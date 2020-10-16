@@ -1,0 +1,7 @@
+_autosave*
+*.kicad_pcb-bak
+*.sch
+*.log
+fp-info-cache
+
+*.zip

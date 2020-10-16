@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name calisco)(type KiCad)(uri ${KIPRJMOD}/../../../kicad-libs/calisco.pretty)(options "")(descr ""))
+)

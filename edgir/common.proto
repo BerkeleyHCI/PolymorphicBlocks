@@ -1,0 +1,47 @@
+/** File : common.proto
+    Package : edg.common
+
+    This is where we keep shared types that we reuse and don't have a
+    good place for. */
+
+syntax = "proto3";
+package edg.common;
+
+/** Arbitrary metadata stored in tree form. */
+message Metadata {
+
+
+  message Members {
+     map<string, Metadata> node = 10;
+  }
+
+  /** An unknown type just means we don't have some specific
+      expected structure.
+
+      A known type is shorthand to tell us what fields we should
+      expect and how to decode the stored data. None of this is
+      enforced anywhere, so programmer beware, getting the type
+      and other information right is your job. */
+  oneof type {
+    Empty unknown = 1;
+    string known = 2;
+  }
+
+  oneof meta {
+
+    Members members = 101;
+
+    string text_leaf = 102;
+
+    /** I wanted to split binary and text data, since we might
+        just want to dump a raw file/image/datasheet in here
+        for safekeeping.
+
+        Mixing up binary and textual formats is just a recipe
+        for trouble. */
+    bytes bin_leaf = 103;
+  }
+}
+
+/** Placeholder until I figure out how to import properly */
+message Empty {}

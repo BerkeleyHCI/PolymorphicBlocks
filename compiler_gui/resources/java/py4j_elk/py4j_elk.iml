@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="net.sf.py4j:py4j:0.10.8.1" level="project" />
+    <orderEntry type="library" name="org.eclipse.elk:org.eclipse.elk.alg.graphviz.dot:0.5.0" level="project" />
+    <orderEntry type="library" name="org.eclipse.elk:org.eclipse.elk.graph.json:0.5.0" level="project" />
+    <orderEntry type="library" name="org.eclipse.elk:org.eclipse.elk.alg.layered:0.5.0" level="project" />
+  </component>
+</module>

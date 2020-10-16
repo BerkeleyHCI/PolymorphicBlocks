@@ -1,0 +1,70 @@
+/**
+   File : init.proto
+   Package : edg.inir
+
+   As with literals and types, we need an initializer for each value type
+   that captures the various levels of information we could have when
+   creating a value.
+
+   FIXME :: Does this make more sense in another file?
+ */
+
+
+
+syntax = "proto3";
+package edg.init;
+import "expr.proto";
+import "name.proto";
+import "ref.proto";
+import "common.proto";
+import "lit.proto";
+import "type.proto";
+
+/** Unlike everything else we have so far the initializer for a
+    UID needs to tell us whether we generate a new unique variable
+    or whether constraints will limit it to some arbitrary value. */
+//message UIDInit {
+//  oneof init {
+//    /** If this is set we generate a unique UID */
+//    edg.common.Empty new = 1;
+//
+//    /** If this is set, we assume that constraints will choose a UID for us */
+//    edg.common.Empty unknown = 2;
+//  }
+//
+//  edg.type.UIDType type = 10;
+//}
+
+/** This is the general way we initialize values in the local context.
+
+    I think the frontend should have more type specific wrappers around
+    this since the data required for each type can be different. */
+message ValInit {
+  oneof val {
+    edg.common.Empty floating = 1;
+    edg.common.Empty integer  = 2;
+    edg.common.Empty boolean  = 3;
+    edg.common.Empty text     = 4;
+//    edg.type.SymbolType      symbol   = 5;
+//    UIDInit         uid      = 6;
+//    edg.common.Empty array    = 7;
+    edg.common.Empty set      = 8;
+    edg.common.Empty struct   = 9;
+    edg.common.Empty range    = 10;
+  }
+
+  edg.common.Metadata meta = 127;
+
+}
+
+
+/** We initialize expressions by pointing to the relevant library
+    elements it steals declarations from.
+
+    This should probably never be empty, since that means we aren't
+    specifying a particulat element that goes in some given slot. */
+//message ElemInit {
+//  repeated edg.ref.LibraryPath elems = 1;
+//
+//  edg.common.Metadata meta = 127;
+//}

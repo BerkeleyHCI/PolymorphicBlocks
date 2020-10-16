@@ -1,0 +1,378 @@
+from typing import Union, Tuple, Optional, Iterable
+
+from .common_pb2 import Empty, Metadata
+from .init_pb2 import ValInit
+from .name_pb2 import *
+from .impl_pb2 import *
+from .type_pb2 import *
+from .ref_pb2 import LibraryPath, LocalPath, LocalStep, Reserved, CONNECTED_LINK, IS_CONNECTED
+from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
+from .schema_pb2 import Library, Design
+from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, ReductionExpr, MapExtractExpr
+
+PortTypes = Union[Port, PortArray, Bundle]
+BlockTypes = HierarchyBlock
+BlockLikeTypes = Union[BlockTypes, Link]
+EltTypes = Union[PortTypes, BlockLikeTypes, ValInit]
+
+
+def resolve_blocklike(block: BlockLike) -> BlockTypes:
+  if block.HasField('hierarchy'):
+    return block.hierarchy
+  else:
+    raise ValueError(f"bad blocklike {block}")
+
+
+def resolve_linklike(link: LinkLike) -> Link:
+  if link.HasField('link'):
+    return link.link
+  else:
+    raise ValueError(f"bad linklike {link}")
+
+
+def resolve_portlike(port: PortLike) -> PortTypes:
+  if port.HasField('port'):
+    return port.port
+  elif port.HasField('array'):
+    return port.array
+  elif port.HasField('bundle'):
+    return port.bundle
+  else:
+    raise ValueError(f"bad portlike {port}")
+
+
+LitTypes = Union[bool, float, Tuple[float, float], str]
+
+
+def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTypes]]:
+  if expr.HasField('binary') and expr.binary.op == BinaryExpr.EQ:
+    rhs_lit = lit_from_expr(expr.binary.rhs)
+    if expr.binary.lhs.HasField('ref') and rhs_lit is not None:
+      # TODO: this only guarantees the expr structure, not that the lhs is reachable
+      return (expr.binary.lhs.ref, rhs_lit)
+    else:
+      return None
+  else:
+    return None
+
+
+def lit_from_expr(expr: ValueExpr) -> Optional[LitTypes]:
+  if expr.HasField('literal') and expr.literal.HasField('boolean'):
+    return expr.literal.boolean.val
+  elif expr.HasField('literal') and expr.literal.HasField('floating'):
+    return expr.literal.floating.val
+  elif expr.HasField('binary') and expr.binary.op == BinaryExpr.RANGE and \
+      expr.binary.lhs.HasField('literal') and expr.binary.lhs.literal.HasField('floating') and \
+      expr.binary.rhs.HasField('literal') and expr.binary.rhs.literal.HasField('floating'):
+    return (expr.binary.lhs.literal.floating.val, expr.binary.rhs.literal.floating.val)
+  elif expr.HasField('literal') and expr.literal.HasField('text'):
+    return expr.literal.text.val
+  else:
+    return None
+
+
+def lit_to_expr(value: LitTypes) -> ValueExpr:
+  pb = ValueExpr()
+  if isinstance(value, bool):
+    pb.literal.boolean.val = value
+  elif isinstance(value, float):
+    pb.literal.floating.val = value
+  elif isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
+    pb.binary.op = BinaryExpr.RANGE
+    pb.binary.lhs.literal.floating.val = value[0]
+    pb.binary.rhs.literal.floating.val = value[1]
+  elif isinstance(value, str):
+    pb.literal.text.val = value
+  else:
+    raise ValueError(f"unknown lit {value}")
+  return pb
+
+
+def valinit_to_type_string(elt: ValInit) -> str:
+  if elt.HasField('boolean'):
+    return 'Bool'
+  elif elt.HasField('floating'):
+    return 'Float'
+  elif elt.HasField('range'):
+    return 'Range'
+  elif elt.HasField('text'):
+    return 'Text'
+  else:
+    return 'unknown'
+
+
+def string_to_lit(input: str, elt: ValInit) -> Optional[LitTypes]:
+  if elt.HasField('boolean'):
+    if input.lower() == 'true':
+      return True
+    elif input.lower() == 'false':
+      return False
+    else:
+      return None
+  elif elt.HasField('floating'):
+    try:
+      return float(input)
+    except ValueError:
+      return None
+  elif elt.HasField('range'):  # TODO: support tolerance notation and single values?
+    elts = input.split(',')
+    if len(elts) != 2:
+      return None
+    try:
+      return (float(elts[0]), float(elts[1]))
+    except ValueError:
+      return None
+  elif elt.HasField('text'):
+    return input
+  else:
+    raise ValueError(f"unknown elt {elt}")
+
+
+def lit_to_string(lit: LitTypes) -> str:
+  import numbers
+  if isinstance(lit, bool):
+    return str(lit)
+  elif isinstance(lit, tuple) and len(lit) == 2 and \
+      isinstance(lit[0], numbers.Number) and isinstance(lit[1], numbers.Number):
+    return f"{lit[0]:3g}, {lit[1]:3g}"
+  elif isinstance(lit, numbers.Number):
+    return str(lit)
+  elif isinstance(lit, str):
+    return lit
+  else:
+    raise ValueError(f"lit_to_string: unknown type for {lit}")
+
+
+def expr_to_string(expr: ValueExpr) -> str:
+  if expr.HasField('literal'):
+    return str(lit_from_expr(expr))
+  elif expr.HasField('binary'):
+    bin_op_infix = {
+      BinaryExpr.ADD: '+',
+      BinaryExpr.SUB: '-',
+      BinaryExpr.MULT: '*',
+      BinaryExpr.DIV: '/',
+      BinaryExpr.AND: '&&',
+      BinaryExpr.OR: '||',
+      BinaryExpr.XOR: '^',
+      BinaryExpr.IMPLIES: '->',
+      BinaryExpr.EQ: '==',
+      BinaryExpr.NEQ: '!=',
+      BinaryExpr.GT: '>',
+      BinaryExpr.GTE: '>=',
+      BinaryExpr.LT: '<',
+      BinaryExpr.LTE: '<=',
+    }
+    bin_op_fn_name = {
+      BinaryExpr.UNDEFINED: 'undef',
+      BinaryExpr.MAX: 'max',
+      BinaryExpr.MIN: 'min',
+      BinaryExpr.INTERSECTION: 'intersect',  # TODO maybe should be a symbol
+      BinaryExpr.SUBSET: 'subset',  # TODO maybe should be a symbol
+      BinaryExpr.RANGE: 'range',
+    }
+    if expr.binary.op in bin_op_infix:
+      return f'({expr_to_string(expr.binary.lhs)} {bin_op_infix[expr.binary.op]} {expr_to_string(expr.binary.rhs)})'
+    elif expr.binary.op in bin_op_fn_name:
+      return f'{bin_op_fn_name[expr.binary.op]}({expr_to_string(expr.binary.lhs)}, {expr_to_string(expr.binary.rhs)})'
+    else:
+      return f'{BinaryExpr.Op.Name(expr.binary.op)}({expr_to_string(expr.binary.lhs)}, {expr_to_string(expr.binary.rhs)})'
+  elif expr.HasField('reduce'):
+    reduce_fn_name = {
+      ReductionExpr.UNDEFINED: 'undef',
+      ReductionExpr.SUM: 'sum',
+      ReductionExpr.ALL_TRUE: 'all_true',
+      ReductionExpr.ANY_TRUE: 'any_true',
+      ReductionExpr.ALL_EQ: 'all_eq',
+      ReductionExpr.ALL_UNIQUE: 'all_unique',
+      ReductionExpr.MAXIMUM: 'max',
+      ReductionExpr.MINIMUM: 'min',
+      ReductionExpr.SET_EXTRACT: 'set_extract',
+      ReductionExpr.INTERSECTION: 'intersection',
+    }
+    if expr.binary.op in reduce_fn_name:
+      return f'reduce_{reduce_fn_name[expr.reduce.op]}({expr_to_string(expr.reduce.vals)})'
+    else:
+      return f'reduce_{ReductionExpr.Op.Name(expr.reduce.op)}({expr_to_string(expr.reduce.vals)})'
+  elif expr.HasField('struct'):
+    elt_strs = [f'{key}: {expr_to_string(val)}' for key, val in expr.struct.vals.items()]
+    elt_str = ','.join(elt_strs)
+    return f'{{{elt_str}}}'
+  elif expr.HasField('range'):
+    return f'range({expr_to_string(expr.range.minimum)}, {expr_to_string(expr.range.maximum)})'
+  elif expr.HasField('ifThenElse'):
+    return f'({expr_to_string(expr.ifThenElse.cond)} ? {expr_to_string(expr.ifThenElse.tru)} : {expr_to_string(expr.ifThenElse.fal)})'
+  elif expr.HasField('extract'):
+    return f'{expr_to_string(expr.extract.container)}[{expr_to_string(expr.extract.index)}]'
+  elif expr.HasField('map_extract'):
+    return f'[_.{local_path_to_str(expr.map_extract.path)} : {expr_to_string(expr.map_extract.container)}]'
+  elif expr.HasField('connected'):
+    return f'connected({expr_to_string(expr.connected.block_port)}, {expr_to_string(expr.connected.link_port)})'
+  elif expr.HasField('exported'):
+    return f'exported({expr_to_string(expr.exported.exterior_port)}, {expr_to_string(expr.exported.internal_block_port)})'
+  elif expr.HasField('ref'):
+    return local_path_to_str(expr.ref)
+  else:
+    raise ValueError(f"no format rule for {expr}")
+
+
+def localpath_concat(*elts: Union[LocalPath, str, 'Reserved']) -> LocalPath:  # TODO workaround for broken enum typing
+  result = LocalPath()
+  for elt in elts:
+    if isinstance(elt, LocalPath):
+      for elt_elt in elt.steps:
+        result.steps.add().CopyFrom(elt_elt)
+    elif isinstance(elt, str):
+      result.steps.add().name = elt
+    elif elt == CONNECTED_LINK or elt == IS_CONNECTED:
+      result.steps.add().reserved_param = elt
+    else:
+      raise ValueError(f"unknown localpath elt {elt}")
+  return result
+
+
+def localpath_slice(path: LocalPath, slice_from: int, slice_to: Optional[int] = None) -> LocalPath:
+  if slice_to is None:
+    slice_to = slice_from + 1
+  rtn = LocalPath()
+  for i in range(slice_from, slice_to):
+    rtn.steps.add().CopyFrom(path.steps[i])
+  return rtn
+
+
+def LocalPathList(path: Iterable[str]) -> LocalPath:
+  pb = LocalPath()
+  for step in path:
+    pb.steps.add().name = step
+  return pb
+
+
+def EqualsValueExpr(path: Iterable[str], value: Union[Iterable[str], float, Tuple[float, float], str]) -> ValueExpr:
+  """Convenience shorthand constructor for a ValueExpr with a path on the lhs and a literal on the rhs"""
+  import numbers
+
+  pb = ValueExpr()
+  pb.binary.op = BinaryExpr.EQ
+  pb.binary.lhs.ref.CopyFrom(LocalPathList(path))
+
+  if isinstance(value, bool):
+    pb.binary.rhs.literal.boolean.val = value
+  elif isinstance(value, numbers.Number):
+    pb.binary.rhs.literal.floating.val = value
+  elif isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
+    pb.binary.rhs.binary.op = BinaryExpr.RANGE
+    pb.binary.rhs.binary.lhs.literal.floating.val = value[0]
+    pb.binary.rhs.binary.rhs.literal.floating.val = value[1]
+  elif isinstance(value, list) and isinstance(value[0], str):
+    pb.binary.rhs.ref.CopyFrom(LocalPathList(value))
+  elif isinstance(value, str):
+    pb.binary.rhs.literal.text.val = value
+  else:
+    raise ValueError(f"unknown literal type {value}")
+
+  return pb
+
+
+def SubsetValueExpr(path: Iterable[str], value: Union[Iterable[str], Tuple[float, float]]) -> ValueExpr:
+  """Convenience shorthand constructor for a ValueExpr with a path on the lhs and a literal on the rhs"""
+  pb = ValueExpr()
+  pb.binary.op = BinaryExpr.SUBSET
+  pb.binary.lhs.ref.CopyFrom(LocalPathList(path))
+
+  if isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
+    pb.binary.rhs.binary.op = BinaryExpr.RANGE
+    pb.binary.rhs.binary.lhs.literal.floating.val = value[0]
+    pb.binary.rhs.binary.rhs.literal.floating.val = value[1]
+  elif isinstance(value, list) and isinstance(value[0], str):
+    pb.binary.rhs.ref.CopyFrom(LocalPathList(value))
+  else:
+    raise ValueError(f"unknown literal type {value}")
+
+  return pb
+
+
+def AndValueExpr(*exprs: ValueExpr) -> ValueExpr:
+  from functools import reduce
+  assert exprs
+  def combine(lhs: ValueExpr, rhs: ValueExpr) -> ValueExpr:
+    pb = ValueExpr()
+    pb.binary.op = BinaryExpr.AND
+    pb.binary.lhs.CopyFrom(lhs)
+    pb.binary.rhs.CopyFrom(rhs)
+    return pb
+  return reduce(combine, exprs)
+
+
+def local_path_to_str(path: LocalPath) -> str:
+  def step_to_str(step: LocalStep) -> str:
+    if step.HasField('name'):
+      return step.name
+    elif step.HasField('reserved_param'):
+      return {
+        CONNECTED_LINK: '(link)',
+        IS_CONNECTED: '(is_connected)'
+      }[step.reserved_param]
+    else:
+      raise ValueError(f"unknown step {step}")
+
+  return '.'.join([step_to_str(step) for step in path.steps])
+
+
+def ordered_blocks(block: HierarchyBlock) -> Iterable[Tuple[str, BlockLike]]:
+  """Returns a list of all sub-blocks (as BlockLike) in lexical order recorded by metadata.
+  """
+  order_dict = block.meta.members.node['_blocks_order'].members.node
+  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
+  assert len(names_sorted) == len(block.blocks), f"sorted names {names_sorted} != block names {list(block.blocks.keys())}"
+  return [(name, block.blocks[name]) for name in names_sorted]
+
+
+def ordered_links(block: Union[HierarchyBlock, Link]) -> Iterable[Tuple[str, LinkLike]]:
+  """Returns a list of all sub-links (as LinkLike) in lexical order recorded by metadata.
+  """
+  order_dict = block.meta.members.node['_links_order'].members.node
+  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
+  assert len(names_sorted) == len(block.links), f"sorted names {names_sorted} != link names {list(block.links.keys())}"
+  return [(name, block.links[name]) for name in names_sorted]
+
+
+def ordered_params(block: Union[HierarchyBlock, Link, Port, Bundle]) -> Iterable[Tuple[str, ValInit]]:
+  """Returns a list of all sub-params (as ValInit) in lexical order recorded by metadata.
+"""
+  order_dict = block.meta.members.node['_params_order'].members.node
+  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
+  assert len(names_sorted) == len(block.params), f"sorted names {names_sorted} != param names {list(block.params.keys())}"
+  return [(name, block.params[name]) for name in names_sorted]
+
+
+def ordered_ports(block: Union[HierarchyBlock, Link, Bundle]) -> Iterable[Tuple[str, PortLike]]:
+  """Returns a list of all sub-ports (as PortLike) in lexical order recorded by metadata.
+  """
+  order_dict = block.meta.members.node['_ports_order'].members.node
+  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
+  assert len(names_sorted) == len(block.ports), f"sorted names {names_sorted} != block ports {list(block.ports.keys())}"
+  return [(name, block.ports[name]) for name in names_sorted]
+
+
+def source_locator_of(elt: Union[HierarchyBlock, Port, Link, Bundle], subelt_name: str) -> Optional[Tuple[str, int]]:
+  """Returns the source locator of subelt_name in elt, as a tuple of (filepath, lineno).
+  """
+  if '_sourcelocator' not in elt.meta.members.node:
+    return None
+  if subelt_name not in elt.meta.members.node['_sourcelocator'].members.node:
+    return None
+  sloc_str = elt.meta.members.node['_sourcelocator'].members.node[subelt_name].text_leaf
+  sloc_split = sloc_str.rpartition(':')
+  sloc_file = sloc_split[0].strip()
+  sloc_line = int(sloc_split[2].strip())
+  return sloc_file, sloc_line
+
+
+def edgdoc_of(elt: Union[HierarchyBlock, Link, Bundle], subelt_name: str) -> Optional[str]:
+  """Returns the docstring / edgdoc of a subelt in elt.
+  """
+  if '_edgdoc' not in elt.meta.members.node:
+    return None
+  if subelt_name not in elt.meta.members.node['_edgdoc'].members.node:
+    return None
+  return elt.meta.members.node['_edgdoc'].members.node[subelt_name].text_leaf

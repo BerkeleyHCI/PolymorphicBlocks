@@ -1,0 +1,29 @@
+/**
+   File : impl.proto
+   Package : edg.impl
+
+   This is where we define how implementation and generator information is
+   stored.
+
+   Fuck if I know what that will look like, so for now you just get a metadata block.
+ */
+
+syntax = "proto3";
+package edg.impl;
+import "common.proto";
+
+message BlockImpl {
+  edg.common.Metadata meta = 127;
+}
+
+message PortImpl {
+  edg.common.Metadata meta = 127;
+}
+
+message LinkImpl {
+  edg.common.Metadata meta = 127;
+}
+
+message EnvironmentImpl {
+  edg.common.Metadata meta = 127;
+}

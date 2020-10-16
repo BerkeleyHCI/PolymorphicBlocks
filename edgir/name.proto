@@ -1,0 +1,72 @@
+/**
+   File : name.proto
+   Package : edg.name
+
+   There are three major classes of name in edg:
+     - Namespaces, which help organize elements within libraries.
+     - LocalNames, which help organize elements relative to each other.
+     - LibraryNames, which we use to identify specific libraries.
+
+ */
+
+syntax = "proto3";
+package edg.name;
+
+import "common.proto";
+
+/**
+   A namespace allows us to define a more useful organizational structure
+   over items in the library. It lets us group elements in categories that
+   are orthogonal to the usual Block, Port, Link, ontology. */
+message Namespace {
+  oneof namespace {
+    /** Basic namespaces are a way to organize library elements into a
+        useful hirearchy (e.g. 'Core.*' for the most primitive definitions
+        that we define, or 'NXP.*' for NXP made components.)
+
+        Basic namespaces should have the following properties:
+
+        - First char is a capital letter
+        - All other chars must be letters, numbers, '-', '<', '>'
+        - CamelCase is preffered, don't use any symbols in the name
+          if possible. */
+    string basic = 1;
+
+    /** @exclude :: Hidden for now because we don't need to handle more
+                    complex name spacing yet.
+
+       Shadow namespaces give us a way to put nested definitions into
+       the namespace heirarchy.
+
+       Basically, we need there to be a unique LibraryName for
+       each element in a library. We also want to allow for nested
+       definitions of elements, since that makes writing complex parts up
+       much easier.
+
+       Shadow namespaces give us a way to do both, we basically can treat
+       localName as its own namespace underneath whatever parent is there.
+
+           Local shadow = 2;
+    */
+  }
+
+  edg.common.Metadata meta = 127;
+}
+
+/** A library name is a way to identify a specific library from a
+    set of parent libraries.
+
+    This can be the initial element in a path or reference. */
+message LibraryName {
+  /** Since libraries allow for inheritance, we will often want to say
+      this element, defined in *this* particular library.
+
+      In those cases we want to be able to specify the relevant library
+      by its identifier.
+
+      Otherwise we assume it's somehow implicit which library we're
+      talking about. */
+  string name = 2;
+
+  edg.common.Metadata meta = 127;
+}

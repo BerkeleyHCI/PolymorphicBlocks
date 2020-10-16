@@ -1,0 +1,196 @@
+/**
+   File : elem.proto
+   Package : edg.elem
+
+   Elements (Blocks, Ports, Links, and Envs) are all equivalent to
+   a set of declarations with some typing information, howver it is
+   much nicer to parse them out into more concrete structures.
+
+   We don't strictly differentiate between library elements and
+   elements within a design within the protobuf. In general, when
+   there is a library element, we
+ */
+
+syntax = "proto3";
+package edg.elem;
+import "common.proto";
+import "init.proto";
+//import "name.proto";
+//import "impl.proto";
+//import "type.proto";
+import "expr.proto";
+import "ref.proto";
+
+
+message Port {
+
+  map<string, edg.init.ValInit> params = 10;
+  map<string, edg.expr.ValueExpr> constraints = 11;
+
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+//  /** Those superclasses that must apply to the env
+//      this bundle is within.*/
+//  edg.ref.LibraryPath env_classes = 30;
+
+//  oneof impl {
+//    edg.common.Empty none = 40;
+//    edg.impl.PortImpl val = 41;
+//  }
+
+  edg.common.Metadata meta = 127;
+}
+
+message Bundle {
+//  enum ConnStyle {  // Currently is all bundle-to-bundle for internal connects, but may connect sub-elements on block edges
+//    UNDEFINED = 0;
+//    BUNDLE_TO_BUNDLE = 1;
+//    INDIVIDUAL_PORTS = 2;
+//  }
+//
+//  ConnStyle conn_style = 1;
+
+  map<string, edg.init.ValInit> params = 10;
+  map<string, PortLike> ports = 11;
+  map<string, edg.expr.ValueExpr> constraints = 12;
+
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+//  oneof impl {
+//    edg.common.Empty none = 40;
+//    edg.impl.PortImpl val = 41;
+//  }
+
+  edg.common.Metadata meta = 127;
+}
+
+message PortArray {
+  /* The superclass that appllies to every port in the set/array. Used
+     when a new port is instantiated by the front or back end. */
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+  /* Only designs should contain actual ports here */
+  map<string, PortLike> ports = 13;
+
+  edg.common.Metadata meta = 127;
+}
+
+/** Wrapper for different port like elements */
+message PortLike {
+  oneof is {
+    edg.common.Empty undefined = 1;
+    edg.ref.LibraryPath lib_elem = 2;
+    /** 'port' disallowed w/in the library */
+    Port       port   = 3;
+    PortArray  array  = 4;
+    /** 'bundle' disallowed w/in the library */
+    Bundle     bundle = 6;
+  }
+}
+
+//message Block {
+//
+//  map<string, edg.init.ValInit> params = 10;
+//  map<string, PortLike>        ports = 11;
+////  map<string, EnvLike>     environments = 12;
+//  map<string, edg.expr.ValueExpr> constraints = 13;
+//
+//  repeated edg.ref.LibraryPath superclasses = 20;
+//
+////  oneof impl {
+////    edg.common.Empty none = 40;
+////    edg.impl.BlockImpl val = 42;
+////  }
+//
+//  edg.common.Metadata meta = 127;
+//}
+
+message HierarchyBlock {
+  map<string, edg.init.ValInit>   params = 10;
+  map<string, PortLike>          ports  = 11;
+  /** Bridges, which adapt an edge port to a link port - eg, edge ElectricalSink to an internal link
+      ElectricalSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
+      infer these blocks. */
+  map<string, BlockLike>          blocks = 12;
+  map<string, LinkLike>           links  = 13;
+  /** Connections between internal block and link ports are represented by connected constraints.
+      Connections between internal; block and edge (of this block) ports are represented by exported constraints. */
+  map<string, edg.expr.ValueExpr> constraints = 14;
+
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+  edg.common.Metadata meta = 127;
+}
+
+message BlockLike {
+  oneof type {
+    edg.common.Empty undefined = 1;
+    edg.ref.LibraryPath lib_elem = 2;
+    /** not allowed w/in the library */
+//    Block block = 3;
+    /** not allowed w/in the library */
+    HierarchyBlock hierarchy = 4;
+  }
+}
+
+message Link {
+
+  map<string, edg.init.ValInit> params = 10;
+  map<string, PortLike>          ports  = 11;
+  map<string, LinkLike>           links  = 13;
+  map<string, edg.expr.ValueExpr> constraints = 12;
+
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+//  oneof impl {
+//    edg.common.Empty none = 40;
+//    edg.impl.LinkImpl val = 43;
+//  }
+
+  edg.common.Metadata meta = 127;
+}
+
+message LinkLike {
+  oneof type {
+    edg.common.Empty undefined = 1;
+    edg.ref.LibraryPath lib_elem = 2;
+    /** not allowed w/in the library */
+    Link link = 3;
+  }
+}
+
+//message Env {
+//
+//  message LinkSet {
+//    /* The superclasses that apply to every port in the set. Used
+//     when a new port is instantiated by the front or back end. */
+//    repeated edg.ref.LibraryPath superclasses = 20;
+//
+//    /* empty within a library */
+//    map<string,LinkLike> links = 12;
+//
+//    edg.common.Metadata meta = 127;
+//  }
+//
+//  map<string, edg.init.ValInit> params = 10;
+//  map<string, LinkSet>          links  = 12;
+//  map<string, edg.expr.ValueExpr> constraints = 13;
+//
+//  repeated edg.ref.LibraryPath superclasses = 20;
+//
+//  oneof impl {
+//    edg.common.Empty none = 40;
+//    edg.impl.EnvironmentImpl val = 44;
+//  }
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message EnvLike {
+//  oneof type {
+//    edg.common.Empty undefined = 1;
+//    edg.ref.LibraryPath lib_elem = 2;
+//    /** not allowed w/in the library */
+//    Env env = 3;
+//  }
+//}

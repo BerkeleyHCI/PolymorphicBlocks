@@ -1,0 +1,22 @@
+.mypy_cache
+__pycache__
+
+*.edg
+*.net
+*.lib
+
+*.raw
+*.plt
+
+# IDEs
+.project
+.pydevproject
+.idea
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Misc
+*.log

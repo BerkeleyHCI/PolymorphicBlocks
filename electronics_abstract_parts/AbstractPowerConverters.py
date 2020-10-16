@@ -1,0 +1,233 @@
+from electronics_model import *
+from .Categories import *
+from .AbstractPassives import Inductor, DecouplingCapacitor
+
+
+@abstract_block
+class DcDcConverter(PowerConditioner):
+  """Base class for all DC-DC converters with shared ground (non-isoalted)."""
+  @init_in_parent
+  def __init__(self, output_voltage: RangeExpr = RangeExpr()) -> None:
+    super().__init__()
+
+    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])
+    self.pwr_out = self.Port(ElectricalSource(), [Output])
+    self.gnd = self.Port(Ground(), [Common])
+    self.constrain(self.pwr_out.voltage_out.within(output_voltage))
+
+@abstract_block
+class LinearRegulator(DcDcConverter):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeExpr = RangeExpr()) -> None:
+    super().__init__(output_voltage)
+    self.dropout = self.Parameter(RangeExpr())
+    self.quiescent_current = self.Parameter(RangeExpr())
+
+    # TODO these constraints establish a theoretical bound, but allows (and demands) subtypes refine to exact values
+    self.constrain(self.pwr_in.current_draw.within(self.pwr_out.link().current_drawn + self.quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
+    self.constrain(self.pwr_in.link().voltage.lower() >= self.pwr_out.link().voltage.upper() + self.dropout.upper())  # TODO more elegant?
+
+
+@abstract_block
+class DcDcSwitchingConverter(DcDcConverter):
+  """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
+  """
+  @init_in_parent
+  def __init__(self, output_voltage: RangeExpr = RangeExpr(), ripple_current_factor: RangeLike = RangeExpr(),
+               input_ripple_limit: FloatExpr = 75 * mVolt, output_ripple_limit: FloatExpr = 25 * mVolt) -> None:
+    # TODO can this be integrated with some kind of AbstractDcDcConverter?
+    super().__init__(output_voltage)
+
+    self.ripple_current_factor = self.Parameter(RangeExpr(ripple_current_factor))
+    self.input_ripple_limit = self.Parameter(FloatExpr(input_ripple_limit))
+    self.output_ripple_limit = self.Parameter(FloatExpr(output_ripple_limit))
+    self.efficiency = self.Parameter(RangeExpr())
+
+    self.constrain(self.pwr_in.current_draw.within((
+      self.pwr_out.link().current_drawn * self.pwr_out.voltage_out / self.pwr_in.link().voltage / self.efficiency + (0, 0.01)  # TODO avoid fudge factor
+    )))
+
+
+@abstract_block
+class BuckConverter(DcDcSwitchingConverter):
+  """Step-down switching converter"""
+  def __init__(self, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
+    # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
+    # TODO can this be integrated with some kind of AbstractDcDcConverter?
+    super().__init__(ripple_current_factor=ripple_current_factor, **kwargs)
+
+    self.frequency = self.Parameter(RangeExpr())
+
+
+@abstract_block
+class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
+  """Provides a helper function to generate the power path for a switching buck converter.
+  TODO: support non-synchronous topologies and non-integrated FETs
+
+  Useful resources:
+  https://www.ti.com/lit/an/slva477b/slva477b.pdf
+    Component sizing in continuous mode
+    Listed references go into more detail
+  http://www.onmyphd.com/?p=voltage.regulators.buck.step.down.converter
+    Very detailed analysis including component sizing, operating modes, calculating losses
+  """
+  DUTYCYCLE_MIN_LIMIT = 0.1
+  DUTYCYCLE_MAX_LIMIT = 0.9
+  WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
+
+  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float) -> ElectricalSource:
+    """
+    Main assumptions in component sizing
+    - Operating only in continuous mode TODO: also consider boundary and discontinuous mode
+
+    TODO support capacitor ESR calculation
+    TODO unify rated max current with something else, perhaps a block param?
+    """
+
+    in_voltage_min, in_voltage_max = self.get(self.pwr_in.link().voltage)
+    out_voltage_min, out_voltage_max = self.get(self.pwr_out.voltage_out)
+    out_voltage_ripple = self.get(self.output_ripple_limit)  # TODO: this adds to tolerance stackups
+    in_voltage_ripple = self.get(self.input_ripple_limit)
+    _, out_current_max = self.get(self.pwr_out.link().current_drawn)
+    freq_min, freq_max = self.get(self.frequency)
+
+    dc_max = out_voltage_max / in_voltage_min / self.WORST_EFFICIENCY_ESTIMATE
+    dc_min = out_voltage_min / in_voltage_max
+
+    assert dc_max <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max {dc_max} outside limit {self.DUTYCYCLE_MAX_LIMIT}"
+    assert dc_min >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min {dc_min} outside limit {self.DUTYCYCLE_MIN_LIMIT}"
+
+    ripple_current_min = out_current_max * self.get(self.ripple_current_factor.lower())  # peak-peak
+    ripple_current_max = max(
+      out_current_max * self.get(self.ripple_current_factor.upper()),  # peak-peak
+      rated_max_current_amps * self.get(self.ripple_current_factor.lower())  # see LMR33630 datasheet, use rating if current draw much lower
+    )
+
+    # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
+    inductance_min = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_max / freq_min / in_voltage_max
+    if ripple_current_min == 0:
+      inductance_max = float('inf')
+    else:
+      inductance_max = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_min / freq_min / in_voltage_max
+
+    out_capacitance_min = ripple_current_max / 8 / freq_min / out_voltage_ripple  # TODO size based on transient response
+    in_capacitance_min = out_current_max * dc_max * (1 - dc_min) / freq_min / in_voltage_ripple
+
+    sw_current_max = out_current_max + ripple_current_max / 2
+
+    self.inductor = self.Block(Inductor(
+      inductance=(inductance_min, inductance_max)*Henry,
+      current=(0, sw_current_max)*Amp,
+      frequency=(freq_min, freq_max)*Hertz
+    ))
+
+    # TODO: DC derating
+    # Note, implicit connect is not great here because of the different power in / power out rails
+    # But maybe something can be done with ground?
+    self.in_cap = self.Block(DecouplingCapacitor(
+      capacitance=(in_capacitance_min, float('inf'))*Farad,
+    ))
+    self.out_cap = self.Block(DecouplingCapacitor(
+      capacitance=(out_capacitance_min, float('inf'))*Farad,
+    ))
+    self.connect(self.pwr_in, self.in_cap.pwr)
+    self.connect(self.pwr_out, self.out_cap.pwr)
+    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+
+    inductor_out = self.inductor.b.as_electrical_source()
+    self.connect(self.pwr_out, inductor_out)  # TODO this should be modeled w/ the final voltages
+    inductor_in = self.inductor.a.as_electrical_sink()
+    self.connect(switch_node, inductor_in)
+    self.constrain(inductor_in.current_draw == self.inductor.current)
+
+    return inductor_out
+
+
+@abstract_block
+class BoostConverter(DcDcSwitchingConverter):
+  """Step-up switching converter"""
+  def __init__(self, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
+    # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
+    # TODO can this be integrated with some kind of AbstractDcDcConverter?
+    super().__init__(ripple_current_factor=ripple_current_factor, **kwargs)
+
+    self.frequency = self.Parameter(RangeExpr())
+
+
+@abstract_block
+class DiscreteBoostConverter(BoostConverter, GeneratorBlock):
+  """Step-up switching converter, with provisions for passives sizing.
+  TODO: support non-integrated FETs
+
+  Useful resources:
+  https://www.ti.com/lit/an/slva372c/slva372c.pdf
+    Component sizing in continuous mode
+    Listed references go into more detail
+  http://www.simonbramble.co.uk/dc_dc_converter_design/boost_converter/boost_converter_design.htm
+    Detailed analysis of converter with discrete FET and diode
+  """
+  DUTYCYCLE_MIN_LIMIT = 0.2  # inferred from Figure 9
+  DUTYCYCLE_MAX_LIMIT = 0.85  # by datasheet
+  WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
+
+  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float) -> None:
+    """
+    - diode needs to be fast, consider forward voltage drop, forward current (> peak inductor current), reverse volts (> Vout)
+
+    Main assumptions in component sizing
+    - Operating only in continuous mode TODO: also consider boundary and discontinuous mode
+
+    TODO support capacitor ESR calculation
+    """
+
+    in_voltage_min, in_voltage_max = self.get(self.pwr_in.link().voltage)
+    out_voltage_min, out_voltage_max = self.get(self.pwr_out.voltage_out)
+    out_voltage_ripple = self.get(self.output_ripple_limit)  # TODO: this adds to tolerance stackups
+    in_voltage_ripple = self.get(self.input_ripple_limit)
+    _, out_current_max = self.get(self.pwr_out.link().current_drawn)
+    freq_min, freq_max = self.get(self.frequency)
+
+    dc_max = 1 - in_voltage_max / out_voltage_min
+    dc_min = 1 - in_voltage_min * self.WORST_EFFICIENCY_ESTIMATE / out_voltage_max
+
+    assert dc_max <= self.DUTYCYCLE_MAX_LIMIT, f"duty cycle {dc_max} over maximum {self.DUTYCYCLE_MAX_LIMIT}, " \
+                                               f"in converting {in_voltage_min}-{in_voltage_max} -> " \
+                                               f"in converting {out_voltage_min}-{out_voltage_max}"
+    assert dc_min >= self.DUTYCYCLE_MIN_LIMIT, f"duty cycle {dc_min} under minimum {self.DUTYCYCLE_MIN_LIMIT}, " \
+                                               f"in converting {in_voltage_min}-{in_voltage_max} -> " \
+                                               f"in converting {out_voltage_min}-{out_voltage_max}"
+
+    ripple_current_min = out_current_max * self.get(self.ripple_current_factor.lower())  # peak-peak
+    ripple_current_max = max(
+      out_current_max * self.get(self.ripple_current_factor.upper()),  # peak-peak
+      rated_max_current_amps * self.get(self.ripple_current_factor.lower())  # see LMR33630 datasheet, use rating if current draw much lower
+    )
+
+    # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
+    inductance_min = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_max / freq_min / out_voltage_min
+    inductance_max = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_min / freq_min / out_voltage_min
+    out_capacitance_min = out_current_max * dc_max / freq_min / out_voltage_ripple
+    in_capacitance_min = (out_current_max / dc_min) * (1 - dc_min) / freq_min / in_voltage_ripple
+
+    sw_current_max = ripple_current_max / 2 + out_current_max / (1 - dc_max)
+
+    self.inductor = self.Block(Inductor(
+      inductance=(inductance_min, inductance_max)*Henry,
+      current=(0, sw_current_max)*Amp,
+      frequency=(freq_min, freq_max)*Hertz
+    ))
+
+    # TODO: DC derating
+    # Note, implicit connect is not great here because of the different power in / power out rails
+    # But maybe something can be done with ground?
+    self.in_cap = self.Block(DecouplingCapacitor(
+      capacitance=(in_capacitance_min, float('inf'))*Farad,
+    ))
+    self.out_cap = self.Block(DecouplingCapacitor(
+      capacitance=(out_capacitance_min, float('inf'))*Farad,
+    ))
+    self.connect(self.pwr_in, self.in_cap.pwr, self.inductor.a.as_electrical_sink())
+    self.connect(self.pwr_out, self.out_cap.pwr)
+    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+
+    self.connect(switch_node, self.inductor.b.as_electrical_sink())

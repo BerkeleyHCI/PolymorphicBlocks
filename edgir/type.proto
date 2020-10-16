@@ -1,0 +1,130 @@
+///**
+//   File : type.proto
+//   Package : edg.type
+//
+//   Basic type system for values in edg.
+//
+// */
+//
+syntax = "proto3";
+//package edg.type;
+//
+//import "common.proto";
+//import "name.proto";
+//
+//message PrimType {
+//  enum Type {
+//    UNDEFINED = 0;
+//    FLOAT = 1;
+//    INT = 2;
+//    BOOL = 3;
+//    TEXT = 4;
+//  }
+//  Type type = 1;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message SymbolType {
+//  message Class {
+//    string name = 1;
+//  }
+//
+//  Class myClass = 2;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message UIDType {
+//  message Class {
+//    string name = 1;
+//  }
+//
+//  Class myClass = 2;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message ArrayType {
+//  ValueType member_type = 1;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message SetType {
+//  ValueType member_type = 1;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+///** A struct type can be explicitly structural or just carry
+//    class information (i.e. this is a port of type foo or
+//    whatever) */
+//message StructType {
+//
+//  /** This is a separate message because we *will* need to
+//      store class information more complex than can be
+//      reasonably represented in a string.
+//
+//      But for now a string will suffice */
+//  message Class {
+//    string name = 1;
+//  }
+//
+//  enum FieldClosure {
+//    UNDEFINED = 0;
+//    /** A closed struct type has all its fields defined. */
+//    CLOSED = 1;
+//
+//    /** An open struct type leaves open the possibility of
+//        it containing fields that haven't yet been explicitly
+//        defined. */
+//    OPEN = 2;
+//  }
+//
+//  map<string, ValueType> member_types = 1;
+//  Class myClass = 2;
+//  FieldClosure field_closure = 3;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+//message RangeType {
+//  ValueType member_type = 1;
+//
+//  edg.common.Metadata meta = 127;
+//}
+//
+///** The unset/empty type signature is defined as:
+//
+//       Type.type.constrained = []
+//
+//       If you don't know what type something has, set it to that. */
+//message ValueType {
+//
+//  /** each class marks some subset of types with a given property */
+//  enum Class {
+//    UNDEFINED = 0;
+//    FORALL = 1; /// This variable could be of any type
+//    NUMERIC = 2; /// This variable must support numeric operations
+//    EQUALITY = 3; /// This variable must have a notion of equality
+//    COMPARABLE = 4; /// This type must have an ordering
+//    UNIONABLE = 5; /// We can take the union or intersection of elements in this variable
+//    SET_LIKE = 6; /// This variable allows for mapping and filtering
+//  }
+//
+//  message ConsType {
+//    repeated Class list = 1;
+//  }
+//
+//  oneof type {
+//    PrimType   prim        = 1;
+//    SymbolType symbol      = 5;
+//    UIDType    uid         = 6;
+//    ArrayType  array       = 7;
+//    SetType    set         = 8;
+//    StructType struct      = 9;
+//    RangeType  range       = 10;
+//    ConsType   constrained = 11;
+//  }
+//}
