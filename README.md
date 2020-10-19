@@ -7,7 +7,7 @@ Adding programming language concepts, like type systems, interfaces, and inherit
 Check out the [the getting started tutorial](getting-started.md) document for a more usage-focused introduction.
 For a slightly deeper technical overview, including summaries of example projects, check out our [UIST'20 paper and recorded talks](http://dx.doi.org/10.1145/3379337.3415860).
 
-**This is alpha software, and is a continuing work-in-progress.** See [Project Status](#project-status) for more details.
+**This is alpha software, and is a continuing work-in-progress. Backwards compatibility is (currently) not guaranteed.** See [Project Status](#project-status) for more details.
 
 ### Example
 From [the getting started tutorial](getting-started.md), this code defines a board with a USB Type-C connector powering (through a buck converter for 3.3V step-down) a microcontroller which drives a LED and reads a switch.
@@ -125,13 +125,11 @@ Example boards, including layouts, are available in the [examples/](examples/) d
 ### Developing
 See [developing.md](developing.md) for developer documentation.
 
-TODO: add IR to repo
-
 ### Misc
 - **_What is EDG?_**:
   [Embedded Device Generation](https://dl.acm.org/doi/10.1145/3083157.3083159) (or more generally Electronic Device Generation) was a prior version of this project that focused on algorithms and models for embedded device synthesis, though it lacked a user-facing component.
   This project is a continuation of that work focusing on an end-to-end system, and for most of its development cycle has been called `edg`.
-  But, for the purposes of writing research paper, naming collisions are confusing and bad, and we chose to keep the repo and paper name consistent.
+  But, for the purposes of writing research papers, naming collisions are confusing and bad, and we chose to keep the repo and paper name consistent.
 - **_Why is there so much CANbus stuff?_**:
   Many of the example designs were built for a [solar car project](https://calsol.berkeley.edu/).  
 - **_Why is there so much USB Type-C stuff?_**:
