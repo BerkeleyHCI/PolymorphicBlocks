@@ -1,6 +1,7 @@
 # Quick Reference
-
 A simplified EDG EDSL guide, primarily as a reference for those who have been through the [getting started guide](getting-started.md).
+
+_Some documentation may be out of date._
 
 ## Core Primitives
 

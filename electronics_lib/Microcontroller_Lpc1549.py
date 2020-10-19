@@ -145,7 +145,7 @@ class Lpc1549_48_Device(Lpc1549_Device):
       '2': self.pio0[1],
       '3': self.pio0[2],
       '4': self.pio0[3],
-      # '5': self.pio0[4],  # not connected, reserved for ISP_0
+      # '5': self.pio0[4],  # not connected, reserved for ISP_0, note datasheet indicates reset state is pull-up
       '6': self.pio0[5],
       '7': self.pio0[6],
       '8': self.pio0[7],
@@ -159,7 +159,7 @@ class Lpc1549_48_Device(Lpc1549_Device):
       '21': self.pio0[13],
       '22': self.pio0[14],
       '23': self.pio0[15],
-      # '24': self.pio0[16],  # not connected, reserved for ISP_1
+      # '24': self.pio0[16],  # not connected, reserved for ISP_1, note datasheet indicates reset state is pull-up
 
       '28': self.pio0[17],
       # '29': self.pio0[19],  # reserved for SWCLK
