@@ -245,7 +245,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(rhs, (float, int, Interval)):
       return self.from_interval(self._interval + rhs)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(rhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(rhs)}")
 
   def __radd__(self, lhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(lhs, SubsetInterval):
@@ -253,7 +253,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(lhs, (float, int, Interval)):
       return self.from_interval(lhs + self._interval)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(lhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(lhs)}")
 
   def __sub__(self, rhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(rhs, SubsetInterval):
@@ -261,7 +261,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(rhs, (float, int, Interval)):
       return self.from_interval(self._interval - rhs)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(rhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(rhs)}")
 
   def __rsub__(self, lhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(lhs, SubsetInterval):
@@ -269,7 +269,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(lhs, (float, int, Interval)):
       return self.from_interval(lhs - self._interval)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(lhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(lhs)}")
 
   def __mul__(self, rhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(rhs, SubsetInterval):
@@ -277,7 +277,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(rhs, (float, int, Interval)):
       return self.from_interval(self._interval * rhs)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(rhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(rhs)}")
 
   def __rmul__(self, lhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(lhs, SubsetInterval):
@@ -285,7 +285,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(lhs, (float, int, Interval)):
       return self.from_interval(lhs * self._interval)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(lhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(lhs)}")
 
   def __truediv__(self, rhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(rhs, SubsetInterval):
@@ -293,7 +293,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(rhs, (float, int, Interval)):
       return self.from_interval(self._interval / rhs)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(rhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(rhs)}")
 
   def __rtruediv__(self, lhs: Union[float, int, IntervalLike]) -> SubsetInterval:
     if isinstance(lhs, SubsetInterval):
@@ -301,7 +301,7 @@ class SubsetInterval(IntervalLike):
     elif isinstance(lhs, (float, int, Interval)):
       return self.from_interval(lhs / self._interval)
     else:
-      return NotImplemented(f"can't do subset-interval op with other {type(lhs)}")
+      raise NotImplementedError(f"can't do subset-interval op with other {type(lhs)}")
 
   # Comparisons not implemented, since a subset may shrink and change the comparison result
 
