@@ -37,7 +37,7 @@ class BlockView:
     self.property = ttk.Treeview(self.frame, columns=('value'))
     self.property.heading('value', text='Value')
     self.property.tag_configure('error', foreground=COLOR_ERROR)
-    self.context_menu = Menu(self.property, tearoff=0)
+    self.context_menu = Menu(self.property, tearoff=False)
     self.context_menu_len = 0
     self.property.bind('<Button-3>', self._on_rclick)
     self.property.bind('<Double-1>', self._on_dclick)

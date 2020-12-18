@@ -17,7 +17,7 @@ class ExprDetailPanel:
       expr_panel.load_param(expr, vals, backedge, seen)
     else:
       expr_panel.load_expr(expr, vals)
-    expr_panel.frame.pack(fill=BOTH, expand=1)
+    expr_panel.frame.pack(fill=BOTH, expand=True)
 
   def __init__(self, parent) -> None:
     self.frame = ttk.Frame(parent)
@@ -27,7 +27,7 @@ class ExprDetailPanel:
 
     self.tree = ttk.Treeview(self.frame, columns=('value'))  # TODO refactor keys so not storing both relpath and path
     self.tree.heading('value', text='Value')
-    self.context_menu = Menu(self.tree, tearoff=0)
+    self.context_menu = Menu(self.tree, tearoff=False)
     self.context_menu_len = 0
     self.tree.bind('<Double-1>', self._on_dclick)
     self.tree.bind('<Button-3>', self._on_rclick)
