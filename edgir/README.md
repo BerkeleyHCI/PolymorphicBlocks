@@ -19,7 +19,7 @@ sed -i -E 's/^from (.*)_pb2 import/from .\1_pb2 import/'  ../edg_core/edgir/*.py
 
 See https://github.com/protocolbuffers/protobuf/issues/1491 for more details.
 
-The current committed stubs are generated with mypy-protobuf 1.23 and working with mypy 0.790.
+The current committed stubs are generated with mypy-protobuf 1.23.
 pip can be forced to install particular versions of packages, such as with: 
 ```
 pip install --force-reinstall 'mypy-protobuf==1.23'
