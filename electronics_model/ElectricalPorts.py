@@ -131,7 +131,9 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
       voltage_out=self.src.link().voltage,
       impedance=(0, 0)*Ohm,  # TODO not actually true, but pretty darn low?
     ), [Output])
-    self.constrain(self.src.current_draw == self.dst.link().current_draw)  # TODO might be an overestimate
+    
+    # TODO might be an overestimate
+    self.constrain(self.src.current_draw == self.dst.link().current_draw)  # type: ignore
 
 
 class ElectricalSource(ElectricalBase):
