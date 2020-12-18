@@ -7,6 +7,7 @@ from .common_pb2 import (
 
 from google.protobuf.descriptor import (
     Descriptor as google___protobuf___descriptor___Descriptor,
+    FileDescriptor as google___protobuf___descriptor___FileDescriptor,
 )
 
 from google.protobuf.message import (
@@ -15,7 +16,6 @@ from google.protobuf.message import (
 
 from typing import (
     Optional as typing___Optional,
-    Union as typing___Union,
 )
 
 from typing_extensions import (
@@ -27,10 +27,9 @@ builtin___bool = bool
 builtin___bytes = bytes
 builtin___float = float
 builtin___int = int
-if sys.version_info < (3,):
-    builtin___buffer = buffer
-    builtin___unicode = unicode
 
+
+DESCRIPTOR: google___protobuf___descriptor___FileDescriptor = ...
 
 class ValInit(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
@@ -70,14 +69,7 @@ class ValInit(google___protobuf___message___Message):
         range : typing___Optional[common_pb2___Empty] = None,
         meta : typing___Optional[common_pb2___Metadata] = None,
         ) -> None: ...
-    if sys.version_info >= (3,):
-        @classmethod
-        def FromString(cls, s: builtin___bytes) -> ValInit: ...
-    else:
-        @classmethod
-        def FromString(cls, s: typing___Union[builtin___bytes, builtin___buffer, builtin___unicode]) -> ValInit: ...
-    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
-    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def HasField(self, field_name: typing_extensions___Literal[u"boolean",b"boolean",u"floating",b"floating",u"integer",b"integer",u"meta",b"meta",u"range",b"range",u"set",b"set",u"struct",b"struct",u"text",b"text",u"val",b"val"]) -> builtin___bool: ...
     def ClearField(self, field_name: typing_extensions___Literal[u"boolean",b"boolean",u"floating",b"floating",u"integer",b"integer",u"meta",b"meta",u"range",b"range",u"set",b"set",u"struct",b"struct",u"text",b"text",u"val",b"val"]) -> None: ...
     def WhichOneof(self, oneof_group: typing_extensions___Literal[u"val",b"val"]) -> typing_extensions___Literal["floating","integer","boolean","text","set","struct","range"]: ...
+type___ValInit = ValInit
