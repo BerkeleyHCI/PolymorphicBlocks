@@ -29,7 +29,7 @@ class DesignTreePanel:
     self.tree.pack(expand=True, fill=BOTH)
     self.tree.configure(yscrollcommand=self.vbar.set, xscrollcommand=self.hbar.set)
 
-    self.context_menu = Menu(self.tree, tearoff=0)
+    self.context_menu = Menu(self.tree, tearoff=False)
     self.context_menu_len = 0
     self.tree.bind("<Button-3>", self._on_rclick)
 

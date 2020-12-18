@@ -20,7 +20,7 @@ class RefinementPanel():
     self.tree.pack(expand=True, fill=BOTH)
     self.tree.configure(yscrollcommand=self.vbar.set, xscrollcommand=self.hbar.set)
 
-    self.context_menu = Menu(self.tree, tearoff=0)
+    self.context_menu = Menu(self.tree, tearoff=False)
     self.context_menu.add_command(label="Delete", command=self._on_delete)
     self.tree.bind("<Button-1>", self._on_click)
 

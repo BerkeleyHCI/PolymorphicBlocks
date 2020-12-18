@@ -123,7 +123,7 @@ class BlockDiagramPanel:
 
         for label in subnode_port.getLabels():
           if subnode_port.getX() < 0:  # heuristic to guess port side - TODO: use CoreOptions.PORT_SIDE property
-            anchor = W
+            anchor: str = W
           else:
             anchor = E
           self.canvas.create_text(offs[0] + port_origin[0] + label.getX() * scale, offs[1] + port_origin[1] + label.getY() * scale,
