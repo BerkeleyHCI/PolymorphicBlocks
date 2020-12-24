@@ -150,12 +150,26 @@ message Link {
   edg.common.Metadata meta = 127;
 }
 
+message LinkArray {
+  /* The superclass that applies to every link in the set/array. Used
+     when a new link is instantiated by the front or back end. */
+  repeated edg.ref.LibraryPath superclasses = 20;
+
+  /* Only designs should contain an implementation here */
+  map<string, PortLike>          ports  = 11;  // the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
+  map<string, edg.expr.ValueExpr> constraints = 12;  // includes all exported constraints to map link ports to my ports
+  map<string, LinkLike> links = 13;
+
+  edg.common.Metadata meta = 127;
+}
+
 message LinkLike {
   oneof type {
     edg.common.Empty undefined = 1;
     edg.ref.LibraryPath lib_elem = 2;
     /** not allowed w/in the library */
     Link link = 3;
+    LinkArray array = 4;
   }
 }
 

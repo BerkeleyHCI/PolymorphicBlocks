@@ -287,6 +287,14 @@ message ExportedExpr {
 }
 
 
+// Variable assignment (from an expression value), which allows dataflow to be directioned and explicit.
+// Assignments should not be cyclic.
+message AssignExpr {
+  edg.ref.LocalPath dst = 1;
+  ValueExpr src = 2;
+}
+
+
 message ValueExpr {
   oneof expr {
     edg.lit.ValueLit literal    = 1;
@@ -304,6 +312,8 @@ message ValueExpr {
     MapExtractExpr  map_extract = 14;
     ConnectedExpr   connected = 15;
     ExportedExpr   exported = 16;
+
+    AssignExpr assign    = 17;
 
     edg.ref.LocalPath  ref     = 99;
   }
