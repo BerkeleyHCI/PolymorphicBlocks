@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='expr.proto',
   package='edg.expr',
   syntax='proto3',
-  serialized_pb=_b('\n\nexpr.proto\x12\x08\x65\x64g.expr\x1a\nname.proto\x1a\tref.proto\x1a\x0c\x63ommon.proto\x1a\tlit.proto\x1a\ntype.proto\"\xc5\x02\n\nBinaryExpr\x12#\n\x02op\x18\x01 \x01(\x0e\x32\x17.edg.expr.BinaryExpr.Op\x12 \n\x03lhs\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03rhs\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xcd\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x41\x44\x44\x10\n\x12\x07\n\x03SUB\x10\x0b\x12\x08\n\x04MULT\x10\x0c\x12\x07\n\x03\x44IV\x10\r\x12\x07\n\x03\x41ND\x10\x14\x12\x06\n\x02OR\x10\x15\x12\x07\n\x03XOR\x10\x16\x12\x0b\n\x07IMPLIES\x10\x17\x12\x06\n\x02\x45Q\x10\x1e\x12\x07\n\x03NEQ\x10\x1f\x12\x06\n\x02GT\x10(\x12\x07\n\x03GTE\x10)\x12\x06\n\x02LT\x10*\x12\x07\n\x03LTE\x10,\x12\x07\n\x03MAX\x10-\x12\x07\n\x03MIN\x10.\x12\x10\n\x0cINTERSECTION\x10\x33\x12\n\n\x06SUBSET\x10\x35\x12\t\n\x05RANGE\x10\x01\"\xee\x01\n\rReductionExpr\x12&\n\x02op\x18\x01 \x01(\x0e\x32\x1a.edg.expr.ReductionExpr.Op\x12!\n\x04vals\x18\x04 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\x91\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03SUM\x10\x01\x12\x0c\n\x08\x41LL_TRUE\x10\x02\x12\x0c\n\x08\x41NY_TRUE\x10\x03\x12\n\n\x06\x41LL_EQ\x10\x04\x12\x0e\n\nALL_UNIQUE\x10\x05\x12\x0b\n\x07MAXIMUM\x10\n\x12\x0b\n\x07MINIMUM\x10\x0b\x12\x0f\n\x0bSET_EXTRACT\x10\x0c\x12\x10\n\x0cINTERSECTION\x10\r\"W\n\tRangeExpr\x12$\n\x07minimum\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12$\n\x07maximum\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"|\n\nStructExpr\x12,\n\x04vals\x18\x01 \x03(\x0b\x32\x1e.edg.expr.StructExpr.ValsEntry\x1a@\n\tValsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\x9b\x01\n\x0eIfThenElseExpr\x12!\n\x04\x63ond\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03tru\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03\x66\x61l\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\"Y\n\x0b\x45xtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x05index\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"Z\n\x0eMapExtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x04path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPath\"`\n\rConnectedExpr\x12\'\n\nblock_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12&\n\tlink_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"l\n\x0c\x45xportedExpr\x12*\n\rexterior_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\x30\n\x13internal_block_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\x86\x04\n\tValueExpr\x12$\n\x07literal\x18\x01 \x01(\x0b\x32\x11.edg.lit.ValueLitH\x00\x12&\n\x06\x62inary\x18\x02 \x01(\x0b\x32\x14.edg.expr.BinaryExprH\x00\x12)\n\x06reduce\x18\x04 \x01(\x0b\x32\x17.edg.expr.ReductionExprH\x00\x12&\n\x06struct\x18\x07 \x01(\x0b\x32\x14.edg.expr.StructExprH\x00\x12$\n\x05range\x18\x08 \x01(\x0b\x32\x13.edg.expr.RangeExprH\x00\x12.\n\nifThenElse\x18\n \x01(\x0b\x32\x18.edg.expr.IfThenElseExprH\x00\x12(\n\x07\x65xtract\x18\x0c \x01(\x0b\x32\x15.edg.expr.ExtractExprH\x00\x12/\n\x0bmap_extract\x18\x0e \x01(\x0b\x32\x18.edg.expr.MapExtractExprH\x00\x12,\n\tconnected\x18\x0f \x01(\x0b\x32\x17.edg.expr.ConnectedExprH\x00\x12*\n\x08\x65xported\x18\x10 \x01(\x0b\x32\x16.edg.expr.ExportedExprH\x00\x12!\n\x03ref\x18\x63 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x06\n\x04\x65xprb\x06proto3')
+  serialized_pb=_b('\n\nexpr.proto\x12\x08\x65\x64g.expr\x1a\nname.proto\x1a\tref.proto\x1a\x0c\x63ommon.proto\x1a\tlit.proto\x1a\ntype.proto\"\xc5\x02\n\nBinaryExpr\x12#\n\x02op\x18\x01 \x01(\x0e\x32\x17.edg.expr.BinaryExpr.Op\x12 \n\x03lhs\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03rhs\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xcd\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x41\x44\x44\x10\n\x12\x07\n\x03SUB\x10\x0b\x12\x08\n\x04MULT\x10\x0c\x12\x07\n\x03\x44IV\x10\r\x12\x07\n\x03\x41ND\x10\x14\x12\x06\n\x02OR\x10\x15\x12\x07\n\x03XOR\x10\x16\x12\x0b\n\x07IMPLIES\x10\x17\x12\x06\n\x02\x45Q\x10\x1e\x12\x07\n\x03NEQ\x10\x1f\x12\x06\n\x02GT\x10(\x12\x07\n\x03GTE\x10)\x12\x06\n\x02LT\x10*\x12\x07\n\x03LTE\x10,\x12\x07\n\x03MAX\x10-\x12\x07\n\x03MIN\x10.\x12\x10\n\x0cINTERSECTION\x10\x33\x12\n\n\x06SUBSET\x10\x35\x12\t\n\x05RANGE\x10\x01\"\xee\x01\n\rReductionExpr\x12&\n\x02op\x18\x01 \x01(\x0e\x32\x1a.edg.expr.ReductionExpr.Op\x12!\n\x04vals\x18\x04 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\x91\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03SUM\x10\x01\x12\x0c\n\x08\x41LL_TRUE\x10\x02\x12\x0c\n\x08\x41NY_TRUE\x10\x03\x12\n\n\x06\x41LL_EQ\x10\x04\x12\x0e\n\nALL_UNIQUE\x10\x05\x12\x0b\n\x07MAXIMUM\x10\n\x12\x0b\n\x07MINIMUM\x10\x0b\x12\x0f\n\x0bSET_EXTRACT\x10\x0c\x12\x10\n\x0cINTERSECTION\x10\r\"W\n\tRangeExpr\x12$\n\x07minimum\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12$\n\x07maximum\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"|\n\nStructExpr\x12,\n\x04vals\x18\x01 \x03(\x0b\x32\x1e.edg.expr.StructExpr.ValsEntry\x1a@\n\tValsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\x9b\x01\n\x0eIfThenElseExpr\x12!\n\x04\x63ond\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03tru\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03\x66\x61l\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\"Y\n\x0b\x45xtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x05index\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"Z\n\x0eMapExtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x04path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPath\"`\n\rConnectedExpr\x12\'\n\nblock_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12&\n\tlink_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"l\n\x0c\x45xportedExpr\x12*\n\rexterior_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\x30\n\x13internal_block_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"O\n\nAssignExpr\x12\x1f\n\x03\x64st\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x03src\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xae\x04\n\tValueExpr\x12$\n\x07literal\x18\x01 \x01(\x0b\x32\x11.edg.lit.ValueLitH\x00\x12&\n\x06\x62inary\x18\x02 \x01(\x0b\x32\x14.edg.expr.BinaryExprH\x00\x12)\n\x06reduce\x18\x04 \x01(\x0b\x32\x17.edg.expr.ReductionExprH\x00\x12&\n\x06struct\x18\x07 \x01(\x0b\x32\x14.edg.expr.StructExprH\x00\x12$\n\x05range\x18\x08 \x01(\x0b\x32\x13.edg.expr.RangeExprH\x00\x12.\n\nifThenElse\x18\n \x01(\x0b\x32\x18.edg.expr.IfThenElseExprH\x00\x12(\n\x07\x65xtract\x18\x0c \x01(\x0b\x32\x15.edg.expr.ExtractExprH\x00\x12/\n\x0bmap_extract\x18\x0e \x01(\x0b\x32\x18.edg.expr.MapExtractExprH\x00\x12,\n\tconnected\x18\x0f \x01(\x0b\x32\x17.edg.expr.ConnectedExprH\x00\x12*\n\x08\x65xported\x18\x10 \x01(\x0b\x32\x16.edg.expr.ExportedExprH\x00\x12&\n\x06\x61ssign\x18\x11 \x01(\x0b\x32\x14.edg.expr.AssignExprH\x00\x12!\n\x03ref\x18\x63 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x06\n\x04\x65xprb\x06proto3')
   ,
   dependencies=[name__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,common__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,type__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -575,6 +575,44 @@ _EXPORTEDEXPR = _descriptor.Descriptor(
 )
 
 
+_ASSIGNEXPR = _descriptor.Descriptor(
+  name='AssignExpr',
+  full_name='edg.expr.AssignExpr',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='dst', full_name='edg.expr.AssignExpr.dst', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='src', full_name='edg.expr.AssignExpr.src', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1417,
+  serialized_end=1496,
+)
+
+
 _VALUEEXPR = _descriptor.Descriptor(
   name='ValueExpr',
   full_name='edg.expr.ValueExpr',
@@ -653,14 +691,21 @@ _VALUEEXPR = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='ref', full_name='edg.expr.ValueExpr.ref', index=10,
+      name='assign', full_name='edg.expr.ValueExpr.assign', index=10,
+      number=17, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='ref', full_name='edg.expr.ValueExpr.ref', index=11,
       number=99, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='meta', full_name='edg.expr.ValueExpr.meta', index=11,
+      name='meta', full_name='edg.expr.ValueExpr.meta', index=12,
       number=127, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -681,8 +726,8 @@ _VALUEEXPR = _descriptor.Descriptor(
       name='expr', full_name='edg.expr.ValueExpr.expr',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1418,
-  serialized_end=1936,
+  serialized_start=1499,
+  serialized_end=2057,
 )
 
 _BINARYEXPR.fields_by_name['op'].enum_type = _BINARYEXPR_OP
@@ -709,6 +754,8 @@ _CONNECTEDEXPR.fields_by_name['block_port'].message_type = _VALUEEXPR
 _CONNECTEDEXPR.fields_by_name['link_port'].message_type = _VALUEEXPR
 _EXPORTEDEXPR.fields_by_name['exterior_port'].message_type = _VALUEEXPR
 _EXPORTEDEXPR.fields_by_name['internal_block_port'].message_type = _VALUEEXPR
+_ASSIGNEXPR.fields_by_name['dst'].message_type = ref__pb2._LOCALPATH
+_ASSIGNEXPR.fields_by_name['src'].message_type = _VALUEEXPR
 _VALUEEXPR.fields_by_name['literal'].message_type = lit__pb2._VALUELIT
 _VALUEEXPR.fields_by_name['binary'].message_type = _BINARYEXPR
 _VALUEEXPR.fields_by_name['reduce'].message_type = _REDUCTIONEXPR
@@ -719,6 +766,7 @@ _VALUEEXPR.fields_by_name['extract'].message_type = _EXTRACTEXPR
 _VALUEEXPR.fields_by_name['map_extract'].message_type = _MAPEXTRACTEXPR
 _VALUEEXPR.fields_by_name['connected'].message_type = _CONNECTEDEXPR
 _VALUEEXPR.fields_by_name['exported'].message_type = _EXPORTEDEXPR
+_VALUEEXPR.fields_by_name['assign'].message_type = _ASSIGNEXPR
 _VALUEEXPR.fields_by_name['ref'].message_type = ref__pb2._LOCALPATH
 _VALUEEXPR.fields_by_name['meta'].message_type = common__pb2._METADATA
 _VALUEEXPR.oneofs_by_name['expr'].fields.append(
@@ -752,6 +800,9 @@ _VALUEEXPR.oneofs_by_name['expr'].fields.append(
   _VALUEEXPR.fields_by_name['exported'])
 _VALUEEXPR.fields_by_name['exported'].containing_oneof = _VALUEEXPR.oneofs_by_name['expr']
 _VALUEEXPR.oneofs_by_name['expr'].fields.append(
+  _VALUEEXPR.fields_by_name['assign'])
+_VALUEEXPR.fields_by_name['assign'].containing_oneof = _VALUEEXPR.oneofs_by_name['expr']
+_VALUEEXPR.oneofs_by_name['expr'].fields.append(
   _VALUEEXPR.fields_by_name['ref'])
 _VALUEEXPR.fields_by_name['ref'].containing_oneof = _VALUEEXPR.oneofs_by_name['expr']
 DESCRIPTOR.message_types_by_name['BinaryExpr'] = _BINARYEXPR
@@ -763,6 +814,7 @@ DESCRIPTOR.message_types_by_name['ExtractExpr'] = _EXTRACTEXPR
 DESCRIPTOR.message_types_by_name['MapExtractExpr'] = _MAPEXTRACTEXPR
 DESCRIPTOR.message_types_by_name['ConnectedExpr'] = _CONNECTEDEXPR
 DESCRIPTOR.message_types_by_name['ExportedExpr'] = _EXPORTEDEXPR
+DESCRIPTOR.message_types_by_name['AssignExpr'] = _ASSIGNEXPR
 DESCRIPTOR.message_types_by_name['ValueExpr'] = _VALUEEXPR
 
 BinaryExpr = _reflection.GeneratedProtocolMessageType('BinaryExpr', (_message.Message,), dict(
@@ -835,6 +887,13 @@ ExportedExpr = _reflection.GeneratedProtocolMessageType('ExportedExpr', (_messag
   # @@protoc_insertion_point(class_scope:edg.expr.ExportedExpr)
   ))
 _sym_db.RegisterMessage(ExportedExpr)
+
+AssignExpr = _reflection.GeneratedProtocolMessageType('AssignExpr', (_message.Message,), dict(
+  DESCRIPTOR = _ASSIGNEXPR,
+  __module__ = 'expr_pb2'
+  # @@protoc_insertion_point(class_scope:edg.expr.AssignExpr)
+  ))
+_sym_db.RegisterMessage(AssignExpr)
 
 ValueExpr = _reflection.GeneratedProtocolMessageType('ValueExpr', (_message.Message,), dict(
   DESCRIPTOR = _VALUEEXPR,
