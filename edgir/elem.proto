@@ -117,9 +117,25 @@ message HierarchyBlock {
       Connections between internal; block and edge (of this block) ports are represented by exported constraints. */
   map<string, edg.expr.ValueExpr> constraints = 14;
 
-  repeated edg.ref.LibraryPath superclasses = 20;
+  repeated edg.ref.LibraryPath superclasses = 20;  // in library: superclasses; in design: reference to library class
+  edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise empty
+  Generator generator = 22;  // optional, and removed upon invocation
+
+  bool is_abstract = 30;  // true if abstract superclass, and should error
 
   edg.common.Metadata meta = 127;
+}
+
+message Generator {
+  string module = 1;  // Python module containing the class of the generator
+  string class = 2;  // Python class name for the generator
+
+  message GeneratorCondition {
+    repeated ref.LocalPath prereqs = 1;  // list of parameters that must be defined for the generator to fire
+    // these are also the only parameters that may be accessed from the generator
+  }
+  repeated GeneratorCondition conditions = 3;  // ANY of these conditions being satisfied will fire this generator
+  // overall, this defines conditions as an OR of any of several AND clauses of parameters being defined
 }
 
 message BlockLike {
@@ -166,7 +182,9 @@ message LinkArray {
 message LinkLike {
   oneof type {
     edg.common.Empty undefined = 1;
+
     edg.ref.LibraryPath lib_elem = 2;
+
     /** not allowed w/in the library */
     Link link = 3;
     LinkArray array = 4;

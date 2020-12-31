@@ -9,8 +9,6 @@ package edg.common;
 
 /** Arbitrary metadata stored in tree form. */
 message Metadata {
-
-
   message Members {
      map<string, Metadata> node = 10;
   }
@@ -40,8 +38,67 @@ message Metadata {
         Mixing up binary and textual formats is just a recipe
         for trouble. */
     bytes bin_leaf = 103;
+
+    // Defined formats
+    // Note: key not defined (but should be sane and consistent), so parsing should match on type of value.
+    SourceLocator source_locator = 110;
+    NamespaceOrder namespace_order = 111;
+
+    // Electronics-specific formats
+    CopperNet copper_net = 120;
+    Footprint footprint = 121;
   }
 }
+
+
+/** Definitions for structured metadata formats */
+
+/** For locating source data */
+message SourceLocator {
+  string file_package = 1;  // package name (portable, not tied to an absolute path) that locates the file
+  int32 line_offset = 2;  // line number
+  int32 col_offset = 3;  // character offset within the line
+
+  enum SourceType {
+    UNKNOWN = 0;
+    DEFINITION = 1;  // source defining this class, would be present in library
+    INSTANTIATION = 2;  // source of instantiation, would not be present in library
+  }
+  SourceType source_type = 4;
+}
+
+/** Supplemental data structure for anything containing a namespace (eg, Block, Link) that
+ defines the original lexical ordering (since proto maps are not order-preserving) */
+message NamespaceOrder {
+  repeated string names = 1;  // names in order, lowest index is first
+}
+
+/** Used to communicate results of analysis / checking passes.
+ Limited to Block and Link objects. */
+message Error {
+  string message = 1;  // free-form error message
+  repeated SourceLocator source = 2;  // source locator, eg line of failing constraint
+  // TODO: should there be a structured stack trace? currently would just be part of message
+}
+
+/** Indicates a copper connection between ports */
+message CopperNet {
+  // Currently empty (all-to-all copper connection implied)
+  // TODO: future feature: define specific ports connected?
+}
+
+/** Defines a footprint with copper mapping between pins and own ports */
+message Footprint {
+  string footprint_name = 1;  // footprint name in KiCad format, including library
+  string manufacturer = 2;
+  string part = 3;  // part number
+  string value = 4;  // only for informational purposes when inspecting components in layout
+  string refdes_prefix = 5;  // eg, 'U' for chips, 'R' for resistors
+
+  map<string, string> pinning = 6;  // footprint pin -> port name (which can use dots to indicate path sub-components)
+  // TODO: use Ref.LocalPath? but importing ref creates a circular import dependency
+}
+
 
 /** Placeholder until I figure out how to import properly */
 message Empty {}
