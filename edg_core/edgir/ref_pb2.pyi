@@ -56,9 +56,13 @@ class _Reserved(google___protobuf___internal___enum_type_wrapper____EnumTypeWrap
     UNDEFINED = typing___cast(ReservedValue, 0)
     CONNECTED_LINK = typing___cast(ReservedValue, 1)
     IS_CONNECTED = typing___cast(ReservedValue, 40)
+    LENGTH = typing___cast(ReservedValue, 42)
+    ALLOCATE = typing___cast(ReservedValue, 43)
 UNDEFINED = typing___cast(ReservedValue, 0)
 CONNECTED_LINK = typing___cast(ReservedValue, 1)
 IS_CONNECTED = typing___cast(ReservedValue, 40)
+LENGTH = typing___cast(ReservedValue, 42)
+ALLOCATE = typing___cast(ReservedValue, 43)
 type___Reserved = Reserved
 
 class LocalStep(google___protobuf___message___Message):
