@@ -40,9 +40,11 @@ message Metadata {
     bytes bin_leaf = 103;
 
     // Defined formats
-    // Note: key not defined (but should be sane and consistent), so parsing should match on type of value.
+    // Note: key should be the message definition name (eg, SourceLocator)
+    // TODO: how to handle multiple metadata of a given type?
     SourceLocator source_locator = 110;
     NamespaceOrder namespace_order = 111;
+    Error error = 112;
 
     // Electronics-specific formats
     CopperNet copper_net = 120;
@@ -62,7 +64,7 @@ message SourceLocator {
   enum SourceType {
     UNKNOWN = 0;
     DEFINITION = 1;  // source defining this class, would be present in library
-    INSTANTIATION = 2;  // source of instantiation, would not be present in library
+    INSTANTIATION = 2;  // source of instantiation, would be present in design
   }
   SourceType source_type = 4;
 }
@@ -89,14 +91,14 @@ message CopperNet {
 
 /** Defines a footprint with copper mapping between pins and own ports */
 message Footprint {
-  string footprint_name = 1;  // footprint name in KiCad format, including library
-  string manufacturer = 2;
-  string part = 3;  // part number
-  string value = 4;  // only for informational purposes when inspecting components in layout
-  string refdes_prefix = 5;  // eg, 'U' for chips, 'R' for resistors
-
-  map<string, string> pinning = 6;  // footprint pin -> port name (which can use dots to indicate path sub-components)
+  string refdes_prefix = 1;  // eg, 'U' for chips, 'R' for resistors
+  string footprint_name =21;  // footprint name in KiCad format, including library
+  map<string, string> pinning = 3;  // footprint pin -> port name (which can use dots to indicate path sub-components)
   // TODO: use Ref.LocalPath? but importing ref creates a circular import dependency
+
+  string part = 10;  // part number
+  string manufacturer = 11;
+  string value = 12;  // only for informational purposes when inspecting components in layout
 }
 
 
