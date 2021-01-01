@@ -18,7 +18,9 @@ class SourceLocator {
 
 
 /**
-  * Parameter propagation, evaluation, and resolution associated with a single design
+  * Parameter propagation, evaluation, and resolution associated with a single design.
+  * General philosophy: this should not refer to any particular design instance, so the design can continue to be
+  * transformed (though those transformations must be strictly additive with regards to assignments and assertions)
   */
 class ConstProp {
   // Adds an assignment (param <- expr) and propagates
