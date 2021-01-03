@@ -8,7 +8,7 @@ import edg.ref.ref
 /**
   * Absolute path (from the design root) to some element
   */
-class DesignPath {
+trait DesignPath {
 
 }
 
