@@ -1,5 +1,7 @@
 package edg.wir
 
+import scala.collection.mutable
+
 import edg.elem.elem
 import edg.schema.schema
 import edg.ref.ref
@@ -10,45 +12,58 @@ import edg.ref.ref
   * ports. Should be a path only, and independent of any particular design (so designs can be transformed while the
   * paths remain valid).
   *
-  * Case classes will automatically generate an equality method that does the right thing,
-  * including field and type checks.
-  *
-  * TODO: would be much improved with union types... which are not supported in Scala =(
+  * Needs a connectivity table to resolve.
   */
-trait IndirectDesignPath
+sealed trait IndirectStep
+object IndirectStep {  // namespace
+  case class ConnectedLink() extends IndirectStep  // block-side port -> link
+  case class ConnectedPort() extends IndirectStep  // link-side port -> block-side port (authoritative)
+  case class Element(name: String) extends IndirectStep
+}
+case class IndirectDesignPath(steps: Seq[IndirectStep]) {
+  def ++(suffix: ref.LocalPath): IndirectDesignPath = {
+    IndirectDesignPath(steps ++ suffix.steps.map { step => step.step match {
+      case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink()
+    } } )
+  }
+}
 
-trait IndirectLinkParentable extends IndirectDesignPath
-trait IndirectLinkPortParentable extends IndirectDesignPath
-trait IndirectLinkParamParentable extends IndirectDesignPath
-
-trait IndirectParamPath extends IndirectDesignPath
-trait IndirectPortPath extends IndirectDesignPath
-
-case class ConnectedLink(parent: PortPath) extends IndirectDesignPath
-  with IndirectLinkPortParentable with IndirectLinkParamParentable
-case class LinkPort(eltName: String, parent: LinkPath) extends IndirectPortPath
-  with IndirectLinkPortParentable with IndirectLinkParamParentable
-case class LinkPortParam(eltName: String, parent: IndirectLinkParamParentable) extends IndirectParamPath
 
 /**
   * Absolute path (from the design root) to some element.
-  * Excludes link ports, since the block side port is treated as authoritative.
+  * TODO: should exclude link ports, since the block side port is treated as authoritative.
   */
-trait DesignPath extends IndirectDesignPath
+case class DesignPath(steps: Seq[String]) {
+  def +(elem: String): DesignPath = {
+    DesignPath(steps ++ Seq(elem))
+  }
 
-trait LinkParentable extends DesignPath with IndirectLinkParentable
-trait PortParentable extends DesignPath
-trait ParamParentable extends DesignPath
+  def ++(suffix: ref.LocalPath): DesignPath = {
+    DesignPath(steps ++ suffix.steps.map { step => step.step match {
+      case ref.LocalStep.Step.Name(name) => name
+      case step => throw new DesignPath.IndirectPathException(
+        s"Found non-direct step $step when appending LocalPath $suffix")
+    } } )
+  }
+}
 
-case class BlockPath(eltName: String, parent: Option[BlockPath]) extends DesignPath
-  with LinkParentable with PortParentable with ParamParentable
+object DesignPath {
+  class IndirectPathException(message: String) extends Exception(message)
 
-case class LinkPath(eltName: String, parent: LinkParentable) extends LinkParentable with ParamParentable
+  /**
+    * Converts an indirect path to a (direct) design path, throwing an exception if there are indirect references
+    */
+  def fromIndirect(indirect: IndirectDesignPath): DesignPath = {
+    DesignPath(indirect.steps.map {
+      case IndirectStep.Element(name) => name
+      case step => throw new IndirectPathException(s"Found non-direct $step when converting indirect $indirect")
+    })
+  }
 
-case class PortPath(eltName: String, parent: PortParentable) extends DesignPath with IndirectPortPath
-  with PortParentable with ParamParentable
+  def root: DesignPath = DesignPath(Seq())
+}
 
-case class ParamPath(eltName: String, parent: ParamParentable) extends DesignPath with IndirectParamPath
 
 
 class InvalidPathException(message: String) extends Exception(message)
@@ -61,41 +76,61 @@ class InvalidPathException(message: String) extends Exception(message)
   */
 trait Pathable {
   /**
-    * Resolves a LocalPath from here, returning the absolute path and the target element
+    * Resolves a LocalPath from here, returning the absolute path and the target element.
+    * The target element must exist as an elaborated element (and not lib_elem).
     */
-  def resolve(path: ref.LocalPath): (IndirectDesignPath, Pathable) = resolve(path.steps)
-  def resolve(path: Seq[ref.LocalStep]): (IndirectDesignPath, Pathable)
+  def resolve(suffix: Seq[String]): Pathable
 }
 
-case class Block(block: elem.HierarchyBlock) extends Pathable {
-  def resolve(root: BlockPath, path: Seq[ref.LocalStep]): (IndirectDesignPath, Pathable) = {
-    path.headOption match {
-      case None => (root, this)
-      case Some(pathElt) => pathElt.step match {
-        case ref.LocalStep.Step.Name(name) =>
-          if (block.params.contains(name)) {
+/**
+  * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
+  * (instead of the proto), while everything else is kept in the proto.
+  * BlockLike / LinkLike lib_elem are kept in the proto, and when elaborated, should be an empty BlockLike / LinkLike
+  * (as a "placeholder") while the actual elaborated sub-tree is in the map.
+  * This is to allow efficient transformation at any point in the design tree without re-writing the root.
+  */
+case class Block(var block: elem.HierarchyBlock) extends Pathable {
+  val subblocks = mutable.HashMap[String, Block]()
+  val sublinks = mutable.HashMap[String, Link]()
 
-          } else if (block.ports.contains(name)) {
-
-          } else if (block.blocks.contains(name)) {
-            Block()
-          } else if (block.links.contains(name)) {
-
-          } else {
-            throw new InvalidPathException(s"No element named $pathElt at Block $root")
-          }
-        case pathElt => throw new InvalidPathException(s"Unexpected $pathElt at Block $root")
-      }
-//      case Some(ref.LocalStep(step=ref.LocalStep.Step.Name(name))) =>
+  override protected def resolve(suffix: Seq[String]): Pathable = {
+    suffix match {
+      case Seq() => this
+      case Seq(subname, tail@_*) =>
+        if (subblocks.contains(subname)) {
+          subblocks(subname).resolve(tail)
+        } else if (sublinks.contains(subname)) {
+          sublinks(subname).resolve(tail)
+        } else {
+          throw new InvalidPathException(s"No element $subname in Block")
+        }
     }
   }
 }
 
+/**
+  * Similar to Block, see documentation there.
+  */
+case class Link(var link: elem.Link) extends Pathable {
+  val sublinks = mutable.HashMap[String, Link]()
 
-class Design extends Pathable {
+  override protected def resolve(suffix: Seq[String]): Pathable = {
+    suffix match {
+      case Seq() => this
+      case Seq(subname, tail@_*) =>
+        if (sublinks.contains(subname)) {
+          sublinks(subname).resolve(tail)
+        } else {
+          throw new InvalidPathException(s"No element $subname in Link")
+        }
+  }
+}
+
+
+class Design {
   val root: Pathable  // TODO define me
 
   def resolve(path: DesignPath): Pathable = {
-
+    root.resolve(path.steps)
   }
 }
