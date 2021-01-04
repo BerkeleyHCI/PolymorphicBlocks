@@ -4,6 +4,7 @@ import edg.elem.elem
 import edg.schema.schema
 import edg.ref.ref
 
+
 /**
   * Absolute path (from the design root) to some element, including indirect elements like CONNECTED_LINK and link-side
   * ports. Should be a path only, and independent of any particular design (so designs can be transformed while the
@@ -50,6 +51,9 @@ case class PortPath(eltName: String, parent: PortParentable) extends DesignPath 
 case class ParamPath(eltName: String, parent: ParamParentable) extends DesignPath with IndirectParamPath
 
 
+class InvalidPathException(message: String) extends Exception(message)
+
+
 // TODO refactor to its own class file?
 /**
   * Base trait for any element that can be resolved from a path, a wrapper around types in elem.proto and parameters.
@@ -59,11 +63,38 @@ trait Pathable {
   /**
     * Resolves a LocalPath from here, returning the absolute path and the target element
     */
-  def resolve(path: ref.LocalPath): (DesignPath, Pathable)
+  def resolve(path: ref.LocalPath): (IndirectDesignPath, Pathable) = resolve(path.steps)
+  def resolve(path: Seq[ref.LocalStep]): (IndirectDesignPath, Pathable)
+}
+
+case class Block(block: elem.HierarchyBlock) extends Pathable {
+  def resolve(root: BlockPath, path: Seq[ref.LocalStep]): (IndirectDesignPath, Pathable) = {
+    path.headOption match {
+      case None => (root, this)
+      case Some(pathElt) => pathElt.step match {
+        case ref.LocalStep.Step.Name(name) =>
+          if (block.params.contains(name)) {
+
+          } else if (block.ports.contains(name)) {
+
+          } else if (block.blocks.contains(name)) {
+            Block()
+          } else if (block.links.contains(name)) {
+
+          } else {
+            throw new InvalidPathException(s"No element named $pathElt at Block $root")
+          }
+        case pathElt => throw new InvalidPathException(s"Unexpected $pathElt at Block $root")
+      }
+//      case Some(ref.LocalStep(step=ref.LocalStep.Step.Name(name))) =>
+    }
+  }
 }
 
 
 class Design extends Pathable {
+  val root: Pathable  // TODO define me
+
   def resolve(path: DesignPath): Pathable = {
 
   }

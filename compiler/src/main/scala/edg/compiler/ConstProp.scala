@@ -92,8 +92,6 @@ class ConstProp {
   val paramExpr = new mutable.HashMap[IndirectParamPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // value as root, expr
   val paramUsedIn = new mutable.HashMap[IndirectParamPath, IndirectParamPath]  // source param -> dest param where source is part of the expr
 
-  val assertions = new ListBuffer[(DesignPath, expr.ValueExpr, SourceLocator)]
-
   // Utility methods
   /**
     * Resolves a DesignPath + LocalPath in some Design to an IndirectParamPath
@@ -143,22 +141,6 @@ class ConstProp {
     * Ignores indirect references.
     */
   def getUnsolved(): Seq[ParamPath] = {
-
-  }
-
-  /**
-    * Adds an assertion (any expr that evaluates to a boolean).
-    * Assertions are only checked on calling checkAssertions.
-    */
-  def addAssertion(design: Design, root: DesignPath, expr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
-
-  }
-
-  /**
-    * Checks all assertions, returning a list of failing assertions.
-    * Expressions that do not evaluate are ignored. TODO: is this desired? but checks would be redundant w/ getUnsolved
-    */
-  def checkAssertions(design: Design): Seq[(DesignPath, expr.ValueExpr, SourceLocator)] = {
-
+    
   }
 }
