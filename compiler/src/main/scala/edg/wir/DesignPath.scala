@@ -6,7 +6,8 @@ import edg.ref.ref
 
 /**
   * Absolute path (from the design root) to some element, including indirect elements like CONNECTED_LINK and link-side
-  * ports.
+  * ports. Should be a path only, and independent of any particular design (so designs can be transformed while the
+  * paths remain valid).
   *
   * Case classes will automatically generate an equality method that does the right thing,
   * including field and type checks.
@@ -19,11 +20,14 @@ trait IndirectLinkParentable extends IndirectDesignPath
 trait IndirectLinkPortParentable extends IndirectDesignPath
 trait IndirectLinkParamParentable extends IndirectDesignPath
 
+trait IndirectParamPath extends IndirectDesignPath
+trait IndirectPortPath extends IndirectDesignPath
+
 case class ConnectedLink(parent: PortPath) extends IndirectDesignPath
   with IndirectLinkPortParentable with IndirectLinkParamParentable
-case class LinkPort(eltName: String, parent: LinkPath) extends IndirectDesignPath
+case class LinkPort(eltName: String, parent: LinkPath) extends IndirectPortPath
   with IndirectLinkPortParentable with IndirectLinkParamParentable
-case class LinkPortParam(eltName: String, parent: IndirectLinkParamParentable) extends IndirectDesignPath
+case class LinkPortParam(eltName: String, parent: IndirectLinkParamParentable) extends IndirectParamPath
 
 /**
   * Absolute path (from the design root) to some element.
@@ -40,9 +44,10 @@ case class BlockPath(eltName: String, parent: Option[BlockPath]) extends DesignP
 
 case class LinkPath(eltName: String, parent: LinkParentable) extends LinkParentable with ParamParentable
 
-case class PortPath(eltName: String, parent: PortParentable) extends PortParentable with ParamParentable
+case class PortPath(eltName: String, parent: PortParentable) extends DesignPath with IndirectPortPath
+  with PortParentable with ParamParentable
 
-case class ParamPath(eltName: String, parent: ParamParentable) extends DesignPath
+case class ParamPath(eltName: String, parent: ParamParentable) extends DesignPath with IndirectParamPath
 
 
 // TODO refactor to its own class file?
