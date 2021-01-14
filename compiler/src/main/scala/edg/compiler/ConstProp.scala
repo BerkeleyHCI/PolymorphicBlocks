@@ -30,17 +30,73 @@ case class IntValue(value: BigInt) extends FloatPromotable {
   override def toFloat: Float = value.toFloat  // note: potential loss of precision
 }
 
+object RangeValue {
+  def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
+}
+
 case class RangeValue(lower: Float, upper: Float) extends ExprValue
 case class BooleanValue(value: Boolean) extends ExprValue
 case class TextValue(value: String) extends ExprValue
 
-case class ArrayValue[T <: ExprValue](values: T) extends ExprValue
+object ArrayValue {
+  /** Maps a Seq using a PartialFunction. Returns the output map if all elements were mapped, otherwise returns None.
+    * May short circuit evaluate on the first PartialFunction failure.
+    */
+  protected def seqMapOption[InType, OutType](seq: Seq[InType])(mapPartialFunc: PartialFunction[InType, OutType]):
+      Option[Seq[OutType]] = {
+    // TODO is this actually more performant than doing a collect, even assuming that most of the time this will fail?
+    val builder = mutable.Buffer[OutType]()
+    val mapLifted = mapPartialFunc.lift
+    for (elt <- seq) {
+      mapLifted(elt) match {
+        case Some(eltMapped) => builder += eltMapped
+        case None => return None
+      }
+    }
+    Some(builder.toList)
+  }
+
+  def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[T]] = {
+    Some(vals.values)
+  }
+
+  object ExtractFloat {
+    def unapply[T](vals: ArrayValue[T]): Option[Seq[Float]] = seqMapOption(vals.values) {
+      case FloatValue(elt) => elt
+    }
+  }
+
+  object ExtractInt {
+    def unapply[T](vals: ArrayValue[T]): Option[Seq[BigInt]] = seqMapOption(vals.values) {
+      case IntValue(elt) => elt
+    }
+  }
+
+  object ExtractRange {
+    def unapply[T](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
+      case RangeValue(eltMin, eltMax) => (eltMin, eltMax)
+    }.map(_.unzip)
+  }
+
+  object ExtractBoolean {
+    def unapply[T](vals: ArrayValue[T]): Option[Seq[Boolean]] = seqMapOption(vals.values) {
+      case BooleanValue(elt) => elt
+    }
+  }
+
+  object ExtractText {
+    def unapply[T](vals: ArrayValue[T]): Option[Seq[String]] = seqMapOption(vals.values) {
+      case TextValue(elt) => elt
+    }
+  }
+}
+case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue
 
 
 /**
   * ValueExpr transform that returns the dependencies as parameters.
   */
-class GetExprDependencies(root: IndirectDesignPath) extends ValueExprMap[Set[IndirectDesignPath]] {
+class GetExprDependencies(refs: ConstProp, root: IndirectDesignPath) extends ValueExprMap[Set[IndirectDesignPath]] {
   override def mapLiteral(literal: lit.ValueLit): Set[IndirectDesignPath] = Set()
 
   override def mapBinary(binary: expr.BinaryExpr,
@@ -62,10 +118,20 @@ class GetExprDependencies(root: IndirectDesignPath) extends ValueExprMap[Set[Ind
 
   override def mapExtract(extract: expr.ExtractExpr,
                           container: Set[IndirectDesignPath], index: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    ???  // TODO need all elements of the container to be ready?
+    container ++ index
 
-  override def mapMapExtract(mapExtract: expr.MapExtractExpr, container: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    ???  // TODO actually get all elements
+  override def mapMapExtract(mapExtract: expr.MapExtractExpr): Set[IndirectDesignPath] = {
+    val container = mapExtract.container.get.expr.ref.getOrElse(  // TODO restrict allowed types in proto
+      throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
+    )
+    val containerPath = IndirectDesignPath.root ++ container
+    val length = refs.getArraySize(containerPath).getOrElse(
+      throw new ExprEvaluateException(s"Array length not known for $container from $mapExtract")
+    )
+    (0 until length).map { i =>
+      containerPath ++ Seq(i.toString) ++ mapExtract.path.get
+    }.toSet
+  }
 
   // connected and exported not overridden and to fail noisily
   // assign also not overridden and to fail noisily
@@ -99,6 +165,9 @@ class ConstProp {
   val paramExpr = new mutable.HashMap[IndirectDesignPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // value as root, expr
   val paramUsedIn = new mutable.HashMap[IndirectDesignPath, IndirectDesignPath]  // source param -> dest param where source is part of the expr
 
+  // Arrays are currently only defined on ports, and this is set once the array's length is known
+  val arraySizes = new mutable.HashMap[IndirectDesignPath, Int]  // empty means not yet known
+
   //
   // Utility methods
   //
@@ -126,6 +195,11 @@ class ConstProp {
     // TODO add to table and propagate
   }
 
+  def setArraySize(target: IndirectDesignPath, size: Int): Unit = {
+    assert(arraySizes.getOrElse(target, size) == size)  // make sure overwrites are at least consistent
+    arraySizes.put(target, size)
+  }
+
   /**
     * Returns the value of a parameter, or None if it does not have a value (yet?).
     * Can be used to check if parameters are resolved yet by testing against None.
@@ -140,6 +214,10 @@ class ConstProp {
     */
   def getValueType(param: DesignPath): Option[Class[ExprValue]] = {
     paramTypes.get(param)
+  }
+
+  def getArraySize(target: IndirectDesignPath): Option[Int] = {
+    arraySizes.get(target)
   }
 
   /**

@@ -47,7 +47,7 @@ trait ValueExprMap[OutputType] {
     throw new UnimplementedValueExprNode(s"Undefined mapIfThenElse for $ite")
   def mapExtract(extract: expr.ExtractExpr, container: OutputType, index: OutputType): OutputType =
     throw new UnimplementedValueExprNode(s"Undefined mapExtract for $extract")
-  def mapMapExtract(mapExtract: expr.MapExtractExpr, container: OutputType): OutputType =
+  def mapMapExtract(mapExtract: expr.MapExtractExpr): OutputType =
     throw new UnimplementedValueExprNode(s"Undefined mapMapExtract for $mapExtract")
   def mapConnected(connected: expr.ConnectedExpr, blockPort: OutputType, linkPort: OutputType): OutputType =
     throw new UnimplementedValueExprNode(s"Undefined mapConnected for $connected")
@@ -78,7 +78,7 @@ trait ValueExprMap[OutputType] {
     mapExtract(extract, map(extract.container.get), map(extract.index.get))
   }
   def wrapMapExtract(mapExtract: expr.MapExtractExpr): OutputType = {
-    mapMapExtract(mapExtract, map(mapExtract.container.get))
+    mapMapExtract(mapExtract)
   }
   def wrapConnected(connected: expr.ConnectedExpr): OutputType = {
     mapConnected(connected, map(connected.blockPort.get), map(connected.linkPort.get))

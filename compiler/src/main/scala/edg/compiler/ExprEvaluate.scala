@@ -159,7 +159,7 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
         if (maxMin <= minMax) {
           RangeValue(maxMin, minMax)
         } else {  // null set
-          RangeValue(Float.NaN, Float.NaN)  // TODO actually have a strict NullRange type?
+          RangeValue.empty
         }
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
@@ -178,8 +178,42 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
     case _ => throw new ExprEvaluateException(s"Unknown binary op in $lhs ${binary.op} $rhs from $binary")
   }
 
-  override def mapReduce(reduce: expr.ReductionExpr, vals: ExprValue): ExprValue = {
+  override def mapReduce(reduce: expr.ReductionExpr, vals: ExprValue): ExprValue = (reduce.op, vals) match {
+      // In this case we don't do numeric promotion
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(valMins, valMaxs)) => RangeValue(valMins.sum, valMaxs.sum)
 
+    case (expr.ReductionExpr.Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
+    case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.contains(true))
+
+      // TODO better support for empty arrays?
+    case (expr.ReductionExpr.Op.ALL_EQ, ArrayValue(vals)) => BooleanValue(vals.forall(_ == vals.head))
+
+    case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
+
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
+
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
+
+      // TODO this should be a user-level assertion instead of a compiler error
+    case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue(vals)) => if (vals.forall(_ == vals.head)) {
+      vals.head
+    } else {
+      throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $reduce")
+    }
+
+    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
+      val (minMax, maxMin) = (valMaxs.min, valMins.max)
+      if (maxMin <= minMax) {
+        RangeValue(maxMin, minMax)
+      } else {  // null set
+        RangeValue.empty
+      }
+
+    case _ => throw new ExprEvaluateException(s"Unknown reduce op in ${reduce.op} $vals from $reduce")
   }
 
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue =
@@ -202,20 +236,35 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
   }
 
   override def mapExtract(extract: expr.ExtractExpr,
-                          container: ExprValue, index: ExprValue): ExprValue =
-    ???  // TODO need all elements of the container to be ready?
+                          container: ExprValue, index: ExprValue): ExprValue = (container, index) match {
+    case (ArrayValue(container), IntValue(index)) => container(index.toInt)
+    case _ => throw new ExprEvaluateException(s"Unknown operand types for extract element $index from $container from $extract")
+  }
 
-  override def mapMapExtract(mapExtract: expr.MapExtractExpr, container: ExprValue): ExprValue =
-    ???  // TODO actually get all elements
+  override def mapMapExtract(mapExtract: expr.MapExtractExpr): ExprValue = {
+    val container = mapExtract.container.get.expr.ref.getOrElse(  // TODO restrict allowed types in proto
+      throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
+    )
+    val containerPath = IndirectDesignPath.root ++ container
+    val length = refs.getArraySize(containerPath).getOrElse(
+      throw new ExprEvaluateException(s"Array length not known for $container from $mapExtract")
+    )
+    val values = (0 until length).map { i =>  // TODO should delegate to mapRef?
+      val refPath = containerPath ++ Seq(i.toString) ++ mapExtract.path.get
+      refs.getValue(refPath).getOrElse(
+        throw new ExprEvaluateException(s"No value for $refPath from $mapExtract")
+      )
+    }
+    ArrayValue(values)
+  }
 
   // connected and exported not overridden and to fail noisily
   // assign also not overridden and to fail noisily
 
   override def mapRef(path: ref.LocalPath): ExprValue = {
-    refs.getValue(root ++ path) match {
-      case Some(value) => value
-      case None => throw new ExprEvaluateException(s"No value for ${root ++ path}")
-    }
+    refs.getValue(root ++ path).getOrElse(
+      throw new ExprEvaluateException(s"No value for ${root ++ path}")
+    )
   }
 
 }

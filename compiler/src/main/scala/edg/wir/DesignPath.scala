@@ -21,12 +21,20 @@ object IndirectStep {  // namespace
   case class Element(name: String) extends IndirectStep
 }
 case class IndirectDesignPath(steps: Seq[IndirectStep]) {
+  def ++(suffix: Seq[String]): IndirectDesignPath = {
+    IndirectDesignPath(steps ++ suffix.map { IndirectStep.Element(_) })
+  }
+
   def ++(suffix: ref.LocalPath): IndirectDesignPath = {
     IndirectDesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink()
     } } )
   }
+}
+
+object IndirectDesignPath {
+  def root: IndirectDesignPath = IndirectDesignPath(Seq())
 }
 
 
