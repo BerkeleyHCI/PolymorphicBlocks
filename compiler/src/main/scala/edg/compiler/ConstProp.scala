@@ -34,6 +34,8 @@ case class RangeValue(lower: Float, upper: Float) extends ExprValue
 case class BooleanValue(value: Boolean) extends ExprValue
 case class TextValue(value: String) extends ExprValue
 
+case class ArrayValue[T <: ExprValue](values: T) extends ExprValue
+
 
 /**
   * ValueExpr transform that returns the dependencies as parameters.
@@ -115,7 +117,7 @@ class ConstProp {
     * Adds an assignment (param <- expr) and propagates
     */
   def addAssignment(target: IndirectDesignPath,
-                    root: DesignPath, expr: expr.AssignExpr, sourceLocator: SourceLocator): Unit = {
+                    root: DesignPath, assign: expr.AssignExpr, sourceLocator: SourceLocator): Unit = {
 
     // TODO add to table and propagate
   }

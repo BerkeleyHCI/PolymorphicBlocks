@@ -123,6 +123,7 @@ case class Link(var link: elem.Link) extends Pathable {
         } else {
           throw new InvalidPathException(s"No element $subname in Link")
         }
+    }
   }
 }
 
