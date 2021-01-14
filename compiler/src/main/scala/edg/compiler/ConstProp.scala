@@ -12,8 +12,25 @@ import edg.ref.ref
 sealed trait ExprValue
 
 // These should be consistent with what is in init.proto
-case class FloatValue(value: Float) extends ExprValue
-case class IntValue(value: BigInt) extends ExprValue
+object FloatPromotable {
+  def unapply(floatPromotable: FloatPromotable): Option[Float] = {
+    Some(floatPromotable.toFloat)
+  }
+}
+
+sealed trait FloatPromotable extends ExprValue {
+  def toFloat: Float
+}
+
+case class FloatValue(value: Float) extends FloatPromotable {
+  override def toFloat: Float = value
+}
+
+case class IntValue(value: BigInt) extends FloatPromotable {
+  override def toFloat: Float = value.toFloat  // note: potential loss of precision
+}
+
+case class RangeValue(lower: Float, upper: Float) extends ExprValue
 case class BooleanValue(value: Boolean) extends ExprValue
 case class TextValue(value: String) extends ExprValue
 
@@ -68,21 +85,8 @@ class SourceLocator {
   * transformed (though those transformations must be strictly additive with regards to assignments and assertions)
   *
   * Handling aliased ports / indirect references (eg, link-side ports, CONNECTED_LINK):
-  * Aliased ports and indirect references will have their own nodes in the graph.
-  * Connected (block-link) and exported (block-block) port pairs will have an entry in a bidirectional connect map.
-  * Assignments will check their port components against the connect map, and recursively assign to those nodes.
-  *   Note: this requires structured paths (block/link/port/parameter components) for efficient matching.
-  *   Since connect edges are bidirectional, the algorithm must avoid back-edges. Must also be acyclic otherwise.
-  *
-  * For now, assignments will just create entries in a connect map. Assume parameters will have connect entries before
-  * they are used (design tree preorder traversal). Optional check that no existing parameters have the entry prefixes.
-  *
-  * Note, alternative options:
-  * - Instead of connect maps, add bidirectional parameter-parameter edges. But this could be inefficient,
-  * and requires the contents of elements to be known to generate these edges.
-  * - Alias the ports and resolve to canonical references as constraints are being parsed. Simple, but discards design
-  * data if the ConstProp object is to be used to generate debugging / tracing data. Requires the connects to be
-  * processed before parameters are used. Likely still requires structured path data, though perhaps not everywhere.
+  * addEquality must be called between the individual parameters and will immediately propagate.
+  * addEquality is idempotent and may be repeated.
   */
 class ConstProp {
   val paramValues = new mutable.HashMap[IndirectDesignPath, ExprValue]  // empty means not yet known
