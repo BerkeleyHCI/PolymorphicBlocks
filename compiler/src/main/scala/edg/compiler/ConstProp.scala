@@ -34,7 +34,9 @@ object RangeValue {
   def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
 }
 
-case class RangeValue(lower: Float, upper: Float) extends ExprValue
+case class RangeValue(lower: Float, upper: Float) extends ExprValue {
+  require(lower <= upper)
+}
 case class BooleanValue(value: Boolean) extends ExprValue
 case class TextValue(value: String) extends ExprValue
 
