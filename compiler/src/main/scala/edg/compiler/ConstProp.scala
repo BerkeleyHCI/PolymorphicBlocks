@@ -176,7 +176,7 @@ class ConstProp {
     * Throws an exception if dependent parameters are missing values.
     */
   protected def evaluate(param: IndirectDesignPath): ExprValue = {
-
+    ???  // TODO implement me
   }
 
   //
@@ -187,12 +187,11 @@ class ConstProp {
     */
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, assign: expr.AssignExpr, sourceLocator: SourceLocator): Unit = {
-
-    // TODO add to table and propagate
+    ??? // TODO add to table and propagate
   }
 
   def addEquality(param1: IndirectDesignPath, param2: IndirectDesignPath): Unit = {
-    // TODO add to table and propagate
+    ??? // TODO add to table and propagate
   }
 
   def setArraySize(target: IndirectDesignPath, size: Int): Unit = {

@@ -101,7 +101,7 @@ case class Block(var block: elem.HierarchyBlock) extends Pathable {
   val subblocks = mutable.HashMap[String, Block]()
   val sublinks = mutable.HashMap[String, Link]()
 
-  override protected def resolve(suffix: Seq[String]): Pathable = {
+  override protected[wir] def resolve(suffix: Seq[String]): Pathable = {
     suffix match {
       case Seq() => this
       case Seq(subname, tail@_*) =>
@@ -122,7 +122,7 @@ case class Block(var block: elem.HierarchyBlock) extends Pathable {
 case class Link(var link: elem.Link) extends Pathable {
   val sublinks = mutable.HashMap[String, Link]()
 
-  override protected def resolve(suffix: Seq[String]): Pathable = {
+  override protected[wir] def resolve(suffix: Seq[String]): Pathable = {
     suffix match {
       case Seq() => this
       case Seq(subname, tail@_*) =>
