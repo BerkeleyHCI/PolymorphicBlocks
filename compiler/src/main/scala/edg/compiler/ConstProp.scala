@@ -61,31 +61,31 @@ object ArrayValue {
   }
 
   object ExtractFloat {
-    def unapply[T](vals: ArrayValue[T]): Option[Seq[Float]] = seqMapOption(vals.values) {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Float]] = seqMapOption(vals.values) {
       case FloatValue(elt) => elt
     }
   }
 
   object ExtractInt {
-    def unapply[T](vals: ArrayValue[T]): Option[Seq[BigInt]] = seqMapOption(vals.values) {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[BigInt]] = seqMapOption(vals.values) {
       case IntValue(elt) => elt
     }
   }
 
   object ExtractRange {
-    def unapply[T](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
       case RangeValue(eltMin, eltMax) => (eltMin, eltMax)
     }.map(_.unzip)
   }
 
   object ExtractBoolean {
-    def unapply[T](vals: ArrayValue[T]): Option[Seq[Boolean]] = seqMapOption(vals.values) {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Boolean]] = seqMapOption(vals.values) {
       case BooleanValue(elt) => elt
     }
   }
 
   object ExtractText {
-    def unapply[T](vals: ArrayValue[T]): Option[Seq[String]] = seqMapOption(vals.values) {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[String]] = seqMapOption(vals.values) {
       case TextValue(elt) => elt
     }
   }

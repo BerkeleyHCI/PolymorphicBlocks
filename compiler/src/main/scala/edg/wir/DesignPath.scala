@@ -1,10 +1,10 @@
 package edg.wir
 
 import scala.collection.mutable
-
 import edg.elem.elem
 import edg.schema.schema
 import edg.ref.ref
+import jdk.jshell.spi.ExecutionControl.NotImplementedException
 
 
 /**
@@ -29,6 +29,7 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
     IndirectDesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink()
+      case step => throw new NotImplementedError(s"Unknown step $step in appending $suffix from $this")
     } } )
   }
 }
@@ -87,7 +88,7 @@ trait Pathable {
     * Resolves a LocalPath from here, returning the absolute path and the target element.
     * The target element must exist as an elaborated element (and not lib_elem).
     */
-  def resolve(suffix: Seq[String]): Pathable
+  protected[wir] def resolve(suffix: Seq[String]): Pathable
 }
 
 /**
@@ -137,7 +138,7 @@ case class Link(var link: elem.Link) extends Pathable {
 
 
 class Design {
-  val root: Pathable  // TODO define me
+  val root: Pathable = ???  // TODO define me
 
   def resolve(path: DesignPath): Pathable = {
     root.resolve(path.steps)
