@@ -10,6 +10,21 @@ import edg.expr.expr
 object ExprBuilder {
   object ValueExpr {
     def Literal(literal: lit.ValueLit): expr.ValueExpr = expr.ValueExpr(expr=expr.ValueExpr.Expr.Literal(literal))
+    def Literal(value: Float): expr.ValueExpr = Literal(ExprBuilder.Literal.Floating(value))
+    def Literal(value: Double): expr.ValueExpr = Literal(value.toFloat)  // convenience
+    def Literal(value: BigInt): expr.ValueExpr = Literal(ExprBuilder.Literal.Integer(value))
+    def Literal(value: Boolean): expr.ValueExpr = Literal(ExprBuilder.Literal.Boolean(value))
+    def Literal(value: String): expr.ValueExpr = Literal(ExprBuilder.Literal.Text(value))
+    def Literal(valueMin: Float, valueMax: Float): expr.ValueExpr =
+      Literal(ExprBuilder.Literal.Range(valueMin, valueMax))
+    def Literal(valueMin: Double, valueMax: Double): expr.ValueExpr =  // convenience
+      Literal(valueMin.toFloat, valueMax.toFloat)
+
+    def BinOp(op: expr.BinaryExpr.Op, lhs: expr.ValueExpr, rhs: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr=expr.ValueExpr.Expr.Binary(expr.BinaryExpr(
+        op=op, lhs=Some(lhs), rhs=Some(rhs)
+      ))
+    )
   }
 
   object Literal {

@@ -32,10 +32,12 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 
 object RangeValue {
   def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
+  def isEmpty(value: RangeValue) = value.lower.isNaN && value.upper.isNaN
 }
 
 case class RangeValue(lower: Float, upper: Float) extends ExprValue {
-  require(lower <= upper)
+  // TODO better definition of empty range
+  require(lower <= upper || (lower.isNaN && upper.isNaN))
 }
 case class BooleanValue(value: Boolean) extends ExprValue
 case class TextValue(value: String) extends ExprValue
