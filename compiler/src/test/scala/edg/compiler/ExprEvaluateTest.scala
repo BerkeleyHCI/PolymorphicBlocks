@@ -64,6 +64,32 @@ class ExprEvaluateTest extends AnyFlatSpec {
     assert(RangeValue.isEmpty(evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0)
     )).asInstanceOf[RangeValue]))
+
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(6.0), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(true))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(7.0), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(true))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(7.5), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(false))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(4.5), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(false))
+
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(true))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(5.5, 6.5), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(true))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(4.5, 6.5), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(false))
+    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+      ValueExpr.Literal(5.5, 7.5), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(BooleanValue(false))
   }
 
   it should "handle arithmetic promotions" in {
