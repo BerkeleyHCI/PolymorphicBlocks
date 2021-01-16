@@ -1,7 +1,7 @@
 package edg
 
 
-/** Convenience functions for building edg ir trees with less proto boilerplate
+/** Convenience functions for building edg ir expression trees with less proto boilerplate
   */
 object ExprBuilder {
   import edg.common.common

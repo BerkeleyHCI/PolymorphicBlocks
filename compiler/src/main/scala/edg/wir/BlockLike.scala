@@ -23,6 +23,10 @@ trait Pathable {
     * The target element must exist as an elaborated element (and not lib_elem).
     */
   def resolve(suffix: Seq[String]): Pathable
+
+  // Disallow equals since it's probably not useful, and full subtree matches are expensive.
+  // But can be allowed in the future, since the current behavior is strict.
+  override def equals(that: Any): Boolean = throw new NotImplementedError("Can't do equality comparison on Pathable")
 }
 
 /**
