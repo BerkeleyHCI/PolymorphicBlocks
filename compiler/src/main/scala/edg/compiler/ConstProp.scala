@@ -12,7 +12,7 @@ import edg.ref.ref
 /**
   * ValueExpr transform that returns the dependencies as parameters.
   */
-class GetExprDependencies(refs: ConstProp, root: IndirectDesignPath) extends ValueExprMap[Set[IndirectDesignPath]] {
+class ExprRefDependencies(refs: ConstProp, root: IndirectDesignPath) extends ValueExprMap[Set[IndirectDesignPath]] {
   override def mapLiteral(literal: lit.ValueLit): Set[IndirectDesignPath] = Set()
 
   override def mapBinary(binary: expr.BinaryExpr,
@@ -71,10 +71,10 @@ class ConstProp {
   val paramValues = new mutable.HashMap[IndirectDesignPath, ExprValue]  // empty means not yet known
   val paramTypes = new mutable.HashMap[DesignPath, Class[ExprValue]]  // only record types of authoritative elements
 
-  val equalityEdges = new mutable.HashMap[IndirectDesignPath, IndirectDesignPath]  // bidirectional, two entries per edge
+  val equalityEdges = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // bidirectional, two entries per edge
 
-  val paramExpr = new mutable.HashMap[IndirectDesignPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // value as root, expr
-  val paramUsedIn = new mutable.HashMap[IndirectDesignPath, IndirectDesignPath]  // source param -> dest param where source is part of the expr
+  val paramExpr = new mutable.HashMap[IndirectDesignPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // TODO case class?
+  val paramUsedIn = new mutable.HashMap[IndirectDesignPath, Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
   val arrayElts = new mutable.HashMap[IndirectDesignPath, Set[String]]  // empty means not yet known
@@ -82,27 +82,89 @@ class ConstProp {
   //
   // Utility methods
   //
-  /**
-    * Evaluates the value of an ValueExpr at some DesignPath in some Design to a ExprValue.
+  /** Returns true if the parameter is ready to evaluate and propagate.
+    * Returns false if dependencies are missing or the parameter has already been evaluated. */
+  protected def isReadyToEvaluate(param: IndirectDesignPath): Boolean = {
+    if (paramValues.isDefinedAt(param)) {
+      return false
+    }
+    val (root, expr, _) = paramExpr(param)
+    val deps = new ExprRefDependencies(this, IndirectDesignPath.fromDesignPath(root)).map(expr)
+    deps.forall(paramValues.isDefinedAt)
+  }
+
+  /** Evaluates the value of an ValueExpr at some DesignPath in some Design to a ExprValue, and propagates.
     * Throws an exception if dependent parameters are missing values.
+    *
+    * paramValues(param) should currently not resolve.
+    * paramExpr and paramUsedIn must be filled in.
     */
-  protected def evaluate(param: IndirectDesignPath): ExprValue = {
-    ???  // TODO implement me
+  protected def evaluate(param: IndirectDesignPath: Unit = {
+    require(!paramValues.isDefinedAt(param))
+    val (root, expr, _) = paramExpr(param)
+
+    val eval = new ExprEvaluate(this, IndirectDesignPath.fromDesignPath(root))
+    assignAndPropagate(param, eval.map(expr))
+  }
+
+  /** Once all of a param's dependencies have been resolved, evaluate and propagate it.
+    * Must only be called once per parameter, on assignment.
+    */
+  protected def assignAndPropagate(param: IndirectDesignPath, value: ExprValue): Unit = {
+    require(!paramValues.isDefinedAt(param))
+    paramValues.put(param, value)
+
+    // Propagate along equality edges
+    val paramValue = paramValues(param)
+    equalityEdges.getOrElse(param, Set()).foreach { equalParam =>
+      require(!paramValues.isDefinedAt(equalParam), s"redefinition of $equalParam via equality")
+      paramValues.put(equalParam, paramValue)
+      assignAndPropagate(equalParam)
+    }
+
+    // Propagate along dependent expressions
+    paramUsedIn.getOrElse(param, Set()).foreach { dependent =>
+      if (isReadyToEvaluate(dependent)) {
+        evaluate(dependent)
+      }
+    }
   }
 
   //
   // API methods
   //
   /**
-    * Adds an assignment (param <- expr) and propagates
+    * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignment(target: IndirectDesignPath,
-                    root: DesignPath, assign: expr.AssignExpr, sourceLocator: SourceLocator): Unit = {
-    ??? // TODO add to table and propagate
+                    root: DesignPath, expr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
+    require(!paramExpr.isDefinedAt(target), s"redefinition of $target via assignment")
+
+    paramExpr.put(target, (root, expr, sourceLocator))
+    if (isReadyToEvaluate(target)) {
+      evaluate(target)
+    }
   }
 
+  /**
+    * Adds a bidirectional equality (param1 == param2) and propagates as needed
+    */
   def addEquality(param1: IndirectDesignPath, param2: IndirectDesignPath): Unit = {
-    ??? // TODO add to table and propagate
+    equalityEdges.getOrElseUpdate(param1, mutable.Set()) += param2
+    paramValues.get(param1) match {
+      case Some(param1Value) =>
+        require(!paramValues.isDefinedAt(param2), s"redefinition of $param2 via equality")
+        assignAndPropagate(param2, param1Value)
+      case None => // do nothing
+    }
+
+    equalityEdges.getOrElseUpdate(param2, mutable.Set()) += param1
+    paramValues.get(param2) match {
+      case Some(param2Value) =>
+        require(!paramValues.isDefinedAt(param1), s"redefinition of $param1 via equality")
+        assignAndPropagate(param1, param2Value)
+      case None => // do nothing
+    }
   }
 
   def setArrayElts(target: IndirectDesignPath, elts: Set[String]): Unit = {

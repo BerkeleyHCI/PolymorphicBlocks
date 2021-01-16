@@ -36,6 +36,9 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
 
 object IndirectDesignPath {
   def root: IndirectDesignPath = IndirectDesignPath(Seq())
+  def fromDesignPath(designPath: DesignPath): IndirectDesignPath = {
+    IndirectDesignPath(designPath.steps.map { IndirectStep.Element(_) })
+  }
 }
 
 
