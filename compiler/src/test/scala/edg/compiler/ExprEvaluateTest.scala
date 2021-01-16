@@ -13,6 +13,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
   val constProp = new ConstProp()
   val evalTest = new ExprEvaluate(constProp, IndirectDesignPath.root)
 
+  // TODO: add array tests once there is an array literal
+
   it should "handle literals" in {
     evalTest.map(ValueExpr.Literal(Literal.Floating(2.0f))) should equal(FloatValue(2.0f))
     evalTest.map(ValueExpr.Literal(Literal.Integer(42))) should equal(IntValue(42))

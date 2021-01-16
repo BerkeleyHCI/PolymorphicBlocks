@@ -41,12 +41,12 @@ class GetExprDependencies(refs: ConstProp, root: IndirectDesignPath) extends Val
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
     )
     val containerPath = IndirectDesignPath.root ++ container
-    val length = refs.getArraySize(containerPath).getOrElse(
-      throw new ExprEvaluateException(s"Array length not known for $container from $mapExtract")
+    val elts = refs.getArrayElts(containerPath).getOrElse(
+      throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )
-    (0 until length).map { i =>
-      containerPath ++ Seq(i.toString) ++ mapExtract.path.get
-    }.toSet
+    elts.map { elt =>
+      containerPath ++ Seq(elt) ++ mapExtract.path.get
+    }
   }
 
   // connected and exported not overridden and to fail noisily
@@ -77,7 +77,7 @@ class ConstProp {
   val paramUsedIn = new mutable.HashMap[IndirectDesignPath, IndirectDesignPath]  // source param -> dest param where source is part of the expr
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
-  val arraySizes = new mutable.HashMap[IndirectDesignPath, Int]  // empty means not yet known
+  val arrayElts = new mutable.HashMap[IndirectDesignPath, Set[String]]  // empty means not yet known
 
   //
   // Utility methods
@@ -105,9 +105,9 @@ class ConstProp {
     ??? // TODO add to table and propagate
   }
 
-  def setArraySize(target: IndirectDesignPath, size: Int): Unit = {
-    assert(arraySizes.getOrElse(target, size) == size)  // make sure overwrites are at least consistent
-    arraySizes.put(target, size)
+  def setArrayElts(target: IndirectDesignPath, elts: Set[String]): Unit = {
+    assert(arrayElts.getOrElse(target, elts) == elts)  // make sure overwrites are at least consistent
+    arrayElts.put(target, elts)
   }
 
   /**
@@ -126,8 +126,8 @@ class ConstProp {
     paramTypes.get(param)
   }
 
-  def getArraySize(target: IndirectDesignPath): Option[Int] = {
-    arraySizes.get(target)
+  def getArrayElts(target: IndirectDesignPath): Option[Set[String]] = {
+    arrayElts.get(target)
   }
 
   /**

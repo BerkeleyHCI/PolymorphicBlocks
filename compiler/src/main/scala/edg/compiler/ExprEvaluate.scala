@@ -251,11 +251,11 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
     )
     val containerPath = IndirectDesignPath.root ++ container
-    val length = refs.getArraySize(containerPath).getOrElse(
-      throw new ExprEvaluateException(s"Array length not known for $container from $mapExtract")
+    val elts = refs.getArrayElts(containerPath).getOrElse(
+      throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )
-    val values = (0 until length).map { i =>  // TODO should delegate to mapRef?
-      val refPath = containerPath ++ Seq(i.toString) ++ mapExtract.path.get
+    val values = elts.toSeq.map { elt =>  // TODO should delegate to mapRef?
+      val refPath = containerPath ++ Seq(elt) ++ mapExtract.path.get
       refs.getValue(refPath).getOrElse(
         throw new ExprEvaluateException(s"No value for $refPath from $mapExtract")
       )
