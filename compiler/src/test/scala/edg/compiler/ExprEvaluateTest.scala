@@ -182,4 +182,23 @@ class ExprEvaluateTest extends AnyFlatSpec {
       ValueExpr.BinOp(Op.EQ, ValueExpr.Literal(4.0), ValueExpr.Literal(3))
     ) should equal(BooleanValue(false))
   }
+
+  it should "handle if then else" in {
+    evalTest.map(
+      ValueExpr.IfThenElse(ValueExpr.Literal(true), ValueExpr.Literal(4.0), ValueExpr.Literal(3))
+    ) should equal(FloatValue(4.0f))
+    evalTest.map(
+      ValueExpr.IfThenElse(ValueExpr.Literal(false), ValueExpr.Literal(4.0), ValueExpr.Literal(3))
+    ) should equal(FloatValue(3.0f))
+
+    import edg.expr.expr.BinaryExpr.Op
+    evalTest.map(
+      ValueExpr.IfThenElse(ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(true)),
+      ValueExpr.Literal(4.0), ValueExpr.Literal(3))
+    ) should equal(FloatValue(4.0f))
+    evalTest.map(
+      ValueExpr.IfThenElse(ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(false)),
+        ValueExpr.Literal(4.0), ValueExpr.Literal(3))
+    ) should equal(FloatValue(3.0f))
+  }
 }
