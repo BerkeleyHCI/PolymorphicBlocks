@@ -255,7 +255,7 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
       throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )
     val values = elts.toSeq.map { elt =>  // TODO should delegate to mapRef?
-      val refPath = containerPath ++ Seq(elt) ++ mapExtract.path.get
+      val refPath = containerPath + elt ++ mapExtract.path.get
       refs.getValue(refPath).getOrElse(
         throw new ExprEvaluateException(s"No value for $refPath from $mapExtract")
       )

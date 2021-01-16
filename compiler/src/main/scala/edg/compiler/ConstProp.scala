@@ -45,7 +45,7 @@ class ExprRefDependencies(refs: ConstProp, root: IndirectDesignPath) extends Val
       throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )
     elts.map { elt =>
-      containerPath ++ Seq(elt) ++ mapExtract.path.get
+      containerPath + elt ++ mapExtract.path.get
     }
   }
 
@@ -99,7 +99,7 @@ class ConstProp {
     * paramValues(param) should currently not resolve.
     * paramExpr and paramUsedIn must be filled in.
     */
-  protected def evaluate(param: IndirectDesignPath: Unit = {
+  protected def evaluate(param: IndirectDesignPath): Unit = {
     require(!paramValues.isDefinedAt(param))
     val (root, expr, _) = paramExpr(param)
 
@@ -118,8 +118,7 @@ class ConstProp {
     val paramValue = paramValues(param)
     equalityEdges.getOrElse(param, Set()).foreach { equalParam =>
       require(!paramValues.isDefinedAt(equalParam), s"redefinition of $equalParam via equality")
-      paramValues.put(equalParam, paramValue)
-      assignAndPropagate(equalParam)
+      assignAndPropagate(equalParam, paramValue)
     }
 
     // Propagate along dependent expressions
@@ -137,10 +136,10 @@ class ConstProp {
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignment(target: IndirectDesignPath,
-                    root: DesignPath, expr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
+                    root: DesignPath, targetExpr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
     require(!paramExpr.isDefinedAt(target), s"redefinition of $target via assignment")
 
-    paramExpr.put(target, (root, expr, sourceLocator))
+    paramExpr.put(target, (root, targetExpr, sourceLocator))
     if (isReadyToEvaluate(target)) {
       evaluate(target)
     }

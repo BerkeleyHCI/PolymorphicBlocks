@@ -21,6 +21,10 @@ object IndirectStep {  // namespace
   case class Element(name: String) extends IndirectStep
 }
 case class IndirectDesignPath(steps: Seq[IndirectStep]) {
+  def +(suffix: String): IndirectDesignPath = {
+    IndirectDesignPath(steps :+ IndirectStep.Element(suffix))
+  }
+
   def ++(suffix: Seq[String]): IndirectDesignPath = {
     IndirectDesignPath(steps ++ suffix.map { IndirectStep.Element(_) })
   }
@@ -48,7 +52,7 @@ object IndirectDesignPath {
   */
 case class DesignPath(steps: Seq[String]) {
   def +(elem: String): DesignPath = {
-    DesignPath(steps ++ Seq(elem))
+    DesignPath(steps :+ elem)
   }
 
   def ++(suffix: ref.LocalPath): DesignPath = {
