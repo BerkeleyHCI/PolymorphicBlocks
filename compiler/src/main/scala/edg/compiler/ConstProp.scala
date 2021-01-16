@@ -110,15 +110,17 @@ class ConstProp {
   /** Once all of a param's dependencies have been resolved, evaluate and propagate it.
     * Must only be called once per parameter, on assignment.
     */
-  protected def assignAndPropagate(param: IndirectDesignPath, value: ExprValue): Unit = {
+  protected def assignAndPropagate(param: IndirectDesignPath, value: ExprValue, backedge: Option[IndirectDesignPath] = None): Unit = {
     require(!paramValues.isDefinedAt(param))
     paramValues.put(param, value)
 
     // Propagate along equality edges
     val paramValue = paramValues(param)
     equalityEdges.getOrElse(param, Set()).foreach { equalParam =>
-      require(!paramValues.isDefinedAt(equalParam), s"redefinition of $equalParam via equality")
-      assignAndPropagate(equalParam, paramValue)
+      if (backedge.orNull != equalParam) {
+        require(!paramValues.isDefinedAt(equalParam), s"redefinition of $equalParam via equality")
+        assignAndPropagate(equalParam, paramValue, Some(param))
+      }
     }
 
     // Propagate along dependent expressions
@@ -151,24 +153,33 @@ class ConstProp {
   }
 
   /**
-    * Adds a bidirectional equality (param1 == param2) and propagates as needed
+    * Adds a bidirectional equality (param1 == param2) and propagates as needed.
+    * Equality cycles (ignoring backedges) will cause infinite recursion and is currently not checked.
+    * TODO: detect cycles
     */
   def addEquality(param1: IndirectDesignPath, param2: IndirectDesignPath): Unit = {
-    equalityEdges.getOrElseUpdate(param1, mutable.Set()) += param2
-    paramValues.get(param1) match {
+    // Store the pre-propagation values, so the parameters don't propagate forward then back
+    val param1Value = paramValues.get(param1)
+    val param2Value = paramValues.get(param2)
+    // TODO maybe need guard against cyclic deps?
+    // TODO maybe also detect against merging?
+
+    param1Value match {
       case Some(param1Value) =>
         require(!paramValues.isDefinedAt(param2), s"redefinition of $param2 via equality")
-        assignAndPropagate(param2, param1Value)
+        assignAndPropagate(param2, param1Value, Some(param1))
+      case None => // do nothing
+    }
+    param2Value match {
+      case Some(param2Value) =>
+        require(!paramValues.isDefinedAt(param1), s"redefinition of $param1 via equality")
+        assignAndPropagate(param1, param2Value, Some(param2))
       case None => // do nothing
     }
 
+    // The back edges are skipped by the equality prop algorithm so we can delay adding those
+    equalityEdges.getOrElseUpdate(param1, mutable.Set()) += param2
     equalityEdges.getOrElseUpdate(param2, mutable.Set()) += param1
-    paramValues.get(param2) match {
-      case Some(param2Value) =>
-        require(!paramValues.isDefinedAt(param1), s"redefinition of $param1 via equality")
-        assignAndPropagate(param1, param2Value)
-      case None => // do nothing
-    }
   }
 
   def setArrayElts(target: IndirectDesignPath, elts: Set[String]): Unit = {

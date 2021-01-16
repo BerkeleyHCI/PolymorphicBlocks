@@ -65,14 +65,32 @@ class ConstPropTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
-      ValueExpr.Literal(2.0),
+      ValueExpr.Literal(2),
       new SourceLocator()
     )
     constProp.addEquality(IndirectDesignPath.root + "a", IndirectDesignPath.root + "b1")
     constProp.addEquality(IndirectDesignPath.root + "b2", IndirectDesignPath.root + "a")
+
     constProp.getValue(IndirectDesignPath.root + "b1") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath.root + "b2") should equal(Some(IntValue(2)))
   }
 
-  it should "handle equality assignments, delayed"
+  it should "handle equality assignments, delayed" in {
+    val constProp = new ConstProp()
+    constProp.addEquality(IndirectDesignPath.root + "a", IndirectDesignPath.root + "b1")
+    constProp.addEquality(IndirectDesignPath.root + "b2", IndirectDesignPath.root + "a")
+    constProp.addAssignment(IndirectDesignPath.root + "a",
+      DesignPath.root,
+      ValueExpr.Literal(2),
+      new SourceLocator()
+    )
+
+    constProp.getValue(IndirectDesignPath.root + "b1") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath.root + "b2") should equal(Some(IntValue(2)))
+  }
+
+  it should "handle evaluations on both side of assignments, delayed" in {
+    val constProp = new ConstProp()
+
+  }
 }

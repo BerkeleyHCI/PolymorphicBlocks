@@ -16,9 +16,15 @@ import jdk.jshell.spi.ExecutionControl.NotImplementedException
   */
 sealed trait IndirectStep
 object IndirectStep {  // namespace
-  case class ConnectedLink() extends IndirectStep  // block-side port -> link
-  case class ConnectedPort() extends IndirectStep  // link-side port -> block-side port (authoritative)
-  case class Element(name: String) extends IndirectStep
+  case class ConnectedLink() extends IndirectStep {  // block-side port -> link
+    override def toString: String = "CONNECTED_LINK"
+  }
+  case class ConnectedPort() extends IndirectStep {  // link-side port -> block-side port (authoritative)
+    override def toString: String = "CONNECTED_PORT"
+  }
+  case class Element(name: String) extends IndirectStep {
+    override def toString = name
+  }
 }
 case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def +(suffix: String): IndirectDesignPath = {
@@ -36,6 +42,8 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
       case step => throw new NotImplementedError(s"Unknown step $step in appending $suffix from $this")
     } } )
   }
+
+  override def toString = steps.map(_.toString).mkString(".")
 }
 
 object IndirectDesignPath {
@@ -62,6 +70,8 @@ case class DesignPath(steps: Seq[String]) {
         s"Found non-direct step $step when appending LocalPath $suffix")
     } } )
   }
+
+  override def toString = steps.map(_.toString).mkString(".")
 }
 
 object DesignPath {
