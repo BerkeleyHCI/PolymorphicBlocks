@@ -225,7 +225,6 @@ class ConstProp {
     * Ignores indirect references.
     */
   def getUnsolved: Set[DesignPath] = {
-    val directParams = paramValues.keys.flatMap(DesignPath.fromIndirectOption)
-    paramTypes.keySet -- directParams
+    paramTypes.keySet -- paramValues.keys.flatMap(DesignPath.fromIndirectOption)
   }
 }

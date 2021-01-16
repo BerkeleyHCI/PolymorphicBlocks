@@ -30,6 +30,9 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def +(suffix: String): IndirectDesignPath = {
     IndirectDesignPath(steps :+ IndirectStep.Element(suffix))
   }
+  def +(suffix: IndirectStep): IndirectDesignPath = {  // TODO: kinda abstraction breaking?
+    IndirectDesignPath(steps :+ suffix)
+  }
 
   def ++(suffix: Seq[String]): IndirectDesignPath = {
     IndirectDesignPath(steps ++ suffix.map { IndirectStep.Element(_) })
