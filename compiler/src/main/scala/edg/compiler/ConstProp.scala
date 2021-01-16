@@ -74,7 +74,7 @@ class ConstProp {
   val equalityEdges = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // bidirectional, two entries per edge
 
   val paramExpr = new mutable.HashMap[IndirectDesignPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // TODO case class?
-  val paramUsedIn = new mutable.HashMap[IndirectDesignPath, Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
+  val paramUsedIn = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
   val arrayElts = new mutable.HashMap[IndirectDesignPath, Set[String]]  // empty means not yet known
@@ -138,6 +138,11 @@ class ConstProp {
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, targetExpr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
     require(!paramExpr.isDefinedAt(target), s"redefinition of $target via assignment")
+
+    val deps = new ExprRefDependencies(this, IndirectDesignPath.fromDesignPath(root)).map(targetExpr)
+    deps.foreach { dep =>
+      paramUsedIn.getOrElseUpdate(dep, mutable.Set()) += target
+    }
 
     paramExpr.put(target, (root, targetExpr, sourceLocator))
     if (isReadyToEvaluate(target)) {

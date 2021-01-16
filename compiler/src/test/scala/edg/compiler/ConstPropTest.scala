@@ -14,10 +14,10 @@ class ConstPropTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
-      ValueExpr.Literal(2.0),
+      ValueExpr.Literal(2),
       new SourceLocator()
     )
-    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(FloatValue(2.0f)))
+    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
   }
 
   it should "handle multi-hop directed assignments" in {
@@ -25,16 +25,16 @@ class ConstPropTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
-      ValueExpr.Literal(2.0),
+      ValueExpr.Literal(2),
       new SourceLocator()
     )
     constProp.addAssignment(IndirectDesignPath.root + "b",
       DesignPath.root,
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3.0), ValueExpr.Ref("a")),
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
       new SourceLocator()
     )
-    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(FloatValue(2.0f)))
-    constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(FloatValue(5.0f)))
+    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(IntValue(5)))
   }
 
   it should "handle multi-hop directed assignments, delayed" in {
@@ -42,26 +42,37 @@ class ConstPropTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath.root + "b",
       DesignPath.root,
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3.0), ValueExpr.Ref("a")),
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
       new SourceLocator()
     )
     constProp.addAssignment(IndirectDesignPath.root + "c",
       DesignPath.root,
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5.0), ValueExpr.Ref("b")),
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5), ValueExpr.Ref("b")),
       new SourceLocator()
     )
 
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
+      ValueExpr.Literal(2),
+      new SourceLocator()
+    )
+    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(IntValue(5)))
+    constProp.getValue(IndirectDesignPath.root + "c") should equal(Some(IntValue(10)))
+  }
+
+  it should "handle equality assignments" in {
+    val constProp = new ConstProp()
+    constProp.addAssignment(IndirectDesignPath.root + "a",
+      DesignPath.root,
       ValueExpr.Literal(2.0),
       new SourceLocator()
     )
-    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(FloatValue(2.0f)))
-    constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(FloatValue(5.0f)))
-    constProp.getValue(IndirectDesignPath.root + "c") should equal(Some(FloatValue(10.0f)))
+    constProp.addEquality(IndirectDesignPath.root + "a", IndirectDesignPath.root + "b1")
+    constProp.addEquality(IndirectDesignPath.root + "b2", IndirectDesignPath.root + "a")
+    constProp.getValue(IndirectDesignPath.root + "b1") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath.root + "b2") should equal(Some(IntValue(2)))
   }
-
-  it should "handle equality assignments"
 
   it should "handle equality assignments, delayed"
 }
