@@ -4,13 +4,6 @@ import edg.elem.elem
 import scala.collection.mutable
 
 
-sealed trait IrPorts  // to box Port-like types because of lack of union types in SScala
-object IrPorts {
-  case class Port(pb: elem.Port) extends IrPorts
-  case class Bundle(pb: elem.Bundle) extends IrPorts
-}
-
-
 class InvalidPathException(message: String) extends Exception(message)
 
 /**

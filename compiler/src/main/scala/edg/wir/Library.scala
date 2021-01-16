@@ -3,6 +3,7 @@ package edg.wir
 import edg.elem.elem
 import edg.ref.ref
 import edg.schema.schema
+import edg.IrPorts
 
 
 class Library(pb: schema.Library) {
