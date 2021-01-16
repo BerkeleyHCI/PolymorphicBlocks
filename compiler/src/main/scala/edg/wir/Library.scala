@@ -20,6 +20,8 @@ class Library(pb: schema.Library) {
       case member => throw new NotImplementedError(s"Unknown library member $member")
       } }
 
+  // API functions
+  //
   def getBlock(path: ref.LibraryPath): elem.HierarchyBlock = elts.get(path) match {
     case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => member
     case Some(member) => throw new NoSuchElementException(s"Library element at $path not a block, got ${member.getClass}")
