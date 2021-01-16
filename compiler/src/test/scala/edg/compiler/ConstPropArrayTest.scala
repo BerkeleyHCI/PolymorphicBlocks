@@ -4,7 +4,7 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.wir.{DesignPath, IndirectDesignPath}
-import ExprBuilder._
+import edg.ExprBuilder._
 
 
 class ConstPropArrayTest extends AnyFlatSpec {
