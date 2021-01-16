@@ -5,8 +5,6 @@ import edg.lit.lit
 import edg.ref.ref
 import edg.wir.IndirectDesignPath
 
-import scala.collection.Set
-
 
 class ExprEvaluateException(msg: String) extends Exception(msg)
 

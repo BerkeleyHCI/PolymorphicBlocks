@@ -1,5 +1,7 @@
 package edg.compiler
 
+import edg.common.common
+import edg.init.init
 import edg.lit.lit
 import edg.ref.ref
 import edg.expr.expr
@@ -64,5 +66,13 @@ object ExprBuilder {
     ref.LocalPath(steps = path.map { step =>
       ref.LocalStep(step=ref.LocalStep.Step.Name(step))
     })
+  }
+
+  object ValInit {
+    val Floating: init.ValInit = init.ValInit(`val`=init.ValInit.Val.Floating(common.Empty()))
+    val Integer: init.ValInit = init.ValInit(`val`=init.ValInit.Val.Integer(common.Empty()))
+    val Boolean: init.ValInit = init.ValInit(`val`=init.ValInit.Val.Boolean(common.Empty()))
+    val Text: init.ValInit = init.ValInit(`val`=init.ValInit.Val.Text(common.Empty()))
+    val Range: init.ValInit = init.ValInit(`val`=init.ValInit.Val.Range(common.Empty()))
   }
 }

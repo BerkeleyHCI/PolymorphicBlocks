@@ -7,7 +7,7 @@ import edg.wir.{IndirectDesignPath, DesignPath}
 import ExprBuilder._
 
 
-class ConstPropTest extends AnyFlatSpec {
+class ConstPropAssignTest extends AnyFlatSpec {
   "ConstProp" should "work properly"
 
   it should "handle single-hop directed assignments" in {

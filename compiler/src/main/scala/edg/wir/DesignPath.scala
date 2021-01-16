@@ -84,6 +84,18 @@ object DesignPath {
   /**
     * Converts an indirect path to a (direct) design path, throwing an exception if there are indirect references
     */
+  def fromIndirectOption(indirect: IndirectDesignPath): Option[DesignPath] = {
+    val stepsOpt = indirect.steps.map {
+      case IndirectStep.Element(name) => Some(name)
+      case step => None
+    }
+    if (stepsOpt.contains(None)) {
+      None
+    } else {
+      Some(DesignPath(stepsOpt.map(_.get)))
+    }
+  }
+
   def fromIndirect(indirect: IndirectDesignPath): DesignPath = {
     DesignPath(indirect.steps.map {
       case IndirectStep.Element(name) => name

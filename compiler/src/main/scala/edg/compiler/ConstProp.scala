@@ -7,6 +7,7 @@ import edg.wir._
 import edg.expr.expr
 import edg.lit.lit
 import edg.ref.ref
+import edg.init.init
 
 
 /**
@@ -69,7 +70,7 @@ class ExprRefDependencies(refs: ConstProp, root: IndirectDesignPath) extends Val
   */
 class ConstProp {
   val paramValues = new mutable.HashMap[IndirectDesignPath, ExprValue]  // empty means not yet known
-  val paramTypes = new mutable.HashMap[DesignPath, Class[ExprValue]]  // only record types of authoritative elements
+  val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
 
   val equalityEdges = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // bidirectional, two entries per edge
 
@@ -134,6 +135,19 @@ class ConstProp {
   //
   // API methods
   //
+  def addDeclaration(target: DesignPath, decl: init.ValInit): Unit = {
+    require(!paramTypes.isDefinedAt(target), s"redeclaration of $target")
+    val paramType = decl.`val` match {
+      case init.ValInit.Val.Floating(_) => classOf[FloatValue]
+      case init.ValInit.Val.Integer(_) => classOf[IntValue]
+      case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
+      case init.ValInit.Val.Text(_) => classOf[TextValue]
+      case init.ValInit.Val.Range(_) => classOf[RangeValue]
+      case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
+    }
+    paramTypes.put(target, paramType)
+  }
+
   /**
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
@@ -191,7 +205,6 @@ class ConstProp {
     * Returns the value of a parameter, or None if it does not have a value (yet?).
     * Can be used to check if parameters are resolved yet by testing against None.
     */
-  //
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     paramValues.get(param)
   }
@@ -199,7 +212,7 @@ class ConstProp {
   /**
     * Returns the type (as a class of ExprValue) of a parameter.
     */
-  def getValueType(param: DesignPath): Option[Class[ExprValue]] = {
+  def getType(param: DesignPath): Option[Class[_ <: ExprValue]] = {
     paramTypes.get(param)
   }
 
@@ -212,6 +225,7 @@ class ConstProp {
     * Ignores indirect references.
     */
   def getUnsolved: Set[DesignPath] = {
-    paramTypes.keySet -- paramValues.keySet.map(DesignPath.fromIndirect)
+    val directParams = paramValues.keys.flatMap(DesignPath.fromIndirectOption)
+    paramTypes.keySet -- directParams
   }
 }
