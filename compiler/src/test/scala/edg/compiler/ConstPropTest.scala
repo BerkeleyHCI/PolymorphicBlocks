@@ -15,7 +15,7 @@ class ConstPropTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
       ValueExpr.Literal(2),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
   }
@@ -26,12 +26,12 @@ class ConstPropTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
       ValueExpr.Literal(2),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.addAssignment(IndirectDesignPath.root + "b",
       DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(IntValue(5)))
@@ -43,18 +43,18 @@ class ConstPropTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "b",
       DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.addAssignment(IndirectDesignPath.root + "c",
       DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5), ValueExpr.Ref("b")),
-      new SourceLocator()
+      SourceLocator.empty
     )
 
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
       ValueExpr.Literal(2),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(IntValue(5)))
@@ -66,7 +66,7 @@ class ConstPropTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
       ValueExpr.Literal(2),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.addEquality(IndirectDesignPath.root + "a", IndirectDesignPath.root + "b1")
     constProp.addEquality(IndirectDesignPath.root + "b2", IndirectDesignPath.root + "a")
@@ -85,7 +85,7 @@ class ConstPropTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "a",
       DesignPath.root,
       ValueExpr.Literal(2),
-      new SourceLocator()
+      SourceLocator.empty
     )
 
     constProp.getValue(IndirectDesignPath.root + "a1") should equal(Some(IntValue(2)))
@@ -97,17 +97,17 @@ class ConstPropTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath.root + "b", DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2), ValueExpr.Ref("a")),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.addEquality(IndirectDesignPath.root + "b", IndirectDesignPath.root + "b1")
     constProp.addEquality(IndirectDesignPath.root + "b2", IndirectDesignPath.root + "b")
     constProp.addAssignment(IndirectDesignPath.root + "c1", DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("b1")),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.addAssignment(IndirectDesignPath.root + "c2", DesignPath.root,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(4), ValueExpr.Ref("b2")),
-      new SourceLocator()
+      SourceLocator.empty
     )
     constProp.getValue(IndirectDesignPath.root + "b") should equal(None)
     constProp.getValue(IndirectDesignPath.root + "b1") should equal(None)
@@ -117,7 +117,7 @@ class ConstPropTest extends AnyFlatSpec {
 
     constProp.addAssignment(IndirectDesignPath.root + "a", DesignPath.root,
       ValueExpr.Literal(1),
-      new SourceLocator()
+      SourceLocator.empty
     )
 
     constProp.getValue(IndirectDesignPath.root + "b") should equal(Some(IntValue(3)))

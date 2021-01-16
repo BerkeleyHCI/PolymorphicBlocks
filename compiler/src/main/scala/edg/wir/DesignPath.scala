@@ -63,6 +63,10 @@ case class DesignPath(steps: Seq[String]) {
     DesignPath(steps :+ elem)
   }
 
+  def ++(suffix: Seq[String]): DesignPath = {
+    DesignPath(steps ++ suffix)
+  }
+
   def ++(suffix: ref.LocalPath): DesignPath = {
     DesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => name
