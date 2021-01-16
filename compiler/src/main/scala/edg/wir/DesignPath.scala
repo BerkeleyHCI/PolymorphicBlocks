@@ -58,6 +58,12 @@ object IndirectDesignPath {
   * TODO: should exclude link ports, since the block side port is treated as authoritative.
   */
 case class DesignPath(steps: Seq[String]) {
+  // Returns the DesignPath minus the last element. Must not be empty.
+  def parent: DesignPath = {
+    require(steps.nonEmpty)
+    DesignPath(steps.slice(0, steps.length - 1))
+  }
+
   def +(elem: String): DesignPath = {
     DesignPath(steps :+ elem)
   }

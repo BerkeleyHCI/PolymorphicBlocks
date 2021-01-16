@@ -18,6 +18,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Seed compilation with the root
   //
   private val root = wir.Block(inputDesignPb.contents.get)
+  def getBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
+  def getLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+
   for (rootBlockName <- root.pb.blocks.keys) {
     pending += DesignPath.root + rootBlockName
   }
@@ -31,6 +34,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     * Adds children to the pending queue, and adds constraints to constProp.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
+    val parent = getBlock(path.parent)
 
   }
 
@@ -38,7 +42,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
     */
-  protected def elaborateBlock(path: DesignPath): Unit = {
+  protected def elaborateLink(path: DesignPath): Unit = {
 
   }
 

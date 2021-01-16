@@ -15,7 +15,7 @@ trait Pathable {
     * Resolves a LocalPath from here, returning the absolute path and the target element.
     * The target element must exist as an elaborated element (and not lib_elem).
     */
-  protected[wir] def resolve(suffix: Seq[String]): Pathable
+  def resolve(suffix: Seq[String]): Pathable
 }
 
 /**
@@ -36,7 +36,7 @@ case class Block(var pb: elem.HierarchyBlock) extends Pathable {
   val subblocks = mutable.HashMap[String, Block]()
   val sublinks = mutable.HashMap[String, Link]()
 
-  override protected[wir] def resolve(suffix: Seq[String]): Pathable = {
+  override def resolve(suffix: Seq[String]): Pathable = {
     suffix match {
       case Seq() => this
       case Seq(subname, tail@_*) =>
@@ -61,7 +61,7 @@ case class Link(var pb: elem.Link) extends Pathable {
 
   val sublinks = mutable.HashMap[String, Link]()
 
-  override protected[wir] def resolve(suffix: Seq[String]): Pathable = {
+  override def resolve(suffix: Seq[String]): Pathable = {
     suffix match {
       case Seq() => this
       case Seq(subname, tail@_*) =>
