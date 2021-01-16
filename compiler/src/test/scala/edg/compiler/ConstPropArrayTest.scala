@@ -102,4 +102,23 @@ class ConstPropArrayTest extends AnyFlatSpec {
     )
     constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(2)))
   }
+
+  // TODO: this might not be needed right now, but will be eventually
+  it should "failed on delayed ops" in {
+    import edg.expr.expr.ReductionExpr.Op
+    val constProp = new ConstProp()
+
+    an [ExprEvaluateException] should be thrownBy {
+      constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
+        ValueExpr.Reduce(Op.SUM,
+          ValueExpr.MapExtract(Ref("ports"), "param")
+        ),
+        SourceLocator.empty
+      )
+
+      addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))
+
+      constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
+    }
+  }
 }
