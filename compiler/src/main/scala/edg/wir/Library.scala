@@ -34,8 +34,9 @@ class Library(pb: schema.Library) {
     case None => throw new NoSuchElementException(s"Library does not contain $path")
   }
 
-  def getPort(path: ref.LibraryPath): elem.Port = elts.get(path) match {  // TODO also need to support bundles!
-    case Some(schema.Library.NS.Val.Type.Port(member)) => member
+  def getPort(path: ref.LibraryPath): IrPorts = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.Port(member)) => IrPorts.Port(member)
+    case Some(schema.Library.NS.Val.Type.Bundle(member)) => IrPorts.Bundle(member)
     case Some(member) => throw new NoSuchElementException(s"Library element at $path not a port-like, got ${member.getClass}")
     case None => throw new NoSuchElementException(s"Library does not contain $path")
   }

@@ -18,8 +18,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Seed compilation with the root
   //
   private val root = wir.Block(inputDesignPb.contents.get)
-  def getBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
-  def getLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
+  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
 
   for (rootBlockName <- root.pb.blocks.keys) {
     pending += DesignPath.root + rootBlockName
@@ -32,15 +32,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
+    * Expands connects in the parent, as needed.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
-    val parent = getBlock(path.parent)
+    val parent = resolveBlock(path.parent)
 
   }
 
   /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
+    * Expands connects in the parent, as needed.
     */
   protected def elaborateLink(path: DesignPath): Unit = {
 
