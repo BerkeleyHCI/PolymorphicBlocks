@@ -9,7 +9,7 @@ object ExprBuilder {
   import edg.init.init
   import edg.lit.lit
   import edg.ref.ref
-  
+
   object ValueExpr {
     def Literal(literal: lit.ValueLit): expr.ValueExpr = expr.ValueExpr(expr = expr.ValueExpr.Expr.Literal(literal))
 
