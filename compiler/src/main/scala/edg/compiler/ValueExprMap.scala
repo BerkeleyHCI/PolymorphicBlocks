@@ -64,7 +64,7 @@ trait ValueExprMap[OutputType] {
     mapReduce(reduce, map(reduce.vals.get))
   }
   def wrapStruct(struct: expr.StructExpr): OutputType = {
-    mapStruct(struct, struct.vals.mapValues(value => map(value)))
+    mapStruct(struct, struct.vals.view.mapValues(value => map(value)).toMap)
   }
   def wrapRange(range: expr.RangeExpr): OutputType = {
     mapRange(range, map(range.minimum.get), map(range.maximum.get))

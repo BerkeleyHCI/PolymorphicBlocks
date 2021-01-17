@@ -17,17 +17,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   // Seed compilation with the root
   //
-  private val root = wir.Block(inputDesignPb.contents.get)
+  private val root = new wir.Block(inputDesignPb.contents.get)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
 
-  for (rootBlockName <- root.pb.blocks.keys) {
-    pending += DesignPath.root + rootBlockName
-  }
-  for (rootLinkName <- root.pb.links.keys) {
-    pending += DesignPath.root + rootLinkName
-  }
+  processBlock(DesignPath.root, root)
 
+
+  protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
+    // TODO elaborate ports
+
+    for (rootBlockName <- block.getUnelaboratedBlocks.keys) {
+      pending += path + rootBlockName
+    }
+    for (rootLinkName <- block.getUnelaboratedLinks.keys) {
+      pending += path + rootLinkName
+    }
+  }
 
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
@@ -36,7 +42,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
     val parent = resolveBlock(path.parent)
-
+    processBlock(path, resolveBlock(path))
   }
 
   /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
