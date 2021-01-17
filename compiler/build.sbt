@@ -2,7 +2,7 @@ name := "edg-compiler"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.0"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.0" % "test",
