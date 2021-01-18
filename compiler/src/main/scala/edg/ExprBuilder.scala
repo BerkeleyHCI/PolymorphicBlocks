@@ -76,14 +76,21 @@ object ExprBuilder {
   }
 
   object Ref {
+    val AllocateStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE))
+
     def apply(path: String*): ref.LocalPath = {
       ref.LocalPath(steps = path.map { step =>
         ref.LocalStep(step = ref.LocalStep.Step.Name(step))
       })
     }
-    def Allocate(prefix: ref.LocalPath): ref.LocalPath = {
-      ref.LocalPath(steps = prefix.steps :+
-        ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE)))
+    object Allocate {
+      def apply(prefix: ref.LocalPath): ref.LocalPath = {
+        ref.LocalPath(steps = prefix.steps :+ AllocateStep)
+      }
+      def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
+        case init :+ last if last == AllocateStep => Some(ref.LocalPath(steps=init))
+        case _ => None
+      }
     }
   }
 

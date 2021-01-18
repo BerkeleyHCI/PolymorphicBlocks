@@ -58,4 +58,8 @@ trait HasMutableConstraints {
   protected val constraints: mutable.Map[String, expr.ValueExpr]
 
   def getConstraints: Map[String, expr.ValueExpr] = constraints.toMap
+
+  def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
+    constraints.put(name, fn(constraints(name)))
+  }
 }

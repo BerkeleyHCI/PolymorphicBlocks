@@ -2,6 +2,7 @@ package edg.compiler
 
 import scala.collection.mutable
 import edg.schema.schema
+import edg.expr.expr
 import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.wir
 
@@ -26,7 +27,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Array ports must be resolved to the element level.
   private val unresolvedConnects = mutable.Set[(DesignPath, DesignPath)]()
   // For array points involved in connects, returns all the sub-elements
-  private val arrayElements = mutable.HashMap[DesignPath, Set[String]]()
+  private val arrayElements = mutable.HashMap[DesignPath, Seq[String]]()
   // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
   // constraint name))
   private val pendingLength = mutable.HashMap[DesignPath, (DesignPath, String)]()
@@ -51,10 +52,45 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   }
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
+    import edg.ExprBuilder.Ref
+
     // Elaborate ports, generating equivalence constraints as needed
     elaborateBlocklikePorts(path, block)
 
     // Process connected constraints, registering into a pending connect map
+    // TODO ensure constraint processing order?
+    // All ports that need to be allocated, with the list of connected ports,
+    // as (port array path -> list(constraint name, block port))
+    val linkPortAllocates = mutable.HashMap[DesignPath, mutable.ListBuffer[(String, DesignPath)]]()
+    block.getConstraints.foreach { case (name, constr) => constr.expr match {
+      case expr.ValueExpr.Expr.Connected(connected) =>
+        (connected.blockPort.get.expr.ref.get, connected.linkPort.get.expr.ref.get) match {
+          case (Ref.Allocate(blockPortlinkPortArray), Ref.Allocate(linkPortlinkPortArray)) =>
+            throw new NotImplementedError("TODO: block port array <-> link port array")
+          case (Ref.Allocate(blockPortlinkPortArray), linkPort) =>
+            throw new NotImplementedError("TODO: block port array <-> link port")
+          case (blockPort, Ref.Allocate(linkPortArray)) =>
+            linkPortAllocates.getOrElseUpdate(path ++ linkPortArray, mutable.ListBuffer()) += ((name, path ++ blockPort))
+          case (blockPort, linkPort) =>
+            unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
+        }
+    }}
+
+    // For fully resolved arrays, allocate port numbers and set array elements
+    linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
+      val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), i) =>
+        unresolvedConnects += ((blockPort, linkPortArray))
+        block.mapConstraint(constrName) { constr =>
+          constr.update(
+            _.connected.linkPort.ref.steps :=
+                constr.expr.connected.get.linkPort.get.expr.ref.get.steps :+ Ref.AllocateStep
+          )
+        }
+        i.toString
+      }
+      require(!arrayElements.isDefinedAt(linkPortArray), s"redefinition of link array elements at $linkPortArray")
+      arrayElements.put(linkPortArray, linkPortArrayElts.toSeq)
+    }
 
     // Process assignment constraints
 
