@@ -12,7 +12,9 @@ import edg.wir
   * During the compilation process, internal data structures are mutated.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
+  // TODO better debug toggle
   protected def debug(msg: => String): Unit = println(msg)
+//  protected def debug(msg: => String): Unit = { }
 
   private val pendingBlocks = mutable.Set[DesignPath]()  // block-likes pending elaboration
   private val pendingLinks = mutable.Set[DesignPath]()  // block-likes pending elaboration

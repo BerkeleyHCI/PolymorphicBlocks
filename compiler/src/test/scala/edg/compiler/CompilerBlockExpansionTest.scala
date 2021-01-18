@@ -7,6 +7,7 @@ import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
 import edg.wir
 
+
 class CompilerBlockExpansionTest extends AnyFlatSpec {
   val library = Library(
     ports = Map(
@@ -24,6 +25,28 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
           "port" -> Port.Library("sinkPort"),
         )
       ),
+      "sourceContainerBlock" -> Block.Block(
+        ports = Map(
+          "port" -> Port.Library("sourcePort"),
+        ),
+        blocks = Map(
+          "inner" -> Block.Library("sourceBlock")
+        ),
+        constraints = Map(
+          "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
+        )
+      ),
+      "sinkContainerBlock" -> Block.Block(
+        ports = Map(
+          "port" -> Port.Library("sinkPort"),
+        ),
+        blocks = Map(
+          "inner" -> Block.Library("sinkBlock")
+        ),
+        constraints = Map(
+          "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
+        )
+      ),
     ),
     links = Map(
       "link" -> Link.Link(
@@ -35,7 +58,7 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
     )
   )
 
-  "Compiler on design with " should "expand blocks" in {
+  "Compiler on design with single source and sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block(
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
@@ -51,26 +74,87 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(
+        "source" -> Block.Block(superclass="sourceBlock",
           ports = Map(
             "port" -> Port.Port(superclass="sourcePort"),
-          ),
-          superclass="sourceBlock"
+          )
         ),
-        "sink" -> Block.Block(
+        "sink" -> Block.Block(superclass="sinkBlock",
           ports = Map(
             "port" -> Port.Port(superclass="sinkPort"),
-          ),
-          superclass="sinkBlock"
+          )
         ),
       ),
       links = Map(
-        "link" -> Link.Link(
+        "link" -> Link.Link(superclass="link",
           ports = Map(
             "source" -> Port.Port(superclass="sourcePort"),
             "sink" -> Port.Port(superclass="sinkPort"),
+          )
+        )
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
+        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    compiler.compile should equal(referenceElaborated)
+  }
+
+  "Compiler on design with single nested source and sink" should "expand blocks" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceContainerBlock"),
+        "sink" -> Block.Library("sinkContainerBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
+        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+      )
+    ))
+    val referenceElaborated = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Block(superclass="sourceContainerBlock",
+          ports = Map(
+            "port" -> Port.Port(superclass="sourcePort"),
           ),
-          superclass="link"
+          blocks = Map(
+            "inner" -> Block.Block(superclass="sourceBlock",
+              ports = Map(
+                "port" -> Port.Port(superclass="sourcePort"),
+              )
+            )
+          ),
+          constraints = Map(
+            "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
+          )
+        ),
+        "sink" -> Block.Block(superclass="sinkContainerBlock",
+          ports = Map(
+            "port" -> Port.Port(superclass="sinkPort"),
+          ),
+          blocks = Map(
+            "inner" -> Block.Block(superclass="sinkBlock",
+              ports = Map(
+                "port" -> Port.Port(superclass="sinkPort"),
+              )
+            )
+          ),
+          constraints = Map(
+            "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
+          )
+        ),
+      ),
+      links = Map(
+        "link" -> Link.Link(superclass="link",
+          ports = Map(
+            "source" -> Port.Port(superclass="sourcePort"),
+            "sink" -> Port.Port(superclass="sinkPort"),
+          )
         )
       ),
       constraints = Map(
