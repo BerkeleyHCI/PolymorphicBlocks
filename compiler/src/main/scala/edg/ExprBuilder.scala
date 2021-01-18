@@ -75,10 +75,16 @@ object ExprBuilder {
     }
   }
 
-  def Ref(path: String*): ref.LocalPath = {
-    ref.LocalPath(steps = path.map { step =>
-      ref.LocalStep(step = ref.LocalStep.Step.Name(step))
-    })
+  object Ref {
+    def apply(path: String*): ref.LocalPath = {
+      ref.LocalPath(steps = path.map { step =>
+        ref.LocalStep(step = ref.LocalStep.Step.Name(step))
+      })
+    }
+    def Allocate(prefix: ref.LocalPath): ref.LocalPath = {
+      ref.LocalPath(steps = prefix.steps :+
+        ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE)))
+    }
   }
 
   object ValInit {

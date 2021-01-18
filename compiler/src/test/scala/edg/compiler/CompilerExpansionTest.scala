@@ -10,7 +10,7 @@ import edg.wir
 
 /** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
   */
-class CompilerBlockExpansionTest extends AnyFlatSpec {
+class CompilerExpansionTest extends AnyFlatSpec {
   val library = Library(
     ports = Map(
       "sourcePort" -> Port.Port(),
@@ -70,8 +70,8 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
         "link" -> Link.Library("link")
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
-        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
     val referenceElaborated = Design(Block.Block(
@@ -96,8 +96,8 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
         )
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
-        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.Library(library))
@@ -114,8 +114,8 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
         "link" -> Link.Library("link")
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
-        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
     val referenceElaborated = Design(Block.Block(
@@ -160,8 +160,8 @@ class CompilerBlockExpansionTest extends AnyFlatSpec {
         )
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "sourcePort")),
-        "sourceConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sinkPort")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.Library(library))
