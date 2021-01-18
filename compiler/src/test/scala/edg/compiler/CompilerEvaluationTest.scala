@@ -66,12 +66,12 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         ),
         constraints = Map(
           "calcSourceFloat" -> ValueExpr.Assign(Ref("sourceFloat"), ValueExpr.Ref("source", "floatVal")),
-//          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.Reduce(Op.SUM,
-//            ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
-//          )),
-//          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.Reduce(Op.INTERSECTION,
-//            ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal"))
-//          )),
+          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.Reduce(Op.SUM,
+            ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
+          )),
+          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.Reduce(Op.INTERSECTION,
+            ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal"))
+          )),
         )
       ),
     )

@@ -47,7 +47,7 @@ class ExprRefDependencies(refs: ConstProp, root: IndirectDesignPath) extends Val
     )
     elts.map { elt =>
       containerPath + elt ++ mapExtract.path.get
-    }
+    }.toSet
   }
 
   // connected and exported not overridden and to fail noisily
@@ -78,7 +78,7 @@ class ConstProp {
   val paramUsedIn = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
-  val arrayElts = new mutable.HashMap[IndirectDesignPath, Set[String]]  // empty means not yet known
+  val arrayElts = new mutable.HashMap[IndirectDesignPath, Seq[String]]  // empty means not yet known
 
   //
   // Utility methods
@@ -196,7 +196,7 @@ class ConstProp {
     equalityEdges.getOrElseUpdate(param2, mutable.Set()) += param1
   }
 
-  def setArrayElts(target: IndirectDesignPath, elts: Set[String]): Unit = {
+  def setArrayElts(target: IndirectDesignPath, elts: Seq[String]): Unit = {
     assert(arrayElts.getOrElse(target, elts) == elts)  // make sure overwrites are at least consistent
     arrayElts.put(target, elts)
   }
@@ -216,7 +216,7 @@ class ConstProp {
     paramTypes.get(param)
   }
 
-  def getArrayElts(target: IndirectDesignPath): Option[Set[String]] = {
+  def getArrayElts(target: IndirectDesignPath): Option[Seq[String]] = {
     arrayElts.get(target)
   }
 

@@ -22,7 +22,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
         IndirectDesignPath.root ++ root ++ pathPrefix + i.toString ++ pathSuffix,
         DesignPath.root ++ root, exprFn(i), SourceLocator.empty)
     }
-    constProp.setArrayElts(IndirectDesignPath.root ++ root ++ pathPrefix, (0 until length).map(_.toString).toSet)
+    constProp.setArrayElts(IndirectDesignPath.root ++ root ++ pathPrefix, (0 until length).map(_.toString))
   }
 
   it should "read out elements" in {

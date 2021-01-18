@@ -171,9 +171,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           )
         }
         index.toString
-      }
+      }.toSeq
+      constProp.setArrayElts(IndirectDesignPath.fromDesignPath(linkPortArray), linkPortArrayElts)
       require(!arrayElements.isDefinedAt(linkPortArray), s"redefinition of link array elements at $linkPortArray")
-      arrayElements.put(linkPortArray, linkPortArrayElts.toSeq)
+      arrayElements.put(linkPortArray, linkPortArrayElts)
     }
 
     // Process assignment constraints
