@@ -96,6 +96,21 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.Library(library))
-    compiler.compile should equal(referenceElaborated)
+    val compiled = compiler.compile().contents.get
+
+    // Smaller comparisons to allow more targeted error messages
+    val compiledBlock = compiler.compile().contents.get
+    val referenceBlock = referenceElaborated.contents.get
+    compiledBlock.blocks("source") should equal(referenceBlock.blocks("source"))
+    compiledBlock.blocks("sink0") should equal(referenceBlock.blocks("sink0"))
+    compiledBlock.blocks("sink1") should equal(referenceBlock.blocks("sink1"))
+    compiledBlock.blocks("sink2") should equal(referenceBlock.blocks("sink2"))
+    compiledBlock.links should equal(referenceBlock.links)
+    compiledBlock.constraints("sourceConnect") should equal(referenceBlock.constraints("sourceConnect"))
+    compiledBlock.constraints("sink0Connect") should equal(referenceBlock.constraints("sink0Connect"))
+    compiledBlock.constraints should equal(referenceBlock.constraints)
+
+    // The catch-all equivalence comparison
+    compiled should equal(referenceElaborated)
   }
 }

@@ -62,6 +62,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.Ref
+    import edg.ref.ref
 
     // Elaborate ports, generating equivalence constraints as needed
     elaborateBlocklikePorts(path, block)
@@ -99,15 +100,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // For fully resolved arrays, allocate port numbers and set array elements
     linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
-      val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), i) =>
+      val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
         unresolvedConnects += ((blockPort, linkPortArray))
         block.mapConstraint(constrName) { constr =>
+          val steps = constr.expr.connected.get.linkPort.get.expr.ref.get.steps
+          require(steps.last == Ref.AllocateStep)
+          val indexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(index.toString))
           constr.update(
-            _.connected.linkPort.ref.steps :=
-                constr.expr.connected.get.linkPort.get.expr.ref.get.steps :+ Ref.AllocateStep
+            _.connected.linkPort.ref.steps := steps.slice(0, steps.length - 1) :+ indexStep
           )
         }
-        i.toString
+        index.toString
       }
       require(!arrayElements.isDefinedAt(linkPortArray), s"redefinition of link array elements at $linkPortArray")
       arrayElements.put(linkPortArray, linkPortArrayElts.toSeq)
