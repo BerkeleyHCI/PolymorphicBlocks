@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.init.init
 import edg.elem.elem
 import edg.ref.ref
 
@@ -20,8 +21,11 @@ object PortLike {
 
 }
 
-class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike {
+class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
+    with HasParams{
   override def isElaborated: Boolean = true
+
+  override def getParams: Map[String, init.ValInit] = pb.params
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

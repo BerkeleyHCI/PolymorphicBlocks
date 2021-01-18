@@ -7,6 +7,9 @@ import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.wir
 
 
+class IllegalConstraintException(msg: String) extends Exception(msg)
+
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   * TODO also needs a Python interface for generators, somewhere.
   *
@@ -21,6 +24,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   private val pendingLinks = mutable.Set[DesignPath]()  // block-likes pending elaboration
 
   private val constProp = new ConstProp()
+  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
   // Connect statements which have been read but the equivalence constraints have not been generated,
   // in the format (block port -> link port) for connects, or (exterior port -> interior port) for exports.
@@ -40,24 +44,55 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   processBlock(DesignPath.root, root)
 
+  protected def processParams(path: DesignPath, hasParams: wir.HasParams): Unit = {
+    for ((paramName, param) <- hasParams.getParams) {
+      constProp.addDeclaration(path + paramName, param)
+    }
+  }
 
-
-  protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
+  protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts,
+                                        isLink: Boolean = false): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
       case port: wir.LibraryElement =>
         val libraryPath = port.target
         debug(s"Elaborate Port at ${path + portName}: $libraryPath")
         val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+        newPort match {
+          case newPort: wir.Port =>
+            if (!isLink) {
+              processParams(path + portName, newPort)
+            }
+          case newPort => throw new NotImplementedError(s"unknown port type $port")
+        }
         hasPorts.elaborate(portName, newPort)
       case port: wir.PortArray =>
         val libraryPath = port.getType
         debug(s"Elaborate PortArray at ${path + portName}: $libraryPath")
         val newPorts = arrayElements(path + portName).map { index =>
-          index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+          val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+          newPort match {
+            case newPort: wir.Port =>
+              if (!isLink) {
+                processParams(path + portName, newPort)
+              }
+            case newPort => throw new NotImplementedError(s"unknown port type $port")
+          }
+          index -> newPort
         }.toMap
         port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }}
+  }
+
+  // TODO clean this up... by a lot
+  def processBlocklikeConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
+    case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
+      constProp.addAssignment(
+        IndirectDesignPath.fromDesignPath(path) ++ assign.dst.get,
+        path, assign.src.get,
+        SourceLocator.empty)  // TODO add sourcelocators
+    case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
+      assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
   }
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
@@ -66,36 +101,42 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Elaborate ports, generating equivalence constraints as needed
     elaborateBlocklikePorts(path, block)
+    processParams(path, block)
 
-    // Process connected constraints, registering into a pending connect map
+    // Process constraints:
+    // - for connected constraints, add into the connectivity map
+    // - for assignment constraints, add into const prop
+    // - for other constraints, add into asserts list
     // TODO ensure constraint processing order?
     // All ports that need to be allocated, with the list of connected ports,
     // as (port array path -> list(constraint name, block port))
     val linkPortAllocates = mutable.HashMap[DesignPath, mutable.ListBuffer[(String, DesignPath)]]()
-    block.getConstraints.foreach { case (name, constr) => constr.expr match {
+    block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
+        processBlocklikeConstraint(path, constrName, constr, expr)
       case expr.ValueExpr.Expr.Connected(connected) =>
         (connected.blockPort.get.expr.ref.get, connected.linkPort.get.expr.ref.get) match {
-          case (Ref.Allocate(blockPortlinkPortArray), Ref.Allocate(linkPortlinkPortArray)) =>
+          case (Ref.Allocate(blockPortArray), Ref.Allocate(linkPortArray)) =>
             throw new NotImplementedError("TODO: block port array <-> link port array")
-          case (Ref.Allocate(blockPortlinkPortArray), linkPort) =>
+          case (Ref.Allocate(blockPortArray), linkPort) =>
             throw new NotImplementedError("TODO: block port array <-> link port")
           case (blockPort, Ref.Allocate(linkPortArray)) =>
-            linkPortAllocates.getOrElseUpdate(path ++ linkPortArray, mutable.ListBuffer()) += ((name, path ++ blockPort))
+            linkPortAllocates.getOrElseUpdate(path ++ linkPortArray, mutable.ListBuffer()) += ((constrName, path ++ blockPort))
           case (blockPort, linkPort) =>
             unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (exported.exteriorPort.get.expr.ref.get, exported.internalBlockPort.get.expr.ref.get) match {
-          case (Ref.Allocate(blockPortlinkPortArray), Ref.Allocate(linkPortlinkPortArray)) =>
+          case (Ref.Allocate(extPortArray), Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port array <-> port array")
-          case (Ref.Allocate(blockPortlinkPortArray), linkPort) =>
+          case (Ref.Allocate(extPortArray), intPort) =>
             throw new NotImplementedError("TODO: export port array <-> port")
-          case (blockPort, Ref.Allocate(linkPortArray)) =>
+          case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
-          case (blockPort, linkPort) =>
-            unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
+          case (extPort, intPort) =>
+            unresolvedConnects += ((path ++ extPort, path ++ intPort))
         }
-      case _ =>  // ignore other constraints
+      case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
     }}
 
     // For fully resolved arrays, allocate port numbers and set array elements
@@ -153,14 +194,28 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
+    import edg.ExprBuilder.Ref
     // Elaborate ports, generating equivalence constraints as needed
-    elaborateBlocklikePorts(path, link)
+    elaborateBlocklikePorts(path, link, isLink=true)
+    processParams(path, link)
 
-    // Process connected constraints, registering into a pending connect map
-
-    // Process assignment constraints
-
-    // Queue up generators as needed
+    // Process constraints, as in the block case
+    link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
+        processBlocklikeConstraint(path, constrName, constr, expr)
+      case expr.ValueExpr.Expr.Exported(exported) =>
+        (exported.exteriorPort.get.expr.ref.get, exported.internalBlockPort.get.expr.ref.get) match {
+          case (Ref.Allocate(extPortArray), Ref.Allocate(intPortArray)) =>
+            throw new NotImplementedError("TODO: export port array <-> port array")
+          case (Ref.Allocate(extPortArray), intPort) =>
+            throw new NotImplementedError("TODO: export port array <-> port")
+          case (extPort, Ref.Allocate(intPortArray)) =>
+            throw new NotImplementedError("TODO: export port <-> port array")
+          case (extPort, intPort) =>
+            unresolvedConnects += ((path ++ extPort, path ++ intPort))
+        }
+      case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
+    }}
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (linkName <- link.getUnelaboratedLinks.keys) {

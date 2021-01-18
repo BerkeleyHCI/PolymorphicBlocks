@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.init.init
 import edg.elem.elem
 import edg.expr.expr
 import edg.ref.ref
@@ -15,12 +16,14 @@ trait LinkLike extends Pathable {
   * Similar to Block, see documentation there.
   */
 class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
-    with HasMutablePorts with HasMutableLinks with HasMutableConstraints  {
+    with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = mutable.LinkedHashMap() ++ pb.constraints
 
   override def isElaborated: Boolean = true
+
+  override def getParams: Map[String, init.ValInit] = pb.params
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

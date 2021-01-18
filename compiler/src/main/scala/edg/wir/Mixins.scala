@@ -2,6 +2,7 @@ package edg.wir
 
 import edg.elem.elem
 import edg.expr.expr
+import edg.init.init
 
 import scala.collection.mutable
 
@@ -63,4 +64,8 @@ trait HasMutableConstraints {
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
   }
+}
+
+trait HasParams {
+  def getParams: Map[String, init.ValInit]
 }

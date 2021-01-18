@@ -19,7 +19,7 @@ trait BlockLike extends Pathable {
   * This is to allow efficient transformation at any point in the design tree without re-writing the root.
   */
 class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends BlockLike
-    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints {
+    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
@@ -27,8 +27,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
 
   override def isElaborated: Boolean = true
 
-
-  def getParams: Map[String, init.ValInit] = pb.params  // immutable
+  override def getParams: Map[String, init.ValInit] = pb.params
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
