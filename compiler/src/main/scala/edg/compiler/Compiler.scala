@@ -50,6 +50,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
   }
 
+  def generateConnectedEquivalence(container1: IndirectDesignPath, container2: IndirectDesignPath,
+                                   hasParams: wir.HasParams): Unit = {
+    for ((paramName, param) <- hasParams.getParams) {
+      constProp.addEquality(container1 + paramName, container2 + paramName)
+    }
+  }
+
   protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts,
                                         isLink: Boolean = false): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
@@ -62,6 +69,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             if (!isLink) {
               processParams(path + portName, newPort)
             }
+            ???  // TODO generate connected equivalence
           case newPort => throw new NotImplementedError(s"unknown port type $port")
         }
         hasPorts.elaborate(portName, newPort)
