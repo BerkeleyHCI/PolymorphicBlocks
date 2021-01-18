@@ -8,7 +8,7 @@ import edg.ExprBuilder._
 
 
 class ExprEvaluateTest extends AnyFlatSpec {
-  "ExprEvaluate" should "evaluate properly"
+  behavior of "ExprEvaluate"
 
   val constProp = new ConstProp()
   val evalTest = new ExprEvaluate(constProp, IndirectDesignPath.root)

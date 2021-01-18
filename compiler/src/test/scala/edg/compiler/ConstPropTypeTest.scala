@@ -8,7 +8,7 @@ import edg.ExprBuilder._
 
 
 class ConstPropTypeTest extends AnyFlatSpec {
-  "ConstProp with types and declarations" should "work properly"
+  behavior of "ConstProp with types and declarations"
 
   it should "getUnsolved of declared types" in {
     val constProp = new ConstProp()

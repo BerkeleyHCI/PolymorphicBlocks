@@ -8,6 +8,7 @@ object ElemBuilder {
   import edg.elem.elem
   import edg.expr.expr
   import edg.ref.ref
+  import edg.schema.schema
   import ExprBuilder.ValueExpr
 
   // For constructing ValueExpr constraints typically used in top-level constraints
@@ -35,16 +36,19 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Block(params: Map[String, init.ValInit],
-              ports: Map[String, elem.PortLike],
-              blocks: Map[String, elem.BlockLike],
-              links: Map[String, elem.LinkLike],
+    def Block(params: Map[String, init.ValInit] = Map(),
+              ports: Map[String, elem.PortLike] = Map(),
+              blocks: Map[String, elem.BlockLike] = Map(),
+              links: Map[String, elem.LinkLike] = Map(),
               constraints: Map[String, expr.ValueExpr] = Map(),
-              superclasses: Seq[String] = Seq()
+              superclass: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
       params=params, ports=ports, blocks=blocks, links=links,
       constraints=constraints,
-      superclasses=superclasses.map { LibraryPath(_) }
+      superclasses=superclass match {
+        case "" => Seq()
+        case superclass => Seq(LibraryPath(superclass))
+      }
     )))
   }
 
@@ -56,15 +60,18 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Link(params: Map[String, init.ValInit],
-             ports: Map[String, elem.PortLike],
-             links: Map[String, elem.LinkLike],
+    def Link(params: Map[String, init.ValInit] = Map(),
+             ports: Map[String, elem.PortLike] = Map(),
+             links: Map[String, elem.LinkLike] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclasses: Seq[String] = Seq()
+             superclass: String = "",
             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Link(elem.Link(
       params=params, ports=ports, links=links,
       constraints=constraints,
-      superclasses=superclasses.map { LibraryPath(_) }
+      superclasses=superclass match {
+        case "" => Seq()
+        case superclass => Seq(LibraryPath(superclass))
+      }
     )))
   }
 
@@ -76,23 +83,29 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Port(params: Map[String, init.ValInit],
+    def Port(params: Map[String, init.ValInit] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclasses: Seq[String] = Seq()
+             superclass: String = ""
             ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Port(elem.Port(
       params=params,
       constraints=constraints,
-      superclasses=superclasses.map { LibraryPath(_) }
+      superclasses=superclass match {
+        case "" => Seq()
+        case superclass => Seq(LibraryPath(superclass))
+      }
     )))
 
-    def Bundle(params: Map[String, init.ValInit],
-               ports: Map[String, elem.PortLike],
+    def Bundle(params: Map[String, init.ValInit] = Map(),
+               ports: Map[String, elem.PortLike] = Map(),
                constraints: Map[String, expr.ValueExpr] = Map(),
-               superclasses: Seq[String] = Seq()
+               superclass: String = ""
               ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Bundle(elem.Bundle(
       params=params, ports=ports,
       constraints=constraints,
-      superclasses=superclasses.map { LibraryPath(_) }
+      superclasses=superclass match {
+        case "" => Seq()
+        case superclass => Seq(LibraryPath(superclass))
+      }
     )))
 
     // Unelaborated (unknown length) PortArray, containing just a superclass reference
@@ -113,4 +126,30 @@ object ElemBuilder {
   def LibraryPath(name: String): ref.LibraryPath = ref.LibraryPath(target=Some(
     ref.LocalStep(step=ref.LocalStep.Step.Name(name))
   ))
+
+  def Library(blocks: Map[String, elem.BlockLike] = Map(),
+              links: Map[String, elem.LinkLike] = Map(),
+              ports: Map[String, elem.PortLike] = Map()): schema.Library = {
+    schema.Library(root=Some(schema.Library.NS(members=
+      blocks.mapValues { _.`type` match {
+        case elem.BlockLike.Type.Hierarchy(block) =>
+          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.HierarchyBlock(block))
+        case block => throw new NotImplementedError(s"Unknown BlockLike in library $block")
+      }}.toMap ++
+      links.mapValues { _.`type` match {
+        case elem.LinkLike.Type.Link(link) =>
+          schema.Library.NS.Val (`type` = schema.Library.NS.Val.Type.Link (link) )
+        case link => throw new NotImplementedError(s"Unknown LinkLike in library $link")
+      }}.toMap ++
+      ports.mapValues { _.`is` match {
+        case elem.PortLike.Is.Port(port) =>
+          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Port(port))
+        case port => throw new NotImplementedError(s"Unknown PortLike in library $port")
+      }}.toMap
+    )))
+  }
+
+  def Design(block: elem.BlockLike): schema.Design = {
+    schema.Design(contents=Some(block.`type`.asInstanceOf[elem.BlockLike.Type.Hierarchy].value))
+  }
 }

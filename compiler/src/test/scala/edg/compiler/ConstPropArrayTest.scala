@@ -8,7 +8,7 @@ import edg.ExprBuilder._
 
 
 class ConstPropArrayTest extends AnyFlatSpec {
-  "ConstProp with array paths" should "work properly"
+  behavior of "ConstProp with array paths"
 
   import edg.expr.expr
 

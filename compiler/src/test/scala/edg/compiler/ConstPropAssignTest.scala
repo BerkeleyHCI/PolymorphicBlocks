@@ -8,7 +8,7 @@ import edg.ExprBuilder._
 
 
 class ConstPropAssignTest extends AnyFlatSpec {
-  "ConstProp" should "work properly"
+  behavior of "ConstProp with element values"
 
   it should "handle single-hop directed assignments" in {
     val constProp = new ConstProp()
