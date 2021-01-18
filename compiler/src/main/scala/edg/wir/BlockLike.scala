@@ -56,7 +56,7 @@ case class LibraryElement(target: ref.LibraryPath) extends PortLike with BlockLi
 trait HasMutablePorts {
   protected val ports: mutable.Map[String, PortLike]
 
-  def getUnelaboratedPorts: Map[String, PortLike] = ports.toMap.filter(_._2.isElaborated)
+  def getUnelaboratedPorts: Map[String, PortLike] = ports.toMap.filter(!_._2.isElaborated)
   def elaborate(name: String, port: PortLike): Unit = {
     require(!ports(name).isElaborated && port.isElaborated)
     ports.put(name, port)
@@ -72,7 +72,7 @@ trait HasMutablePorts {
 trait HasMutableBlocks {
   protected val blocks: mutable.Map[String, BlockLike]
 
-  def getUnelaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(_._2.isElaborated)
+  def getUnelaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(!_._2.isElaborated)
   def elaborate(name: String, block: BlockLike): Unit = {
     require(!blocks(name).isElaborated && block.isElaborated)
     blocks.put(name, block)
@@ -88,7 +88,7 @@ trait HasMutableBlocks {
 trait HasMutableLinks {
   protected val links: mutable.Map[String, LinkLike]
 
-  def getUnelaboratedLinks: Map[String, LinkLike] = links.toMap.filter(_._2.isElaborated)
+  def getUnelaboratedLinks: Map[String, LinkLike] = links.toMap.filter(!_._2.isElaborated)
   def elaborate(name: String, link: LinkLike): Unit = {
     require(!links(name).isElaborated && link.isElaborated)
     links.put(name, link)

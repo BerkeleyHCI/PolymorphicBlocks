@@ -84,7 +84,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     val block = new wir.Block(library.getBlock(libraryPath), Seq(libraryPath))
 
     // Process block
-    processBlock(path, resolveBlock(path))
+    processBlock(path, block)
 
     // Link block in parent
     parent.elaborate(name, block)
@@ -122,7 +122,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
 
     // Process block
-    processLink(path, resolveLink(path))
+    processLink(path, link)
 
     // Link block in parent
     parent.elaborate(name, link)
