@@ -5,6 +5,7 @@ import edg.schema.schema
 import edg.expr.expr
 import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.wir
+import edg.util.MutableBiMap
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -32,7 +33,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Connect statements which have been read but the equivalence constraints have not been generated,
   // in the format (block port -> link port) for connects, or (exterior port -> interior port) for exports.
   // Array ports must be resolved to the element level.
-  private val unresolvedConnects = mutable.Set[(DesignPath, DesignPath)]()
+  private val unresolvedConnects = MutableBiMap[DesignPath]()
   // For array points involved in connects, returns all the sub-elements
   private val arrayElements = mutable.HashMap[DesignPath, Seq[String]]()
   // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
@@ -66,6 +67,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Main issue is that PortArray doesn't have a meaningful elaborate(), instead using bulk setPorts
     case port: wir.Port =>
       processParams(path, port)
+      unresolvedConnects.get(path) match {
+        case Some(connectedPath) =>
+          generateConnectedEquivalence(IndirectDesignPath.fromDesignPath(path),
+            IndirectDesignPath.fromDesignPath(connectedPath),
+            port)
+          unresolvedConnects.remove(path).get
+        case None =>  // ignored
+      }
     case port: wir.PortArray =>
       val libraryPath = port.getType
       debug(s"Elaborate PortArray at ${path}: $libraryPath")
@@ -133,7 +142,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (blockPort, Ref.Allocate(linkPortArray)) =>
             linkPortAllocates.getOrElseUpdate(path ++ linkPortArray, mutable.ListBuffer()) += ((constrName, path ++ blockPort))
           case (blockPort, linkPort) =>
-            unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
+            unresolvedConnects.put(path ++ blockPort, path ++ linkPort)
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (exported.exteriorPort.get.expr.ref.get, exported.internalBlockPort.get.expr.ref.get) match {
@@ -144,7 +153,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            unresolvedConnects += ((path ++ extPort, path ++ intPort))
+            unresolvedConnects.put(path ++ extPort, path ++ intPort)
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
     }}
@@ -152,7 +161,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // For fully resolved arrays, allocate port numbers and set array elements
     linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
       val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
-        unresolvedConnects += ((blockPort, linkPortArray))
+        unresolvedConnects.put(blockPort, linkPortArray + index.toString)
         block.mapConstraint(constrName) { constr =>
           val steps = constr.expr.connected.get.linkPort.get.expr.ref.get.steps
           require(steps.last == Ref.AllocateStep)
@@ -222,7 +231,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            unresolvedConnects += ((path ++ extPort, path ++ intPort))
+            unresolvedConnects.put(path ++ extPort, path ++ intPort)
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
     }}
