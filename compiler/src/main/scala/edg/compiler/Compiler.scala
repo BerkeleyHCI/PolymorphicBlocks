@@ -2,7 +2,7 @@ package edg.compiler
 
 import scala.collection.mutable
 import edg.schema.schema
-import edg.wir.DesignPath
+import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.wir
 
 
@@ -15,6 +15,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   private val pending = mutable.Set[DesignPath]()  // block-likes pending elaboration
   private val constProp = new ConstProp()
 
+  // Connect statements which have been read but the equivalence constraints have not been generated,
+  // in the format (block port -> link port) for connects, or (exterior port -> interior port) for exports.
+  // Array ports must be resolved to the element level.
+  private val unresolvedConnects = mutable.Set[(DesignPath, DesignPath)]()
+  // For array points involved in connects, returns all the sub-elements
+  private val arrayElements = mutable.HashMap[DesignPath, Set[String]]()
+  // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
+  // constraint name))
+  private val pendingLength = mutable.HashMap[DesignPath, (DesignPath, String)]()
+
   // Seed compilation with the root
   //
   private val root = new wir.Block(inputDesignPb.contents.get)
@@ -24,9 +34,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   processBlock(DesignPath.root, root)
 
 
-  protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
-    // TODO elaborate ports
 
+  protected def elaborateBlocklikePorts(hasPorts: wir.HasMutablePorts): Unit = {
+    for ((portName, portLib) <- hasPorts.getUnelaboratedPorts) {
+      val portLibraryPath = portLib.asInstanceOf[wir.LibraryElement].target
+      val port = wir.PortLike.fromIrPort(library.getPort(portLibraryPath))
+      hasPorts.elaborate(portName, port)
+    }
+  }
+
+  protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
+    // Elaborate ports, generating equivalence constraints as needed
+    elaborateBlocklikePorts(block)
+
+    // Process connected constraints, registering into a pending connect map
+
+    // Process assignment constraints
+
+    // Queue up generators as needed
+
+    // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (rootBlockName <- block.getUnelaboratedBlocks.keys) {
       pending += path + rootBlockName
     }
@@ -41,8 +68,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     * Expands connects in the parent, as needed.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
-    val parent = resolveBlock(path.parent)
+    val (parentPath, blockName) = path.split
+
+    // Instantiate block from library element to wir.Block
+    val parent = resolveBlock(parentPath)
+    val libraryPath = parent.getUnelaboratedBlocks(blockName).asInstanceOf[wir.LibraryElement].target
+    val block = new wir.Block(library.getBlock(libraryPath))
+
+    // Process block
     processBlock(path, resolveBlock(path))
+
+    // Link block in parent
+    parent.elaborate(blockName, block)
   }
 
   /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),

@@ -4,6 +4,7 @@ import edg.elem.elem
 import edg.expr.expr
 import edg.init.init
 import edg.ref.ref
+import jdk.jshell.spi.ExecutionControl.NotImplementedException
 
 import scala.collection.mutable
 
@@ -36,7 +37,17 @@ trait PortLike extends Pathable
 trait BlockLike extends Pathable
 trait LinkLike extends Pathable
 
-class LibraryElement(target: ref.LibraryPath) extends PortLike with BlockLike with LinkLike {
+object PortLike {
+  import edg.IrPort
+  def fromIrPort(irPort: IrPort): PortLike = irPort match {
+    case IrPort.Port(port) => new Port(port)
+    case IrPort.Bundle(port) => ???
+    case irPort => throw new NotImplementedException(s"Can't construct PortLike from $irPort")
+  }
+
+}
+
+case class LibraryElement(target: ref.LibraryPath) extends PortLike with BlockLike with LinkLike {
   def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException("Can't resolve LibraryElement")
   override def isElaborated: Boolean = false
 }
@@ -90,6 +101,25 @@ trait HasMutableLinks {
     }}
 }
 
+trait HasMutableConstraints {
+  protected val constraints: mutable.Map[String, expr.ValueExpr]
+
+  def getConstraints: Map[String, expr.ValueExpr] = constraints.toMap
+}
+
+
+class Port(pb: elem.Port) extends PortLike {
+  override def isElaborated: Boolean = true
+
+  override def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case suffix => throw new InvalidPathException(s"No suffix $suffix in Port")
+  }
+
+  def toPb: elem.Port = {
+    pb
+  }
+}
 
 /**
   * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
@@ -97,15 +127,15 @@ trait HasMutableLinks {
   * BlockLike / LinkLike lib_elem are kept in the proto, unmodified.
   * This is to allow efficient transformation at any point in the design tree without re-writing the root.
   */
-class Block(pb: elem.HierarchyBlock) extends BlockLike with HasMutablePorts with HasMutableBlocks with HasMutableLinks {
+class Block(pb: elem.HierarchyBlock) extends BlockLike
+    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints {
   override protected val ports: mutable.Map[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.Map[String, BlockLike] = parseBlocks(pb.blocks)
   override protected val links: mutable.Map[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.Map[String, expr.ValueExpr] = mutable.HashMap() ++ pb.constraints
 
   override def isElaborated: Boolean = true
 
-
-  private val constraints = mutable.HashMap[String, expr.ValueExpr]() ++ pb.constraints
 
   def getParams: Map[String, init.ValInit] = pb.params  // immutable
 
@@ -123,19 +153,34 @@ class Block(pb: elem.HierarchyBlock) extends BlockLike with HasMutablePorts with
       }
   }
 
-  // Serializes this to protobuf
   def toPb: elem.HierarchyBlock = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty)
-    ???
+    pb.copy(
+      ports=ports.view.mapValues {
+        case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
+        case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
+      }.toMap,
+      blocks=blocks.view.mapValues {
+        case block: Block => elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(block.toPb))
+        case block => throw new IllegalArgumentException(s"Unexpected block $block in serializing block")
+      }.toMap,
+      links=links.view.mapValues {
+        case link: Link => elem.LinkLike(`type`=elem.LinkLike.Type.Link(link.toPb))
+        case link => throw new IllegalArgumentException(s"Unexpected block $link in serializing block")
+      }.toMap,
+      constraints=constraints.toMap,
+    )
   }
 }
 
 /**
   * Similar to Block, see documentation there.
   */
-class Link(var pb: elem.Link) extends LinkLike with HasMutablePorts with HasMutableLinks {
+class Link(pb: elem.Link) extends LinkLike with HasMutablePorts with HasMutableLinks with HasMutableConstraints  {
   override protected val ports: mutable.Map[String, PortLike] = parsePorts(pb.ports)
   override protected val links: mutable.Map[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.Map[String, expr.ValueExpr] = mutable.HashMap() ++ pb.constraints
+
 
   override def isElaborated: Boolean = true
 
@@ -155,7 +200,17 @@ class Link(var pb: elem.Link) extends LinkLike with HasMutablePorts with HasMuta
   // Serializes this to protobuf
   def toPb: elem.Link = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty)
-    ???
+    pb.copy(
+      ports=ports.view.mapValues {
+        case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
+        case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
+      }.toMap,
+      links=links.view.mapValues {
+        case link: Link => elem.LinkLike(`type`=elem.LinkLike.Type.Link(link.toPb))
+        case link => throw new IllegalArgumentException(s"Unexpected block $link in serializing block")
+      }.toMap,
+      constraints=constraints.toMap,
+    )
   }
 }
 

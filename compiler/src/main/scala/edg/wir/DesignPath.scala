@@ -15,9 +15,6 @@ object IndirectStep {  // namespace
   case class ConnectedLink() extends IndirectStep {  // block-side port -> link
     override def toString: String = "CONNECTED_LINK"
   }
-  case class ConnectedPort() extends IndirectStep {  // link-side port -> block-side port (authoritative)
-    override def toString: String = "CONNECTED_PORT"
-  }
   case class Element(name: String) extends IndirectStep {
     override def toString = name
   }
@@ -58,10 +55,11 @@ object IndirectDesignPath {
   * TODO: should exclude link ports, since the block side port is treated as authoritative.
   */
 case class DesignPath(steps: Seq[String]) {
-  // Returns the DesignPath minus the last element. Must not be empty.
-  def parent: DesignPath = {
+  // Separates into (prefix, last) where last is the last element, and prefix is a DesignPath of all but the last
+  // element.
+  def split: (DesignPath, String) = {
     require(steps.nonEmpty)
-    DesignPath(steps.slice(0, steps.length - 1))
+    (DesignPath(steps.slice(0, steps.length - 1)), steps.last)
   }
 
   def +(elem: String): DesignPath = {

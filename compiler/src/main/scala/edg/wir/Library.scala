@@ -3,7 +3,7 @@ package edg.wir
 import edg.elem.elem
 import edg.ref.ref
 import edg.schema.schema
-import edg.IrPorts
+import edg.IrPort
 
 
 class Library(pb: schema.Library) {
@@ -35,9 +35,9 @@ class Library(pb: schema.Library) {
     case None => throw new NoSuchElementException(s"Library does not contain $path")
   }
 
-  def getPort(path: ref.LibraryPath): IrPorts = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.Port(member)) => IrPorts.Port(member)
-    case Some(schema.Library.NS.Val.Type.Bundle(member)) => IrPorts.Bundle(member)
+  def getPort(path: ref.LibraryPath): IrPort = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.Port(member)) => IrPort.Port(member)
+    case Some(schema.Library.NS.Val.Type.Bundle(member)) => IrPort.Bundle(member)
     case Some(member) => throw new NoSuchElementException(s"Library element at $path not a port-like, got ${member.getClass}")
     case None => throw new NoSuchElementException(s"Library does not contain $path")
   }
