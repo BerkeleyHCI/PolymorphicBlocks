@@ -7,7 +7,9 @@ import edg.ref.ref
 import scala.collection.mutable
 
 
-trait LinkLike extends Pathable
+trait LinkLike extends Pathable {
+  def toPb: elem.LinkLike
+}
 
 /**
   * Similar to Block, see documentation there.
@@ -18,9 +20,7 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
   override protected val links: mutable.Map[String, LinkLike] = parseLinks(pb.links)
   override protected val constraints: mutable.Map[String, expr.ValueExpr] = mutable.HashMap() ++ pb.constraints
 
-
   override def isElaborated: Boolean = true
-
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -35,19 +35,17 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
   }
 
   // Serializes this to protobuf
-  def toPb: elem.Link = {
+  def toEltPb: elem.Link = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty)
     pb.copy(
       superclasses=superclasses,
-      ports=ports.view.mapValues {
-        case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
-        case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
-      }.toMap,
-      links=links.view.mapValues {
-        case link: Link => elem.LinkLike(`type`=elem.LinkLike.Type.Link(link.toPb))
-        case link => throw new IllegalArgumentException(s"Unexpected block $link in serializing block")
-      }.toMap,
-      constraints=constraints.toMap,
+      ports=ports.view.mapValues(_.toPb).toMap,
+      links=links.view.mapValues(_.toPb).toMap,
+      constraints=constraints.toMap
     )
+  }
+
+  override def toPb: elem.LinkLike = {
+    elem.LinkLike(`type`=elem.LinkLike.Type.Link(toEltPb))
   }
 }

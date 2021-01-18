@@ -8,7 +8,9 @@ import edg.ref.ref
 import scala.collection.mutable
 
 
-trait BlockLike extends Pathable
+trait BlockLike extends Pathable {
+  def toPb: elem.BlockLike
+}
 
 /**
   * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
@@ -42,23 +44,18 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
       }
   }
 
-  def toPb: elem.HierarchyBlock = {
+  def toEltPb: elem.HierarchyBlock = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty)
     pb.copy(
       superclasses=superclasses,
-      ports=ports.view.mapValues {
-        case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
-        case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
-      }.toMap,
-      blocks=blocks.view.mapValues {
-        case block: Block => elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(block.toPb))
-        case block => throw new IllegalArgumentException(s"Unexpected block $block in serializing block")
-      }.toMap,
-      links=links.view.mapValues {
-        case link: Link => elem.LinkLike(`type`=elem.LinkLike.Type.Link(link.toPb))
-        case link => throw new IllegalArgumentException(s"Unexpected block $link in serializing block")
-      }.toMap,
+      ports=ports.view.mapValues(_.toPb).toMap,
+      blocks=blocks.view.mapValues(_.toPb).toMap,
+      links=links.view.mapValues(_.toPb).toMap,
       constraints=constraints.toMap,
     )
+  }
+
+  override def toPb: elem.BlockLike = {
+    elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(toEltPb))
   }
 }

@@ -17,7 +17,8 @@ trait HasMutablePorts {
 
   protected def parsePorts(pb: Map[String, elem.PortLike]): mutable.Map[String, PortLike] =
     mutable.HashMap[String, PortLike]() ++ pb.mapValues { _.`is` match {
-      case elem.PortLike.Is.LibElem(like) => new LibraryElement(like)
+      case elem.PortLike.Is.LibElem(like) => LibraryElement(like)
+      case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-port $like")
     }}
 }
@@ -33,7 +34,7 @@ trait HasMutableBlocks {
 
   protected def parseBlocks(pb: Map[String, elem.BlockLike]): mutable.Map[String, BlockLike] =
     mutable.HashMap[String, BlockLike]() ++ pb.mapValues { _.`type` match {
-      case elem.BlockLike.Type.LibElem(like) => new LibraryElement(like)
+      case elem.BlockLike.Type.LibElem(like) => LibraryElement(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
     }}
 }
@@ -49,7 +50,7 @@ trait HasMutableLinks {
 
   protected def parseLinks(pb: Map[String, elem.LinkLike]): mutable.Map[String, LinkLike] =
     mutable.HashMap[String, LinkLike]() ++ pb.mapValues { _.`type` match {
-      case elem.LinkLike.Type.LibElem(like) => new LibraryElement(like)
+      case elem.LinkLike.Type.LibElem(like) => LibraryElement(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
     }}
 }

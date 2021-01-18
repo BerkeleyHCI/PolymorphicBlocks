@@ -43,12 +43,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
 
   protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
-    for ((portName, portLib) <- hasPorts.getUnelaboratedPorts) {
-      val portLibraryPath = portLib.asInstanceOf[wir.LibraryElement].target
-      debug(s"Elaborate port at ${path + portName}: $portLibraryPath")
-      val port = wir.PortLike.fromIrPort(library.getPort(portLibraryPath), portLibraryPath)
-      hasPorts.elaborate(portName, port)
-    }
+    for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
+      case port: wir.LibraryElement =>
+        val libraryPath = port.target
+        debug(s"Elaborate Port at ${path + portName}: $libraryPath")
+        val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+        hasPorts.elaborate(portName, newPort)
+      case port: wir.PortArray =>
+        val libraryPath = port.getType
+        debug(s"Elaborate PortArray at ${path + portName}: $libraryPath")
+        val newPorts = arrayElements(path + portName).map { index =>
+          index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+        }.toMap
+        port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
+      case port => throw new NotImplementedError(s"unknown unelaborated port $port")
+    }}
   }
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
@@ -74,6 +83,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (blockPort, linkPort) =>
             unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
         }
+      case expr.ValueExpr.Expr.Exported(exported) =>
+        (exported.exteriorPort.get.expr.ref.get, exported.internalBlockPort.get.expr.ref.get) match {
+          case (Ref.Allocate(blockPortlinkPortArray), Ref.Allocate(linkPortlinkPortArray)) =>
+            throw new NotImplementedError("TODO: export port array <-> port array")
+          case (Ref.Allocate(blockPortlinkPortArray), linkPort) =>
+            throw new NotImplementedError("TODO: export port array <-> port")
+          case (blockPort, Ref.Allocate(linkPortArray)) =>
+            throw new NotImplementedError("TODO: export port <-> port array")
+          case (blockPort, linkPort) =>
+            unresolvedConnects += ((path ++ blockPort, path ++ linkPort))
+        }
+      case _ =>  // ignore other constraints
     }}
 
     // For fully resolved arrays, allocate port numbers and set array elements
