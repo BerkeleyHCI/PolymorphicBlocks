@@ -8,6 +8,8 @@ import edg.ExprBuilder.Ref
 import edg.wir
 
 
+/** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
+  */
 class CompilerBlockExpansionTest extends AnyFlatSpec {
   val library = Library(
     ports = Map(
