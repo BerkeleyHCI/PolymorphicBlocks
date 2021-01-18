@@ -84,7 +84,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "link" -> Link.Link(superclass="link",
           ports = Map(
             "source" -> Port.Port(superclass="sourcePort"),
-            "sinks" -> Port.Port(superclass="sinkPort"),
+            "sinks" -> Port.Array(superclass="sinkPort", 3, Port.Port(superclass="sinkPort")),
           )
         )
       ),
