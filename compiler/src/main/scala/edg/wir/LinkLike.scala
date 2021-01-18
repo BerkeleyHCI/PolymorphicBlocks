@@ -16,9 +16,9 @@ trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints  {
-  override protected val ports: mutable.Map[String, PortLike] = parsePorts(pb.ports)
-  override protected val links: mutable.Map[String, LinkLike] = parseLinks(pb.links)
-  override protected val constraints: mutable.Map[String, expr.ValueExpr] = mutable.HashMap() ++ pb.constraints
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = mutable.LinkedHashMap() ++ pb.constraints
 
   override def isElaborated: Boolean = true
 

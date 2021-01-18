@@ -42,7 +42,7 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike {
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   require(pb.superclasses.length == 1)
 
-  override protected val ports: mutable.Map[String, PortLike] = mutable.Map()
+  override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
 
   override def isElaborated: Boolean = ports.nonEmpty
 
