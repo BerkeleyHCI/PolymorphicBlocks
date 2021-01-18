@@ -66,12 +66,12 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         ),
         constraints = Map(
           "calcSourceFloat" -> ValueExpr.Assign(Ref("sourceFloat"), ValueExpr.Ref("source", "floatVal")),
-          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.Reduce(Op.SUM,
-            ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
-          )),
-          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.Reduce(Op.INTERSECTION,
-            ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal"))
-          )),
+//          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.Reduce(Op.SUM,
+//            ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
+//          )),
+//          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.Reduce(Op.INTERSECTION,
+//            ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal"))
+//          )),
         )
       ),
     )
@@ -88,7 +88,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
       ),
       constraints = Map(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
-        "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sink"))),
+        "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
         "sink0SumVal" -> Constraint.Assign(Ref("sink0", "sumVal"), ValueExpr.Literal(1.0)),
         "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
