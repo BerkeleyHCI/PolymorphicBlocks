@@ -39,8 +39,8 @@ trait LinkLike extends Pathable
 
 object PortLike {
   import edg.IrPort
-  def fromIrPort(irPort: IrPort): PortLike = irPort match {
-    case IrPort.Port(port) => new Port(port)
+  def fromIrPort(irPort: IrPort, libraryPath: ref.LibraryPath): PortLike = irPort match {
+    case IrPort.Port(port) => new Port(port, Seq(libraryPath))
     case IrPort.Bundle(port) => ???
     case irPort => throw new NotImplementedException(s"Can't construct PortLike from $irPort")
   }
@@ -108,7 +108,7 @@ trait HasMutableConstraints {
 }
 
 
-class Port(pb: elem.Port) extends PortLike {
+class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike {
   override def isElaborated: Boolean = true
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
@@ -117,7 +117,9 @@ class Port(pb: elem.Port) extends PortLike {
   }
 
   def toPb: elem.Port = {
-    pb
+    pb.copy(
+      superclasses = superclasses
+    )
   }
 }
 
@@ -127,7 +129,7 @@ class Port(pb: elem.Port) extends PortLike {
   * BlockLike / LinkLike lib_elem are kept in the proto, unmodified.
   * This is to allow efficient transformation at any point in the design tree without re-writing the root.
   */
-class Block(pb: elem.HierarchyBlock) extends BlockLike
+class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints {
   override protected val ports: mutable.Map[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.Map[String, BlockLike] = parseBlocks(pb.blocks)
@@ -156,6 +158,7 @@ class Block(pb: elem.HierarchyBlock) extends BlockLike
   def toPb: elem.HierarchyBlock = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty)
     pb.copy(
+      superclasses=superclasses,
       ports=ports.view.mapValues {
         case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
         case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
@@ -176,7 +179,8 @@ class Block(pb: elem.HierarchyBlock) extends BlockLike
 /**
   * Similar to Block, see documentation there.
   */
-class Link(pb: elem.Link) extends LinkLike with HasMutablePorts with HasMutableLinks with HasMutableConstraints  {
+class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
+    with HasMutablePorts with HasMutableLinks with HasMutableConstraints  {
   override protected val ports: mutable.Map[String, PortLike] = parsePorts(pb.ports)
   override protected val links: mutable.Map[String, LinkLike] = parseLinks(pb.links)
   override protected val constraints: mutable.Map[String, expr.ValueExpr] = mutable.HashMap() ++ pb.constraints
@@ -201,6 +205,7 @@ class Link(pb: elem.Link) extends LinkLike with HasMutablePorts with HasMutableL
   def toPb: elem.Link = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty)
     pb.copy(
+      superclasses=superclasses,
       ports=ports.view.mapValues {
         case port: Port => elem.PortLike(is=elem.PortLike.Is.Port(port.toPb))
         case port => throw new IllegalArgumentException(s"Unexpected port $port in serializing block")
@@ -211,14 +216,5 @@ class Link(pb: elem.Link) extends LinkLike with HasMutablePorts with HasMutableL
       }.toMap,
       constraints=constraints.toMap,
     )
-  }
-}
-
-
-class Design {
-  val root: Pathable = ???  // TODO define me
-
-  def resolve(path: DesignPath): Pathable = {
-    root.resolve(path.steps)
   }
 }

@@ -150,6 +150,9 @@ object ElemBuilder {
   }
 
   def Design(block: elem.BlockLike): schema.Design = {
-    schema.Design(contents=Some(block.`type`.asInstanceOf[elem.BlockLike.Type.Hierarchy].value))
+    Design(block.`type`.asInstanceOf[elem.BlockLike.Type.Hierarchy].value)
+  }
+  def Design(block: elem.HierarchyBlock): schema.Design = {
+    schema.Design(contents=Some(block))
   }
 }

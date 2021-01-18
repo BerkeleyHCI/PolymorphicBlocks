@@ -12,7 +12,9 @@ import edg.wir
   * During the compilation process, internal data structures are mutated.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
-  private val pending = mutable.Set[DesignPath]()  // block-likes pending elaboration
+  private val pendingBlocks = mutable.Set[DesignPath]()  // block-likes pending elaboration
+  private val pendingLinks = mutable.Set[DesignPath]()  // block-likes pending elaboration
+
   private val constProp = new ConstProp()
 
   // Connect statements which have been read but the equivalence constraints have not been generated,
@@ -27,7 +29,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   // Seed compilation with the root
   //
-  private val root = new wir.Block(inputDesignPb.contents.get)
+  private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
 
@@ -38,7 +40,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def elaborateBlocklikePorts(hasPorts: wir.HasMutablePorts): Unit = {
     for ((portName, portLib) <- hasPorts.getUnelaboratedPorts) {
       val portLibraryPath = portLib.asInstanceOf[wir.LibraryElement].target
-      val port = wir.PortLike.fromIrPort(library.getPort(portLibraryPath))
+      val port = wir.PortLike.fromIrPort(library.getPort(portLibraryPath), portLibraryPath)
       hasPorts.elaborate(portName, port)
     }
   }
@@ -54,11 +56,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Queue up generators as needed
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
-    for (rootBlockName <- block.getUnelaboratedBlocks.keys) {
-      pending += path + rootBlockName
+    for (blockName <- block.getUnelaboratedBlocks.keys) {
+      pendingBlocks += path + blockName
     }
-    for (rootLinkName <- block.getUnelaboratedLinks.keys) {
-      pending += path + rootLinkName
+    for (linkName <- block.getUnelaboratedLinks.keys) {
+      pendingLinks += path + linkName
     }
   }
 
@@ -68,18 +70,34 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     * Expands connects in the parent, as needed.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
-    val (parentPath, blockName) = path.split
+    val (parentPath, name) = path.split
 
     // Instantiate block from library element to wir.Block
     val parent = resolveBlock(parentPath)
-    val libraryPath = parent.getUnelaboratedBlocks(blockName).asInstanceOf[wir.LibraryElement].target
-    val block = new wir.Block(library.getBlock(libraryPath))
+    val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.LibraryElement].target
+    val block = new wir.Block(library.getBlock(libraryPath), Seq(libraryPath))
 
     // Process block
     processBlock(path, resolveBlock(path))
 
     // Link block in parent
-    parent.elaborate(blockName, block)
+    parent.elaborate(name, block)
+  }
+
+  protected def processLink(path: DesignPath, link: wir.Link): Unit = {
+    // Elaborate ports, generating equivalence constraints as needed
+    elaborateBlocklikePorts(link)
+
+    // Process connected constraints, registering into a pending connect map
+
+    // Process assignment constraints
+
+    // Queue up generators as needed
+
+    // Queue up sub-trees that need elaboration - needs to be post-generate for generators
+    for (linkName <- link.getUnelaboratedLinks.keys) {
+      pendingLinks += path + linkName
+    }
   }
 
   /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
@@ -88,12 +106,33 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     * Expands connects in the parent, as needed.
     */
   protected def elaborateLink(path: DesignPath): Unit = {
+    val (parentPath, name) = path.split
 
+    // Instantiate block from library element to wir.Block
+    val parent = resolveBlock(parentPath)  // TODO what if this is a link?
+    val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LibraryElement].target
+    val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
+
+    // Process block
+    processLink(path, resolveLink(path))
+
+    // Link block in parent
+    parent.elaborate(name, link)
   }
 
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
   def compile(): schema.Design = {
-    ???
+    import edg.ElemBuilder
+    while (pendingBlocks.nonEmpty && pendingLinks.nonEmpty) {
+      if (pendingBlocks.nonEmpty) {
+        val nextPath = pendingBlocks.drop(1).head
+        elaborateBlock(nextPath)
+      } else if (pendingLinks.nonEmpty) {
+        val nextPath = pendingLinks.drop(1).head
+        elaborateLink(nextPath)
+      }
+    }
+    ElemBuilder.Design(root.toPb)
   }
 }
