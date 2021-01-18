@@ -73,7 +73,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
       ),
       SourceLocator.empty
     )
-    constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(RangeValue(3.0f, 4.0f)))
+    constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(RangeValue(3.0, 4.0)))
   }
 
   it should "fail to SetExtract for different values" in {

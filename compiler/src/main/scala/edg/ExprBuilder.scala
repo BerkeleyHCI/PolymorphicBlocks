@@ -57,9 +57,14 @@ object ExprBuilder {
     def Ref(path: String*): expr.ValueExpr = expr.ValueExpr( // convenience method
       expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref(path: _*))
     )
+
+    def Assign(dst: ref.LocalPath, src: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.Assign(expr.AssignExpr(dst=Some(dst), src=Some(src)))
+    )
   }
 
   object Literal {
+    def Floating(value: Double): lit.ValueLit = Floating(value.toFloat)
     def Floating(value: Float): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Floating(lit.FloatLit(value)))
 
     def Integer(value: BigInt): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Integer(lit.IntLit(value.toLong)))

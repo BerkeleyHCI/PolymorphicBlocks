@@ -17,6 +17,9 @@ sealed trait FloatPromotable extends ExprValue {
   def toFloat: Float
 }
 
+object FloatValue {
+  def apply(value: Double): FloatValue = FloatValue(value.toFloat)  // convenience method
+}
 case class FloatValue(value: Float) extends FloatPromotable {
   override def toFloat: Float = value
 }
@@ -26,6 +29,7 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 }
 
 object RangeValue {
+  def apply(lower: Double, upper: Double): RangeValue = RangeValue(lower.toFloat, upper.toFloat)  // convenience method
   def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
   def isEmpty(value: RangeValue): Boolean = value.lower.isNaN && value.upper.isNaN
 }

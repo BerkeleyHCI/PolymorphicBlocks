@@ -26,6 +26,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   private val constProp = new ConstProp()
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
+  // TODO clean up this API?
+  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
+
   // Connect statements which have been read but the equivalence constraints have not been generated,
   // in the format (block port -> link port) for connects, or (exterior port -> interior port) for exports.
   // Array ports must be resolved to the element level.
@@ -50,44 +53,43 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
   }
 
-  def generateConnectedEquivalence(container1: IndirectDesignPath, container2: IndirectDesignPath,
+  protected def generateConnectedEquivalence(container1: IndirectDesignPath, container2: IndirectDesignPath,
                                    hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
       constProp.addEquality(container1 + paramName, container2 + paramName)
     }
   }
 
-  protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts,
-                                        isLink: Boolean = false): Unit = {
+  protected def processPort(path: DesignPath, port: wir.PortLike): Unit = port match {
+    // TODO better semantics and consistency between this and processBlock/processLink
+    // Unlike those, this is called with the final port object (after LibraryElements replaced).
+    // Main issue is that PortArray doesn't have a meaningful elaborate(), instead using bulk setPorts
+    case port: wir.Port =>
+      processParams(path, port)
+    case port: wir.PortArray =>
+      val libraryPath = port.getType
+      debug(s"Elaborate PortArray at ${path}: $libraryPath")
+      // TODO can / should this share the LibraryElement instantiation logic w/ elaborateBlocklikePorts?
+      val newPorts = arrayElements(path).map { index =>
+        index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+      }.toMap
+      port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
+      newPorts.foreach { case (index, subport) =>
+        processPort(path + index, subport)
+      }
+    case port => throw new NotImplementedError(s"unknown unelaborated port $port")
+  }
+
+  protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
       case port: wir.LibraryElement =>
         val libraryPath = port.target
         debug(s"Elaborate Port at ${path + portName}: $libraryPath")
         val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
-        newPort match {
-          case newPort: wir.Port =>
-            if (!isLink) {
-              processParams(path + portName, newPort)
-            }
-            ???  // TODO generate connected equivalence
-          case newPort => throw new NotImplementedError(s"unknown port type $port")
-        }
         hasPorts.elaborate(portName, newPort)
+        processPort(path + portName, newPort)
       case port: wir.PortArray =>
-        val libraryPath = port.getType
-        debug(s"Elaborate PortArray at ${path + portName}: $libraryPath")
-        val newPorts = arrayElements(path + portName).map { index =>
-          val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
-          newPort match {
-            case newPort: wir.Port =>
-              if (!isLink) {
-                processParams(path + portName, newPort)
-              }
-            case newPort => throw new NotImplementedError(s"unknown port type $port")
-          }
-          index -> newPort
-        }.toMap
-        port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
+        processPort(path + portName, port)
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }}
   }
@@ -204,7 +206,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.Ref
     // Elaborate ports, generating equivalence constraints as needed
-    elaborateBlocklikePorts(path, link, isLink=true)
+    elaborateBlocklikePorts(path, link)
     processParams(path, link)
 
     // Process constraints, as in the block case
