@@ -132,12 +132,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     */
   def compile(): schema.Design = {
     import edg.ElemBuilder
-    while (pendingBlocks.nonEmpty && pendingLinks.nonEmpty) {
+    while (pendingBlocks.nonEmpty || pendingLinks.nonEmpty) {
       if (pendingBlocks.nonEmpty) {
-        val nextPath = pendingBlocks.drop(1).head
+        val nextPath = pendingBlocks.head
+        pendingBlocks.subtractOne(nextPath)
+        debug(s"Pick block to elaborate: $nextPath")
         elaborateBlock(nextPath)
       } else if (pendingLinks.nonEmpty) {
-        val nextPath = pendingLinks.drop(1).head
+        val nextPath = pendingLinks.head
+        pendingLinks.subtractOne(nextPath)
+        debug(s"Pick link to elaborate: $nextPath")
         elaborateLink(nextPath)
       }
     }
