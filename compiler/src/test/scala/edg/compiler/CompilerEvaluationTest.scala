@@ -6,7 +6,7 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir
-import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.wir.{IndirectDesignPath, IndirectStep}
 
 
 /** Tests compiler parameter and expression evaluation using ASSIGN constraints.
@@ -118,6 +118,14 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath.root + "link" + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
 
     // check CONNECTED_LINK
-    ???
+    val linkThroughSource = IndirectDesignPath.root + "source" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSource + "sinkSum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(linkThroughSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+
+    val linkThroughSink0 = IndirectDesignPath.root + "sink0" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSink0 + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
   }
 }
