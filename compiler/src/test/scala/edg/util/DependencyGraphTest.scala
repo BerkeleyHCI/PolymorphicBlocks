@@ -26,7 +26,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getReady() should equal(Set())
   }
 
-  it should "return set vallues" in {
+  it should "return set values" in {
     val dep = DependencyGraph[Int, Int]()
     dep.getValue(0) should equal(None)
     dep.setValue(0, 10)
@@ -79,5 +79,23 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getReady() should equal(Set(2))
     dep.setValue(2, 0)
     dep.getReady() should equal(Set(3))
+  }
+
+  it should "not include value set in ready" in {
+    val dep = DependencyGraph[Int, Int]()
+    dep.setValue(1, 0)
+    dep.getReady() should equal(Set())
+    dep.addNode(1, Seq(0))
+    dep.getReady() should equal(Set())
+  }
+
+
+  it should "return knownValueKeys" in {
+    val dep = DependencyGraph[Int, Int]()
+    dep.knownValueKeys() should equal(Set())
+    dep.addNode(1, Seq(0))
+    dep.knownValueKeys() should equal(Set())
+    dep.setValue(1, 1)
+    dep.knownValueKeys() should equal(Set(1))
   }
 }

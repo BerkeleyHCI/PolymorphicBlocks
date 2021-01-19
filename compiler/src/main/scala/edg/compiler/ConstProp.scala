@@ -2,10 +2,10 @@ package edg.compiler
 
 import scala.collection.mutable
 import scala.collection.Set
-
 import edg.wir._
 import edg.expr.expr
 import edg.init.init
+import edg.util.{DependencyGraph, MutableBiMap}
 
 
 case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
@@ -20,73 +20,19 @@ case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: exp
   * addEquality is idempotent and may be repeated.
   */
 class ConstProp {
-  val paramValues = new mutable.HashMap[IndirectDesignPath, ExprValue]  // empty means not yet known
+  // Assign statements logged here on addAssignment
+  val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
+
+  // Assign statements are added to the dependency graph only when arrays are ready
+  val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
 
-  val equalityEdges = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // bidirectional, two entries per edge
-
-  // Assign statements are logged here before hitting paramExpr/paramUsedIn if waiting on an array
-  val arrayUsedIn = new mutable.HashMap[DesignPath, mutable.Buffer[AssignRecord]]
-
-  // Assign statements are logged here only when arrays are ready
-  val paramExpr = new mutable.HashMap[IndirectDesignPath, AssignRecord]  // TODO case class?
-  val paramUsedIn = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
+  // Equality, two entries per equality edge (one per direction / target)
+  val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
-  val arrayElts = new mutable.HashMap[DesignPath, Seq[String]]  // empty means not yet known
+  val arrayElts = DependencyGraph[IndirectDesignPath, Seq[String]]  // empty means not yet known
 
-  //
-  // Utility methods
-  //
-  /** Returns true if the parameter is ready to evaluate and propagate.
-    * Returns false if dependencies are missing or the parameter has already been evaluated. */
-  protected def isReadyToEvaluate(param: IndirectDesignPath): Boolean = {
-    if (paramValues.isDefinedAt(param)) {
-      return false
-    }
-    val assign = paramExpr(param)
-    require(assign.target == param)
-    val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
-    deps.forall(paramValues.isDefinedAt)
-  }
-
-  /** Evaluates the value of an ValueExpr at some DesignPath in some Design to a ExprValue, and propagates.
-    * Throws an exception if dependent parameters are missing values.
-    *
-    * paramValues(param) should currently not resolve.
-    * paramExpr and paramUsedIn must be filled in.
-    */
-  protected def evaluate(param: IndirectDesignPath): Unit = {
-    require(!paramValues.isDefinedAt(param))
-    val assign = paramExpr(param)
-    require(assign.target == param)
-    val eval = new ExprEvaluate(this, assign.root)
-    assignAndPropagate(param, eval.map(assign.value))
-  }
-
-  /** Once all of a param's dependencies have been resolved, evaluate and propagate it.
-    * Must only be called once per parameter, on assignment.
-    */
-  protected def assignAndPropagate(param: IndirectDesignPath, value: ExprValue, backedge: Option[IndirectDesignPath] = None): Unit = {
-    require(!paramValues.isDefinedAt(param))
-    paramValues.put(param, value)
-
-    // Propagate along equality edges
-    val paramValue = paramValues(param)
-    equalityEdges.getOrElse(param, Set()).foreach { equalParam =>
-      if (backedge.orNull != equalParam) {
-        require(!paramValues.isDefinedAt(equalParam), s"redefinition of $equalParam via equality")
-        assignAndPropagate(equalParam, paramValue, Some(param))
-      }
-    }
-
-    // Propagate along dependent expressions
-    paramUsedIn.getOrElse(param, Set()).foreach { dependent =>
-      if (isReadyToEvaluate(dependent)) {
-        evaluate(dependent)
-      }
-    }
-  }
 
   //
   // API methods
@@ -104,15 +50,34 @@ class ConstProp {
     paramTypes.put(target, paramType)
   }
 
-  protected def addAssignmentPostArray(assign: AssignRecord): Unit = {
-    val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
-    deps.foreach { dep =>
-      paramUsedIn.getOrElseUpdate(dep, mutable.Set()) += assign.target
+  // Repeated does propagations as long as there is work to do, including both array available and param available.
+  protected def update(): Unit = {
+    while (arrayElts.getReady().nonEmpty || params.getReady().nonEmpty) {
+      for (constrTarget <- arrayElts.getReady()) {
+        // TODO avoid null hack - but it allows things to fail noisily and should never be used
+        arrayElts.setValue(constrTarget, null)  // remove from ready queue
+        val assign = paramAssign(constrTarget)
+        val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
+        params.addNode(constrTarget, deps.toSeq)
+      }
+      for (constrTarget <- params.getReady()) {
+        val assign = paramAssign(constrTarget)
+        val value = new ExprEvaluate(this, assign.root).map(assign.value)
+        params.setValue(constrTarget, value)
+        for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
+          propagateEquality(constrTargetEquals, constrTarget, value)
+        }
+      }
     }
+  }
 
-    paramExpr.put(assign.target, assign)
-    if (isReadyToEvaluate(assign.target)) {
-      evaluate(assign.target)
+  protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
+    require(params.getValue(dst).isEmpty, s"redefinition of $dst via equality from $src = $value")
+    params.setValue(dst, value)
+    for (dstEquals <- equality.getOrElse(dst, mutable.Buffer())) {
+      if (dstEquals != src) {  // ignore the backedge for propagation
+        propagateEquality(dstEquals, dst, value)
+      }
     }
   }
 
@@ -121,17 +86,14 @@ class ConstProp {
     */
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, targetExpr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
-    require(!paramExpr.isDefinedAt(target), s"redefinition of $target via assignment")
+    require(!paramAssign.isDefinedAt(target), s"redefinition of $target via assignment")
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
+    paramAssign.put(target, assign)
 
-    val arrayDeps = new ExprArrayDependencies(root).map(targetExpr)
-    arrayDeps.foreach { arrayDep =>
-      arrayUsedIn.getOrElseUpdate(arrayDep, mutable.Buffer()) += assign
-    }
+    val arrayDeps = new ExprArrayDependencies(root).map(targetExpr).map(IndirectDesignPath.fromDesignPath(_))
+    arrayElts.addNode(target, arrayDeps.toSeq)
 
-    if ((arrayDeps -- arrayElts.keySet).isEmpty) {  // only continue if is ready
-      addAssignmentPostArray(assign)
-    }
+    update()
   }
 
   /**
@@ -140,40 +102,27 @@ class ConstProp {
     * TODO: detect cycles
     */
   def addEquality(param1: IndirectDesignPath, param2: IndirectDesignPath): Unit = {
-    // Store the pre-propagation values, so the parameters don't propagate forward then back
-    val param1Value = paramValues.get(param1)
-    val param2Value = paramValues.get(param2)
-    // TODO maybe need guard against cyclic deps?
-    // TODO maybe also detect against merging?
+    equality.getOrElseUpdate(param1, mutable.Buffer()) += param2
+    equality.getOrElseUpdate(param2, mutable.Buffer()) += param1
 
-    param1Value match {
-      case Some(param1Value) =>
-        require(!paramValues.isDefinedAt(param2), s"redefinition of $param2 via equality")
-        assignAndPropagate(param2, param1Value, Some(param1))
-      case None => // do nothing
-    }
-    param2Value match {
-      case Some(param2Value) =>
-        require(!paramValues.isDefinedAt(param1), s"redefinition of $param1 via equality")
-        assignAndPropagate(param1, param2Value, Some(param2))
-      case None => // do nothing
+    // the initial propagation (if applicable) is tricky
+    // we assume that propagations between param1 and its equal nodes, and param2 and its equal nodes, are done prior
+    (params.getValue(param1), params.getValue(param2)) match {
+      case (Some(param1Value), Some(param2Value)) =>
+        // TODO better exception type?
+        throw new IllegalArgumentException(s"equality between $param1 = $param1Value <-> $param2 = $param2Value with both values already defined")
+      case (Some(param1Value), None) => propagateEquality(param2, param1, param1Value)
+      case (None, Some(param2Value)) => propagateEquality(param1, param2, param2Value)
+      case (None, None) => // nothing to be done
     }
 
-    // The back edges are skipped by the equality prop algorithm so we can delay adding those
-    equalityEdges.getOrElseUpdate(param1, mutable.Set()) += param2
-    equalityEdges.getOrElseUpdate(param2, mutable.Set()) += param1
+    update()
   }
 
   def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    assert(arrayElts.getOrElse(target, elts) == elts)  // make sure overwrites are at least consistent
-    arrayElts.put(target, elts)
+    arrayElts.setValue(IndirectDesignPath.fromDesignPath(target), elts)
 
-    arrayUsedIn.getOrElse(target, mutable.Buffer()).foreach { assign =>
-      val arrayDeps = new ExprArrayDependencies(assign.root).map(assign.value)
-      if ((arrayDeps -- arrayElts.keySet).isEmpty) {  // only continue if is ready
-        addAssignmentPostArray(assign)
-      }
-    }
+    update()
   }
 
   /**
@@ -181,11 +130,11 @@ class ConstProp {
     * Can be used to check if parameters are resolved yet by testing against None.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
-    paramValues.get(param)
+    params.getValue(param)
   }
   def getValue(param: DesignPath): Option[ExprValue] = {
     // TODO should this be an implicit conversion?
-    paramValues.get(IndirectDesignPath.fromDesignPath(param))
+    getValue(IndirectDesignPath.fromDesignPath(param))
   }
 
   /**
@@ -196,7 +145,7 @@ class ConstProp {
   }
 
   def getArrayElts(target: DesignPath): Option[Seq[String]] = {
-    arrayElts.get(target)
+    arrayElts.getValue(IndirectDesignPath.fromDesignPath(target))
   }
 
   /**
@@ -204,6 +153,6 @@ class ConstProp {
     * Ignores indirect references.
     */
   def getUnsolved: Set[DesignPath] = {
-    paramTypes.keySet -- paramValues.keys.flatMap(DesignPath.fromIndirectOption)
+    paramTypes.keySet -- params.knownValueKeys.flatMap(DesignPath.fromIndirectOption)
   }
 }

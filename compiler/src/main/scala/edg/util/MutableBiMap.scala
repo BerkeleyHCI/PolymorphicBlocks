@@ -28,6 +28,8 @@ class MutableBiMap[KeyType] {
     }
   }
 
+  def apply(key: KeyType): KeyType = get(key).get
+
   def remove(key: KeyType): Option[KeyType] = {
     (fwdMap.get(key), bwdMap.get(key)) match {
       case (Some(fwdValue), Some(bwdValue)) =>
