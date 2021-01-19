@@ -64,6 +64,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def updateConnectPropDependencies(): Unit = {
     connectPropDependencies.getReady() foreach {
       case connectRecord @ ConnectPropRecord.Connect(blockPortPath, linkPortPath, linkPath) =>
+        debug(s"Generate connect equalities for $blockPortPath, $linkPortPath")
         // Generate CONNECTED_LINK equalities
         val link = resolveLink(linkPath)
         for (paramName <- link.getParams.keys) {
@@ -79,6 +80,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         // Mark as completed
         connectPropDependencies.setValue(connectRecord, None)
       case connectRecord @ ConnectPropRecord.Export(extPortPath, intPortPath) =>
+        debug(s"Generate export equalities for $extPortPath, $intPortPath")
         val extPort = resolvePort(extPortPath)
         val intPort = resolvePort(intPortPath)
         generateConnected(extPortPath, extPort, intPortPath, intPort)
@@ -330,7 +332,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     parent.elaborate(name, link)
 
     // Mark this as ready for dependent actions
-    connectPropDependencies.setValue(ConnectPropRecord.Block(path), None)
+    connectPropDependencies.setValue(ConnectPropRecord.Link(path), None)
     updateConnectPropDependencies()
   }
 
