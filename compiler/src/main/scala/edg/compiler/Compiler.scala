@@ -3,12 +3,22 @@ package edg.compiler
 import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr
-import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.wir
-import edg.util.MutableBiMap
+import edg.util.{DependencyGraph, MutableBiMap}
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
+
+
+trait ConnectPropRecord
+object ConnectPropRecord {
+  case class Block(path: DesignPath) extends ConnectPropRecord  // set once block elborated
+  case class Link(path: DesignPath) extends ConnectPropRecord  // set once link elaborated
+  case class Connect(blockPortPath: DesignPath, linkPortPath: DesignPath,
+                     linkPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
+  case class Export(extPortPath: DesignPath, intPortPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
+}
 
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -30,12 +40,54 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
-  // Connect statements which have been read but the equivalence constraints have not been generated,
-  // in the format (block port -> link port) for connects, or (exterior port -> interior port) for exports.
-  // Array ports must be resolved to the element level.
-  private val unresolvedConnects = MutableBiMap[DesignPath]()
-  // For array points involved in connects, returns all the sub-elements
-  private val arrayElements = mutable.HashMap[DesignPath, Seq[String]]()
+  // Dependency graph for generating the equivalence constraints between parameters, as well as CONNECTED_LINK.
+  // This triggers once both the block and links (or exterior block and interior block, for exports)
+  // have been elaborated, as a simultaneous traversal on the ports on both sides.
+  private val connectPropDependencies = DependencyGraph[ConnectPropRecord, None.type]()
+
+  protected def generateConnected(port1Path: DesignPath, port1: wir.PortLike,
+                                  port2Path: DesignPath, port2: wir.PortLike): Unit = {
+    (port1, port2) match {
+      case (port1: wir.Port, port2: wir.Port) =>
+        require(port1.getParams.keys == port2.getParams.keys,
+          s"connected ports at $port1Path, $port2Path with different params")
+        for (paramName <- port1.getParams.keys) {
+          constProp.addEquality(
+            IndirectDesignPath.fromDesignPath(port1Path) + paramName,
+            IndirectDesignPath.fromDesignPath(port2Path) + paramName
+          )
+        }
+      case (port1, port2) => throw new IllegalArgumentException(s"can't connect ports $port1, $port2")
+    }
+  }
+
+  protected def updateConnectPropDependencies(): Unit = {
+    connectPropDependencies.getReady() foreach {
+      case connectRecord @ ConnectPropRecord.Connect(blockPortPath, linkPortPath, linkPath) =>
+        // Generate CONNECTED_LINK equalities
+        val link = resolveLink(linkPath)
+        for (paramName <- link.getParams.keys) {
+          constProp.addEquality(
+            IndirectDesignPath.fromDesignPath(linkPath) + paramName,
+            IndirectDesignPath.fromDesignPath(blockPortPath) + IndirectStep.ConnectedLink() + paramName
+          )
+        }
+        // Generated port parameter equalities
+        val blockPort = resolvePort(blockPortPath)
+        val linkPort = resolvePort(linkPortPath)
+        generateConnected(blockPortPath, blockPort, linkPortPath, linkPort)
+        // Mark as completed
+        connectPropDependencies.setValue(connectRecord, None)
+      case connectRecord @ ConnectPropRecord.Export(extPortPath, intPortPath) =>
+        val extPort = resolvePort(extPortPath)
+        val intPort = resolvePort(intPortPath)
+        generateConnected(extPortPath, extPort, intPortPath, intPort)
+        // Mark as completed
+        connectPropDependencies.setValue(connectRecord, None)
+    }
+    require(connectPropDependencies.getReady().isEmpty)
+  }
+
   // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
   // constraint name))
   private val pendingLength = mutable.HashMap[DesignPath, (DesignPath, String)]()
@@ -45,6 +97,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+  def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
 
   processBlock(DesignPath.root, root)
 
@@ -67,19 +120,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Main issue is that PortArray doesn't have a meaningful elaborate(), instead using bulk setPorts
     case port: wir.Port =>
       processParams(path, port)
-      unresolvedConnects.get(path) match {
-        case Some(connectedPath) =>
-          generateConnectedEquivalence(IndirectDesignPath.fromDesignPath(path),
-            IndirectDesignPath.fromDesignPath(connectedPath),
-            port)
-          unresolvedConnects.remove(path).get
-        case None =>  // ignored
-      }
     case port: wir.PortArray =>
       val libraryPath = port.getType
       debug(s"Elaborate PortArray at ${path}: $libraryPath")
       // TODO can / should this share the LibraryElement instantiation logic w/ elaborateBlocklikePorts?
-      val newPorts = arrayElements(path).map { index =>
+      val newPorts = constProp.getArrayElts(path).get.map { index =>
         index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
       }.toMap
       port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
@@ -129,7 +174,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // TODO ensure constraint processing order?
     // All ports that need to be allocated, with the list of connected ports,
     // as (port array path -> list(constraint name, block port))
-    val linkPortAllocates = mutable.HashMap[DesignPath, mutable.ListBuffer[(String, DesignPath)]]()
+    val linkPortAllocates = mutable.HashMap[ref.LocalPath, mutable.ListBuffer[(String, ref.LocalPath)]]()
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
         processBlocklikeConstraint(path, constrName, constr, expr)
@@ -140,9 +185,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (Ref.Allocate(blockPortArray), linkPort) =>
             throw new NotImplementedError("TODO: block port array <-> link port")
           case (blockPort, Ref.Allocate(linkPortArray)) =>
-            linkPortAllocates.getOrElseUpdate(path ++ linkPortArray, mutable.ListBuffer()) += ((constrName, path ++ blockPort))
+            linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
           case (blockPort, linkPort) =>
-            unresolvedConnects.put(path ++ blockPort, path ++ linkPort)
+            connectPropDependencies.addNode(
+              ConnectPropRecord.Connect(path ++ blockPort, path ++ linkPort,
+                path + linkPort.steps.head.step.name.get),
+              Seq(ConnectPropRecord.Block(path + blockPort.steps.head.step.name.get),
+                ConnectPropRecord.Link(path + linkPort.steps.head.step.name.get))
+            )
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (exported.exteriorPort.get.expr.ref.get, exported.internalBlockPort.get.expr.ref.get) match {
@@ -153,7 +203,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            unresolvedConnects.put(path ++ extPort, path ++ intPort)
+            connectPropDependencies.addNode(
+              ConnectPropRecord.Export(path ++ extPort, path ++ intPort),
+              Seq(ConnectPropRecord.Block(path),
+                ConnectPropRecord.Block(path + intPort.steps.head.step.name.get))
+            )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
     }}
@@ -161,7 +215,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // For fully resolved arrays, allocate port numbers and set array elements
     linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
       val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
-        unresolvedConnects.put(blockPort, linkPortArray + index.toString)
+        connectPropDependencies.addNode(
+          ConnectPropRecord.Connect(path ++ blockPort, path ++ linkPortArray + index.toString,
+            path + linkPortArray.steps.head.step.name.get),
+          Seq(ConnectPropRecord.Block(path + blockPort.steps.head.step.name.get),
+            ConnectPropRecord.Link(path + linkPortArray.steps.head.step.name.get))
+        )
         block.mapConstraint(constrName) { constr =>
           val steps = constr.expr.connected.get.linkPort.get.expr.ref.get.steps
           require(steps.last == Ref.AllocateStep)
@@ -172,9 +231,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         }
         index.toString
       }.toSeq
-      constProp.setArrayElts(linkPortArray, linkPortArrayElts)
-      require(!arrayElements.isDefinedAt(linkPortArray), s"redefinition of link array elements at $linkPortArray")
-      arrayElements.put(linkPortArray, linkPortArrayElts)
+      constProp.setArrayElts(path ++ linkPortArray, linkPortArrayElts)
     }
 
     // Process assignment constraints
@@ -211,6 +268,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Link block in parent
     parent.elaborate(name, block)
+
+    // Mark this as ready for dependent actions
+    connectPropDependencies.setValue(ConnectPropRecord.Block(path), None)
+    updateConnectPropDependencies()
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -232,7 +293,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            unresolvedConnects.put(path ++ extPort, path ++ intPort)
+            connectPropDependencies.addNode(
+              ConnectPropRecord.Export(path ++ extPort, path ++ intPort),
+              Seq(ConnectPropRecord.Link(path),
+                ConnectPropRecord.Link(path + intPort.steps.head.step.name.get))
+            )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
     }}
@@ -263,6 +328,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Link block in parent
     parent.elaborate(name, link)
+
+    // Mark this as ready for dependent actions
+    connectPropDependencies.setValue(ConnectPropRecord.Block(path), None)
+    updateConnectPropDependencies()
   }
 
   /** Performs full compilation and returns the resulting design. Might take a while.
