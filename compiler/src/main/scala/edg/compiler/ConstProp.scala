@@ -52,15 +52,15 @@ class ConstProp {
 
   // Repeated does propagations as long as there is work to do, including both array available and param available.
   protected def update(): Unit = {
-    while (arrayElts.getReady().nonEmpty || params.getReady().nonEmpty) {
-      for (constrTarget <- arrayElts.getReady()) {
+    while (arrayElts.getReady.nonEmpty || params.getReady.nonEmpty) {
+      for (constrTarget <- arrayElts.getReady) {
         // TODO avoid null hack - but it allows things to fail noisily and should never be used
         arrayElts.setValue(constrTarget, null)  // remove from ready queue
         val assign = paramAssign(constrTarget)
         val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
         params.addNode(constrTarget, deps.toSeq)
       }
-      for (constrTarget <- params.getReady()) {
+      for (constrTarget <- params.getReady) {
         val assign = paramAssign(constrTarget)
         val value = new ExprEvaluate(this, assign.root).map(assign.value)
         params.setValue(constrTarget, value)

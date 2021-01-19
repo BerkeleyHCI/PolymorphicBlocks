@@ -13,11 +13,18 @@ class IllegalConstraintException(msg: String) extends Exception(msg)
 
 trait ConnectPropRecord
 object ConnectPropRecord {
-  case class Block(path: DesignPath) extends ConnectPropRecord  // set once block elborated
+  case class Block(path: DesignPath) extends ConnectPropRecord  // set once block elaborated
   case class Link(path: DesignPath) extends ConnectPropRecord  // set once link elaborated
   case class Connect(blockPortPath: DesignPath, linkPortPath: DesignPath,
                      linkPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
   case class Export(extPortPath: DesignPath, intPortPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
+}
+
+trait ElaborateRecord
+object ElaborateRecord {
+  case class Block(blockPath: DesignPath) extends ElaborateRecord
+  case class Link(linkPath: DesignPath) extends ElaborateRecord
+  case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
 }
 
 
@@ -31,8 +38,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  private val pendingBlocks = mutable.Set[DesignPath]()  // block-likes pending elaboration
-  private val pendingLinks = mutable.Set[DesignPath]()  // block-likes pending elaboration
+  private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
   private val constProp = new ConstProp()
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
@@ -62,7 +68,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   }
 
   protected def updateConnectPropDependencies(): Unit = {
-    connectPropDependencies.getReady() foreach {
+    connectPropDependencies.getReady.foreach {
       case connectRecord @ ConnectPropRecord.Connect(blockPortPath, linkPortPath, linkPath) =>
         debug(s"Generate connect equalities for $blockPortPath, $linkPortPath")
         // Generate CONNECTED_LINK equalities
@@ -87,7 +93,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         // Mark as completed
         connectPropDependencies.setValue(connectRecord, None)
     }
-    require(connectPropDependencies.getReady().isEmpty)
+    require(connectPropDependencies.getReady.isEmpty)
   }
 
   // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
@@ -243,11 +249,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (blockName <- block.getUnelaboratedBlocks.keys) {
       debug(s"Push block to pending: ${path + blockName}")
-      pendingBlocks += path + blockName
+      elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
-      pendingLinks += path + linkName
+      elaboratePending.addNode(ElaborateRecord.Link(path + linkName), Seq())
     }
   }
 
@@ -307,7 +313,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (linkName <- link.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
-      pendingLinks += path + linkName
+      elaboratePending.addNode(ElaborateRecord.Link(path + linkName), Seq())
     }
   }
 
@@ -340,19 +346,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     */
   def compile(): schema.Design = {
     import edg.ElemBuilder
-    while (pendingBlocks.nonEmpty || pendingLinks.nonEmpty) {
-      if (pendingBlocks.nonEmpty) {
-        val nextPath = pendingBlocks.head
-        pendingBlocks.subtractOne(nextPath)
-        debug(s"Pick block to elaborate: $nextPath")
-        elaborateBlock(nextPath)
-      } else if (pendingLinks.nonEmpty) {
-        val nextPath = pendingLinks.head
-        pendingLinks.subtractOne(nextPath)
-        debug(s"Pick link to elaborate: $nextPath")
-        elaborateLink(nextPath)
+    while (elaboratePending.getReady.nonEmpty) {
+      elaboratePending.getReady.foreach {
+        case elaborateRecord @ ElaborateRecord.Block(blockPath) => elaborateBlock(blockPath)
+          elaboratePending.setValue(elaborateRecord, None)
+        case elaborateRecord @ ElaborateRecord.Link(linkPath) => elaborateLink(linkPath)
+          elaboratePending.setValue(elaborateRecord, None)
       }
     }
+
+    require(elaboratePending.getMissing.isEmpty,
+      s"failed to elaborate: ${elaboratePending.getMissing}")
+    require(connectPropDependencies.getMissing.isEmpty,
+      s"connects failed to generate: ${connectPropDependencies.getMissing}")
+    require(constProp.getUnsolved.isEmpty,
+      s"const prop failed to solve: ${constProp.getUnsolved}")
+
     ElemBuilder.Design(root.toPb)
   }
 }

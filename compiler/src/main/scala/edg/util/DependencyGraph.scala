@@ -53,11 +53,16 @@ class DependencyGraph[KeyType, ValueType] {
   }
 
   // Returns all the KeyTypes that don't have values and have satisfied dependencies.
-  def getReady(): Set[KeyType] = {
+  def getReady: Set[KeyType] = {
     ready.toSet
   }
 
-  def knownValueKeys(): Iterable[KeyType] = {
+  // Returns all the KeyTypes that have no values. NOT a fast operation.
+  def getMissing: Set[KeyType] = {
+    (deps.keySet -- values.keySet).toSet
+  }
+
+  def knownValueKeys: Iterable[KeyType] = {
     values.keys
   }
 }
