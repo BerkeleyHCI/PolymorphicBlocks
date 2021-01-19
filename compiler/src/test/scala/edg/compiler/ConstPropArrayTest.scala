@@ -22,7 +22,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
         IndirectDesignPath.root ++ root ++ pathPrefix + i.toString ++ pathSuffix,
         DesignPath.root ++ root, exprFn(i), SourceLocator.empty)
     }
-    constProp.setArrayElts(IndirectDesignPath.root ++ root ++ pathPrefix, (0 until length).map(_.toString))
+    constProp.setArrayElts(DesignPath.root ++ root ++ pathPrefix, (0 until length).map(_.toString))
   }
 
   it should "read out elements" in {
@@ -104,21 +104,18 @@ class ConstPropArrayTest extends AnyFlatSpec {
   }
 
   // TODO: this might not be needed right now, but will be eventually
-  it should "failed on delayed ops" in {
+  it should "work on delayed ops" in {
     import edg.expr.expr.ReductionExpr.Op
     val constProp = new ConstProp()
 
-    an [ExprEvaluateException] should be thrownBy {
-      constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
-        ValueExpr.Reduce(Op.SUM,
-          ValueExpr.MapExtract(Ref("ports"), "param")
-        ),
-        SourceLocator.empty
-      )
+    constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
+      ValueExpr.Reduce(Op.SUM,
+        ValueExpr.MapExtract(Ref("ports"), "param")
+      ),
+      SourceLocator.empty
+    )
 
-      addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))
-
-      constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
-    }
+    addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))
+    constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
   }
 }

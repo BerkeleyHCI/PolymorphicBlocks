@@ -113,6 +113,11 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath.root + "link" + "sinks" + "0" + "intersectVal") should equal(Some(RangeValue(5.0, 7.0)))
 
     // check link reductions
+    compiler.getValue(IndirectDesignPath.root + "link" + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinkSum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
 
+    // check CONNECTED_LINK
+    ???
   }
 }

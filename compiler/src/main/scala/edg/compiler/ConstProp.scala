@@ -5,59 +5,10 @@ import scala.collection.Set
 
 import edg.wir._
 import edg.expr.expr
-import edg.lit.lit
-import edg.ref.ref
 import edg.init.init
 
 
-/**
-  * ValueExpr transform that returns the dependencies as parameters.
-  */
-class ExprRefDependencies(refs: ConstProp, root: IndirectDesignPath) extends ValueExprMap[Set[IndirectDesignPath]] {
-  override def mapLiteral(literal: lit.ValueLit): Set[IndirectDesignPath] = Set()
-
-  override def mapBinary(binary: expr.BinaryExpr,
-                         lhs: Set[IndirectDesignPath], rhs: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    lhs ++ rhs
-
-  override def mapReduce(reduce: expr.ReductionExpr, vals: Set[IndirectDesignPath]): Set[IndirectDesignPath] = vals
-
-  override def mapStruct(struct: expr.StructExpr, vals: Map[String, Set[IndirectDesignPath]]): Set[IndirectDesignPath] =
-    vals.values.flatten.toSet
-
-  override def mapRange(range: expr.RangeExpr,
-                        minimum: Set[IndirectDesignPath], maximum: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    minimum ++ maximum
-
-  override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: Set[IndirectDesignPath],
-                             tru: Set[IndirectDesignPath], fal: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    cond ++ tru ++ fal
-
-  override def mapExtract(extract: expr.ExtractExpr,
-                          container: Set[IndirectDesignPath], index: Set[IndirectDesignPath]): Set[IndirectDesignPath] =
-    container ++ index
-
-  override def mapMapExtract(mapExtract: expr.MapExtractExpr): Set[IndirectDesignPath] = {
-    val container = mapExtract.container.get.expr.ref.getOrElse(  // TODO restrict allowed types in proto
-      throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
-    )
-    val containerPath = IndirectDesignPath.root ++ container
-    val elts = refs.getArrayElts(containerPath).getOrElse(
-      throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
-    )
-    elts.map { elt =>
-      containerPath + elt ++ mapExtract.path.get
-    }.toSet
-  }
-
-  // connected and exported not overridden and to fail noisily
-  // assign also not overridden and to fail noisily
-
-  override def mapRef(path: ref.LocalPath): Set[IndirectDesignPath] = {
-    Set(root ++ path)
-  }
-}
-
+case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
 
 /**
   * Parameter propagation, evaluation, and resolution associated with a single design.
@@ -74,11 +25,15 @@ class ConstProp {
 
   val equalityEdges = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // bidirectional, two entries per edge
 
-  val paramExpr = new mutable.HashMap[IndirectDesignPath, (DesignPath, expr.ValueExpr, SourceLocator)]  // TODO case class?
+  // Assign statements are logged here before hitting paramExpr/paramUsedIn if waiting on an array
+  val arrayUsedIn = new mutable.HashMap[DesignPath, mutable.Buffer[AssignRecord]]
+
+  // Assign statements are logged here only when arrays are ready
+  val paramExpr = new mutable.HashMap[IndirectDesignPath, AssignRecord]  // TODO case class?
   val paramUsedIn = new mutable.HashMap[IndirectDesignPath, mutable.Set[IndirectDesignPath]]  // source param -> dest param where source is part of the expr
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
-  val arrayElts = new mutable.HashMap[IndirectDesignPath, Seq[String]]  // empty means not yet known
+  val arrayElts = new mutable.HashMap[DesignPath, Seq[String]]  // empty means not yet known
 
   //
   // Utility methods
@@ -89,8 +44,9 @@ class ConstProp {
     if (paramValues.isDefinedAt(param)) {
       return false
     }
-    val (root, expr, _) = paramExpr(param)
-    val deps = new ExprRefDependencies(this, IndirectDesignPath.fromDesignPath(root)).map(expr)
+    val assign = paramExpr(param)
+    require(assign.target == param)
+    val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
     deps.forall(paramValues.isDefinedAt)
   }
 
@@ -102,10 +58,10 @@ class ConstProp {
     */
   protected def evaluate(param: IndirectDesignPath): Unit = {
     require(!paramValues.isDefinedAt(param))
-    val (root, expr, _) = paramExpr(param)
-
-    val eval = new ExprEvaluate(this, IndirectDesignPath.fromDesignPath(root))
-    assignAndPropagate(param, eval.map(expr))
+    val assign = paramExpr(param)
+    require(assign.target == param)
+    val eval = new ExprEvaluate(this, assign.root)
+    assignAndPropagate(param, eval.map(assign.value))
   }
 
   /** Once all of a param's dependencies have been resolved, evaluate and propagate it.
@@ -148,21 +104,33 @@ class ConstProp {
     paramTypes.put(target, paramType)
   }
 
+  protected def addAssignmentPostArray(assign: AssignRecord): Unit = {
+    val deps = new ExprRefDependencies(this, assign.root).map(assign.value)
+    deps.foreach { dep =>
+      paramUsedIn.getOrElseUpdate(dep, mutable.Set()) += assign.target
+    }
+
+    paramExpr.put(assign.target, assign)
+    if (isReadyToEvaluate(assign.target)) {
+      evaluate(assign.target)
+    }
+  }
+
   /**
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, targetExpr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
     require(!paramExpr.isDefinedAt(target), s"redefinition of $target via assignment")
+    val assign = AssignRecord(target, root, targetExpr, sourceLocator)
 
-    val deps = new ExprRefDependencies(this, IndirectDesignPath.fromDesignPath(root)).map(targetExpr)
-    deps.foreach { dep =>
-      paramUsedIn.getOrElseUpdate(dep, mutable.Set()) += target
+    val arrayDeps = new ExprArrayDependencies(root).map(targetExpr)
+    arrayDeps.foreach { arrayDep =>
+      arrayUsedIn.getOrElseUpdate(arrayDep, mutable.Buffer()) += assign
     }
 
-    paramExpr.put(target, (root, targetExpr, sourceLocator))
-    if (isReadyToEvaluate(target)) {
-      evaluate(target)
+    if ((arrayDeps -- arrayElts.keySet).isEmpty) {  // only continue if is ready
+      addAssignmentPostArray(assign)
     }
   }
 
@@ -196,9 +164,16 @@ class ConstProp {
     equalityEdges.getOrElseUpdate(param2, mutable.Set()) += param1
   }
 
-  def setArrayElts(target: IndirectDesignPath, elts: Seq[String]): Unit = {
+  def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
     assert(arrayElts.getOrElse(target, elts) == elts)  // make sure overwrites are at least consistent
     arrayElts.put(target, elts)
+
+    arrayUsedIn.getOrElse(target, mutable.Buffer()).foreach { assign =>
+      val arrayDeps = new ExprArrayDependencies(assign.root).map(assign.value)
+      if ((arrayDeps -- arrayElts.keySet).isEmpty) {  // only continue if is ready
+        addAssignmentPostArray(assign)
+      }
+    }
   }
 
   /**
@@ -208,6 +183,10 @@ class ConstProp {
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     paramValues.get(param)
   }
+  def getValue(param: DesignPath): Option[ExprValue] = {
+    // TODO should this be an implicit conversion?
+    paramValues.get(IndirectDesignPath.fromDesignPath(param))
+  }
 
   /**
     * Returns the type (as a class of ExprValue) of a parameter.
@@ -216,7 +195,7 @@ class ConstProp {
     paramTypes.get(param)
   }
 
-  def getArrayElts(target: IndirectDesignPath): Option[Seq[String]] = {
+  def getArrayElts(target: DesignPath): Option[Seq[String]] = {
     arrayElts.get(target)
   }
 

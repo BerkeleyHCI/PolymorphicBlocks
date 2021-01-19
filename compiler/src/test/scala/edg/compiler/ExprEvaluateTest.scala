@@ -3,7 +3,7 @@ package edg.compiler
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
-import edg.wir.IndirectDesignPath
+import edg.wir.DesignPath
 import edg.ExprBuilder._
 
 
@@ -11,7 +11,7 @@ class ExprEvaluateTest extends AnyFlatSpec {
   behavior of "ExprEvaluate"
 
   val constProp = new ConstProp()
-  val evalTest = new ExprEvaluate(constProp, IndirectDesignPath.root)
+  val evalTest = new ExprEvaluate(constProp, DesignPath.root)
 
   // TODO: add array tests once there is an array literal
 

@@ -3,12 +3,12 @@ package edg.compiler
 import edg.expr.expr
 import edg.lit.lit
 import edg.ref.ref
-import edg.wir.IndirectDesignPath
+import edg.wir.{DesignPath, IndirectDesignPath}
 
 
 class ExprEvaluateException(msg: String) extends Exception(msg)
 
-class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprMap[ExprValue] {
+class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprValue] {
   override def mapLiteral(literal: lit.ValueLit): ExprValue = literal.`type` match {
     case lit.ValueLit.Type.Floating(literal) => FloatValue(literal.`val`.toFloat)
     case lit.ValueLit.Type.Integer(literal) => IntValue(literal.`val`)
@@ -248,7 +248,7 @@ class ExprEvaluate(refs: ConstProp, root: IndirectDesignPath) extends ValueExprM
     val container = mapExtract.container.get.expr.ref.getOrElse(  // TODO restrict allowed types in proto
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
     )
-    val containerPath = IndirectDesignPath.root ++ container
+    val containerPath = root ++ container
     val elts = refs.getArrayElts(containerPath).getOrElse(
       throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )

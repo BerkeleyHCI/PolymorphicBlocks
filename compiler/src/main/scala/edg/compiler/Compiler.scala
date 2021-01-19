@@ -172,7 +172,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         }
         index.toString
       }.toSeq
-      constProp.setArrayElts(IndirectDesignPath.fromDesignPath(linkPortArray), linkPortArrayElts)
+      constProp.setArrayElts(linkPortArray, linkPortArrayElts)
       require(!arrayElements.isDefinedAt(linkPortArray), s"redefinition of link array elements at $linkPortArray")
       arrayElements.put(linkPortArray, linkPortArrayElts)
     }
