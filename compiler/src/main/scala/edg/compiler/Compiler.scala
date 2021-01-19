@@ -5,7 +5,7 @@ import edg.schema.schema
 import edg.expr.expr
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.wir
-import edg.util.{DependencyGraph, MutableBiMap}
+import edg.util.DependencyGraph
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -96,10 +96,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     require(connectPropDependencies.getReady.isEmpty)
   }
 
-  // PortArrays (either link side or block side) pending a length, as (port name -> (constraint containing block,
-  // constraint name))
-  private val pendingLength = mutable.HashMap[DesignPath, (DesignPath, String)]()
-
   // Seed compilation with the root
   //
   private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
@@ -117,7 +113,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   protected def generateConnectedEquivalence(container1: IndirectDesignPath, container2: IndirectDesignPath,
                                    hasParams: wir.HasParams): Unit = {
-    for ((paramName, param) <- hasParams.getParams) {
+    for (paramName <- hasParams.getParams.keys) {
       constProp.addEquality(container1 + paramName, container2 + paramName)
     }
   }
@@ -130,8 +126,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       processParams(path, port)
     case port: wir.PortArray =>
       val libraryPath = port.getType
-      debug(s"Elaborate PortArray at ${path}: $libraryPath")
-      // TODO can / should this share the LibraryElement instantiation logic w/ elaborateBlocklikePorts?
+      debug(s"Elaborate PortArray at $path: $libraryPath")
+      // TODO can / should this share the LibraryElement instantiation logic w/ elaborate BlocklikePorts?
       val newPorts = constProp.getArrayElts(path).get.map { index =>
         index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
       }.toMap
