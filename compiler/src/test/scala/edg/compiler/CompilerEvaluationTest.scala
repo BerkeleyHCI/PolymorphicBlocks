@@ -128,4 +128,56 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
   }
+
+  "Compiler on design with assign constraints and multiple connects to link" should "propagate and evaluate values" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+        "sink0" -> Block.Library("sinkBlock"),
+        "sink1" -> Block.Library("sinkBlock"),
+        "sink2" -> Block.Library("sinkBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
+        "sink1Connect" -> Constraint.Connected(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
+        "sink2Connect" -> Constraint.Connected(Ref("sink2", "port"), Ref.Allocate(Ref("link", "sinks"))),
+
+        "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
+
+        "sink0SumVal" -> Constraint.Assign(Ref("sink0", "sumVal"), ValueExpr.Literal(1.0)),
+        "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(4.0, 7.0)),
+        "sink1SumVal" -> Constraint.Assign(Ref("sink1", "sumVal"), ValueExpr.Literal(2.0)),
+        "sink1IntersectVal" -> Constraint.Assign(Ref("sink1", "intersectVal"), ValueExpr.Literal(5.0, 8.0)),
+        "sink2SumVal" -> Constraint.Assign(Ref("sink2", "sumVal"), ValueExpr.Literal(3.0)),
+        "sink2IntersectVal" -> Constraint.Assign(Ref("sink2", "intersectVal"), ValueExpr.Literal(6.0, 9.0)),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    compiler.compile()
+
+    // check link reductions
+    compiler.getValue(IndirectDesignPath.root + "link" + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinkSum") should equal(Some(FloatValue(6.0)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+
+    // check CONNECTED_LINK
+    val linkThroughSink0 = IndirectDesignPath.root + "sink0" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSink0 + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(6.0)))
+    compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+
+    val linkThroughSink1 = IndirectDesignPath.root + "sink1" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSink1 + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSink1 + "sinkSum") should equal(Some(FloatValue(6.0)))
+    compiler.getValue(linkThroughSink1 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+
+    val linkThroughSink2 = IndirectDesignPath.root + "sink2" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSink2 + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSink2 + "sinkSum") should equal(Some(FloatValue(6.0)))
+    compiler.getValue(linkThroughSink2 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+  }
 }
