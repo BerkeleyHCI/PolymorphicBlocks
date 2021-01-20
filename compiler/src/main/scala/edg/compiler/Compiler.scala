@@ -124,6 +124,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Main issue is that PortArray doesn't have a meaningful elaborate(), instead using bulk setPorts
     case port: wir.Port =>
       processParams(path, port)
+    case port: wir.Bundle =>
+      processParams(path, port)
+      elaborateContainedPorts(path, port)
     case port: wir.PortArray =>
       val libraryPath = port.getType
       debug(s"Elaborate PortArray at $path: $libraryPath")
@@ -138,7 +141,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     case port => throw new NotImplementedError(s"unknown unelaborated port $port")
   }
 
-  protected def elaborateBlocklikePorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
+  protected def elaborateContainedPorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
       case port: wir.LibraryElement =>
         val libraryPath = port.target
@@ -168,7 +171,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     import edg.ref.ref
 
     // Elaborate ports, generating equivalence constraints as needed
-    elaborateBlocklikePorts(path, block)
+    elaborateContainedPorts(path, block)
     processParams(path, block)
 
     // Process constraints:
@@ -281,7 +284,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.Ref
     // Elaborate ports, generating equivalence constraints as needed
-    elaborateBlocklikePorts(path, link)
+    elaborateContainedPorts(path, link)
     processParams(path, link)
 
     // Process constraints, as in the block case

@@ -138,12 +138,14 @@ object ElemBuilder {
       }}.toMap ++
       links.mapValues { _.`type` match {
         case elem.LinkLike.Type.Link(link) =>
-          schema.Library.NS.Val (`type` = schema.Library.NS.Val.Type.Link (link) )
+          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Link (link))
         case link => throw new NotImplementedError(s"Unknown LinkLike in library $link")
       }}.toMap ++
       ports.mapValues { _.`is` match {
         case elem.PortLike.Is.Port(port) =>
           schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Port(port))
+        case elem.PortLike.Is.Bundle(bundle) =>
+          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Bundle(bundle))
         case port => throw new NotImplementedError(s"Unknown PortLike in library $port")
       }}.toMap
     )))

@@ -15,14 +15,14 @@ object PortLike {
   import edg.IrPort
   def fromIrPort(irPort: IrPort, libraryPath: ref.LibraryPath): PortLike = irPort match {
     case IrPort.Port(port) => new Port(port, Seq(libraryPath))
-    case IrPort.Bundle(port) => ???
+    case IrPort.Bundle(bundle) => new Bundle(bundle, Seq(libraryPath))
     case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
   }
 
 }
 
 class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
-    with HasParams{
+    with HasParams {
   override def isElaborated: Boolean = true
 
   override def getParams: Map[String, init.ValInit] = pb.params
@@ -40,6 +40,35 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
 
   def toPb: elem.PortLike = {
     elem.PortLike(`is`=elem.PortLike.Is.Port(toEltPb))
+  }
+}
+
+class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLike
+    with HasMutablePorts with HasParams {
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+
+  override def isElaborated: Boolean = true
+
+  override def getParams: Map[String, init.ValInit] = pb.params
+
+  override def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case Seq(subname, tail@_*) =>
+      if (ports.contains(subname)) {
+        ports(subname).resolve(tail)
+      } else {
+        throw new InvalidPathException(s"No element $subname in Block")
+      }
+  }
+
+  def toEltPb: elem.Bundle = {
+    pb.copy(
+      superclasses = superclasses
+    )
+  }
+
+  def toPb: elem.PortLike = {
+    elem.PortLike(`is`=elem.PortLike.Is.Bundle(toEltPb))
   }
 }
 
