@@ -193,10 +193,10 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "source" -> Block.Library("sourceBlock"),
       ),
       links = Map(
-        "link" -> Link.Library("link")
+        "link" -> Link.Library("outerLink")
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
 
         "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
