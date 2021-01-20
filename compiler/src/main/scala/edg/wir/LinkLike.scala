@@ -33,7 +33,7 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
       } else if (links.contains(subname)) {
         links(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Block")
+        throw new InvalidPathException(s"No element $subname in Link")
       }
   }
 

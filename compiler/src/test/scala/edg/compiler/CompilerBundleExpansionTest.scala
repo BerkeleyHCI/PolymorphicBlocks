@@ -79,10 +79,10 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "source" -> Block.Library("sourceBlock"),
       ),
       links = Map(
-        "link" -> Link.Library("link")
+        "link" -> Link.Library("outerLink")
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
       )
     ))
     val referenceElaborated = Design(Block.Block(
@@ -155,7 +155,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         )
       ),
       constraints = Map(
-        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.Library(library))
