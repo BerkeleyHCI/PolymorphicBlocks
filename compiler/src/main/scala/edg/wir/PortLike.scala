@@ -63,7 +63,8 @@ class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLi
 
   def toEltPb: elem.Bundle = {
     pb.copy(
-      superclasses = superclasses
+      superclasses = superclasses,
+      ports=ports.view.mapValues(_.toPb).toMap,
     )
   }
 
