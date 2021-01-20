@@ -63,6 +63,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             IndirectDesignPath.fromDesignPath(port2Path) + paramName
           )
         }
+      case (port1: wir.Bundle, port2: wir.Bundle) =>
+        require(port1.getParams.keys == port2.getParams.keys,
+          s"connected ports at $port1Path, $port2Path with different params")
+        for (paramName <- port1.getParams.keys) {
+          constProp.addEquality(
+            IndirectDesignPath.fromDesignPath(port1Path) + paramName,
+            IndirectDesignPath.fromDesignPath(port2Path) + paramName
+          )
+        }
+
+        require(port1.getElaboratedPorts.keys == port2.getElaboratedPorts.keys,
+          s"connected ports at $port1Path, $port2Path with different params")
+        // TODO need to handle CONNECTED_LINK
+        for (portName <- port1.getElaboratedPorts.keys) {
+          generateConnected(port1Path + portName, port1.getElaboratedPorts(portName),
+            port2Path + portName, port2.getElaboratedPorts(portName))
+        }
       case (port1, port2) => throw new IllegalArgumentException(s"can't connect ports $port1, $port2")
     }
   }
@@ -99,6 +116,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Seed compilation with the root
   //
   private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
+  def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
   def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
@@ -325,7 +343,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     val (parentPath, name) = path.split
 
     // Instantiate block from library element to wir.Block
-    val parent = resolveBlock(parentPath)  // TODO what if this is a link?
+    val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
     val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LibraryElement].target
     debug(s"Elaborate link at $path: $libraryPath")
     val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))

@@ -83,6 +83,9 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
       ),
       constraints = Map(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
+
+        "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
+        "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
     val referenceElaborated = Design(Block.Block(
@@ -156,6 +159,9 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
       ),
       constraints = Map(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
+
+        "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
+        "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.Library(library))
@@ -164,8 +170,17 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.contents.get
     val referenceBlock = referenceElaborated.contents.get
+
+    compiledBlock.blocks("source").`type`.hierarchy.get.ports("port") should
+        equal(referenceBlock.blocks("source").`type`.hierarchy.get.ports("port"))
     compiledBlock.blocks("source") should equal(referenceBlock.blocks("source"))
+
+    compiledBlock.links("link").`type`.link.get.ports("outerPort") should
+        equal(referenceBlock.links("link").`type`.link.get.ports("outerPort"))
+    compiledBlock.links("link").`type`.link.get.links("inner") should
+        equal(referenceBlock.links("link").`type`.link.get.links("inner"))
     compiledBlock.links("link") should equal(referenceBlock.links("link"))
+
     compiledBlock.constraints should equal(referenceBlock.constraints)
 
     // The catch-all equivalence comparison
