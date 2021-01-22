@@ -11,20 +11,16 @@ import edg.util.DependencyGraph
 class IllegalConstraintException(msg: String) extends Exception(msg)
 
 
-trait ConnectPropRecord
-object ConnectPropRecord {
-  case class Block(path: DesignPath) extends ConnectPropRecord  // set once block elaborated
-  case class Link(path: DesignPath) extends ConnectPropRecord  // set once link elaborated
-  case class Connect(blockPortPath: DesignPath, linkPortPath: DesignPath,
-                     linkPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
-  case class Export(extPortPath: DesignPath, intPortPath: DesignPath) extends ConnectPropRecord  // as dependency target, set once elaborated
-}
-
 trait ElaborateRecord
 object ElaborateRecord {
   case class Block(blockPath: DesignPath) extends ElaborateRecord
   case class Link(linkPath: DesignPath) extends ElaborateRecord
   case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
+
+  // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
+  case class Connect(blockPortPath: DesignPath, linkPortPath: DesignPath,
+                     linkPath: DesignPath) extends ElaborateRecord
+  case class Export(extPortPath: DesignPath, intPortPath: DesignPath) extends ElaborateRecord
 }
 
 
@@ -45,11 +41,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
-
-  // Dependency graph for generating the equivalence constraints between parameters, as well as CONNECTED_LINK.
-  // This triggers once both the block and links (or exterior block and interior block, for exports)
-  // have been elaborated, as a simultaneous traversal on the ports on both sides.
-  private val connectPropDependencies = DependencyGraph[ConnectPropRecord, None.type]()
 
   protected def generateConnected(port1Path: DesignPath, port1: wir.PortLike,
                                   port2Path: DesignPath, port2: wir.PortLike): Unit = {
@@ -84,33 +75,27 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
   }
 
-  protected def updateConnectPropDependencies(): Unit = {
-    connectPropDependencies.getReady.foreach {
-      case connectRecord @ ConnectPropRecord.Connect(blockPortPath, linkPortPath, linkPath) =>
-        debug(s"Generate connect equalities for $blockPortPath, $linkPortPath")
-        // Generate CONNECTED_LINK equalities
-        val link = resolveLink(linkPath)
-        for (paramName <- link.getParams.keys) {
-          constProp.addEquality(
-            IndirectDesignPath.fromDesignPath(linkPath) + paramName,
-            IndirectDesignPath.fromDesignPath(blockPortPath) + IndirectStep.ConnectedLink() + paramName
-          )
-        }
-        // Generated port parameter equalities
-        val blockPort = resolvePort(blockPortPath)
-        val linkPort = resolvePort(linkPortPath)
-        generateConnected(blockPortPath, blockPort, linkPortPath, linkPort)
-        // Mark as completed
-        connectPropDependencies.setValue(connectRecord, None)
-      case connectRecord @ ConnectPropRecord.Export(extPortPath, intPortPath) =>
-        debug(s"Generate export equalities for $extPortPath, $intPortPath")
-        val extPort = resolvePort(extPortPath)
-        val intPort = resolvePort(intPortPath)
-        generateConnected(extPortPath, extPort, intPortPath, intPort)
-        // Mark as completed
-        connectPropDependencies.setValue(connectRecord, None)
+  protected def elaborateConnectRecord(connectRecord: ElaborateRecord.Connect): Unit = {
+    debug(s"Generate connect equalities for $connectRecord")
+    // Generate CONNECTED_LINK equalities
+    val link = resolveLink(connectRecord.linkPath)
+    for (paramName <- link.getParams.keys) {
+      constProp.addEquality(
+        IndirectDesignPath.fromDesignPath(connectRecord.linkPath) + paramName,
+        IndirectDesignPath.fromDesignPath(connectRecord.blockPortPath) + IndirectStep.ConnectedLink() + paramName
+      )
     }
-    require(connectPropDependencies.getReady.isEmpty)
+    // Generated port parameter equalities
+    val blockPort = resolvePort(connectRecord.blockPortPath)
+    val linkPort = resolvePort(connectRecord.linkPortPath)
+    generateConnected(connectRecord.blockPortPath, blockPort, connectRecord.linkPortPath, linkPort)
+  }
+
+  protected def elaborateExportRecord(connectRecord: ElaborateRecord.Export): Unit = {
+    debug(s"Generate export equalities for $connectRecord")
+    val extPort = resolvePort(connectRecord.extPortPath)
+    val intPort = resolvePort(connectRecord.intPortPath)
+    generateConnected(connectRecord.extPortPath, extPort, connectRecord.intPortPath, intPort)
   }
 
   // Seed compilation with the root
@@ -212,11 +197,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (blockPort, Ref.Allocate(linkPortArray)) =>
             linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
           case (blockPort, linkPort) =>
-            connectPropDependencies.addNode(
-              ConnectPropRecord.Connect(path ++ blockPort, path ++ linkPort,
+            elaboratePending.addNode(
+              ElaborateRecord.Connect(path ++ blockPort, path ++ linkPort,
                 path + linkPort.steps.head.step.name.get),
-              Seq(ConnectPropRecord.Block(path + blockPort.steps.head.step.name.get),
-                ConnectPropRecord.Link(path + linkPort.steps.head.step.name.get))
+              Seq(ElaborateRecord.Block(path + blockPort.steps.head.step.name.get),
+                ElaborateRecord.Link(path + linkPort.steps.head.step.name.get))
             )
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
@@ -228,10 +213,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            connectPropDependencies.addNode(
-              ConnectPropRecord.Export(path ++ extPort, path ++ intPort),
-              Seq(ConnectPropRecord.Block(path),
-                ConnectPropRecord.Block(path + intPort.steps.head.step.name.get))
+            elaboratePending.addNode(
+              ElaborateRecord.Export(path ++ extPort, path ++ intPort),
+              Seq(ElaborateRecord.Block(path),
+                ElaborateRecord.Block(path + intPort.steps.head.step.name.get))
             )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
@@ -240,11 +225,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // For fully resolved arrays, allocate port numbers and set array elements
     linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
       val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
-        connectPropDependencies.addNode(
-          ConnectPropRecord.Connect(path ++ blockPort, path ++ linkPortArray + index.toString,
+        elaboratePending.addNode(
+          ElaborateRecord.Connect(path ++ blockPort, path ++ linkPortArray + index.toString,
             path + linkPortArray.steps.head.step.name.get),
-          Seq(ConnectPropRecord.Block(path + blockPort.steps.head.step.name.get),
-            ConnectPropRecord.Link(path + linkPortArray.steps.head.step.name.get))
+          Seq(ElaborateRecord.Block(path + blockPort.steps.head.step.name.get),
+            ElaborateRecord.Link(path + linkPortArray.steps.head.step.name.get))
         )
         block.mapConstraint(constrName) { constr =>
           val steps = constr.expr.connected.get.linkPort.get.expr.ref.get.steps
@@ -293,10 +278,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Link block in parent
     parent.elaborate(name, block)
-
-    // Mark this as ready for dependent actions
-    connectPropDependencies.setValue(ConnectPropRecord.Block(path), None)
-    updateConnectPropDependencies()
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -318,10 +299,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (extPort, Ref.Allocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port <-> port array")
           case (extPort, intPort) =>
-            connectPropDependencies.addNode(
-              ConnectPropRecord.Export(path ++ extPort, path ++ intPort),
-              Seq(ConnectPropRecord.Link(path),
-                ConnectPropRecord.Link(path + intPort.steps.head.step.name.get))
+            elaboratePending.addNode(
+              ElaborateRecord.Export(path ++ extPort, path ++ intPort),
+              Seq(ElaborateRecord.Link(path),
+                ElaborateRecord.Link(path + intPort.steps.head.step.name.get))
             )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
@@ -353,10 +334,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Link block in parent
     parent.elaborate(name, link)
-
-    // Mark this as ready for dependent actions
-    connectPropDependencies.setValue(ConnectPropRecord.Link(path), None)
-    updateConnectPropDependencies()
   }
 
   /** Performs full compilation and returns the resulting design. Might take a while.
@@ -369,13 +346,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           elaboratePending.setValue(elaborateRecord, None)
         case elaborateRecord @ ElaborateRecord.Link(linkPath) => elaborateLink(linkPath)
           elaboratePending.setValue(elaborateRecord, None)
+        case connectRecord @ ElaborateRecord.Connect(_, _, _) => elaborateConnectRecord(connectRecord)
+          elaboratePending.setValue(connectRecord, None)
+        case connectRecord @ ElaborateRecord.Export(_, _) => elaborateExportRecord(connectRecord)
+          elaboratePending.setValue(connectRecord, None)
       }
     }
 
     require(elaboratePending.getMissing.isEmpty,
       s"failed to elaborate: ${elaboratePending.getMissing}")
-    require(connectPropDependencies.getMissing.isEmpty,
-      s"connects failed to generate: ${connectPropDependencies.getMissing}")
     require(constProp.getUnsolved.isEmpty,
       s"const prop failed to solve: ${constProp.getUnsolved}")
 
