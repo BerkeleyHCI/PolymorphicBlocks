@@ -52,6 +52,21 @@ class CompilerEvaluationTest extends AnyFlatSpec {
           "propIntersectVal" -> ValueExpr.Assign(Ref("port", "intersectVal"), ValueExpr.Ref("intersectVal")),
         )
       ),
+      "sourceContainerBlock" -> Block.Block(
+        params = Map(
+          "floatVal" -> ValInit.Floating,
+        ),
+        ports = Map(
+          "port" -> Port.Library("sourcePort"),
+        ),
+        blocks = Map(
+          "inner" -> Block.Library("sourceBlock")
+        ),
+        constraints = Map(
+          "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port")),
+          "floatAssign" -> Constraint.Assign(Ref("inner", "floatVal"), ValueExpr.Ref("floatVal")),
+        )
+      ),
     ),
     links = Map(
       "link" -> Link.Link(
@@ -179,5 +194,38 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSink2 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink2 + "sinkSum") should equal(Some(FloatValue(6.0)))
     compiler.getValue(linkThroughSink2 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+  }
+
+  "Compiler on design with exports" should "propagate and evaluate values" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceContainerBlock"),
+        "sink0" -> Block.Library("sinkBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
+        "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
+        "sink0SumVal" -> Constraint.Assign(Ref("sink0", "sumVal"), ValueExpr.Literal(1.0)),
+        "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    compiler.compile()
+
+    // check CONNECTED_LINK through outer (direct connection)
+    val linkThroughSource = IndirectDesignPath.root + "source" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughSource + "sinkSum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(linkThroughSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+
+    // check CONNECTED_LINK through inner (via exports)
+    val linkThroughInnerSource = IndirectDesignPath.root + "source" + "inner" + "port" + IndirectStep.ConnectedLink()
+    compiler.getValue(linkThroughInnerSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
+    compiler.getValue(linkThroughInnerSource + "sinkSum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(linkThroughInnerSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
   }
 }

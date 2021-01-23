@@ -6,7 +6,7 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir
-import edg.wir.IndirectDesignPath
+import edg.wir.{IndirectDesignPath, IndirectStep}
 
 
 /** Tests compiler Bundle expansion / elaboration, including nested links.
@@ -210,6 +210,9 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath.root + "link" + "inner" + "innerParam") should equal(Some(IntValue(7)))
 
     // Check the CONNECTED_LINK propagation
-    ??? // TODO
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.ConnectedLink() + "outerParam") should
+        equal(Some(IntValue(42)))
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + "inner" + IndirectStep.ConnectedLink() + "outerParam") should
+        equal(Some(IntValue(7)))
   }
 }
