@@ -17,6 +17,10 @@ object ElaborateRecord {
   case class Link(linkPath: DesignPath) extends ElaborateRecord
   case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
 
+  // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
+  // and inserted into the link params data structure
+  case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
+
   // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
   case class Connect(blockPortPath: DesignPath, linkPortPath: DesignPath,
                      linkPath: DesignPath) extends ElaborateRecord
@@ -28,6 +32,21 @@ object ElaborateRecord {
   * TODO also needs a Python interface for generators, somewhere.
   *
   * During the compilation process, internal data structures are mutated.
+  *
+  * Port parameters are propagated by expanding connect and export statements between connected ports
+  * into equalities between all contained parameters.
+  * This expansion triggers when both ports are fully elaborated, and checks the structures of both ends
+  * for equivalence.
+  *
+  * CONNECTED_LINK parameters are propagated by expanding from the link's top-level port outward.
+  * Expansion triggers at the link-side top-level port (by ref matching), or when the towards-innermost-link
+  * (or towards-outermost-block) port is expanded.
+  * A list of link params is kept in a hashmap indexed by ports, as they are expanded.
+  *
+  * Alternative: fetch links from library (using the port type) to get params to expand.
+  * Problem: a bit more restrictive than what can be expressed in a block - but should be a common interface.
+  *
+  * It is intentional to allow a link-side port to access the CONNECTED_LINK, as a mechanism to access inner links.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // TODO better debug toggle
@@ -38,6 +57,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   private val constProp = new ConstProp()
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
+
+  // Supplemental elaboration data structures
+  // port -> (connected link path, list of params of the connected link)
+  private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[String])]()
 
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
@@ -121,15 +144,31 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
   }
 
-  protected def processPort(path: DesignPath, port: wir.PortLike): Unit = port match {
+  protected def generatePortConnectedLinkEquality(portPath: DesignPath,
+                                                  directContainingLink: (DesignPath, wir.Link)): Unit = {
+    val (containingLinkPath, containingLink) = directContainingLink
+    connectedLinkParams.put(portPath, (containingLinkPath, containingLink.getParams.keys.toSeq))
+    containingLink.getParams.keys.foreach { containingLinkParam =>
+      constProp.addEquality(
+        IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.ConnectedLink() + containingLinkParam,
+        IndirectDesignPath.fromDesignPath(containingLinkPath) + containingLinkParam
+      )
+    }
+    elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+  }
+
+  protected def processPort(path: DesignPath, port: wir.PortLike,
+                            directContainingLink: Option[(DesignPath, wir.Link)] = None): Unit = port match {
     // TODO better semantics and consistency between this and processBlock/processLink
     // Unlike those, this is called with the final port object (after LibraryElements replaced).
     // Main issue is that PortArray doesn't have a meaningful elaborate(), instead using bulk setPorts
     case port: wir.Port =>
       processParams(path, port)
+      directContainingLink.foreach { generatePortConnectedLinkEquality(path, _) }
     case port: wir.Bundle =>
       processParams(path, port)
       elaborateContainedPorts(path, port)
+      directContainingLink.foreach { generatePortConnectedLinkEquality(path, _) }
     case port: wir.PortArray =>
       val libraryPath = port.getType
       debug(s"Elaborate PortArray at $path: $libraryPath")
@@ -139,12 +178,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       }.toMap
       port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
       newPorts.foreach { case (index, subport) =>
-        processPort(path + index, subport)
+        processPort(path + index, subport, directContainingLink)
       }
     case port => throw new NotImplementedError(s"unknown unelaborated port $port")
   }
 
-  protected def elaborateContainedPorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
+  protected def elaborateContainedPorts(path: DesignPath, hasPorts: wir.HasMutablePorts,
+                                        directContainingLink: Option[wir.Link] = None): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
       case port: wir.LibraryElement =>
         val libraryPath = port.target
@@ -201,7 +241,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
               ElaborateRecord.Connect(path ++ blockPort, path ++ linkPort,
                 path + linkPort.steps.head.step.name.get),
               Seq(ElaborateRecord.Block(path + blockPort.steps.head.step.name.get),
-                ElaborateRecord.Link(path + linkPort.steps.head.step.name.get))
+                ElaborateRecord.Link(path + linkPort.steps.head.step.name.get),
+                ElaborateRecord.ConnectedLink(path ++ linkPort))
             )
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
@@ -216,7 +257,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             elaboratePending.addNode(
               ElaborateRecord.Export(path ++ extPort, path ++ intPort),
               Seq(ElaborateRecord.Block(path),
-                ElaborateRecord.Block(path + intPort.steps.head.step.name.get))
+                ElaborateRecord.Block(path + intPort.steps.head.step.name.get),
+                ElaborateRecord.ConnectedLink(path ++ extPort))
             )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
@@ -283,7 +325,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.Ref
     // Elaborate ports, generating equivalence constraints as needed
-    elaborateContainedPorts(path, link)
+    elaborateContainedPorts(path, link, Some(link))
     processParams(path, link)
 
     // Process constraints, as in the block case
@@ -302,7 +344,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             elaboratePending.addNode(
               ElaborateRecord.Export(path ++ extPort, path ++ intPort),
               Seq(ElaborateRecord.Link(path),
-                ElaborateRecord.Link(path + intPort.steps.head.step.name.get))
+                ElaborateRecord.Link(path + intPort.steps.head.step.name.get),
+                ElaborateRecord.ConnectedLink(path ++ intPort))
             )
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
