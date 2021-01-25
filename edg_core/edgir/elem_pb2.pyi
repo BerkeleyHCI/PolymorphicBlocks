@@ -28,6 +28,7 @@ from .init_pb2 import (
 
 from .ref_pb2 import (
     LibraryPath as ref_pb2___LibraryPath,
+    LocalPath as ref_pb2___LocalPath,
 )
 
 from typing import (
@@ -338,6 +339,7 @@ class HierarchyBlock(google___protobuf___message___Message):
         def ClearField(self, field_name: typing_extensions___Literal[u"key",b"key",u"value",b"value"]) -> None: ...
     type___ConstraintsEntry = ConstraintsEntry
 
+    is_abstract: builtin___bool = ...
 
     @property
     def params(self) -> typing___MutableMapping[typing___Text, init_pb2___ValInit]: ...
@@ -358,6 +360,12 @@ class HierarchyBlock(google___protobuf___message___Message):
     def superclasses(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[ref_pb2___LibraryPath]: ...
 
     @property
+    def prerefine_class(self) -> ref_pb2___LibraryPath: ...
+
+    @property
+    def generator(self) -> type___Generator: ...
+
+    @property
     def meta(self) -> common_pb2___Metadata: ...
 
     def __init__(self,
@@ -368,11 +376,42 @@ class HierarchyBlock(google___protobuf___message___Message):
         links : typing___Optional[typing___Mapping[typing___Text, type___LinkLike]] = None,
         constraints : typing___Optional[typing___Mapping[typing___Text, expr_pb2___ValueExpr]] = None,
         superclasses : typing___Optional[typing___Iterable[ref_pb2___LibraryPath]] = None,
+        prerefine_class : typing___Optional[ref_pb2___LibraryPath] = None,
+        generator : typing___Optional[type___Generator] = None,
+        is_abstract : typing___Optional[builtin___bool] = None,
         meta : typing___Optional[common_pb2___Metadata] = None,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal[u"meta",b"meta"]) -> builtin___bool: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"blocks",b"blocks",u"constraints",b"constraints",u"links",b"links",u"meta",b"meta",u"params",b"params",u"ports",b"ports",u"superclasses",b"superclasses"]) -> None: ...
+    def HasField(self, field_name: typing_extensions___Literal[u"generator",b"generator",u"meta",b"meta",u"prerefine_class",b"prerefine_class"]) -> builtin___bool: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"blocks",b"blocks",u"constraints",b"constraints",u"generator",b"generator",u"is_abstract",b"is_abstract",u"links",b"links",u"meta",b"meta",u"params",b"params",u"ports",b"ports",u"prerefine_class",b"prerefine_class",u"superclasses",b"superclasses"]) -> None: ...
 type___HierarchyBlock = HierarchyBlock
+
+class Generator(google___protobuf___message___Message):
+    DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
+    class GeneratorCondition(google___protobuf___message___Message):
+        DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
+
+        @property
+        def prereqs(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[ref_pb2___LocalPath]: ...
+
+        def __init__(self,
+            *,
+            prereqs : typing___Optional[typing___Iterable[ref_pb2___LocalPath]] = None,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"prereqs",b"prereqs"]) -> None: ...
+    type___GeneratorCondition = GeneratorCondition
+
+    module: typing___Text = ...
+
+    @property
+    def conditions(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[type___Generator.GeneratorCondition]: ...
+
+    def __init__(self,
+        *,
+        module : typing___Optional[typing___Text] = None,
+        conditions : typing___Optional[typing___Iterable[type___Generator.GeneratorCondition]] = None,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"class",b"class",u"conditions",b"conditions",u"module",b"module"]) -> None: ...
+type___Generator = Generator
 
 class BlockLike(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...

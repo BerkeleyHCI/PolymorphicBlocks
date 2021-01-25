@@ -19,11 +19,37 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='common.proto',
   package='edg.common',
   syntax='proto3',
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\nedg.common\"\xb0\x02\n\x08Metadata\x12$\n\x07unknown\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12/\n\x07members\x18\x65 \x01(\x0b\x32\x1c.edg.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x1a\x82\x01\n\x07Members\x12\x34\n\x04node\x18\n \x03(\x0b\x32&.edg.common.Metadata.Members.NodeEntry\x1a\x41\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edg.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\x07\n\x05\x45mptyb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\nedg.common\"\x99\x04\n\x08Metadata\x12$\n\x07unknown\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12/\n\x07members\x18\x65 \x01(\x0b\x32\x1c.edg.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x12\x33\n\x0esource_locator\x18n \x01(\x0b\x32\x19.edg.common.SourceLocatorH\x01\x12\x35\n\x0fnamespace_order\x18o \x01(\x0b\x32\x1a.edg.common.NamespaceOrderH\x01\x12\"\n\x05\x65rror\x18p \x01(\x0b\x32\x11.edg.common.ErrorH\x01\x12+\n\ncopper_net\x18x \x01(\x0b\x32\x15.edg.common.CopperNetH\x01\x12*\n\tfootprint\x18y \x01(\x0b\x32\x15.edg.common.FootprintH\x01\x1a\x82\x01\n\x07Members\x12\x34\n\x04node\x18\n \x03(\x0b\x32&.edg.common.Metadata.Members.NodeEntry\x1a\x41\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edg.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\xc7\x01\n\rSourceLocator\x12\x14\n\x0c\x66ile_package\x18\x01 \x01(\t\x12\x13\n\x0bline_offset\x18\x02 \x01(\x05\x12\x12\n\ncol_offset\x18\x03 \x01(\x05\x12\x39\n\x0bsource_type\x18\x04 \x01(\x0e\x32$.edg.common.SourceLocator.SourceType\"<\n\nSourceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nDEFINITION\x10\x01\x12\x11\n\rINSTANTIATION\x10\x02\"\x1f\n\x0eNamespaceOrder\x12\r\n\x05names\x18\x01 \x03(\t\"C\n\x05\x45rror\x12\x0f\n\x07message\x18\x01 \x01(\t\x12)\n\x06source\x18\x02 \x03(\x0b\x32\x19.edg.common.SourceLocator\"\x0b\n\tCopperNet\"\xd2\x01\n\tFootprint\x12\x15\n\rrefdes_prefix\x18\x01 \x01(\t\x12\x16\n\x0e\x66ootprint_name\x18\x15 \x01(\t\x12\x33\n\x07pinning\x18\x03 \x03(\x0b\x32\".edg.common.Footprint.PinningEntry\x12\x0c\n\x04part\x18\n \x01(\t\x12\x14\n\x0cmanufacturer\x18\x0b \x01(\t\x12\r\n\x05value\x18\x0c \x01(\t\x1a.\n\x0cPinningEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x07\n\x05\x45mptyb\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
+
+_SOURCELOCATOR_SOURCETYPE = _descriptor.EnumDescriptor(
+  name='SourceType',
+  full_name='edg.common.SourceLocator.SourceType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DEFINITION', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='INSTANTIATION', index=2, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=708,
+  serialized_end=768,
+)
+_sym_db.RegisterEnumDescriptor(_SOURCELOCATOR_SOURCETYPE)
 
 
 _METADATA_MEMBERS_NODEENTRY = _descriptor.Descriptor(
@@ -59,8 +85,8 @@ _METADATA_MEMBERS_NODEENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=252,
-  serialized_end=317,
+  serialized_start=485,
+  serialized_end=550,
 )
 
 _METADATA_MEMBERS = _descriptor.Descriptor(
@@ -89,8 +115,8 @@ _METADATA_MEMBERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=187,
-  serialized_end=317,
+  serialized_start=420,
+  serialized_end=550,
 )
 
 _METADATA = _descriptor.Descriptor(
@@ -135,6 +161,41 @@ _METADATA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='source_locator', full_name='edg.common.Metadata.source_locator', index=5,
+      number=110, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='namespace_order', full_name='edg.common.Metadata.namespace_order', index=6,
+      number=111, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='edg.common.Metadata.error', index=7,
+      number=112, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='copper_net', full_name='edg.common.Metadata.copper_net', index=8,
+      number=120, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='footprint', full_name='edg.common.Metadata.footprint', index=9,
+      number=121, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -154,7 +215,256 @@ _METADATA = _descriptor.Descriptor(
       index=1, containing_type=None, fields=[]),
   ],
   serialized_start=29,
-  serialized_end=333,
+  serialized_end=566,
+)
+
+
+_SOURCELOCATOR = _descriptor.Descriptor(
+  name='SourceLocator',
+  full_name='edg.common.SourceLocator',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='file_package', full_name='edg.common.SourceLocator.file_package', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='line_offset', full_name='edg.common.SourceLocator.line_offset', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='col_offset', full_name='edg.common.SourceLocator.col_offset', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='source_type', full_name='edg.common.SourceLocator.source_type', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _SOURCELOCATOR_SOURCETYPE,
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=569,
+  serialized_end=768,
+)
+
+
+_NAMESPACEORDER = _descriptor.Descriptor(
+  name='NamespaceOrder',
+  full_name='edg.common.NamespaceOrder',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='names', full_name='edg.common.NamespaceOrder.names', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=770,
+  serialized_end=801,
+)
+
+
+_ERROR = _descriptor.Descriptor(
+  name='Error',
+  full_name='edg.common.Error',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='message', full_name='edg.common.Error.message', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='source', full_name='edg.common.Error.source', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=803,
+  serialized_end=870,
+)
+
+
+_COPPERNET = _descriptor.Descriptor(
+  name='CopperNet',
+  full_name='edg.common.CopperNet',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=872,
+  serialized_end=883,
+)
+
+
+_FOOTPRINT_PINNINGENTRY = _descriptor.Descriptor(
+  name='PinningEntry',
+  full_name='edg.common.Footprint.PinningEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='edg.common.Footprint.PinningEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='edg.common.Footprint.PinningEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1050,
+  serialized_end=1096,
+)
+
+_FOOTPRINT = _descriptor.Descriptor(
+  name='Footprint',
+  full_name='edg.common.Footprint',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='refdes_prefix', full_name='edg.common.Footprint.refdes_prefix', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='footprint_name', full_name='edg.common.Footprint.footprint_name', index=1,
+      number=21, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='pinning', full_name='edg.common.Footprint.pinning', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='part', full_name='edg.common.Footprint.part', index=3,
+      number=10, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='manufacturer', full_name='edg.common.Footprint.manufacturer', index=4,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='edg.common.Footprint.value', index=5,
+      number=12, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_FOOTPRINT_PINNINGENTRY, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=886,
+  serialized_end=1096,
 )
 
 
@@ -177,8 +487,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=335,
-  serialized_end=342,
+  serialized_start=1098,
+  serialized_end=1105,
 )
 
 _METADATA_MEMBERS_NODEENTRY.fields_by_name['value'].message_type = _METADATA
@@ -187,6 +497,11 @@ _METADATA_MEMBERS.fields_by_name['node'].message_type = _METADATA_MEMBERS_NODEEN
 _METADATA_MEMBERS.containing_type = _METADATA
 _METADATA.fields_by_name['unknown'].message_type = _EMPTY
 _METADATA.fields_by_name['members'].message_type = _METADATA_MEMBERS
+_METADATA.fields_by_name['source_locator'].message_type = _SOURCELOCATOR
+_METADATA.fields_by_name['namespace_order'].message_type = _NAMESPACEORDER
+_METADATA.fields_by_name['error'].message_type = _ERROR
+_METADATA.fields_by_name['copper_net'].message_type = _COPPERNET
+_METADATA.fields_by_name['footprint'].message_type = _FOOTPRINT
 _METADATA.oneofs_by_name['type'].fields.append(
   _METADATA.fields_by_name['unknown'])
 _METADATA.fields_by_name['unknown'].containing_oneof = _METADATA.oneofs_by_name['type']
@@ -202,7 +517,32 @@ _METADATA.fields_by_name['text_leaf'].containing_oneof = _METADATA.oneofs_by_nam
 _METADATA.oneofs_by_name['meta'].fields.append(
   _METADATA.fields_by_name['bin_leaf'])
 _METADATA.fields_by_name['bin_leaf'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_METADATA.oneofs_by_name['meta'].fields.append(
+  _METADATA.fields_by_name['source_locator'])
+_METADATA.fields_by_name['source_locator'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_METADATA.oneofs_by_name['meta'].fields.append(
+  _METADATA.fields_by_name['namespace_order'])
+_METADATA.fields_by_name['namespace_order'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_METADATA.oneofs_by_name['meta'].fields.append(
+  _METADATA.fields_by_name['error'])
+_METADATA.fields_by_name['error'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_METADATA.oneofs_by_name['meta'].fields.append(
+  _METADATA.fields_by_name['copper_net'])
+_METADATA.fields_by_name['copper_net'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_METADATA.oneofs_by_name['meta'].fields.append(
+  _METADATA.fields_by_name['footprint'])
+_METADATA.fields_by_name['footprint'].containing_oneof = _METADATA.oneofs_by_name['meta']
+_SOURCELOCATOR.fields_by_name['source_type'].enum_type = _SOURCELOCATOR_SOURCETYPE
+_SOURCELOCATOR_SOURCETYPE.containing_type = _SOURCELOCATOR
+_ERROR.fields_by_name['source'].message_type = _SOURCELOCATOR
+_FOOTPRINT_PINNINGENTRY.containing_type = _FOOTPRINT
+_FOOTPRINT.fields_by_name['pinning'].message_type = _FOOTPRINT_PINNINGENTRY
 DESCRIPTOR.message_types_by_name['Metadata'] = _METADATA
+DESCRIPTOR.message_types_by_name['SourceLocator'] = _SOURCELOCATOR
+DESCRIPTOR.message_types_by_name['NamespaceOrder'] = _NAMESPACEORDER
+DESCRIPTOR.message_types_by_name['Error'] = _ERROR
+DESCRIPTOR.message_types_by_name['CopperNet'] = _COPPERNET
+DESCRIPTOR.message_types_by_name['Footprint'] = _FOOTPRINT
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 
 Metadata = _reflection.GeneratedProtocolMessageType('Metadata', (_message.Message,), dict(
@@ -228,6 +568,49 @@ _sym_db.RegisterMessage(Metadata)
 _sym_db.RegisterMessage(Metadata.Members)
 _sym_db.RegisterMessage(Metadata.Members.NodeEntry)
 
+SourceLocator = _reflection.GeneratedProtocolMessageType('SourceLocator', (_message.Message,), dict(
+  DESCRIPTOR = _SOURCELOCATOR,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:edg.common.SourceLocator)
+  ))
+_sym_db.RegisterMessage(SourceLocator)
+
+NamespaceOrder = _reflection.GeneratedProtocolMessageType('NamespaceOrder', (_message.Message,), dict(
+  DESCRIPTOR = _NAMESPACEORDER,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:edg.common.NamespaceOrder)
+  ))
+_sym_db.RegisterMessage(NamespaceOrder)
+
+Error = _reflection.GeneratedProtocolMessageType('Error', (_message.Message,), dict(
+  DESCRIPTOR = _ERROR,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:edg.common.Error)
+  ))
+_sym_db.RegisterMessage(Error)
+
+CopperNet = _reflection.GeneratedProtocolMessageType('CopperNet', (_message.Message,), dict(
+  DESCRIPTOR = _COPPERNET,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:edg.common.CopperNet)
+  ))
+_sym_db.RegisterMessage(CopperNet)
+
+Footprint = _reflection.GeneratedProtocolMessageType('Footprint', (_message.Message,), dict(
+
+  PinningEntry = _reflection.GeneratedProtocolMessageType('PinningEntry', (_message.Message,), dict(
+    DESCRIPTOR = _FOOTPRINT_PINNINGENTRY,
+    __module__ = 'common_pb2'
+    # @@protoc_insertion_point(class_scope:edg.common.Footprint.PinningEntry)
+    ))
+  ,
+  DESCRIPTOR = _FOOTPRINT,
+  __module__ = 'common_pb2'
+  # @@protoc_insertion_point(class_scope:edg.common.Footprint)
+  ))
+_sym_db.RegisterMessage(Footprint)
+_sym_db.RegisterMessage(Footprint.PinningEntry)
+
 Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), dict(
   DESCRIPTOR = _EMPTY,
   __module__ = 'common_pb2'
@@ -238,4 +621,6 @@ _sym_db.RegisterMessage(Empty)
 
 _METADATA_MEMBERS_NODEENTRY.has_options = True
 _METADATA_MEMBERS_NODEENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_FOOTPRINT_PINNINGENTRY.has_options = True
+_FOOTPRINT_PINNINGENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)
