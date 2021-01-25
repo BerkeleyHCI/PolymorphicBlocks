@@ -1,0 +1,32 @@
+/** Defines a gRPC service provided in Python that exposes HDL-to-edgir elaboration for a compiler in a
+    different process / language.
+*/
+
+syntax = "proto3";
+package edg.compiler;
+
+import "schema.proto";
+import "ref.proto";
+import "elem.proto";
+import "lit.proto";
+
+message ModuleName {
+  string name = 1;
+}
+
+message GeneratorRequest {
+  message Value {
+    ref.LocalPath path = 1;
+    lit.ValueLit value = 2;
+  }
+
+  ref.LibraryPath class = 1;
+  repeated Value values = 2;
+}
+
+service HdlInterface {
+  rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
+  rpc GetLibraryElement (ref.LibraryPath) returns (stream schema.Library.NS.Val) { }
+
+  rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
+}
