@@ -14,7 +14,7 @@ from .IdentityDict import IdentityDict
 from .MultiBiDict import MultiBiDict
 
 # Features for library builders
-from .Core import SubElementDict, ElementDict, ElementMeta, non_library
+from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_library
 from .Blocks import BasePort, BaseBlock
 from . import TransformUtil
 from . import edgir

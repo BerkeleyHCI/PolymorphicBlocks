@@ -163,6 +163,14 @@ class Refable():
     return IdentityDict([(self, prefix)])
 
 
+NonLibraryFlag = object()
+NonLibraryType = TypeVar('NonLibraryType', bound=Type['LibraryElement'])
+def non_library(decorated: NonLibraryType) -> NonLibraryType:
+  decorated._elt_properties[(decorated, 'non_library')] = None
+  return decorated
+
+
+@non_library
 class LibraryElement(Refable, metaclass=ElementMeta):
   """Defines a library element, which optionally contains other library elements."""
   _elt_properties: Dict[Any, Any] = {}  # TODO can this be restricted further?
@@ -300,10 +308,3 @@ class HasMetadata(LibraryElement):
     else:
       raise ValueError(f'must overload _metadata_to_proto to handle unknown value {src} at {path}')
     return pb
-
-
-NonLibraryFlag = object()
-NonLibraryType = TypeVar('NonLibraryType', bound=Type[LibraryElement])
-def non_library(decorated: NonLibraryType) -> NonLibraryType:
-  decorated._elt_properties[(decorated, 'non_library')] = None
-  return decorated
