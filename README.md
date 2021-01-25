@@ -68,7 +68,7 @@ You will need a Python 3.7+ installation with the protobuf and py4j packages.
 
 The packages can be installed using `pip`:
 ```python
-pip install protobuf py4j
+pip install protobuf py4j grpcio
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 
