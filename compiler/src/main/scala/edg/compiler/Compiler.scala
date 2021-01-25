@@ -83,6 +83,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Generate the CONNECTED_LINK equalities
     val (linkPath, linkParams) = connectedLinkParams(toLinkPortPath)
+    connectedLinkParams.put(fromLinkPortPath, (linkPath, linkParams))  // propagate CONNECTED_LINK params
     for (linkParam <- linkParams) {
       constProp.addEquality(
         IndirectDesignPath.fromDesignPath(toLinkPortPath) + IndirectStep.ConnectedLink() + linkParam,
