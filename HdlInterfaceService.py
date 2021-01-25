@@ -3,19 +3,22 @@ from typing import  Generator
 import grpc  # type: ignore
 from concurrent import futures
 
-from . import edgrpc, edgir
+from edg_core import edgrpc, edgir
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) ->\
           Generator[edgir.LibraryPath, None, None]:
-    pass
+    print(request)
+    yield edgir.LibraryPath()
 
   def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
-    pass
+    print(request)
+    return edgir.Library.NS.Val()
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
-    pass
+    print(request)
+    return edgir.HierarchyBlock()
 
 
 if __name__ == '__main__':
