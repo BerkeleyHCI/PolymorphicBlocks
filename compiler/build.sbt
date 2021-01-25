@@ -1,3 +1,5 @@
+import scalapb.compiler.Version.scalapbVersion
+
 name := "edg-compiler"
 
 version := "0.1-SNAPSHOT"
@@ -7,7 +9,8 @@ scalaVersion := "2.13.4"
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.0" % "test",
 
-  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapbVersion,
 )
 
 PB.protoSources in Compile := Seq(
