@@ -13,12 +13,13 @@ class PythonInterfaceTest extends AnyFlatSpec {
   behavior of "PythonInterface"
 
   it should "do something" in {
-    val channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext(true).build
+    val channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext.build
     val request = edgrpc.ModuleName(name = "World")
     val blockingStub = HdlInterfaceGrpc.blockingStub(channel)
     val reply = blockingStub.libraryElementsInModule(request)
 
     println(reply)
+    println(reply.mkString(", "))
   }
 
 }

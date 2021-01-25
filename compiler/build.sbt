@@ -1,4 +1,4 @@
-import scalapb.compiler.Version.scalapbVersion
+import scalapb.compiler.Version.{grpcJavaVersion, scalapbVersion}
 
 name := "edg-compiler"
 
@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
 
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapbVersion,
+  "io.grpc" % "grpc-netty" % grpcJavaVersion,
 )
 
 PB.protoSources in Compile := Seq(

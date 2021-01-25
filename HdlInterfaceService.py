@@ -10,7 +10,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) ->\
           Generator[edgir.LibraryPath, None, None]:
     print(request)
-    yield edgir.LibraryPath()
+    yield edgir.LibraryPath(target=edgir.LocalStep(name=request.name))
 
   def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
     print(request)
