@@ -26,7 +26,7 @@ message GeneratorRequest {
 
 service HdlInterface {
   rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
-  rpc GetLibraryElement (ref.LibraryPath) returns (stream schema.Library.NS.Val) { }
+  rpc GetLibraryElement (ref.LibraryPath) returns (schema.Library.NS.Val) { }
 
   rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
 }

@@ -1,17 +1,17 @@
 import grpc  # type: ignore
 from concurrent import futures
 
-from . import edgrpc
+from . import edgrpc, edgir
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def LibraryElementsInModule(self, request, context):
+  def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> None:
     pass
 
-  def GetLibraryElement(self, request, context):
+  def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
     pass
 
-  def ElaborateGenerator(self, request, context):
+  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
     pass
 
 

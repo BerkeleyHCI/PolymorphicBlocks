@@ -9,8 +9,8 @@ protoc -I=. -I=../../edgir --python_out=../../edg_core/edgrpc --mypy_out=../../e
 
 And to fix up package imports:
 ```
-sed -i -E 's/^import.*_pb2/from . \0/' ../edg_core/edgrpc/*.py
-sed -i -E 's/^from (.*)_pb2 import/from .\1_pb2 import/'  ../edg_core/edgir/*.pyi
+sed -i -E 's/^import.*_pb2/from edg_core.edgir \0/' ../../edg_core/edgrpc/*.py
+sed -i -E 's/^from (.*)_pb2 import/from edg_core.edgir.\1_pb2 import/'  ../../edg_core/edgrpc/*.pyi
 ```
 
 Note: mypy-protobuf [does not currently generate gRPC stubs](https://github.com/dropbox/mypy-protobuf/issues/46).
