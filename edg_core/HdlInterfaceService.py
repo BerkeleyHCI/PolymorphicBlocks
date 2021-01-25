@@ -1,3 +1,5 @@
+from typing import  Generator
+
 import grpc  # type: ignore
 from concurrent import futures
 
@@ -5,7 +7,8 @@ from . import edgrpc, edgir
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> None:
+  def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) ->\
+          Generator[edgir.LibraryPath, None, None]:
     pass
 
   def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
