@@ -17,13 +17,13 @@ message ModuleName {
 
 message LibraryRequest {
   repeated string modules = 1;  // Python modules to search for the class
-  ref.LibraryPath class = 2;  // library element asked for
+  ref.LibraryPath element = 2;  // library element asked for
 }
 
 message GeneratorRequest {
   // TODO: support multiple generator and stages?
   repeated string modules = 1;  // Python modules to search for the class
-  ref.LibraryPath class = 2;  // path of library element containing the generator
+  ref.LibraryPath element = 2;  // path of library element containing the generator
 
   message Value {
     ref.LocalPath path = 1;

@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"F\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12#\n\x05\x63lass\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xcb\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12#\n\x05\x63lass\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xcd\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -78,7 +78,7 @@ _LIBRARYREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class', full_name='edg.compiler.LibraryRequest.class', index=1,
+      name='element', full_name='edg.compiler.LibraryRequest.element', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -97,7 +97,7 @@ _LIBRARYREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=103,
-  serialized_end=173,
+  serialized_end=175,
 )
 
 
@@ -135,8 +135,8 @@ _GENERATORREQUEST_VALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=304,
-  serialized_end=379,
+  serialized_start=308,
+  serialized_end=383,
 )
 
 _GENERATORREQUEST = _descriptor.Descriptor(
@@ -155,7 +155,7 @@ _GENERATORREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class', full_name='edg.compiler.GeneratorRequest.class', index=1,
+      name='element', full_name='edg.compiler.GeneratorRequest.element', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -180,15 +180,15 @@ _GENERATORREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=176,
-  serialized_end=379,
+  serialized_start=178,
+  serialized_end=383,
 )
 
-_LIBRARYREQUEST.fields_by_name['class'].message_type = ref__pb2._LIBRARYPATH
+_LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
 _GENERATORREQUEST_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
 _GENERATORREQUEST_VALUE.containing_type = _GENERATORREQUEST
-_GENERATORREQUEST.fields_by_name['class'].message_type = ref__pb2._LIBRARYPATH
+_GENERATORREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST.fields_by_name['values'].message_type = _GENERATORREQUEST_VALUE
 DESCRIPTOR.message_types_by_name['ModuleName'] = _MODULENAME
 DESCRIPTOR.message_types_by_name['LibraryRequest'] = _LIBRARYREQUEST
@@ -233,8 +233,8 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=382,
-  serialized_end=638,
+  serialized_start=386,
+  serialized_end=642,
   methods=[
   _descriptor.MethodDescriptor(
     name='LibraryElementsInModule',

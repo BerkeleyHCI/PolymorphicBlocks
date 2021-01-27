@@ -55,9 +55,15 @@ class CachedLibrary():
   def _elaborate_class(cls, elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
     obj = elt_cls()
     if isinstance(obj, Block):
-      pass
-
-
+      return edgir.Library.NS.Val(hierarchy_block=obj._def_to_proto())
+    elif isinstance(obj, Port):
+      return edgir.Library.NS.Val(port=obj._def_to_proto())
+    elif isinstance(obj, Bundle):
+      return edgir.Library.NS.Val(bundle=obj._def_to_proto())
+    elif isinstance(obj, Link):
+      return edgir.Library.NS.Val(link=obj._def_to_proto())
+    else:
+      raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
@@ -68,13 +74,22 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
           Generator[edgir.LibraryPath, None, None]:
     return  # TODO implement me
 
-  def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
+  def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgir.Library.NS.Val:
     # TODO: this isn't completely hermetic in terms of library searching
-    print(request)
-    return edgir.Library.NS.Val()
+    for module_name in request.modules:
+      self.library.load_module(module_name)
+
+    library_elt = self.library.find_by_path(request.element)
+    if library_elt is not None:
+      return library_elt
+    else:
+      return edgir.Library.NS.Val()  # TODO better more explicit failure?
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
     # TODO: this isn't completely hermetic in terms of library searching
+    for module_name in request.modules:
+      self.library.load_module(module_name)
+
     print(request)
     return edgir.HierarchyBlock()
 
