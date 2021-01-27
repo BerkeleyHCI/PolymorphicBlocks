@@ -24,7 +24,7 @@ class HdlInterfaceStub(object):
                 )
         self.GetLibraryElement = channel.unary_unary(
                 '/edg.compiler.HdlInterface/GetLibraryElement',
-                request_serializer=ref__pb2.LibraryPath.SerializeToString,
+                request_serializer=hdl__pb2.LibraryRequest.SerializeToString,
                 response_deserializer=schema__pb2.Library.NS.Val.FromString,
                 )
         self.ElaborateGenerator = channel.unary_unary(
@@ -65,7 +65,7 @@ def add_HdlInterfaceServicer_to_server(servicer, server):
             ),
             'GetLibraryElement': grpc.unary_unary_rpc_method_handler(
                     servicer.GetLibraryElement,
-                    request_deserializer=ref__pb2.LibraryPath.FromString,
+                    request_deserializer=hdl__pb2.LibraryRequest.FromString,
                     response_serializer=schema__pb2.Library.NS.Val.SerializeToString,
             ),
             'ElaborateGenerator': grpc.unary_unary_rpc_method_handler(
@@ -112,7 +112,7 @@ class HdlInterface(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/edg.compiler.HdlInterface/GetLibraryElement',
-            ref__pb2.LibraryPath.SerializeToString,
+            hdl__pb2.LibraryRequest.SerializeToString,
             schema__pb2.Library.NS.Val.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -10,23 +10,32 @@ import "ref.proto";
 import "elem.proto";
 import "lit.proto";
 
+
 message ModuleName {
   string name = 1;
 }
 
+message LibraryRequest {
+  repeated string modules = 1;  // Python modules to search for the class
+  ref.LibraryPath class = 2;  // library element asked for
+}
+
 message GeneratorRequest {
+  // TODO: support multiple generator and stages?
+  repeated string modules = 1;  // Python modules to search for the class
+  ref.LibraryPath class = 2;  // path of library element containing the generator
+
   message Value {
     ref.LocalPath path = 1;
     lit.ValueLit value = 2;
   }
 
-  ref.LibraryPath class = 1;
-  repeated Value values = 2;
+  repeated Value values = 3;
 }
 
 service HdlInterface {
   rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
-  rpc GetLibraryElement (ref.LibraryPath) returns (schema.Library.NS.Val) { }
 
+  rpc GetLibraryElement (LibraryRequest) returns (schema.Library.NS.Val) { }
   rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
 }
