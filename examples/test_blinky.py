@@ -212,5 +212,8 @@ class BlinkyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
   from edg_core.ScalaCompilerInterface import ScalaCompiler
+  import time
+
   compiler = ScalaCompiler()
+  time.sleep(1)
   compiler.compile(TestBlinkyBasic)
