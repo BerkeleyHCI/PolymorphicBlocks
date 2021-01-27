@@ -3,6 +3,7 @@ from typing import  Generator, Optional, Set, Dict, Type, cast
 
 import importlib
 import inspect
+import traceback
 import sys
 
 from . import edgrpc, edgir
@@ -60,14 +61,16 @@ class CachedLibrary():
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
     obj = elt_cls()
     if isinstance(obj, Block):
-      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library library {elt_cls}")
+      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}")
       return edgir.Library.NS.Val(hierarchy_block=block_proto)
+    elif isinstance(obj, Link):
+      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}")
+      assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
+      return edgir.Library.NS.Val(link=link_proto)
     elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
       return edgir.Library.NS.Val(bundle=obj._def_to_proto())
     elif isinstance(obj, Port):
       return edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
-    elif isinstance(obj, Link):
-      return edgir.Library.NS.Val(link=obj._def_to_proto())
     else:
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
@@ -85,7 +88,13 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     for module_name in request.modules:
       self.library.load_module(module_name)
 
-    library_elt = self.library.find_by_path(request.element)
+    try:
+      library_elt = self.library.find_by_path(request.element)
+    except BaseException as e:
+      traceback.print_exc()
+      print(f"while serving library element request for {request.element.target.name}")
+      library_elt = None
+
     if library_elt is not None:
       return library_elt
     else:
@@ -96,5 +105,10 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     for module_name in request.modules:
       self.library.load_module(module_name)
 
-    print(request)
+    try:
+      pass
+    except BaseException as e:
+      traceback.print_exc()
+      print(f"while serving generator request for {request.element.target.name}")
+
     return edgir.HierarchyBlock()
