@@ -95,7 +95,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "sink2Connect" -> Constraint.Connected(Ref("sink2", "port"), Ref("link", "sinks", "2")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
 
     // Smaller comparisons to allow more targeted error messages

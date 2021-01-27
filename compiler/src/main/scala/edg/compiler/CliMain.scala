@@ -14,6 +14,8 @@ object CliMain {
     val blockLib = ref.LibraryPath(target=Some(ref.LocalStep(ref.LocalStep.Step.Name(blockName))))
     val topBlock = pyIf.libraryRequest(Seq(moduleName), blockLib).getHierarchyBlock
 
-    schema.Design(contents=Some(topBlock)).writeTo(System.out)
+    val topDesign = schema.Design(contents=Some(topBlock))
+    val compiler = new Compiler(topDesign, new PythonInterfaceLibrary(pyIf, Seq(moduleName)))
+    compiler.compile().writeTo(System.out)
   }
 }

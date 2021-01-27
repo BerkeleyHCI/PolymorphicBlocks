@@ -100,7 +100,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile should equal(referenceElaborated)
   }
 
@@ -164,7 +164,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile should equal(referenceElaborated)
   }
 }

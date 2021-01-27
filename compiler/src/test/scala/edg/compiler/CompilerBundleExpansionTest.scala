@@ -164,7 +164,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
 
     // Smaller comparisons to allow more targeted error messages
@@ -202,7 +202,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
 
     // Check basic to-link value propagation

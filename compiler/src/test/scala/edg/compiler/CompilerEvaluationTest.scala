@@ -109,7 +109,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
 
     // Check one-step prop
@@ -171,7 +171,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink2IntersectVal" -> Constraint.Assign(Ref("sink2", "intersectVal"), ValueExpr.Literal(6.0, 9.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
 
     // check link reductions
@@ -213,7 +213,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.Library(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
 
     // check CONNECTED_LINK through outer (direct connection)
