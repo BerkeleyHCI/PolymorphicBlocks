@@ -225,4 +225,5 @@ if __name__ == '__main__':
   # server.wait_for_termination()
 
   compiler = ScalaCompiler()
-  compiler.compile(TestBlinkyBasic)
+  compiled_design = compiler.compile(TestBlinkyBasic)
+  print(compiled_design)

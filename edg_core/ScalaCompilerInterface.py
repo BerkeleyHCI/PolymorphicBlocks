@@ -34,15 +34,13 @@ class ScalaCompiler:
 
     process = subprocess.Popen(
       ['java', '-jar', jar_path, str(block_modules), block_name],
-      shell=True,  # apparently makes it possible for py4j to open the socket w/ subprocess?!
       stdin=subprocess.PIPE,
       stdout=subprocess.PIPE)
-    # assert process.stdout is not None
-    # output = cls.elk_process.stdout.readline().decode('utf-8')
     out, errs = process.communicate()
-    print(out)
 
-    raise NotImplementedError
+    design = edgir.Design()
+    design.ParseFromString(out)
+    return design
 
   def close(self):
     assert self.server is not None
