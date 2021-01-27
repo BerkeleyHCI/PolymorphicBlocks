@@ -226,4 +226,3 @@ if __name__ == '__main__':
 
   compiler = ScalaCompiler()
   compiled_design = compiler.compile(TestBlinkyBasic)
-  print(compiled_design)
