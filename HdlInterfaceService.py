@@ -15,8 +15,8 @@ from edg_core import edgrpc, edgir, LibraryElement
 class CachedLibrary():
   def __init__(self):
     self.seen_modules: Set[ModuleType] = set()
-    self.lib_class_map: Dict[edgir.LibraryPath, Type[LibraryElement]] = {}
-    self.lib_proto_map: Dict[edgir.LibraryPath, edgir.Library.NS.Val] = {}
+    self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
+    self.lib_proto_map: Dict[str, edgir.Library.NS.Val] = {}
 
   # Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
   # Avoids re-loading previously loaded modules with cacheing.
@@ -34,28 +34,47 @@ class CachedLibrary():
         self._search_module(member)
       if inspect.isclass(member) and issubclass(member, LibraryElement) \
           and (member, 'non_library') not in member._elt_properties:
-        pass
-
+        name = member._static_def_name()
+        assert name not in self.lib_class_map, f"re-loaded {name}"
+        self.lib_class_map[name] = member
 
   # Assuming the module has been loaded, retrieves a library element by LibraryPath.
   def find_by_path(self, path: edgir.LibraryPath) -> Optional[edgir.Library.NS.Val]:
-    pass
+    dict_key = path.target.name
+    if path.target.name in self.lib_proto_map:
+      return self.lib_proto_map[dict_key]
+    else:
+      if dict_key not in self.lib_class_map:
+        return None
+      else:
+        elaborated = self._elaborate_class(self.lib_class_map[dict_key])
+        self.lib_proto_map[dict_key] = elaborated
+        return elaborated
 
-  def _elaborate_class(self, cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
-    pass
+  @staticmethod
+  def _elaborate_class(cls, elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
+    obj = elt_cls()
+    if isinstance(obj, Block):
+      pass
+
+
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
+  def __init__(self, library: CachedLibrary):
+    self.library = library
+
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) ->\
           Generator[edgir.LibraryPath, None, None]:
-    print(request)
-    yield edgir.LibraryPath(target=edgir.LocalStep(name=request.name))
+    return  # TODO implement me
 
   def GetLibraryElement(self, request: edgir.LibraryPath, context) -> edgir.Library.NS.Val:
+    # TODO: this isn't completely hermetic in terms of library searching
     print(request)
     return edgir.Library.NS.Val()
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
+    # TODO: this isn't completely hermetic in terms of library searching
     print(request)
     return edgir.HierarchyBlock()
 
