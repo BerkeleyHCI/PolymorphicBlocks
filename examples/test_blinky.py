@@ -2,6 +2,10 @@ import os
 import unittest
 import sys
 
+if __name__ == '__main__':  # to allow this to be executed in repo root without import errors
+  import os
+  sys.path.append(os.getcwd())
+
 from edg import *
 from edg import TransformUtil as tfu
 
@@ -205,3 +209,8 @@ class BlinkyTestCase(unittest.TestCase):
         tfu.Path.empty().append_block('usb_reg'): Tps561201,
       }
     )
+
+if __name__ == '__main__':
+  from edg_core.ScalaCompilerInterface import ScalaCompiler
+  compiler = ScalaCompiler()
+  compiler.compile(TestBlinkyBasic)

@@ -18,3 +18,4 @@ from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_
 from .Blocks import BasePort, BaseBlock
 from . import TransformUtil
 from . import edgir
+from .HdlInterfaceServer import HdlInterface
