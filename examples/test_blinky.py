@@ -212,8 +212,17 @@ class BlinkyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
   from edg_core.ScalaCompilerInterface import ScalaCompiler
-  import time
+  import grpc  # type: ignore
+  from edg_core import HdlInterface, edgrpc
+  from concurrent import futures
+  from edg_core.HdlInterfaceServer import CachedLibrary
+
+  # server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+  # edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(CachedLibrary()), server)  # type: ignore
+  # server.add_insecure_port('[::]:50051')
+  # print("started server")
+  # server.start()
+  # server.wait_for_termination()
 
   compiler = ScalaCompiler()
-  time.sleep(1)
   compiler.compile(TestBlinkyBasic)

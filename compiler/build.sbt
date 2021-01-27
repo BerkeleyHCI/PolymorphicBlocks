@@ -25,7 +25,7 @@ PB.targets in Compile := Seq(
 
 test in assembly := {}
 assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.last
+  case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.first
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
   case PathList("META-INF", xs @ _*) => MergeStrategy.first
   case x => MergeStrategy.deduplicate

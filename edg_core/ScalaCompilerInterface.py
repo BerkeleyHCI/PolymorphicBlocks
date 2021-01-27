@@ -42,6 +42,10 @@ class ScalaCompiler:
     out, errs = process.communicate()
     print(out)
 
+    raise NotImplementedError
+
   def close(self):
+    assert self.server is not None
     self.server.stop()
     self.server.wait_for_termination()  # is this needed?
+    self.server = None

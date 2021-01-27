@@ -1,8 +1,9 @@
 from types import ModuleType
-from typing import  Generator, Optional, Set, Dict, Type
+from typing import  Generator, Optional, Set, Dict, Type, cast
 
 import importlib
 import inspect
+import sys
 
 from . import edgrpc, edgir
 from .Core import builder, LibraryElement
@@ -22,11 +23,13 @@ class CachedLibrary():
   # Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
   # Avoids re-loading previously loaded modules with cacheing.
   def load_module(self, module_name: str) -> None:
-    self._search_module(importlib.import_module('edg_core'))
+    self._search_module(importlib.import_module(module_name))
 
   def _search_module(self, module: ModuleType) -> None:
     # avoid repeated work and re-indexing modules
-    if module in self.seen_modules:
+    if (module.__name__ in sys.builtin_module_names
+        or not hasattr(module, '__file__')  # apparently load six.moves breaks
+        or module in self.seen_modules):
       return
     self.seen_modules.add(module)
 
@@ -36,7 +39,8 @@ class CachedLibrary():
       if inspect.isclass(member) and issubclass(member, LibraryElement) \
           and (member, 'non_library') not in member._elt_properties:
         name = member._static_def_name()
-        assert name not in self.lib_class_map, f"re-loaded {name}"
+        if name in self.lib_class_map:
+          assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
         self.lib_class_map[name] = member
 
   # Assuming the module has been loaded, retrieves a library element by LibraryPath.
@@ -53,15 +57,15 @@ class CachedLibrary():
         return elaborated
 
   @staticmethod
-  def _elaborate_class(cls, elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
+  def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
     obj = elt_cls()
     if isinstance(obj, Block):
       block_proto = builder.elaborate_toplevel(obj, f"in elaborating library library {elt_cls}")
-      return edgir.Library.NS.Val(hierarchy_block=obj._def_to_proto())
-    elif isinstance(obj, Port):
-      return edgir.Library.NS.Val(port=obj._def_to_proto())
-    elif isinstance(obj, Bundle):
+      return edgir.Library.NS.Val(hierarchy_block=block_proto)
+    elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
       return edgir.Library.NS.Val(bundle=obj._def_to_proto())
+    elif isinstance(obj, Port):
+      return edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
     elif isinstance(obj, Link):
       return edgir.Library.NS.Val(link=obj._def_to_proto())
     else:
@@ -74,7 +78,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> \
       Generator[edgir.LibraryPath, None, None]:
-    return  # TODO implement me
+    raise NotImplementedError
 
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgir.Library.NS.Val:
     # TODO: this isn't completely hermetic in terms of library searching
