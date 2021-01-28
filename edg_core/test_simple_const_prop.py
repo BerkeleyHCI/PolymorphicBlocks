@@ -36,43 +36,36 @@ class TestParameterConstProp(Block):
 
 
 class ConstPropTestCase(unittest.TestCase):
+  from . import edgrpc
+  from . import edgir
+  @staticmethod
+  def makeSolved(path: Iterable[Union[str]], value: edgir.LitTypes) -> edgrpc.SolvedConstraints.Value:
+    from . import edgrpc
+    return edgrpc.SolvedConstraints.Value(
+      path=edgir.LocalPathList(path), value=edgir.lit_to_valuelit(value)
+    )
+
+
   def setUp(self) -> None:
     from edg_core.ScalaCompilerInterface import ScalaCompiler
 
     compiler = ScalaCompiler()
     compiled_design = compiler.compile(TestParameterConstProp)
 
-    #
-    # driver = Driver([sys.modules[__name__]])
-    # design = driver.generate_block(TestParameterConstProp())
-    # with open("TestParameterConstProp.edg", 'wb') as f:
-    #   f.write(design.SerializeToString())
-    #
-    # self.const_prop = SimpleConstPropTransform()
-    # self.const_prop.transform_design(design)
+
+    from . import edgrpc
+    solved = edgrpc.SolvedConstraints()
+    solved.ParseFromString(compiled_design.contents.meta.members.node['solved'].bin_leaf)
+    self.solved = solved.values
 
   def test_float_prop(self) -> None:
-    pass
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_param('float_const')),
-  #                    2.0)
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block').append_param('float_param')),
-  #                    2.0)
-  #
-  # def test_range_prop(self) -> None:
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_param('range_const')),
-  #                    Interval(1.0, 42.0))
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block').append_param('range_param')),
-  #                    Interval(1.0, 42.0))
-  #
-  # def test_range_subset(self) -> None:
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_param('range_subset')),
-  #                    SubsetInterval(3.0, 18.0))
-  #
-  # def test_range_override(self) -> None:
-  #   self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_param('range_override')),
-  #                    Interval(10.0, 11.0))
+    self.assertIn(self.makeSolved(['float_const'], 2.0), self.solved)
+    self.assertIn(self.makeSolved(['block', 'float_param'], 2.0), self.solved)
 
-#
+  def test_range_prop(self) -> None:
+    self.assertIn(self.makeSolved(['range_const'], (1.0, 42.0)), self.solved)
+    self.assertIn(self.makeSolved(['block', 'range_param'], (1.0, 42.0)), self.solved)
+
 # class TestPortConstPropLink(Link):
 #   def __init__(self) -> None:
 #     super().__init__()

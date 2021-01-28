@@ -9,6 +9,7 @@ from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNE
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, ReductionExpr, MapExtractExpr
+from .lit_pb2 import ValueLit
 
 if TYPE_CHECKING:
   from .ref_pb2 import ReservedValue
@@ -74,20 +75,25 @@ def lit_from_expr(expr: ValueExpr) -> Optional[LitTypes]:
     return None
 
 
-def lit_to_expr(value: LitTypes) -> ValueExpr:
-  pb = ValueExpr()
+def lit_to_valuelit(value: LitTypes) -> ValueLit:
+  pb = ValueLit()
   if isinstance(value, bool):
-    pb.literal.boolean.val = value
+    pb.boolean.val = value
   elif isinstance(value, float):
-    pb.literal.floating.val = value
+    pb.floating.val = value
   elif isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
-    pb.binary.op = BinaryExpr.RANGE
-    pb.binary.lhs.literal.floating.val = value[0]
-    pb.binary.rhs.literal.floating.val = value[1]
+    pb.range.minimum.floating.val = value[0]
+    pb.range.maximum.floating.val = value[1]
   elif isinstance(value, str):
-    pb.literal.text.val = value
+    pb.text.val = value
   else:
     raise ValueError(f"unknown lit {value}")
+  return pb
+
+
+def lit_to_expr(value: LitTypes) -> ValueExpr:
+  pb = ValueExpr()
+  pb.literal.CopyFrom(lit_to_valuelit(value))
   return pb
 
 
