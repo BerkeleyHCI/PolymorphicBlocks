@@ -39,6 +39,15 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
     } } )
   }
 
+  def toLocalPath: ref.LocalPath = {
+    ref.LocalPath(steps=steps.map{
+      case IndirectStep.Element(name) => ref.LocalStep(step=ref.LocalStep.Step.Name(name))
+      case IndirectStep.ConnectedLink() => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
+        ref.Reserved.CONNECTED_LINK
+      ))
+    })
+  }
+
   override def toString = steps.map(_.toString).mkString(".")
 }
 

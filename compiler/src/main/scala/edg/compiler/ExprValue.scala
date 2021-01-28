@@ -1,10 +1,14 @@
 package edg.compiler
 
+import edg.lit.lit
 import scala.collection.mutable
+import edg.ExprBuilder.Literal
 
 
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
-sealed trait ExprValue
+sealed trait ExprValue {
+  def toLit: lit.ValueLit
+}
 
 // These should be consistent with what is in init.proto
 object FloatPromotable {
@@ -22,10 +26,12 @@ object FloatValue {
 }
 case class FloatValue(value: Float) extends FloatPromotable {
   override def toFloat: Float = value
+  override def toLit: lit.ValueLit = Literal.Floating(value)
 }
 
 case class IntValue(value: BigInt) extends FloatPromotable {
   override def toFloat: Float = value.toFloat  // note: potential loss of precision
+  override def toLit: lit.ValueLit = Literal.Integer(value)
 }
 
 object RangeValue {
@@ -37,9 +43,16 @@ object RangeValue {
 case class RangeValue(lower: Float, upper: Float) extends ExprValue {
   // TODO better definition of empty range
   require(lower <= upper || (lower.isNaN && upper.isNaN))
+
+  override def toLit: lit.ValueLit = Literal.Range(lower, upper)
 }
-case class BooleanValue(value: Boolean) extends ExprValue
-case class TextValue(value: String) extends ExprValue
+case class BooleanValue(value: Boolean) extends ExprValue {
+  override def toLit: lit.ValueLit = Literal.Boolean(value)
+}
+
+case class TextValue(value: String) extends ExprValue {
+  override def toLit: lit.ValueLit = Literal.Text(value)
+}
 
 object ArrayValue {
   /** Maps a Seq using a PartialFunction. Returns the output map if all elements were mapped, otherwise returns None.
@@ -93,4 +106,7 @@ object ArrayValue {
     }
   }
 }
-case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue
+
+case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
+  override def toLit: lit.ValueLit = throw new NotImplementedError("Can't toLit on Array")
+}

@@ -1,9 +1,12 @@
 package edg
 
+import com.google.protobuf.ByteString
+
 
 /** Convenience functions for building edg ir element trees with less proto boilerplate
   */
 object ElemBuilder {
+  import edg.common.common
   import edg.init.init
   import edg.elem.elem
   import edg.expr.expr
@@ -156,5 +159,22 @@ object ElemBuilder {
   }
   def Design(block: elem.HierarchyBlock): schema.Design = {
     schema.Design(contents=Some(block))
+  }
+
+  object Metadata {
+    def Node(contents: Map[String, common.Metadata]): common.Metadata = {
+      common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
+        node=contents
+      )))
+    }
+    def Text(contents: String): common.Metadata = {
+      common.Metadata(meta=common.Metadata.Meta.TextLeaf(contents))
+    }
+    def Bytes(contents: ByteString): common.Metadata = {
+      common.Metadata(meta=common.Metadata.Meta.BinLeaf(contents))
+    }
+    def Bytes(contents: Array[Byte]): common.Metadata = {
+      common.Metadata(meta=common.Metadata.Meta.BinLeaf(ByteString.copyFrom(contents)))
+    }
   }
 }
