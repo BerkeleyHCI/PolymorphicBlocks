@@ -249,10 +249,13 @@ def localpath_slice(path: LocalPath, slice_from: int, slice_to: Optional[int] = 
   return rtn
 
 
-def LocalPathList(path: Iterable[str]) -> LocalPath:
+def LocalPathList(path: Iterable[Union[str, 'ReservedValue']]) -> LocalPath:
   pb = LocalPath()
   for step in path:
-    pb.steps.add().name = step
+    if isinstance(step, str):
+      pb.steps.add().name = step
+    elif step in (CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATE):
+      pb.steps.add().reserved_param = step
   return pb
 
 

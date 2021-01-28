@@ -102,17 +102,18 @@ class ConstPropPortTestCase(unittest.TestCase):
     self.assertIn(makeSolved(['block2', 'port', 'float_param'], 3.5), self.solved)
     self.assertIn(makeSolved(['block2', 'inner', 'port', 'float_param'], 3.5), self.solved)
 
+  def test_connected_link(self) -> None:
+    self.assertIn(makeSolved(['block1', 'port', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['block2', 'port', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['block2', 'inner', 'port', edgir.IS_CONNECTED], True), self.solved)
+    
   # def test_unconnected_link(self) -> None:
   #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_port('export')),
   #                    None)
   #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('export_block').append_port('port')),
   #                    None)
   #
-  # def test_connected_link(self) -> None:
-  #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block1').append_port('port')),
-  #                    tfu.Path.empty().append_link('link').append_port('a'))
-  #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block2').append_port('port')),
-  #                    tfu.Path.empty().append_link('link').append_port('b'))
+
 
 
 # class TestPortConstPropBundleLink(Link):
