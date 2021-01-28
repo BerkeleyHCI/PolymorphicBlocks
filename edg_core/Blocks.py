@@ -30,7 +30,7 @@ class ConnectedPorts():
     direct_connects: List[Tuple[BasePort, BasePort]]  # internal block ports <> link port
 
     def generate_connections(self) -> ConnectedPorts.Connections:
-      link_ref_map = self.link._get_ref_map(edgir.LocalPath())
+      link_ref_map = self.link._get_ref_map_allocate(edgir.LocalPath())
       bridged_connects = [(port, link_ref_map[tar]) for port, tar in self.bridged_connects]
       direct_connects = [(port, link_ref_map[tar]) for port, tar in self.direct_connects]
       return ConnectedPorts.Connections(type(self.link), bridged_connects, direct_connects)
@@ -157,7 +157,7 @@ class ConnectedPorts():
   def generate_connections(self) -> Optional[ConnectedPorts.Connections]:
     if self.connect is not None:
       return self.connect.generate_connections()
-    elif len(self.ports) == 2:
+    elif len(self.ports) == 2:  # for direct exports
       exterior_port = [port for port in self.ports if port._block_parent() is self.parent]
       internal_port = [port for port in self.ports if port._block_parent() is not self.parent]
       assert len(exterior_port) == 1 and len(internal_port) == 1
@@ -424,6 +424,20 @@ class Link(BaseBlock[edgir.Link]):
   def __init__(self) -> None:
     super().__init__()
     self.parent: Optional[Port] = None
+
+  # Returns the ref_map, but with a trailing ALLOCATE for BaseVector ports
+  def _get_ref_map_allocate(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+    def map_port_allocate(ref: Refable, path: edgir.LocalPath) -> edgir.LocalPath:
+      if isinstance(ref, BaseVector):
+        new_path = edgir.LocalPath()
+        new_path.CopyFrom(path)
+        new_path.steps.append(edgir.LocalStep(reserved_param=edgir.ALLOCATE))
+        return new_path
+      else:
+        return path
+
+    return IdentityDict([(port, map_port_allocate(port, path))
+                         for port, path in self._get_ref_map(prefix).items()])
 
   def _def_to_proto(self) -> edgir.Link:
     for cls in self._get_block_bases():

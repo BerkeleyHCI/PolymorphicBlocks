@@ -3,6 +3,7 @@ package edg.compiler
 import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr
+import edg.ref.ref
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.wir
 import edg.util.DependencyGraph
@@ -50,6 +51,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // TODO better debug toggle
   protected def debug(msg: => String): Unit = System.err.println(msg)
 //  protected def debug(msg: => String): Unit = { }
+
+  def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
+    path.getTarget.getName
+  }
+
 
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
@@ -160,9 +166,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       directContainingLink.foreach { generatePortConnectedLinkEquality(path, _) }
     case port: wir.PortArray =>
       val libraryPath = port.getType
-      debug(s"Elaborate PortArray at $path: $libraryPath")
+      debug(s"Elaborate PortArray at $path: ${readableLibraryPath(libraryPath)}")
       // TODO can / should this share the LibraryElement instantiation logic w/ elaborate BlocklikePorts?
-      val newPorts = constProp.getArrayElts(path).get.map { index =>
+      // TODO .getOrElse is needed for ports that don't get connected, but may want something stricter
+      // especially when block side arrays become a thing
+      val newPorts = constProp.getArrayElts(path).getOrElse(Seq()).map { index =>
         index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
       }.toMap
       port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
@@ -177,7 +185,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
       case port: wir.LibraryElement =>
         val libraryPath = port.target
-        debug(s"Elaborate Port at ${path + portName}: $libraryPath")
+        debug(s"Elaborate Port at ${path + portName}: ${readableLibraryPath(libraryPath)}")
         val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
         hasPorts.elaborate(portName, newPort)
         processPort(path + portName, newPort, directContainingLink)
@@ -195,6 +203,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         path, assign.src.get,
         SourceLocator.empty)  // TODO add sourcelocators
     case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
+      assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
+    case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))
+      if target.steps.last.step.isReservedParam
+          && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
   }
 
@@ -271,6 +283,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         }
         index.toString
       }.toSeq
+      debug(s"Array defined: ${path ++ linkPortArray} = $linkPortArrayElts")
       constProp.setArrayElts(path ++ linkPortArray, linkPortArrayElts)
     }
 
@@ -300,7 +313,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Instantiate block from library element to wir.Block
     val parent = resolveBlock(parentPath)
     val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.LibraryElement].target
-    debug(s"Elaborate block at $path: $libraryPath")
+    debug(s"Elaborate block at $path: ${readableLibraryPath(libraryPath)}")
     val block = new wir.Block(library.getBlock(libraryPath), Seq(libraryPath))
 
     // Process block
@@ -357,7 +370,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Instantiate block from library element to wir.Block
     val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
     val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LibraryElement].target
-    debug(s"Elaborate link at $path: $libraryPath")
+    debug(s"Elaborate link at $path: ${readableLibraryPath(libraryPath)}")
     val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
 
     // Process block

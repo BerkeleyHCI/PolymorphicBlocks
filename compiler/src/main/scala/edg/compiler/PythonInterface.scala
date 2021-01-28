@@ -50,7 +50,7 @@ class PythonInterfaceLibrary(py: PythonInterface, modules: Seq[String]) extends 
       val reply = py.libraryRequest(modules, path)
       if (reply.`type`.isDefined) {
         elts.put(path, reply.`type`)
-      }  // otherwise error handling done by cammer
+      }  // otherwise error handling done by caller
     }
   }
 
