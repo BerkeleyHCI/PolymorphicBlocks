@@ -388,6 +388,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     */
   def compile(): schema.Design = {
     import edg.ElemBuilder
+
+    // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
+    require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
+
     while (elaboratePending.getReady.nonEmpty) {
       elaboratePending.getReady.foreach {
         case elaborateRecord @ ElaborateRecord.Block(blockPath) =>

@@ -73,20 +73,21 @@ class TestPortConstPropInnerBlock(Block):
     self.port = self.Port(TestPortConstPropPort())
 
 
+class TestPortConstPropOuterBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.inner = self.Block(TestPortConstPropInnerBlock())
+    self.port = self.Port(TestPortConstPropPort())
+    self.connect(self.inner.port, self.port)
+
+
 class TestPortConstPropTopBlock(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.export = self.Port(TestPortConstPropPort())
-
-  def contents(self) -> None:
     self.block1 = self.Block(TestPortConstPropInnerBlock())
-    self.block2 = self.Block(TestPortConstPropInnerBlock())
+    self.block2 = self.Block(TestPortConstPropOuterBlock())
     self.link = self.connect(self.block1.port, self.block2.port)
-    self.assign(self.block1.port.float_param, 3.1)
-
-    self.export_block = self.Block(TestPortConstPropInnerBlock())
-    self.connect(self.export_block.port, self.export)
-    self.assign(self.export_block.port.float_param, 6.0)
+    self.assign(self.block1.port.float_param, 3.5)
 
 
 class ConstPropPortTestCase(unittest.TestCase):
@@ -95,13 +96,11 @@ class ConstPropPortTestCase(unittest.TestCase):
     self.solved = designSolvedValues(compiled_design)
 
   def test_port_param_prop(self) -> None:
-    self.assertIn(makeSolved(['block1', 'port', 'float_param'], 3.1), self.solved)
-    self.assertIn(makeSolved(['link', 'a', 'float_param'], 3.1), self.solved)
-    self.assertIn(makeSolved(['link', 'b', 'float_param'], 3.1), self.solved)
-    self.assertIn(makeSolved(['block2', 'port', 'float_param'], 3.1), self.solved)
-
-    self.assertIn(makeSolved(['export', 'float_param'], 6.0), self.solved)
-    self.assertIn(makeSolved(['export_block', 'port', 'float_param'], 6.0), self.solved)
+    self.assertIn(makeSolved(['block1', 'port', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'a', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'b', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['block2', 'port', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['block2', 'inner', 'port', 'float_param'], 3.5), self.solved)
 
   # def test_unconnected_link(self) -> None:
   #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_port('export')),
