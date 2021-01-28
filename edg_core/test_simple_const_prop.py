@@ -1,5 +1,4 @@
 import unittest
-import sys
 
 from . import *
 from edg_core.ScalaCompilerInterface import ScalaCompiler
