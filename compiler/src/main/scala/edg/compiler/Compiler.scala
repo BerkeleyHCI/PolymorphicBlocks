@@ -405,4 +405,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     ElemBuilder.Design(root.toPb)
   }
+
+  def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
 }

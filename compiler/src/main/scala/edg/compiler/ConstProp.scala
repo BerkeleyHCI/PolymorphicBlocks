@@ -155,4 +155,6 @@ class ConstProp {
   def getUnsolved: Set[DesignPath] = {
     paramTypes.keySet -- params.knownValueKeys.flatMap(DesignPath.fromIndirectOption)
   }
+
+  def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
 }

@@ -65,6 +65,8 @@ class DependencyGraph[KeyType, ValueType] {
   def knownValueKeys: Iterable[KeyType] = {
     values.keys
   }
+
+  def toMap: Map[KeyType, ValueType] = values.toMap
 }
 
 object DependencyGraph {

@@ -39,3 +39,11 @@ service HdlInterface {
   rpc GetLibraryElement (LibraryRequest) returns (schema.Library.NS.Val) { }
   rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
 }
+
+message SolvedConstraints {
+  message Value {
+    ref.LocalPath path = 1;
+    lit.ValueLit value = 2;
+  }
+  repeated Value values = 1;
+}

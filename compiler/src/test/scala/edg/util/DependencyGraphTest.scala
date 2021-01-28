@@ -29,8 +29,10 @@ class DependencyGraphTest extends AnyFlatSpec {
   it should "return set values" in {
     val dep = DependencyGraph[Int, Int]()
     dep.getValue(0) should equal(None)
+    dep.toMap should equal(Map())
     dep.setValue(0, 10)
     dep.getValue(0) should equal(Some(10))
+    dep.toMap should equal(Map(0 -> 10))
   }
 
   it should "track a single dependency, and add it to ready when set" in {
