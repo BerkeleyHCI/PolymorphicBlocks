@@ -213,5 +213,5 @@ class BlinkyTestCase(unittest.TestCase):
 if __name__ == '__main__':
   from edg_core.ScalaCompilerInterface import ScalaCompiler
 
-  compiler = ScalaCompiler()
+  compiler = ScalaCompiler
   compiled_design = compiler.compile(TestBlinkyBasic)

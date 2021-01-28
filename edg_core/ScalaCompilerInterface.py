@@ -10,18 +10,24 @@ from .HierarchyBlock import Block
 from .HdlInterfaceServer import HdlInterface, CachedLibrary
 
 
-class ScalaCompiler:
+class ScalaCompilerInstance:
   RELATIVE_PATH = "compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
-  library = CachedLibrary()  # TODO should this be instance-specific?
 
   def __init__(self):
-    self.server: Optional[Any] = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(self.library), self.server)  # type: ignore
-    self.server.add_insecure_port('[::]:50051')
-    self.server.start()
-    print("started server")
+    self.server: Optional[Any] = None
+    self.library = CachedLibrary()  # TODO should this be instance-specific?
+
+  def check_server_started(self) -> Any:
+    if self.server is None:
+      self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+      edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(self.library), self.server)  # type: ignore
+      self.server.add_insecure_port('[::]:50051')
+      self.server.start()
+    return self.server
 
   def compile(self, block: Type[Block]) -> edgir.Design:
+    self.check_server_started()
+
     # TODO perhaps make compiler process persistent
     if os.path.exists(self.RELATIVE_PATH):
       jar_path = self.RELATIVE_PATH
@@ -47,3 +53,6 @@ class ScalaCompiler:
     self.server.stop()
     self.server.wait_for_termination()  # is this needed?
     self.server = None
+
+
+ScalaCompiler = ScalaCompilerInstance()
