@@ -104,9 +104,12 @@ class DependencyGraphTest extends AnyFlatSpec {
   it should "return getMissing" in {
     val dep = DependencyGraph[Int, Int]()
     dep.getMissing shouldBe empty
+    dep.getMissingBlocking shouldBe empty
     dep.addNode(1, Seq(0))
     dep.getMissing should equal(Set(1))
+    dep.getMissingBlocking should equal(Map(1 -> Seq(0)))
     dep.setValue(1, 1)
     dep.getMissing shouldBe empty
+    dep.getMissingBlocking shouldBe empty
   }
 }

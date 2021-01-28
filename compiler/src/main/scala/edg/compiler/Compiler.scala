@@ -69,6 +69,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
+
+  // Seed compilation with the root
+  //
+  private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
+  def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
+  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
+  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+  def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
+
+  processBlock(DesignPath.root, root)
+  elaboratePending.setValue(ElaborateRecord.Block(DesignPath.root), None)
+
+  // Actual compilation methods
+  //
   protected def elaborateConnect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath): Unit = {
     debug(s"Generate connect equalities for $toLinkPortPath <-> $fromLinkPortPath")
 
@@ -114,16 +128,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     // Register port as finished
     elaboratePending.setValue(ElaborateRecord.ConnectedLink(fromLinkPortPath), None)
   }
-
-  // Seed compilation with the root
-  //
-  private val root = new wir.Block(inputDesignPb.contents.get, inputDesignPb.contents.get.superclasses)
-  def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
-  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
-  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
-  def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
-
-  processBlock(DesignPath.root, root)
 
   protected def processParams(path: DesignPath, hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
@@ -398,8 +402,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       }
     }
 
-    require(elaboratePending.getMissing.isEmpty,
-      s"failed to elaborate: ${elaboratePending.getMissing}")
+    require(elaboratePending.getMissingBlocking.isEmpty,
+      s"failed to elaborate: ${elaboratePending.getMissingBlocking}")
     require(constProp.getUnsolved.isEmpty,
       s"const prop failed to solve: ${constProp.getUnsolved}")
 

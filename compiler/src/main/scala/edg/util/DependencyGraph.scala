@@ -62,6 +62,12 @@ class DependencyGraph[KeyType, ValueType] {
     (deps.keySet -- values.keySet).toSet
   }
 
+  def getMissingBlocking: Map[KeyType, Seq[KeyType]] = {
+    deps.collect { case (key, keyDeps) if !values.contains(key) =>
+      key -> keyDeps.toSeq
+    }.toMap
+  }
+
   def knownValueKeys: Iterable[KeyType] = {
     values.keys
   }
