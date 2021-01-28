@@ -96,6 +96,12 @@ class ConstProp {
     update()
   }
 
+  /** Sets a value directly (without the expr)
+    */
+  def setValue(target: IndirectDesignPath, value: ExprValue): Unit = {
+    params.setValue(target, value)
+  }
+
   /**
     * Adds a bidirectional equality (param1 == param2) and propagates as needed.
     * Equality cycles (ignoring backedges) will cause infinite recursion and is currently not checked.

@@ -142,6 +142,16 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSink0 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "sink0" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "source" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinks" + "0" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
   }
 
   "Compiler on design with assign constraints and multiple connects to link" should "propagate and evaluate values" in {
@@ -194,6 +204,24 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSink2 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink2 + "sinkSum") should equal(Some(FloatValue(6.0)))
     compiler.getValue(linkThroughSink2 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "sink0" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "sink1" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "sink2" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "source" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinks" + "0" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinks" + "1" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "link" + "sinks" + "2" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
   }
 
   "Compiler on design with exports" should "propagate and evaluate values" in {
@@ -227,5 +255,30 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughInnerSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughInnerSource + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughInnerSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath.root + "source" + "inner" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(true)))
+  }
+
+
+  "Compiler on design with disconnected ports" should "indicate disconnected" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+      ),
+      constraints = Map(
+        // to not give an unsolved parameter error
+        "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    compiler.compile()
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(false)))
   }
 }

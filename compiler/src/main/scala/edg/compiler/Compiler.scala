@@ -65,6 +65,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // Supplemental elaboration data structures
   // port -> (connected link path, list of params of the connected link)
   private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[String])]()
+  // all connected ports
 
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
@@ -110,6 +111,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         IndirectDesignPath.fromDesignPath(fromLinkPortPath) + IndirectStep.ConnectedLink() + linkParam
       )
     }
+    constProp.addEquality(
+      IndirectDesignPath.fromDesignPath(toLinkPortPath) + IndirectStep.IsConnected(),
+      IndirectDesignPath.fromDesignPath(fromLinkPortPath) + IndirectStep.IsConnected()
+    )
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
     (toLinkPort, fromLinkPort) match {
@@ -153,6 +158,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         IndirectDesignPath.fromDesignPath(containingLinkPath) + containingLinkParam
       )
     }
+    constProp.setValue(IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.IsConnected(),
+      BooleanValue(true))
     elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
   }
 
