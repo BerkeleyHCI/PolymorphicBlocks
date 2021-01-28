@@ -301,7 +301,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     clone._bind_in_place(parent)
     return clone
 
-  def _check_constraint(self, constraint: BoolExpr) -> None:
+  def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
       if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamVariableBinding, ParamBinding)):
         if isinstance(expr.parent, BaseBlock):
@@ -349,6 +349,29 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return constraint
 
+  ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
+  ConstrCastableType = TypeVar('ConstrCastableType')
+  ConstrGetType = TypeVar('ConstrGetType')
+  def assign(self, target: ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType],
+             value: Union[ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType], ConstrCastableType],
+             name: Optional[str] = None) -> None:
+    if not isinstance(target, ConstraintExpr):
+      raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
+    if not isinstance(name, (str, type(None))):
+      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+
+    self._check_constraint(target)
+    value = target._to_expr_type(value)
+    self._check_constraint(value)
+
+    # TODO construct assign constraint here
+    self._constraints.register(constraint)
+
+    if name:  # TODO unify naming API with everything else?
+      self.manager.add_element(name, constraint)
+    if not builder.stack or builder.stack[0] is self:
+      self._sourcelocator[constraint] = self._get_calling_source_locator()
+
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None, _no_init: bool = False) -> T:
     """Registers a port for this Block"""
@@ -373,8 +396,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
-  U = TypeVar('U', bound=ConstraintExpr)
-  def Parameter(self, tpe: U, *, desc: Optional[str] = None) -> U:
+  def Parameter(self, tpe: ConstraintType, *, desc: Optional[str] = None) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",

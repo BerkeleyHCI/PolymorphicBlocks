@@ -23,24 +23,16 @@ class TestParameterConstProp(Block):
     self.range_const = self.Parameter(RangeExpr())
     self.range_param = self.Parameter(RangeExpr())
 
-    self.range_subset = self.Parameter(RangeExpr())
-    self.range_override = self.Parameter(RangeExpr())
-
   def contents(self):
-    self.constrain(self.float_const == 2.0)
-    self.constrain(self.float_param == self.float_const)
+    self.assign(self.float_const, 2.0)
+    self.assign(self.float_param, self.float_const)
 
-    self.constrain(self.range_const == (1.0, 42.0))
-    self.constrain(self.range_param == self.range_const)
-
-    self.constrain(self.range_subset.within((3.0, 18.0)))
-
-    self.constrain(self.range_override.within(self.range_subset))
-    self.constrain(self.range_override == (10.0, 11.0))
+    self.assign(self.range_const, (1.0, 42.0))
+    self.assign(self.range_param, self.range_const)
 
     self.block = self.Block(TestConstPropInternal())
-    self.constrain(self.block.float_param == self.float_param)
-    self.constrain(self.block.range_param == self.range_param)
+    self.assign(self.block.float_param, self.float_param)
+    self.assign(self.block.range_param, self.range_param)
 
 
 class ConstPropTestCase(unittest.TestCase):
