@@ -159,61 +159,53 @@ class TestPortConstPropBundleTopBlock(Block):
     self.block2 = self.Block(TestPortConstPropBundleInnerBlock())
     self.link = self.connect(self.block1.port, self.block2.port)
 
-    self.constrain(self.block1.port.elt1.float_param == 3.1)
-    self.constrain(self.block1.port.elt2.float_param == 6.0)
+    self.assign(self.block1.port.elt1.float_param, 3.5)
+    self.assign(self.block1.port.elt2.float_param, 6.0)
 
 
-# class ConstPropBundleTestCase(unittest.TestCase):
-#   def setUp(self) -> None:
-#     driver = Driver([sys.modules[__name__]])
-#     design = driver.generate_block(TestPortConstPropBundleTopBlock())
-#     with open("TestPortConstPropBundleTopBlock.edg", 'wb') as f:
-#       f.write(design.SerializeToString())
-#
-#     self.const_prop = SimpleConstPropTransform()
-#     self.const_prop.transform_design(design)
-#
-#   def test_port_param_prop(self) -> None:
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block1').append_port('port').append_port('elt1').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block1').append_port('port').append_port('elt2').append_param('float_param')),
-#                      6.0)
-#
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_port('a').append_port('elt1').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_port('a').append_port('elt2').append_param('float_param')),
-#                      6.0)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_link('elt1_link').append_port('a').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_link('elt2_link').append_port('a').append_param('float_param')),
-#                      6.0)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_link('elt1_link').append_port('b').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_link('elt2_link').append_port('b').append_param('float_param')),
-#                      6.0)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_port('b').append_port('elt1').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_link('link').append_port('b').append_port('elt2').append_param('float_param')),
-#                      6.0)
-#
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block2').append_port('port').append_port('elt1').append_param('float_param')),
-#                      3.1)
-#     self.assertEqual(self.const_prop.resolve_param(tfu.Path.empty().append_block('block2').append_port('port').append_port('elt2').append_param('float_param')),
-#                      6.0)
-#
-#   def test_connected_link(self) -> None:
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block1').append_port('port')),
-#                      tfu.Path.empty().append_link('link').append_port('a'))
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block2').append_port('port')),
-#                      tfu.Path.empty().append_link('link').append_port('b'))
-#
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block1').append_port('port').append_port('elt1')),
-#                      tfu.Path.empty().append_link('link').append_link('elt1_link').append_port('a'))
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block2').append_port('port').append_port('elt1')),
-#                      tfu.Path.empty().append_link('link').append_link('elt1_link').append_port('b'))
-#
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block1').append_port('port').append_port('elt2')),
-#                      tfu.Path.empty().append_link('link').append_link('elt2_link').append_port('a'))
-#     self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('block2').append_port('port').append_port('elt2')),
-#                      tfu.Path.empty().append_link('link').append_link('elt2_link').append_port('b'))
-#
+class ConstPropBundleTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    compiled_design = ScalaCompiler.compile(TestPortConstPropBundleTopBlock)
+    self.solved = designSolvedValues(compiled_design)
+
+  def test_port_param_prop(self) -> None:
+    self.assertIn(makeSolved(['block1', 'port', 'elt1', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['block1', 'port', 'elt2', 'float_param'], 6.0), self.solved)
+
+    self.assertIn(makeSolved(['link', 'a', 'elt1', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'a', 'elt2', 'float_param'], 6.0), self.solved)
+
+    self.assertIn(makeSolved(['link', 'elt1_link', 'a', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'elt2_link', 'a', 'float_param'], 6.0), self.solved)
+
+    self.assertIn(makeSolved(['link', 'elt1_link', 'b', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'elt2_link', 'b', 'float_param'], 6.0), self.solved)
+
+    self.assertIn(makeSolved(['link', 'b', 'elt1', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['link', 'b', 'elt2', 'float_param'], 6.0), self.solved)
+
+    self.assertIn(makeSolved(['block2', 'port', 'elt1', 'float_param'], 3.5), self.solved)
+    self.assertIn(makeSolved(['block2', 'port', 'elt2', 'float_param'], 6.0), self.solved)
+
+  def test_connected_link(self) -> None:
+    self.assertIn(makeSolved(['block1', 'port', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['block2', 'port', edgir.IS_CONNECTED], True), self.solved)
+
+    self.assertIn(makeSolved(['block1', 'port', 'elt1', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['block1', 'port', 'elt2', edgir.IS_CONNECTED], True), self.solved)
+
+    self.assertIn(makeSolved(['block2', 'port', 'elt1', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['block2', 'port', 'elt2', edgir.IS_CONNECTED], True), self.solved)
+
+    self.assertIn(makeSolved(['link', 'a', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'b', edgir.IS_CONNECTED], True), self.solved)
+
+    self.assertIn(makeSolved(['link', 'a', 'elt1', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'a', 'elt2', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'b', 'elt1', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'b', 'elt2', edgir.IS_CONNECTED], True), self.solved)
+
+    self.assertIn(makeSolved(['link', 'elt1_link', 'a', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'elt1_link', 'b', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'elt2_link', 'a', edgir.IS_CONNECTED], True), self.solved)
+    self.assertIn(makeSolved(['link', 'elt2_link', 'b', edgir.IS_CONNECTED], True), self.solved)
