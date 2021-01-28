@@ -70,7 +70,7 @@ class TestPortConstPropPort(Port[TestPortConstPropLink]):
 class TestPortConstPropInnerBlock(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.port = self.Port(TestPortConstPropPort())
+    self.port = self.Port(TestPortConstPropPort(), optional=True)
 
 
 class TestPortConstPropOuterBlock(Block):
@@ -106,55 +106,63 @@ class ConstPropPortTestCase(unittest.TestCase):
     self.assertIn(makeSolved(['block1', 'port', edgir.IS_CONNECTED], True), self.solved)
     self.assertIn(makeSolved(['block2', 'port', edgir.IS_CONNECTED], True), self.solved)
     self.assertIn(makeSolved(['block2', 'inner', 'port', edgir.IS_CONNECTED], True), self.solved)
-    
-  # def test_unconnected_link(self) -> None:
-  #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_port('export')),
-  #                    None)
-  #   self.assertEqual(self.const_prop.get_port_link(tfu.Path.empty().append_block('export_block').append_port('port')),
-  #                    None)
-  #
 
 
+class TestDisconnectedTopBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block1 = self.Block(TestPortConstPropInnerBlock())
+    self.assign(self.block1.port.float_param, 3.5)
 
-# class TestPortConstPropBundleLink(Link):
-#   def __init__(self) -> None:
-#     super().__init__()
-#
-#     self.a = self.Port(TestPortConstPropBundle())
-#     self.b = self.Port(TestPortConstPropBundle())
-#
-#     self.elt1_link = self.connect(self.a.elt1, self.b.elt1)
-#     self.elt2_link = self.connect(self.a.elt2, self.b.elt2)
-#
-#
-# class TestPortConstPropBundle(Bundle[TestPortConstPropBundleLink]):
-#   def __init__(self) -> None:
-#     super().__init__()
-#     self.link_type = TestPortConstPropBundleLink
-#
-#     self.elt1 = self.Port(TestPortConstPropPort())
-#     self.elt2 = self.Port(TestPortConstPropPort())
-#
-#
-# class TestPortConstPropBundleInnerBlock(Block):
-#   def __init__(self) -> None:
-#     super().__init__()
-#     self.port = self.Port(TestPortConstPropBundle())
-#
-#
-# class TestPortConstPropBundleTopBlock(Block):
-#   def __init__(self) -> None:
-#     super().__init__()
-#
-#   def contents(self) -> None:
-#     self.block1 = self.Block(TestPortConstPropBundleInnerBlock())
-#     self.block2 = self.Block(TestPortConstPropBundleInnerBlock())
-#     self.link = self.connect(self.block1.port, self.block2.port)
-#
-#     self.constrain(self.block1.port.elt1.float_param == 3.1)
-#     self.constrain(self.block1.port.elt2.float_param == 6.0)
-#
-#
+
+class DisconnectedPortTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    compiled_design = ScalaCompiler.compile(TestDisconnectedTopBlock)
+    self.solved = designSolvedValues(compiled_design)
+
+  def test_disconnected_link(self) -> None:
+    self.assertIn(makeSolved(['block1', 'port', edgir.IS_CONNECTED], False), self.solved)
+
+
+class TestPortConstPropBundleLink(Link):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.a = self.Port(TestPortConstPropBundle())
+    self.b = self.Port(TestPortConstPropBundle())
+
+    self.elt1_link = self.connect(self.a.elt1, self.b.elt1)
+    self.elt2_link = self.connect(self.a.elt2, self.b.elt2)
+
+
+class TestPortConstPropBundle(Bundle[TestPortConstPropBundleLink]):
+  def __init__(self) -> None:
+    super().__init__()
+    self.link_type = TestPortConstPropBundleLink
+
+    self.elt1 = self.Port(TestPortConstPropPort())
+    self.elt2 = self.Port(TestPortConstPropPort())
+
+
+class TestPortConstPropBundleInnerBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.port = self.Port(TestPortConstPropBundle())
+
+
+class TestPortConstPropBundleTopBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+
+  def contents(self) -> None:
+    self.block1 = self.Block(TestPortConstPropBundleInnerBlock())
+    self.block2 = self.Block(TestPortConstPropBundleInnerBlock())
+    self.link = self.connect(self.block1.port, self.block2.port)
+
+    self.constrain(self.block1.port.elt1.float_param == 3.1)
+    self.constrain(self.block1.port.elt2.float_param == 6.0)
+
+
 # class ConstPropBundleTestCase(unittest.TestCase):
 #   def setUp(self) -> None:
 #     driver = Driver([sys.modules[__name__]])
