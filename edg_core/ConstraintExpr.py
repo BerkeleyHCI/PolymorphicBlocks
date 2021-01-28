@@ -284,6 +284,26 @@ class IsConnectedBinding(Binding):
     return pb
 
 
+class AssignBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Assign({self.target}, ...)"
+
+  def __init__(self, target: ConstraintExpr, value: ConstraintExpr):
+    super().__init__()
+    self.target = target
+    self.value = value
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.value]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.assign.dst.CopyFrom(ref_map[self.target])
+    pb.assign.src.CopyFrom(self.value._expr_to_proto(ref_map))
+
+    return pb
+
+
 ConstraintExprCastable = TypeVar('ConstraintExprCastable')
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
 GetType = TypeVar('GetType')
@@ -302,7 +322,7 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
       return f"{super().__repr__()}"
 
   @classmethod
-  @abstractmethod
+  # @abstractmethod  # TODO mypy requires this to be concrete
   def _to_expr_type(cls, input: ConstraintExprCastable) -> SelfType:
     """Casts the input from an equivalent-type to the self-type."""
     raise NotImplementedError
@@ -347,7 +367,7 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
     else:
       return target == self.initializer
 
-  @abstractmethod
+  # @abstractmethod  # TODO mypy requires this to be concrete
   def _decl_to_proto(self) -> edgir.ValInit:
     """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
     raise NotImplementedError
@@ -657,6 +677,19 @@ class StringExpr(ConstraintExpr['StringExpr', StringLike, str]):
   def _is_lit(self) -> bool:
     assert self._is_bound()
     return isinstance(self.binding, StringLiteralBinding)
+
+
+class AssignExpr(ConstraintExpr['AssignExpr', None, None]):
+  """String expression, can be used as a constraint"""
+  @classmethod
+  def _to_expr_type(cls, input: Any) -> AssignExpr:
+    raise ValueError("can't convert to AssignExpr")
+
+  def _decl_to_proto(self) -> edgir.ValInit:
+    raise ValueError("can't create parameter from AssignExpr")
+
+  def _is_lit(self) -> bool:
+    raise ValueError("can't have literal AssignExpr")
 
 
 # TODO actually implement dimensional analysis and units type checking

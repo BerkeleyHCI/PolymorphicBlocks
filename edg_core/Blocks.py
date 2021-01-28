@@ -10,7 +10,7 @@ from .Array import BaseVector, DerivedVector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding
 from .Ports import BasePort, Port, Bundle
 
 
@@ -202,7 +202,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
-    self._constraints = self.manager.new_dict(BoolExpr, anon_prefix='anon_constr')
+    self._constraints = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')
     self._inits = IdentityDict[Tuple[Refable, str], BoolExpr]()  # need to delay init constraint binding until after things are named
 
   def _post_init(self):
@@ -353,7 +353,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   ConstrCastableType = TypeVar('ConstrCastableType')
   ConstrGetType = TypeVar('ConstrGetType')
   def assign(self, target: ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType],
-             value: Union[ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType], ConstrCastableType],
+             value: ConstrCastableType,
              name: Optional[str] = None) -> None:
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
@@ -361,10 +361,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
 
     self._check_constraint(target)
-    value = target._to_expr_type(value)
-    self._check_constraint(value)
+    expr_value = target._to_expr_type(value)
+    self._check_constraint(expr_value)
 
-    # TODO construct assign constraint here
+    constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
     self._constraints.register(constraint)
 
     if name:  # TODO unify naming API with everything else?
