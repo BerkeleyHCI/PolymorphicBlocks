@@ -45,7 +45,8 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
 
 class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLike
     with HasMutablePorts with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  private val nameOrder = getNameOrder(pb.meta)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
 
   override def isElaborated: Boolean = true
 

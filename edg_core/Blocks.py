@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import *
 from abc import abstractmethod
+from itertools import chain
 
 from . import edgir
 from .Exception import *
@@ -236,10 +237,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
            self._elaboration_state == BlockElaborationState.post_generate
 
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
-
     self._ports.finalize()
-    self._ports_order = self.Metadata({str(idx): name for idx, name in enumerate(self._ports.keys_ordered())})
 
     if (self.__class__, 'abstract') in self._elt_properties:
       self.abstract = self.Metadata('abstract')
@@ -258,7 +256,17 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._constraints.finalize()  # needed for source locator generation
 
     ref_map = self._get_ref_map(edgir.LocalPath())
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))  # needed for block ordering; TODO maybe should be in contents?
+    # TODO get rid of meta merging (here b/c the block order writes meta before this)
+    for (name, meta) in self._metadata_to_proto(self._metadata, [], ref_map).members.node.items():
+      assert name not in pb.meta.members.node, f"overwriting meta {name}"
+      pb.meta.members.node[name].CopyFrom(meta)
+
+
+    # generate base-block order
+    # TODO unified namespace order
+    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered(),
+                      self._constraints.keys_ordered()):
+      pb.meta.members.node["NamespaceOrder"].namespace_order.names.append(name)
 
     return pb
 

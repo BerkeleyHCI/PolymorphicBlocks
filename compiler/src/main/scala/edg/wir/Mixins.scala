@@ -4,7 +4,26 @@ import edg.elem.elem
 import edg.expr.expr
 import edg.init.init
 
-import scala.collection.mutable
+import scala.collection.{MapView, mutable}
+
+
+object MapSort {
+  def apply[K, V](map: Map[K, V], order: Seq[K]): mutable.LinkedHashMap[K, V] = {
+    val out = mutable.LinkedHashMap[K, V]()
+    for (orderedName <- order) {
+      map.get(orderedName) match {
+        case Some(value) => out.put(orderedName, value)
+        case None => // ignore
+      }
+    }
+    for ((mapKey, mapVal) <- map) {
+      if (!out.contains(mapKey)) {
+        out.put(mapKey, mapVal)
+      }
+    }
+    out
+  }
+}
 
 
 trait HasMutablePorts {
@@ -17,12 +36,14 @@ trait HasMutablePorts {
     ports.update(name, port)
   }
 
-  protected def parsePorts(pb: Map[String, elem.PortLike]): mutable.SeqMap[String, PortLike] =
-    mutable.LinkedHashMap[String, PortLike]() ++ pb.mapValues { _.`is` match {
+  protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
+      mutable.SeqMap[String, PortLike] = {
+    MapSort(pb.mapValues { _.`is` match {
       case elem.PortLike.Is.LibElem(like) => LibraryElement(like)
       case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-port $like")
-    }}
+    }}.toMap, nameOrder)
+  }
 }
 
 trait HasMutableBlocks {
@@ -34,11 +55,12 @@ trait HasMutableBlocks {
     blocks.update(name, block)
   }
 
-  protected def parseBlocks(pb: Map[String, elem.BlockLike]): mutable.SeqMap[String, BlockLike] =
-    mutable.LinkedHashMap[String, BlockLike]() ++ pb.mapValues { _.`type` match {
+  protected def parseBlocks(pb: Map[String, elem.BlockLike], nameOrder: Seq[String]):
+  mutable.SeqMap[String, BlockLike] =
+    MapSort(pb.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => LibraryElement(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
-    }}
+    }}.toMap, nameOrder)
 }
 
 trait HasMutableLinks {
@@ -50,11 +72,12 @@ trait HasMutableLinks {
     links.update(name, link)
   }
 
-  protected def parseLinks(pb: Map[String, elem.LinkLike]): mutable.SeqMap[String, LinkLike] =
-    mutable.LinkedHashMap[String, LinkLike]() ++ pb.mapValues { _.`type` match {
+  protected def parseLinks(pb: Map[String, elem.LinkLike], nameOrder: Seq[String]):
+      mutable.SeqMap[String, LinkLike] =
+    MapSort(pb.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LibraryElement(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
-    }}
+    }}.toMap, nameOrder)
 }
 
 trait HasMutableConstraints {
@@ -65,6 +88,12 @@ trait HasMutableConstraints {
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
   }
+
+  protected def parseConstraints(pb: Map[String, expr.ValueExpr], nameOrder: Seq[String]):
+      mutable.SeqMap[String, expr.ValueExpr] = {
+    MapSort(pb, nameOrder)  // TODO get rid of MapValues
+  }
+
 }
 
 trait HasParams {

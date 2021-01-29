@@ -20,10 +20,11 @@ trait BlockLike extends Pathable {
   */
 class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
-  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = mutable.LinkedHashMap() ++ pb.constraints
+  private val nameOrder = getNameOrder(pb.meta)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
+  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
 
   override def isElaborated: Boolean = true
 

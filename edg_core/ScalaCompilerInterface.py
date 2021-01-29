@@ -38,7 +38,7 @@ class ScalaCompilerInstance:
         raise ValueError("No EDG Compiler JAR found")
       self.process = subprocess.Popen(
         ['java', '-jar', jar_path],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdin=subprocess.PIPE)
 
       self.channel = grpc.insecure_channel('localhost:50052')
       self.stub = edgrpc.CompilerStub(self.channel)
