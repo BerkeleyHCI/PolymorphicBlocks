@@ -189,20 +189,10 @@ class ConstPropBundleTestCase(unittest.TestCase):
   def test_connected_link(self) -> None:
     self.assertIn(makeSolved(['block1', 'port', edgir.IS_CONNECTED], True), self.solved)
     self.assertIn(makeSolved(['block2', 'port', edgir.IS_CONNECTED], True), self.solved)
-
-    self.assertIn(makeSolved(['block1', 'port', 'elt1', edgir.IS_CONNECTED], True), self.solved)
-    self.assertIn(makeSolved(['block1', 'port', 'elt2', edgir.IS_CONNECTED], True), self.solved)
-
-    self.assertIn(makeSolved(['block2', 'port', 'elt1', edgir.IS_CONNECTED], True), self.solved)
-    self.assertIn(makeSolved(['block2', 'port', 'elt2', edgir.IS_CONNECTED], True), self.solved)
+    # Note: inner ports IS_CONNECTED is not defined
 
     self.assertIn(makeSolved(['link', 'a', edgir.IS_CONNECTED], True), self.solved)
     self.assertIn(makeSolved(['link', 'b', edgir.IS_CONNECTED], True), self.solved)
-
-    self.assertIn(makeSolved(['link', 'a', 'elt1', edgir.IS_CONNECTED], True), self.solved)
-    self.assertIn(makeSolved(['link', 'a', 'elt2', edgir.IS_CONNECTED], True), self.solved)
-    self.assertIn(makeSolved(['link', 'b', 'elt1', edgir.IS_CONNECTED], True), self.solved)
-    self.assertIn(makeSolved(['link', 'b', 'elt2', edgir.IS_CONNECTED], True), self.solved)
 
     self.assertIn(makeSolved(['link', 'elt1_link', 'a', edgir.IS_CONNECTED], True), self.solved)
     self.assertIn(makeSolved(['link', 'elt1_link', 'b', edgir.IS_CONNECTED], True), self.solved)
