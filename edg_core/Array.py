@@ -98,6 +98,7 @@ class BaseVector(BaseContainerPort):
     pass
 
 
+# A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
 VectorType = TypeVar('VectorType', bound='BasePort', covariant=True)
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
@@ -133,6 +134,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     raise RuntimeError()  # TODO maybe revisit this eventually
 
 
+# An 'elastic' array of ports type, with unspecified length at declaration time, and length
+# determined by connections in the parent block.
 @non_library
 class Vector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -145,8 +148,6 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self.tpe = tpe
     self.elt_sample = tpe._bind(self, ignore_context=True)
-    if isinstance(tpe, Port):
-      assert not tpe._initializers().items(), "vector types may not have initializers"
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__

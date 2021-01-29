@@ -6,7 +6,7 @@ from abc import abstractmethod
 
 from . import edgir
 from .Exception import *
-from .Array import BaseVector, DerivedVector
+from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -228,7 +228,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return [bcls for bcls in cls.__bases__
             if issubclass(bcls, BaseBlock) and (bcls, 'non_library') not in bcls._elt_properties]
 
-  # TODO: can we unify PortBridge into ProtoType? Differnce seems to be in meta and repeated superclasses
+  # TODO: can we unify PortBridge into ProtoType? Difference seems to be in meta and repeated superclasses
   ProtoType = TypeVar('ProtoType', bound=edgir.BlockLikeTypes)
   def _populate_def_proto_block_base(self, pb: ProtoType) -> ProtoType:
     """Populates the structural parts of a block proto: parameters, ports, superclasses"""
@@ -281,11 +281,20 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         )
 
     for (name, port) in self._ports.items():
-      if isinstance(port, Port):
-        for (port_param, port_param_init) in port._initializers().items():
-          pb.constraints[f'(init){name}{port_param}'].CopyFrom(  # TODO better name
-            AssignBinding.make_assign(port_param, port_param_init, ref_map)
-          )
+      if isinstance(port, (Port, Bundle)):
+        for (port_param_path, port_param) in port._recursive_params([name]):
+          if port_param.initializer is not None:
+            pb.constraints[f"(init){'.'.join(port_param_path)}"].CopyFrom(
+              AssignBinding.make_assign(port_param, port_param._to_expr_type(port_param.initializer), ref_map)
+            )
+      elif isinstance(port, (Vector,)):
+        elt_sample = port._get_elt_sample()
+        assert isinstance(elt_sample, (Port, Bundle))  # TODO support vectors in vectors?
+        for (port_param_path, port_param) in elt_sample._recursive_params([name]):
+          assert port_param.initializer is None, f"can't have initialized vector elts"
+      else:
+        raise TypeError(f"unexpected port type in blocklike: {port}")
+
       if port in self._required_ports:
         pb.constraints[f'(reqd){name}'].CopyFrom(
           port.is_connected()._expr_to_proto(ref_map)

@@ -138,10 +138,9 @@ class Port(BasePort, Generic[PortLinkType]):
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     return adapter_inst.dst
 
-  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
-    # TODO unify w/ _initializer_to?
-    return IdentityDict([(param, param.initializer)
-                         for param in self._parameters.values() if param.initializer is not None])
+  def _recursive_params(self, root: List[str]) -> Iterable[Tuple[List[str], ConstraintExpr]]:
+    return [(root + [name], param)
+            for (name, param) in self._parameters.items()]
 
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
@@ -209,11 +208,12 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
 
-  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
-    # TODO unify w/ _initializer_to?
-    return IdentityDict(chain(*[super()._initializers().items()],
-                              *[port._initializers().items() for port in self._ports.values()]
-                              ))
+  def _recursive_params(self, root: List[str]) -> Iterable[Tuple[List[str], ConstraintExpr]]:
+    my_params = [(root + [name], param)
+                 for (name, param) in self._parameters.items()]
+    port_params = chain(*[port._recursive_params(root + [name])
+                          for (name, port) in self._ports.items()])
+    return my_params + list(port_params)
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()

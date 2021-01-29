@@ -273,6 +273,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       for (block_param, block_param_init) in block._initializers().items():
         pb.constraints[f'(init){name}{block_param}'].CopyFrom(  # TODO better name
           AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_init), ref_map)
+          # AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param.initializer), ref_map)
         )
 
     return pb
