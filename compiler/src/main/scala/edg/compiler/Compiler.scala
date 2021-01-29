@@ -284,7 +284,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
                 ElaborateRecord.Block(path + intPort.steps.head.step.name.get),
                 ElaborateRecord.ConnectedLink(path ++ extPort))
             )
-            if (connectedPorts.contains(path ++ extPort)) {
+            // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
+            if (connectedPorts.contains(path + extPort.steps.head.getName)) {
               connectedPorts += (path ++ intPort)
             }
         }
@@ -378,6 +379,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
                 ElaborateRecord.Link(path + intPort.steps.head.getName),
                 ElaborateRecord.ConnectedLink(path ++ intPort))
             )
+            // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             if (connectedPorts.contains(path + extPort.steps.head.getName)) {
               connectedPorts += (path ++ intPort)
             }
