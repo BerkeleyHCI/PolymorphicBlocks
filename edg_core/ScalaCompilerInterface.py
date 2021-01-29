@@ -6,6 +6,7 @@ from concurrent import futures
 import subprocess
 
 from . import edgir, edgrpc
+from .Core import builder
 from .HierarchyBlock import Block
 from .HdlInterfaceServer import HdlInterface, CachedLibrary
 
@@ -15,38 +16,45 @@ class ScalaCompilerInstance:
 
   def __init__(self):
     self.server: Optional[Any] = None
+
+    self.process: Optional[Any] = None
+    self.channel: Optional[Any] = None
+    self.stub: Optional[Any] = None
+
     self.library = CachedLibrary()  # TODO should this be instance-specific?
 
-  def check_server_started(self) -> Any:
+  def check_started(self) -> None:
     if self.server is None:
       self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
       edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(self.library), self.server)  # type: ignore
       self.server.add_insecure_port('[::]:50051')
       self.server.start()
-    return self.server
 
-  def compile(self, block: Type[Block]) -> edgir.Design:
-    self.check_server_started()
+    if self.stub is None:
+      if os.path.exists(self.RELATIVE_PATH):
+        jar_path = self.RELATIVE_PATH
+        print("Using development JAR")
+      else:
+        raise ValueError("No EDG Compiler JAR found")
+      self.process = subprocess.Popen(
+        ['java', '-jar', jar_path],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
-    # TODO perhaps make compiler process persistent
-    if os.path.exists(self.RELATIVE_PATH):
-      jar_path = self.RELATIVE_PATH
-      print("Using development JAR")
-    else:
-      raise ValueError("No EDG Compiler JAR found")
+      self.channel = grpc.insecure_channel('localhost:50052')
+      self.stub = edgrpc.CompilerStub(self.channel)
 
-    block_name = block._static_def_name()
-    block_modules = block.__module__
 
-    process = subprocess.Popen(
-      ['java', '-jar', jar_path, str(block_modules), block_name],
-      stdin=subprocess.PIPE,
-      stdout=subprocess.PIPE)
-    out, errs = process.communicate()
+  def compile(self, block: Type[Block]) -> edgrpc.CompilerResult:
+    self.check_started()
+    assert self.stub is not None
 
-    design = edgir.Design()
-    design.ParseFromString(out)
-    return design
+    result: edgrpc.CompilerResult = self.stub.Compile(edgrpc.CompilerRequest(
+      modules=[block.__module__],
+      design=edgir.Design(
+        contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
+    ))
+    assert not result.error, f"error during compilation: \n{result.error}"
+    return result
 
   def close(self):
     assert self.server is not None

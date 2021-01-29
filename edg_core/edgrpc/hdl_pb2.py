@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xcd\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\x97\x01\n\x11SolvedConstraints\x12\x35\n\x06values\x18\x01 \x03(\x0b\x32%.edg.compiler.SolvedConstraints.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xcd\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -184,90 +184,15 @@ _GENERATORREQUEST = _descriptor.Descriptor(
   serialized_end=383,
 )
 
-
-_SOLVEDCONSTRAINTS_VALUE = _descriptor.Descriptor(
-  name='Value',
-  full_name='edg.compiler.SolvedConstraints.Value',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='path', full_name='edg.compiler.SolvedConstraints.Value.path', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='edg.compiler.SolvedConstraints.Value.value', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=308,
-  serialized_end=383,
-)
-
-_SOLVEDCONSTRAINTS = _descriptor.Descriptor(
-  name='SolvedConstraints',
-  full_name='edg.compiler.SolvedConstraints',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='values', full_name='edg.compiler.SolvedConstraints.values', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[_SOLVEDCONSTRAINTS_VALUE, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=386,
-  serialized_end=537,
-)
-
 _LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
 _GENERATORREQUEST_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
 _GENERATORREQUEST_VALUE.containing_type = _GENERATORREQUEST
 _GENERATORREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST.fields_by_name['values'].message_type = _GENERATORREQUEST_VALUE
-_SOLVEDCONSTRAINTS_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
-_SOLVEDCONSTRAINTS_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
-_SOLVEDCONSTRAINTS_VALUE.containing_type = _SOLVEDCONSTRAINTS
-_SOLVEDCONSTRAINTS.fields_by_name['values'].message_type = _SOLVEDCONSTRAINTS_VALUE
 DESCRIPTOR.message_types_by_name['ModuleName'] = _MODULENAME
 DESCRIPTOR.message_types_by_name['LibraryRequest'] = _LIBRARYREQUEST
 DESCRIPTOR.message_types_by_name['GeneratorRequest'] = _GENERATORREQUEST
-DESCRIPTOR.message_types_by_name['SolvedConstraints'] = _SOLVEDCONSTRAINTS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ModuleName = _reflection.GeneratedProtocolMessageType('ModuleName', (_message.Message,), {
@@ -299,21 +224,6 @@ GeneratorRequest = _reflection.GeneratedProtocolMessageType('GeneratorRequest', 
 _sym_db.RegisterMessage(GeneratorRequest)
 _sym_db.RegisterMessage(GeneratorRequest.Value)
 
-SolvedConstraints = _reflection.GeneratedProtocolMessageType('SolvedConstraints', (_message.Message,), {
-
-  'Value' : _reflection.GeneratedProtocolMessageType('Value', (_message.Message,), {
-    'DESCRIPTOR' : _SOLVEDCONSTRAINTS_VALUE,
-    '__module__' : 'hdl_pb2'
-    # @@protoc_insertion_point(class_scope:edg.compiler.SolvedConstraints.Value)
-    })
-  ,
-  'DESCRIPTOR' : _SOLVEDCONSTRAINTS,
-  '__module__' : 'hdl_pb2'
-  # @@protoc_insertion_point(class_scope:edg.compiler.SolvedConstraints)
-  })
-_sym_db.RegisterMessage(SolvedConstraints)
-_sym_db.RegisterMessage(SolvedConstraints.Value)
-
 
 
 _HDLINTERFACE = _descriptor.ServiceDescriptor(
@@ -323,8 +233,8 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=540,
-  serialized_end=796,
+  serialized_start=386,
+  serialized_end=642,
   methods=[
   _descriptor.MethodDescriptor(
     name='LibraryElementsInModule',

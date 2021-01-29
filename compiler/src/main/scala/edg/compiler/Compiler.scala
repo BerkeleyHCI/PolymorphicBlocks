@@ -49,8 +49,8 @@ object ElaborateRecord {
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   // TODO better debug toggle
-  protected def debug(msg: => String): Unit = System.err.println(msg)
-//  protected def debug(msg: => String): Unit = { }
+//  protected def debug(msg: => String): Unit = println(msg)
+  protected def debug(msg: => String): Unit = { }
 
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName

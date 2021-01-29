@@ -1,1 +1,34 @@
+/** Defines a gRPC service that provides EDG compilation services.
+    Interface to the HDL (eg, library fetch) is not included here.
+*/
 syntax = "proto3";
+package edg.compiler;
+
+import "schema.proto";
+import "ref.proto";
+import "lit.proto";
+
+
+message CompilerRequest {
+  repeated string modules = 1;
+  schema.Design design = 2;
+}
+
+message CompilerResult {
+  oneof result {
+    schema.Design design = 1;
+    string error = 3;
+  }
+
+  message Value {
+    ref.LocalPath path = 1;
+    lit.ValueLit value = 2;
+  }
+  repeated Value solvedValues = 2;
+
+
+}
+
+service Compiler {
+  rpc Compile (CompilerRequest) returns (CompilerResult) { }
+}

@@ -11,20 +11,214 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from edg_core.edgir import schema_pb2 as schema__pb2
+from edg_core.edgir import ref_pb2 as ref__pb2
+from edg_core.edgir import lit_pb2 as lit__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='compiler.proto',
-  package='',
+  package='edg.compiler',
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0e\x63ompiler.protob\x06proto3'
+  serialized_pb=b'\n\x0e\x63ompiler.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\tlit.proto\"F\n\x0f\x43ompilerRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12\"\n\x06\x64\x65sign\x18\x02 \x01(\x0b\x32\x12.edg.schema.Design\"\xd8\x01\n\x0e\x43ompilerResult\x12$\n\x06\x64\x65sign\x18\x01 \x01(\x0b\x32\x12.edg.schema.DesignH\x00\x12\x0f\n\x05\x65rror\x18\x03 \x01(\tH\x00\x12\x38\n\x0csolvedValues\x18\x02 \x03(\x0b\x32\".edg.compiler.CompilerResult.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLitB\x08\n\x06result2T\n\x08\x43ompiler\x12H\n\x07\x43ompile\x12\x1d.edg.compiler.CompilerRequest\x1a\x1c.edg.compiler.CompilerResult\"\x00\x62\x06proto3'
+  ,
+  dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
+
+
+
+
+_COMPILERREQUEST = _descriptor.Descriptor(
+  name='CompilerRequest',
+  full_name='edg.compiler.CompilerRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='modules', full_name='edg.compiler.CompilerRequest.modules', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='design', full_name='edg.compiler.CompilerRequest.design', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=68,
+  serialized_end=138,
 )
 
 
+_COMPILERRESULT_VALUE = _descriptor.Descriptor(
+  name='Value',
+  full_name='edg.compiler.CompilerResult.Value',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='edg.compiler.CompilerResult.Value.path', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='edg.compiler.CompilerResult.Value.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=272,
+  serialized_end=347,
+)
 
+_COMPILERRESULT = _descriptor.Descriptor(
+  name='CompilerResult',
+  full_name='edg.compiler.CompilerResult',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='design', full_name='edg.compiler.CompilerResult.design', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='edg.compiler.CompilerResult.error', index=1,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='solvedValues', full_name='edg.compiler.CompilerResult.solvedValues', index=2,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[_COMPILERRESULT_VALUE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='edg.compiler.CompilerResult.result',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=141,
+  serialized_end=357,
+)
+
+_COMPILERREQUEST.fields_by_name['design'].message_type = schema__pb2._DESIGN
+_COMPILERRESULT_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
+_COMPILERRESULT_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
+_COMPILERRESULT_VALUE.containing_type = _COMPILERRESULT
+_COMPILERRESULT.fields_by_name['design'].message_type = schema__pb2._DESIGN
+_COMPILERRESULT.fields_by_name['solvedValues'].message_type = _COMPILERRESULT_VALUE
+_COMPILERRESULT.oneofs_by_name['result'].fields.append(
+  _COMPILERRESULT.fields_by_name['design'])
+_COMPILERRESULT.fields_by_name['design'].containing_oneof = _COMPILERRESULT.oneofs_by_name['result']
+_COMPILERRESULT.oneofs_by_name['result'].fields.append(
+  _COMPILERRESULT.fields_by_name['error'])
+_COMPILERRESULT.fields_by_name['error'].containing_oneof = _COMPILERRESULT.oneofs_by_name['result']
+DESCRIPTOR.message_types_by_name['CompilerRequest'] = _COMPILERREQUEST
+DESCRIPTOR.message_types_by_name['CompilerResult'] = _COMPILERRESULT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
+CompilerRequest = _reflection.GeneratedProtocolMessageType('CompilerRequest', (_message.Message,), {
+  'DESCRIPTOR' : _COMPILERREQUEST,
+  '__module__' : 'compiler_pb2'
+  # @@protoc_insertion_point(class_scope:edg.compiler.CompilerRequest)
+  })
+_sym_db.RegisterMessage(CompilerRequest)
+
+CompilerResult = _reflection.GeneratedProtocolMessageType('CompilerResult', (_message.Message,), {
+
+  'Value' : _reflection.GeneratedProtocolMessageType('Value', (_message.Message,), {
+    'DESCRIPTOR' : _COMPILERRESULT_VALUE,
+    '__module__' : 'compiler_pb2'
+    # @@protoc_insertion_point(class_scope:edg.compiler.CompilerResult.Value)
+    })
+  ,
+  'DESCRIPTOR' : _COMPILERRESULT,
+  '__module__' : 'compiler_pb2'
+  # @@protoc_insertion_point(class_scope:edg.compiler.CompilerResult)
+  })
+_sym_db.RegisterMessage(CompilerResult)
+_sym_db.RegisterMessage(CompilerResult.Value)
+
+
+
+_COMPILER = _descriptor.ServiceDescriptor(
+  name='Compiler',
+  full_name='edg.compiler.Compiler',
+  file=DESCRIPTOR,
+  index=0,
+  serialized_options=None,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=359,
+  serialized_end=443,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Compile',
+    full_name='edg.compiler.Compiler.Compile',
+    index=0,
+    containing_service=None,
+    input_type=_COMPILERREQUEST,
+    output_type=_COMPILERRESULT,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_COMPILER)
+
+DESCRIPTOR.services_by_name['Compiler'] = _COMPILER
 
 # @@protoc_insertion_point(module_scope)

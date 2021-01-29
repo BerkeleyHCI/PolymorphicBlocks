@@ -14,8 +14,8 @@ import edg.IrPort
 
 class PythonInterface {
   // TODO better debug toggle
-  protected def debug(msg: => String): Unit = System.err.println(msg)
-//  protected def debug(msg: => String): Unit = { }
+//  protected def debug(msg: => String): Unit = println(msg)
+  protected def debug(msg: => String): Unit = { }
 
   val ((channel, blockingStub), initTime) = timeExec {
     val channel = NettyChannelBuilder
@@ -42,8 +42,13 @@ class PythonInterface {
 }
 
 
-class PythonInterfaceLibrary(py: PythonInterface, modules: Seq[String]) extends Library {
+class PythonInterfaceLibrary(py: PythonInterface) extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
+
+  private var modules: Seq[String] = Seq()
+  def setModules(mods: Seq[String]) = {
+    modules = mods
+  }
 
   private def fetchEltIfNeeded(path: ref.LibraryPath): Unit = {
     if (!elts.contains(path)) {
