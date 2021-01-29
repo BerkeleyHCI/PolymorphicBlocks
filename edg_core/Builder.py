@@ -38,9 +38,15 @@ class Builder:
     self.push_element(block)
     try:
       if not generate:  # TODO this is kind of nasty =(
-        return block._elaborated_def_to_proto()
+        elaborated = block._elaborated_def_to_proto()
       else:  # TODO check is a GeneratorBlock w/o circular imports?
-        return block._generated_def_to_proto()  # type: ignore
+        elaborated = block._generated_def_to_proto()  # type: ignore
+
+      # since this is the top level, set the superclass to the block itself
+      del elaborated.superclasses[:]  # TODO stack instead of replace superclasses?
+      elaborated.superclasses.add().target.name = block._get_def_name()
+
+      return elaborated
     except BaseException as e:
       raise type(e)(f"({exc_prefix}) " + repr(e)) \
         .with_traceback(sys.exc_info()[2])

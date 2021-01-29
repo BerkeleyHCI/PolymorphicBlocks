@@ -2,6 +2,7 @@ from typing import *
 import unittest
 
 from . import *
+from edg_core.ScalaCompilerInterface import ScalaCompiler
 from .test_common import TestPortSource, TestPortSink
 from .test_hierarchy_block import TopHierarchyBlock, ExportPortHierarchyBlock, PortBridgeHierarchyBlock
 from . import test_common, test_hierarchy_block
@@ -13,9 +14,8 @@ class DesignInstantiationTestCase(unittest.TestCase):
     Tests design instantiation with a single level of hierarchy blocks.
     Only tests that the contained blocks are instantiated and structurally correct, does not check internal constraints
     """
-    driver = Driver([test_common, test_hierarchy_block])
-    design = Driver.elaborate_toplevel(TopHierarchyBlock())
-    pb = InstantiationTransform(driver.libs()).transform_design(design).contents
+    compiled_design = ScalaCompiler.compile(TopHierarchyBlock)
+    pb = compiled_design.design.contents
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.TopHierarchyBlock')
 
@@ -68,9 +68,8 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertIn(expected_conn, pb.constraints.values())
 
   def test_exported_hierarchy(self):
-    driver = Driver([test_common, test_hierarchy_block])
-    design = Driver.elaborate_toplevel(ExportPortHierarchyBlock())
-    pb = InstantiationTransform(driver.libs()).transform_design(design).contents
+    compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlock)
+    pb = compiled_design.design.contents
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
 
@@ -93,9 +92,8 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertIn(expected_conn, pb.constraints.values())
 
   def test_bridge_hierarchy(self):
-    driver = Driver([test_common, test_hierarchy_block])
-    design = Driver.elaborate_toplevel(PortBridgeHierarchyBlock())
-    pb = InstantiationTransform(driver.libs()).transform_design(design).contents
+    compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlock)
+    pb = compiled_design.design.contents
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
 

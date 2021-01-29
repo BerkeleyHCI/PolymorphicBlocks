@@ -9,14 +9,14 @@ class TestBlockBase(Block):
     super().__init__()
     self.base_float = self.Parameter(FloatExpr())
     self.base_port = self.Port(TestPortBase())  # required to test required constraint
-    self.base_port_constr = self.Port(TestPortBase(self.base_float), optional=True)
+    # self.base_port_constr = self.Port(TestPortBase(self.base_float), optional=True)
 
 
 class TestBlock(TestBlockBase):
   def __init__(self) -> None:
     super().__init__()
-    self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
-    self.port_lit = self.Port(TestPortBase(117), optional=True)
+    # self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
+    # self.port_lit = self.Port(TestPortBase(117), optional=True)
 
 
 class BlockBaseProtoTestCase(unittest.TestCase):

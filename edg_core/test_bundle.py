@@ -12,8 +12,8 @@ class TestBundle(Bundle):
 
     self.float_param = self.Parameter(FloatExpr(float_param))
 
-    self.a = self.Port(TestPortSink(float_param=a_float_param))
-    self.b = self.Port(TestPortSink(float_param=b_float_param))
+    # self.a = self.Port(TestPortSink(float_param=a_float_param))
+    # self.b = self.Port(TestPortSink(float_param=b_float_param))
 
 
 class BundleProtoTestCase(unittest.TestCase):

@@ -56,7 +56,8 @@ class GeneratorBlockTestCase(unittest.TestCase):
     self.assertEqual(generator.get(generator.bool_param), True)
     self.assertEqual(generator.get(generator.string_param), "TeSt")
 
-    self.assertEqual(generator.get(generator.port.float_param), 3.1)
+    raise NotImplementedError
+    # self.assertEqual(generator.get(generator.port.float_param), 3.1)
 
     self.assertEqual(generator.get(generator.port.is_connected()), False)
 

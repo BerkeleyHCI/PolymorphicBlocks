@@ -476,8 +476,6 @@ class Driver():
 
     design = edgir.Design()
     design.contents.CopyFrom(block_pb)
-    del design.contents.superclasses[:]  # TODO stack instead of replace superclasses?
-    design.contents.superclasses.add().target.name = block._get_def_name()  # TODO dedup w/ InstantiationTransform
 
     console.print("")
     return design

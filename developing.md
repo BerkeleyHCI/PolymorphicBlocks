@@ -23,6 +23,11 @@ If that doesn't get resolved, we might go through and manually annotate all retu
 python -m unittest discover
 ```
 
+Or, to run tests for a specific package (eg, `edg_core` in this command):
+```
+python -m unittest discover -s edg_core -t .
+```
+
 PROTIP: run both by combining the commands with `&&`
 
 

@@ -377,8 +377,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     new_port: BasePort = self.Port(type(port)(),  # TODO is dropping args safe in all cases?
                                    list(tags) + list(port_parent._port_tags[port]),
-                                   optional=optional,
-                                   _no_init=True)  # don't generate initializers, assuming link / export handles it
+                                   optional=optional)
     self.connect(new_port, port)
     return new_port  # type: ignore
 
