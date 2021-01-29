@@ -189,16 +189,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
                          for name, (self_param, self_param_init) in self._init_params.items()
                          if self_param_init is not None])
 
-  SelfType = TypeVar('SelfType', bound='Block')
-  def _initializer_to(self, target: SelfType) -> BoolExpr:
-    assert isinstance(target, type(self)), "initializer target must be of same type"
-
-    sub_exprs = [target._init_params[name][0] == self_param_init
-                 for name, (self_param, self_param_init) in self._init_params.items()
-                 if self_param_init is not None]
-
-    return BoolExpr._combine_and(sub_exprs)
-
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]

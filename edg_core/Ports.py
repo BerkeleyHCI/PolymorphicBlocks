@@ -143,15 +143,6 @@ class Port(BasePort, Generic[PortLinkType]):
     return IdentityDict([(param, param.initializer)
                          for param in self._parameters.values() if param.initializer is not None])
 
-  def _initializer_to(self, target: BasePort) -> BoolExpr:
-    assert not self._is_bound(), f"model for initializer must be literal-like and not be bound"
-    assert isinstance(target, type(self)), "target of initializer must be same type"  # TODO should be type equivalent, but breaks type checkers
-    assert target._is_bound(), "target for initializer must be bound"
-
-    param_init_exprs = [self_param._initializer_to(target._parameters[name])
-                        for name, self_param in self._parameters.items()]
-    return BoolExpr._combine_and(param_init_exprs)
-
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.lib_elem.target.name = self._get_def_name()
@@ -223,13 +214,6 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     return IdentityDict(chain(*[super()._initializers().items()],
                               *[port._initializers().items() for port in self._ports.values()]
                               ))
-
-  def _initializer_to(self, target: BasePort) -> BoolExpr:
-    assert isinstance(target, type(self)), "initializer must be of same type as target"  # TODO should be type equivalent, but breaks type checkers
-    param_exprs = super()._initializer_to(target)
-    port_init_exprs = [self_port._initializer_to(target._ports[name])
-                       for name, self_port in self._ports.items()]
-    return BoolExpr._combine_and([param_exprs] + port_init_exprs)
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()

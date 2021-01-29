@@ -467,9 +467,10 @@ class Driver():
     block_bound = block._bind(fake_toplevel, ignore_context=True)
 
     # for initializers from the top-level, create the initializer constraints in the block itself
-    top_init = block._initializer_to(block_bound)
-    if not BoolExpr._is_true_lit(top_init):
-      block_bound.constrain(top_init, "(top_init)")
+    raise NotImplementedError("Top level initializer")
+    # top_init = block._initializer_to(block_bound)
+    # if not BoolExpr._is_true_lit(top_init):
+    #   block_bound.constrain(top_init, "(top_init)")
 
     block_pb = builder.elaborate_toplevel(block_bound, f"in elaborating toplevel design {block_bound}")
 
