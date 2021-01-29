@@ -101,7 +101,7 @@ class Port(BasePort, Generic[PortLinkType]):
     self.adapter_types: List[Type[PortAdapter]] = []
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
 
     self.manager_ignored.update(['_is_connected'])
     self._is_connected = BoolExpr()._bind(ParamVariableBinding(IsConnectedBinding(self)))

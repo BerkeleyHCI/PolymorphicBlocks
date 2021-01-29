@@ -322,7 +322,7 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
       return f"{super().__repr__()}"
 
   @classmethod
-  # @abstractmethod  # TODO mypy requires this to be concrete
+  @abstractmethod
   def _to_expr_type(cls, input: ConstraintExprCastable) -> SelfType:
     """Casts the input from an equivalent-type to the self-type."""
     raise NotImplementedError
@@ -367,7 +367,7 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
     else:
       return target == self.initializer
 
-  # @abstractmethod  # TODO mypy requires this to be concrete
+  @abstractmethod
   def _decl_to_proto(self) -> edgir.ValInit:
     """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
     raise NotImplementedError

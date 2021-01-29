@@ -202,7 +202,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
-    self._constraints = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')
+    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
     self._inits = IdentityDict[Tuple[Refable, str], BoolExpr]()  # need to delay init constraint binding until after things are named
 
   def _post_init(self):
