@@ -203,7 +203,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
-    self._inits = IdentityDict[Tuple[Refable, str], BoolExpr]()  # need to delay init constraint binding until after things are named
 
   def _post_init(self):
     assert self._elaboration_state == BlockElaborationState.init
@@ -275,9 +274,22 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for (name, constraint) in self._constraints.items():
       pb.constraints[name].CopyFrom(constraint._expr_to_proto(ref_map))
 
-    for ((target, prefix), constraint) in self._inits.items():
-      if not constraint._is_true_lit():
-        pb.constraints[prefix + self._name_of(target)].CopyFrom(constraint._expr_to_proto(ref_map))
+    for (name, param) in self._parameters.items():
+      if param.initializer is not None:
+        pb.constraints[f'(init){name}'].CopyFrom(
+          AssignBinding.make_assign(param, param.initializer, ref_map)
+        )
+
+    for (name, port) in self._ports.items():
+      if isinstance(port, Port):
+        for (port_param, port_param_init) in port._initializers().items():
+          pb.constraints[f'(init){name}{port_param}'].CopyFrom(  # TODO better name
+            AssignBinding.make_assign(port_param, port_param_init, ref_map)
+          )
+      if port in self._required_ports:
+        pb.constraints[f'(reqd){name}'].CopyFrom(
+          port.is_connected()._expr_to_proto(ref_map)
+        )
 
     return pb
 
@@ -373,7 +385,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       self._sourcelocator[constraint] = self._get_calling_source_locator()
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None, _no_init: bool = False) -> T:
+  def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
@@ -383,10 +395,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     elt = tpe._bind(self)
     self._ports.register(elt)
-    if isinstance(tpe, Port) and not _no_init:
-      self._inits[elt, '(init)'] = tpe._initializer_to(elt)
+
     if not optional:
-      self._inits[elt, '(reqd)'] = elt.is_connected()
       self._required_ports.add(elt)
 
     if not builder.stack or builder.stack[0] is self:
@@ -406,9 +416,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     elt = tpe._bind(ParamBinding(self))
     self._parameters.register(elt)
-    init_expr = tpe._initializer_to(elt)
-    self._check_constraint(init_expr)
-    self._inits[elt, '(init)'] = init_expr
+    if elt.initializer is not None:
+      self._check_constraint(elt.initializer)
 
     if not builder.stack or builder.stack[0] is self:
       if desc is not None:

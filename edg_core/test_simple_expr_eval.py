@@ -8,11 +8,11 @@ from .CompilerUtils import *
 class TestEvalExprBlock(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.sum_float = self.Parameter(FloatExpr())
+    # Test both the initializer form and the assign form
+    self.sum_float = self.Parameter(FloatExpr(2 * LiteralConstructor(1) + 3 * LiteralConstructor(1)))
     self.sum_range = self.Parameter(RangeExpr())
 
   def contents(self):
-    self.assign(self.sum_float, 2 * LiteralConstructor(1) + 3 * LiteralConstructor(1))
     self.assign(self.sum_range, (2, 6) * LiteralConstructor(1) + (7, 8) * LiteralConstructor(1))
 
 

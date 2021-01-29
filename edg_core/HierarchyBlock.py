@@ -10,7 +10,7 @@ from .Exception import *
 from .Array import Vector
 from .Builder import builder
 from .Blocks import BaseBlock, Link, BlockElaborationState, ConnectedPorts
-from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr, ParamBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr, ParamBinding, AssignBinding
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -183,6 +183,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         out.append(block_port)
     return out
 
+  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
+    # TODO unify w/ _initializer_to?
+    return IdentityDict([(self_param, self_param_init)
+                         for name, (self_param, self_param_init) in self._init_params.items()
+                         if self_param_init is not None])
+
   SelfType = TypeVar('SelfType', bound='Block')
   def _initializer_to(self, target: SelfType) -> BoolExpr:
     assert isinstance(target, type(self)), "initializer target must be of same type"
@@ -271,6 +277,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         for idx, (subelt_port, link_port_path) in enumerate(connect_elts.direct_connects):
           pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
           pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+
+    # generate block initializers
+    for (name, block) in self._blocks.items():
+      for (block_param, block_param_init) in block._initializers().items():
+        pb.constraints[f'(init){name}{block_param}'].CopyFrom(  # TODO better name
+          AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_init), ref_map)
+        )
 
     return pb
 
@@ -385,7 +398,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     elt = tpe._bind(self)
     self._blocks.register(elt)
-    self._inits[elt, '(init)'] = tpe._initializer_to(elt)
 
     if not builder.stack or builder.stack[0] is self:
       self._sourcelocator[elt] = self._get_calling_source_locator()

@@ -285,6 +285,14 @@ class IsConnectedBinding(Binding):
 
 
 class AssignBinding(Binding):
+  # Convenience method to make an assign expr without the rest of this proto infrastructure
+  @staticmethod
+  def make_assign(target: ConstraintExpr, value: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.assign.dst.CopyFrom(ref_map[target])
+    pb.assign.src.CopyFrom(value._expr_to_proto(ref_map))
+    return pb
+
   def __repr__(self) -> str:
     return f"Assign({self.target}, ...)"
 
@@ -297,11 +305,7 @@ class AssignBinding(Binding):
     return [self.value]
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    pb = edgir.ValueExpr()
-    pb.assign.dst.CopyFrom(ref_map[self.target])
-    pb.assign.src.CopyFrom(self.value._expr_to_proto(ref_map))
-
-    return pb
+    return self.make_assign(self.target, self.value, ref_map)
 
 
 ConstraintExprCastable = TypeVar('ConstraintExprCastable')
