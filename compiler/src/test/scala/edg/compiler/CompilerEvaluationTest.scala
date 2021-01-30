@@ -263,7 +263,6 @@ class CompilerEvaluationTest extends AnyFlatSpec {
       Some(BooleanValue(true)))
   }
 
-
   "Compiler on design with disconnected ports" should "indicate disconnected" in {
     val inputDesign = Design(Block.Block(
       blocks = Map(
@@ -279,6 +278,26 @@ class CompilerEvaluationTest extends AnyFlatSpec {
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(false)))
+  }
+
+  "Compiler on design with disconnected exported ports" should "indicate disconnected" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceContainerBlock"),
+      ),
+      constraints = Map(
+        // to not give an unsolved parameter error
+        "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    compiler.compile()
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath.root + "source" + "port" + IndirectStep.IsConnected()) should equal(
+      Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath.root + "source" + "inner" + "port" + IndirectStep.IsConnected()) should equal(
       Some(BooleanValue(false)))
   }
 }
