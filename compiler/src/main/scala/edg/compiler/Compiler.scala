@@ -400,6 +400,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
                 ElaborateRecord.Link(path + intPort.head),
                 ElaborateRecord.ConnectedLink(path ++ intPort))
             )
+
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             if (connectedPorts.contains(path + extPort.head)) {
               connectedPorts += (path ++ intPort)
@@ -407,6 +408,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             directConnectedPorts += (path ++ intPort)
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
               ValueExpr.RefAllocate(intPortArray)) =>
+            require(!linkPortAllocates.contains(intPortArray), s"redefinition of link port array $intPortArray")
             linkPortAllocates.put(intPortArray, constrName)
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
             throw new NotImplementedError("TODO: export port array <-> port array")

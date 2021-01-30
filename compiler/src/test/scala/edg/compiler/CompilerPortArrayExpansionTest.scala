@@ -85,7 +85,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
           "sinkAExport" -> Constraint.Exported(ValueExpr.MapExtract(Ref("sinks"), "a"),
             Ref.Allocate(Ref("a", "sinks"))
           ),
-          "sinkAExport" -> Constraint.Exported(ValueExpr.MapExtract(Ref("sinks"), "b"),
+          "sinkBExport" -> Constraint.Exported(ValueExpr.MapExtract(Ref("sinks"), "b"),
             Ref.Allocate(Ref("b", "sinks"))
           ),
         )
