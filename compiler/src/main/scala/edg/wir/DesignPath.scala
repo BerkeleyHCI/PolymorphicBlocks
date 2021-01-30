@@ -15,10 +15,10 @@ object IndirectStep {  // namespace
   case class Element(name: String) extends IndirectStep {
     override def toString = name
   }
-  case class IsConnected() extends IndirectStep {
+  object IsConnected extends IndirectStep {
     override def toString: String = "IS_CONNECTED"
   }
-  case class ConnectedLink() extends IndirectStep {  // block-side port -> link
+  object ConnectedLink extends IndirectStep {  // block-side port -> link
     override def toString: String = "CONNECTED_LINK"
   }
 }
@@ -37,8 +37,8 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def ++(suffix: ref.LocalPath): IndirectDesignPath = {
     IndirectDesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink()
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected()
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
       case step => throw new NotImplementedError(s"Unknown step $step in appending $suffix from $this")
     } } )
   }
@@ -46,10 +46,10 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def toLocalPath: ref.LocalPath = {
     ref.LocalPath(steps=steps.map{
       case IndirectStep.Element(name) => ref.LocalStep(step=ref.LocalStep.Step.Name(name))
-      case IndirectStep.IsConnected() => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
+      case IndirectStep.IsConnected => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
         ref.Reserved.IS_CONNECTED
       ))
-      case IndirectStep.ConnectedLink() => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
+      case IndirectStep.ConnectedLink => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
         ref.Reserved.CONNECTED_LINK
       ))
     })

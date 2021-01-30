@@ -109,8 +109,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     connectedLinkParams.put(fromLinkPortPath, (linkPath, linkParams))  // propagate CONNECTED_LINK params
     for (linkParam <- linkParams) {
       constProp.addEquality(
-        IndirectDesignPath.fromDesignPath(toLinkPortPath) + IndirectStep.ConnectedLink() + linkParam,
-        IndirectDesignPath.fromDesignPath(fromLinkPortPath) + IndirectStep.ConnectedLink() + linkParam
+        IndirectDesignPath.fromDesignPath(toLinkPortPath) + IndirectStep.ConnectedLink + linkParam,
+        IndirectDesignPath.fromDesignPath(fromLinkPortPath) + IndirectStep.ConnectedLink + linkParam
       )
     }
 
@@ -186,7 +186,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   protected def processPortConnected(portPath: DesignPath, port: wir.PortLike): Unit = port match {
     case port @ (_: wir.Port | _: wir.Bundle) =>
-      constProp.setValue(IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.IsConnected(),
+      constProp.setValue(IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.IsConnected,
         BooleanValue(connectedPorts.contains(portPath)))
     case port: wir.PortArray => port.getElaboratedPorts.foreach { case (name, subport) =>
       processPortConnected(portPath + name, subport)
@@ -202,7 +202,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         connectedLinkParams.put(portPath, (linkPath, params))
         params.foreach { paramName =>
           constProp.addEquality(
-            IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.ConnectedLink() + paramName,
+            IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.ConnectedLink + paramName,
             IndirectDesignPath.fromDesignPath(linkPath) + paramName
           )
         }

@@ -52,7 +52,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
       ValueExpr.Literal(1),
       SourceLocator.empty
     )
-    constProp.addAssignment(IndirectDesignPath.root + "port" + IndirectStep.ConnectedLink() + "param", DesignPath.root,
+    constProp.addAssignment(IndirectDesignPath.root + "port" + IndirectStep.ConnectedLink + "param", DesignPath.root,
       ValueExpr.Literal(1),
       SourceLocator.empty
     )
