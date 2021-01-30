@@ -1,6 +1,6 @@
 import unittest
 
-from .test_common import TestPortBridge, TestPortSink
+from .test_elaboration_common import TestPortBridge, TestPortSink
 from . import edgir
 from . import *
 
@@ -10,8 +10,8 @@ class PortBridgeProtoTestCase(unittest.TestCase):
     self.pb = TestPortBridge()._elaborated_def_to_proto()
 
   def test_contains_param(self):
-    self.assertEqual(self.pb.ports['inner_link'].lib_elem.target.name, "edg_core.test_common.TestPortSource")
-    self.assertEqual(self.pb.ports['outer_port'].lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports['inner_link'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
+    self.assertEqual(self.pb.ports['outer_port'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_constraints(self):
     self.assertEqual(len(self.pb.constraints), 4)  # include two required-connect constraints

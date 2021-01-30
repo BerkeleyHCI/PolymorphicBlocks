@@ -259,6 +259,20 @@ def LocalPathList(path: Iterable[Union[str, 'ReservedValue']]) -> LocalPath:
   return pb
 
 
+def AssignLit(dst: Iterable[str], src: LitTypes) -> ValueExpr:
+  pb = ValueExpr()
+  pb.assign.dst.CopyFrom(LocalPathList(dst))
+  pb.assign.src.CopyFrom(lit_to_expr(src))
+  return pb
+
+
+def AssignRef(dst: Iterable[str], src: Iterable[str]) -> ValueExpr:
+  pb = ValueExpr()
+  pb.assign.dst.CopyFrom(LocalPathList(dst))
+  pb.assign.src.ref.CopyFrom(LocalPathList(src))
+  return pb
+
+
 def EqualsValueExpr(path: Iterable[str], value: Union[Iterable[str], float, Tuple[float, float], str]) -> ValueExpr:
   """Convenience shorthand constructor for a ValueExpr with a path on the lhs and a literal on the rhs"""
   import numbers

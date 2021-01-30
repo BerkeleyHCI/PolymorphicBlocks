@@ -138,6 +138,21 @@ class FloatLiteralBinding(LiteralBinding):
     return pb
 
 
+class RangeLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.lower, self.upper})"
+
+  def __init__(self, value: Tuple[Union[float, int], Union[float, int]]):
+    self.lower = value[0]
+    self.upper = value[1]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.range.minimum.floating.val = self.lower
+    pb.literal.range.maximum.floating.val = self.upper
+    return pb
+
+
 class StringLiteralBinding(LiteralBinding):
   def __repr__(self) -> str:
     return f"Lit({self.value})"
@@ -575,9 +590,12 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     if isinstance(input, RangeExpr):
       assert input._is_bound()
       return input
-    elif isinstance(input, int) or isinstance(input, float) or isinstance(input, FloatExpr):
+    elif isinstance(input, (int, float, FloatExpr)):
       expr = FloatExpr._to_expr_type(input)
       return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
+    elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
+      assert len(input) == 2
+      return RangeExpr()._bind(RangeLiteralBinding((input[0], input[1])))
     elif isinstance(input, tuple):
       assert len(input) == 2
       return RangeExpr()._bind(RangeBuilderBinding(
