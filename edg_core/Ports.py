@@ -10,6 +10,7 @@ from .IdentityDict import IdentityDict
 from .ConstraintExpr import ConstraintExpr, RangeExpr, ParamBinding, BoolExpr, IsConnectedBinding, ParamVariableBinding
 from .Builder import builder
 from .Exception import *
+from .StructuredMetadata import MetaNamespaceOrder
 if TYPE_CHECKING:
   from .Blocks import BaseBlock, Link
   from .PortBlocks import PortBridge, PortAdapter
@@ -103,6 +104,8 @@ class Port(BasePort, Generic[PortLinkType]):
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
 
+    self._namespace_order = self.Metadata(MetaNamespaceOrder())
+
     self.manager_ignored.update(['_is_connected'])
     self._is_connected = BoolExpr()._bind(ParamVariableBinding(IsConnectedBinding(self)))
 
@@ -149,7 +152,6 @@ class Port(BasePort, Generic[PortLinkType]):
 
   def _def_to_proto(self) -> edgir.PortTypes:
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
 
     pb = edgir.Port()
 
@@ -161,6 +163,9 @@ class Port(BasePort, Generic[PortLinkType]):
 
     for (name, param) in self._parameters.items():
       pb.params[name].CopyFrom(param._decl_to_proto())
+
+    for name in self._parameters.keys_ordered():
+      self._namespace_order.append(name)
 
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 
@@ -217,10 +222,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
-
     self._ports.finalize()
-    self._ports_order = self.Metadata({str(idx): name for idx, name in enumerate(self._ports.keys_ordered())})
 
     pb = edgir.Bundle()
 
@@ -235,6 +237,9 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       pb.params[name].CopyFrom(param._decl_to_proto())
     for (name, port) in self._ports.items():
       pb.ports[name].CopyFrom(port._instance_to_proto())
+
+    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered()):
+      self._namespace_order.append(name)
 
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 

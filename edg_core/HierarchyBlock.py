@@ -224,9 +224,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     # actually generate the links and connects
     link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
-    connect_order = []
-    link_order = []
-    supplement_block_order = []
     for name, chain in self._chains.items_ordered():
       for i, connect in enumerate(chain.links):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
@@ -244,11 +241,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       elif connect_elts.link_type is None:  # generate direct export
         pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
         pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
-        connect_order.append(f"(conn){name}")
+        self._namespace_order.append(f"(conn){name}")
       else:  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
 
-        link_order.append(f"{name}")
+        self._namespace_order.append(f"{name}")
         pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
 
         for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
@@ -257,21 +254,21 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
           port_name = self._name_of(self_port)
           pb.blocks[f"(bridge){port_name}"].lib_elem.target.name = self_port.bridge_type._static_def_name()
-          supplement_block_order.append(f"(bridge){port_name}")
+          self._namespace_order.append(f"(bridge){port_name}")
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
 
           pb.constraints[f"(bridge){name}_b{idx}"].exported.exterior_port.ref.CopyFrom(ref_map[self_port])
           pb.constraints[f"(bridge){name}_b{idx}"].exported.internal_block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'outer_port'))
-          connect_order.append(f"(bridge){name}_b{idx}")
+          self._namespace_order.append(f"(bridge){name}_b{idx}")
 
           pb.constraints[f"(conn){name}_b{idx}"].connected.block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'inner_link'))
           pb.constraints[f"(conn){name}_b{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
-          connect_order.append(f"(conn){name}_b{idx}")
+          self._namespace_order.append(f"(conn){name}_b{idx}")
 
         for idx, (subelt_port, link_port_path) in enumerate(connect_elts.direct_connects):
           pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
           pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
-          connect_order.append(f"(conn){name}_d{idx}")
+          self._namespace_order.append(f"(conn){name}_d{idx}")
 
     # generate block initializers
     for (name, block) in self._blocks.items():
@@ -280,12 +277,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_init), ref_map)
           # AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param.initializer), ref_map)
         )
-        connect_order.append(f'(init){name}{block_param}')
+        self._namespace_order.append(f'(init){name}{block_param}')
 
     # generate H-block-specific order
-    import itertools  # use itertools.chain instead of Block.chain
-    for name in itertools.chain(self._blocks.keys_ordered(), connect_order, supplement_block_order, link_order):
-      pb.meta.members.node["NamespaceOrder"].namespace_order.names.append(name)
+    for name in self._blocks.keys_ordered():
+      self._namespace_order.append(name)
 
     return pb
 

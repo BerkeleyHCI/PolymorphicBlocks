@@ -13,6 +13,7 @@ from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding
 from .Ports import BasePort, Port, Bundle
+from .StructuredMetadata import MetaNamespaceOrder
 
 
 class ConnectedPorts():
@@ -149,7 +150,7 @@ class ConnectedPorts():
           # deallocate the port to prevent double connection
           # note, we can't use .remove since it uses __eq__ for comparison
           link_free_ports = [port for port in link_free_ports if port is not link_connect_port]
-            
+
         if port._block_parent() is self.parent:
           self.connect.bridged_connects.append((port, link_connect_port))
         else:
@@ -205,6 +206,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
+    self._namespace_order = self.Metadata(MetaNamespaceOrder())
+
   def _post_init(self):
     assert self._elaboration_state == BlockElaborationState.init
     self._elaboration_state = BlockElaborationState.post_init
@@ -255,18 +258,15 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._constraints.finalize()  # needed for source locator generation
 
-    ref_map = self._get_ref_map(edgir.LocalPath())
-    # TODO get rid of meta merging (here b/c the block order writes meta before this)
-    for (name, meta) in self._metadata_to_proto(self._metadata, [], ref_map).members.node.items():
-      assert name not in pb.meta.members.node, f"overwriting meta {name}"
-      pb.meta.members.node[name].CopyFrom(meta)
-
-
     # generate base-block order
     # TODO unified namespace order
+    # TODO this also appends to end, which may not be desirable
     for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered(),
                       self._constraints.keys_ordered()):
-      pb.meta.members.node["NamespaceOrder"].namespace_order.names.append(name)
+      self._namespace_order.append(name)
+
+    ref_map = self._get_ref_map(edgir.LocalPath())
+    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))
 
     return pb
 
@@ -287,6 +287,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         pb.constraints[f'(init){name}'].CopyFrom(
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
+        self._namespace_order.append(f'(init){name}')
 
     for (name, port) in self._ports.items():
       if isinstance(port, (Port, Bundle)):
@@ -295,6 +296,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
             pb.constraints[f"(init){'.'.join(port_param_path)}"].CopyFrom(
               AssignBinding.make_assign(port_param, port_param._to_expr_type(port_param.initializer), ref_map)
             )
+            self._namespace_order.append(f"(init){'.'.join(port_param_path)}")
       elif isinstance(port, (Vector,)):
         elt_sample = port._get_elt_sample()
         assert isinstance(elt_sample, (Port, Bundle))  # TODO support vectors in vectors?
@@ -307,6 +309,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         pb.constraints[f'(reqd){name}'].CopyFrom(
           port.is_connected()._expr_to_proto(ref_map)
         )
+        self._namespace_order.append(f'(reqd){name}')
 
     return pb
 
@@ -517,6 +520,7 @@ class Link(BaseBlock[edgir.Link]):
         pb.constraints[f"(export){name}_{idx}"].exported.internal_block_port.ref.CopyFrom(
           edgir.localpath_concat(link_path, link_port_path)
         )
+        self._namespace_order.append(f"(export){name}_{idx}")
 
     return pb
 
