@@ -41,14 +41,20 @@ object ExprBuilder {
       expr = expr.ValueExpr.Expr.IfThenElse(expr.IfThenElseExpr(cond = Some(cond), tru = Some(tru), fal = Some(fal)))
     )
 
-    def MapExtract(container: ref.LocalPath, path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)), path = Some(path)))
-    )
+    object MapExtract {
+      def apply(container: ref.LocalPath, path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+        expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)), path = Some(path)))
+      )
+      def apply(container: ref.LocalPath, path: String*): expr.ValueExpr = expr.ValueExpr(
+        expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)),
+          path = Some(ExprBuilder.Ref(path: _*))))
+      )
 
-    def MapExtract(container: ref.LocalPath, path: String*): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)),
-        path = Some(ExprBuilder.Ref(path: _*))))
-    )
+      def unapply(that: expr.ValueExpr): Option[(expr.ValueExpr, ref.LocalPath)] = that.expr match {
+        case expr.ValueExpr.Expr.MapExtract(expr) => Some(expr.container.get, expr.path.get)
+        case _ => None
+      }
+    }
 
     def Ref(path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.Ref(path)
