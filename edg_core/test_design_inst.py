@@ -8,6 +8,18 @@ from .test_hierarchy_block import TopHierarchyBlock, ExportPortHierarchyBlock, P
 from . import test_common, test_hierarchy_block
 
 
+class ExportPortHierarchyBlockTop(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(ExportPortHierarchyBlock())
+
+
+class PortBridgeHierarchyBlockTop(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(PortBridgeHierarchyBlock())
+
+
 class DesignInstantiationTestCase(unittest.TestCase):
   def test_single_hierarchy(self):
     """
@@ -68,8 +80,8 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertIn(expected_conn, pb.constraints.values())
 
   def test_exported_hierarchy(self):
-    compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlock)
-    pb = compiled_design.design.contents
+    compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlockTop)
+    pb = compiled_design.design.contents.blocks['block'].hierarchy
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
 
@@ -93,7 +105,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
 
   def test_bridge_hierarchy(self):
     compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlock)
-    pb = compiled_design.design.contents
+    pb = compiled_design.design.contents.blocks['block'].hierarchy
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
 
