@@ -81,12 +81,18 @@ trait HasMutableLinks {
 }
 
 trait HasMutableConstraints {
+  import edg.util.SeqMapUtils
+
   protected val constraints: mutable.SeqMap[String, expr.ValueExpr]
 
   def getConstraints: Map[String, expr.ValueExpr] = constraints.toMap
 
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
+  }
+
+  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)]): Unit = {
+    SeqMapUtils.replaceInPlace(constraints, name, fn(constraints(name)))
   }
 
   protected def parseConstraints(pb: Map[String, expr.ValueExpr], nameOrder: Seq[String]):
