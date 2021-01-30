@@ -56,13 +56,30 @@ object ExprBuilder {
       }
     }
 
-    def Ref(path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Ref(path)
-    )
+    object Ref {
+      def apply(path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+        expr = expr.ValueExpr.Expr.Ref(path)
+      )
+      def apply(path: String*): expr.ValueExpr = expr.ValueExpr( // convenience method
+        expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref(path: _*))
+      )
 
-    def Ref(path: String*): expr.ValueExpr = expr.ValueExpr( // convenience method
-      expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref(path: _*))
-    )
+      def unapply(that: expr.ValueExpr): Option[Seq[String]] = that.expr match {
+        case expr.ValueExpr.Expr.Ref(ref) => ExprBuilder.Ref.unapply(ref)
+        case _ => None
+      }
+    }
+
+    object RefAllocate {
+      def unapply(that: expr.ValueExpr): Option[Seq[String]] = that.expr match {
+        case expr.ValueExpr.Expr.Ref(that) => that.steps match {
+          case init :+ ExprBuilder.Ref.AllocateStep =>
+            localPathStepsNameOption(init)
+          case _ => None
+        }
+        case _ => None
+      }
+    }
 
     def Assign(dst: ref.LocalPath, src: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.Assign(expr.AssignExpr(dst=Some(dst), src=Some(src)))
@@ -86,6 +103,17 @@ object ExprBuilder {
     }
   }
 
+  private def localPathStepsNameOption(steps: Seq[ref.LocalStep]): Option[Seq[String]] = {
+    val names = steps.collect { step => step.step match {
+      case ref.LocalStep.Step.Name(name) => name
+    }}
+    if (names.length == steps.length) {
+      Some(names)
+    } else {
+      None
+    }
+  }
+
   object Ref {
     val AllocateStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE))
 
@@ -94,12 +122,17 @@ object ExprBuilder {
         ref.LocalStep(step = ref.LocalStep.Step.Name(step))
       })
     }
+
+    def unapply(that: ref.LocalPath): Option[Seq[String]] = {
+      localPathStepsNameOption(that.steps)
+    }
+
     object Allocate {
       def apply(prefix: ref.LocalPath): ref.LocalPath = {
         ref.LocalPath(steps = prefix.steps :+ AllocateStep)
       }
       def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
-        case init :+ last if last == AllocateStep => Some(ref.LocalPath(steps=init))
+        case init :+ ExprBuilder.Ref.AllocateStep => Some(ref.LocalPath(steps=init))
         case _ => None
       }
     }
@@ -112,5 +145,4 @@ object ExprBuilder {
     val Text: init.ValInit = init.ValInit(`val` = init.ValInit.Val.Text(common.Empty()))
     val Range: init.ValInit = init.ValInit(`val` = init.ValInit.Val.Range(common.Empty()))
   }
-
 }
