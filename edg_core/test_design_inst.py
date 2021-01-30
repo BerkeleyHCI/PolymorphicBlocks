@@ -104,7 +104,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertIn(expected_conn, pb.constraints.values())
 
   def test_bridge_hierarchy(self):
-    compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlock)
+    compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlockTop)
     pb = compiled_design.design.contents.blocks['block'].hierarchy
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
