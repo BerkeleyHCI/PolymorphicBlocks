@@ -1,10 +1,7 @@
-from typing import *
-import sys
 import unittest
 
 from . import *
 from .test_bundle import TestBundle
-from . import test_common, test_bundle
 
 
 class TestSingleInitializerBlock(Block):
@@ -15,7 +12,7 @@ class TestSingleInitializerBlock(Block):
 
 class TestInternalBlock(Block):
   @init_in_parent
-  def __init__(self, container_float_param: FloatLike = 3, float_param: FloatLike = FloatExpr()) -> None:
+  def __init__(self, container_float_param: FloatLike = 3.0, float_param: FloatLike = FloatExpr()) -> None:
     super().__init__()
     self.inner_bundle = self.Port(TestBundle(float_param, 0, 24), optional=True)
     self.inner_param = self.Parameter(FloatExpr(container_float_param))
@@ -89,11 +86,12 @@ class InitializerTestCase(unittest.TestCase):
       edgir.AssignLit(['outer_bundle', 'b', 'float_param'], -1.0),
       pb.constraints["(init)outer_bundle.b.float_param"])
 
-    self.assertEqual(edgir.AndValueExpr(
-      edgir.EqualsValueExpr(['inner', '(constr)container_float_param'], 62),
-      edgir.EqualsValueExpr(['inner', '(constr)float_param'], 31),
-    ), pb.constraints["(init)inner"])
-
+    self.assertEqual(
+      edgir.AssignLit(['inner', '(constr)container_float_param'], 62.0),
+      pb.constraints["(init)inner.(constr)container_float_param"])
+    self.assertEqual(
+      edgir.AssignLit(['inner', '(constr)float_param'], 31.0),
+      pb.constraints["(init)inner.(constr)float_param"])
 
   def test_default_initializer(self):
     pb = TestDefaultBlock()._elaborated_def_to_proto()
@@ -101,7 +99,7 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(len(pb.constraints.items()), 1)
     self.assertEqual(
       edgir.AssignLit(['inner', '(constr)container_float_param'], 3.0),
-      pb.constraints["(init)inner"])
+      pb.constraints["(init)inner.(constr)container_float_param"])
 
   def test_range_initializer(self):
     pb = TestDefaultRangeBlock((4*0.9, 4*1.1))._elaborated_def_to_proto()
@@ -121,9 +119,9 @@ class InitializerTestCase(unittest.TestCase):
     pb = TestMultipleInstantiationBlock()._elaborated_def_to_proto()
 
     self.assertEqual(
-      edgir.AssignLit(['inner1', '(constr)container_float_param'], 3),
-      pb.constraints["(init)inner1"])
+      edgir.AssignLit(['inner1', '(constr)container_float_param'], 3.0),
+      pb.constraints["(init)inner1.(constr)container_float_param"])
 
     self.assertEqual(
-      edgir.AssignLit(['inner2', '(constr)container_float_param'], 3),
-      pb.constraints["(init)inner2"])
+      edgir.AssignLit(['inner2', '(constr)container_float_param'], 3.0),
+      pb.constraints["(init)inner2.(constr)container_float_param"])

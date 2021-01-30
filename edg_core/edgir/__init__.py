@@ -319,18 +319,6 @@ def SubsetValueExpr(path: Iterable[str], value: Union[Iterable[str], Tuple[float
   return pb
 
 
-def AndValueExpr(*exprs: ValueExpr) -> ValueExpr:
-  from functools import reduce
-  assert exprs
-  def combine(lhs: ValueExpr, rhs: ValueExpr) -> ValueExpr:
-    pb = ValueExpr()
-    pb.binary.op = BinaryExpr.AND
-    pb.binary.lhs.CopyFrom(lhs)
-    pb.binary.rhs.CopyFrom(rhs)
-    return pb
-  return reduce(combine, exprs)
-
-
 def local_path_to_str(path: LocalPath) -> str:
   def step_to_str(step: LocalStep) -> str:
     if step.HasField('name'):

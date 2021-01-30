@@ -49,28 +49,25 @@ def init_in_parent(fn: InitType) -> InitType:
 
         if isinstance(arg_default, param_types):  # only care about ConstraintExpr-like args
           # TODO unify w/ ConstraintExpr Union-type
-          # TODO check arg_val type
+          # TODO check arg_val type, so a better error message is generated
           if isinstance(arg_default, (bool, BoolExpr)):
-            param_model: ConstraintExpr = BoolExpr()
+            param_model: ConstraintExpr = BoolExpr(arg_val)
           elif isinstance(arg_default, (float, int, FloatExpr)):
-            param_model = FloatExpr()
+            param_model = FloatExpr(arg_val)
           elif isinstance(arg_default, RangeExpr) or (isinstance(arg_default, tuple) and
               isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
-            param_model = RangeExpr()
+            param_model = RangeExpr(arg_val)
           elif isinstance(arg_default, (str, StringExpr)):
-            param_model = StringExpr()
+            param_model = StringExpr(arg_val)
           else:
             raise ValueError(f"Unknown Constraint-like argument to name={arg_name} with default={arg_default} of type={type(arg_default)}")
 
           # Create new parameter in self
           # TODO internal initializers (subclass fixing superclass initializers) need to be supported properly
           param_name = '(constr)' + arg_name
-          if param_name in self._init_params:
-            param_bound = self._init_params[param_name][0]
-            assert arg_val is param_bound, f"in {fn}, top level remapped name={arg_name} but got different value passed through"
-          else:
-            param_bound = param_model._bind(ParamBinding(self))
-            self._init_params[param_name] = (param_bound, arg_val)
+          assert param_name not in self._init_params, f"in {fn}, redefinition of initializer {arg_name}"
+          param_bound = param_model._bind(ParamBinding(self))
+          self._init_params[param_name] = param_bound
 
           # Modify the arguments passed through
           if arg_name in kwargs:
@@ -160,9 +157,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def __init__(self) -> None:
     super().__init__()
 
-    self._init_params: Dict[str, Tuple[ConstraintExpr, Any]]  # name -> (bound parameter, raw arg value), set in @init_in_parent
+    self._init_params: Dict[str, ConstraintExpr]  # name -> bound param (with initializer set), set in @init_in_parent
     if hasattr(self, '_init_params'):
-      for param_name, (self_param, parent_init) in self._init_params.items():
+      for param_name, self_param in self._init_params.items():
         self._parameters.register(self_param)
         self.manager.add_element(param_name, self_param)
     else:
@@ -182,12 +179,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       if port_tags.issuperset(tags):
         out.append(block_port)
     return out
-
-  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
-    # TODO unify w/ _initializer_to?
-    return IdentityDict([(self_param, self_param_init)
-                         for name, (self_param, self_param_init) in self._init_params.items()
-                         if self_param_init is not None])
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(
@@ -271,13 +262,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           self._namespace_order.append(f"(conn){name}_d{idx}")
 
     # generate block initializers
-    for (name, block) in self._blocks.items():
-      for (block_param, block_param_init) in block._initializers().items():
-        pb.constraints[f'(init){name}{block_param}'].CopyFrom(  # TODO better name
-          AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_init), ref_map)
-          # AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param.initializer), ref_map)
-        )
-        self._namespace_order.append(f'(init){name}{block_param}')
+    for (block_name, block) in self._blocks.items():
+      for (block_param_name, block_param) in block._init_params.items():
+        if block_param.initializer is not None:
+          pb.constraints[f'(init){block_name}.{block_param_name}'].CopyFrom(  # TODO better name
+            AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param.initializer), ref_map)
+          )
+          self._namespace_order.append(f'(init){block_name}.{block_param_name}')
 
     # generate H-block-specific order
     for name in self._blocks.keys_ordered():
