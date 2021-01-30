@@ -79,6 +79,8 @@ def lit_to_valuelit(value: LitTypes) -> ValueLit:
   pb = ValueLit()
   if isinstance(value, bool):
     pb.boolean.val = value
+  elif isinstance(value, int):
+    pb.integer.val = value
   elif isinstance(value, float):
     pb.floating.val = value
   elif isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
