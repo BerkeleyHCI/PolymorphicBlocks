@@ -3,6 +3,7 @@ from __future__ import annotations
 from numbers import Number
 from typing import *
 from itertools import chain
+import collections
 import sys
 
 from . import edgir
@@ -276,6 +277,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
+  # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     for cls in self._get_block_bases():
       assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
@@ -400,6 +402,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return super().connect(*ports)
 
 
+class GeneratorRecord():
+  def __init__(self):
+    pass
+
+
 @non_library
 class GeneratorBlock(Block):
   """Part which generates into a subcircuit, given fully resolved parameters.
@@ -408,12 +415,12 @@ class GeneratorBlock(Block):
   """
   def __init__(self):
     super().__init__()
-    self.param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
+    self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
+    self._generators: collections.OrderedDict[str, GeneratorRecord] = collections.OrderedDict()
 
-    self.generator = self.Metadata({
-      'module': self.__class__.__module__,
-      'class': self.__class__.__name__,
-    })
+  Self = TypeVar('Self', covariant=True)
+  def add_generator(self: Self, fn: Callable[[], None], *reqs: ConstraintExpr):
+    pass
 
   def _parse_from_proto(self, pb: edgir.HierarchyBlock, additional_constraints: Dict[str, edgir.ValueExpr]={}) -> None:
     """Reads concrete parameter values (including those of contained ports and attached links) from a protobuffer.
@@ -423,7 +430,7 @@ class GeneratorBlock(Block):
     # TODO: maybe check structural definitions too (ports and params)
 
     # Read through constraints and create a parameter value map
-    self.param_values = IdentityDict()
+    self._param_values = IdentityDict()
 
     def resolve_path(starting: Union[Block, Port, Link, ConstraintExpr], path: List[edgir.LocalStep]) \
         -> Optional[Union[ConstraintExpr, Block, Port, Link]]:
@@ -467,20 +474,20 @@ class GeneratorBlock(Block):
           param = resolve_path(self, list(constraint.binary.lhs.ref.steps))
           lit_val = edgir.lit_from_expr(constraint.binary.rhs)
           if isinstance(param, ConstraintExpr) and lit_val is not None:
-            if param not in self.param_values or self.param_values[param] != lit_val:
+            if param not in self._param_values or self._param_values[param] != lit_val:
               # reassignment errors in IdentityDict
-              self.param_values[param] = lit_val
+              self._param_values[param] = lit_val
               if isinstance(param, RangeExpr) and isinstance(lit_val, tuple):
-                self.param_values[param.lower()] = lit_val[0]
-                self.param_values[param.upper()] = lit_val[1]
+                self._param_values[param.lower()] = lit_val[0]
+                self._param_values[param.upper()] = lit_val[1]
       except Exception as e:
         raise type(e)(f"(while parsing constraint {name} = {constraint}) " + str(e)) \
           .with_traceback(sys.exc_info()[2])
 
     for port in self._ports.values():
       assert isinstance(port, Port)  # TODO self.ports is of type BasePort, maybe fix to Port?
-      if port.is_connected() not in self.param_values:
-        self.param_values[port.is_connected()] = False
+      if port.is_connected() not in self._param_values:
+        self._param_values[port.is_connected()] = False
 
   ParamGetType = TypeVar('ParamGetType')
   def get(self, param: ConstraintExpr[Any, Any, ParamGetType], default: Optional[ParamGetType] = None) -> ParamGetType:
@@ -489,15 +496,15 @@ class GeneratorBlock(Block):
                                  "call get(...) inside generate only, and remember to call super().generate()")
     if not isinstance(param, ConstraintExpr):
       raise TypeError(f"param to get(...) must be ConstraintExpr, got {param} of type {type(param)}")
-    assert self.param_values is not None
+    assert self._param_values is not None
 
-    if param not in self.param_values:  # TODO disambiguate between inaccessible and failed const prop
+    if param not in self._param_values:  # TODO disambiguate between inaccessible and failed const prop
       if default is not None:
         return default
       else:
         raise NotImplementedError(f"get({self._name_of(param)}) did not find a value, either the variable is inaccessible or an internal error")
 
-    value = cast(Any, self.param_values[param])
+    value = cast(Any, self._param_values[param])
     if isinstance(param, FloatExpr):
       assert isinstance(value, Number), f"get({self._name_of(param)}) expected float, got {value}"
     elif isinstance(param, RangeExpr):
@@ -518,8 +525,8 @@ class GeneratorBlock(Block):
       return None
 
   def _has(self, param: ConstraintExpr) -> bool:  # temporary, hack: all ConstraintExpr should be solved with const prop
-    assert self.param_values is not None, "Can't call _has(...) outside generate()"
-    return param in self.param_values
+    assert self._param_values is not None, "Can't call _has(...) outside generate()"
+    return param in self._param_values
 
   # TODO maybe disallow Block from being called in contents() ?
 
@@ -541,6 +548,13 @@ class GeneratorBlock(Block):
     else:
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)  # constraints need to be written and propagated
+      pb = self._populate_def_proto_block_generator(pb)
+    return pb
+
+
+  def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+    pb.generator.module = self._get_def_name()
+    raise NotImplementedError
     return pb
 
 
@@ -550,7 +564,6 @@ class GeneratorBlock(Block):
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
     self.generate()
-    self.generator['done'] = 'done'
     self._elaboration_state = BlockElaborationState.post_generate
     return self._def_to_proto()
 
