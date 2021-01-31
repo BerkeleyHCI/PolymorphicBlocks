@@ -566,12 +566,13 @@ class GeneratorBlock(Block):
         conditions.prereqs.add().CopyFrom(ref_map[req])
     return pb
 
-  def _generated_def_to_proto(self) -> edgir.HierarchyBlock:
+  def _generated_def_to_proto(self, generate_fn_name: str) -> edgir.HierarchyBlock:
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
-    self.generate()
+    fn = getattr(self, generate_fn_name)
+    fn()
     self._elaboration_state = BlockElaborationState.post_generate
     return self._def_to_proto()
 

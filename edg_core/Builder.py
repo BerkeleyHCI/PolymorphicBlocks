@@ -33,14 +33,15 @@ class Builder:
     else:
       return self.stack[-1]
 
-  def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *, generate=False) -> edgir.HierarchyBlock:
+  def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *,
+                         generate_fn_name: Optional[str]=None) -> edgir.HierarchyBlock:
     assert self.get_curr_context() is None
     self.push_element(block)
     try:
-      if not generate:  # TODO this is kind of nasty =(
-        elaborated = block._elaborated_def_to_proto()
+      if generate_fn_name is not None:  # TODO this is kind of nasty =(
+        elaborated = block._generated_def_to_proto(generate_fn_name)  # type: ignore
       else:  # TODO check is a GeneratorBlock w/o circular imports?
-        elaborated = block._generated_def_to_proto()  # type: ignore
+        elaborated = block._elaborated_def_to_proto()
 
       # since this is the top level, set the superclass to the block itself
       del elaborated.superclasses[:]  # TODO stack instead of replace superclasses?

@@ -276,8 +276,10 @@ class GeneratorTransform(TransformUtil.Transform):
       generator_obj._parse_from_proto(block, additional_constraints)
       if self.continue_on_error:  # if continue on error, wrap in a try/except call
         try:
-          generated = builder.elaborate_toplevel(generator_obj, f"in generate at {context.path} for {generator_obj}",
-                                                 generate=True)
+          # generated = builder.elaborate_toplevel(generator_obj, f"in generate at {context.path} for {generator_obj}",
+          #                                        generate=True)
+          generated = edgir.HierarchyBlock()
+          raise NotImplementedError
         except BaseException as e:
           generated = copy.deepcopy(block)
           generated.meta.members.node['error'].members.node['generator'].text_leaf = repr(e)
@@ -286,8 +288,10 @@ class GeneratorTransform(TransformUtil.Transform):
           del generated.meta.members.node['generator'].members.node['module']
           generated.meta.members.node['generator'].members.node['done'].text_leaf = 'done'
       else:
-        generated = builder.elaborate_toplevel(generator_obj, f"in generate at {context.path} for {generator_obj}",
-                                               generate=True)
+        generated = edgir.HierarchyBlock()
+        raise NotImplementedError
+        # generated = builder.elaborate_toplevel(generator_obj, f"in generate at {context.path} for {generator_obj}",
+        #                                        generate=True)
 
       assert 'done' in generated.meta.members.node['generator'].members.node
 

@@ -113,17 +113,20 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       self.library.load_module(module_name)
 
     try:
-      library_type = self.library.class_from_path(request.element)
-      assert issubclass(library_type, GeneratorBlock)
-      obj = library_type()
-      fn = getattr(obj, request.fn)
-      
+      generator_type = self.library.class_from_path(request.element)
+      assert generator_type is not None, f"no generator {request.element}"
+      assert issubclass(generator_type, GeneratorBlock)
+      generator_obj = generator_type()
+      assert len(request.values) == 0  # TODO support passing values
+      generated: Optional[edgir.HierarchyBlock] = builder.elaborate_toplevel(
+        generator_obj, f"in generate at {context.path} for {generator_obj}",
+        generate_fn_name=request.fn)
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving generator request for {request.element.target.name}")
-      elaborated = None
+      generated = None
 
-    if elaborated is not None:
-      return elaborated
+    if generated is not None:
+      return generated
     else:
       return edgir.HierarchyBlock()
