@@ -60,13 +60,9 @@ object CompilerGrpcMain {
         .start
 
     sys.addShutdownHook {
-      System.err.println("Shutdown")
       server.shutdown()
     }
 
-    System.err.println("Started")
     scala.io.StdIn.readLine
-    System.err.println("Shutdown")
-    server.shutdown()
   }
 }

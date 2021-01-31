@@ -22,12 +22,29 @@ class TestGeneratorAssign(GeneratorBlock):
 class TestGeneratorDependency(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.float_preset = self.Parameter(FloatExpr(2.0))
+    self.float_preset = self.Parameter(FloatExpr(3.0))
     self.float_param = self.Parameter(FloatExpr())
     self.add_generator(self.float_gen, self.float_preset)
 
   def float_gen(self) -> None:
     self.assign(self.float_param, self.get(self.float_preset) * 2)
+
+
+class TestGeneratorMultiDependency(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.float_preset = self.Parameter(FloatExpr(5.0))
+    self.float_param1 = self.Parameter(FloatExpr())
+    self.float_param2 = self.Parameter(FloatExpr())
+    self.add_generator(self.float_gen1, self.float_preset)
+    self.add_generator(self.float_gen2, self.float_param1)
+
+  def float_gen1(self) -> None:
+    self.assign1 = self.assign(self.float_param1, self.get(self.float_preset) * 3)
+
+  def float_gen2(self) -> None:
+    # TODO better name inference to avoid name collisions in multiple generates
+    self.assign2 = self.assign(self.float_param2, self.get(self.float_param1) + 7)
 
 
 class TestGenerator(unittest.TestCase):
@@ -39,9 +56,13 @@ class TestGenerator(unittest.TestCase):
   def test_generator_dependency(self):
     compiled_design = ScalaCompiler.compile(TestGeneratorDependency)
     solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['float_param'], 4.0), solved)
+    self.assertIn(makeSolved(['float_param'], 6.0), solved)
 
-
+  def test_generator_multi_dependency(self):
+    compiled_design = ScalaCompiler.compile(TestGeneratorMultiDependency)
+    solved = designSolvedValues(compiled_design)
+    self.assertIn(makeSolved(['float_param1'], 15.0), solved)
+    self.assertIn(makeSolved(['float_param2'], 22.0), solved)
 
 
 # class TestGenerator(GeneratorBlock):

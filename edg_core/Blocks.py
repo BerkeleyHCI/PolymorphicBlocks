@@ -386,7 +386,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   ConstrGetType = TypeVar('ConstrGetType')
   def assign(self, target: ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType],
              value: ConstrCastableType,
-             name: Optional[str] = None) -> None:
+             name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
     if not isinstance(name, (str, type(None))):
@@ -403,6 +403,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       self.manager.add_element(name, constraint)
     if not builder.stack or builder.stack[0] is self:
       self._sourcelocator[constraint] = self._get_calling_source_locator()
+
+    return constraint
 
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None) -> T:
