@@ -402,11 +402,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return super().connect(*ports)
 
 
-class GeneratorRecord():
-  def __init__(self):
-    pass
-
-
 @non_library
 class GeneratorBlock(Block):
   """Part which generates into a subcircuit, given fully resolved parameters.
@@ -416,11 +411,22 @@ class GeneratorBlock(Block):
   def __init__(self):
     super().__init__()
     self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
-    self._generators: collections.OrderedDict[str, GeneratorRecord] = collections.OrderedDict()
+    self._generators: collections.OrderedDict[str, GeneratorBlock.GeneratorRecord] = collections.OrderedDict()
 
-  Self = TypeVar('Self', covariant=True)
-  def add_generator(self: Self, fn: Callable[[], None], *reqs: ConstraintExpr):
-    pass
+
+  class GeneratorRecord(NamedTuple):
+    reqs: Tuple[ConstraintExpr, ...]
+
+  Self = TypeVar('Self', bound='GeneratorBlock', covariant=True)
+  def add_generator(self: Self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
+    assert callable(fn), f"fn {fn} must be a method (callable)"
+    fn_name = fn.__name__
+    assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
+    assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
+
+    assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs)
+
 
   def _parse_from_proto(self, pb: edgir.HierarchyBlock, additional_constraints: Dict[str, edgir.ValueExpr]={}) -> None:
     """Reads concrete parameter values (including those of contained ports and attached links) from a protobuffer.
