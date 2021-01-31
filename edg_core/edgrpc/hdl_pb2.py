@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xcd\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\x34\n\x06values\x18\x03 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -135,8 +135,8 @@ _GENERATORREQUEST_VALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=308,
-  serialized_end=383,
+  serialized_start=320,
+  serialized_end=395,
 )
 
 _GENERATORREQUEST = _descriptor.Descriptor(
@@ -162,8 +162,15 @@ _GENERATORREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='values', full_name='edg.compiler.GeneratorRequest.values', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      name='fn', full_name='edg.compiler.GeneratorRequest.fn', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='values', full_name='edg.compiler.GeneratorRequest.values', index=3,
+      number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -181,7 +188,7 @@ _GENERATORREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=178,
-  serialized_end=383,
+  serialized_end=395,
 )
 
 _LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
@@ -233,8 +240,8 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=386,
-  serialized_end=642,
+  serialized_start=398,
+  serialized_end=654,
   methods=[
   _descriptor.MethodDescriptor(
     name='LibraryElementsInModule',

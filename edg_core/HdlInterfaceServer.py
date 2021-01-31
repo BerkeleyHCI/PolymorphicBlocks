@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import  Generator, Optional, Set, Dict, Type, cast
+from typing import Generator, Optional, Set, Dict, Type, cast
 
 import importlib
 import inspect
@@ -9,7 +9,7 @@ import sys
 from . import edgrpc, edgir
 from .Core import builder, LibraryElement
 from .Blocks import Link
-from .HierarchyBlock import Block
+from .HierarchyBlock import Block, GeneratorBlock
 from .Ports import Port, Bundle
 
 
@@ -21,9 +21,10 @@ class CachedLibrary():
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
     self.lib_proto_map: Dict[str, edgir.Library.NS.Val] = {}
 
-  # Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
-  # Avoids re-loading previously loaded modules with cacheing.
   def load_module(self, module_name: str) -> None:
+    """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
+    Avoids re-loading previously loaded modules with cacheing.
+    """
     self._search_module(importlib.import_module(module_name))
 
   def _search_module(self, module: ModuleType) -> None:
@@ -44,8 +45,8 @@ class CachedLibrary():
           assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
         self.lib_class_map[name] = member
 
-  # Assuming the module has been loaded, retrieves a library element by LibraryPath.
-  def find_by_path(self, path: edgir.LibraryPath) -> Optional[edgir.Library.NS.Val]:
+  def elaborated_from_path(self, path: edgir.LibraryPath) -> Optional[edgir.Library.NS.Val]:
+    """Assuming the module has been loaded, retrieves a library element by LibraryPath."""
     dict_key = path.target.name
     if path.target.name in self.lib_proto_map:
       return self.lib_proto_map[dict_key]
@@ -56,6 +57,14 @@ class CachedLibrary():
         elaborated = self._elaborate_class(self.lib_class_map[dict_key])
         self.lib_proto_map[dict_key] = elaborated
         return elaborated
+
+  def class_from_path(self, path: edgir.LibraryPath) -> Optional[Type[LibraryElement]]:
+    """Assuming modules have been loaded, retrieves a LibraryElement class by LibraryPath."""
+    dict_key = path.target.name
+    if dict_key not in self.lib_class_map:
+      return None
+    else:
+      return self.lib_class_map[dict_key]
 
   @staticmethod
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
@@ -84,12 +93,11 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     raise NotImplementedError
 
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgir.Library.NS.Val:
-    # TODO: this isn't completely hermetic in terms of library searching
-    for module_name in request.modules:
+    for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
       self.library.load_module(module_name)
 
     try:
-      library_elt = self.library.find_by_path(request.element)
+      library_elt = self.library.elaborated_from_path(request.element)
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving library element request for {request.element.target.name}")
@@ -101,14 +109,21 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       return edgir.Library.NS.Val()  # TODO better more explicit failure?
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
-    # TODO: this isn't completely hermetic in terms of library searching
-    for module_name in request.modules:
+    for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
       self.library.load_module(module_name)
 
     try:
-      pass
+      library_type = self.library.class_from_path(request.element)
+      assert issubclass(library_type, GeneratorBlock)
+      obj = library_type()
+      fn = getattr(obj, request.fn)
+      
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving generator request for {request.element.target.name}")
+      elaborated = None
 
-    return edgir.HierarchyBlock()
+    if elaborated is not None:
+      return elaborated
+    else:
+      return edgir.HierarchyBlock()

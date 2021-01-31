@@ -21,16 +21,16 @@ message LibraryRequest {
 }
 
 message GeneratorRequest {
-  // TODO: support multiple generator and stages?
   repeated string modules = 1;  // Python modules to search for the class
   ref.LibraryPath element = 2;  // path of library element containing the generator
+  string fn = 3;  // name of generator function
 
   message Value {
     ref.LocalPath path = 1;
     lit.ValueLit value = 2;
   }
 
-  repeated Value values = 3;
+  repeated Value values = 4;
 }
 
 service HdlInterface {
