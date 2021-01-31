@@ -117,10 +117,14 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       assert generator_type is not None, f"no generator {request.element}"
       assert issubclass(generator_type, GeneratorBlock)
       generator_obj = generator_type()
-      assert len(request.values) == 0  # TODO support passing values
+      generator_values_raw = [(value.path, edgir.valuelit_to_lit(value.value))
+                              for value in request.values]
+      generator_values = [(path, value)  # purge None from values to make the typer happy
+                          for (path, value) in generator_values_raw
+                          if value is not None]
       generated: Optional[edgir.HierarchyBlock] = builder.elaborate_toplevel(
         generator_obj, f"in generate {request.fn} for {request.element}",
-        generate_fn_name=request.fn)
+        generate_fn_name=request.fn, generate_values=generator_values)
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving generator request for {request.element.target.name}")

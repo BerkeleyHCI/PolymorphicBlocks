@@ -17,7 +17,17 @@ class TestGeneratorAssign(GeneratorBlock):
 
   def float_gen(self) -> None:
     self.assign(self.float_param, 2.0)
-    # TODO add an internal constraint
+
+
+class TestGeneratorDependency(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.float_preset = self.Parameter(FloatExpr(2.0))
+    self.float_param = self.Parameter(FloatExpr())
+    self.add_generator(self.float_gen, self.float_preset)
+
+  def float_gen(self) -> None:
+    self.assign(self.float_param, self.get(self.float_preset) * 2)
 
 
 class TestGenerator(unittest.TestCase):
@@ -25,6 +35,12 @@ class TestGenerator(unittest.TestCase):
     compiled_design = ScalaCompiler.compile(TestGeneratorAssign)
     solved = designSolvedValues(compiled_design)
     self.assertIn(makeSolved(['float_param'], 2.0), solved)
+
+  def test_generator_dependency(self):
+    compiled_design = ScalaCompiler.compile(TestGeneratorDependency)
+    solved = designSolvedValues(compiled_design)
+    self.assertIn(makeSolved(['float_param'], 4.0), solved)
+
 
 
 

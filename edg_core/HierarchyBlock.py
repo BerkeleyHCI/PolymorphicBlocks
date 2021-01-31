@@ -566,11 +566,23 @@ class GeneratorBlock(Block):
         conditions.prereqs.add().CopyFrom(ref_map[req])
     return pb
 
-  def _generated_def_to_proto(self, generate_fn_name: str) -> edgir.HierarchyBlock:
+  def _parse_param_values(self, values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> None:
+    ref_map = self._get_ref_map(edgir.LocalPath())
+    reverse_ref_map = { path.SerializeToString(): refable
+      for refable, path in ref_map.items() }
+    self._param_values = IdentityDict()
+    for (path, value) in values:
+      path_expr = reverse_ref_map[path.SerializeToString()]
+      assert isinstance(path_expr, ConstraintExpr)
+      self._param_values[path_expr] = value
+
+  def _generated_def_to_proto(self, generate_fn_name: str,
+                              generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> edgir.HierarchyBlock:
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
+    self._parse_param_values(generate_values)
     fn = getattr(self, generate_fn_name)
     fn()
     self._elaboration_state = BlockElaborationState.post_generate

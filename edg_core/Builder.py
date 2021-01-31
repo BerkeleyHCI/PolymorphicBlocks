@@ -34,12 +34,13 @@ class Builder:
       return self.stack[-1]
 
   def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *,
-                         generate_fn_name: Optional[str]=None) -> edgir.HierarchyBlock:
+                         generate_fn_name: Optional[str] = None,
+                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]] = []) -> edgir.HierarchyBlock:
     assert self.get_curr_context() is None
     self.push_element(block)
     try:
       if generate_fn_name is not None:  # TODO this is kind of nasty =(
-        elaborated = block._generated_def_to_proto(generate_fn_name)  # type: ignore
+        elaborated = block._generated_def_to_proto(generate_fn_name, generate_values)  # type: ignore
       else:  # TODO check is a GeneratorBlock w/o circular imports?
         elaborated = block._elaborated_def_to_proto()
 

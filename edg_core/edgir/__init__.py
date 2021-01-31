@@ -61,16 +61,22 @@ def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTy
 
 
 def lit_from_expr(expr: ValueExpr) -> Optional[LitTypes]:
-  if expr.HasField('literal') and expr.literal.HasField('boolean'):
-    return expr.literal.boolean.val
-  elif expr.HasField('literal') and expr.literal.HasField('floating'):
-    return expr.literal.floating.val
-  elif expr.HasField('binary') and expr.binary.op == BinaryExpr.RANGE and \
-      expr.binary.lhs.HasField('literal') and expr.binary.lhs.literal.HasField('floating') and \
-      expr.binary.rhs.HasField('literal') and expr.binary.rhs.literal.HasField('floating'):
-    return (expr.binary.lhs.literal.floating.val, expr.binary.rhs.literal.floating.val)
-  elif expr.HasField('literal') and expr.literal.HasField('text'):
-    return expr.literal.text.val
+  if expr.HasField('literal'):
+    return valuelit_to_lit(expr.literal)
+  else:
+    return None
+
+
+def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
+  if expr.HasField('boolean'):
+    return expr.boolean.val
+  elif expr.HasField('floating'):
+    return expr.floating.val
+  elif expr.HasField('range') and \
+       expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
+    return (expr.range.minimum.floating.val, expr.range.maximum.floating.val)
+  elif expr.HasField('text'):
+    return expr.text.val
   else:
     return None
 

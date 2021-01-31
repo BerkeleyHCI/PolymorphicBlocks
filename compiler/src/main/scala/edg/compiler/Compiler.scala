@@ -24,6 +24,7 @@ object ElaborateRecord {
   // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
   // and inserted into the link params data structure
   case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
+  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateRecord
 
   // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateRecord
@@ -62,7 +63,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
-  private val constProp = new ConstProp()
+  private val constProp = new ConstProp() {
+    override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
+      elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
+    }
+  }
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
   // Supplemental elaboration data structures
@@ -343,9 +348,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     // Queue up generators as needed
     for ((generatorFnName, generator) <- block.getGenerators) {
-      require(generator.dependencies.isEmpty, s"TODO deps support, got ${generator.dependencies}")
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
-        Seq()  // TODO deps support
+        generator.dependencies.map { depPath =>
+          ElaborateRecord.ParamValue(IndirectDesignPath.fromDesignPath(path) ++ depPath)
+        }
       )
     }
 
@@ -494,9 +500,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
     debug(s"Elaborate generator $fnName at $blockPath")
     val block = resolveBlock(blockPath)
-    val generator = block.getGenerators.get(fnName)
+    val generator = block.getGenerators(fnName)
     block.removeGenerator(fnName)
-    val generatedDiff = block.dedupGeneratorPb(library.runGenerator(block.getBlockClass, fnName, Map()))
+    val generatedPb = library.runGenerator(block.getBlockClass, fnName,
+      generator.dependencies.map { depPath =>
+        depPath -> constProp.getValue(IndirectDesignPath.fromDesignPath(blockPath) ++ depPath).get
+      }.toMap
+    )
+    val generatedDiff = block.dedupGeneratorPb(generatedPb)
     val generatedDiffBlock = new wir.Block(generatedDiff, Seq(block.getBlockClass))
     processBlock(blockPath, generatedDiffBlock)
     block.append(generatedDiffBlock)
