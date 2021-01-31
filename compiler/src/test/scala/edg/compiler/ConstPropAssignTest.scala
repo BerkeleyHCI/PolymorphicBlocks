@@ -20,6 +20,22 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(2)))
   }
 
+  it should "fire callbacks" in {
+    var lastSolved: Option[IndirectDesignPath] = None
+    val constProp = new ConstProp() {
+      override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
+        lastSolved = Some(param)
+      }
+    }
+    lastSolved should equal(None)
+    constProp.addAssignment(IndirectDesignPath.root + "a",
+      DesignPath.root,
+      ValueExpr.Literal(2),
+      SourceLocator.empty
+    )
+    lastSolved should equal(Some(IndirectDesignPath.root + "a"))
+  }
+
   it should "handle multi-hop directed assignments" in {
     import edg.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()

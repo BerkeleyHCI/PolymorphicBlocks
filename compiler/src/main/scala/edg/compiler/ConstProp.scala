@@ -33,6 +33,12 @@ class ConstProp {
   // Arrays are currently only defined on ports, and this is set once the array's length is known
   val arrayElts = DependencyGraph[IndirectDesignPath, Seq[String]]  // empty means not yet known
 
+  //
+  // Callbacks, to be overridden at instantiation site
+  //
+  def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
+  def onArraySolved(array: IndirectDesignPath, elts: Seq[String]): Unit = { }
+
 
   //
   // API methods
@@ -64,6 +70,7 @@ class ConstProp {
         val assign = paramAssign(constrTarget)
         val value = new ExprEvaluate(this, assign.root).map(assign.value)
         params.setValue(constrTarget, value)
+        onParamSolved(constrTarget, value)
         for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
           propagateEquality(constrTargetEquals, constrTarget, value)
         }
@@ -74,6 +81,7 @@ class ConstProp {
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
     require(params.getValue(dst).isEmpty, s"redefinition of $dst via equality from $src = $value")
     params.setValue(dst, value)
+    onParamSolved(dst, value)
     for (dstEquals <- equality.getOrElse(dst, mutable.Buffer())) {
       if (dstEquals != src) {  // ignore the backedge for propagation
         propagateEquality(dstEquals, dst, value)
@@ -100,6 +108,7 @@ class ConstProp {
     */
   def setValue(target: IndirectDesignPath, value: ExprValue): Unit = {
     params.setValue(target, value)
+    onParamSolved(target, value)
   }
 
   /**
@@ -126,7 +135,9 @@ class ConstProp {
   }
 
   def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    arrayElts.setValue(IndirectDesignPath.fromDesignPath(target), elts)
+    val indirectTarget = IndirectDesignPath.fromDesignPath(target)
+    arrayElts.setValue(indirectTarget, elts)
+    onArraySolved(indirectTarget, elts)
 
     update()
   }
