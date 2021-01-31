@@ -119,7 +119,7 @@ message HierarchyBlock {
 
   repeated edg.ref.LibraryPath superclasses = 20;  // in library: superclasses; in design: reference to library class
   edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise empty
-  Generator generator = 22;  // optional, and removed upon invocation
+  map<string, Generator> generators = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if abstract superclass, and should error
 
@@ -127,8 +127,7 @@ message HierarchyBlock {
 }
 
 message Generator {
-  string module = 1;  // Python module containing the class of the generator
-  string class = 2;  // Python class name for the generator
+  string fn = 2;  // Python function name for the generator
 
   message GeneratorCondition {
     repeated ref.LocalPath prereqs = 1;  // list of parameters that must be defined for the generator to fire

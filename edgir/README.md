@@ -13,7 +13,7 @@ If installing with `pip` under Ubuntu, you may have to invoke `pip` with `sudo` 
 Note that both the Python and mypy generators do not support modules (they expect the generated files to be dumped in the project top directory), so post-processing is reequired. **In the same directory**, run this find-and-replace script:
 
 ```
-sed -i -E 's/^import.*_pb2/from . \0/' ../edg_core/edgir/*.py
+sed -i -E 's/^import.*__pb2/from . \0/' ../edg_core/edgir/*.py
 sed -i -E 's/^from (.*)_pb2 import/from .\1_pb2 import/'  ../edg_core/edgir/*.pyi
 ```
 

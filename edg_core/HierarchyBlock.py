@@ -557,12 +557,14 @@ class GeneratorBlock(Block):
       pb = self._populate_def_proto_block_generator(pb)
     return pb
 
-
   def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
-    pb.generator.module = self._get_def_name()
-    raise NotImplementedError
+    ref_map = self._get_ref_map(edgir.LocalPath())
+    for (name, record) in self._generators.items():
+      pb.generators[name].fn = name
+      conditions = pb.generators[name].conditions.add()
+      for req in record.reqs:
+        conditions.prereqs.add().CopyFrom(ref_map[req])
     return pb
-
 
   def _generated_def_to_proto(self) -> edgir.HierarchyBlock:
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
