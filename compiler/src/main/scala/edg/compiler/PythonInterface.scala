@@ -54,7 +54,7 @@ class PythonInterface {
     val (reply, reqTime) = timeExec {
       blockingStub.elaborateGenerator(request)
     }
-    debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)"))
+    debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
     reply
   }
 }

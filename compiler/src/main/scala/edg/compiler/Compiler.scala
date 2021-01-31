@@ -342,7 +342,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
 
     // Queue up generators as needed
-    for ((generatorFnName, generator) <- block.getGenerators()) {
+    for ((generatorFnName, generator) <- block.getGenerators) {
       require(generator.dependencies.isEmpty, s"TODO deps support, got ${generator.dependencies}")
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
         Seq()  // TODO deps support
@@ -494,9 +494,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
   protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
     debug(s"Elaborate generator $fnName at $blockPath")
     val block = resolveBlock(blockPath)
-
-    val generator = library.runGenerator(block.getBlockClass, fnName, Map())
-
+    val generator = block.getGenerators.get(fnName)
+    block.removeGenerator(fnName)
+    val generatedDiff = block.dedupGeneratorPb(library.runGenerator(block.getBlockClass, fnName, Map()))
+    val generatedDiffBlock = new wir.Block(generatedDiff, Seq(block.getBlockClass))
+    processBlock(blockPath, generatedDiffBlock)
+    block.append(generatedDiffBlock)
   }
 
   /** Performs full compilation and returns the resulting design. Might take a while.

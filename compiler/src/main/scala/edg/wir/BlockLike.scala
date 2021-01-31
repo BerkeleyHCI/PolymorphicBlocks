@@ -36,7 +36,44 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
     }.toMap, nameOrder)
   }
 
-  def getGenerators(): Map[String, Generator] = generators.toMap
+  def getGenerators: Map[String, Generator] = generators.toMap
+  def removeGenerator(name: String): Unit = generators.remove(name)
+
+  /** Appends the contents of another block onto this block. Used to combine generator results.
+    * Elements must not overlap.
+    */
+  def append(that: Block): this.type = {
+    // TODO also combine NameOrder
+    require(that.ports.keySet.intersect(ports.keySet).isEmpty, "Block append ports must not overlap")
+    ports ++= that.ports
+    require(that.blocks.keySet.intersect(blocks.keySet).isEmpty, "Block append blocks must not overlap")
+    blocks ++= that.blocks
+    require(that.links.keySet.intersect(links.keySet).isEmpty, "Block append links must not overlap")
+    links ++= that.links
+    require(that.constraints.keySet.intersect(constraints.keySet).isEmpty, "Block append constraints must not overlap")
+    constraints ++= that.constraints
+    this
+  }
+
+  /** Removes duplicate fields for an elaborated (but not recursively elaborated) block,
+    * against the original block definition (excluding .append'd items).
+    * This block may be in any state of elaboration.
+    */
+  def dedupGeneratorPb(that: elem.HierarchyBlock): elem.HierarchyBlock = {
+    val newPb = that.copy(
+      params = that.params -- pb.params.keys,
+      ports = that.ports -- pb.ports.keys,
+      blocks = that.blocks -- pb.blocks.keys,
+      links = that.links -- pb.links.keys,
+      constraints = that.constraints -- pb.constraints.keys,
+      generators = that.generators -- pb.generators.keys
+    )
+    // TODO check consistency of intersection keys
+    require(newPb.ports.isEmpty, "generators may not introduce new ports")
+    require(newPb.params.isEmpty, "generators may not introduce new params")
+    require(newPb.generators.isEmpty, "generators may not introduce new generators")
+    newPb
+  }
 
   def getBlockClass: ref.LibraryPath = {
     require(superclasses.length == 1)
@@ -62,12 +99,15 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
 
   def toEltPb: elem.HierarchyBlock = {
     require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty)
+    require(generators.isEmpty)
+    // TODO also (re)serialize NameOrder?
     pb.copy(
       superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
       blocks=blocks.view.mapValues(_.toPb).toMap,
       links=links.view.mapValues(_.toPb).toMap,
       constraints=constraints.toMap,
+      generators=Map(),
     )
   }
 
