@@ -39,6 +39,24 @@ class PythonInterface {
     debug(s"PyIf:libraryRequest ${element.getTarget.getName} (${reqTime} ms)")
     reply
   }
+
+  def elaborateGeneratorRequest(modules: Seq[String], element: ref.LibraryPath,
+                                fnName: String, values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+    val request = edgrpc.GeneratorRequest(
+      modules=modules, element=Some(element), fn=fnName,
+      values=values.map { case (valuePath, valueValue) =>
+        edgrpc.GeneratorRequest.Value(
+          path=Some(valuePath),
+          value=Some(valueValue.toLit)
+        )
+      }.toSeq
+    )
+    val (reply, reqTime) = timeExec {
+      blockingStub.elaborateGenerator(request)
+    }
+    debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)"))
+    reply
+  }
 }
 
 
@@ -85,5 +103,10 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
       case Some(member) => throw new NoSuchElementException(s"Library element at $path not a port-like, got ${member.getClass}")
       case None => throw new NoSuchElementException(s"Library does not contain $path")
     }
+  }
+
+  override def runGenerator(path: ref.LibraryPath, fnName: String,
+                            values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+    py.elaborateGeneratorRequest(modules, path, fnName, values)
   }
 }

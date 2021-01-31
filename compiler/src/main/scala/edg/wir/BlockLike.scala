@@ -12,6 +12,8 @@ trait BlockLike extends Pathable {
   def toPb: elem.BlockLike
 }
 
+case class Generator(dependencies: Seq[ref.LocalPath])
+
 /**
   * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
   * (instead of the proto), while everything else is kept in the proto.
@@ -26,6 +28,20 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
 
+  protected val generators: mutable.SeqMap[String, Generator] = {
+    MapSort(pb.generators.mapValues { generatorPb =>
+      require(generatorPb.conditions.length <= 1, "TODO: support OR-ing of conditions")
+      val prereqs = generatorPb.conditions.headOption.getOrElse(elem.Generator.GeneratorCondition()).prereqs
+      Generator(prereqs)
+    }.toMap, nameOrder)
+  }
+
+  def getGenerators(): Map[String, Generator] = generators.toMap
+
+  def getBlockClass: ref.LibraryPath = {
+    require(superclasses.length == 1)
+    superclasses.head
+  }
   override def isElaborated: Boolean = true
 
   override def getParams: Map[String, init.ValInit] = pb.params

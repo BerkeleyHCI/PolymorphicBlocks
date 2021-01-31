@@ -13,7 +13,7 @@ class TestGeneratorAssign(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.add_generator(self.float_gen, self.float_param)
+    self.add_generator(self.float_gen)
 
   def float_gen(self) -> None:
     self.assign(self.float_param, 2.0)

@@ -1,5 +1,7 @@
 package edg.compiler
 
+import edg.compiler.hdl.HdlInterfaceGrpc.HdlInterface
+
 import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr
@@ -12,11 +14,12 @@ import edg.util.DependencyGraph
 class IllegalConstraintException(msg: String) extends Exception(msg)
 
 
-trait ElaborateRecord
+sealed trait ElaborateRecord
 object ElaborateRecord {
   case class Block(blockPath: DesignPath) extends ElaborateRecord
   case class Link(linkPath: DesignPath) extends ElaborateRecord
   case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
+  case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateRecord
 
   // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
   // and inserted into the link params data structure
@@ -339,6 +342,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
 
     // Queue up generators as needed
+    for ((generatorFnName, generator) <- block.getGenerators()) {
+      require(generator.dependencies.isEmpty, s"TODO deps support, got ${generator.dependencies}")
+      elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
+        Seq()  // TODO deps support
+      )
+    }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (blockName <- block.getUnelaboratedBlocks.keys) {
@@ -480,6 +489,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     parent.elaborate(name, link)
   }
 
+  /** Elaborates the generator, running it and merging the result with the block.
+    */
+  protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
+    debug(s"Elaborate generator $fnName at $blockPath")
+    val block = resolveBlock(blockPath)
+
+    val generator = library.runGenerator(block.getBlockClass, fnName, Map())
+
+  }
+
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
   def compile(): schema.Design = {
@@ -496,9 +515,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         case elaborateRecord @ ElaborateRecord.Link(linkPath) =>
           elaborateLink(linkPath)
           elaboratePending.setValue(elaborateRecord, None)
-        case connectRecord @ ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
+        case elaborateRecord @ ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
           elaborateConnect(toLinkPortPath, fromLinkPortPath)
-          elaboratePending.setValue(connectRecord, None)
+          elaboratePending.setValue(elaborateRecord, None)
+        case elaborateRecord @ ElaborateRecord.Generator(blockPath, fnName) =>
+          elaborateGenerator(blockPath, fnName)
+          elaboratePending.setValue(elaborateRecord, None)
+        case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
       }
     }
 

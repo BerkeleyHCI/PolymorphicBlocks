@@ -119,7 +119,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       generator_obj = generator_type()
       assert len(request.values) == 0  # TODO support passing values
       generated: Optional[edgir.HierarchyBlock] = builder.elaborate_toplevel(
-        generator_obj, f"in generate at {context.path} for {generator_obj}",
+        generator_obj, f"in generate {request.fn} for {request.element}",
         generate_fn_name=request.fn)
     except BaseException as e:
       traceback.print_exc()

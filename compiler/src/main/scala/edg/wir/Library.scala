@@ -5,6 +5,7 @@ import edg.elem.elem
 import edg.ref.ref
 import edg.schema.schema
 import edg.IrPort
+import edg.compiler.ExprValue
 
 
 /** API definition for a library
@@ -13,6 +14,8 @@ trait Library {
   def getBlock(path: ref.LibraryPath): elem.HierarchyBlock
   def getLink(path: ref.LibraryPath): elem.Link
   def getPort(path: ref.LibraryPath): IrPort
+
+  def runGenerator(path: ref.LibraryPath, fnName: String, values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock
 }
 
 
@@ -49,5 +52,10 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case Some(schema.Library.NS.Val.Type.Bundle(member)) => IrPort.Bundle(member)
     case Some(member) => throw new NoSuchElementException(s"Library element at $path not a port-like, got ${member.getClass}")
     case None => throw new NoSuchElementException(s"Library does not contain $path")
+  }
+
+  override def runGenerator(path: ref.LibraryPath, fnName: String,
+                            values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+    throw new IllegalArgumentException("Can't run generators in static library")
   }
 }
