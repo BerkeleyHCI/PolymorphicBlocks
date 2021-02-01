@@ -524,7 +524,12 @@ class GeneratorBlock(Block):
     except BaseException as e:
       import traceback
       pb = edgir.HierarchyBlock()
-      pb.meta.members.node[f'GenerateError_{generate_values}'].error.message = traceback.format_exc()
+      values_str = ", ".join([f"{edgir.local_path_to_str(path)}={edgir.lit_to_string(value)}"
+                              for (path, value) in generate_values])
+      err_meta = pb.meta.members.node[f'GenerateError_{generate_fn_name}'].error
+      err_meta.message = repr(e) + "\n" + f"with values: {values_str}"
+      err_meta.traceback = traceback.format_exc()
+      # TODO ideally discard this stack frame, since it's not helpful
       return pb
 
   def generate(self):

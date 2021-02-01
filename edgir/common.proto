@@ -79,8 +79,8 @@ message NamespaceOrder {
  Limited to Block and Link objects. */
 message Error {
   string message = 1;  // free-form error message
+  string traceback = 3;  // full traceback  TODO: should there be a structured stack trace?
   repeated SourceLocator source = 2;  // source locator, eg line of failing constraint
-  // TODO: should there be a structured stack trace? currently would just be part of message
 }
 
 /** Indicates a copper connection between ports */

@@ -64,13 +64,24 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
     * This block may be in any state of elaboration.
     */
   def dedupGeneratorPb(that: elem.HierarchyBlock): elem.HierarchyBlock = {
+    val filteredMeta = that.getMeta.getMembers.node.filter { case (key, value) => value.meta match {
+      case common.Metadata.Meta.NamespaceOrder(meta) => false  // TODO merge namespace metadata in future?
+      case _ if key == "_sourcelocator" => false // TODO merge source locators in future
+      case meta if pb.getMeta.getMembers.node.contains(key) =>
+        require(meta == pb.getMeta.getMembers.node(key).meta, s"metadata mismatch at $key")
+        true
+      case meta => true
+    }}
+
     val newPb = that.copy(
       params = that.params -- pb.params.keys,
       ports = that.ports -- pb.ports.keys,
       blocks = that.blocks -- pb.blocks.keys,
       links = that.links -- pb.links.keys,
       constraints = that.constraints -- pb.constraints.keys,
-      generators = that.generators -- pb.generators.keys
+      generators = that.generators -- pb.generators.keys,
+      meta = Some(common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
+        filteredMeta -- pb.getMeta.getMembers.node.keys))))
     )
     // TODO check consistency of intersection keys
     require(newPb.ports.isEmpty, "generators may not introduce new ports")
@@ -112,6 +123,8 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
       links=links.view.mapValues(_.toPb).toMap,
       constraints=constraints.toMap,
       generators=Map(),
+      meta=Some(common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
+        meta.toMap)))),
     )
   }
 

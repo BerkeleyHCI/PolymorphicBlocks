@@ -165,23 +165,37 @@ class TestGeneratorConnect(unittest.TestCase):
     self.assertIn(makeSolved(['link', 'sinks_range'], (1.5, 3.5)), solved)
 
 
+class TestGeneratorException(BaseException):
+  pass
+
+
 class TestGeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.add_generator(self.errorfn)
+    self.float_param = self.Parameter(FloatExpr(41.0))
+    self.add_generator(self.errorfn, self.float_param)
 
   def errorfn(self) -> None:
-    raise RuntimeError("test text")
+    def helperfn() -> None:
+      raise TestGeneratorException("test text")
+    helperfn()
 
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    compiled_design = ScalaCompiler.compile(TestGeneratorInnerConnectTop)
+    compiled_design = ScalaCompiler.compile(TestGeneratorFailure)
     pb = compiled_design.design.contents
+
+    self.assertIn('GenerateError_errorfn', pb.meta.members.node)
 
     self.assertIn("TestGeneratorException",
                   pb.meta.members.node['GenerateError_errorfn'].error.message)
-    self.assertIn("test_text",
+    self.assertIn("test text",
                   pb.meta.members.node['GenerateError_errorfn'].error.message)
-    self.assertIn("in generate at (root) for edg_core.test_generator.TestGeneratorFailure",
+    self.assertIn("float_param=41",
                   pb.meta.members.node['GenerateError_errorfn'].error.message)
+
+    self.assertIn("errorfn",
+                  pb.meta.members.node['GenerateError_errorfn'].error.traceback)
+    self.assertIn("helperfn",
+                  pb.meta.members.node['GenerateError_errorfn'].error.traceback)
