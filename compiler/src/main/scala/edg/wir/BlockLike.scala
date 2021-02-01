@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.common.common
 import edg.elem.elem
 import edg.expr.expr
 import edg.init.init
@@ -22,11 +23,12 @@ case class Generator(dependencies: Seq[ref.LocalPath])
   */
 class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val nameOrder = getNameOrder(pb.meta)
+  private var nameOrder = getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
+  protected val meta: mutable.SeqMap[String, common.Metadata] = mutable.SeqMap() ++ pb.getMeta.getMembers.node
 
   protected val generators: mutable.SeqMap[String, Generator] = {
     MapSort(pb.generators.mapValues { generatorPb =>
@@ -43,7 +45,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
     * Elements must not overlap.
     */
   def append(that: Block): this.type = {
-    // TODO also combine NameOrder
+    nameOrder = nameOrder ++ that.nameOrder
     require(that.ports.keySet.intersect(ports.keySet).isEmpty, "Block append ports must not overlap")
     ports ++= that.ports
     require(that.blocks.keySet.intersect(blocks.keySet).isEmpty, "Block append blocks must not overlap")
@@ -52,6 +54,8 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
     links ++= that.links
     require(that.constraints.keySet.intersect(constraints.keySet).isEmpty, "Block append constraints must not overlap")
     constraints ++= that.constraints
+    require(that.meta.keySet.intersect(meta.keySet).isEmpty, "Block append meta must not overlap")
+    meta ++= that.meta
     this
   }
 

@@ -168,9 +168,9 @@ class TestGeneratorConnect(unittest.TestCase):
 class TestGeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
+    self.add_generator(self.errorfn)
 
-  def generate(self) -> None:
-    super().generate()
+  def errorfn(self) -> None:
     raise RuntimeError("test text")
 
 
@@ -180,9 +180,8 @@ class GeneratorFailureTestCase(unittest.TestCase):
     pb = compiled_design.design.contents
 
     self.assertIn("TestGeneratorException",
-                  pb.meta.members.node['error'].members.node['generator'].text_leaf)
+                  pb.meta.members.node['GenerateError_errorfn'].error.message)
     self.assertIn("test_text",
-                  pb.meta.members.node['error'].members.node['generator'].text_leaf)
+                  pb.meta.members.node['GenerateError_errorfn'].error.message)
     self.assertIn("in generate at (root) for edg_core.test_generator.TestGeneratorFailure",
-                  pb.meta.members.node['error'].members.node['generator'].text_leaf)
-    self.assertIn('traceback', pb.meta.members.node)
+                  pb.meta.members.node['GenerateError_errorfn'].error.message)

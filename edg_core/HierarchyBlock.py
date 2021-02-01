@@ -413,7 +413,8 @@ class GeneratorBlock(Block):
     self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
     self._generators: collections.OrderedDict[str, GeneratorBlock.GeneratorRecord] = collections.OrderedDict()
 
-
+  # Generator dependency data
+  #
   class GeneratorRecord(NamedTuple):
     reqs: Tuple[ConstraintExpr, ...]
 
@@ -428,73 +429,8 @@ class GeneratorBlock(Block):
     self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs)
 
 
-  def _parse_from_proto(self, pb: edgir.HierarchyBlock, additional_constraints: Dict[str, edgir.ValueExpr]={}) -> None:
-    """Reads concrete parameter values (including those of contained ports and attached links) from a protobuffer.
-    Does not parse data for internal blocks, links, or ports, because those would not have been instantiated."""
-    # Sanity check the incoming proto
-    assert pb.superclasses[0].target.name == self.ref_to_proto(), f"proto superclass mismatch {pb.superclasses} in {type(self)}"
-    # TODO: maybe check structural definitions too (ports and params)
-
-    # Read through constraints and create a parameter value map
-    self._param_values = IdentityDict()
-
-    def resolve_path(starting: Union[Block, Port, Link, ConstraintExpr], path: List[edgir.LocalStep]) \
-        -> Optional[Union[ConstraintExpr, Block, Port, Link]]:
-      if not path:
-        return starting
-      elif isinstance(starting, Block):
-        if path[0].name in starting._ports:
-          port = starting._ports[path[0].name]
-          assert isinstance(port, Port)
-          return resolve_path(port, path[1:])
-        elif path[0].name in starting._parameters:
-          return starting._parameters[path[0].name]
-        else:
-          raise ValueError(f"no path {path} in {starting}")
-      elif isinstance(starting, Port):
-        if path[0].HasField('reserved_param') and path[0].reserved_param == edgir.CONNECTED_LINK:
-          return resolve_path(starting.link(), path[1:])
-        elif path[0].HasField('reserved_param') and path[0].reserved_param == edgir.IS_CONNECTED:
-          return resolve_path(starting.is_connected(), path[1:])
-        elif isinstance(starting, Bundle) and path[0].HasField('name') and path[0].name in starting._ports:
-          return resolve_path(starting._ports[path[0].name], path[1:])
-        elif path[0].HasField('name') and path[0].name in starting._parameters:
-          return starting._parameters[path[0].name]
-        else:
-          raise ValueError(f"no path {path} in {starting}")
-      elif isinstance(starting, Link):
-        if path[0].name in starting._parameters:
-          return starting._parameters[path[0].name]
-        if path[0].name in starting._ports:
-          raise ValueError(f"can't resolve into ports in array {path} in {starting}")
-        else:
-          raise ValueError(f"no path {path} in {starting}")
-      else:
-        return None  # failed to parse
-
-    # TODO: maybe better name tracking w/ additional_constraints
-    for name, constraint in chain(pb.constraints.items(), additional_constraints.items()):
-      try:
-        if constraint.HasField('binary') and constraint.binary.op == edgir.BinaryExpr.EQ:
-          # Only parse constraints of the type [parameter] = [literal]
-          param = resolve_path(self, list(constraint.binary.lhs.ref.steps))
-          lit_val = edgir.lit_from_expr(constraint.binary.rhs)
-          if isinstance(param, ConstraintExpr) and lit_val is not None:
-            if param not in self._param_values or self._param_values[param] != lit_val:
-              # reassignment errors in IdentityDict
-              self._param_values[param] = lit_val
-              if isinstance(param, RangeExpr) and isinstance(lit_val, tuple):
-                self._param_values[param.lower()] = lit_val[0]
-                self._param_values[param.upper()] = lit_val[1]
-      except Exception as e:
-        raise type(e)(f"(while parsing constraint {name} = {constraint}) " + str(e)) \
-          .with_traceback(sys.exc_info()[2])
-
-    for port in self._ports.values():
-      assert isinstance(port, Port)  # TODO self.ports is of type BasePort, maybe fix to Port?
-      if port.is_connected() not in self._param_values:
-        self._param_values[port.is_connected()] = False
-
+  # Generator solved-parameter-access interface
+  #
   ParamGetType = TypeVar('ParamGetType')
   def get(self, param: ConstraintExpr[Any, Any, ParamGetType], default: Optional[ParamGetType] = None) -> ParamGetType:
     if self._elaboration_state != BlockElaborationState.generate:
@@ -536,11 +472,8 @@ class GeneratorBlock(Block):
 
   # TODO maybe disallow Block from being called in contents() ?
 
-  # generate should be overloaded to instantiate subparts and connect them together
-  def generate(self) -> None:
-    pass
-
-
+  # Generator serialization and parsing
+  #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     # TODO dedup w/ HierarchyBlock._def_to_proto
     for cls in self._get_block_bases():
@@ -583,11 +516,19 @@ class GeneratorBlock(Block):
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
     self._parse_param_values(generate_values)
-    fn = getattr(self, generate_fn_name)
-    fn()
-    self._elaboration_state = BlockElaborationState.post_generate
-    return self._def_to_proto()
+    try:
+      fn = getattr(self, generate_fn_name)
+      fn()
+      self._elaboration_state = BlockElaborationState.post_generate
+      return self._def_to_proto()
+    except BaseException as e:
+      import traceback
+      pb = edgir.HierarchyBlock()
+      pb.meta.members.node[f'GenerateError_{generate_values}'].error.message = traceback.format_exc()
+      return pb
 
+  def generate(self):
+    raise RuntimeError("generate deprecated")
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])
 def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:

@@ -273,7 +273,8 @@ class GeneratorTransform(TransformUtil.Transform):
         additional_constraints[constr_name].binary.lhs.ref.CopyFrom(param_relpath)
         additional_constraints[constr_name].binary.rhs.CopyFrom(edgir.lit_to_expr(param_value))
 
-      generator_obj._parse_from_proto(block, additional_constraints)
+      # generator_obj._parse_from_proto(block, additional_constraints)
+      raise NotImplementedError
       if self.continue_on_error:  # if continue on error, wrap in a try/except call
         try:
           # generated = builder.elaborate_toplevel(generator_obj, f"in generate at {context.path} for {generator_obj}",
