@@ -40,7 +40,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
     self.constrain(self.source.is_connected() | self.single_sources.is_connected() | self.bidirs.is_connected(), "DigitalLink must have some kind of source")
 
     # TODO RangeBuilder initializer for voltage
-    self.constrain(self.voltage == (
+    self.assign(self.voltage, (
       self.source.voltage_out.lower().min(
         self.bidirs.min(lambda x: x.voltage_out)).min(
         self.single_sources.min(lambda x: x.voltage_out)),
@@ -49,34 +49,34 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
         self.single_sources.max(lambda x: x.voltage_out))
     ))
 
-    self.constrain(self.voltage_limits ==
+    self.assign(self.voltage_limits,
       self.sinks.intersection(lambda x: x.voltage_limits).intersect(self.bidirs.intersection(lambda x: x.voltage_limits))
     )
     self.constrain(self.voltage_limits.contains(self.voltage))
 
-    self.constrain(self.current_drawn ==
+    self.assign(self.current_drawn,
       self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
     )
-    self.constrain(self.current_limits ==
+    self.assign(self.current_limits,
       self.source.current_limits.intersect(self.bidirs.intersection(lambda x: x.current_limits))
     )
     self.constrain(self.current_limits.contains(self.current_drawn))
 
-    self.constrain(self.output_thresholds == self.source.output_thresholds.intersect(
+    self.assign(self.output_thresholds, self.source.output_thresholds.intersect(
         self.bidirs.intersection(lambda x: x.output_thresholds).intersect(
         self.single_sources.intersection(lambda x: x.output_thresholds))))
-    self.constrain(self.input_thresholds == (
+    self.assign(self.input_thresholds, (
       self.sinks.min(lambda x: x.input_thresholds).min(self.bidirs.min(lambda x: x.input_thresholds)),
       self.sinks.max(lambda x: x.input_thresholds).max(self.bidirs.max(lambda x: x.input_thresholds))
     ))
     self.constrain(self.output_thresholds.contains(self.input_thresholds))
 
-    self.constrain(self.pullup_capable == self.bidirs.any(lambda x: x.pullup_capable) |
+    self.assign(self.pullup_capable , self.bidirs.any(lambda x: x.pullup_capable) |
                    self.single_sources.any(lambda x: x.pullup_capable))
-    self.constrain(self.pulldown_capable == self.bidirs.any(lambda x: x.pulldown_capable) |
+    self.assign(self.pulldown_capable, self.bidirs.any(lambda x: x.pulldown_capable) |
                    self.single_sources.any(lambda x: x.pulldown_capable))
-    self.constrain(self.has_low_signal_driver == self.single_sources.any(lambda x: x.low_signal_driver))
-    self.constrain(self.has_high_signal_driver == self.single_sources.any(lambda x: x.high_signal_driver))
+    self.assign(self.has_low_signal_driver, self.single_sources.any(lambda x: x.low_signal_driver))
+    self.assign(self.has_high_signal_driver, self.single_sources.any(lambda x: x.high_signal_driver))
     self.constrain(self.has_low_signal_driver.implies(self.pullup_capable))
     self.constrain(self.has_high_signal_driver.implies(self.pulldown_capable))
 
@@ -135,12 +135,12 @@ class DigitalSourceBridge(CircuitPortBridge):
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.constrain(self.inner_link.voltage_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.voltage_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.voltage_out == self.inner_link.link().voltage)
-    self.constrain(self.outer_port.link().current_drawn == self.inner_link.current_draw)
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.link().current_drawn, self.inner_link.current_draw)
 
-    self.constrain(self.outer_port.output_thresholds == self.inner_link.link().output_thresholds)
+    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
 
 
 class DigitalSinkBridge(CircuitPortBridge):
@@ -154,13 +154,13 @@ class DigitalSinkBridge(CircuitPortBridge):
     super().contents()
 
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
-    self.constrain(self.inner_link.current_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.current_draw == self.inner_link.link().current_drawn)
-    self.constrain(self.inner_link.voltage_out == self.outer_port.link().voltage)
+    self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+    self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
-    self.constrain(self.inner_link.output_thresholds == self.outer_port.link().output_thresholds)
-    self.constrain(self.outer_port.input_thresholds == (
+    self.assign(self.inner_link.output_thresholds, self.outer_port.link().output_thresholds)
+    self.assign(self.outer_port.input_thresholds, (
       self.inner_link.link().input_low_threshold,
       self.inner_link.link().input_high_threshold
     ))
@@ -174,7 +174,7 @@ class DigitalSourceAdapterElectricalSource(CircuitPortAdapter[ElectricalSource])
     self.dst = self.Port(ElectricalSource(
       voltage_out=self.src.link().voltage,
       current_limits=(-float('inf'), float('inf'))))
-    self.constrain(self.src.current_draw == self.dst.link().current_drawn)
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)
 
 
 class DigitalSource(DigitalBase):
@@ -288,14 +288,14 @@ class DigitalBidirBridge(CircuitPortBridge):
     super().contents()
 
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
-    self.constrain(self.inner_link.voltage_limits == (-float('inf'), float('inf')))
-    self.constrain(self.inner_link.current_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.voltage_limits, (-float('inf'), float('inf')))
+    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.voltage_out == self.inner_link.link().voltage)
-    self.constrain(self.outer_port.current_draw == self.inner_link.link().current_drawn)
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
 
-    self.constrain(self.outer_port.output_thresholds == self.inner_link.link().output_thresholds)
-    self.constrain(self.outer_port.input_thresholds == (
+    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+    self.assign(self.outer_port.input_thresholds, (
       self.inner_link.link().input_low_threshold,
       self.inner_link.link().input_high_threshold
     ))

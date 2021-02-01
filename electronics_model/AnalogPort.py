@@ -23,9 +23,9 @@ class AnalogLink(CircuitLink):
     super().contents()
 
     self.constrain(self.source.impedance <= self.sink_impedance * 0.1)  # about 10x to ensure signal integrity  # TODO make 100x?
-    self.constrain(self.current_draw == self.sinks.sum(lambda x: x.current_draw))
+    self.assign(self.current_draw, self.sinks.sum(lambda x: x.current_draw))
     total_conductance = self.sinks.sum(lambda x: x.conductance)
-    self.constrain(self.sink_impedance == (1 / total_conductance))
+    self.assign(self.sink_impedance, (1 / total_conductance))
 
 
 class AnalogBase(CircuitPort[AnalogLink]):
@@ -49,10 +49,10 @@ class AnalogSinkBridge(CircuitPortBridge):
     # The outer port's voltage_limits is untouched and should be defined in the port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.constrain(self.inner_link.current_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.inner_link.voltage_out == self.outer_port.link().voltage)
-    self.constrain(self.outer_port.impedance == self.inner_link.link().sink_impedance)
+    self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+    self.assign(self.outer_port.impedance, self.inner_link.link().sink_impedance)
 
 
 class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
@@ -69,10 +69,10 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.constrain(self.inner_link.voltage_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.voltage_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.voltage_out == self.inner_link.link().voltage)
-    self.constrain(self.outer_port.impedance == self.inner_link.link().source_impedance)
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
 
 
 class AnalogSink(AnalogBase):

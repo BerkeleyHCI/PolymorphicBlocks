@@ -88,24 +88,24 @@ class CircuitBlock(Block):
 
     self.pinning = self.Metadata(pinning)
 
-    self.constrain(self.footprint_name == footprint)
-    self.constrain(self.refdes_prefix == refdes)
+    self.assign(self.footprint_name, footprint)
+    self.assign(self.refdes_prefix, refdes)
     if mfr is not None:
-      self.constrain(self.mfr == mfr)
+      self.assign(self.mfr, mfr)
     else:
-      self.constrain(self.mfr == '')
+      self.assign(self.mfr, '')
     if part is not None:
-      self.constrain(self.part == part)
+      self.assign(self.part, part)
     else:
-      self.constrain(self.part == '')
+      self.assign(self.part, '')
     if value is not None:
-      self.constrain(self.value == value)
+      self.assign(self.value, value)
     else:
-      self.constrain(self.value == '')
+      self.assign(self.value, '')
     if datasheet is not None:
-      self.constrain(self.datasheet == datasheet)
+      self.assign(self.datasheet, datasheet)
     else:
-      self.constrain(self.datasheet == '')
+      self.assign(self.datasheet, '')
 
 
 @abstract_block

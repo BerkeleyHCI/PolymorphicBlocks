@@ -24,11 +24,11 @@ class ElectricalLink(CircuitLink):
   def contents(self) -> None:
     super().contents()
 
-    self.constrain(self.voltage == self.source.voltage_out)
-    self.constrain(self.voltage_limits == self.sinks.intersection(lambda x: x.voltage_limits))
+    self.assign(self.voltage, self.source.voltage_out)
+    self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.constrain(self.voltage_limits.contains(self.voltage))
 
-    self.constrain(self.current_drawn == self.sinks.sum(lambda x: x.current_draw))
+    self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
     self.constrain(self.source.current_limits.contains(self.current_drawn))
 
 
@@ -46,10 +46,10 @@ class ElectricalSinkBridge(CircuitPortBridge):
     # The outer port's voltage_limits is untouched and should be defined in the port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.constrain(self.inner_link.current_limits == (-float('inf'), float('inf')))
+    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.current_draw == self.inner_link.link().current_drawn)
-    self.constrain(self.inner_link.voltage_out == self.outer_port.link().voltage)
+    self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+    self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
 class ElectricalSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
@@ -68,8 +68,8 @@ class ElectricalSourceBridge(CircuitPortBridge):  # basic passthrough port, sour
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.constrain(self.inner_link.voltage_limits == (-float('inf'), float('inf')))
 
-    self.constrain(self.outer_port.voltage_out == self.inner_link.link().voltage)
-    self.constrain(self.outer_port.link().current_drawn == self.inner_link.current_draw)
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
 
 CircuitLinkType = TypeVar('CircuitLinkType', bound=Link)
@@ -116,7 +116,7 @@ class ElectricalSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
       # TODO propagation of current limits?
       output_thresholds=(0, self.src.link().voltage.lower())
     ))
-    self.constrain(self.src.current_draw == self.dst.link().current_drawn)  # TODO might be an overestimate
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
 
 class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
@@ -133,7 +133,7 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     ), [Output])
 
     # TODO might be an overestimate
-    self.constrain(self.src.current_draw == self.dst.link().current_draw)  # type: ignore
+    self.assign(self.src.current_draw, self.dst.link().current_draw)  # type: ignore
 
 
 class ElectricalSource(ElectricalBase):
