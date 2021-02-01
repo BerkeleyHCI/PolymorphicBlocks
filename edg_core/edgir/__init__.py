@@ -257,6 +257,12 @@ def localpath_slice(path: LocalPath, slice_from: int, slice_to: Optional[int] = 
   return rtn
 
 
+def libpath(name: str) -> LibraryPath:
+  pb = LibraryPath()
+  pb.target.name = name
+  return pb
+
+
 def LocalPathList(path: Iterable[Union[str, 'ReservedValue']]) -> LocalPath:
   pb = LocalPath()
   for step in path:

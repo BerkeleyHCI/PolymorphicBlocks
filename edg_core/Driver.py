@@ -1,3 +1,10 @@
+##
+## DEPRECATED!
+##
+## This implementation of the compiler has been replaced with code written in Scala (see compiler/ folder).
+## Stuff is still here because not all dependencies have been refactored out, but will disappear soon. Ish.
+##
+
 from __future__ import annotations
 
 from types import ModuleType
@@ -366,6 +373,7 @@ class Driver():
     self._lib_modules = libs
     self._raw_defs = raw_defs
     self._libs_opt: Optional[Dict[str, edgir.EltTypes]] = None
+    raise NotImplementedError("Deprecated")
 
   def libs(self) -> Dict[str, edgir.EltTypes]:  # lazy-initialize libraries
     if self._libs_opt is None:
