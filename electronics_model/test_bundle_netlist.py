@@ -3,7 +3,6 @@ import unittest
 from typing import Type
 from edg_core import *
 import electronics_model
-from . import test_bundle_netlist
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .NetlistGenerator import Netlist
 

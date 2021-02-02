@@ -43,6 +43,12 @@ class CachedLibrary():
         name = member._static_def_name()
         if name in self.lib_class_map:
           assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
+        else:  # for ports, recurse into links and stuff
+          if issubclass(member, Port):  # TODO for some reason, Links not in __init__ are sometimes not found
+            obj = member()  # TODO can these be clss definitions?
+            if hasattr(obj, 'link_type') and obj.link_type._static_def_name() not in self.lib_class_map:
+              self.lib_class_map[obj.link_type._static_def_name()] = obj.link_type
+
         self.lib_class_map[name] = member
 
   def elaborated_from_path(self, path: edgir.LibraryPath) -> Optional[edgir.Library.NS.Val]:
