@@ -1,5 +1,6 @@
 from .ConstraintExpr import BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, RangeLike, StringLike, LiteralConstructor
+from .ConstraintExpr import RangeLit as RangeVal
 from .ConstraintExpr import RangeSubset, RangeSuperset
 from .ConstraintExpr import Default
 from .Ports import Port, Bundle

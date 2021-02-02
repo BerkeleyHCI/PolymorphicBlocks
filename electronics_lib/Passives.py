@@ -365,23 +365,33 @@ class SmtInductor(Inductor, CircuitBlock, GeneratorBlock):
     super().__init__(**kwargs)
     self.current_rating = self.Parameter(RangeExpr())
     self.frequency_rating = self.Parameter(RangeExpr())
+    self.part_spec = self.Parameter(StringExpr(""))
+    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
+                   self.part_spec, self.footprint_spec)
 
-  def generate(self) -> None:
+    # Output values
+    self.selected_inductance = self.Parameter(RangeExpr())
+    self.selected_current_rating = self.Parameter(RangeExpr())
+    self.selected_frequency_rating = self.Parameter(RangeExpr())
+
+  def select_inductor(self, inductance: RangeVal, current: RangeVal, frequency: RangeVal,
+               part_spec: str, footprint_spec: str) -> None:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
-    parts = self.product_table.filter(RangeContains(Lit(self.get(self.inductance)), Column('inductance'))) \
+    parts = self.product_table.filter(RangeContains(Lit(inductance), Column('inductance'))) \
         .filter(RangeContains(Lit((-float('inf'), 1)), Column('dc_resistance'))) \
-        .filter(RangeContains(Column('frequency'), Lit(self.get(self.frequency)))) \
-        .filter(RangeContains(Column('current'), Lit(self.get(self.current)))) \
-        .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
-        .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
+        .filter(RangeContains(Column('frequency'), Lit(frequency))) \
+        .filter(RangeContains(Column('current'), Lit(current))) \
+        .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
+        .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
         .sort(Column('footprint'))  \
         .sort(Column('Unit Price (USD)'))
 
-    part = parts.first(err=f"no inductors in {self.get(self.inductance)} H, {self.get(self.current)} A, {self.get(self.frequency)} Hz")
+    part = parts.first(err=f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
-    self.constrain(self.inductance == part['inductance'])
-    self.constrain(self.current_rating == part['current'])
-    self.constrain(self.frequency_rating == part['frequency'])
+    self.assign(self.selected_inductance, part['inductance'])
+    self.assign(self.selected_current_rating, part['current'])
+    self.assign(self.selected_frequency_rating, part['frequency'])
 
     self.footprint(
       'L', part['footprint'],
