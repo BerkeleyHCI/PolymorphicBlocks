@@ -265,7 +265,7 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
   // assign also not overridden and to fail noisily
 
   override def mapRef(path: ref.LocalPath): ExprValue = {
-    refs.getValue(root ++ path).getOrElse(
+    refs.getValue(IndirectDesignPath.fromDesignPath(root) ++ path).getOrElse(
       throw new ExprEvaluateException(s"No value for ${root ++ path}")
     )
   }

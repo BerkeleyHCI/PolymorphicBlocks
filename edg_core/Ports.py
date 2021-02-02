@@ -141,10 +141,6 @@ class Port(BasePort, Generic[PortLinkType]):
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     return adapter_inst.dst
 
-  def _recursive_params(self, root: List[str]) -> Iterable[Tuple[List[str], ConstraintExpr]]:
-    return [(root + [name], param)
-            for (name, param) in self._parameters.items()]
-
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.lib_elem.target.name = self._get_def_name()
@@ -212,13 +208,6 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     super().__init__()
 
     self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
-
-  def _recursive_params(self, root: List[str]) -> Iterable[Tuple[List[str], ConstraintExpr]]:
-    my_params = [(root + [name], param)
-                 for (name, param) in self._parameters.items()]
-    port_params = chain(*[port._recursive_params(root + [name])
-                          for (name, port) in self._ports.items()])
-    return my_params + list(port_params)
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()

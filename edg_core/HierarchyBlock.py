@@ -277,6 +277,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
+  def _connected_ports(self) -> IdentitySet[BasePort]:
+    """Returns an IdentitySet of all ports (boundary and interior) involved in a connect or export."""
+    rtn = IdentitySet[BasePort]()
+    for name, connect in self._connects.items_ordered():
+      rtn.update(connect.ports)
+    return rtn
+
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     for cls in self._get_block_bases():
@@ -285,6 +292,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_hierarchy(edgir.HierarchyBlock())  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_port_init(pb, self._connected_ports())
 
     return pb
 
@@ -484,9 +492,11 @@ class GeneratorBlock(Block):
       pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)
+      pb = self._populate_def_proto_port_init(pb, self._connected_ports())
     else:
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)  # constraints need to be written and propagated
+      pb = self._populate_def_proto_port_init(pb, self._connected_ports())
       pb = self._populate_def_proto_block_generator(pb)
     return pb
 

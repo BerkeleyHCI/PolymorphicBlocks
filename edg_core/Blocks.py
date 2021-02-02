@@ -270,6 +270,49 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
+  def _populate_def_proto_port_init(self, pb: ProtoType,
+                                    ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> ProtoType:
+    # TODO this is structurally ugly!
+    # TODO TODO: for non-generated exported initializers, check and assert default-ness
+    ref_map = self._get_ref_map(edgir.LocalPath())
+
+    def check_recursive_no_initializer(port: BasePort, path: List[str]) -> None:
+      if isinstance(port, (Port, Bundle)):
+        for (name, subparam) in port._parameters.items():
+          assert subparam.initializer is None, f"unexpected initializer in {port} at {path}"
+
+      if isinstance(port, Bundle):
+        for (name, subport) in port._ports.items():
+          check_recursive_no_initializer(subport, path + [name])
+      elif isinstance(port, Vector):
+        check_recursive_no_initializer(port._get_elt_sample(), path)
+      # TODO needs to be something like sealed types for match comprehensiveness
+
+    def process_port_inits(port: BasePort, path: List[str]) -> None:
+      if port in ignore_ports:
+        return
+
+      if isinstance(port, (Port, Bundle)):
+        for (name, subparam) in port._parameters.items():
+          if subparam.initializer is not None:
+            pb.constraints[f"(init){'.'.join(path + [name])}"].CopyFrom(
+              AssignBinding.make_assign(subparam,
+                                        subparam._to_expr_type(subparam.initializer), ref_map)
+            )
+            self._namespace_order.append(f"(init){'.'.join(path + [name])}")
+
+      if isinstance(port, Bundle):
+        for (name, subport) in port._ports.items():
+          process_port_inits(subport, path + [name])
+      elif isinstance(port, Vector):
+        check_recursive_no_initializer(port._get_elt_sample(), path)
+      # TODO needs to be something like sealed types for match comprehensiveness
+
+    for (name, port) in self._ports.items():
+      process_port_inits(port, [name])
+
+    return pb
+
   def _populate_def_proto_block_contents(self, pb: ProtoType, ignore_port_init: bool = False) -> ProtoType:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
@@ -288,25 +331,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
         self._namespace_order.append(f'(init){name}')
-
-    if not ignore_port_init:  # don't generate initializer in links - link params are fully driven
-      # TODO: don't generate initializers for anything exported
-      # TODO TODO: for non-generated exported initializers, check and assert default-ness
-      for (name, port) in self._ports.items():
-        if isinstance(port, (Port, Bundle)):
-          for (port_param_path, port_param) in port._recursive_params([name]):
-            if port_param.initializer is not None:
-              pb.constraints[f"(init){'.'.join(port_param_path)}"].CopyFrom(
-                AssignBinding.make_assign(port_param, port_param._to_expr_type(port_param.initializer), ref_map)
-              )
-              self._namespace_order.append(f"(init){'.'.join(port_param_path)}")
-        elif isinstance(port, (Vector,)):
-          elt_sample = port._get_elt_sample()
-          assert isinstance(elt_sample, (Port, Bundle))  # TODO support vectors in vectors?
-          for (port_param_path, port_param) in elt_sample._recursive_params([name]):
-            assert port_param.initializer is None, f"can't have initialized vector elts"
-        else:
-          raise TypeError(f"unexpected port type in blocklike: {port}")
 
     for (name, port) in self._ports.items():
       if port in self._required_ports:
@@ -501,7 +525,8 @@ class Link(BaseBlock[edgir.Link]):
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_block_contents(pb, ignore_port_init=True)
+    pb = self._populate_def_proto_block_contents(pb)
+    # specifically ignore the port initializers
 
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())
