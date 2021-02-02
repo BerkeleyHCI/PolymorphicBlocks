@@ -2,7 +2,6 @@ import unittest
 
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
-from .CompilerUtils import *
 
 
 class TestGeneratorAssign(GeneratorBlock):
@@ -45,20 +44,20 @@ class TestGeneratorMultiDependency(GeneratorBlock):
 
 class TestGenerator(unittest.TestCase):
   def test_generator_assign(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorAssign)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['float_param'], 2.0), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorAssign)
+
+    self.assertEqual(compiled.get_value(['float_param']), 2.0)
 
   def test_generator_dependency(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorDependency)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['float_param'], 6.0), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorDependency)
+
+    self.assertEqual(compiled.get_value(['float_param']), 6.0)
 
   def test_generator_multi_dependency(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorMultiDependency)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['float_param1'], 15.0), solved)
-    self.assertIn(makeSolved(['float_param2'], 22.0), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorMultiDependency)
+
+    self.assertEqual(compiled.get_value(['float_param1']), 15.0)
+    self.assertEqual(compiled.get_value(['float_param2']), 22.0)
 
 
 class TestLink(Link):
@@ -147,22 +146,22 @@ class TestGeneratorInnerConnectTop(Block):
 
 class TestGeneratorConnect(unittest.TestCase):
   def test_generator_connected(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorConnectedTop)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['generator', 'connected'], True), solved)
-    self.assertIn(makeSolved(['link', 'source_float'], 2.0), solved)
-    self.assertIn(makeSolved(['link', 'sinks_range'], (0.5, 2.5)), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorConnectedTop)
+
+    self.assertEqual(compiled.get_value(['generator', 'connected']), True)
+    self.assertEqual(compiled.get_value(['link', 'source_float']), 2.0)
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (0.5, 2.5))
 
   def test_generator_not_connected(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorNotConnectedTop)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['generator', 'connected'], False), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorNotConnectedTop)
+
+    self.assertEqual(compiled.get_value(['generator', 'connected']), False)
 
   def test_generator_inner_connect(self):
-    compiled_design = ScalaCompiler.compile(TestGeneratorInnerConnectTop)
-    solved = designSolvedValues(compiled_design)
-    self.assertIn(makeSolved(['link', 'source_float'], 4.5), solved)
-    self.assertIn(makeSolved(['link', 'sinks_range'], (1.5, 3.5)), solved)
+    compiled = ScalaCompiler.compile(TestGeneratorInnerConnectTop)
+
+    self.assertEqual(compiled.get_value(['link', 'source_float']), 4.5)
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (1.5, 3.5))
 
 
 class TestGeneratorException(BaseException):
@@ -183,8 +182,8 @@ class TestGeneratorFailure(GeneratorBlock):
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    compiled_design = ScalaCompiler.compile(TestGeneratorFailure)
-    pb = compiled_design.design.contents
+    compiled = ScalaCompiler.compile(TestGeneratorFailure)
+    pb = compiled.contents
 
     self.assertIn('GenerateError_errorfn', pb.meta.members.node)
 

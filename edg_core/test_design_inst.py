@@ -27,7 +27,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     Only tests that the contained blocks are instantiated and structurally correct, does not check internal constraints
     """
     compiled_design = ScalaCompiler.compile(TopHierarchyBlock)
-    pb = compiled_design.design.contents
+    pb = compiled_design.contents
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.TopHierarchyBlock')
 
@@ -81,7 +81,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
 
   def test_exported_hierarchy(self):
     compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlockTop)
-    pb = compiled_design.design.contents.blocks['block'].hierarchy
+    pb = compiled_design.contents.blocks['block'].hierarchy
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
 
@@ -105,7 +105,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
 
   def test_bridge_hierarchy(self):
     compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlockTop)
-    pb = compiled_design.design.contents.blocks['block'].hierarchy
+    pb = compiled_design.contents.blocks['block'].hierarchy
 
     self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
 

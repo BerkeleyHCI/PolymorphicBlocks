@@ -1,4 +1,4 @@
-from typing import Optional, Any, Type
+from typing import Optional, Any, Type, Iterable, Union
 
 import os
 import grpc  # type: ignore
@@ -9,6 +9,21 @@ from . import edgir, edgrpc
 from .Core import builder
 from .HierarchyBlock import Block
 from .HdlInterfaceServer import HdlInterface, CachedLibrary
+
+
+class CompiledDesign:
+  def __init__(self, compiled: edgrpc.CompilerResult):
+    self.result = compiled
+    self.contents = compiled.design.contents
+    self.values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
+      for value in compiled.solvedValues}
+
+  def get_value(self, path: Iterable[Union[str, 'edgir.ReservedValue']]) -> Optional[edgir.LitTypes]:
+    path_key = edgir.LocalPathList(path).SerializeToString()
+    if path_key in self.values:
+      return self.values[path_key]
+    else:
+      return None
 
 
 class ScalaCompilerInstance:
@@ -44,7 +59,7 @@ class ScalaCompilerInstance:
       self.stub = edgrpc.CompilerStub(self.channel)
 
 
-  def compile(self, block: Type[Block]) -> edgrpc.CompilerResult:
+  def compile(self, block: Type[Block]) -> CompiledDesign:
     self.check_started()
     assert self.stub is not None
 
@@ -54,7 +69,7 @@ class ScalaCompilerInstance:
         contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
     ))
     assert not result.error, f"error during compilation: \n{result.error}"
-    return result
+    return CompiledDesign(result)
 
   def close(self):
     assert self.server is not None

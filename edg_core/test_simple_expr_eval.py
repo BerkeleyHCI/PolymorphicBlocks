@@ -2,7 +2,6 @@ import unittest
 
 from . import *
 from edg_core.ScalaCompilerInterface import ScalaCompiler
-from .CompilerUtils import *
 
 
 class TestEvalExprBlock(Block):
@@ -18,12 +17,11 @@ class TestEvalExprBlock(Block):
 
 class EvalExprTestCase(unittest.TestCase):
   def setUp(self) -> None:
-    compiled_design = ScalaCompiler.compile(TestEvalExprBlock)
-    self.solved = designSolvedValues(compiled_design)
+    self.compiled = ScalaCompiler.compile(TestEvalExprBlock)
 
   def test_sum(self) -> None:
-    self.assertIn(makeSolved(['sum_float'], 5.0), self.solved)
-    self.assertIn(makeSolved(['sum_range'], (9.0, 14.0)), self.solved)
+    self.assertEqual(self.compiled.get_value(['sum_float']), 5.0)
+    self.assertEqual(self.compiled.get_value(['sum_range']), (9.0, 14.0))
 
 
 class TestReductionLink(Link):
@@ -60,9 +58,8 @@ class TestEvalReductionBlock(Block):
 
 class EvalReductionTestCase(unittest.TestCase):
   def setUp(self) -> None:
-    compiled_design = ScalaCompiler.compile(TestEvalReductionBlock)
-    self.solved = designSolvedValues(compiled_design)
+    self.compiled = ScalaCompiler.compile(TestEvalReductionBlock)
 
   def test_reduce(self) -> None:
-    self.assertIn(makeSolved(['link', 'range_sum'], (6.0, 130.0)), self.solved)
-    self.assertIn(makeSolved(['link', 'range_intersection'], (5.0, 10.0)), self.solved)
+    self.assertEqual(self.compiled.get_value(['link', 'range_sum']), (6.0, 130.0))
+    self.assertEqual(self.compiled.get_value(['link', 'range_intersection']), (5.0, 10.0))
