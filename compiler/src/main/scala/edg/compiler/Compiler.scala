@@ -399,11 +399,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       processPortConnected(path + name, port)
     }
 
-    // All inner link ports that need to be allocated, with the list of connected ports,
-    // as (port array path -> constraint name)
-    val linkPortAllocates = mutable.HashMap[Seq[String], String]()
+    // All inner link ports that need to be allocated, and constraints connecting to it
     // as (path to inner link port array -> constraint names)
-    val innerLinkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
+    val innerLinkArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
+
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
@@ -425,10 +424,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             directConnectedPorts += (path ++ intPort)
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
               ValueExpr.RefAllocate(intPortArray)) =>
-            require(!linkPortAllocates.contains(intPortArray), s"redefinition of link port array $intPortArray")
-            linkPortAllocates.put(intPortArray, constrName)
+            innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
           case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray)) =>
-            innerLinkPortAllocates.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
+            innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
             throw new NotImplementedError(s"TODO: export port array <-> port array: ${constr.expr}")
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
@@ -439,63 +437,61 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }}
 
     // Expand arrays
-    linkPortAllocates.foreach { case (linkPortArray, exportConstrName) =>
-      link.mapMultiConstraint(exportConstrName) { exportConstr =>
-        val ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) = exportConstr.getExported.getExteriorPort
-        val ValueExpr.RefAllocate(intPortArray) = exportConstr.getExported.getInternalBlockPort
-
-        val arrayElts = constProp.getArrayElts(path ++ extPortArray).get
-        constProp.setArrayElts(path ++ intPortArray, arrayElts)
-
-        val expandedExports = arrayElts.map { arrayElt =>
-          elaboratePending.addNode(
-            ElaborateRecord.Connect(path ++ intPortArray + arrayElt, path ++ extPortArray + arrayElt ++ extPortInner),
-            Seq(ElaborateRecord.Link(path),
-              ElaborateRecord.Link(path + intPortArray.head),
-              ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayElt))
-          )
-          if (connectedPorts.contains(path + extPortArray.head)) {
-            connectedPorts += (path ++ intPortArray + arrayElt)
+    innerLinkArrayConstraints.foreach { case (intPortArray, constrNames) =>
+      var nextIndex = 0
+      val intPortArrayElts = constrNames.flatMap { constrName =>
+        var thisArrayElts = mutable.ListBuffer[String]()
+        link.mapMultiConstraint(constrName) { constr =>
+          val extPorts = (constr.getExported.getExteriorPort, constr.getExported.getInternalBlockPort) match {
+            // get individual external ports
+            case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
+            ValueExpr.RefAllocate(constrIntPortArray)) =>  // vector-vector connect
+              require(intPortArray == constrIntPortArray)
+              constProp.getArrayElts(path ++ extPortArray).get.map { extArrayElt =>
+                (extPortArray :+ extArrayElt) ++ extPortInner }
+            case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(constrIntPortArray)) =>  // element-vector connect
+              require(intPortArray == constrIntPortArray)
+              Seq(extPort)
+            case _ => throw new IllegalArgumentException(s"Unknown constraint in expanding array: $constr")
           }
-          directConnectedPorts += (path ++ intPortArray + arrayElt)
+          val startIndex = nextIndex
+          nextIndex += extPorts.length
 
-          exportConstrName + "." + arrayElt ->
-              Constraint.Exported(Ref((extPortArray :+ arrayElt :++ extPortInner): _*),
-                Ref((intPortArray :+ arrayElt): _*)
-              )
-        }
-        debug(s"Array defined: ${path ++ intPortArray} = $arrayElts")
-        expandedExports
-      }
-    }
+          extPorts.zipWithIndex.map { case (extPort, index) =>
+            val arrayIndex = (index + startIndex).toString
+            thisArrayElts += arrayIndex
 
-    innerLinkPortAllocates.foreach { case (intPortArray, exportConstrNames) =>
-      val innerLinkPortArrayElts = exportConstrNames.zipWithIndex.map { case (constrName, index) =>
-        link.mapConstraint(constrName) { constr =>
-          val ValueExpr.Ref(extPort) = constr.getExported.getExteriorPort
+            elaboratePending.addNode(
+              ElaborateRecord.Connect(path ++ intPortArray + arrayIndex, path ++ extPort),
+              Seq(ElaborateRecord.Link(path),
+                ElaborateRecord.Link(path + intPortArray.head),
+                ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
+            )
+            if (connectedPorts.contains(path + extPort.head)) {
+              connectedPorts += (path ++ intPortArray + arrayIndex)
+            }
+            directConnectedPorts += (path ++ intPortArray + arrayIndex)
 
-          elaboratePending.addNode(
-            ElaborateRecord.Connect(path ++ intPortArray + index.toString, path ++ extPort),
-            Seq(ElaborateRecord.Link(path),
-              ElaborateRecord.Link(path + intPortArray.head),
-              ElaborateRecord.ConnectedLink(path ++ intPortArray + index.toString))
-          )
+            val newConstrName = if (extPorts.length == 1) {
+              constrName  // constraints don't expand
+            } else {
+              constrName + "." + index  // expands into multiple constraints, each needs a unique name
+            }
+            val newConstr = constr.update(
+              _.exported.exteriorPort.ref.steps := extPort.map { pathElt =>
+                ref.LocalStep(ref.LocalStep.Step.Name(pathElt)) },
+              _.exported.internalBlockPort.ref.steps := (intPortArray :+ arrayIndex).map { pathElt =>
+                ref.LocalStep(ref.LocalStep.Step.Name(pathElt)) },
+            )
 
-          if (connectedPorts.contains(path + extPort.head)) {
-            connectedPorts += (path ++ intPortArray + index.toString)
+            newConstrName -> newConstr
           }
-          directConnectedPorts += (path ++ intPortArray + index.toString)
-
-          val extPortSteps = constr.getExported.getExteriorPort.getRef.steps
-          val indexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(index.toString))
-          constr.update(
-            _.exported.internalBlockPort.ref.steps := extPortSteps.slice(0, extPortSteps.length - 1) :+ indexStep
-          )
         }
-        index.toString
+
+        thisArrayElts.toSeq
       }.toSeq
-      debug(s"Array defined: ${path ++ intPortArray} = $innerLinkPortArrayElts")
-      constProp.setArrayElts(path ++ intPortArray, innerLinkPortArrayElts)
+      debug(s"Array defined: ${path ++ intPortArray} = $intPortArrayElts")
+      constProp.setArrayElts(path ++ intPortArray, intPortArrayElts)
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
