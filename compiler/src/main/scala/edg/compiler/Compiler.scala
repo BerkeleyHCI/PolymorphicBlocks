@@ -288,9 +288,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
           case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
             linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
-            throw new NotImplementedError("TODO: block port array <-> link port array")
+            throw new NotImplementedError(s"TODO: block port array <-> link port array: ${constr.expr}")
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.Ref(linkPort)) =>
-            throw new NotImplementedError("TODO: block port array <-> link port")
+            throw new NotImplementedError(s"TODO: block port array <-> link port: ${constr.expr}")
           case _ => throw new IllegalConstraintException(s"unknown connect in block $path: $constrName = $connected")
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
@@ -308,11 +308,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
             }
             directConnectedPorts += (path ++ intPort)
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
-            throw new NotImplementedError("TODO: export port array <-> port array")
+            throw new NotImplementedError(s"TODO: export port array <-> port array: ${constr.expr}")
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
-            throw new NotImplementedError("TODO: export port array <-> port")
+            throw new NotImplementedError(s"TODO: export port array <-> port: ${constr.expr}")
           case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray)) =>
-            throw new NotImplementedError("TODO: export port <-> port array")
+            throw new NotImplementedError(s"TODO: export port <-> port array: ${constr.expr}")
           case _ => throw new IllegalConstraintException(s"unknown export in block $path: $constrName = $exported")
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
@@ -400,8 +400,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
     }
 
     // All inner link ports that need to be allocated, with the list of connected ports,
-    // as (port array path -> constraint name
+    // as (port array path -> constraint name)
     val linkPortAllocates = mutable.HashMap[Seq[String], String]()
+    // as (path to inner link port array -> constraint names)
+    val innerLinkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
@@ -425,12 +427,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
               ValueExpr.RefAllocate(intPortArray)) =>
             require(!linkPortAllocates.contains(intPortArray), s"redefinition of link port array $intPortArray")
             linkPortAllocates.put(intPortArray, constrName)
-          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
-            throw new NotImplementedError("TODO: export port array <-> port array")
-          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
-            throw new NotImplementedError("TODO: export port array <-> port")
           case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray)) =>
-            throw new NotImplementedError("TODO: export port <-> port array")
+            innerLinkPortAllocates.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
+          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
+            throw new NotImplementedError(s"TODO: export port array <-> port array: ${constr.expr}")
+          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
+            throw new NotImplementedError(s"TODO: export port array <-> port: ${constr.expr}")
           case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
@@ -453,9 +455,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
               ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayElt))
           )
           if (connectedPorts.contains(path + extPortArray.head)) {
-            connectedPorts += (path ++ intPortArray)
+            connectedPorts += (path ++ intPortArray + arrayElt)
           }
-          directConnectedPorts += (path ++ intPortArray)
+          directConnectedPorts += (path ++ intPortArray + arrayElt)
 
           exportConstrName + "." + arrayElt ->
               Constraint.Exported(Ref((extPortArray :+ arrayElt :++ extPortInner): _*),
@@ -465,6 +467,35 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
         debug(s"Array defined: ${path ++ intPortArray} = $arrayElts")
         expandedExports
       }
+    }
+
+    innerLinkPortAllocates.foreach { case (intPortArray, exportConstrNames) =>
+      val innerLinkPortArrayElts = exportConstrNames.zipWithIndex.map { case (constrName, index) =>
+        link.mapConstraint(constrName) { constr =>
+          val ValueExpr.Ref(extPort) = constr.getExported.getExteriorPort
+
+          elaboratePending.addNode(
+            ElaborateRecord.Connect(path ++ intPortArray + index.toString, path ++ extPort),
+            Seq(ElaborateRecord.Link(path),
+              ElaborateRecord.Link(path + intPortArray.head),
+              ElaborateRecord.ConnectedLink(path ++ intPortArray + index.toString))
+          )
+
+          if (connectedPorts.contains(path + extPort.head)) {
+            connectedPorts += (path ++ intPortArray + index.toString)
+          }
+          directConnectedPorts += (path ++ intPortArray + index.toString)
+
+          val extPortSteps = constr.getExported.getExteriorPort.getRef.steps
+          val indexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(index.toString))
+          constr.update(
+            _.exported.internalBlockPort.ref.steps := extPortSteps.slice(0, extPortSteps.length - 1) :+ indexStep
+          )
+        }
+        index.toString
+      }.toSeq
+      debug(s"Array defined: ${path ++ intPortArray} = $innerLinkPortArrayElts")
+      constProp.setArrayElts(path ++ intPortArray, innerLinkPortArrayElts)
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
