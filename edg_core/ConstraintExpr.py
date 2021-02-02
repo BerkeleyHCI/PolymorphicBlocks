@@ -325,7 +325,7 @@ class AssignBinding(Binding):
 
 ConstraintExprCastable = TypeVar('ConstraintExprCastable')
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-GetType = TypeVar('GetType')
+GetType = TypeVar('GetType', covariant=True)
 class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.

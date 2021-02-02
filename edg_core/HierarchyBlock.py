@@ -425,17 +425,63 @@ class GeneratorBlock(Block):
   #
   class GeneratorRecord(NamedTuple):
     reqs: Tuple[ConstraintExpr, ...]
+    fn_args: Tuple[ConstraintExpr, ...]
 
-  Self = TypeVar('Self', bound='GeneratorBlock', covariant=True)
-  def add_generator(self: Self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
+  # DEPRECATED - pending experimentation to see if this can be removed
+  # This is an older API that has the .get(...) in the genreator function,
+  # instead of handling it in infrastructure and passing results to the generator as args.
+  def generator_getfn(self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
     assert callable(fn), f"fn {fn} must be a method (callable)"
     fn_name = fn.__name__
     assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs)
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, ())
 
+  ConstrGet1 = TypeVar('ConstrGet1', bound=Any)
+  ConstrGet2 = TypeVar('ConstrGet2', bound=Any)
+  ConstrGet3 = TypeVar('ConstrGet3', bound=Any)
+  ConstrGet4 = TypeVar('ConstrGet4', bound=Any)
+  ConstrGet5 = TypeVar('ConstrGet5', bound=Any)
+
+  @overload
+  def generator(self, fn: Callable[[], None]) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1]) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1],
+                req2: ConstraintExpr[Any, Any, ConstrGet2]) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1],
+                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3]) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1],
+                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3],
+                req4: ConstraintExpr[Any, Any, ConstrGet4]) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4, ConstrGet5], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1],
+                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3],
+                req4: ConstraintExpr[Any, Any, ConstrGet4],
+                req5: ConstraintExpr[Any, Any, ConstrGet5]) -> None: ...
+
+  # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
+  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr) -> None:  # type: ignore
+    assert callable(fn), f"fn {fn} must be a method (callable)"
+    fn_name = fn.__name__
+    assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
+    assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
+
+    assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, reqs)
 
   # Generator solved-parameter-access interface
   #
@@ -526,9 +572,15 @@ class GeneratorBlock(Block):
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
     self._parse_param_values(generate_values)
+
+    # TODO: support ValueExpr, perhaps by ConstraintExpr matching or eager conversion to ValueExpr
+    # or some kind of matching (eg, by index) from generator record to request
+    fn_args = [self.get(arg_param)
+      for arg_param in self._generators[generate_fn_name].fn_args]
+
     try:
       fn = getattr(self, generate_fn_name)
-      fn()
+      fn(*fn_args)
       self._elaboration_state = BlockElaborationState.post_generate
       return self._def_to_proto()
     except BaseException as e:
