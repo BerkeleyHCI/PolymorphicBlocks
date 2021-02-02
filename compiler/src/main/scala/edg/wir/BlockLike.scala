@@ -118,7 +118,9 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
   }
 
   def toEltPb: elem.HierarchyBlock = {
-    require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty)
+    require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty,
+      s"contains unelaborated ports ${getUnelaboratedPorts.keys} or blocks ${getUnelaboratedBlocks.keys} " +
+      s"or links ${getUnelaboratedLinks.keys}")
     require(generators.isEmpty)
     // TODO also (re)serialize NameOrder?
     pb.copy(

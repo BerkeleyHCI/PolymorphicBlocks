@@ -1,7 +1,5 @@
 package edg.compiler
 
-import edg.compiler.hdl.HdlInterfaceGrpc.HdlInterface
-
 import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr

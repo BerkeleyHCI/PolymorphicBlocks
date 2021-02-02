@@ -40,7 +40,8 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
 
   // Serializes this to protobuf
   def toEltPb: elem.Link = {
-    require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty)
+    require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty,
+      s"contains unelaborated ports ${getUnelaboratedPorts.keys} or links ${getUnelaboratedLinks.keys}")
     pb.copy(
       superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,

@@ -63,8 +63,10 @@ class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLi
   }
 
   def toEltPb: elem.Bundle = {
+    require(getUnelaboratedPorts.isEmpty,
+      s"contains unelaborated ports ${getUnelaboratedPorts.keys}")
     pb.copy(
-      superclasses = superclasses,
+      superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
     )
   }
@@ -78,8 +80,9 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   require(pb.superclasses.length == 1)
 
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
+  var portsSet = false  // allow empty port arrays
 
-  override def isElaborated: Boolean = ports.nonEmpty
+  override def isElaborated: Boolean = portsSet
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -96,6 +99,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   def setPorts(newPorts: Map[String, PortLike]): Unit = {
     require(ports.isEmpty)
     ports ++= newPorts
+    portsSet = true
   }
 
   def toEltPb: elem.PortArray = {
