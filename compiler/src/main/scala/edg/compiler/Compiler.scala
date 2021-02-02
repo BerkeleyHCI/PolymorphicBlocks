@@ -541,8 +541,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
 
     require(elaboratePending.getMissingBlocking.isEmpty,
       s"failed to elaborate: ${elaboratePending.getMissingBlocking}")
-    require(constProp.getUnsolved.isEmpty,
-      s"const prop failed to solve: ${constProp.getUnsolved}")
+//    require(constProp.getUnsolved.isEmpty,
+//      s"const prop failed to solve: ${constProp.getUnsolved}")
 
     ElemBuilder.Design(root.toPb)
   }

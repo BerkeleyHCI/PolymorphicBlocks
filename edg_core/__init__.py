@@ -19,3 +19,4 @@ from .Blocks import BasePort, BaseBlock
 from . import TransformUtil
 from . import edgir
 from .HdlInterfaceServer import HdlInterface
+from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign

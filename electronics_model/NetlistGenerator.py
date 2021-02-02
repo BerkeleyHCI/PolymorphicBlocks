@@ -8,20 +8,6 @@ from . import footprint as kicad
 # TODO netlist type maybe should be defined in footprint.py?
 
 
-def find_constraints(names: Set[str], constrs: Iterable[edgir.ValueExpr]) -> Dict[str, str]:
-  output: Dict[str, str] = {}
-  for constr in constrs:
-    assign_opt = edgir.lit_assignment_from_expr(constr)
-    if assign_opt is not None and len(assign_opt[0].steps) == 1:
-      assign_tgt = assign_opt[0].steps[0].name
-      if assign_tgt in names:
-        assign_val = assign_opt[1]
-        assert isinstance(assign_val, str), f"lit {assign_tgt} expected str but got {assign_val}"
-        output[assign_tgt] = assign_val
-  assert set(output.keys()) == names, f"missing values for {names.difference(output.keys())}"
-  return output
-
-
 def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
   if port.HasField('port'):
     return [path]
@@ -92,26 +78,38 @@ class NetlistCollect(TransformUtil.Transform):
             self.edges.setdefault(src_path, []).append(dst_path)
 
     if 'pinning' in block.meta.members.node:
-      vals = find_constraints({'footprint_name', 'mfr', 'part', 'value', 'refdes_prefix'}, block.constraints.values())
+
+      # vals = find_constraints({'footprint_name', 'mfr', 'part', 'value', 'refdes_prefix'}, block.constraints.values())
+      footprint_name = self.design.get_value(path.to_tuple() + ('footprint_name',))
+      mfr = self.design.get_value(path.to_tuple() + ('mfr',))
+      part = self.design.get_value(path.to_tuple() + ('part',))
+      value = self.design.get_value(path.to_tuple() + ('value',))
+      refdes_prefix = self.design.get_value(path.to_tuple() + ('refdes_prefix',))
+
+      assert isinstance(footprint_name, str)
+      assert isinstance(mfr, str) or mfr is None
+      assert isinstance(part, str) or part is None
+      assert isinstance(value, str) or value is None
+      assert isinstance(refdes_prefix, str)
 
       part_comps = [
-        vals['part'],
-        f"({vals['mfr']})" if vals['mfr'] else ""
+        part,
+        f"({mfr})" if mfr else ""
       ]
       part_str = " ".join(filter(None, part_comps))
       value_comps = [
         part_str,
-        vals['value']
+        value
       ]
       value_str = " - ".join(filter(None, value_comps))
 
       self.blocks[path] = (
-        vals['footprint_name'],
+        footprint_name,
         value_str
       )
 
-      refdes_id = self.refdes_last.get(vals['refdes_prefix'], 0) + 1
-      self.refdes_last[vals['refdes_prefix']] = refdes_id
+      refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
+      self.refdes_last[refdes_prefix] = refdes_id
 
       # Uncomment one to set refdes type
       # TODO this should be a user flag
@@ -186,7 +184,7 @@ class NetlistCollect(TransformUtil.Transform):
   def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
     self.process_blocklike(context.path, link)
 
-  def __init__(self):
+  def __init__(self, design: CompiledDesign):
     self.blocks: Blocks = {}
     self.edges: Edges = {}
     self.short_paths: Names = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
@@ -196,8 +194,10 @@ class NetlistCollect(TransformUtil.Transform):
 
     self.refdes_last: Dict[str, int] = {}
 
-  def run(self, design: edgir.Design) -> Tuple[Blocks, Edges, Names, Hierarchy, Names]:
-    self.transform_design(design)
+    self.design = design
+
+  def run(self) -> Tuple[Blocks, Edges, Names, Hierarchy, Names]:
+    self.transform_design(self.design.design)
 
     # Sanity check to ensure all pins exist
     for pin_src, pins_dst in self.edges.items():
@@ -221,9 +221,9 @@ class Netlist(NamedTuple):
 
 
 class NetlistGenerator:
-  def generate(self, design: edgir.Design) -> Netlist:
+  def generate(self, design: CompiledDesign) -> Netlist:
     # TODO another algorithm is for each block, return its footprints and connected nets, and merge nets incrementally
-    blocks, edges, short_paths, hierarchy, names = NetlistCollect().run(design)
+    blocks, edges, short_paths, hierarchy, names = NetlistCollect(design).run()
 
     seen: Set[TransformUtil.Path] = set()
     nets: List[Set[TransformUtil.Path]] = []

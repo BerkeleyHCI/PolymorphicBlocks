@@ -14,6 +14,7 @@ from .HdlInterfaceServer import HdlInterface, CachedLibrary
 class CompiledDesign:
   def __init__(self, compiled: edgrpc.CompilerResult):
     self.result = compiled
+    self.design = compiled.design
     self.contents = compiled.design.contents
     self.values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
       for value in compiled.solvedValues}

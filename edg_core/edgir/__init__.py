@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING
+from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING, List
 
 from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
@@ -346,40 +346,43 @@ def local_path_to_str(path: LocalPath) -> str:
   return '.'.join([step_to_str(step) for step in path.steps])
 
 
+def _namespace(meta: Metadata) -> List[str]:
+  namespace_elts = [v.namespace_order
+                    for k, v in meta.members.node.items() if v.HasField('namespace_order')]
+  assert len(namespace_elts) == 1
+  return namespace_elts[0].names
+
+
 def ordered_blocks(block: HierarchyBlock) -> Iterable[Tuple[str, BlockLike]]:
   """Returns a list of all sub-blocks (as BlockLike) in lexical order recorded by metadata.
   """
-  order_dict = block.meta.members.node['_blocks_order'].members.node
-  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
-  assert len(names_sorted) == len(block.blocks), f"sorted names {names_sorted} != block names {list(block.blocks.keys())}"
-  return [(name, block.blocks[name]) for name in names_sorted]
+  names_sorted = _namespace(block.meta)
+  assert set(block.blocks.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all blocks {list(block.blocks.keys())}"
+  return [(name, block.blocks[name]) for name in names_sorted if name in block.blocks]
 
 
 def ordered_links(block: Union[HierarchyBlock, Link]) -> Iterable[Tuple[str, LinkLike]]:
   """Returns a list of all sub-links (as LinkLike) in lexical order recorded by metadata.
   """
-  order_dict = block.meta.members.node['_links_order'].members.node
-  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
-  assert len(names_sorted) == len(block.links), f"sorted names {names_sorted} != link names {list(block.links.keys())}"
-  return [(name, block.links[name]) for name in names_sorted]
+  names_sorted = _namespace(block.meta)
+  assert set(block.links.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all links {list(block.links.keys())}"
+  return [(name, block.links[name]) for name in names_sorted if name in block.links]
 
 
 def ordered_params(block: Union[HierarchyBlock, Link, Port, Bundle]) -> Iterable[Tuple[str, ValInit]]:
   """Returns a list of all sub-params (as ValInit) in lexical order recorded by metadata.
-"""
-  order_dict = block.meta.members.node['_params_order'].members.node
-  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
-  assert len(names_sorted) == len(block.params), f"sorted names {names_sorted} != param names {list(block.params.keys())}"
-  return [(name, block.params[name]) for name in names_sorted]
+  """
+  names_sorted = _namespace(block.meta)
+  assert set(block.params.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all params {list(block.params.keys())}"
+  return [(name, block.params[name]) for name in names_sorted if name in block.params]
 
 
 def ordered_ports(block: Union[HierarchyBlock, Link, Bundle]) -> Iterable[Tuple[str, PortLike]]:
   """Returns a list of all sub-ports (as PortLike) in lexical order recorded by metadata.
   """
-  order_dict = block.meta.members.node['_ports_order'].members.node
-  names_sorted = [v.text_leaf for k, v in sorted(order_dict.items(), key=lambda item: int(item[0]))]
-  assert len(names_sorted) == len(block.ports), f"sorted names {names_sorted} != block ports {list(block.ports.keys())}"
-  return [(name, block.ports[name]) for name in names_sorted]
+  names_sorted = _namespace(block.meta)
+  assert set(block.ports.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all ports {list(block.ports.keys())}"
+  return [(name, block.ports[name]) for name in names_sorted if name in block.ports]
 
 
 def source_locator_of(elt: Union[HierarchyBlock, Port, Link, Bundle], subelt_name: str) -> Optional[Tuple[str, int]]:

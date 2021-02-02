@@ -1,8 +1,8 @@
 import unittest
 
+from typing import Type
 from edg_core import *
 import electronics_model
-from . import test_netlist
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 
 from . import *
@@ -159,12 +159,12 @@ class TestDualHierarchyCircuit(CircuitBlock):
 
 
 class NetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Block):
-    pb = Driver([electronics_model, test_netlist]).generate_block(design)
-    return NetlistGenerator().generate(pb)
+  def generate_net(self, design: Type[Block]):
+    compiled = ScalaCompiler.compile(design)
+    return NetlistGenerator().generate(compiled)
 
   def test_basic_netlist(self) -> None:
-    net = self.generate_net(TestBasicCircuit())
+    net = self.generate_net(TestBasicCircuit)
 
     self.assertEqual(net.nets['vpos'], {
       Pin('source', '1'),
@@ -178,7 +178,7 @@ class NetlistTestCase(unittest.TestCase):
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['sink']))
 
   def test_multisink_netlist(self) -> None:
-    net = self.generate_net(TestMultisinkCircuit())
+    net = self.generate_net(TestMultisinkCircuit)
 
     self.assertEqual(net.nets['vpos'], {
       Pin('source', '1'),
@@ -195,7 +195,7 @@ class NetlistTestCase(unittest.TestCase):
     self.assertEqual(net.blocks['sink2'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['sink2']))
 
   def test_multinet_netlist(self) -> None:
-    net = self.generate_net(TestMultinetCircuit())
+    net = self.generate_net(TestMultinetCircuit)
 
     self.assertEqual(net.nets['vin'], {
       Pin('source', '1'),
@@ -215,7 +215,7 @@ class NetlistTestCase(unittest.TestCase):
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['sink']))
 
   def test_hierarchy_netlist(self) -> None:
-    net = self.generate_net(TestHierarchyCircuit())
+    net = self.generate_net(TestHierarchyCircuit)
 
     self.assertEqual(net.nets['vpos'], {
       Pin('source', '1'),
@@ -229,7 +229,7 @@ class NetlistTestCase(unittest.TestCase):
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['sink']))
 
   def test_dual_hierarchy_netlist(self) -> None:
-    net = self.generate_net(TestDualHierarchyCircuit())
+    net = self.generate_net(TestDualHierarchyCircuit)
 
     self.assertEqual(net.nets['vpos'], {
       Pin('source', '1'),
