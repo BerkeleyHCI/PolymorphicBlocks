@@ -576,6 +576,16 @@ RangeSuperset = RangeConstrMode()
 RangeLit = Tuple[FloatLit, FloatLit]
 RangeLike = Union[RangeLit, FloatLike, FloatLike, Tuple[FloatLike, FloatLike], 'RangeExpr']
 class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
+  # Some range literals for defaults
+  POSITIVE = (0.0, float('inf'))
+  NEGATIVE = (float('-inf'), 0.0)
+  ALL = (float('-inf'), float('inf'))
+  INF = (float('inf'), float('inf'))
+  ZERO = (0.0, 0.0)
+  EMPTY_ZERO = (0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
+  EMPTY_DIT = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
+  EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
+
   def __init__(self, initializer: Optional[RangeLike]=None, constr: Optional[RangeConstrMode]=None):
     if initializer is None:
       assert constr is None, "cannot specify init constr without initializer"
@@ -779,3 +789,12 @@ class LiteralConstructor:
       return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
     else:
       raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
+
+
+# TODO this is a placeholder that just returns the constraint itself
+# In the future, it should annotate the value with default-ness
+DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, FloatLike, RangeLike, StringLike])
+def Default(constr: DefaultType) -> DefaultType:
+  if isinstance(constr, ConstraintExpr):
+    assert constr.initializer is not None, "default must have initialzier"
+  return constr

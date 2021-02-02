@@ -18,7 +18,8 @@ class PassiveLink(CircuitLink):
 
 class PassiveAdapterElectricalSource(CircuitPortAdapter[ElectricalSource]):
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()):
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               current_limits: RangeLike = Default(RangeExpr.ALL)):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(ElectricalSource(voltage_out=voltage_out, current_limits=current_limits))
@@ -26,7 +27,8 @@ class PassiveAdapterElectricalSource(CircuitPortAdapter[ElectricalSource]):
 
 class PassiveAdapterElectricalSink(CircuitPortAdapter[ElectricalSink]):
   @init_in_parent
-  def __init__(self, voltage_limits: RangeLike = RangeExpr(), current_draw: RangeLike = RangeExpr()):
+  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO)):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(ElectricalSink(voltage_limits=voltage_limits, current_draw=current_draw))
@@ -100,13 +102,15 @@ class Passive(CircuitPort[PassiveLink]):
                           PassiveAdapterDigitalSingleSource,
                           PassiveAdapterAnalogSource, PassiveAdapterAnalogSink]
 
-  def as_electrical_source(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> ElectricalSource:
+  def as_electrical_source(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+                           current_limits: RangeLike = Default(RangeExpr.ALL)) -> ElectricalSource:
     return self._convert(PassiveAdapterElectricalSource(voltage_out=voltage_out, current_limits=current_limits))
 
-  def as_electrical_sink(self, voltage_limits: RangeLike = RangeExpr(), current_draw: RangeLike = RangeExpr()) -> ElectricalSink:
+  def as_electrical_sink(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+                         current_draw: RangeLike = Default(RangeExpr.ZERO)) -> ElectricalSink:
     return self._convert(PassiveAdapterElectricalSink(voltage_limits=voltage_limits, current_draw=current_draw))
 
-  def as_ground(self, current_draw: RangeLike = RangeExpr()) -> ElectricalSink:
+  def as_ground(self, current_draw: RangeLike = Default(RangeExpr.ZERO)) -> ElectricalSink:
     return self._convert(PassiveAdapterElectricalSink(voltage_limits=(0, 0) * Volt, current_draw=current_draw))
 
   def as_ground_source(self) -> ElectricalSource:

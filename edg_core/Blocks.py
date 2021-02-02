@@ -270,7 +270,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_block_contents(self, pb: ProtoType) -> ProtoType:
+  def _populate_def_proto_block_contents(self, pb: ProtoType, ignore_port_init: bool = False) -> ProtoType:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -289,22 +289,26 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         )
         self._namespace_order.append(f'(init){name}')
 
-    for (name, port) in self._ports.items():
-      if isinstance(port, (Port, Bundle)):
-        for (port_param_path, port_param) in port._recursive_params([name]):
-          if port_param.initializer is not None:
-            pb.constraints[f"(init){'.'.join(port_param_path)}"].CopyFrom(
-              AssignBinding.make_assign(port_param, port_param._to_expr_type(port_param.initializer), ref_map)
-            )
-            self._namespace_order.append(f"(init){'.'.join(port_param_path)}")
-      elif isinstance(port, (Vector,)):
-        elt_sample = port._get_elt_sample()
-        assert isinstance(elt_sample, (Port, Bundle))  # TODO support vectors in vectors?
-        for (port_param_path, port_param) in elt_sample._recursive_params([name]):
-          assert port_param.initializer is None, f"can't have initialized vector elts"
-      else:
-        raise TypeError(f"unexpected port type in blocklike: {port}")
+    if not ignore_port_init:  # don't generate initializer in links - link params are fully driven
+      # TODO: don't generate initializers for anything exported
+      # TODO TODO: for non-generated exported initializers, check and assert default-ness
+      for (name, port) in self._ports.items():
+        if isinstance(port, (Port, Bundle)):
+          for (port_param_path, port_param) in port._recursive_params([name]):
+            if port_param.initializer is not None:
+              pb.constraints[f"(init){'.'.join(port_param_path)}"].CopyFrom(
+                AssignBinding.make_assign(port_param, port_param._to_expr_type(port_param.initializer), ref_map)
+              )
+              self._namespace_order.append(f"(init){'.'.join(port_param_path)}")
+        elif isinstance(port, (Vector,)):
+          elt_sample = port._get_elt_sample()
+          assert isinstance(elt_sample, (Port, Bundle))  # TODO support vectors in vectors?
+          for (port_param_path, port_param) in elt_sample._recursive_params([name]):
+            assert port_param.initializer is None, f"can't have initialized vector elts"
+        else:
+          raise TypeError(f"unexpected port type in blocklike: {port}")
 
+    for (name, port) in self._ports.items():
       if port in self._required_ports:
         pb.constraints[f'(reqd){name}'].CopyFrom(
           port.is_connected()._expr_to_proto(ref_map)
@@ -497,7 +501,7 @@ class Link(BaseBlock[edgir.Link]):
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_block_contents(pb, ignore_port_init=True)
 
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())

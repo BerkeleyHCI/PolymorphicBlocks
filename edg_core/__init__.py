@@ -1,6 +1,7 @@
 from .ConstraintExpr import BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, RangeLike, StringLike, LiteralConstructor
 from .ConstraintExpr import RangeSubset, RangeSuperset
+from .ConstraintExpr import Default
 from .Ports import Port, Bundle
 from .Blocks import Link
 from .HierarchyBlock import Block, GeneratorBlock, ImplicitConnect, init_in_parent, abstract_block

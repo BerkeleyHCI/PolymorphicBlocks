@@ -18,7 +18,8 @@ class SpiLink(Link):
 
 
 class SpiMaster(Bundle[SpiLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None, frequency: RangeLike = RangeExpr()) -> None:
+  def __init__(self, model: Optional[DigitalBidir] = None,
+               frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
     super().__init__()
     self.link_type = SpiLink
 
@@ -32,7 +33,8 @@ class SpiMaster(Bundle[SpiLink]):
 
 class SpiSlave(Bundle[SpiLink]):
   # TODO: for now, CS is defined separately
-  def __init__(self, model: Optional[DigitalBidir] = None, frequency_limit: RangeLike = RangeExpr()) -> None:
+  def __init__(self, model: Optional[DigitalBidir] = None,
+               frequency_limit: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.link_type = SpiLink
 

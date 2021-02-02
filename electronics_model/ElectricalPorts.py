@@ -36,17 +36,17 @@ class ElectricalSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(ElectricalSink())
-    self.inner_link = self.Port(ElectricalSource())
-
-  def contents(self) -> None:
-    super().contents()
+    self.outer_port = self.Port(ElectricalSink(current_draw=RangeExpr()))
 
     # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
     # The outer port's voltage_limits is untouched and should be defined in the port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
+    self.inner_link = self.Port(ElectricalSource(current_limits=RangeExpr.ALL,
+                                                 voltage_out=RangeExpr()))
+
+  def contents(self) -> None:
+    super().contents()
 
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
@@ -56,17 +56,17 @@ class ElectricalSourceBridge(CircuitPortBridge):  # basic passthrough port, sour
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(ElectricalSource())
-    self.inner_link = self.Port(ElectricalSink())
-
-  def contents(self) -> None:
-    super().contents()
+    self.outer_port = self.Port(ElectricalSource(voltage_out=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.constrain(self.inner_link.voltage_limits == (-float('inf'), float('inf')))
+    self.inner_link = self.Port(ElectricalSink(voltage_limits=RangeExpr.ALL,
+                                               current_draw=RangeExpr()))
+
+  def contents(self) -> None:
+    super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
@@ -89,8 +89,8 @@ class ElectricalBase(CircuitPort[ElectricalLink]):
 
 class ElectricalSink(ElectricalBase):
   def __init__(self, model: Optional[ElectricalSink] = None,
-               voltage_limits: RangeLike = RangeExpr(),
-               current_draw: RangeLike = RangeExpr()) -> None:
+               voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.bridge_type = ElectricalSinkBridge
 
@@ -109,7 +109,8 @@ class ElectricalSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     from .DigitalPorts import DigitalSource
     super().__init__()
     self.src = self.Port(ElectricalSink(
-      voltage_limits=(-float('inf'), float('inf'))*Volt
+      voltage_limits=RangeExpr.ALL * Volt,
+      current_draw=RangeExpr()
     ))
     self.dst = self.Port(DigitalSource(
       voltage_out=self.src.link().voltage,
@@ -125,7 +126,8 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     from .AnalogPort import AnalogSource
     super().__init__()
     self.src = self.Port(ElectricalSink(
-      voltage_limits=(-float('inf'), float('inf'))*Volt
+      voltage_limits=(-float('inf'), float('inf'))*Volt,
+      current_draw=RangeExpr()
     ), [Input])
     self.dst = self.Port(AnalogSource(
       voltage_out=self.src.link().voltage,
@@ -138,7 +140,8 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
 class ElectricalSource(ElectricalBase):
   def __init__(self, model: Optional[ElectricalSource] = None,
-               voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
+               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.bridge_type = ElectricalSourceBridge
     self.adapter_types = [ElectricalSinkAdapterDigitalSource, ElectricalSinkAdapterAnalogSource]
@@ -158,11 +161,11 @@ class ElectricalSource(ElectricalBase):
     return self._convert(ElectricalSinkAdapterAnalogSource())
 
 
-def Ground(current_draw: RangeLike = (0, 0)*Amp) -> ElectricalSink:
-  return ElectricalSink(voltage_limits=(0, 0)*Volt, current_draw=current_draw)
+def Ground(current_draw: RangeLike = RangeExpr.ZERO * Amp) -> ElectricalSink:
+  return ElectricalSink(voltage_limits=RangeExpr.ZERO * Volt, current_draw=current_draw)
 
 def GroundSource() -> ElectricalSource:
-  return ElectricalSource(voltage_out=(0, 0)*Volt, current_limits=(0, 0)*Amp)
+  return ElectricalSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ZERO * Amp)
 
 # Standard port tags for implicit connection scopes / auto-connecting power supplies
 Common = PortTag(ElectricalSink)  # Common ground (0v) port

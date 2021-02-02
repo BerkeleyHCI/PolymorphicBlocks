@@ -39,17 +39,16 @@ class AnalogSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(AnalogSink())
-    self.inner_link = self.Port(AnalogSource())
-
-  def contents(self) -> None:
-    super().contents()
+    self.outer_port = self.Port(AnalogSink(impedance=RangeExpr()))
 
     # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
     # The outer port's voltage_limits is untouched and should be defined in the port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
+    self.inner_link = self.Port(AnalogSource(current_limits=RangeExpr.ALL))
+
+  def contents(self) -> None:
+    super().contents()
 
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
     self.assign(self.outer_port.impedance, self.inner_link.link().sink_impedance)
@@ -59,25 +58,25 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(AnalogSource())
-    self.inner_link = self.Port(AnalogSink())
-
-  def contents(self) -> None:
-    super().contents()
+    self.outer_port = self.Port(AnalogSource(voltage_out=RangeExpr(), impedance=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.assign(self.inner_link.voltage_limits, (-float('inf'), float('inf')))
+    self.inner_link = self.Port(AnalogSink(voltage_limits=RangeExpr.ALL))
+
+  def contents(self) -> None:
+    super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
 
 
 class AnalogSink(AnalogBase):
-  def __init__(self, voltage_limits: RangeLike = RangeExpr(), current_draw: RangeLike = RangeExpr(),
-               impedance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO),
+               impedance: RangeLike = Default(RangeExpr.INF)) -> None:
     super().__init__()
     self.bridge_type = AnalogSinkBridge
 
@@ -92,8 +91,9 @@ class AnalogSink(AnalogBase):
 
 
 class AnalogSource(AnalogBase):
-  def __init__(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr(),
-               impedance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               current_limits: RangeLike = Default(RangeExpr.ALL),
+               impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.bridge_type = AnalogSourceBridge
 
