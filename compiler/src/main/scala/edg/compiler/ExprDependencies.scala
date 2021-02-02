@@ -44,7 +44,7 @@ class ExprRefDependencies(refs: ConstProp, root: DesignPath) extends ValueExprMa
       throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
     )
     elts.map { elt =>
-      IndirectDesignPath.fromDesignPath(containerPath + elt ++ mapExtract.path.get)
+      IndirectDesignPath.fromDesignPath(containerPath) + elt ++ mapExtract.path.get
     }.toSet
   }
 
@@ -52,7 +52,7 @@ class ExprRefDependencies(refs: ConstProp, root: DesignPath) extends ValueExprMa
   // assign also not overridden and to fail noisily
 
   override def mapRef(path: ref.LocalPath): Set[IndirectDesignPath] = {
-    Set(IndirectDesignPath.fromDesignPath(root ++ path))
+    Set(IndirectDesignPath.fromDesignPath(root) ++ path)
   }
 }
 

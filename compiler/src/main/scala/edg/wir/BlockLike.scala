@@ -72,6 +72,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
         true
       case meta => true
     }}
+    val dedupedMeta = filteredMeta -- pb.getMeta.getMembers.node.keys
 
     val newPb = that.copy(
       params = that.params -- pb.params.keys,
@@ -80,8 +81,12 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
       links = that.links -- pb.links.keys,
       constraints = that.constraints -- pb.constraints.keys,
       generators = that.generators -- pb.generators.keys,
-      meta = Some(common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
-        filteredMeta -- pb.getMeta.getMembers.node.keys))))
+      meta = if (dedupedMeta.isEmpty) {
+        None
+      } else {
+        Some(common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
+        dedupedMeta))))
+      }
     )
     // TODO check consistency of intersection keys
     require(newPb.ports.isEmpty, "generators may not introduce new ports")
@@ -123,8 +128,12 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
       links=links.view.mapValues(_.toPb).toMap,
       constraints=constraints.toMap,
       generators=Map(),
-      meta=Some(common.Metadata(meta=common.Metadata.Meta.Members(common.Metadata.Members(
-        meta.toMap)))),
+      meta=if (meta.isEmpty) {
+        None
+      } else {
+        Some(common.Metadata(meta = common.Metadata.Meta.Members(common.Metadata.Members(
+          meta.toMap))))
+      },
     )
   }
 

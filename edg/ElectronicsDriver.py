@@ -130,7 +130,9 @@ $EndSCHEMATC
     writer_transform = WriteSolvedParamTransform(transformer.scp)
     design_scp = writer_transform.transform_design(design)
 
-    netlist = NetlistGenerator().generate(design_scp)
+    netlist = NetlistGenerator().generate(design_scp)  # type: ignore
+    raise NotImplementedError
+
     netlist_string = footprint.generate_netlist(netlist.blocks, netlist.nets)
     with open(entlist_filename, 'w') as net_file:
       net_file.write(netlist_string)

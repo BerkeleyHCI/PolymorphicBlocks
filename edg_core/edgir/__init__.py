@@ -346,7 +346,7 @@ def local_path_to_str(path: LocalPath) -> str:
   return '.'.join([step_to_str(step) for step in path.steps])
 
 
-def _namespace(meta: Metadata) -> List[str]:
+def _namespace(meta: Metadata) -> Iterable[str]:
   namespace_elts = [v.namespace_order
                     for k, v in meta.members.node.items() if v.HasField('namespace_order')]
   assert len(namespace_elts) == 1
