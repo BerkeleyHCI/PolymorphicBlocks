@@ -20,10 +20,7 @@ class CompiledDesign:
 
   def get_value(self, path: Iterable[Union[str, 'edgir.ReservedValue']]) -> Optional[edgir.LitTypes]:
     path_key = edgir.LocalPathList(path).SerializeToString()
-    if path_key in self.values:
-      return self.values[path_key]
-    else:
-      return None
+    return self.values.get(path_key, None)
 
 
 class ScalaCompilerInstance:
