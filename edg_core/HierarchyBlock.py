@@ -292,6 +292,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_hierarchy(edgir.HierarchyBlock())  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_param_init(pb)
     pb = self._populate_def_proto_port_init(pb, self._connected_ports())
 
     return pb
@@ -538,10 +539,12 @@ class GeneratorBlock(Block):
       pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)
+      pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
       pb = self._populate_def_proto_port_init(pb, self._connected_ports())
     else:
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)  # constraints need to be written and propagated
+      pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
       pb = self._populate_def_proto_port_init(pb, self._connected_ports())
       pb = self._populate_def_proto_block_generator(pb)
     return pb

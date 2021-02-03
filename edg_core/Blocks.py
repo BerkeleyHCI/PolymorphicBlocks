@@ -274,7 +274,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
                                     ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> ProtoType:
     # TODO this is structurally ugly!
     # TODO TODO: for non-generated exported initializers, check and assert default-ness
-    ref_map = self._get_ref_map(edgir.LocalPath())
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
 
     def check_recursive_no_initializer(port: BasePort, path: List[str]) -> None:
       if isinstance(port, (Port, Bundle)):
@@ -313,7 +313,18 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_block_contents(self, pb: ProtoType, ignore_port_init: bool = False) -> ProtoType:
+  def _populate_def_proto_param_init(self, pb: ProtoType,
+                                    ignore_params: IdentitySet[ConstraintExpr] = IdentitySet()) -> ProtoType:
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+    for (name, param) in self._parameters.items():
+      if param.initializer is not None and param not in ignore_params:
+        pb.constraints[f'(init){name}'].CopyFrom(
+          AssignBinding.make_assign(param, param.initializer, ref_map)
+        )
+        self._namespace_order.append(f'(init){name}')
+    return pb
+
+  def _populate_def_proto_block_contents(self, pb: ProtoType) -> ProtoType:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -324,13 +335,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     for (name, constraint) in self._constraints.items():
       pb.constraints[name].CopyFrom(constraint._expr_to_proto(ref_map))
-
-    for (name, param) in self._parameters.items():
-      if param.initializer is not None:
-        pb.constraints[f'(init){name}'].CopyFrom(
-          AssignBinding.make_assign(param, param.initializer, ref_map)
-        )
-        self._namespace_order.append(f'(init){name}')
 
     for (name, port) in self._ports.items():
       if port in self._required_ports:
@@ -526,6 +530,7 @@ class Link(BaseBlock[edgir.Link]):
 
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_param_init(pb)
     # specifically ignore the port initializers
 
     # actually generate the links and connects

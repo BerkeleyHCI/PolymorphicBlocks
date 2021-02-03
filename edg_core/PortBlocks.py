@@ -34,6 +34,7 @@ class PortBridge(Block):
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     pb = self._populate_def_proto_block_base(edgir.HierarchyBlock())
     pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_param_init(pb)
     pb = self._populate_def_proto_port_init(pb)
 
     for cls in self._get_block_bases():
