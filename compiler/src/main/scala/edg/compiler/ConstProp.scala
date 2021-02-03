@@ -26,14 +26,21 @@ class ConstProp {
   val paramSource = mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)]()
 
   // Assign statements are added to the dependency graph only when arrays are ready
+  // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
+
+  // Params that have a forced/override value, which must be set before any assign statements are parsed
+  // TODO how to handle constraints on parameters from an outer component?
+  // Perhaps don't propagate assigns to targets before the param type is parsed?
+  val forcedParams = mutable.Set[IndirectDesignPath]()
 
   // Equality, two entries per equality edge (one per direction / target)
   val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Arrays are currently only defined on ports, and this is set once the array's length is known
   val arrayElts = DependencyGraph[IndirectDesignPath, Seq[String]]  // empty means not yet known
+
 
   //
   // Callbacks, to be overridden at instantiation site
@@ -97,7 +104,10 @@ class ConstProp {
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, targetExpr: expr.ValueExpr,
                     constrName: String = "", sourceLocator: SourceLocator = new SourceLocator()): Unit = {
-    require(!paramAssign.isDefinedAt(target),
+    if (forcedParams.contains(target)) {
+      return  // ignore forced params
+    }
+    require(!params.nodeDefinedAt(target),
       s"redefinition of $target via assignment at $root:$constrName, previous assignment at ${paramSource(target)._1}:${paramSource(target)._2}")
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
     paramAssign.put(target, assign)
@@ -112,7 +122,18 @@ class ConstProp {
   /** Sets a value directly (without the expr)
     */
   def setValue(target: IndirectDesignPath, value: ExprValue): Unit = {
+    require(!params.nodeDefinedAt(target), s"redefinition of $target via setValue")
     params.setValue(target, value)
+    onParamSolved(target, value)
+  }
+
+  /** Sets a value directly, and ignores subsequent assignments.
+    * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
+    */
+  def setForcedValue(target: IndirectDesignPath, value: ExprValue): Unit = {
+    require(!params.nodeDefinedAt(target), s"redefinition of $target via setValue")
+    params.setValue(target, value)
+    forcedParams += target
     onParamSolved(target, value)
   }
 

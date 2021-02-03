@@ -5,6 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.wir.{IndirectDesignPath, DesignPath}
 import edg.ExprBuilder._
+import edg.compiler.IntValue
 
 
 class ConstPropAssignTest extends AnyFlatSpec {
@@ -128,5 +129,15 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath.root + "b2") should equal(Some(IntValue(3)))
     constProp.getValue(IndirectDesignPath.root + "c1") should equal(Some(IntValue(6)))
     constProp.getValue(IndirectDesignPath.root + "c2") should equal(Some(IntValue(7)))
+  }
+
+  it should "handle forced set and ignore subsequent assignments" in {
+    val constProp = new ConstProp()
+    constProp.setForcedValue(IndirectDesignPath.root + "a", IntValue(3))
+    constProp.addAssignment(IndirectDesignPath.root + "a",  // should be ignored because of above forced-set
+      DesignPath.root,
+      ValueExpr.Literal(2)
+    )
+    constProp.getValue(IndirectDesignPath.root + "a") should equal(Some(IntValue(3)))
   }
 }

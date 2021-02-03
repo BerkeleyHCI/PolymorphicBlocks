@@ -18,7 +18,8 @@ class DependencyGraph[KeyType, ValueType] {
 
   // Adds a node in the graph. May only be called once per node.
   def addNode(node: KeyType, dependencies: Seq[KeyType]): Unit = {
-    require(!deps.isDefinedAt(node), s"reinsertion of dependency for $node <- $dependencies")
+    require(!deps.isDefinedAt(node), s"reinsertion of dependency for node $node <- $dependencies")
+    require(!values.isDefinedAt(node), s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies")
     val remainingDeps = mutable.Set(dependencies: _*) -- values.keySet
 
     deps.put(node, remainingDeps)
@@ -31,9 +32,15 @@ class DependencyGraph[KeyType, ValueType] {
     }
   }
 
+  // Returns true if a node has been inserted for some key, whether a value has been set or not
+  def nodeDefinedAt(node: KeyType): Boolean = deps.isDefinedAt(node)
+  // Returns true if a value is available for some key, whether a node has been defined or not
+  def valueDefinedAt(node: KeyType): Boolean = values.isDefinedAt(node)
+
   // Sets the value of a node. May not overwrite values.
   def setValue(node: KeyType, value: ValueType): Unit = {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
+    deps.put(node, mutable.Set())
     values.put(node, value)
     if (ready.contains(node)) {
       ready -= node

@@ -87,8 +87,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     val dep = DependencyGraph[Int, Int]()
     dep.setValue(1, 0)
     dep.getReady shouldBe empty
-    dep.addNode(1, Seq(0))
-    dep.getReady shouldBe empty
+
   }
 
 
@@ -111,5 +110,47 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.setValue(1, 1)
     dep.getMissing shouldBe empty
     dep.getMissingBlocking shouldBe empty
+  }
+
+  it should "prevent reinsertion of a node" in {
+    val dep = DependencyGraph[Int, Int]()
+    assertThrows[IllegalArgumentException] {
+      dep.addNode(1, Seq(0))
+      dep.addNode(1, Seq(0))
+    }
+  }
+
+  it should "prevent reinsertion of a node, after initial set" in {
+    val dep = DependencyGraph[Int, Int]()
+    assertThrows[IllegalArgumentException] {
+      dep.setValue(1, 1)
+      dep.addNode(1, Seq(0))
+    }
+  }
+
+  it should "prevent reinsertion of a node, after resolution and set" in {
+    val dep = DependencyGraph[Int, Int]()
+    assertThrows[IllegalArgumentException] {
+      dep.addNode(1, Seq(0))
+      dep.setValue(0, 0)
+      dep.setValue(1, 1)
+      dep.setValue(1, 1)
+    }
+  }
+
+  it should "return nodeDefinedAt and valueDefinedAt for dependencies" in {
+    val dep = DependencyGraph[Int, Int]()
+    dep.addNode(1, Seq(0))
+    dep.nodeDefinedAt(1) should equal(true)
+    dep.valueDefinedAt(1) should equal(false)
+    dep.nodeDefinedAt(2) should equal(false)
+    dep.addNode(2, Seq(0))
+    dep.nodeDefinedAt(1) should equal(true)
+    dep.valueDefinedAt(1) should equal(false)
+    dep.nodeDefinedAt(2) should equal(true)
+    dep.setValue(1, 1)
+    dep.nodeDefinedAt(1) should equal(true)
+    dep.valueDefinedAt(1) should equal(true)
+    dep.nodeDefinedAt(2) should equal(true)
   }
 }

@@ -12,6 +12,23 @@ import "lit.proto";
 message CompilerRequest {
   repeated string modules = 1;
   schema.Design design = 2;
+
+  message Refinement {
+    oneof source {
+      ref.LocalPath path = 1;
+      ref.LibraryPath cls = 2;
+    }
+    ref.LibraryPath replacement = 3;
+  }
+  message Value {
+    oneof source {
+      ref.LocalPath path = 1;
+      ref.LibraryPath cls = 2;
+    }
+    lit.ValueLit value = 3;
+  }
+  Refinement refinements = 3;
+  Value values = 4;
 }
 
 message CompilerResult {
