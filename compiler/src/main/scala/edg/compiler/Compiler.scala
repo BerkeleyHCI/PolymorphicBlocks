@@ -235,7 +235,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
       constProp.addAssignment(
         IndirectDesignPath.fromDesignPath(path) ++ assign.dst.get,
         path, assign.src.get,
-        SourceLocator.empty)  // TODO add sourcelocators
+        constrName)  // TODO add sourcelocators
     case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
     case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))

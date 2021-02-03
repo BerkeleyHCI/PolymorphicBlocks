@@ -22,6 +22,8 @@ case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: exp
 class ConstProp {
   // Assign statements logged here on addAssignment
   val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
+  // Param source, for error tracking
+  val paramSource = mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)]()
 
   // Assign statements are added to the dependency graph only when arrays are ready
   val params = DependencyGraph[IndirectDesignPath, ExprValue]()
@@ -93,10 +95,13 @@ class ConstProp {
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignment(target: IndirectDesignPath,
-                    root: DesignPath, targetExpr: expr.ValueExpr, sourceLocator: SourceLocator): Unit = {
-    require(!paramAssign.isDefinedAt(target), s"redefinition of $target via assignment")
+                    root: DesignPath, targetExpr: expr.ValueExpr,
+                    constrName: String = "", sourceLocator: SourceLocator = new SourceLocator()): Unit = {
+    require(!paramAssign.isDefinedAt(target),
+      s"redefinition of $target via assignment at $root:$constrName, previous assignment at ${paramSource(target)._1}:${paramSource(target)._2}")
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
     paramAssign.put(target, assign)
+    paramSource.put(target, (root, constrName, targetExpr))
 
     val arrayDeps = new ExprArrayDependencies(root).map(targetExpr).map(IndirectDesignPath.fromDesignPath(_))
     arrayElts.addNode(target, arrayDeps.toSeq)

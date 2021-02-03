@@ -179,11 +179,8 @@ class Inductor(PassiveComponent):
   # TODO no default inductance
   @init_in_parent
   def __init__(self, inductance: RangeLike = RangeExpr(),
-               current: RangeLike = RangeExpr(),
-               frequency: RangeLike = RangeExpr()) -> None:
-               # TODO FIX ME - overriding default initializers seem to not work or something
-               # current: RangeLike = Default(RangeExpr.ZERO),
-               # frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+               current: RangeLike = Default(RangeExpr.ZERO),
+               frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())

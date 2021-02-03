@@ -20,7 +20,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     for (i <- 0 until length) {
       constProp.addAssignment(
         IndirectDesignPath.root ++ root ++ pathPrefix + i.toString ++ pathSuffix,
-        DesignPath.root ++ root, exprFn(i), SourceLocator.empty)
+        DesignPath.root ++ root, exprFn(i))
     }
     constProp.setArrayElts(DesignPath.root ++ root ++ pathPrefix, (0 until length).map(_.toString))
   }
@@ -42,8 +42,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
       ValueExpr.Reduce(Op.SUM,
         ValueExpr.MapExtract(Ref("ports"), "param")
-      ),
-      SourceLocator.empty
+      )
     )
     constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
   }
@@ -56,8 +55,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
       ValueExpr.Reduce(Op.MAXIMUM,
         ValueExpr.MapExtract(Ref("ports"), "param")
-      ),
-      SourceLocator.empty
+      )
     )
     constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(5)))
   }
@@ -70,8 +68,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
       ValueExpr.Reduce(Op.INTERSECTION,
         ValueExpr.MapExtract(Ref("ports"), "param")
-      ),
-      SourceLocator.empty
+      )
     )
     constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(RangeValue(3.0, 4.0)))
   }
@@ -84,8 +81,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
       constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
         ValueExpr.Reduce(Op.SET_EXTRACT,
           ValueExpr.MapExtract(Ref("ports"), "param")
-        ),
-        SourceLocator.empty
+        )
       )
     }
   }
@@ -97,8 +93,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
       ValueExpr.Reduce(Op.SET_EXTRACT,
         ValueExpr.MapExtract(Ref("ports"), "param")
-      ),
-      SourceLocator.empty
+      )
     )
     constProp.getValue(IndirectDesignPath.root + "reduce") should equal(Some(IntValue(2)))
   }
@@ -111,8 +106,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addAssignment(IndirectDesignPath.root + "reduce", DesignPath.root,
       ValueExpr.Reduce(Op.SUM,
         ValueExpr.MapExtract(Ref("ports"), "param")
-      ),
-      SourceLocator.empty
+      )
     )
 
     addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))

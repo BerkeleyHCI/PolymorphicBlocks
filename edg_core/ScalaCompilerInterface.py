@@ -61,11 +61,12 @@ class ScalaCompilerInstance:
     self.check_started()
     assert self.stub is not None
 
-    result: edgrpc.CompilerResult = self.stub.Compile(edgrpc.CompilerRequest(
+    request = edgrpc.CompilerRequest(
       modules=[block.__module__],
       design=edgir.Design(
         contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
-    ))
+    )
+    result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert not result.error, f"error during compilation: \n{result.error}"
     return CompiledDesign(result)
 

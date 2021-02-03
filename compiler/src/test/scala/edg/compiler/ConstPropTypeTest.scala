@@ -22,8 +22,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
     ))
 
     constProp.addAssignment(IndirectDesignPath.root + "a", DesignPath.root,
-      ValueExpr.Literal(1),
-      SourceLocator.empty
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
       DesignPath.root + "b",
@@ -31,16 +30,14 @@ class ConstPropTypeTest extends AnyFlatSpec {
     ))
 
     constProp.addAssignment(IndirectDesignPath.root + "b", DesignPath.root,
-      ValueExpr.Literal(1),
-      SourceLocator.empty
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
       DesignPath.root + "c",
     ))
 
     constProp.addAssignment(IndirectDesignPath.root + "c", DesignPath.root,
-      ValueExpr.Literal(1),
-      SourceLocator.empty
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
   }
@@ -49,12 +46,10 @@ class ConstPropTypeTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.addDeclaration(DesignPath.root + "a", ValInit.Integer)
     constProp.addAssignment(IndirectDesignPath.root + "a", DesignPath.root,
-      ValueExpr.Literal(1),
-      SourceLocator.empty
+      ValueExpr.Literal(1)
     )
     constProp.addAssignment(IndirectDesignPath.root + "port" + IndirectStep.ConnectedLink + "param", DesignPath.root,
-      ValueExpr.Literal(1),
-      SourceLocator.empty
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
   }
