@@ -40,6 +40,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
     self.constrain(self.source.is_connected() | self.single_sources.is_connected() | self.bidirs.is_connected(), "DigitalLink must have some kind of source")
 
     # TODO RangeBuilder initializer for voltage
+    # TODO this and below should be x.voltage_out.min (etc) instead of relying on min over Array[Range]
     self.assign(self.voltage, (
       self.source.voltage_out.lower().min(
         self.bidirs.min(lambda x: x.voltage_out)).min(

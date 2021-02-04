@@ -48,12 +48,11 @@ class IndicatorLed(Light, GeneratorBlock):
 
     self.constrain(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
-  def generate(self):
-    super().generate()
+    self.generator(self.generate_circuit, self.target_current_draw, self.signal.link().output_thresholds)
 
+  def generate_circuit(self, target_current: RangeVal, voltage: RangeVal):
     # TODO parse wavelength
-    target_current = self.get(self.target_current_draw)
-    min_voltage = self.get(self.signal.link().output_thresholds.upper())
+    min_voltage = voltage[1]
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(resistance=(min_voltage / target_current[1], min_voltage / target_current[0])))
 
@@ -82,12 +81,11 @@ class VoltageIndicatorLed(Light, GeneratorBlock):
 
     self.constrain(self.signal.current_draw.within(current_draw))
 
-  def generate(self):
-    super().generate()
+    self.generator(self.generate_circuit, self.target_current_draw, self.signal.link().voltage)
 
+  def generate_circuit(self, target_current: RangeVal, voltage: RangeVal):
     # TODO parse wavelength
-    target_current = self.get(self.target_current_draw)
-    min_voltage = self.get(self.signal.link().voltage.lower())
+    min_voltage = voltage[0]
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(resistance=(min_voltage / target_current[1], min_voltage / target_current[0])))
 
@@ -149,15 +147,18 @@ class IndicatorSinkRgbLed(Light, GeneratorBlock):
     self.constrain(self.blue.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
     self.constrain(self.pwr.current_draw.within((0, 3 * self.target_current_draw.upper())))
 
-  def generate(self):
-    super().generate()
+    self.generator(self.generate_circuit, self.target_current_draw,
+                   self.red.link().output_thresholds,
+                   self.green.link().output_thresholds,
+                   self.blue.link().output_thresholds)
 
+  def generate_circuit(self, target_current: RangeVal,
+                       red_voltage: RangeVal, green_voltage: RangeVal, blue_voltage: RangeVal):
     self.package = self.Block(RgbLedCommonAnode())
 
-    target_current = self.get(self.target_current_draw)
-    min_red_voltage = self.get(self.red.link().output_thresholds.upper())
-    min_green_voltage = self.get(self.green.link().output_thresholds.upper())
-    min_blue_voltage = self.get(self.blue.link().output_thresholds.upper())
+    min_red_voltage = red_voltage[1]
+    min_green_voltage = green_voltage[1]
+    min_blue_voltage = blue_voltage[1]
 
     self.red_res = self.Block(Resistor(resistance=(min_red_voltage / target_current[1], min_red_voltage / target_current[0])))
     self.green_res = self.Block(Resistor(resistance=(min_green_voltage / target_current[1], min_green_voltage / target_current[0])))

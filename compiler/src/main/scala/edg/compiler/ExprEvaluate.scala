@@ -195,6 +195,10 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
 
     case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
 
+      // TODO max / min on Array[Range] is a bit of a hack (but kinda makes sense?) - perhaps should be removed
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
+
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
 
