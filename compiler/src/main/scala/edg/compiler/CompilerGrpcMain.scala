@@ -1,12 +1,7 @@
 package edg.compiler
 
-import edg.common.common
-import edg.ref.ref
-import edg.schema.schema
-import edg.wir.{IndirectDesignPath, Library}
-import edg.compiler.{hdl => edgrpc}
+import edg.wir.{IndirectDesignPath, Refinements}
 import edg.compiler.{compiler => edgcompiler}
-import edg.ElemBuilder.Metadata
 import edg.compiler.compiler.{CompilerRequest, CompilerResult}
 import io.grpc.netty.NettyServerBuilder
 
@@ -26,7 +21,8 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
     library.setModules(request.modules)
 
     try {
-      val compiler = new Compiler(request.getDesign, library)
+      val refinements = Refinements.fromCompilerRequest(request)
+      val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
       val result = edgcompiler.CompilerResult(
         result = edgcompiler.CompilerResult.Result.Design(compiled),

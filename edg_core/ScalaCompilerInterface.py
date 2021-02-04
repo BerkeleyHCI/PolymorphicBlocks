@@ -9,6 +9,7 @@ from . import edgir, edgrpc
 from .Core import builder
 from .HierarchyBlock import Block
 from .HdlInterfaceServer import HdlInterface, CachedLibrary
+from .Refinements import Refinements
 
 
 class CompiledDesign:
@@ -57,7 +58,7 @@ class ScalaCompilerInstance:
       self.stub = edgrpc.CompilerStub(self.channel)
 
 
-  def compile(self, block: Type[Block]) -> CompiledDesign:
+  def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
     self.check_started()
     assert self.stub is not None
 
@@ -66,6 +67,7 @@ class ScalaCompilerInstance:
       design=edgir.Design(
         contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
     )
+    refinements.populate_compiler_request(request)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert not result.error, f"error during compilation: \n{result.error}"
     return CompiledDesign(result)

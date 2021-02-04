@@ -6,7 +6,7 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit}
 import edg.wir
-import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
 
 
 /** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.

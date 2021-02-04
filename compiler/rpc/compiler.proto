@@ -21,14 +21,18 @@ message CompilerRequest {
     ref.LibraryPath replacement = 3;
   }
   message Value {
+    message ClassParamPath {
+      ref.LibraryPath cls = 1;
+      ref.LocalPath param_path = 2;
+    }
     oneof source {
       ref.LocalPath path = 1;
-      ref.LibraryPath cls = 2;
+      ClassParamPath cls_param = 2;
     }
     lit.ValueLit value = 3;
   }
-  Refinement refinements = 3;
-  Value values = 4;
+  repeated Refinement refinements = 3;
+  repeated Value values = 4;
 }
 
 message CompilerResult {

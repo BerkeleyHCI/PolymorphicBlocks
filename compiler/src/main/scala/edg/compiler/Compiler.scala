@@ -4,7 +4,7 @@ import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr
 import edg.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, Refinements}
 import edg.wir
 import edg.util.DependencyGraph
 
@@ -27,14 +27,6 @@ object ElaborateRecord {
   // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateRecord
 }
-
-
-case class Refinements(
-  classRefinements: Map[ref.LibraryPath, ref.LibraryPath] = Map(),
-  instanceRefinements: Map[DesignPath, ref.LibraryPath] = Map(),
-  classValues: Map[ref.LibraryPath, Seq[(ref.LocalPath, ExprValue)]] = Map(),  // class -> (internal path, value)
-  instanceValues: Map[DesignPath, ExprValue] = Map()
-)
 
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
