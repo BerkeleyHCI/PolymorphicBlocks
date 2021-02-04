@@ -42,8 +42,6 @@ message CompilerResult {
     lit.ValueLit value = 2;
   }
   repeated Value solvedValues = 2;
-
-
 }
 
 service Compiler {

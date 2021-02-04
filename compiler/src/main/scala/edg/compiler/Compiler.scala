@@ -29,6 +29,14 @@ object ElaborateRecord {
 }
 
 
+case class Refinements(
+  classRefinements: Map[ref.LibraryPath, ref.LibraryPath] = Map(),
+  instanceRefinements: Map[DesignPath, ref.LibraryPath] = Map(),
+  classValues: Map[ref.LibraryPath, (ref.LocalPath, ExprValue)] = Map(),  // class -> (internal path, value)
+  instanceValues: Map[DesignPath, ExprValue] = Map()
+)
+
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   * TODO also needs a Python interface for generators, somewhere.
   *
@@ -49,7 +57,8 @@ object ElaborateRecord {
   *
   * It is intentional to allow a link-side port to access the CONNECTED_LINK, as a mechanism to access inner links.
   */
-class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library) {
+class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
+               refinements: Refinements=Refinements()) {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
