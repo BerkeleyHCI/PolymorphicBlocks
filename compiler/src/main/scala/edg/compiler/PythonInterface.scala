@@ -62,6 +62,8 @@ class PythonInterface {
 
 class PythonInterfaceLibrary(py: PythonInterface) extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
+  private val generatorCache = mutable.HashMap[(ref.LibraryPath, String, Map[ref.LocalPath, ExprValue]),
+      elem.HierarchyBlock]()
 
   private var modules: Seq[String] = Seq()
   def setModules(mods: Seq[String]) = {
@@ -107,6 +109,12 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
 
   override def runGenerator(path: ref.LibraryPath, fnName: String,
                             values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
-    py.elaborateGeneratorRequest(modules, path, fnName, values)
+    generatorCache.get((path, fnName, values)) match {
+      case Some(generated) => generated
+      case None =>
+        val generated = py.elaborateGeneratorRequest(modules, path, fnName, values)
+        generatorCache.put((path, fnName, values), generated)
+        generated
+    }
   }
 }
