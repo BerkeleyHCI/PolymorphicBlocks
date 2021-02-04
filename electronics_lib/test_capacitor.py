@@ -23,7 +23,7 @@ class BigCapacitorTestTop(Block):
   def __init__(self):
     super().__init__()
     self.dut = self.Block(SmtCeramicCapacitor(
-      capacitance=(150, 1000) * uFarad,
+      capacitance=(50, 1000) * uFarad,
       voltage=(0, 3.3) * Volt
     ))
     (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
@@ -56,8 +56,12 @@ class CapacitorTestCase(unittest.TestCase):
   def test_multi_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(BigCapacitorTestTop)
     self.assertEqual(compiled.get_value(['dut', 'c_0', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c_0', 'part']), 'CL31A107MQHNNNE')
-    self.assertEqual(compiled.get_value(['dut', 'c_0', 'value']), '100µF, 6.3V')
+    self.assertEqual(compiled.get_value(['dut', 'c_0', 'part']), 'CL31A226MQHNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c_0', 'value']), '22µF, 6.3V')
     self.assertEqual(compiled.get_value(['dut', 'c_1', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c_1', 'part']), 'CL31A107MQHNNNE')
-    self.assertEqual(compiled.get_value(['dut', 'c_1', 'value']), '100µF, 6.3V')
+    self.assertEqual(compiled.get_value(['dut', 'c_1', 'part']), 'CL31A226MQHNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c_1', 'value']), '22µF, 6.3V')
+    self.assertEqual(compiled.get_value(['dut', 'c_2', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c_2', 'part']), 'CL31A226MQHNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c_2', 'value']), '22µF, 6.3V')
+    self.assertEqual(compiled.get_value(['dut', 'c_3', 'footprint_name']), None)

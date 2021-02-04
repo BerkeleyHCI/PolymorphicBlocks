@@ -175,10 +175,13 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
 
     self.part_spec = self.Parameter(StringExpr(part_spec))
     self.footprint_spec = self.Parameter(StringExpr(""))
-    self.generator(self.select_capacitor, self.capacitance, self.voltage,
+
+    # Default to be overridden on a per-device basis
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+
+    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
                    self.part_spec, self.footprint_spec)
 
-    self.single_nominal_capacitance = self.Parameter(RangeExpr())
     # Output values
     self.selected_capacitance = self.Parameter(RangeExpr())
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
@@ -220,6 +223,7 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
   }
 
   def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
+                       single_nominal_capacitance: RangeVal,
                        part_spec: str, footprint_spec: str) -> None:
     def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
       if voltage[1] < 3.6:  # x-intercept at 3.6v
@@ -234,10 +238,7 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
       )
 
-    if self._has(self.single_nominal_capacitance):
-      single_cap_max = self.get(self.single_nominal_capacitance.upper()) * 1.2  # TODO tolerance elsewhere
-    else:
-      single_cap_max = float('inf')
+    single_cap_max = single_nominal_capacitance[1]
 
     parts = self.product_table \
       .filter(Implication(  # enforce minimum package size by capacitance
@@ -280,7 +281,7 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
         datasheet=part['Datasheets']
       )
-    elif capacitance[1] >= single_cap_max or capacitance[1] > 22e-6:  # parallel capacitors, TODO remove arbitrary 22e-6 "heuristic"
+    elif capacitance[1] >= single_cap_max:
       parts = parts.sort(Column('Unit Price (USD)')) \
         .sort(Column('footprint')) \
         .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
@@ -299,13 +300,13 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
       ))
 
       cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
-                                      voltage=self.voltage)  # TODO eliminate voltage
+                                      voltage=self.voltage,
+                                      part_spec=part['Manufacturer Part Number'])
       self.c = ElementDict[SmtCeramicCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
-        self.constrain(self.c[i].part == part['Manufacturer Part Number'])
 
       # TODO CircuitBlocks probably shouldn't have hierarchy?
       self.assign(self.mfr, part['Manufacturer'])
