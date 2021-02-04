@@ -32,7 +32,7 @@ object ElaborateRecord {
 case class Refinements(
   classRefinements: Map[ref.LibraryPath, ref.LibraryPath] = Map(),
   instanceRefinements: Map[DesignPath, ref.LibraryPath] = Map(),
-  classValues: Map[ref.LibraryPath, (ref.LocalPath, ExprValue)] = Map(),  // class -> (internal path, value)
+  classValues: Map[ref.LibraryPath, Seq[(ref.LocalPath, ExprValue)]] = Map(),  // class -> (internal path, value)
   instanceValues: Map[DesignPath, ExprValue] = Map()
 )
 
@@ -77,6 +77,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
+  // seed const prop with path assertions
+  for ((path, value) <- refinements.instanceValues) {
+    constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path), value)
+  }
+
   // Supplemental elaboration data structures
   // port -> (connected link path, list of params of the connected link)
   private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[String])]()
@@ -90,7 +95,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Seed compilation with the root
   //
-  private val root = new wir.Block(inputDesignPb.getContents, inputDesignPb.getContents.superclasses)
+  private val root = new wir.Block(inputDesignPb.getContents, inputDesignPb.getContents.superclasses, None)
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
@@ -385,7 +390,24 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolveBlock(parentPath)
     val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.LibraryElement].target
     debug(s"Elaborate block at $path: ${readableLibraryPath(libraryPath)}")
-    val block = new wir.Block(library.getBlock(libraryPath), Seq(libraryPath))
+    val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
+      case Some(refinement) => (refinement, Some(libraryPath))
+      case None => refinements.classRefinements.get(libraryPath) match {
+        case Some(refinement) => (refinement, Some(libraryPath))
+        case None => (libraryPath, None)
+      }
+    }
+    require(library.isSubclassOf(refinedLibrary, libraryPath),
+      s"refinement $refinedLibrary must be subclass of original $libraryPath")
+    val block = new wir.Block(library.getBlock(refinedLibrary), Seq(refinedLibrary), unrefinedType)
+
+    // Populate class-based value refinements
+    refinements.classValues.get(refinedLibrary) match {
+      case Some(classValueRefinements) => for ((subpath, value) <- classValueRefinements) {
+        constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path) ++ subpath, value)
+      }
+      case None =>
+    }
 
     // Process block
     processBlock(path, block)
@@ -542,7 +564,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }.toMap
     )
     val generatedDiff = block.dedupGeneratorPb(generatedPb)
-    val generatedDiffBlock = new wir.Block(generatedDiff, Seq(block.getBlockClass))
+    val generatedDiffBlock = new wir.Block(generatedDiff, Seq(block.getBlockClass), None)
     processBlock(blockPath, generatedDiffBlock)
     block.append(generatedDiffBlock)
   }

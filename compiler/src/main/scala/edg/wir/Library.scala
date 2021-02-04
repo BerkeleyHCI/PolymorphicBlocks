@@ -11,6 +11,16 @@ import edg.compiler.ExprValue
 /** API definition for a library
   */
 trait Library {
+  def isSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
+    if (subclass == superclass) {
+      true
+    } else {
+      getBlock(subclass).superclasses.exists {
+        isSubclassOf(_, superclass)
+      }
+    }
+  }
+
   def getBlock(path: ref.LibraryPath): elem.HierarchyBlock
   def getLink(path: ref.LibraryPath): elem.Link
   def getPort(path: ref.LibraryPath): IrPort

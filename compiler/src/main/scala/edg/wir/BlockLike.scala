@@ -21,7 +21,8 @@ case class Generator(dependencies: Seq[ref.LocalPath])
   * BlockLike / LinkLike lib_elem are kept in the proto, unmodified.
   * This is to allow efficient transformation at any point in the design tree without re-writing the root.
   */
-class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends BlockLike
+class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
+            unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
   private var nameOrder = getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
@@ -125,6 +126,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath]) extends
     // TODO also (re)serialize NameOrder?
     pb.copy(
       superclasses=superclasses,
+      prerefineClass=unrefinedType,
       ports=ports.view.mapValues(_.toPb).toMap,
       blocks=blocks.view.mapValues(_.toPb).toMap,
       links=links.view.mapValues(_.toPb).toMap,

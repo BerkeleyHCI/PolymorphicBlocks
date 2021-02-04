@@ -50,12 +50,17 @@ object ElemBuilder {
               links: Map[String, elem.LinkLike] = Map(),
               constraints: Map[String, expr.ValueExpr] = Map(),
               superclass: String = "",
+              prerefine: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
       params=params, ports=ports, blocks=blocks, links=links,
       constraints=constraints,
       superclasses=superclass match {
         case "" => Seq()
         case superclass => Seq(LibraryPath(superclass))
+      },
+      prerefineClass=prerefine match {
+        case "" => None
+        case prerefine => Some(LibraryPath(prerefine))
       }
     )))
   }
