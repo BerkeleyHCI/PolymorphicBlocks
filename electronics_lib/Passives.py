@@ -170,12 +170,19 @@ def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
 
 class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, part_spec: StringLike = "", **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.part_spec = self.Parameter(StringExpr(part_spec))
+    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_capacitor, self.capacitance, self.voltage,
+                   self.part_spec, self.footprint_spec)
+
     self.single_nominal_capacitance = self.Parameter(RangeExpr())
-    self.nominal_capacitance = self.Parameter(RangeExpr())
-    # defaulted to true in generate logic, since this doesn't exist in Capacitor and during instantiation replacement
-    self.voltage_rating = self.Parameter(RangeExpr())
+    # Output values
+    self.selected_capacitance = self.Parameter(RangeExpr())
+    self.selected_derated_capacitance = self.Parameter(RangeExpr())
+    self.selected_voltage_rating = self.Parameter(RangeExpr())
 
   # Chosen by a rough scan over available parts on Digikey
   # at voltages 10v, 16v, 25v, 50v, 100v, 250v
@@ -212,10 +219,10 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
   }
 
-  def generate(self) -> None:
-    (voltage_lower, voltage_upper) = self.get(self.voltage)
+  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
+                       part_spec: str, footprint_spec: str) -> None:
     def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
-      if voltage_upper < 3.6:  # x-intercept at 3.6v
+      if voltage[1] < 3.6:  # x-intercept at 3.6v
         return row['capacitance']
       if (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
         return row['capacitance']
@@ -223,16 +230,9 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         return (0, 0)  # can't derate, generate obviously bogus and ignored value
       voltco = self.DERATE_VOLTCO[row['footprint']]
       return (
-        row['capacitance'][0] * (1 - voltco * (voltage_upper - 3.6)),
-        row['capacitance'][1] * (1 - voltco * (voltage_lower - 3.6))
+        row['capacitance'][0] * (1 - voltco * (voltage[1] - 3.6)),
+        row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
       )
-
-    if self._has(self.capacitance):
-      cap_low, cap_high = self.get(self.capacitance)
-    else:
-      assert self._has(self.part), "must specify either capacitance or part number"
-      cap_low = -float('inf')
-      cap_high = float('inf')
 
     if self._has(self.single_nominal_capacitance):
       single_cap_max = self.get(self.single_nominal_capacitance.upper()) * 1.2  # TODO tolerance elsewhere
@@ -254,21 +254,21 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
       StringContains(Column('Package / Case'), [
         '1206 (3216 Metric)',
       ]))) \
-      .filter(RangeContains(Column('voltage'), Lit(self.get(self.voltage)))) \
-      .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
-      .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
+      .filter(RangeContains(Column('voltage'), Lit(voltage))) \
+      .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
+      .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
       .filter(RangeContains(RangeFromUpper(Lit(single_cap_max)), Column('capacitance'))) \
       .derived_column('derated_capacitance', derated_capacitance)
 
-    capacitance_filtered_parts = parts.filter(RangeContains(Lit((cap_low, cap_high)), Column('derated_capacitance'))) \
+    capacitance_filtered_parts = parts.filter(RangeContains(Lit(capacitance), Column('derated_capacitance'))) \
       .sort(Column('Unit Price (USD)')) \
       .sort(Column('footprint'))  # this kind of gets at smaller first
 
     if len(capacitance_filtered_parts) > 0:  # available in single capacitor
-      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({cap_low}, {cap_high}) F")
+      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
 
-      self.constrain(self.capacitance == part['derated_capacitance'])
-      self.constrain(self.nominal_capacitance == part['capacitance'])
+      self.assign(self.selected_capacitance, part['capacitance'])
+      self.assign(self.selected_derated_capacitance, part['derated_capacitance'])
 
       self.footprint(
         'C', part['footprint'],
@@ -280,22 +280,22 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
         datasheet=part['Datasheets']
       )
-    elif cap_high >= single_cap_max or cap_high > 22e-6:  # parallel capacitors, TODO remove arbitrary 22e-6 "heuristic"
+    elif capacitance[1] >= single_cap_max or capacitance[1] > 22e-6:  # parallel capacitors, TODO remove arbitrary 22e-6 "heuristic"
       parts = parts.sort(Column('Unit Price (USD)')) \
         .sort(Column('footprint')) \
         .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
-      part = parts.first(err=f"no parallel capacitors in ({cap_low}, {cap_high}) F")
+      part = parts.first(err=f"no parallel capacitors in ({capacitance}) F")
 
-      num_caps = math.ceil(cap_low / part['derated_capacitance'][0])
-      assert num_caps * part['derated_capacitance'][1] < cap_high, "can't generate parallel caps within max capacitance limit"
+      num_caps = math.ceil(capacitance[0] / part['derated_capacitance'][0])
+      assert num_caps * part['derated_capacitance'][1] < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      self.constrain(self.capacitance == (
-        num_caps * part['derated_capacitance'][0],
-        num_caps * part['derated_capacitance'][1],
-      ))
-      self.constrain(self.nominal_capacitance == (
+      self.assign(self.selected_capacitance, (
         num_caps * part['capacitance'][0],
         num_caps * part['capacitance'][1],
+      ))
+      self.assign(self.selected_derated_capacitance, (
+        num_caps * part['derated_capacitance'][0],
+        num_caps * part['derated_capacitance'][1],
       ))
 
       cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
@@ -308,10 +308,10 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         self.constrain(self.c[i].part == part['Manufacturer Part Number'])
 
       # TODO CircuitBlocks probably shouldn't have hierarchy?
-      self.constrain(self.mfr == part['Manufacturer'])
-      self.constrain(self.part == part['Manufacturer Part Number'])
+      self.assign(self.mfr, part['Manufacturer'])
+      self.assign(self.part, part['Manufacturer Part Number'])
     else:
-      raise ValueError(f"no single capacitors in ({cap_low}, {cap_high}) F")
+      raise ValueError(f"no single capacitors in ({capacitance}) F")
 
 
 def generate_inductor_table(TABLES: List[str]) -> ProductTable:

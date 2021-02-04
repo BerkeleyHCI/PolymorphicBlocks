@@ -145,8 +145,8 @@ class Capacitor(UnpolarizedCapacitor):
   """Polarized capacitor, which we assume will be the default"""
   # TODO no default capacitance and voltage rating
   @init_in_parent
-  def __init__(self, capacitance: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
-    super().__init__(capacitance, voltage)
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
     self.pos = self.Port(Passive())
     self.neg = self.Port(Passive())

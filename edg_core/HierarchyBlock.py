@@ -550,6 +550,8 @@ class GeneratorBlock(Block):
     return pb
 
   def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+    assert self._generators, f"{self} did not define any generator functions"
+
     ref_map = self._get_ref_map(edgir.LocalPath())
     for (name, record) in self._generators.items():
       pb.generators[name].fn = name
