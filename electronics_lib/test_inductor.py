@@ -3,13 +3,8 @@ import unittest
 from electronics_abstract_parts import *
 import electronics_model
 import electronics_abstract_parts
+from .test_passive_common import *
 from . import *
-
-
-class PassiveDummy(Block):
-  def __init__(self):
-    super().__init__()
-    self.port = self.Port(Passive(), [InOut])
 
 
 class InductorTestTop(Block):

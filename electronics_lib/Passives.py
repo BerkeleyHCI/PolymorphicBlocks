@@ -56,7 +56,13 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.power_rated = self.Parameter(RangeExpr())
+    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_resistor, self.resistance, self.power,
+                   self.footprint_spec)
+
+    # Output values
+    self.selected_resistance = self.Parameter(RangeExpr())
+    self.selected_power_rating = self.Parameter(RangeExpr())
 
   """Default generator that automatically picks resistors.
   For value, preferentially picks the lowest-step E-series (E1 before E3 before E6 ...) value meeting the needs,
@@ -64,8 +70,7 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
   exact value at 1%.
   If below 1% tolerance is needed, fails. TODO: non-preferentially pick tolerances down to 0.1%, though pricey!
   Picks the minimum (down to 0603, up to 2512) SMD size for the power requirement. TODO: consider PTH types"""
-  def generate(self) -> None:
-    resistance = self.get(self.resistance)
+  def select_resistor(self, resistance: RangeVal, power: RangeVal, footprint_spec: str) -> None:
     value = choose_preferred_number(resistance, self.TOLERANCE, self.E24_SERIES_ZIGZAG, 2)
 
     if value is None:  # failed to find a preferred resistor, choose the center within tolerance
@@ -76,16 +81,14 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
         raise ValueError(f"Cannot generate 1% resistor within {resistance}")
       value = center
 
-    constr_packages = self.get_opt(self.footprint_name)  # TODO support separators
-    _, reqd_power_min = self.get(self.power)
     # TODO we only need the first really so this is a bit inefficient
-    suitable_packages = [(power, package) for power, package in self.PACKAGE_POWER
-                         if power >= reqd_power_min and (constr_packages is None or package == constr_packages)]
+    suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
+                         if package_power >= power[1] and (not footprint_spec or package == footprint_spec)]
     if not suitable_packages:
-      raise ValueError(f"Cannot find suitable package for resistor needing {reqd_power_min} W power")
+      raise ValueError(f"Cannot find suitable package for resistor needing {power[1]} W power")
 
-    self.constrain(self.resistance == value * Ohm(tol=self.TOLERANCE))
-    self.constrain(self.power_rated == suitable_packages[0][0])
+    self.assign(self.selected_resistance, value * Ohm(tol=self.TOLERANCE))
+    self.assign(self.selected_power_rating, suitable_packages[0][0])
 
     self.footprint(
       'R', suitable_packages[0][1],
