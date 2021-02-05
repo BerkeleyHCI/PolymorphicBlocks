@@ -91,8 +91,9 @@ class CachedLibrary():
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def __init__(self, library: CachedLibrary):
+  def __init__(self, library: CachedLibrary, *, verbose: bool = False):
     self.library = library
+    self.verbose = verbose
 
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> \
       Generator[edgir.LibraryPath, None, None]:
@@ -110,8 +111,12 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       library_elt = None
 
     if library_elt is not None:
+      if self.verbose:
+        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
       return library_elt
     else:
+      if self.verbose:
+        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> None")
       return edgir.Library.NS.Val()  # TODO better more explicit failure?
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
@@ -137,6 +142,10 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       generated = None
 
     if generated is not None:
+      if self.verbose:
+        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name, ...}) -> None")
       return generated
     else:
+      if self.verbose:
+        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name, ...}) -> None")
       return edgir.HierarchyBlock()
