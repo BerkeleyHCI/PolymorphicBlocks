@@ -6,6 +6,15 @@ import edg.wir._
 import edg.expr.expr
 import edg.init.init
 import edg.util.{DependencyGraph, MutableBiMap}
+import edg.ExprBuilder
+
+
+case class OverassignError(target: IndirectDesignPath,
+                           oldAssign: (DesignPath, String, expr.ValueExpr),
+                           newAssign: (DesignPath, String, expr.ValueExpr)
+                          ) extends Exception(
+  s"Redefinition of $target: old assign $oldAssign, new assign $newAssign"
+)
 
 
 case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
@@ -107,11 +116,14 @@ class ConstProp {
     if (forcedParams.contains(target)) {
       return  // ignore forced params
     }
-    require(!params.nodeDefinedAt(target),
-      s"redefinition of $target via assignment at $root:$constrName, previous assignment at ${paramSource(target)._1}:${paramSource(target)._2}")
+    val paramSourceRecord = (root, constrName, targetExpr)
+    if (params.nodeDefinedAt(target)) {
+      throw OverassignError(target, paramSource(target), paramSourceRecord)
+    }
+
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
     paramAssign.put(target, assign)
-    paramSource.put(target, (root, constrName, targetExpr))
+    paramSource.put(target, paramSourceRecord)
 
     val arrayDeps = new ExprArrayDependencies(root).map(targetExpr).map(IndirectDesignPath.fromDesignPath(_))
     arrayElts.addNode(target, arrayDeps.toSeq)
@@ -121,18 +133,26 @@ class ConstProp {
 
   /** Sets a value directly (without the expr)
     */
-  def setValue(target: IndirectDesignPath, value: ExprValue): Unit = {
-    require(!params.nodeDefinedAt(target), s"redefinition of $target via setValue")
+  def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
+    val paramSourceRecord = (DesignPath.root, constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
+    if (params.nodeDefinedAt(target)) {
+      throw OverassignError(target, paramSource(target), paramSourceRecord)
+    }
     params.setValue(target, value)
+    paramSource.put(target, paramSourceRecord)
     onParamSolved(target, value)
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
     * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
     */
-  def setForcedValue(target: IndirectDesignPath, value: ExprValue): Unit = {
-    require(!params.nodeDefinedAt(target), s"redefinition of $target via setValue")
+  def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
+    val paramSourceRecord = (DesignPath.root, constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
+    if (params.nodeDefinedAt(target)) {
+      throw OverassignError(target, paramSource(target), paramSourceRecord)
+    }
     params.setValue(target, value)
+    paramSource.put(target, paramSourceRecord)
     forcedParams += target
     onParamSolved(target, value)
   }

@@ -29,6 +29,16 @@ object ElaborateRecord {
 }
 
 
+sealed trait CompilerError
+object CompilerError {
+  case class Unelaborated(elaborateRecord: ElaborateRecord) extends CompilerError
+  case class ConflictingAssign(target: IndirectDesignPath,
+                               oldAssign: (DesignPath, String, expr.ValueExpr),
+                               newAssign: (DesignPath, String, expr.ValueExpr)
+                              ) extends CompilerError
+}
+
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   * TODO also needs a Python interface for generators, somewhere.
   *
@@ -71,7 +81,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // seed const prop with path assertions
   for ((path, value) <- refinements.instanceValues) {
-    constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path), value)
+    constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path), value, "path refinement")
   }
 
   // Supplemental elaboration data structures
@@ -83,6 +93,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
+
+  private val errors = mutable.ListBuffer[CompilerError]()
+
+  def getErrors(): Seq[CompilerError] = {
+    errors.toSeq ++ elaboratePending.getMissing.map {
+      CompilerError.Unelaborated(_)
+    }.toSeq
+  }
 
 
   // Seed compilation with the root
@@ -199,7 +217,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def processPortConnected(portPath: DesignPath, port: wir.PortLike): Unit = port match {
     case port @ (_: wir.Port | _: wir.Bundle) =>
       constProp.setValue(IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.IsConnected,
-        BooleanValue(connectedPorts.contains(portPath)))
+        BooleanValue(connectedPorts.contains(portPath)),
+        "connected")
     case port: wir.PortArray => port.getElaboratedPorts.foreach { case (name, subport) =>
       processPortConnected(portPath + name, subport)
     }
@@ -238,10 +257,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // TODO clean this up... by a lot
   def processBlocklikeConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
-      constProp.addAssignment(
-        IndirectDesignPath.fromDesignPath(path) ++ assign.dst.get,
-        path, assign.src.get,
-        constrName)  // TODO add sourcelocators
+      try {
+        constProp.addAssignment(
+          IndirectDesignPath.fromDesignPath(path) ++ assign.dst.get,
+          path, assign.src.get,
+          constrName) // TODO add sourcelocators
+      } catch {
+        case OverassignError(target, oldAssign, newAssign) =>
+          errors += CompilerError.ConflictingAssign(target, oldAssign, newAssign)
+      }
     case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
     case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))
@@ -396,7 +420,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Populate class-based value refinements
     refinements.classValues.get(refinedLibrary) match {
       case Some(classValueRefinements) => for ((subpath, value) <- classValueRefinements) {
-        constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path) ++ subpath, value)
+        constProp.setForcedValue(
+          IndirectDesignPath.fromDesignPath(path) ++ subpath, value,
+          s"${refinedLibrary.getTarget.getName} class refinement")
       }
       case None =>
     }
@@ -586,11 +612,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
       }
     }
-
-    require(elaboratePending.getMissingBlocking.isEmpty,
-      s"failed to elaborate: ${elaboratePending.getMissingBlocking}")
-//    require(constProp.getUnsolved.isEmpty,
-//      s"const prop failed to solve: ${constProp.getUnsolved}")
 
     ElemBuilder.Design(root.toPb)
   }

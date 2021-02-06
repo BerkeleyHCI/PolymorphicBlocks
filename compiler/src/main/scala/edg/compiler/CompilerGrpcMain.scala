@@ -24,6 +24,7 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
       val refinements = Refinements.fromCompilerRequest(request)
       val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
+      require(compiler.getErrors().isEmpty)
       val result = edgcompiler.CompilerResult(
         result = edgcompiler.CompilerResult.Result.Design(compiled),
         solvedValues = constPropToSolved(compiler.getAllSolved)
