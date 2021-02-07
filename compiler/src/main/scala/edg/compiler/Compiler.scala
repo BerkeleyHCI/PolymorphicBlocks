@@ -31,7 +31,9 @@ object ElaborateRecord {
 
 sealed trait CompilerError
 object CompilerError {
-  case class Unelaborated(elaborateRecord: ElaborateRecord) extends CompilerError
+  case class Unelaborated(elaborateRecord: ElaborateRecord) extends CompilerError  // may be redundant w/ below
+  case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
+  case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
   case class ConflictingAssign(target: IndirectDesignPath,
                                oldAssign: (DesignPath, String, expr.ValueExpr),
                                newAssign: (DesignPath, String, expr.ValueExpr)

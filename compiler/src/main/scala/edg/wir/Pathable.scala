@@ -26,17 +26,6 @@ trait Pathable {
   // Disallow equals since it's probably not useful, and full subtree matches are expensive.
   // But can be allowed in the future, since the current behavior is strict.
   override def equals(that: Any): Boolean = throw new NotImplementedError("Can't do equality comparison on Pathable")
-
-  // Utility functions for IR parsing
-  //
-  def getNameOrder(pb: Option[common.Metadata]): Seq[String] = {
-    pb.getOrElse(common.Metadata()).meta.members match {
-      case Some(members) => members.node.collect {
-        case (name, meta) if meta.meta.namespaceOrder.isDefined => meta.getNamespaceOrder.names
-      }.flatten.toSeq
-      case None => Seq()
-    }
-  }
 }
 
 case class LibraryElement(target: ref.LibraryPath) extends PortLike with BlockLike with LinkLike {

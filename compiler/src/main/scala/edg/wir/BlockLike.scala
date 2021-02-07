@@ -24,7 +24,7 @@ case class Generator(dependencies: Seq[ref.LocalPath])
 class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
             unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  private var nameOrder = getNameOrder(pb.meta)
+  private var nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
