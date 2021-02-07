@@ -39,20 +39,26 @@ class DependencyGraphTest extends AnyFlatSpec {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(1, Seq(0))
     dep.getReady shouldBe empty
+    dep.nodeMissing(1) should equal(Set(0))
     dep.setValue(0, 0)
     dep.getReady should equal(Set(1))
+    dep.nodeMissing(1) should equal(Set())
   }
 
   it should "track multiple dependencies, and add to ready when all set" in {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(3, Seq(0, 1, 2))
     dep.getReady shouldBe empty
+    dep.nodeMissing(3) should equal(Set(0, 1, 2))
     dep.setValue(0, 0)
     dep.getReady shouldBe empty
+    dep.nodeMissing(3) should equal(Set(1, 2))
     dep.setValue(1, 0)
     dep.getReady shouldBe empty
+    dep.nodeMissing(3) should equal(Set(2))
     dep.setValue(2, 0)
     dep.getReady should equal(Set(3))
+    dep.nodeMissing(3) should equal(Set())
   }
 
   it should "track a chain of dependencies" in {

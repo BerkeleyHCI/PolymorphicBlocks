@@ -31,7 +31,7 @@ object ElaborateRecord {
 
 sealed trait CompilerError
 object CompilerError {
-  case class Unelaborated(elaborateRecord: ElaborateRecord) extends CompilerError  // may be redundant w/ below
+  case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
   case class ConflictingAssign(target: IndirectDesignPath,
@@ -99,8 +99,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val errors = mutable.ListBuffer[CompilerError]()
 
   def getErrors(): Seq[CompilerError] = {
-    errors.toSeq ++ elaboratePending.getMissing.map {
-      CompilerError.Unelaborated(_)
+    errors.toSeq ++ elaboratePending.getMissing.map { missingNode =>
+      CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq
   }
 

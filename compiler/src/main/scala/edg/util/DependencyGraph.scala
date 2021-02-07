@@ -37,6 +37,10 @@ class DependencyGraph[KeyType, ValueType] {
   // Returns true if a value is available for some key, whether a node has been defined or not
   def valueDefinedAt(node: KeyType): Boolean = values.isDefinedAt(node)
 
+  // Returns missing dependencies for a node, or empty if the node is ready or has a value assigned
+  // Node must exist, or this will exception out
+  def nodeMissing(node: KeyType): Set[KeyType] = deps(node).toSet
+
   // Sets the value of a node. May not overwrite values.
   def setValue(node: KeyType, value: ValueType): Unit = {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
