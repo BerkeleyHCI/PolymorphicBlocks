@@ -45,7 +45,7 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
 
 class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLike
     with HasMutablePorts with HasParams {
-  private val nameOrder = getNameOrder(pb.meta)
+  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
 
   override def isElaborated: Boolean = true
@@ -63,8 +63,6 @@ class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLi
   }
 
   def toEltPb: elem.Bundle = {
-    require(getUnelaboratedPorts.isEmpty,
-      s"contains unelaborated ports ${getUnelaboratedPorts.keys}")
     pb.copy(
       superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
@@ -111,4 +109,10 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   override def toPb: elem.PortLike = {
     elem.PortLike(`is`=elem.PortLike.Is.Array(toEltPb))
   }
+}
+
+case class PortLibrary(target: ref.LibraryPath) extends PortLike {
+  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def toPb: elem.PortLike = elem.PortLike(elem.PortLike.Is.LibElem(target))
+  override def isElaborated: Boolean = false
 }

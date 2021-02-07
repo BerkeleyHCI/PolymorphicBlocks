@@ -81,6 +81,19 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
 
   // TODO this should be dedup'd with Library.EdgirLibrary, but there doesn't appear to be an easy
   // common superclass for mutable and immutable maps
+  override def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.HierarchyBlock(block)) => (path, block)
+  }.toMap
+
+  override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
+    case (path, schema.Library.NS.Val.Type.Bundle(port)) => (path, IrPort.Bundle(port))
+  }.toMap
+
+  override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
+  }.toMap
+
   override def getBlock(path: ref.LibraryPath): elem.HierarchyBlock = {
     fetchEltIfNeeded(path)
     elts.get(path) match {

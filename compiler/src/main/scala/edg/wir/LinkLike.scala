@@ -17,7 +17,7 @@ trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val nameOrder = getNameOrder(pb.meta)
+  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
@@ -40,8 +40,6 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
 
   // Serializes this to protobuf
   def toEltPb: elem.Link = {
-    require(getUnelaboratedPorts.isEmpty && getUnelaboratedLinks.isEmpty,
-      s"contains unelaborated ports ${getUnelaboratedPorts.keys} or links ${getUnelaboratedLinks.keys}")
     pb.copy(
       superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
@@ -53,4 +51,10 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
   override def toPb: elem.LinkLike = {
     elem.LinkLike(`type`=elem.LinkLike.Type.Link(toEltPb))
   }
+}
+
+case class LinkLibrary(target: ref.LibraryPath) extends LinkLike {
+  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def toPb: elem.LinkLike = elem.LinkLike(elem.LinkLike.Type.LibElem(target))
+  override def isElaborated: Boolean = false
 }
