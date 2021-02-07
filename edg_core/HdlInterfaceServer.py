@@ -76,10 +76,12 @@ class CachedLibrary():
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
     obj = elt_cls()
     if isinstance(obj, Block):
-      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}")
+      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}",
+                                               replace_superclass=False,)
       return edgir.Library.NS.Val(hierarchy_block=block_proto)
     elif isinstance(obj, Link):
-      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}")
+      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}",
+                                              replace_superclass=False)
       assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
       return edgir.Library.NS.Val(link=link_proto)
     elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
@@ -135,6 +137,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
                           if value is not None]
       generated: Optional[edgir.HierarchyBlock] = builder.elaborate_toplevel(
         generator_obj, f"in generate {request.fn} for {request.element}",
+        replace_superclass=False,
         generate_fn_name=request.fn, generate_values=generator_values)
     except BaseException as e:
       traceback.print_exc()

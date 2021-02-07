@@ -34,6 +34,7 @@ class Builder:
       return self.stack[-1]
 
   def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *,
+                         replace_superclass: bool = True,
                          generate_fn_name: Optional[str] = None,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]] = []) -> edgir.HierarchyBlock:
     assert self.get_curr_context() is None
@@ -45,8 +46,9 @@ class Builder:
         elaborated = block._elaborated_def_to_proto()
 
       # since this is the top level, set the superclass to the block itself
-      del elaborated.superclasses[:]  # TODO stack instead of replace superclasses?
-      elaborated.superclasses.add().target.name = block._get_def_name()
+      if replace_superclass:
+        del elaborated.superclasses[:]  # TODO stack instead of replace superclasses?
+        elaborated.superclasses.add().target.name = block._get_def_name()
 
       return elaborated
     except BaseException as e:
