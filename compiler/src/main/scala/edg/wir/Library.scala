@@ -25,6 +25,12 @@ trait Library {
   def getLink(path: ref.LibraryPath): elem.Link
   def getPort(path: ref.LibraryPath): IrPort
 
+  // Returns all elements of the specified type and their path.
+  // If the library has a mutable backing, this may change over time.
+  def allPorts: Map[ref.LibraryPath, IrPort]
+  def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock]
+  def allLinks: Map[ref.LibraryPath, elem.Link]
+
   def runGenerator(path: ref.LibraryPath, fnName: String, values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock
 }
 
@@ -44,6 +50,19 @@ class EdgirLibrary(pb: schema.Library) extends Library {
         throw new NotImplementedError(s"Library namespaces not yet supported, got $name = $member")
       case member => throw new NotImplementedError(s"Unknown library member $member")
       } }
+
+  override def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.HierarchyBlock(block)) => (path, block)
+  }
+
+  override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
+    case (path, schema.Library.NS.Val.Type.Bundle(port)) => (path, IrPort.Bundle(port))
+  }
+
+  override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
+  }
 
   override def getBlock(path: ref.LibraryPath): elem.HierarchyBlock = elts.get(path) match {
     case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => member
