@@ -27,9 +27,3 @@ trait Pathable {
   // But can be allowed in the future, since the current behavior is strict.
   override def equals(that: Any): Boolean = throw new NotImplementedError("Can't do equality comparison on Pathable")
 }
-
-case class LibraryElement(target: ref.LibraryPath) extends PortLike with BlockLike with LinkLike {
-  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException("Can't resolve LibraryElement")
-  def toPb: Nothing = throw new IllegalArgumentException("Can't toPb LibraryElement")
-  override def isElaborated: Boolean = false
-}

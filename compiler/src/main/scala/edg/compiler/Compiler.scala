@@ -204,7 +204,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def elaborateContainedPorts(path: DesignPath, hasPorts: wir.HasMutablePorts): Unit = {
     for ((portName, port) <- hasPorts.getUnelaboratedPorts) { port match {
-      case port: wir.LibraryElement =>
+      case port: wir.PortLibrary =>
         val libraryPath = port.target
         debug(s"Elaborate Port at ${path + portName}: ${readableLibraryPath(libraryPath)}")
         val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
@@ -406,7 +406,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Instantiate block from library element to wir.Block
     val parent = resolveBlock(parentPath)
-    val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.LibraryElement].target
+    val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.BlockLibrary].target
     debug(s"Elaborate block at $path: ${readableLibraryPath(libraryPath)}")
     val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
       case Some(refinement) => (refinement, Some(libraryPath))
@@ -560,7 +560,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Instantiate block from library element to wir.Block
     val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
-    val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LibraryElement].target
+    val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LinkLibrary].target
     debug(s"Elaborate link at $path: ${readableLibraryPath(libraryPath)}")
     val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
 

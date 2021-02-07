@@ -119,10 +119,6 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
   }
 
   def toEltPb: elem.HierarchyBlock = {
-    require(getUnelaboratedPorts.isEmpty && getUnelaboratedBlocks.isEmpty && getUnelaboratedLinks.isEmpty,
-      s"contains unelaborated ports ${getUnelaboratedPorts.keys} or blocks ${getUnelaboratedBlocks.keys} " +
-      s"or links ${getUnelaboratedLinks.keys}")
-    require(generators.isEmpty)
     // TODO also (re)serialize NameOrder?
     pb.copy(
       superclasses=superclasses,
@@ -144,4 +140,10 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
   override def toPb: elem.BlockLike = {
     elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(toEltPb))
   }
+}
+
+case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
+  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def toPb: elem.BlockLike = elem.BlockLike(elem.BlockLike.Type.LibElem(target))
+  override def isElaborated: Boolean = false
 }
