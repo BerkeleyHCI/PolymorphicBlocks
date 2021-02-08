@@ -72,7 +72,7 @@ class ExprToString() extends ValueExprMap[String] {
 
   override def mapBinary(binary: expr.BinaryExpr,
                          lhs: String, rhs: String): String = binary.op match {
-    case BinaryExprOp.InfixOp(op) => s"$lhs $op $rhs"
+    case BinaryExprOp.InfixOp(op) => s"($lhs $op $rhs)"
     case BinaryExprOp.PrefixOp(op) => s"$op($lhs, $rhs)"
     case op => s"unknown[$op]($lhs, $rhs)"
   }
@@ -109,7 +109,7 @@ class ExprToString() extends ValueExprMap[String] {
 
   override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: String,
                              tru: String, fal: String): String = {
-    s"$cond? $tru : $fal"
+    s"($cond? $tru : $fal)"
   }
 
   override def mapExtract(extract: expr.ExtractExpr,
