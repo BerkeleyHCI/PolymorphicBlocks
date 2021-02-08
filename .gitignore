@@ -12,6 +12,7 @@ __pycache__
 .project
 .pydevproject
 .idea
+*.iml
 
 # mypy
 .mypy_cache/
