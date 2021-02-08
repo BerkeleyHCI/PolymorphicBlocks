@@ -28,11 +28,14 @@ class CachedLibrary():
     """
     self._search_module(importlib.import_module(module_name))
 
-  def discard_module(self, module_name: str) -> Set[str]:
-    discarded = self.module_contains.get(module_name, set())
-    for discard in discarded:
+  def discard_module(self, module_name: str) -> List[str]:
+    all_discarded = self.module_contains.get(module_name, set())
+    discarded: List[str] = []
+    for discard in all_discarded:
       self.lib_class_map.pop(discard, None)
-      self.lib_proto_map.pop(discard, None)
+      popped = self.lib_proto_map.pop(discard, None)
+      if popped is not None:
+        discarded.append(discard)
     module = importlib.import_module(module_name)
     self.seen_modules.remove(module)
     self.module_contains.pop(module_name, None)
