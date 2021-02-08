@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\x80\x02\n\x0cHdlInterface\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\xc3\x02\n\x0cHdlInterface\x12\x41\n\x0b\x43learCached\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -241,12 +241,22 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=398,
-  serialized_end=654,
+  serialized_end=721,
   methods=[
+  _descriptor.MethodDescriptor(
+    name='ClearCached',
+    full_name='edg.compiler.HdlInterface.ClearCached',
+    index=0,
+    containing_service=None,
+    input_type=_MODULENAME,
+    output_type=ref__pb2._LIBRARYPATH,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
   _descriptor.MethodDescriptor(
     name='LibraryElementsInModule',
     full_name='edg.compiler.HdlInterface.LibraryElementsInModule',
-    index=0,
+    index=1,
     containing_service=None,
     input_type=_MODULENAME,
     output_type=ref__pb2._LIBRARYPATH,
@@ -256,7 +266,7 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='GetLibraryElement',
     full_name='edg.compiler.HdlInterface.GetLibraryElement',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_LIBRARYREQUEST,
     output_type=schema__pb2._LIBRARY_NS_VAL,
@@ -266,7 +276,7 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='ElaborateGenerator',
     full_name='edg.compiler.HdlInterface.ElaborateGenerator',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_GENERATORREQUEST,
     output_type=elem__pb2._HIERARCHYBLOCK,

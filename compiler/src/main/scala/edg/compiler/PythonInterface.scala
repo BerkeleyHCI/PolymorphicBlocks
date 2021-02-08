@@ -28,6 +28,15 @@ class PythonInterface {
   }
   debug(s"PyIf:init (${initTime} ms)")
 
+  def clearCache(module: String): Seq[ref.LibraryPath] = {
+    val request = edgrpc.ModuleName(module)
+    val (reply, reqTime) = timeExec {
+      blockingStub.clearCached(request)
+    }
+    debug(s"PyIf:chearCached module (${reqTime} ms)")
+    reply.toSeq
+  }
+
   def libraryRequest(modules: Seq[String], element: ref.LibraryPath): schema.Library.NS.Val = {
     val request = edgrpc.LibraryRequest(
       modules=modules,
@@ -66,8 +75,23 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
       elem.HierarchyBlock]()
 
   private var modules: Seq[String] = Seq()
-  def setModules(mods: Seq[String]) = {
+  def setModules(mods: Seq[String]): Unit = {
     modules = mods
+  }
+
+  def clearCache(module: String): Seq[ref.LibraryPath] = {
+    val discardKeys = elts.collect {  // TODO this assumes following the naming convention
+      case (path, data) if path.getTarget.getName.startsWith(module) => path
+    }
+    elts --= discardKeys
+
+    val discardGenerator = generatorCache.collect {  // TODO this assumes following the naming convention
+      case (key @ (path, fn, values), data) if path.getTarget.getName.startsWith(module) => key
+    }
+    generatorCache --= discardGenerator
+
+    val pyDiscardKeys = py.clearCache(module)
+    pyDiscardKeys  // TODO: which set should we report as cleared? currently uses the Python as it is "ground truth"
   }
 
   private def fetchEltIfNeeded(path: ref.LibraryPath): Unit = {

@@ -286,6 +286,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((name, port) <- block.getElaboratedPorts) {
       if (!directConnectedPorts.contains(path + name)) {
         // TODO this needs to not be transitive, should only fire for the topmost disconnected
+        // TODO this is hacky, to add the recursive elaboration record
         setPortConnectedLinkParams(path + name, port, DesignPath.root, Seq(), true)
       }
       processPortConnected(path + name, port)
@@ -619,4 +620,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
+
+  def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLinkParams.get(port) match {
+    case Some((linkPath, linkParams)) if linkPath == DesignPath.root => None  // this is a hack, because disconnected ports generate a dummy entry
+    case Some((linkPath, linkParams)) => Some(linkPath)
+    case None => None
+  }
 }

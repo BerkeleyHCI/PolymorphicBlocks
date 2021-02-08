@@ -34,6 +34,7 @@ message GeneratorRequest {
 }
 
 service HdlInterface {
+  rpc ClearCached (ModuleName) returns (stream ref.LibraryPath) { }
   rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
 
   rpc GetLibraryElement (LibraryRequest) returns (schema.Library.NS.Val) { }

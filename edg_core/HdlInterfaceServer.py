@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Generator, Optional, Set, Dict, Type, cast
+from typing import Generator, Optional, Set, Dict, Type, cast, List
 
 import importlib
 import inspect
@@ -18,6 +18,7 @@ from .Ports import Port, Bundle
 class CachedLibrary():
   def __init__(self):
     self.seen_modules: Set[ModuleType] = set()
+    self.module_contains: Dict[str, Set[str]] = {}
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
     self.lib_proto_map: Dict[str, edgir.Library.NS.Val] = {}
 
@@ -26,6 +27,17 @@ class CachedLibrary():
     Avoids re-loading previously loaded modules with cacheing.
     """
     self._search_module(importlib.import_module(module_name))
+
+  def discard_module(self, module_name: str) -> Set[str]:
+    discarded = self.module_contains.get(module_name, set())
+    for discard in discarded:
+      self.lib_class_map.pop(discard, None)
+      self.lib_proto_map.pop(discard, None)
+    module = importlib.import_module(module_name)
+    self.seen_modules.remove(module)
+    self.module_contains.pop(module_name, None)
+    importlib.reload(module)
+    return discarded
 
   def _search_module(self, module: ModuleType) -> None:
     # avoid repeated work and re-indexing modules
@@ -46,10 +58,11 @@ class CachedLibrary():
         else:  # for ports, recurse into links and stuff
           if issubclass(member, Port):  # TODO for some reason, Links not in __init__ are sometimes not found
             obj = member()  # TODO can these be clss definitions?
-            if hasattr(obj, 'link_type') and obj.link_type._static_def_name() not in self.lib_class_map:
-              self.lib_class_map[obj.link_type._static_def_name()] = obj.link_type
+            if hasattr(obj, 'link_type'):
+              self._search_module(importlib.import_module(obj.link_type.__module__))
 
         self.lib_class_map[name] = member
+        self.module_contains.setdefault(member.__module__, set()).add(name)
 
   def elaborated_from_path(self, path: edgir.LibraryPath) -> Optional[edgir.Library.NS.Val]:
     """Assuming the module has been loaded, retrieves a library element by LibraryPath."""
@@ -100,6 +113,16 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> \
       Generator[edgir.LibraryPath, None, None]:
     raise NotImplementedError
+
+  def ClearCached(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
+    discarded = self.library.discard_module(request.name)
+    if self.verbose:
+      print(f"ClearCached({request.name}) -> None (discarding {len(discarded)})")
+    for discard in discarded:
+      pb = edgir.LibraryPath()
+      pb.target.name = discard
+      yield pb
+    self.library.load_module(request.name)
 
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgir.Library.NS.Val:
     for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching

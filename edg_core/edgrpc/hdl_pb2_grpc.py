@@ -17,6 +17,11 @@ class HdlInterfaceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.ClearCached = channel.unary_stream(
+                '/edg.compiler.HdlInterface/ClearCached',
+                request_serializer=hdl__pb2.ModuleName.SerializeToString,
+                response_deserializer=ref__pb2.LibraryPath.FromString,
+                )
         self.LibraryElementsInModule = channel.unary_stream(
                 '/edg.compiler.HdlInterface/LibraryElementsInModule',
                 request_serializer=hdl__pb2.ModuleName.SerializeToString,
@@ -36,6 +41,12 @@ class HdlInterfaceStub(object):
 
 class HdlInterfaceServicer(object):
     """Missing associated documentation comment in .proto file."""
+
+    def ClearCached(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def LibraryElementsInModule(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -58,6 +69,11 @@ class HdlInterfaceServicer(object):
 
 def add_HdlInterfaceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'ClearCached': grpc.unary_stream_rpc_method_handler(
+                    servicer.ClearCached,
+                    request_deserializer=hdl__pb2.ModuleName.FromString,
+                    response_serializer=ref__pb2.LibraryPath.SerializeToString,
+            ),
             'LibraryElementsInModule': grpc.unary_stream_rpc_method_handler(
                     servicer.LibraryElementsInModule,
                     request_deserializer=hdl__pb2.ModuleName.FromString,
@@ -82,6 +98,23 @@ def add_HdlInterfaceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class HdlInterface(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def ClearCached(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/edg.compiler.HdlInterface/ClearCached',
+            hdl__pb2.ModuleName.SerializeToString,
+            ref__pb2.LibraryPath.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def LibraryElementsInModule(request,
