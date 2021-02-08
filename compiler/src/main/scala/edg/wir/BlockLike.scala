@@ -5,6 +5,7 @@ import edg.elem.elem
 import edg.expr.expr
 import edg.init.init
 import edg.ref.ref
+import edg.util.SeqMapSortableFrom._
 
 import scala.collection.mutable
 
@@ -32,11 +33,11 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
   protected val meta: mutable.SeqMap[String, common.Metadata] = mutable.SeqMap() ++ pb.getMeta.getMembers.node
 
   protected val generators: mutable.SeqMap[String, Generator] = {
-    MapSort(pb.generators.mapValues { generatorPb =>
+    pb.generators.mapValues { generatorPb =>
       require(generatorPb.conditions.length <= 1, "TODO: support OR-ing of conditions")
       val prereqs = generatorPb.conditions.headOption.getOrElse(elem.Generator.GeneratorCondition()).prereqs
       Generator(prereqs)
-    }.toMap, nameOrder)
+    }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 
   def getGenerators: Map[String, Generator] = generators.toMap

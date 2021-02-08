@@ -3,27 +3,9 @@ package edg.wir
 import edg.elem.elem
 import edg.expr.expr
 import edg.init.init
+import edg.util.SeqMapSortableFrom._
 
 import scala.collection.{MapView, mutable}
-
-
-object MapSort {
-  def apply[K, V](map: Map[K, V], order: Seq[K]): mutable.LinkedHashMap[K, V] = {
-    val out = mutable.LinkedHashMap[K, V]()
-    for (orderedName <- order) {
-      map.get(orderedName) match {
-        case Some(value) => out.put(orderedName, value)
-        case None => // ignore
-      }
-    }
-    for ((mapKey, mapVal) <- map) {
-      if (!out.contains(mapKey)) {
-        out.put(mapKey, mapVal)
-      }
-    }
-    out
-  }
-}
 
 
 trait HasMutablePorts {
@@ -38,11 +20,11 @@ trait HasMutablePorts {
 
   protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, PortLike] = {
-    MapSort(pb.mapValues { _.`is` match {
+    pb.mapValues { _.`is` match {
       case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
       case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-port $like")
-    }}.toMap, nameOrder)
+    }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 }
 
@@ -57,10 +39,10 @@ trait HasMutableBlocks {
 
   protected def parseBlocks(pb: Map[String, elem.BlockLike], nameOrder: Seq[String]):
   mutable.SeqMap[String, BlockLike] =
-    MapSort(pb.mapValues { _.`type` match {
+    pb.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
-    }}.toMap, nameOrder)
+    }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
 }
 
 trait HasMutableLinks {
@@ -74,10 +56,10 @@ trait HasMutableLinks {
 
   protected def parseLinks(pb: Map[String, elem.LinkLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, LinkLike] =
-    MapSort(pb.mapValues { _.`type` match {
+    pb.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
-    }}.toMap, nameOrder)
+    }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
 }
 
 trait HasMutableConstraints {
@@ -97,7 +79,7 @@ trait HasMutableConstraints {
 
   protected def parseConstraints(pb: Map[String, expr.ValueExpr], nameOrder: Seq[String]):
       mutable.SeqMap[String, expr.ValueExpr] = {
-    MapSort(pb, nameOrder)  // TODO get rid of MapValues
+    pb.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 
 }
