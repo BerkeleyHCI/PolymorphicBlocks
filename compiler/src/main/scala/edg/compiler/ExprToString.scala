@@ -82,13 +82,14 @@ class ExprToString() extends ValueExprMap[String] {
     def unapply(op: Op): Option[String] = op match {
       case Op.SUM => Some("sum")
       case Op.ALL_TRUE => Some("allTrue")
+      case Op.ANY_TRUE => Some("anyTrue")
       case Op.ALL_EQ => Some("allEqual")
       case Op.ALL_UNIQUE => Some("allUnique")
       case Op.MAXIMUM => Some("max")
       case Op.MINIMUM => Some("min")
       case Op.SET_EXTRACT => Some("setExtract")
       case Op.INTERSECTION => Some("intersection")
-      case Op.UNDEFINED => None
+      case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }
 
@@ -135,12 +136,13 @@ class ExprToString() extends ValueExprMap[String] {
   override def mapRef(path: ref.LocalPath): String = {
     path.steps.map { _.step match {
       case ref.LocalStep.Step.Name(name) => name
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.UNDEFINED) => "undefined"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "connectedLink"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "isConnected"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "length"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) => "allocate"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"unrecognized[$op]"
+      case ref.LocalStep.Step.Empty => "(empty)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.UNDEFINED) => "(undefined)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "(connectedLink)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "(isConnected)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "(length)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) => "(allocate)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"(unrecognized[$op])"
     } }.mkString(".")
   }
 }
