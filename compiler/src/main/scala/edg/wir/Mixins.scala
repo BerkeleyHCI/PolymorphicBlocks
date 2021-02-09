@@ -5,7 +5,7 @@ import edg.expr.expr
 import edg.init.init
 import edg.util.SeqMapSortableFrom._
 
-import scala.collection.{MapView, mutable}
+import scala.collection.mutable
 
 
 trait HasMutablePorts {

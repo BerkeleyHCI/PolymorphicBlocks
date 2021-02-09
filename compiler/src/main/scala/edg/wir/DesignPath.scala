@@ -123,4 +123,6 @@ object DesignPath {
   }
 
   def root: DesignPath = DesignPath(Seq())
+
+  def unapply(path: DesignPath): Option[Seq[String]] = Some(path.steps)
 }

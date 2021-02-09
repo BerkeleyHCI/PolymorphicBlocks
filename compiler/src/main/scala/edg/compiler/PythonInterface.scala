@@ -79,6 +79,11 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     modules = mods
   }
 
+  def clearThisCache(): Unit = {
+    elts.clear()
+    generatorCache.clear()
+  }
+
   def clearCache(module: String): Seq[ref.LibraryPath] = {
     val discardKeys = elts.collect {  // TODO this assumes following the naming convention
       case (path, data) if path.getTarget.getName.startsWith(module) => path
