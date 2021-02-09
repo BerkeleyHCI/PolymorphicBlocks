@@ -137,6 +137,15 @@ class AxialVerticalResistor(ESeriesResistor):
     (2.0, 'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P5.08mm_Vertical'),
   ]
 
+class CurrentSenseResistor(ESeriesResistor):
+  TOLERANCE = 0.01
+
+  @init_in_parent
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+
+  def generate(self) -> None:
+
 
 def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
   tables = []
