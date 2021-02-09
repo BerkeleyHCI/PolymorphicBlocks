@@ -12,7 +12,7 @@ import scala.collection.SeqMap
 trait DesignMap[PortType, BlockType, LinkType] {
   // Top-level entry point
   def map(design: schema.Design): BlockType = {
-    wrapBlock(DesignPath.root, design.getContents)
+    wrapBlock(DesignPath(), design.getContents)
   }
 
   // These methods handle how nodes are processed must be overridden by the user where appropriate

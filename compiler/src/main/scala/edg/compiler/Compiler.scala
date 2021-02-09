@@ -83,7 +83,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // seed const prop with path assertions
   for ((path, value) <- refinements.instanceValues) {
-    constProp.setForcedValue(IndirectDesignPath.fromDesignPath(path), value, "path refinement")
+    constProp.setForcedValue(path.asIndirect, value, "path refinement")
   }
 
   // Supplemental elaboration data structures
@@ -113,8 +113,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
   def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
 
-  processBlock(DesignPath.root, root)
-  elaboratePending.setValue(ElaborateRecord.Block(DesignPath.root), None)
+  processBlock(DesignPath(), root)
+  elaboratePending.setValue(ElaborateRecord.Block(DesignPath()), None)
 
   // Actual compilation methods
   //
@@ -131,8 +131,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       s"connected ports at $toLinkPortPath, $fromLinkPortPath with different params")
     for (paramName <- toLinkPortParams) {
       constProp.addEquality(
-        IndirectDesignPath.fromDesignPath(toLinkPortPath) + paramName,
-        IndirectDesignPath.fromDesignPath(fromLinkPortPath) + paramName
+        toLinkPortPath.asIndirect + paramName,
+        fromLinkPortPath.asIndirect + paramName
       )
     }
 
@@ -141,8 +141,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     connectedLinkParams.put(fromLinkPortPath, (linkPath, linkParams))  // propagate CONNECTED_LINK params
     for (linkParam <- linkParams) {
       constProp.addEquality(
-        IndirectDesignPath.fromDesignPath(toLinkPortPath) + IndirectStep.ConnectedLink + linkParam,
-        IndirectDesignPath.fromDesignPath(fromLinkPortPath) + IndirectStep.ConnectedLink + linkParam
+        toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
+        fromLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
       )
     }
 
@@ -218,7 +218,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def processPortConnected(portPath: DesignPath, port: wir.PortLike): Unit = port match {
     case port @ (_: wir.Port | _: wir.Bundle) =>
-      constProp.setValue(IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.IsConnected,
+      constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
         BooleanValue(connectedPorts.contains(portPath)),
         "connected")
     case port: wir.PortArray => port.getElaboratedPorts.foreach { case (name, subport) =>
@@ -235,8 +235,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         connectedLinkParams.put(portPath, (linkPath, params))
         params.foreach { paramName =>
           constProp.addEquality(
-            IndirectDesignPath.fromDesignPath(portPath) + IndirectStep.ConnectedLink + paramName,
-            IndirectDesignPath.fromDesignPath(linkPath) + paramName
+            portPath.asIndirect + IndirectStep.ConnectedLink + paramName,
+            linkPath.asIndirect + paramName
           )
         }
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
@@ -261,7 +261,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
       try {
         constProp.addAssignment(
-          IndirectDesignPath.fromDesignPath(path) ++ assign.dst.get,
+          path.asIndirect ++ assign.dst.get,
           path, assign.src.get,
           constrName) // TODO add sourcelocators
       } catch {
@@ -287,7 +287,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       if (!directConnectedPorts.contains(path + name)) {
         // TODO this needs to not be transitive, should only fire for the topmost disconnected
         // TODO this is hacky, to add the recursive elaboration record
-        setPortConnectedLinkParams(path + name, port, DesignPath.root, Seq(), true)
+        setPortConnectedLinkParams(path + name, port, DesignPath(), Seq(), true)
       }
       processPortConnected(path + name, port)
     }
@@ -381,7 +381,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((generatorFnName, generator) <- block.getGenerators) {
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
         generator.dependencies.map { depPath =>
-          ElaborateRecord.ParamValue(IndirectDesignPath.fromDesignPath(path) ++ depPath)
+          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
         }
       )
     }
@@ -424,7 +424,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     refinements.classValues.get(refinedLibrary) match {
       case Some(classValueRefinements) => for ((subpath, value) <- classValueRefinements) {
         constProp.setForcedValue(
-          IndirectDesignPath.fromDesignPath(path) ++ subpath, value,
+          path.asIndirect ++ subpath, value,
           s"${refinedLibrary.getTarget.getName} class refinement")
       }
       case None =>
@@ -581,7 +581,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.removeGenerator(fnName)
     val generatedPb = library.runGenerator(block.getBlockClass, fnName,
       generator.dependencies.map { depPath =>
-        depPath -> constProp.getValue(IndirectDesignPath.fromDesignPath(blockPath) ++ depPath).get
+        depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
       }.toMap
     )
     val generatedDiff = block.dedupGeneratorPb(generatedPb)
@@ -622,7 +622,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
 
   def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLinkParams.get(port) match {
-    case Some((linkPath, linkParams)) if linkPath == DesignPath.root => None  // this is a hack, because disconnected ports generate a dummy entry
+    case Some((linkPath, linkParams)) if linkPath == DesignPath() => None  // this is a hack, because disconnected ports generate a dummy entry
     case Some((linkPath, linkParams)) => Some(linkPath)
     case None => None
   }

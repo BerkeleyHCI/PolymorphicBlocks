@@ -77,7 +77,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
 
   "Compiler on design with subclass refinement" should "error if selected class is not a subclass" in {
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
-      instanceRefinements = Map(DesignPath.root + "block" -> LibraryPath("block"))
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("block"))
     ))
     assertThrows[IllegalArgumentException] {
       compiler.compile()
@@ -100,7 +100,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
-      instanceRefinements = Map(DesignPath.root + "block" -> LibraryPath("subclassBlock"))
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassBlock"))
     ))
     compiler.compile() should equal(expected)
   }
@@ -124,7 +124,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       )
     ))
     compiler.compile()
-    compiler.getValue(IndirectDesignPath.root + "block" + "superParam") should equal(Some(IntValue(5)))
+    compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(5)))
   }
 
   "Compiler on design with path values" should "work" in {
@@ -141,9 +141,9 @@ class CompilerRefinementTest extends AnyFlatSpec {
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
-      instanceValues = Map(DesignPath.root + "block" + "superParam" -> IntValue(3))
+      instanceValues = Map(DesignPath() + "block" + "superParam" -> IntValue(3))
     ))
     compiler.compile()
-    compiler.getValue(IndirectDesignPath.root + "block" + "superParam") should equal(Some(IntValue(3)))
+    compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(3)))
   }
 }

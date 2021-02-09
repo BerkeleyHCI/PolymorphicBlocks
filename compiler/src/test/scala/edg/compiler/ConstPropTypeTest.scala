@@ -12,31 +12,31 @@ class ConstPropTypeTest extends AnyFlatSpec {
 
   it should "getUnsolved of declared types" in {
     val constProp = new ConstProp()
-    constProp.addDeclaration(DesignPath.root + "a", ValInit.Integer)
-    constProp.addDeclaration(DesignPath.root + "b", ValInit.Integer)
-    constProp.addDeclaration(DesignPath.root + "c", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "b", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "c", ValInit.Integer)
     constProp.getUnsolved should equal(Set(
-      DesignPath.root + "a",
-      DesignPath.root + "b",
-      DesignPath.root + "c",
+      DesignPath() + "a",
+      DesignPath() + "b",
+      DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath.root + "a", DesignPath.root,
+    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath.root + "b",
-      DesignPath.root + "c",
+      DesignPath() + "b",
+      DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath.root + "b", DesignPath.root,
+    constProp.addAssignment(IndirectDesignPath() + "b", DesignPath(),
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath.root + "c",
+      DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath.root + "c", DesignPath.root,
+    constProp.addAssignment(IndirectDesignPath() + "c", DesignPath(),
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
@@ -44,11 +44,11 @@ class ConstPropTypeTest extends AnyFlatSpec {
 
   it should "getUnsolved ignoring indirect paths" in {
     val constProp = new ConstProp()
-    constProp.addDeclaration(DesignPath.root + "a", ValInit.Integer)
-    constProp.addAssignment(IndirectDesignPath.root + "a", DesignPath.root,
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
+    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
       ValueExpr.Literal(1)
     )
-    constProp.addAssignment(IndirectDesignPath.root + "port" + IndirectStep.ConnectedLink + "param", DesignPath.root,
+    constProp.addAssignment(IndirectDesignPath() + "port" + IndirectStep.ConnectedLink + "param", DesignPath(),
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
@@ -56,12 +56,12 @@ class ConstPropTypeTest extends AnyFlatSpec {
 
   it should "return declared types" in {
     val constProp = new ConstProp()
-    constProp.addDeclaration(DesignPath.root + "int", ValInit.Integer)
-    constProp.addDeclaration(DesignPath.root + "float", ValInit.Floating)
-    constProp.addDeclaration(DesignPath.root + "boolean", ValInit.Boolean)
+    constProp.addDeclaration(DesignPath() + "int", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "float", ValInit.Floating)
+    constProp.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
 
-    constProp.getType(DesignPath.root + "int") should equal(Some(classOf[IntValue]))
-    constProp.getType(DesignPath.root + "float") should equal(Some(classOf[FloatValue]))
-    constProp.getType(DesignPath.root + "boolean") should equal(Some(classOf[BooleanValue]))
+    constProp.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
+    constProp.getType(DesignPath() + "float") should equal(Some(classOf[FloatValue]))
+    constProp.getType(DesignPath() + "boolean") should equal(Some(classOf[BooleanValue]))
   }
 }

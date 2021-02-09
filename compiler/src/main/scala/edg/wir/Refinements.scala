@@ -21,7 +21,7 @@ object Refinements {
     } }.toMap
     val instanceRefinements = request.refinements.collect { refinement => refinement.source match {
       case edgcompiler.CompilerRequest.Refinement.Source.Path(path) =>
-        DesignPath.root ++ path -> refinement.getReplacement
+        DesignPath() ++ path -> refinement.getReplacement
     } }.toMap
     val classValues = request.values.collect { value => value.source match {
       case edgcompiler.CompilerRequest.Value.Source.ClsParam(clsParam) =>
@@ -30,7 +30,7 @@ object Refinements {
 
     val instanceValues = request.values.collect { value => value.source match {
       case edgcompiler.CompilerRequest.Value.Source.Path(path) =>
-        DesignPath.root ++ path -> ExprValue.fromLit(value.getValue)
+        DesignPath() ++ path -> ExprValue.fromLit(value.getValue)
     } }.toMap
 
     Refinements(classRefinements, instanceRefinements, classValues, instanceValues)

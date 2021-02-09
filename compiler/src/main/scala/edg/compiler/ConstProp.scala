@@ -125,7 +125,7 @@ class ConstProp {
     paramAssign.put(target, assign)
     paramSource.put(target, paramSourceRecord)
 
-    val arrayDeps = new ExprArrayDependencies(root).map(targetExpr).map(IndirectDesignPath.fromDesignPath(_))
+    val arrayDeps = new ExprArrayDependencies(root).map(targetExpr).map(_.asIndirect)
     arrayElts.addNode(target, arrayDeps.toSeq)
 
     update()
@@ -134,7 +134,7 @@ class ConstProp {
   /** Sets a value directly (without the expr)
     */
   def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
-    val paramSourceRecord = (DesignPath.root, constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
+    val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
     if (params.nodeDefinedAt(target)) {
       throw OverassignError(target, paramSource(target), paramSourceRecord)
     }
@@ -147,7 +147,7 @@ class ConstProp {
     * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
     */
   def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
-    val paramSourceRecord = (DesignPath.root, constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
+    val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
     if (params.nodeDefinedAt(target)) {
       throw OverassignError(target, paramSource(target), paramSourceRecord)
     }
@@ -181,7 +181,7 @@ class ConstProp {
   }
 
   def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    val indirectTarget = IndirectDesignPath.fromDesignPath(target)
+    val indirectTarget = target.asIndirect
     arrayElts.setValue(indirectTarget, elts)
     onArraySolved(indirectTarget, elts)
 
@@ -197,7 +197,7 @@ class ConstProp {
   }
   def getValue(param: DesignPath): Option[ExprValue] = {
     // TODO should this be an implicit conversion?
-    getValue(IndirectDesignPath.fromDesignPath(param))
+    getValue(param.asIndirect)
   }
 
   /**
@@ -208,7 +208,7 @@ class ConstProp {
   }
 
   def getArrayElts(target: DesignPath): Option[Seq[String]] = {
-    arrayElts.getValue(IndirectDesignPath.fromDesignPath(target))
+    arrayElts.getValue(target.asIndirect)
   }
 
   /**

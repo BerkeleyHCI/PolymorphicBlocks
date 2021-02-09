@@ -70,7 +70,7 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
       )
     ))
     dsv.map(dut) should equal(Seq(
-      CompilerError.LibraryElement(DesignPath.root + "test", LibraryPath("testBlock")),
+      CompilerError.LibraryElement(DesignPath() + "test", LibraryPath("testBlock")),
     ))
   }
 
@@ -89,8 +89,8 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
       )
     ))
     dsv.map(dut) should equal(Seq(
-      CompilerError.LibraryElement(DesignPath.root + "test" + "port", LibraryPath("testPort")),
-      CompilerError.LibraryElement(DesignPath.root + "test" + "link", LibraryPath("testLink")),
+      CompilerError.LibraryElement(DesignPath() + "test" + "port", LibraryPath("testPort")),
+      CompilerError.LibraryElement(DesignPath() + "test" + "link", LibraryPath("testLink")),
     ))
   }
 }

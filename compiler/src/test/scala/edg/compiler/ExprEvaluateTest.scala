@@ -11,7 +11,7 @@ class ExprEvaluateTest extends AnyFlatSpec {
   behavior of "ExprEvaluate"
 
   val constProp = new ConstProp()
-  val evalTest = new ExprEvaluate(constProp, DesignPath.root)
+  val evalTest = new ExprEvaluate(constProp, DesignPath())
 
   // TODO: add array tests once there is an array literal
 

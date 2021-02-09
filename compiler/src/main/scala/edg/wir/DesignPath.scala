@@ -59,10 +59,7 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
 }
 
 object IndirectDesignPath {
-  def root: IndirectDesignPath = IndirectDesignPath(Seq())
-  def fromDesignPath(designPath: DesignPath): IndirectDesignPath = {
-    IndirectDesignPath(designPath.steps.map { IndirectStep.Element(_) })
-  }
+  def apply(): IndirectDesignPath = IndirectDesignPath(Seq())
 }
 
 
@@ -95,6 +92,8 @@ case class DesignPath(steps: Seq[String]) {
   }
 
   override def toString = steps.map(_.toString).mkString(".")
+
+  def asIndirect: IndirectDesignPath = IndirectDesignPath(steps.map { IndirectStep.Element(_) })
 }
 
 object DesignPath {
@@ -122,7 +121,7 @@ object DesignPath {
     })
   }
 
-  def root: DesignPath = DesignPath(Seq())
+  def apply(): DesignPath = DesignPath(Seq())
 
   def unapply(path: DesignPath): Option[Seq[String]] = Some(path.steps)
 }

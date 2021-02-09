@@ -7,6 +7,7 @@ import edg.wir.{DesignPath, IndirectDesignPath}
 
 
 class ExprEvaluateException(msg: String) extends Exception(msg)
+class MissingValueException(path: IndirectDesignPath) extends ExprEvaluateException(s"Missing value $path")
 
 class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprValue] {
   override def mapLiteral(literal: lit.ValueLit): ExprValue = literal.`type` match {
@@ -269,8 +270,8 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
   // assign also not overridden and to fail noisily
 
   override def mapRef(path: ref.LocalPath): ExprValue = {
-    refs.getValue(IndirectDesignPath.fromDesignPath(root) ++ path).getOrElse(
-      throw new ExprEvaluateException(s"No value for ${root ++ path}")
+    refs.getValue(root.asIndirect ++ path).getOrElse(
+      throw new MissingValueException(root.asIndirect ++ path)
     )
   }
 
