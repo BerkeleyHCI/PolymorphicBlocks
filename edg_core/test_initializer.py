@@ -93,6 +93,20 @@ class InitializerTestCase(unittest.TestCase):
       edgir.AssignLit(['inner', '(constr)float_param'], 31.0),
       pb.constraints["(init)inner.(constr)float_param"])
 
+  def test_nested_inner(self):
+    pb = TestInternalBlock()._elaborated_def_to_proto()
+
+    self.assertEqual(len(pb.constraints.items()), 4)  # should not generate initializers for constructors
+
+    self.assertEqual(
+      edgir.AssignRef(['inner_param'], ['(constr)container_float_param']),  # check constr params propagated
+      pb.constraints["(init)inner_param"])
+    self.assertEqual(
+      edgir.AssignRef(['inner_bundle', 'float_param'], ['(constr)float_param']),  # even if it's a default
+      pb.constraints["(init)inner_bundle.float_param"])
+    self.assertIn("(init)inner_bundle.a.float_param", pb.constraints)  # don't care about literal initializers
+    self.assertIn("(init)inner_bundle.b.float_param", pb.constraints)  # don't care about literal initializers
+
   def test_default_initializer(self):
     pb = TestDefaultBlock()._elaborated_def_to_proto()
 
