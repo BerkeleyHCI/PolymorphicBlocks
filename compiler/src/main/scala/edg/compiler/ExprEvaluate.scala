@@ -18,7 +18,7 @@ object ExprEvaluate {
     case lit.ValueLit.Type.Integer(literal) => IntValue(literal.`val`)
     case lit.ValueLit.Type.Boolean(literal) => BooleanValue(literal.`val`)
     case lit.ValueLit.Type.Text(literal) => TextValue(literal.`val`)
-    case lit.ValueLit.Type.Range(literal) => (literal..getMinimum.`type`, literal.getMaximum.`type`) match {
+    case lit.ValueLit.Type.Range(literal) => (literal.getMinimum.`type`, literal.getMaximum.`type`) match {
       case (lit.ValueLit.Type.Floating(literalMin), lit.ValueLit.Type.Floating(literalMax)) =>
         RangeValue(literalMin.`val`.toFloat, literalMax.`val`.toFloat)
       case _ => throw new ExprEvaluateException(s"Malformed range literal $literal")

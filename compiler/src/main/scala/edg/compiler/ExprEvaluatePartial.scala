@@ -28,7 +28,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
 
   override def mapBinary(binary: expr.BinaryExpr,
                          lhs: ExprResult, rhs: ExprResult): ExprResult = (lhs, rhs) match {
-    case (ExprResult.Missing(lhs), ExprResult.Missing(rhs)) => ExprResult.Missing(lhs + rhs)
+    case (ExprResult.Missing(lhs), ExprResult.Missing(rhs)) => ExprResult.Missing(lhs ++ rhs)
     case (lhs @ ExprResult.Missing(_), ExprResult.Result(_)) => lhs
     case (ExprResult.Result(_), rhs @ ExprResult.Missing(_)) => rhs
     case (ExprResult.Result(lhs), ExprResult.Result(rhs)) =>
@@ -45,7 +45,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
 
   override def mapRange(range: expr.RangeExpr,
                         minimum: ExprResult, maximum: ExprResult): ExprResult = (minimum, maximum) match {
-    case (ExprResult.Missing(minimum), ExprResult.Missing(maximum)) => ExprResult.Missing(minimum + maximum)
+    case (ExprResult.Missing(minimum), ExprResult.Missing(maximum)) => ExprResult.Missing(minimum ++ maximum)
     case (minimum @ ExprResult.Missing(_), ExprResult.Result(_)) => minimum
     case (ExprResult.Result(_), rhs @ ExprResult.Missing(_)) => maximum
     case (ExprResult.Result(minimum), ExprResult.Result(maximum)) =>
@@ -57,19 +57,21 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
                              tru: ExprResult, fal: ExprResult): ExprResult = (cond, tru, fal) match {
     case (cond @ ExprResult.Missing(_), _, _) => cond  // only report condition missing
       // For If-Then-Else, don't depend on or require the untaken branch
-    case (ExprResult.Result(BooleanValue(true)), tru @ ExprResult.Missing(_), _) =>
-      tru
-    case (ExprResult.Result(BooleanValue(false)), _, fal @ ExprResult.Result(_)) =>
-      fal
-    case (ExprResult.Result(cond @ BooleanValue(true)), ExprResult.Result(tru), _) =>
-      ExprResult.Result(ExprEvaluate.evalIfThenElse(ite, cond, tru, tru))
-    case (ExprResult.Result(cond @ BooleanValue(false)), _, ExprResult.Result(fal)) =>
-      ExprResult.Result(ExprEvaluate.evalIfThenElse(ite, cond, fal, fal))
+    case (ExprResult.Result(cond @ BooleanValue(true)), tru, _) => tru match {
+      case tru @ ExprResult.Missing(_) => tru
+      case ExprResult.Result(tru) => ExprResult.Result(ExprEvaluate.evalIfThenElse(ite, cond, tru, tru))
+    }
+    case (ExprResult.Result(cond @ BooleanValue(false)), _, fal) => fal match {
+      case fal @ ExprResult.Missing(_) => fal
+      case ExprResult.Result(fal) => ExprResult.Result(ExprEvaluate.evalIfThenElse(ite, cond, fal, fal))
+    }
+    case (ExprResult.Result(cond), _, _) =>
+      throw new ExprEvaluateException(s"Unknown condition $cond for $ite")
   }
 
   override def mapExtract(extract: expr.ExtractExpr,
                           container: ExprResult, index: ExprResult): ExprResult = (container, index) match {
-    case (ExprResult.Missing(container), ExprResult.Missing(index)) => ExprResult.Missing(container + index)
+    case (ExprResult.Missing(container), ExprResult.Missing(index)) => ExprResult.Missing(container ++ index)
     case (container @ ExprResult.Missing(_), ExprResult.Result(_)) => container
     case (ExprResult.Result(_), index @ ExprResult.Missing(_)) => index
     case (ExprResult.Result(container), ExprResult.Result(index)) =>
@@ -91,7 +93,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
             case None => ExprResult.Missing(Set(ExprRef.Param(eltPath)))
         }}
         if (eltsVals.forall(_.isInstanceOf[ExprResult.Result])) {
-          val values = eltsVals.map { case ExprResult.Result(value) => value }
+          val values = eltsVals.map { _.asInstanceOf[ExprResult.Result].value }
           ExprResult.Result(ArrayValue(values))
         } else {
           val missings = eltsVals.collect { case ExprResult.Missing(refs) => refs }
