@@ -94,8 +94,8 @@ class ExprToString() extends ValueExprMap[String] {
   }
 
   override def mapReduce(reduce: expr.ReductionExpr, vals: String): String = reduce.op match {
-    case ReductionExprOp(op) => s"$op(${vals.mkString(", ")})"
-    case op => s"unknown[$op](${vals.mkString(", ")})"
+    case ReductionExprOp(op) => s"$op(${vals})"
+    case op => s"unknown[$op](${vals})"
   }
 
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, String]): String = {

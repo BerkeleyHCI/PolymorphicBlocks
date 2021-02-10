@@ -8,6 +8,7 @@ import edg.ExprBuilder.Literal
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
 sealed trait ExprValue {
   def toLit: lit.ValueLit
+  def toStringValue: String
 }
 
 object ExprValue {
@@ -39,11 +40,13 @@ object FloatValue {
 case class FloatValue(value: Float) extends FloatPromotable {
   override def toFloat: Float = value
   override def toLit: lit.ValueLit = Literal.Floating(value)
+  override def toStringValue: String = value.toString
 }
 
 case class IntValue(value: BigInt) extends FloatPromotable {
   override def toFloat: Float = value.toFloat  // note: potential loss of precision
   override def toLit: lit.ValueLit = Literal.Integer(value)
+  override def toStringValue: String = value.toString
 }
 
 object RangeValue {
@@ -57,13 +60,16 @@ case class RangeValue(lower: Float, upper: Float) extends ExprValue {
   require(lower <= upper || (lower.isNaN && upper.isNaN))
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
+  override def toStringValue: String = s"($lower, $upper)"
 }
 case class BooleanValue(value: Boolean) extends ExprValue {
   override def toLit: lit.ValueLit = Literal.Boolean(value)
+  override def toStringValue: String = value.toString
 }
 
 case class TextValue(value: String) extends ExprValue {
   override def toLit: lit.ValueLit = Literal.Text(value)
+  override def toStringValue: String = value
 }
 
 object ArrayValue {
@@ -121,4 +127,8 @@ object ArrayValue {
 
 case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
   override def toLit: lit.ValueLit = throw new NotImplementedError("Can't toLit on Array")
+  override def toStringValue: String = {
+    val valuesString = values.map{_.toStringValue}.mkString(", ")
+    s"[$valuesString]"
+  }
 }

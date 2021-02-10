@@ -619,6 +619,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     ElemBuilder.Design(root.toPb)
   }
 
+  def evaluateExpr(root: DesignPath, value: expr.ValueExpr): ExprResult = {
+    new ExprEvaluatePartial(constProp, root).map(value)
+  }
+
+  def getParamValue(param: IndirectDesignPath): Option[ExprValue] = constProp.getValue(param)
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
 
   def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLinkParams.get(port) match {
