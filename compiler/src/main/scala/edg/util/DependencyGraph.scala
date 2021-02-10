@@ -17,8 +17,14 @@ class DependencyGraph[KeyType, ValueType] {
   private val ready = mutable.Set[KeyType]()
 
   // Adds a node in the graph. May only be called once per node.
-  def addNode(node: KeyType, dependencies: Seq[KeyType]): Unit = {
-    require(!deps.isDefinedAt(node), s"reinsertion of dependency for node $node <- $dependencies")
+  def addNode(node: KeyType, dependencies: Seq[KeyType], update: Boolean = false): Unit = {
+    deps.get(node) match {
+      case Some(prevDeps) =>
+        require(update, s"reinsertion of dependency for node $node <- $dependencies without update=true")
+        // TODO can this requirement be eliminated?
+        require(prevDeps.subsetOf(dependencies.toSet), "update of dependencies without being a superset of prior")
+      case None =>  // nothing if no previous dependencies
+    }
     require(!values.isDefinedAt(node), s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies")
     val remainingDeps = mutable.Set(dependencies: _*) -- values.keySet
 
@@ -27,6 +33,9 @@ class DependencyGraph[KeyType, ValueType] {
       inverseDeps.getOrElseUpdate(dependency, mutable.Set()) += node
     }
 
+    if (update && ready.contains(node)) {
+      ready -= node
+    }
     if (remainingDeps.isEmpty && !values.isDefinedAt(node)) {
       ready += node
     }
