@@ -34,10 +34,9 @@ object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
-  case class ConflictingAssign(target: IndirectDesignPath,
-                               oldAssign: (DesignPath, String, expr.ValueExpr),
-                               newAssign: (DesignPath, String, expr.ValueExpr)
-                              ) extends CompilerError
+  case class OverAssign(target: IndirectDesignPath,
+                        assigns: Seq[(DesignPath, String, expr.ValueExpr)],
+                        equals: Seq[IndirectDesignPath]) extends CompilerError
 }
 
 
@@ -99,7 +98,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val errors = mutable.ListBuffer[CompilerError]()
 
   def getErrors(): Seq[CompilerError] = {
-    errors.toSeq ++ elaboratePending.getMissing.map { missingNode =>
+    errors.toSeq ++ constProp.getErrors ++ elaboratePending.getMissing.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq
   }
@@ -267,15 +266,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // TODO clean this up... by a lot
   def processBlocklikeConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
-      try {
-        constProp.addAssignment(
-          path.asIndirect ++ assign.dst.get,
-          path, assign.src.get,
-          constrName) // TODO add sourcelocators
-      } catch {
-        case OverassignError(target, oldAssign, newAssign) =>
-          errors += CompilerError.ConflictingAssign(target, oldAssign, newAssign)
-      }
+      constProp.addAssignment(
+        path.asIndirect ++ assign.dst.get,
+        path, assign.src.get,
+        constrName) // TODO add sourcelocators
     case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
     case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))

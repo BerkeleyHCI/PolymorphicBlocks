@@ -18,15 +18,10 @@ object DepValue {
 }
 
 
-case class OverassignError(target: IndirectDesignPath,
-                           oldAssign: (DesignPath, String, expr.ValueExpr),
-                           newAssign: (DesignPath, String, expr.ValueExpr)
-                          ) extends Exception(
-  s"Redefinition of $target: old assign $oldAssign, new assign $newAssign"
-)
-
-
 case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
+
+case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set(),
+                            equals: mutable.Set[IndirectDesignPath] = mutable.Set())
 
 /**
   * Parameter propagation, evaluation, and resolution associated with a single design.
@@ -56,6 +51,8 @@ class ConstProp {
   // Equality, two entries per equality edge (one per direction / target)
   val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
+  // Overassigns, for error tracking
+  val overassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
 
   //
   // Callbacks, to be overridden at instantiation site
@@ -100,6 +97,14 @@ class ConstProp {
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
     require(params.getValue(ExprRef.Param(dst)).isEmpty, s"redefinition of $dst via equality from $src = $value")
+    if (params.getValue(ExprRef.Param(dst)).isDefined) {
+      val record = overassigns.getOrElseUpdate(dst, OverassignRecord())
+      record.equals.add(src)
+      paramSource.get(dst).foreach( record.assigns.add )  // if there are assigns, make sure they are tracked
+      equality.get(dst).foreach( equalitySrcs => equalitySrcs.foreach( record.equals.add ) )
+      return  // first set "wins"
+    }
+
     params.setValue(ExprRef.Param(dst), DepValue.Param(value))
     onParamSolved(dst, value)
     for (dstEquals <- equality.getOrElse(dst, mutable.Buffer())) {
@@ -120,7 +125,10 @@ class ConstProp {
     }
     val paramSourceRecord = (root, constrName, targetExpr)
     if (params.nodeDefinedAt(ExprRef.Param(target))) {
-      throw OverassignError(target, paramSource(target), paramSourceRecord)
+      val record = overassigns.getOrElseUpdate(target, OverassignRecord())
+      record.assigns.add(paramSource(target))
+      record.assigns.add(paramSourceRecord)
+      return  // first set "wins"
     }
 
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
@@ -146,7 +154,10 @@ class ConstProp {
   def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
     if (params.nodeDefinedAt(ExprRef.Param(target))) {
-      throw OverassignError(target, paramSource(target), paramSourceRecord)
+      val record = overassigns.getOrElseUpdate(target, OverassignRecord())
+      record.assigns.add(paramSource(target))
+      record.assigns.add(paramSourceRecord)
+      return  // first set "wins"
     }
     params.setValue(ExprRef.Param(target), DepValue.Param(value))
     paramSource.put(target, paramSourceRecord)
@@ -158,9 +169,8 @@ class ConstProp {
     */
   def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    if (params.nodeDefinedAt(ExprRef.Param(target))) {
-      throw OverassignError(target, paramSource(target), paramSourceRecord)
-    }
+    require(!params.nodeDefinedAt(ExprRef.Param(target)), "forced value must be set before assigns")
+
     params.setValue(ExprRef.Param(target), DepValue.Param(value))
     paramSource.put(target, paramSourceRecord)
     forcedParams += target
@@ -180,8 +190,15 @@ class ConstProp {
     // we assume that propagations between param1 and its equal nodes, and param2 and its equal nodes, are done prior
     (params.getValue(ExprRef.Param(param1)), params.getValue(ExprRef.Param(param2))) match {
       case (Some(param1Value), Some(param2Value)) =>
-        // TODO better exception type?
-        throw new IllegalArgumentException(s"equality between $param1 = $param1Value <-> $param2 = $param2Value with both values already defined")
+        val record1 = overassigns.getOrElseUpdate(param1, OverassignRecord())
+        record1.equals.add(param2)
+        paramSource.get(param1).foreach( record1.assigns.add )
+        equality.get(param1).foreach( equalitySrcs => equalitySrcs.foreach( record1.equals.add ) )
+        val record2 = overassigns.getOrElseUpdate(param2, OverassignRecord())
+        record2.equals.add(param1)
+        paramSource.get(param2).foreach( record2.assigns.add )
+        equality.get(param2).foreach( equalitySrcs => equalitySrcs.foreach( record2.equals.add ) )
+        // the equality is ignored otherwise
       case (Some(param1Value), None) => propagateEquality(param2, param1,
                                                           param1Value.asInstanceOf[DepValue.Param].value)
       case (None, Some(param2Value)) => propagateEquality(param1, param2,
@@ -234,4 +251,13 @@ class ConstProp {
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap.collect {
     case (ExprRef.Param(param), value) => param -> value.asInstanceOf[DepValue.Param].value
   }
+
+  def getErrors: Seq[CompilerError.OverAssign] = overassigns.map { case (target, record) =>
+    CompilerError.OverAssign(target,
+      assigns=record.assigns.map { case (root, constrName, constr) =>
+        (root, constrName, constr)
+      }.toSeq, equals = record.equals.map { equals =>
+        equals
+      }.toSeq)
+  }.toSeq
 }
