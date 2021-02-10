@@ -224,6 +224,30 @@ class CompilerEvaluationTest extends AnyFlatSpec {
       Some(BooleanValue(true)))
   }
 
+  "Compiler on design with empty port arrays" should "propagate and evaluate values" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    compiler.compile()
+
+    // check link reductions
+    compiler.getValue(IndirectDesignPath() + "link" + "sinkSum") should equal(Some(FloatValue(0.0)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinkIntersect") should equal(
+      Some(RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)))
+
+    // TODO array IS_CONNECTED?
+  }
+
   "Compiler on design with exports" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block(
       blocks = Map(

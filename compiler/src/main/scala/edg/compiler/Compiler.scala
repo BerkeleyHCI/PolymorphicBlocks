@@ -4,7 +4,7 @@ import scala.collection.mutable
 import edg.schema.schema
 import edg.expr.expr
 import edg.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, Refinements}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PortLike, Refinements}
 import edg.wir
 import edg.util.DependencyGraph
 
@@ -192,9 +192,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       // TODO can / should this share the LibraryElement instantiation logic w/ elaborate BlocklikePorts?
       // TODO .getOrElse is needed for ports that don't get connected, but may want something stricter
       // especially when block side arrays become a thing
-      val newPorts = constProp.getArrayElts(path).getOrElse(Seq()).map { index =>
-        index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
-      }.toMap
+      val newPorts = constProp.getArrayElts(path) match {
+        case Some(elts) =>
+          elts.map { index =>
+            index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+          }.toMap
+        case None =>
+          // TODO: this assumes ports without elts set from connects are empty
+          // TODO: this may need to be revisited with block-side ports
+          constProp.setArrayElts(path, Seq())
+          Map[String, PortLike]()
+      }
       port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
       newPorts.foreach { case (index, subport) =>
         processPort(path + index, subport)

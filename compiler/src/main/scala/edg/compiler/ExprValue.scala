@@ -94,6 +94,16 @@ object ArrayValue {
     Some(vals.values)
   }
 
+  object Empty {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Unit] = {
+      if (vals.values.isEmpty) {
+        Some()
+      } else {
+        None
+      }
+    }
+  }
+
   object ExtractFloat {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Float]] = seqMapOption(vals.values) {
       case FloatValue(elt) => elt

@@ -186,6 +186,7 @@ object ExprEvaluate {
 
   def evalReduce(reduce: expr.ReductionExpr, vals: ExprValue): ExprValue = (reduce.op, vals) match {
     // In this case we don't do numeric promotion
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.Empty(_)) => FloatValue(0)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(valMins, valMaxs)) => RangeValue(valMins.sum, valMaxs.sum)
@@ -198,23 +199,30 @@ object ExprEvaluate {
 
     case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
 
-    // TODO max / min on Array[Range] is a bit of a hack (but kinda makes sense?) - perhaps should be removed
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
-
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.Empty(_)) => FloatValue(Float.NegativeInfinity)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
 
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.Empty(_)) => FloatValue(Float.PositiveInfinity)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
+    // TODO max / min on Array[Range] is a bit of a hack (but kinda makes sense?) - perhaps should be removed
+    // TODO define a default in case of empty?
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
+
     // TODO this should be a user-level assertion instead of a compiler error
+    case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
+      throw new ExprEvaluateException(s"SetExtract with empty values from $reduce")
     case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue(vals)) => if (vals.forall(_ == vals.head)) {
       vals.head
     } else {
       throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $reduce")
     }
 
+    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>
+      RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
     case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
       val (minMax, maxMin) = (valMaxs.min, valMins.max)
       if (maxMin <= minMax) {

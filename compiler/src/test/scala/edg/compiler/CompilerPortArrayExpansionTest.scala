@@ -172,6 +172,44 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
     compiled should equal(referenceElaborated)
   }
 
+
+  "Compiler on design with source and array sink" should "support empty arrays" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+      )
+    ))
+    val referenceElaborated = Design(Block.Block(
+      blocks = Map(
+        "source" -> Block.Block(superclass="sourceBlock",
+          ports = Map(
+            "port" -> Port.Port(superclass="sourcePort"),
+          )
+        ),
+      ),
+      links = Map(
+        "link" -> Link.Link(superclass="link",
+          ports = Map(
+            "source" -> Port.Port(superclass="sourcePort"),
+            "sinks" -> Port.Array(superclass="sinkPort", 0, Port.Port(superclass="sinkPort")),
+          )
+        )
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    val compiled = compiler.compile()
+    compiled should equal(referenceElaborated)
+  }
+
   "Compiler on design with bundle source and array bundle sink" should "expand link connections" in {
     val inputDesign = Design(Block.Block(
       blocks = Map(
