@@ -37,7 +37,8 @@ class CachedLibrary():
       if popped is not None:
         discarded.append(discard)
     module = importlib.import_module(module_name)
-    self.seen_modules.remove(module)
+    if module in self.seen_modules:  # TODO better discard behavior for never seen module
+      self.seen_modules.remove(module)
     self.module_contains.pop(module_name, None)
     importlib.reload(module)
     return discarded

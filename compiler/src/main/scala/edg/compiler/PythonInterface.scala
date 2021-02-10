@@ -33,7 +33,7 @@ class PythonInterface {
     val (reply, reqTime) = timeExec {
       blockingStub.clearCached(request)
     }
-    debug(s"PyIf:chearCached module (${reqTime} ms)")
+    debug(s"PyIf:clearCached module (${reqTime} ms)")
     reply.toSeq
   }
 
