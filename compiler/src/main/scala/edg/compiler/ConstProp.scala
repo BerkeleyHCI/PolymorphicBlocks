@@ -96,7 +96,6 @@ class ConstProp {
   }
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
-    require(params.getValue(ExprRef.Param(dst)).isEmpty, s"redefinition of $dst via equality from $src = $value")
     if (params.getValue(ExprRef.Param(dst)).isDefined) {
       val record = overassigns.getOrElseUpdate(dst, OverassignRecord())
       record.equals.add(src)
