@@ -300,4 +300,38 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath() + "source" + "inner" + "port" + IndirectStep.IsConnected) should equal(
       Some(BooleanValue(false)))
   }
+
+  "Compiler on design with assign constraints" should "resolve if-then-else without defined non-taken branch" in {
+    val inputDesign = Design(Block.Block(
+      params = Map(
+        "condTrue" -> ValInit.Boolean,
+        "condFalse" -> ValInit.Boolean,
+        "defined" -> ValInit.Integer,
+        "undefined" -> ValInit.Integer,
+        "ifTrue" -> ValInit.Integer,
+        "ifFalse" -> ValInit.Integer,
+        "ifUndef" -> ValInit.Integer,
+      ),
+      constraints = Map(
+        "condTrue" -> Constraint.Assign(Ref("condTrue"), ValueExpr.Literal(true)),
+        "condFalse" -> Constraint.Assign(Ref("condFalse"), ValueExpr.Literal(false)),
+        "defined" -> Constraint.Assign(Ref("defined"), ValueExpr.Literal(45)),
+        "ifTrue" -> Constraint.Assign(Ref("ifTrue"),
+          ValueExpr.IfThenElse(ValueExpr.Ref("condTrue"), ValueExpr.Ref("defined"), ValueExpr.Ref("undefined"))
+        ),
+        "ifFalse" -> Constraint.Assign(Ref("ifFalse"),
+          ValueExpr.IfThenElse(ValueExpr.Ref("condFalse"), ValueExpr.Ref("undefined"), ValueExpr.Ref("defined"))
+        ),
+        "ifUndef" -> Constraint.Assign(Ref("ifUndef"),
+          ValueExpr.IfThenElse(ValueExpr.Ref("condFalse"), ValueExpr.Ref("defined"), ValueExpr.Ref("undefined"))
+        ),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    compiler.compile()
+
+    compiler.getValue(IndirectDesignPath() + "ifUndef") should equal(None)
+    compiler.getValue(IndirectDesignPath() + "ifTrue") should equal(Some(IntValue(45)))
+    compiler.getValue(IndirectDesignPath() + "ifFalse") should equal(Some(IntValue(45)))
+  }
 }
