@@ -212,6 +212,10 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
 
+    // TODO this is definitely a hack in the absence of a proper range extractor
+    case (expr.ReductionExpr.Op.MAXIMUM, RangeValue(lower, upper)) => FloatValue(upper)
+    case (expr.ReductionExpr.Op.MINIMUM, RangeValue(lower, upper)) => FloatValue(lower)
+
     // TODO this should be a user-level assertion instead of a compiler error
     case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
       throw new ExprEvaluateException(s"SetExtract with empty values from $reduce")
