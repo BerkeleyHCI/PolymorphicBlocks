@@ -47,11 +47,10 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
                         minimum: ExprResult, maximum: ExprResult): ExprResult = (minimum, maximum) match {
     case (ExprResult.Missing(minimum), ExprResult.Missing(maximum)) => ExprResult.Missing(minimum ++ maximum)
     case (minimum @ ExprResult.Missing(_), ExprResult.Result(_)) => minimum
-    case (ExprResult.Result(_), rhs @ ExprResult.Missing(_)) => maximum
+    case (ExprResult.Result(_), maximum @ ExprResult.Missing(_)) => maximum
     case (ExprResult.Result(minimum), ExprResult.Result(maximum)) =>
       ExprResult.Result(ExprEvaluate.evalRange(range, minimum, maximum))
   }
-
 
   override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: ExprResult,
                              tru: ExprResult, fal: ExprResult): ExprResult = (cond, tru, fal) match {
