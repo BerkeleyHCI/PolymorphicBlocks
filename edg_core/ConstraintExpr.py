@@ -14,6 +14,7 @@ from .Builder import builder
 from .Core import Refable
 if TYPE_CHECKING:
   from .Ports import BasePort, Port
+  from .Array import Vector
   from .Blocks import BaseBlock
 
 
@@ -122,6 +123,19 @@ class BoolLiteralBinding(LiteralBinding):
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.boolean.val = self.value
+    return pb
+
+
+class IntLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: int):
+    self.value = value
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.integer.val = self.value
     return pb
 
 
@@ -296,6 +310,42 @@ class IsConnectedBinding(Binding):
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
     pb.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+    return pb
+
+
+class NameBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Name"
+
+  def __init__(self, src: Union[BaseBlock, BasePort]):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return []
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.NAME
+    return pb
+
+
+class LengthBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Length"
+
+  def __init__(self, src: Vector):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.src]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.LENGTH
     return pb
 
 
@@ -539,6 +589,25 @@ class NumLikeExpr(ConstraintExpr[NumSelfType, ConstraintExprCastable, GetType],
 
   def __le__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.le)
+
+
+IntLit = Union[int]
+IntLike = Union[IntLit, 'IntExpr']
+class IntExpr(NumLikeExpr['IntExpr', IntLike, int]):
+  @classmethod
+  def _to_expr_type(cls, input: IntLike) -> IntExpr:
+    if isinstance(input, IntExpr):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, int):
+      return IntExpr()._bind(IntLiteralBinding(input))
+    else:
+      raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
+
+  def _decl_to_proto(self) -> edgir.ValInit:
+    pb = edgir.ValInit()
+    pb.integer.CopyFrom(edgir.Empty())
+    return pb
 
 
 FloatLit = Union[int, float]

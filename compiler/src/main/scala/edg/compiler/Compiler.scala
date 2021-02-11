@@ -226,6 +226,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           // TODO: this assumes ports without elts set from connects are empty
           // TODO: this may need to be revisited with block-side ports
           constProp.setArrayElts(path, Seq())
+          constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
           Map[String, PortLike]()
       }
       port.setPorts(newPorts)  // the PortArray is elaborated in-place instead of needing a new object
@@ -254,9 +255,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
         BooleanValue(connectedPorts.contains(portPath)),
         "connected")
-    case port: wir.PortArray => port.getElaboratedPorts.foreach { case (name, subport) =>
-      processPortConnected(portPath + name, subport)
-    }
+    case port: wir.PortArray =>
+      port.getElaboratedPorts.foreach { case (name, subport) =>
+        processPortConnected(portPath + name, subport)
+      }
     case port => throw new NotImplementedError(s"unknown unelaborated port $port")
   }
 
@@ -403,6 +405,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }.toSeq
       debug(s"Array defined: ${path ++ linkPortArray} = $linkPortArrayElts")
       constProp.setArrayElts(path ++ linkPortArray, linkPortArrayElts)
+      constProp.setValue(path.asIndirect ++ linkPortArray + IndirectStep.Length,
+        IntValue(linkPortArrayElts.length))
     }
 
     // Queue up generators as needed
@@ -570,6 +574,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }.toSeq
       debug(s"Array defined: ${path ++ intPortArray} = $intPortArrayElts")
       constProp.setArrayElts(path ++ intPortArray, intPortArrayElts)
+      constProp.setValue(path.asIndirect ++ intPortArray + IndirectStep.Length,
+        IntValue(intPortArrayElts.length))
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators

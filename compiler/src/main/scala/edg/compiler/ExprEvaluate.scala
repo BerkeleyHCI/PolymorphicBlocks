@@ -191,7 +191,9 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(valMins, valMaxs)) => RangeValue(valMins.sum, valMaxs.sum)
 
+    case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
     case (expr.ReductionExpr.Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
+    case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(false)
     case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.contains(true))
 
     // TODO better support for empty arrays?

@@ -152,6 +152,8 @@ class CompilerEvaluationTest extends AnyFlatSpec {
       Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.IsConnected) should equal(
       Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should equal(
+      Some(IntValue(1)))
   }
 
   "Compiler on design with assign constraints and multiple connects to link" should "propagate and evaluate values" in {
@@ -222,6 +224,8 @@ class CompilerEvaluationTest extends AnyFlatSpec {
       Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "2" + IndirectStep.IsConnected) should equal(
       Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should equal(
+      Some(IntValue(3)))
   }
 
   "Compiler on design with empty port arrays" should "propagate and evaluate values" in {
@@ -244,8 +248,8 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath() + "link" + "sinkSum") should equal(Some(FloatValue(0.0)))
     compiler.getValue(IndirectDesignPath() + "link" + "sinkIntersect") should equal(
       Some(RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)))
-
-    // TODO array IS_CONNECTED?
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should equal(
+      Some(IntValue(0)))
   }
 
   "Compiler on design with exports" should "propagate and evaluate values" in {

@@ -5,7 +5,7 @@ from .init_pb2 import ValInit
 from .name_pb2 import *
 from .impl_pb2 import *
 from .type_pb2 import *
-from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, ALLOCATE, LENGTH
+from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, ALLOCATE, LENGTH, NAME
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, ReductionExpr, MapExtractExpr
@@ -72,6 +72,8 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
     return expr.boolean.val
   elif expr.HasField('floating'):
     return expr.floating.val
+  elif expr.HasField('integer'):
+    return expr.integer.val
   elif expr.HasField('range') and \
        expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
     return (expr.range.minimum.floating.val, expr.range.maximum.floating.val)
@@ -108,6 +110,8 @@ def lit_to_expr(value: LitTypes) -> ValueExpr:
 def valinit_to_type_string(elt: ValInit) -> str:
   if elt.HasField('boolean'):
     return 'Bool'
+  elif elt.HasField('integer'):
+    return 'Int'
   elif elt.HasField('floating'):
     return 'Float'
   elif elt.HasField('range'):
@@ -125,6 +129,11 @@ def string_to_lit(input: str, elt: ValInit) -> Optional[LitTypes]:
     elif input.lower() == 'false':
       return False
     else:
+      return None
+  elif elt.HasField('integer'):
+    try:
+      return int(input)
+    except ValueError:
       return None
   elif elt.HasField('floating'):
     try:
