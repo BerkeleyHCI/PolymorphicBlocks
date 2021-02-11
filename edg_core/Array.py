@@ -130,9 +130,6 @@ class DerivedVector(BaseVector, Generic[VectorType]):
   def _type_of(self) -> Hashable:
     return (self.target._type_of(),)
 
-  def is_connected(self) -> BoolExpr:
-    raise RuntimeError()  # TODO maybe revisit this eventually
-
 
 # An 'elastic' array of ports type, with unspecified length at declaration time, and length
 # determined by connections in the parent block.
@@ -172,12 +169,6 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self.elt_sample._get_ref_map(edgir.LocalPath())
-
-  def is_connected(self) -> BoolExpr:
-    """Returns true if ANY element is connected"""
-    # TODO maybe also a length() option?
-    # TODO DEPRECATED
-    return self.length() > 0
 
   def length(self) -> IntExpr:
     return self._length

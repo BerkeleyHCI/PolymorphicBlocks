@@ -37,7 +37,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
   def contents(self):
     super().contents()
 
-    self.constrain(self.source.is_connected() | self.single_sources.is_connected() | self.bidirs.is_connected(),
+    self.constrain(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
                    "DigitalLink must have some kind of source")
 
     # TODO RangeBuilder initializer for voltage

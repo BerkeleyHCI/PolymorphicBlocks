@@ -42,9 +42,6 @@ class BasePort(HasMetadata):
       raise ValueError(f"Unknown parent type {self.parent}")
 
   @abstractmethod
-  def is_connected(self) -> BoolExpr: ...
-
-  @abstractmethod
   def _def_to_proto(self) -> edgir.PortTypes:  # TODO: this might not be valid for Vector types?
     raise NotImplementedError
 
