@@ -18,9 +18,6 @@ from .IdentitySet import IdentitySet
 from .Ports import BasePort, Port, Bundle
 from .PortTag import PortTag, Input, Output, InOut
 
-if TYPE_CHECKING:
-  from .DesignTop import DesignTop
-
 
 InitType = TypeVar('InitType', bound=Callable[..., None])
 def init_in_parent(fn: InitType) -> InitType:
@@ -395,6 +392,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   BlockType = TypeVar('BlockType', bound='Block')
   def Block(self, tpe: BlockType) -> BlockType:
+    from .DesignTop import DesignTop
     if not isinstance(tpe, Block):
       raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
     if isinstance(tpe, DesignTop):

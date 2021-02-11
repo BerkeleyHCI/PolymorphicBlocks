@@ -8,7 +8,7 @@ import subprocess
 from . import edgir, edgrpc
 from .Core import builder
 from .HierarchyBlock import Block
-from .HdlInterfaceServer import HdlInterface, CachedLibrary
+from .HdlInterfaceServer import HdlInterface, LibraryElementResolver
 from .Refinements import Refinements
 
 
@@ -35,7 +35,7 @@ class ScalaCompilerInstance:
     self.channel: Optional[Any] = None
     self.stub: Optional[Any] = None
 
-    self.library = CachedLibrary()  # TODO should this be instance-specific?
+    self.library = LibraryElementResolver()  # TODO should this be instance-specific?
 
   def check_started(self) -> None:
     if self.server is None:

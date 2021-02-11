@@ -3,11 +3,11 @@ import unittest
 
 from . import test_common, test_hierarchy_block  # needed for library detection
 from . import edgir
-from .HdlInterfaceServer import CachedLibrary
+from .HdlInterfaceServer import LibraryElementResolver
 
 class LibGenTestCase(unittest.TestCase):
   def test_library_detect(self):
-    lib = CachedLibrary()
+    lib = LibraryElementResolver()
     lib.load_module("edg_core.test_libgen")
 
     self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestLink')))

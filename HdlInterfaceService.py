@@ -2,12 +2,12 @@ import grpc  # type: ignore
 from concurrent import futures
 
 from edg_core import HdlInterface, edgrpc
-from edg_core.HdlInterfaceServer import CachedLibrary
+from edg_core.HdlInterfaceServer import LibraryElementResolver
 
 
 if __name__ == '__main__':
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-  library = CachedLibrary()
+  library = LibraryElementResolver()
   edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(library, verbose=True), server)  # type: ignore
   server.add_insecure_port('[::]:50051')
   print("started server")
