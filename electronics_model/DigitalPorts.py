@@ -41,13 +41,16 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
 
     # TODO RangeBuilder initializer for voltage
     # TODO this and below should be x.voltage_out.min (etc) instead of relying on min over Array[Range]
-    self.assign(self.voltage, (
-      self.source.voltage_out.lower().min(
-        self.bidirs.min(lambda x: x.voltage_out)).min(
-        self.single_sources.min(lambda x: x.voltage_out)),
-      self.source.voltage_out.upper().max(
-        self.bidirs.max(lambda x: x.voltage_out)).max(
-        self.single_sources.max(lambda x: x.voltage_out))
+    bidirs_voltage_min = self.bidirs.min(lambda x: x.voltage_out)
+    bidirs_voltage_max = self.bidirs.max(lambda x: x.voltage_out)
+    single_voltage_min = self.single_sources.min(lambda x: x.voltage_out)
+    single_voltage_max = self.single_sources.max(lambda x: x.voltage_out)
+    self.assign(self.voltage, self.source.is_connected().then_else(
+      # TODO get rid of _to_expr_type?
+      RangeExpr._to_expr_type((self.source.voltage_out.lower().min(bidirs_voltage_min.min(single_voltage_min)),
+                               self.source.voltage_out.upper().max(bidirs_voltage_max.max(single_voltage_max)))),
+      RangeExpr._to_expr_type((bidirs_voltage_min.min(single_voltage_min),
+                               bidirs_voltage_max.max(single_voltage_max)))
     ))
 
     self.assign(self.voltage_limits,
@@ -63,9 +66,16 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
     )
     self.constrain(self.current_limits.contains(self.current_drawn))
 
-    self.assign(self.output_thresholds, self.source.output_thresholds.intersect(
-        self.bidirs.intersection(lambda x: x.output_thresholds).intersect(
-        self.single_sources.intersection(lambda x: x.output_thresholds))))
+    source_output_thresholds = self.source.is_connected().then_else(
+      self.source.output_thresholds,
+      RangeExpr.ALL * Volt
+    )
+    bidirs_output_thresholds = self.bidirs.intersection(lambda x: x.output_thresholds)
+    single_output_thresholds = self.single_sources.intersection(lambda x: x.output_thresholds)
+    self.assign(self.output_thresholds,
+                source_output_thresholds.intersect(
+                  bidirs_output_thresholds.intersect(
+                    single_output_thresholds)))
     self.assign(self.input_thresholds, (
       self.sinks.min(lambda x: x.input_thresholds).min(self.bidirs.min(lambda x: x.input_thresholds)),
       self.sinks.max(lambda x: x.input_thresholds).max(self.bidirs.max(lambda x: x.input_thresholds))
