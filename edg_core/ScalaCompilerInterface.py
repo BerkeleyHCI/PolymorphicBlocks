@@ -67,7 +67,7 @@ class ScalaCompilerInstance:
       design=edgir.Design(
         contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
     )
-    refinements.populate_compiler_request(request)
+    refinements.populate_proto(request.refinements)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert not result.error, f"error during compilation: \n{result.error}"
     return CompiledDesign(result)

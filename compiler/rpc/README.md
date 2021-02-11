@@ -14,6 +14,7 @@ sed -i -E "s/^import (schema|ref|elem|lit)_pb2 as (.*)/from edg_core.edgir impor
 sed -i -E "s/^import (compiler|hdl)_pb2 as (.*)/from edg_core.edgrpc import \1_pb2 as \2/" ../../edg_core/edgrpc/*.py
 sed -i -E 's/^import grpc/import grpc  # type: ignore/' ../../edg_core/edgrpc/*.py
 sed -i -E "s/^from (schema|ref|elem|lit)_pb2 import/from edg_core.edgir.\1_pb2 import/"  ../../edg_core/edgrpc/*.pyi
+sed -i -E "s/^from (compiler|hdl)_pb2 import/from edg_core.edgrpc.\1_pb2 import/"  ../../edg_core/edgrpc/*.pyi
 ```
 
 Note: mypy-protobuf [does not currently generate gRPC stubs](https://github.com/dropbox/mypy-protobuf/issues/46).

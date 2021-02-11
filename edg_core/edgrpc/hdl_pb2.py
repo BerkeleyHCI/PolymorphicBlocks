@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2\xc3\x02\n\x0cHdlInterface\x12\x41\n\x0b\x43learCached\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12O\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1a.edg.schema.Library.NS.Val\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\xfd\x03\n\x0bRefinements\x12\x36\n\nsubclasses\x18\x01 \x03(\x0b\x32\".edg.compiler.Refinements.Subclass\x12/\n\x06values\x18\x02 \x03(\x0b\x32\x1f.edg.compiler.Refinements.Value\x1a\x88\x01\n\x08Subclass\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12#\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12)\n\x0breplacement\x18\x03 \x01(\x0b\x32\x14.edg.ref.LibraryPathB\x08\n\x06source\x1a\xf9\x01\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\x43\n\tcls_param\x18\x02 \x01(\x0b\x32..edg.compiler.Refinements.Value.ClassParamPathH\x00\x12 \n\x05value\x18\x03 \x01(\x0b\x32\x11.edg.lit.ValueLit\x1a[\n\x0e\x43lassParamPath\x12!\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12&\n\nparam_path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPathB\x08\n\x06source\"\x8b\x01\n\x0fLibraryResponse\x12-\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1a.edg.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.RefinementsB\x08\n\x06result2\xc6\x02\n\x0cHdlInterface\x12\x41\n\x0b\x43learCached\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12R\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1d.edg.compiler.LibraryResponse\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -191,15 +191,278 @@ _GENERATORREQUEST = _descriptor.Descriptor(
   serialized_end=395,
 )
 
+
+_REFINEMENTS_SUBCLASS = _descriptor.Descriptor(
+  name='Subclass',
+  full_name='edg.compiler.Refinements.Subclass',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='edg.compiler.Refinements.Subclass.path', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='cls', full_name='edg.compiler.Refinements.Subclass.cls', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='replacement', full_name='edg.compiler.Refinements.Subclass.replacement', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='source', full_name='edg.compiler.Refinements.Subclass.source',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=519,
+  serialized_end=655,
+)
+
+_REFINEMENTS_VALUE_CLASSPARAMPATH = _descriptor.Descriptor(
+  name='ClassParamPath',
+  full_name='edg.compiler.Refinements.Value.ClassParamPath',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='cls', full_name='edg.compiler.Refinements.Value.ClassParamPath.cls', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='param_path', full_name='edg.compiler.Refinements.Value.ClassParamPath.param_path', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=806,
+  serialized_end=897,
+)
+
+_REFINEMENTS_VALUE = _descriptor.Descriptor(
+  name='Value',
+  full_name='edg.compiler.Refinements.Value',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='edg.compiler.Refinements.Value.path', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='cls_param', full_name='edg.compiler.Refinements.Value.cls_param', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='edg.compiler.Refinements.Value.value', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[_REFINEMENTS_VALUE_CLASSPARAMPATH, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='source', full_name='edg.compiler.Refinements.Value.source',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=658,
+  serialized_end=907,
+)
+
+_REFINEMENTS = _descriptor.Descriptor(
+  name='Refinements',
+  full_name='edg.compiler.Refinements',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='subclasses', full_name='edg.compiler.Refinements.subclasses', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='values', full_name='edg.compiler.Refinements.values', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[_REFINEMENTS_SUBCLASS, _REFINEMENTS_VALUE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=398,
+  serialized_end=907,
+)
+
+
+_LIBRARYRESPONSE = _descriptor.Descriptor(
+  name='LibraryResponse',
+  full_name='edg.compiler.LibraryResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='element', full_name='edg.compiler.LibraryResponse.element', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='edg.compiler.LibraryResponse.error', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='refinements', full_name='edg.compiler.LibraryResponse.refinements', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='edg.compiler.LibraryResponse.result',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=910,
+  serialized_end=1049,
+)
+
 _LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
 _GENERATORREQUEST_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
 _GENERATORREQUEST_VALUE.containing_type = _GENERATORREQUEST
 _GENERATORREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST.fields_by_name['values'].message_type = _GENERATORREQUEST_VALUE
+_REFINEMENTS_SUBCLASS.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
+_REFINEMENTS_SUBCLASS.fields_by_name['cls'].message_type = ref__pb2._LIBRARYPATH
+_REFINEMENTS_SUBCLASS.fields_by_name['replacement'].message_type = ref__pb2._LIBRARYPATH
+_REFINEMENTS_SUBCLASS.containing_type = _REFINEMENTS
+_REFINEMENTS_SUBCLASS.oneofs_by_name['source'].fields.append(
+  _REFINEMENTS_SUBCLASS.fields_by_name['path'])
+_REFINEMENTS_SUBCLASS.fields_by_name['path'].containing_oneof = _REFINEMENTS_SUBCLASS.oneofs_by_name['source']
+_REFINEMENTS_SUBCLASS.oneofs_by_name['source'].fields.append(
+  _REFINEMENTS_SUBCLASS.fields_by_name['cls'])
+_REFINEMENTS_SUBCLASS.fields_by_name['cls'].containing_oneof = _REFINEMENTS_SUBCLASS.oneofs_by_name['source']
+_REFINEMENTS_VALUE_CLASSPARAMPATH.fields_by_name['cls'].message_type = ref__pb2._LIBRARYPATH
+_REFINEMENTS_VALUE_CLASSPARAMPATH.fields_by_name['param_path'].message_type = ref__pb2._LOCALPATH
+_REFINEMENTS_VALUE_CLASSPARAMPATH.containing_type = _REFINEMENTS_VALUE
+_REFINEMENTS_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
+_REFINEMENTS_VALUE.fields_by_name['cls_param'].message_type = _REFINEMENTS_VALUE_CLASSPARAMPATH
+_REFINEMENTS_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
+_REFINEMENTS_VALUE.containing_type = _REFINEMENTS
+_REFINEMENTS_VALUE.oneofs_by_name['source'].fields.append(
+  _REFINEMENTS_VALUE.fields_by_name['path'])
+_REFINEMENTS_VALUE.fields_by_name['path'].containing_oneof = _REFINEMENTS_VALUE.oneofs_by_name['source']
+_REFINEMENTS_VALUE.oneofs_by_name['source'].fields.append(
+  _REFINEMENTS_VALUE.fields_by_name['cls_param'])
+_REFINEMENTS_VALUE.fields_by_name['cls_param'].containing_oneof = _REFINEMENTS_VALUE.oneofs_by_name['source']
+_REFINEMENTS.fields_by_name['subclasses'].message_type = _REFINEMENTS_SUBCLASS
+_REFINEMENTS.fields_by_name['values'].message_type = _REFINEMENTS_VALUE
+_LIBRARYRESPONSE.fields_by_name['element'].message_type = schema__pb2._LIBRARY_NS_VAL
+_LIBRARYRESPONSE.fields_by_name['refinements'].message_type = _REFINEMENTS
+_LIBRARYRESPONSE.oneofs_by_name['result'].fields.append(
+  _LIBRARYRESPONSE.fields_by_name['element'])
+_LIBRARYRESPONSE.fields_by_name['element'].containing_oneof = _LIBRARYRESPONSE.oneofs_by_name['result']
+_LIBRARYRESPONSE.oneofs_by_name['result'].fields.append(
+  _LIBRARYRESPONSE.fields_by_name['error'])
+_LIBRARYRESPONSE.fields_by_name['error'].containing_oneof = _LIBRARYRESPONSE.oneofs_by_name['result']
 DESCRIPTOR.message_types_by_name['ModuleName'] = _MODULENAME
 DESCRIPTOR.message_types_by_name['LibraryRequest'] = _LIBRARYREQUEST
 DESCRIPTOR.message_types_by_name['GeneratorRequest'] = _GENERATORREQUEST
+DESCRIPTOR.message_types_by_name['Refinements'] = _REFINEMENTS
+DESCRIPTOR.message_types_by_name['LibraryResponse'] = _LIBRARYRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ModuleName = _reflection.GeneratedProtocolMessageType('ModuleName', (_message.Message,), {
@@ -231,6 +494,44 @@ GeneratorRequest = _reflection.GeneratedProtocolMessageType('GeneratorRequest', 
 _sym_db.RegisterMessage(GeneratorRequest)
 _sym_db.RegisterMessage(GeneratorRequest.Value)
 
+Refinements = _reflection.GeneratedProtocolMessageType('Refinements', (_message.Message,), {
+
+  'Subclass' : _reflection.GeneratedProtocolMessageType('Subclass', (_message.Message,), {
+    'DESCRIPTOR' : _REFINEMENTS_SUBCLASS,
+    '__module__' : 'hdl_pb2'
+    # @@protoc_insertion_point(class_scope:edg.compiler.Refinements.Subclass)
+    })
+  ,
+
+  'Value' : _reflection.GeneratedProtocolMessageType('Value', (_message.Message,), {
+
+    'ClassParamPath' : _reflection.GeneratedProtocolMessageType('ClassParamPath', (_message.Message,), {
+      'DESCRIPTOR' : _REFINEMENTS_VALUE_CLASSPARAMPATH,
+      '__module__' : 'hdl_pb2'
+      # @@protoc_insertion_point(class_scope:edg.compiler.Refinements.Value.ClassParamPath)
+      })
+    ,
+    'DESCRIPTOR' : _REFINEMENTS_VALUE,
+    '__module__' : 'hdl_pb2'
+    # @@protoc_insertion_point(class_scope:edg.compiler.Refinements.Value)
+    })
+  ,
+  'DESCRIPTOR' : _REFINEMENTS,
+  '__module__' : 'hdl_pb2'
+  # @@protoc_insertion_point(class_scope:edg.compiler.Refinements)
+  })
+_sym_db.RegisterMessage(Refinements)
+_sym_db.RegisterMessage(Refinements.Subclass)
+_sym_db.RegisterMessage(Refinements.Value)
+_sym_db.RegisterMessage(Refinements.Value.ClassParamPath)
+
+LibraryResponse = _reflection.GeneratedProtocolMessageType('LibraryResponse', (_message.Message,), {
+  'DESCRIPTOR' : _LIBRARYRESPONSE,
+  '__module__' : 'hdl_pb2'
+  # @@protoc_insertion_point(class_scope:edg.compiler.LibraryResponse)
+  })
+_sym_db.RegisterMessage(LibraryResponse)
+
 
 
 _HDLINTERFACE = _descriptor.ServiceDescriptor(
@@ -240,8 +541,8 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=398,
-  serialized_end=721,
+  serialized_start=1052,
+  serialized_end=1378,
   methods=[
   _descriptor.MethodDescriptor(
     name='ClearCached',
@@ -269,7 +570,7 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
     index=2,
     containing_service=None,
     input_type=_LIBRARYREQUEST,
-    output_type=schema__pb2._LIBRARY_NS_VAL,
+    output_type=_LIBRARYRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

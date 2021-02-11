@@ -9,15 +9,15 @@ class Refinements(NamedTuple):
   class_values: Iterable[Tuple[Type[Block], Iterable[str], edgir.LitTypes]] = []
   instance_values: Iterable[Tuple[Iterable[str], edgir.LitTypes]] = []
 
-  def populate_compiler_request(self, pb: edgrpc.CompilerRequest) -> edgrpc.CompilerRequest:
+  def populate_proto(self, pb: edgrpc.Refinements) -> edgrpc.Refinements:
     # TODO: this doesn't dedup refinement. Is this desired?
     for (src_cls, target_cls) in self.class_refinements:
-      ref_entry = pb.refinements.add()
+      ref_entry = pb.subclasses.add()
       ref_entry.cls.target.name = src_cls._static_def_name()
       ref_entry.replacement.target.name = target_cls._static_def_name()
 
     for (src_path, target_cls) in self.instance_refinements:
-      ref_entry = pb.refinements.add()
+      ref_entry = pb.subclasses.add()
       ref_entry.path.CopyFrom(edgir.LocalPathList(src_path))
       ref_entry.replacement.target.name = target_cls._static_def_name()
 
