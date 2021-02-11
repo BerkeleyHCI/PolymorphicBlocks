@@ -122,8 +122,8 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         response.error = f"No library elt {request.element}"
       else:
         response.element.CopyFrom(self._elaborate_class(cls))
-        if isinstance(cls, DesignTop):
-          response.refinements.CopyFrom(cls().refinements())  # TODO refinements should be static
+        if issubclass(cls, DesignTop):  # TODO don't create another instance, perhaps refinements should be static?
+          cls().refinements().populate_proto(response.refinements)
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving library element request for {request.element.target.name}")

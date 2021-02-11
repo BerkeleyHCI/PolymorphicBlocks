@@ -8,6 +8,7 @@ import subprocess
 from . import edgir, edgrpc
 from .Core import builder
 from .HierarchyBlock import Block
+from .DesignTop import DesignTop
 from .HdlInterfaceServer import HdlInterface, LibraryElementResolver
 from .Refinements import Refinements
 
@@ -67,6 +68,9 @@ class ScalaCompilerInstance:
       design=edgir.Design(
         contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
     )
+    if issubclass(block, DesignTop):  # TODO don't create another instance
+      refinements = block().refinements() + refinements
+
     refinements.populate_proto(request.refinements)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert not result.error, f"error during compilation: \n{result.error}"
