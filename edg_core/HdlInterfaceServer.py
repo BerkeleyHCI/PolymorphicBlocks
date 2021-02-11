@@ -128,25 +128,29 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       yield pb
     self.library.load_module(request.name)
 
-  def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgir.Library.NS.Val:
+  def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
     for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
       self.library.load_module(module_name)
 
+    response = edgrpc.LibraryResponse()
     try:
       library_elt = self.library.elaborated_from_path(request.element)
+      if library_elt is None:
+        response.error = f"No library elt {request.element}"
+      else:
+        response.element.CopyFrom(library_elt)
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving library element request for {request.element.target.name}")
-      library_elt = None
+      response.error = str(e)
 
-    if library_elt is not None:
-      if self.verbose:
+    if self.verbose:
+      if response.HasField('error'):
+        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> {response.error}")
+      else:
         print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
-      return library_elt
-    else:
-      if self.verbose:
-        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> None")
-      return edgir.Library.NS.Val()  # TODO better more explicit failure?
+
+    return response
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
     for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
