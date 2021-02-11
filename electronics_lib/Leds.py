@@ -48,17 +48,20 @@ class IndicatorLed(Light, GeneratorBlock):
 
     self.constrain(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
-    self.generator(self.generate_circuit, self.target_current_draw, self.signal.link().output_thresholds,
+    self.generator(self.generate_circuit, self.target_current_draw,
+                   self.signal.link().voltage, self.signal.link().output_thresholds,
                    targets=[self.signal, self.gnd])
 
-  def generate_circuit(self, target_current: RangeVal, voltage: RangeVal):
+  def generate_circuit(self, target_current: RangeVal, voltage: RangeVal, thresholds: RangeVal):
     # TODO parse wavelength
-    min_voltage = voltage[1]
+    min_voltage = thresholds[1]
+    max_voltage = voltage[1]
     self.package = self.Block(Led())
-    self.res = self.Block(Resistor(resistance=(min_voltage / target_current[1], min_voltage / target_current[0])))
+    self.res = self.Block(Resistor(resistance=(max_voltage / target_current[1], min_voltage / target_current[0])))
 
-    self.connect(self.signal, self.package.a.as_digital_sink())  # TODO current draw should be here, but the constraint doesn't generate - debug this
-    self.constrain(self.signal.current_draw == (0, self.signal.link().voltage.upper() / self.res.resistance.lower()))
+    self.connect(self.signal, self.package.a.as_digital_sink(
+      current_draw=(0, self.signal.link().voltage.upper() / self.res.resistance.lower())
+    ))
 
     self.connect(self.res.a, self.package.k)
     self.connect(self.res.b.as_ground(), self.gnd)
