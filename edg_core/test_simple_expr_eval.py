@@ -63,3 +63,4 @@ class EvalReductionTestCase(unittest.TestCase):
   def test_reduce(self) -> None:
     self.assertEqual(self.compiled.get_value(['link', 'range_sum']), (6.0, 130.0))
     self.assertEqual(self.compiled.get_value(['link', 'range_intersection']), (5.0, 10.0))
+    self.assertEqual(self.compiled.get_value(['link', 'ports', edgir.LENGTH]), 3)
