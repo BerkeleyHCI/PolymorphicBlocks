@@ -36,6 +36,10 @@ object CompilerError {
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
+  case class FailedAssertion(root: DesignPath, constrName: String,
+                             value: expr.ValueExpr, result: ExprValue) extends CompilerError
+  case class MissingAssertion(root: DesignPath, constrName: String,
+                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError
 
   sealed trait OverAssignCause
   object OverAssignCause {
@@ -105,11 +109,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val errors = mutable.ListBuffer[CompilerError]()
 
   def getErrors(): Seq[CompilerError] = {
-    errors.toSeq ++ constProp.getErrors ++ elaboratePending.getMissing.map { missingNode =>
+    val assertionErrors = assertions.flatMap { case (root, constrName, value, sourceLocator) =>
+      new ExprEvaluatePartial(constProp, root).map(value) match {
+        case ExprResult.Result(BooleanValue(true)) => None
+        case ExprResult.Result(result) =>
+          Some(CompilerError.FailedAssertion(root, constrName, value, result))
+        case ExprResult.Missing(missing) =>
+          Some(CompilerError.MissingAssertion(root, constrName, value, missing))
+      }
+    }.toSeq
+
+    val pendingErrors = elaboratePending.getMissing.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq
+
+    errors.toSeq ++ constProp.getErrors ++ pendingErrors ++ assertionErrors
   }
 
+  // Hook method to be overridden, eg for status
+  //
+  def onElaborate(record: ElaborateRecord) { }
 
   // Seed compilation with the root
   //

@@ -3,7 +3,7 @@ import unittest
 
 from . import *
 from edg_core.ScalaCompilerInterface import ScalaCompiler
-from .test_common import TestPortSource, TestPortSink
+from .test_common import TestPortSource, TestPortSink, TestBlockSource
 from .test_hierarchy_block import TopHierarchyBlock, ExportPortHierarchyBlock, PortBridgeHierarchyBlock
 from . import test_common, test_hierarchy_block
 
@@ -18,6 +18,8 @@ class PortBridgeHierarchyBlockTop(Block):
   def __init__(self) -> None:
     super().__init__()
     self.block = self.Block(PortBridgeHierarchyBlock())
+    self.source = self.Block(TestBlockSource())  # TODO the PortBridge requires a connect, which isn't satisfied here
+    self.connect(self.block.source_port, self.source.source)
 
 
 class DesignInstantiationTestCase(unittest.TestCase):

@@ -24,7 +24,8 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
       val refinements = Refinements.fromCompilerRequest(request)
       val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
-      require(compiler.getErrors().isEmpty)
+      val errors = compiler.getErrors()
+      require(errors.isEmpty, s"got errors: $errors")
       val checker = new DesignStructuralValidate()
       require(checker.map(compiled).isEmpty)
       val result = edgcompiler.CompilerResult(
