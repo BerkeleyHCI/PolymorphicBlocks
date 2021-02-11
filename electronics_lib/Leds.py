@@ -48,7 +48,8 @@ class IndicatorLed(Light, GeneratorBlock):
 
     self.constrain(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
-    self.generator(self.generate_circuit, self.target_current_draw, self.signal.link().output_thresholds)
+    self.generator(self.generate_circuit, self.target_current_draw, self.signal.link().output_thresholds,
+                   targets=[self.signal, self.gnd])
 
   def generate_circuit(self, target_current: RangeVal, voltage: RangeVal):
     # TODO parse wavelength

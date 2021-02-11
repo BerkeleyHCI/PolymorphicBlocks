@@ -422,6 +422,10 @@ class GeneratorBlock(Block):
     self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
     self._generators: collections.OrderedDict[str, GeneratorBlock.GeneratorRecord] = collections.OrderedDict()
 
+    # Track generatorr targets to know where to not generate default initializers
+    self._generator_target_ports = IdentitySet[BasePort]()
+    self._generator_target_params = IdentitySet[ConstraintExpr]()
+
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
@@ -446,36 +450,44 @@ class GeneratorBlock(Block):
   ConstrGet4 = TypeVar('ConstrGet4', bound=Any)
   ConstrGet5 = TypeVar('ConstrGet5', bound=Any)
 
+  TargetsType = Iterable[Union[BasePort, ConstraintExpr]]
+
   @overload
-  def generator(self, fn: Callable[[], None]) -> None: ...
+  def generator(self, fn: Callable[[], None],
+                *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1]) -> None: ...
+                req1: ConstraintExpr[Any, Any, ConstrGet1],
+                *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1],
-                req2: ConstraintExpr[Any, Any, ConstrGet2]) -> None: ...
+                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1],
                 req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3]) -> None: ...
+                req3: ConstraintExpr[Any, Any, ConstrGet3],
+                *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1],
                 req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3],
-                req4: ConstraintExpr[Any, Any, ConstrGet4]) -> None: ...
+                req4: ConstraintExpr[Any, Any, ConstrGet4],
+                *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4, ConstrGet5], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1],
                 req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3],
                 req4: ConstraintExpr[Any, Any, ConstrGet4],
-                req5: ConstraintExpr[Any, Any, ConstrGet5]) -> None: ...
+                req5: ConstraintExpr[Any, Any, ConstrGet5],
+                *, targets: TargetsType = []) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
-  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr) -> None:  # type: ignore
+  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr, targets: TargetsType = []) -> None:  # type: ignore
     assert callable(fn), f"fn {fn} must be a method (callable)"
     fn_name = fn.__name__
     assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
@@ -483,6 +495,14 @@ class GeneratorBlock(Block):
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
     self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, reqs)
+
+    for target in targets:
+      if isinstance(target, BasePort):
+        self._generator_target_ports.add(target)
+      elif isinstance(target, ConstraintExpr):
+        self._generator_target_params.add(target)
+      else:
+        raise TypeError(f"unknown generator target type {target}")
 
   # Generator solved-parameter-access interface
   #
@@ -539,13 +559,17 @@ class GeneratorBlock(Block):
       pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)
-      pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
-      pb = self._populate_def_proto_port_init(pb, self._connected_ports())
+      pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
+                                                                      self._generator_target_params)))
+      pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
+                                                                     self._generator_target_ports)))
     else:
       pb = self._populate_def_proto_block_base(pb)
       pb = self._populate_def_proto_block_contents(pb)  # constraints need to be written and propagated
-      pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
-      pb = self._populate_def_proto_port_init(pb, self._connected_ports())
+      pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
+                                                                      self._generator_target_params)))
+      pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
+                                                                     self._generator_target_ports)))
       pb = self._populate_def_proto_block_generator(pb)
     return pb
 
