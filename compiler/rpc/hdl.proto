@@ -33,10 +33,41 @@ message GeneratorRequest {
   repeated Value values = 4;
 }
 
+message Refinements {
+  message Subclass {
+    oneof source {
+      ref.LocalPath path = 1;
+      ref.LibraryPath cls = 2;
+    }
+    ref.LibraryPath replacement = 3;
+  }
+  message Value {
+    message ClassParamPath {
+      ref.LibraryPath cls = 1;
+      ref.LocalPath param_path = 2;
+    }
+    oneof source {
+      ref.LocalPath path = 1;
+      ClassParamPath cls_param = 2;
+    }
+    lit.ValueLit value = 3;
+  }
+  repeated Subclass subclasses = 1;
+  repeated Value values = 2;
+}
+
+message LibraryResponse {
+  oneof result {
+    schema.Library.NS.Val element = 1;
+    string error = 2;  // TODO source locators
+  }
+  Refinements refinements = 3;  // only valid if element is a top-level block, and not error
+}
+
 service HdlInterface {
   rpc ClearCached (ModuleName) returns (stream ref.LibraryPath) { }
   rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
 
-  rpc GetLibraryElement (LibraryRequest) returns (schema.Library.NS.Val) { }
+  rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) { }
   rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
 }

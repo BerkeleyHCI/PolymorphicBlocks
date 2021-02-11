@@ -21,7 +21,7 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
     library.setModules(request.modules)
 
     try {
-      val refinements = Refinements.fromCompilerRequest(request)
+      val refinements = Refinements(request.getRefinements)
       val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
       val errors = compiler.getErrors()

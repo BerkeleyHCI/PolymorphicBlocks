@@ -7,32 +7,13 @@ package edg.compiler;
 import "schema.proto";
 import "ref.proto";
 import "lit.proto";
+import "hdl.proto";
 
 
 message CompilerRequest {
   repeated string modules = 1;
   schema.Design design = 2;
-
-  message Refinement {
-    oneof source {
-      ref.LocalPath path = 1;
-      ref.LibraryPath cls = 2;
-    }
-    ref.LibraryPath replacement = 3;
-  }
-  message Value {
-    message ClassParamPath {
-      ref.LibraryPath cls = 1;
-      ref.LocalPath param_path = 2;
-    }
-    oneof source {
-      ref.LocalPath path = 1;
-      ClassParamPath cls_param = 2;
-    }
-    lit.ValueLit value = 3;
-  }
-  repeated Refinement refinements = 3;
-  repeated Value values = 4;
+  Refinements refinements = 3;
 }
 
 message CompilerResult {

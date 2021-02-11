@@ -42,8 +42,8 @@ class PythonInterface {
       modules=modules,
       element=Some(element)
     )
-    val (reply, reqTime) = timeExec {
-      blockingStub.getLibraryElement(request)
+    val (reply, reqTime) = timeExec {  // TODO plumb refinements through
+      blockingStub.getLibraryElement(request).getElement
     }
     debug(s"PyIf:libraryRequest ${element.getTarget.getName} (${reqTime} ms)")
     reply
