@@ -18,6 +18,29 @@ object DepValue {
 }
 
 
+/** Utilities for graphs structured as adjacency matrices (typed Map[T, Iterable[T]]),
+  * which may have back-edges
+  */
+class AdjacencyMatrix[T](mat: Map[T, Iterable[T]]) {
+  /** Returns the set of nodes (matrix keys) reachable from some starting key.
+    */
+  def connectedSet(starting: T): Set[T] = {
+    val setBuilder = mutable.Set[T]()
+    def traverse(node: T): Unit = {
+      if (setBuilder.contains(node)) {
+        return
+      }
+      setBuilder.add(node)
+      for (child <- mat.getOrElse(node, Seq())) {
+        traverse(child)
+      }
+    }
+    traverse(starting)
+    setBuilder.toSet
+  }
+}
+
+
 case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
 
 case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set(),
@@ -52,7 +75,9 @@ class ConstProp {
   val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Overassigns, for error tracking
-  val overassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
+  // This only tracks overassigns that were discarded, not including assigns that took effect.
+  // Additional analysis is needed to get the full set of conflicting assigns.
+  val discardOverassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
 
   //
   // Callbacks, to be overridden at instantiation site
@@ -97,10 +122,8 @@ class ConstProp {
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
     if (params.getValue(ExprRef.Param(dst)).isDefined) {
-      val record = overassigns.getOrElseUpdate(dst, OverassignRecord())
+      val record = discardOverassigns.getOrElseUpdate(dst, OverassignRecord())
       record.equals.add(src)
-      paramSource.get(dst).foreach( record.assigns.add )  // if there are assigns, make sure they are tracked
-      equality.get(dst).foreach( equalitySrcs => equalitySrcs.foreach( record.equals.add ) )
       return  // first set "wins"
     }
 
@@ -124,8 +147,7 @@ class ConstProp {
     }
     val paramSourceRecord = (root, constrName, targetExpr)
     if (params.nodeDefinedAt(ExprRef.Param(target))) {
-      val record = overassigns.getOrElseUpdate(target, OverassignRecord())
-      record.assigns.add(paramSource(target))
+      val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
       record.assigns.add(paramSourceRecord)
       return  // first set "wins"
     }
@@ -153,8 +175,7 @@ class ConstProp {
   def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
     if (params.nodeDefinedAt(ExprRef.Param(target))) {
-      val record = overassigns.getOrElseUpdate(target, OverassignRecord())
-      record.assigns.add(paramSource(target))
+      val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
       record.assigns.add(paramSourceRecord)
       return  // first set "wins"
     }
@@ -189,14 +210,10 @@ class ConstProp {
     // we assume that propagations between param1 and its equal nodes, and param2 and its equal nodes, are done prior
     (params.getValue(ExprRef.Param(param1)), params.getValue(ExprRef.Param(param2))) match {
       case (Some(param1Value), Some(param2Value)) =>
-        val record1 = overassigns.getOrElseUpdate(param1, OverassignRecord())
+        val record1 = discardOverassigns.getOrElseUpdate(param1, OverassignRecord())
         record1.equals.add(param2)
-        paramSource.get(param1).foreach( record1.assigns.add )
-        equality.get(param1).foreach( equalitySrcs => equalitySrcs.foreach( record1.equals.add ) )
-        val record2 = overassigns.getOrElseUpdate(param2, OverassignRecord())
+        val record2 = discardOverassigns.getOrElseUpdate(param2, OverassignRecord())
         record2.equals.add(param1)
-        paramSource.get(param2).foreach( record2.assigns.add )
-        equality.get(param2).foreach( equalitySrcs => equalitySrcs.foreach( record2.equals.add ) )
         // the equality is ignored otherwise
       case (Some(param1Value), None) => propagateEquality(param2, param1,
                                                           param1Value.asInstanceOf[DepValue.Param].value)
@@ -251,12 +268,57 @@ class ConstProp {
     case (ExprRef.Param(param), value) => param -> value.asInstanceOf[DepValue.Param].value
   }
 
-  def getErrors: Seq[CompilerError.OverAssign] = overassigns.map { case (target, record) =>
-    CompilerError.OverAssign(target,
-      assigns=record.assigns.map { case (root, constrName, constr) =>
-        (root, constrName, constr)
-      }.toSeq, equals = record.equals.map { equals =>
-        equals
-      }.toSeq)
-  }.toSeq
+  def getErrors: Seq[CompilerError.OverAssign] = {
+    // For all the overassigns, return the top-level "first" canonicalized path (merging the equalities)
+    val equalityWithDiscard = equality map { case (target, sources) =>
+      sources.toSeq ++ (discardOverassigns.get(target) match {
+        case Some(record) => record.equals.toSeq
+        case None => Seq()
+      })
+    }
+    val equalityGraph = new AdjacencyMatrix(equality.toMap)
+    val topPaths = discardOverassigns.map { case (target, record) =>
+      val all = equalityGraph.connectedSet(target).toSeq.sortBy(_.steps.head.toString).sortBy(_.steps.length)
+      all.head
+    }.toSet.toSeq//.toSet.toSeq.sortBy(_.steps.head.toString)
+       // .sortBy(_.steps.length)
+
+    topPaths.map { topTarget =>
+      val seen = mutable.Set[IndirectDesignPath]()
+      val assignBuilder = mutable.ListBuffer[CompilerError.OverAssignCause]()
+      def processNode(node: IndirectDesignPath): Unit = {  // traverse in DFS
+        // insert propagated assigns first
+        paramSource.get(node).foreach { case (root, constrName, value) =>
+          assignBuilder += CompilerError.OverAssignCause.Assign(node, root, constrName, value)
+        }
+        // then insert non-propagated assigns
+        discardOverassigns.get(node).foreach { record =>
+          record.assigns.foreach { case (root, constrName, value) =>
+            assignBuilder += CompilerError.OverAssignCause.Assign(node, root, constrName, value)
+          }
+        }
+        // then iterate to propagated equalities
+        for (child <- equality.getOrElse(node, mutable.Seq())) {
+          if (!seen.contains(child)) {
+            seen += child
+            assignBuilder += CompilerError.OverAssignCause.Equal(node, child)
+            processNode(child)
+          }
+        }
+        // then non-propagated equalities
+        discardOverassigns.get(node).foreach { record =>
+          record.equals.foreach { child =>
+            if (!seen.contains(child)) {
+              seen += child
+              assignBuilder += CompilerError.OverAssignCause.Equal(node, child)
+              processNode(child)
+            }
+          }
+        }
+      }
+      seen += topTarget
+      processNode(topTarget)
+      CompilerError.OverAssign(topTarget, assignBuilder.toSeq)
+    }
+  }
 }

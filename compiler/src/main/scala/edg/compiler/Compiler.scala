@@ -35,8 +35,15 @@ object CompilerError {
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
   case class OverAssign(target: IndirectDesignPath,
-                        assigns: Seq[(DesignPath, String, expr.ValueExpr)],
-                        equals: Seq[IndirectDesignPath]) extends CompilerError
+                        causes: Seq[OverAssignCause]) extends CompilerError
+
+  sealed trait OverAssignCause
+  object OverAssignCause {
+    case class Assign(target: IndirectDesignPath, root: DesignPath, constrName: String, value: expr.ValueExpr)
+        extends OverAssignCause
+    case class Equal(target: IndirectDesignPath, source: IndirectDesignPath)  // TODO constraint info once we track that?
+        extends OverAssignCause
+  }
 }
 
 
