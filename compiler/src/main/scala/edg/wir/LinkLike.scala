@@ -8,7 +8,7 @@ import edg.ref.ref
 import scala.collection.mutable
 
 
-trait LinkLike extends Pathable {
+sealed trait LinkLike extends Pathable {
   def toPb: elem.LinkLike
 }
 

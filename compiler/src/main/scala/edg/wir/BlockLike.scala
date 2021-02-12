@@ -10,7 +10,7 @@ import edg.util.SeqMapSortableFrom._
 import scala.collection.mutable
 
 
-trait BlockLike extends Pathable {
+sealed trait BlockLike extends Pathable {
   def toPb: elem.BlockLike
 }
 
@@ -107,7 +107,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
   }
 
   def getBlockClass: ref.LibraryPath = {
-    require(superclasses.length == 1)
+    require(superclasses.length == 1, s"unexpected multiple superclasses $superclasses")
     superclasses.head
   }
   override def isElaborated: Boolean = true

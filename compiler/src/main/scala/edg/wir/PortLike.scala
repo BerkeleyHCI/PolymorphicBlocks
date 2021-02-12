@@ -7,7 +7,7 @@ import edg.ref.ref
 import scala.collection.mutable
 
 
-trait PortLike extends Pathable {
+sealed trait PortLike extends Pathable {
   def toPb: elem.PortLike
 }
 

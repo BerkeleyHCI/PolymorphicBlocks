@@ -1,6 +1,6 @@
 package edg.compiler
 
-import scala.collection.mutable
+import scala.collection.{SeqMap, mutable}
 import edg.schema.schema
 import edg.expr.expr
 import edg.ref.ref
@@ -22,6 +22,8 @@ object ElaborateRecord {
   // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
   // and inserted into the link params data structure
   case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
+  // dependency source, set when CONNECTED_LINK.NAME available (if connected) or IS_CONNECTED set to false
+  case class FullConnectedPort(portPath: DesignPath) extends ElaborateRecord
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateRecord
 
   // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
@@ -94,6 +96,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val constProp = new ConstProp() {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
+
+      val (paramPrefix, paramSuffix) = param.steps.splitAt(param.steps.length - 2)
+      if (paramSuffix == Seq(IndirectStep.ConnectedLink, IndirectStep.Name)) {
+        require(paramPrefix.nonEmpty)
+        val paramPortPath = DesignPath() ++ paramPrefix.map(_.asInstanceOf[IndirectStep.Element].name)
+        if (connectedPorts.contains(paramPortPath)) {  // this filters out non-top-level ports, which behaves weirdly
+          // TODO debug with non-top-level ports?
+          elaboratePending.setValue(ElaborateRecord.FullConnectedPort(paramPortPath), None)
+        }
+      }
     }
   }
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
@@ -209,6 +221,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  protected def topPorts(path: DesignPath, portable: wir.HasMutablePorts): Seq[(DesignPath, wir.PortLike)] = {
+    def inner(path: DesignPath, port: wir.PortLike): Seq[(DesignPath, wir.PortLike)] = port match {
+      case port: wir.Port => Seq((path, port))
+      case port: wir.Bundle => Seq((path, port))
+      case port: wir.PortArray =>
+        port.getElaboratedPorts.toSeq.flatMap { case (subpath, subport) =>
+          inner(path + subpath, subport)
+        }
+      case port => throw new NotImplementedError(s"unknown unelaborated port $port")
+    }
+    portable.getElaboratedPorts.toSeq.flatMap { case (subpath, subport) =>
+      inner(path + subpath, subport)
+    }
+  }
+
   protected def processPort(path: DesignPath, port: wir.PortLike): Unit = port match {
     // TODO better semantics and consistency between this and processBlock/processLink
     // Unlike those, this is called with the final port object (after LibraryElements replaced).
@@ -259,9 +286,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def processPortConnected(portPath: DesignPath, port: wir.PortLike): Unit = port match {
     case port @ (_: wir.Port | _: wir.Bundle) =>
+      val isConnected = connectedPorts.contains(portPath)
       constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
-        BooleanValue(connectedPorts.contains(portPath)),
+        BooleanValue(isConnected),
         "connected")
+      if (!isConnected) {
+        elaboratePending.setValue(ElaborateRecord.FullConnectedPort(portPath), None)
+      }
     case port: wir.PortArray =>
       port.getElaboratedPorts.foreach { case (name, subport) =>
         processPortConnected(portPath + name, subport)
@@ -318,7 +349,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ref.ref
 
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     // Elaborate ports, generating equivalence constraints as needed
     // TODO support port.NAME
     elaborateContainedPorts(path, block)
@@ -420,11 +450,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Queue up generators as needed
+    val allPortsDeps = topPorts(path, block).map { case (path, port) =>
+      ElaborateRecord.FullConnectedPort(path)
+    }
     for ((generatorFnName, generator) <- block.getGenerators) {
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
         generator.dependencies.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        }
+        } ++ allPortsDeps
       )
     }
 
@@ -471,6 +504,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
       case None =>
     }
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
     // Process block
     processBlock(path, block)
@@ -482,7 +516,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
 
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     // Elaborate ports, generating equivalence constraints as needed
     // TODO support port.NAME
     elaborateContainedPorts(path, link)
@@ -610,6 +643,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     debug(s"Elaborate link at $path: ${readableLibraryPath(libraryPath)}")
     val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
 
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+
     // Process block
     processLink(path, link)
 
@@ -624,6 +659,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val block = resolveBlock(blockPath)
     val generator = block.getGenerators(fnName)
     block.removeGenerator(fnName)
+
+    // TODO pass through IS_CONNECTED
     val generatorResult = library.runGenerator(block.getBlockClass, fnName,
       generator.dependencies.map { depPath =>
         depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
