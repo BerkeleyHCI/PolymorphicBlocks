@@ -15,6 +15,8 @@ object ExprToString {
   private val instance = new ExprToString()
 
   def apply(item: expr.ValueExpr): String = instance.map(item)
+  def apply(item: ref.LocalPath): String = instance.mapRef(item)
+  def apply(item: lit.ValueLit): String = instance.mapLiteral(item)
 }
 
 
