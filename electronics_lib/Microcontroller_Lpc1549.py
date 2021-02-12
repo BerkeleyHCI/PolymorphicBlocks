@@ -422,7 +422,13 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     self.connect(self.pwr, self.io_draw.pwr)
     self.constrain(self.pwr.current_draw.within(self._io_draw + (0, 19)*mAmp))  # TODO fast prop so we can bound it before generation
 
-  def generate(self) -> None:
+    self.generator(self.pin_assign,
+                   targets=chain(self.digital.values(),
+                                 self.adc.values(), self.dac.values(),
+                                 self.uart.values(), self.spi.values(),
+                                 [self.can_0, self.i2c_0, self.usb_0]))  # TODO pass in connected blocks
+
+  def pin_assign(self) -> None:
     #
     # Reference Circuit Block
     #

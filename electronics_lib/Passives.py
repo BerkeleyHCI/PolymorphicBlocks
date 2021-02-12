@@ -170,10 +170,9 @@ def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
 
 class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, *args, part_spec: StringLike = "", **kwargs):
+  def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.part_spec = self.Parameter(StringExpr(part_spec))
     self.footprint_spec = self.Parameter(StringExpr(""))
 
     # Default to be overridden on a per-device basis

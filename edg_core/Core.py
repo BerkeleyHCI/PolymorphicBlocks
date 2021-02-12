@@ -130,6 +130,9 @@ class ElementDict(Generic[ElementType]):
   def items(self) -> ItemsView[Union[str, int], ElementType]:
     return self.container.items()
 
+  def values(self) -> ValuesView[ElementType]:
+    return self.container.values()
+
 
 class ElementMeta(type):
   def __call__(cls, *args, **kwargs):

@@ -80,8 +80,6 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
 
     # TODO model IO draw - need internal source block?
 
-    # TODO principled new-style generator for pin assign / hinting params
-    # NOTE this only (maybe?) works b/c of compiler implementation specifics (assigns in parent processed first)
     self.generator(self.pin_assign)  # TODO pass in connected blocks
 
   def pin_assign(self) -> None:
