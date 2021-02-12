@@ -141,17 +141,19 @@ class DigitalSourceBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(DigitalSource())
-    self.inner_link = self.Port(DigitalSink())
-
-  def contents(self) -> None:
-    super().contents()
+    self.outer_port = self.Port(DigitalSource(voltage_out=RangeExpr(),
+                                              output_thresholds=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.assign(self.inner_link.voltage_limits, (-float('inf'), float('inf')))
+    self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
+                                            current_draw=RangeExpr(),
+                                            input_thresholds=RangeExpr.EMPTY_DIT))
+
+  def contents(self) -> None:
+    super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.link().current_drawn, self.inner_link.current_draw)
@@ -163,14 +165,16 @@ class DigitalSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(DigitalSink())
-    self.inner_link = self.Port(DigitalSource())
+    self.outer_port = self.Port(DigitalSink(current_draw=RangeExpr(),
+                                            input_thresholds=RangeExpr()))
+
+    # TODO can we actually define something here? as a pseudoport, this doesn't have limits
+    self.inner_link = self.Port(DigitalSource(current_limits=RangeExpr.ALL,
+                                              voltage_out=RangeExpr(),
+                                              output_thresholds=RangeExpr()))
 
   def contents(self) -> None:
     super().contents()
-
-    # TODO can we actually define something here? as a pseudoport, this doesn't have limits
-    self.assign(self.inner_link.current_limits, (-float('inf'), float('inf')))
 
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
