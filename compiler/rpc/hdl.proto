@@ -64,10 +64,17 @@ message LibraryResponse {
   Refinements refinements = 3;  // only valid if element is a top-level block, and not error
 }
 
+message GeneratorResponse {
+  oneof result {
+    elem.HierarchyBlock generated = 1;
+    string error = 2;  // TODO source locators
+  }
+}
+
 service HdlInterface {
   rpc ClearCached (ModuleName) returns (stream ref.LibraryPath) { }
   rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
 
   rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) { }
-  rpc ElaborateGenerator (GeneratorRequest) returns (elem.HierarchyBlock) { }
+  rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) { }
 }

@@ -51,9 +51,6 @@ class Builder:
         elaborated.superclasses.add().target.name = block._get_def_name()
 
       return elaborated
-    except BaseException as e:
-      raise type(e)(f"({exc_prefix}) " + repr(e)) \
-        .with_traceback(sys.exc_info()[2])
     finally:
       self.pop_to(None)
 

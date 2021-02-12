@@ -132,7 +132,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> {response.error}")
+        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> Error {response.error}")
       elif response.HasField('refinements'):
         print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ... (w/ refinements)")
       else:
@@ -140,10 +140,11 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     return response
 
-  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgir.HierarchyBlock:
+  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgrpc.GeneratorResponse:
     for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
       self.library.load_module(module_name)
 
+    response = edgrpc.GeneratorResponse()
     try:
       generator_type = self.library.class_from_path(request.element)
       assert generator_type is not None, f"no generator {request.element}"
@@ -154,20 +155,19 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       generator_values = [(path, value)  # purge None from values to make the typer happy
                           for (path, value) in generator_values_raw
                           if value is not None]
-      generated: Optional[edgir.HierarchyBlock] = builder.elaborate_toplevel(
+      response.generated.CopyFrom(builder.elaborate_toplevel(
         generator_obj, f"in generate {request.fn} for {request.element}",
         replace_superclass=False,
-        generate_fn_name=request.fn, generate_values=generator_values)
+        generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
       traceback.print_exc()
       print(f"while serving generator request for {request.element.target.name}")
-      generated = None
+      response.error = str(e)
 
-    if generated is not None:
-      if self.verbose:
-        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name, ...}) -> None")
-      return generated
-    else:
-      if self.verbose:
-        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name, ...}) -> None")
-      return edgir.HierarchyBlock()
+    if self.verbose:
+      if response.HasField('error'):
+        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name}) -> Error {response.error}")
+      else:
+        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
+
+    return response

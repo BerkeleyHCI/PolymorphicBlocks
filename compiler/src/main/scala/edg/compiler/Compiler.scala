@@ -6,7 +6,7 @@ import edg.expr.expr
 import edg.ref.ref
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PortLike, Refinements}
 import edg.wir
-import edg.util.DependencyGraph
+import edg.util.{DependencyGraph, Errorable}
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -32,11 +32,17 @@ object ElaborateRecord {
 sealed trait CompilerError
 object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
+
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
-  case class AbstractBlock(path: DesignPath, superclasses: Seq[ref.LibraryPath]) extends CompilerError
+
+  case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError
+  case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError
+
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
+
+  case class AbstractBlock(path: DesignPath, superclasses: Seq[ref.LibraryPath]) extends CompilerError
   case class FailedAssertion(root: DesignPath, constrName: String,
                              value: expr.ValueExpr, result: ExprValue) extends CompilerError
   case class MissingAssertion(root: DesignPath, constrName: String,
@@ -614,13 +620,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val block = resolveBlock(blockPath)
     val generator = block.getGenerators(fnName)
     block.removeGenerator(fnName)
-    val generatedPb = library.runGenerator(block.getBlockClass, fnName,
+    val generatorResult = library.runGenerator(block.getBlockClass, fnName,
       generator.dependencies.map { depPath =>
         depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
       }.toMap
     )
-    val generatedDiff = block.dedupGeneratorPb(generatedPb)
-    val generatedDiffBlock = new wir.Block(generatedDiff, Seq(block.getBlockClass), None)
+    val generatedPb = generatorResult match {
+      case Errorable.Success(generatedPb) =>
+        block.dedupGeneratorPb(generatedPb)
+      case Errorable.Error(err) =>
+        import edg.elem.elem
+        errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
+        elem.HierarchyBlock()
+    }
+
+    val generatedDiffBlock = new wir.Block(generatedPb, Seq(block.getBlockClass), None)
     processBlock(blockPath, generatedDiffBlock)
     block.append(generatedDiffBlock)
   }

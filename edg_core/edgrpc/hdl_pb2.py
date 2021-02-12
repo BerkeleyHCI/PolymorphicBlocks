@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\xfd\x03\n\x0bRefinements\x12\x36\n\nsubclasses\x18\x01 \x03(\x0b\x32\".edg.compiler.Refinements.Subclass\x12/\n\x06values\x18\x02 \x03(\x0b\x32\x1f.edg.compiler.Refinements.Value\x1a\x88\x01\n\x08Subclass\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12#\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12)\n\x0breplacement\x18\x03 \x01(\x0b\x32\x14.edg.ref.LibraryPathB\x08\n\x06source\x1a\xf9\x01\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\x43\n\tcls_param\x18\x02 \x01(\x0b\x32..edg.compiler.Refinements.Value.ClassParamPathH\x00\x12 \n\x05value\x18\x03 \x01(\x0b\x32\x11.edg.lit.ValueLit\x1a[\n\x0e\x43lassParamPath\x12!\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12&\n\nparam_path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPathB\x08\n\x06source\"\x8b\x01\n\x0fLibraryResponse\x12-\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1a.edg.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.RefinementsB\x08\n\x06result2\xc6\x02\n\x0cHdlInterface\x12\x41\n\x0b\x43learCached\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12R\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1d.edg.compiler.LibraryResponse\"\x00\x12P\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x18.edg.elem.HierarchyBlock\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"H\n\x0eLibraryRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xd9\x01\n\x10GeneratorRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\xfd\x03\n\x0bRefinements\x12\x36\n\nsubclasses\x18\x01 \x03(\x0b\x32\".edg.compiler.Refinements.Subclass\x12/\n\x06values\x18\x02 \x03(\x0b\x32\x1f.edg.compiler.Refinements.Value\x1a\x88\x01\n\x08Subclass\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12#\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12)\n\x0breplacement\x18\x03 \x01(\x0b\x32\x14.edg.ref.LibraryPathB\x08\n\x06source\x1a\xf9\x01\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\x43\n\tcls_param\x18\x02 \x01(\x0b\x32..edg.compiler.Refinements.Value.ClassParamPathH\x00\x12 \n\x05value\x18\x03 \x01(\x0b\x32\x11.edg.lit.ValueLit\x1a[\n\x0e\x43lassParamPath\x12!\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12&\n\nparam_path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPathB\x08\n\x06source\"\x8b\x01\n\x0fLibraryResponse\x12-\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1a.edg.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.RefinementsB\x08\n\x06result\"]\n\x11GeneratorResponse\x12-\n\tgenerated\x18\x01 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result2\xcd\x02\n\x0cHdlInterface\x12\x41\n\x0b\x43learCached\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12M\n\x17LibraryElementsInModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12R\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1d.edg.compiler.LibraryResponse\"\x00\x12W\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x1f.edg.compiler.GeneratorResponse\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -419,6 +419,50 @@ _LIBRARYRESPONSE = _descriptor.Descriptor(
   serialized_end=1049,
 )
 
+
+_GENERATORRESPONSE = _descriptor.Descriptor(
+  name='GeneratorResponse',
+  full_name='edg.compiler.GeneratorResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='generated', full_name='edg.compiler.GeneratorResponse.generated', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='edg.compiler.GeneratorResponse.error', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='edg.compiler.GeneratorResponse.result',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+  ],
+  serialized_start=1051,
+  serialized_end=1144,
+)
+
 _LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
 _GENERATORREQUEST_VALUE.fields_by_name['path'].message_type = ref__pb2._LOCALPATH
 _GENERATORREQUEST_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
@@ -458,11 +502,19 @@ _LIBRARYRESPONSE.fields_by_name['element'].containing_oneof = _LIBRARYRESPONSE.o
 _LIBRARYRESPONSE.oneofs_by_name['result'].fields.append(
   _LIBRARYRESPONSE.fields_by_name['error'])
 _LIBRARYRESPONSE.fields_by_name['error'].containing_oneof = _LIBRARYRESPONSE.oneofs_by_name['result']
+_GENERATORRESPONSE.fields_by_name['generated'].message_type = elem__pb2._HIERARCHYBLOCK
+_GENERATORRESPONSE.oneofs_by_name['result'].fields.append(
+  _GENERATORRESPONSE.fields_by_name['generated'])
+_GENERATORRESPONSE.fields_by_name['generated'].containing_oneof = _GENERATORRESPONSE.oneofs_by_name['result']
+_GENERATORRESPONSE.oneofs_by_name['result'].fields.append(
+  _GENERATORRESPONSE.fields_by_name['error'])
+_GENERATORRESPONSE.fields_by_name['error'].containing_oneof = _GENERATORRESPONSE.oneofs_by_name['result']
 DESCRIPTOR.message_types_by_name['ModuleName'] = _MODULENAME
 DESCRIPTOR.message_types_by_name['LibraryRequest'] = _LIBRARYREQUEST
 DESCRIPTOR.message_types_by_name['GeneratorRequest'] = _GENERATORREQUEST
 DESCRIPTOR.message_types_by_name['Refinements'] = _REFINEMENTS
 DESCRIPTOR.message_types_by_name['LibraryResponse'] = _LIBRARYRESPONSE
+DESCRIPTOR.message_types_by_name['GeneratorResponse'] = _GENERATORRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ModuleName = _reflection.GeneratedProtocolMessageType('ModuleName', (_message.Message,), {
@@ -532,6 +584,13 @@ LibraryResponse = _reflection.GeneratedProtocolMessageType('LibraryResponse', (_
   })
 _sym_db.RegisterMessage(LibraryResponse)
 
+GeneratorResponse = _reflection.GeneratedProtocolMessageType('GeneratorResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GENERATORRESPONSE,
+  '__module__' : 'hdl_pb2'
+  # @@protoc_insertion_point(class_scope:edg.compiler.GeneratorResponse)
+  })
+_sym_db.RegisterMessage(GeneratorResponse)
+
 
 
 _HDLINTERFACE = _descriptor.ServiceDescriptor(
@@ -541,8 +600,8 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1052,
-  serialized_end=1378,
+  serialized_start=1147,
+  serialized_end=1480,
   methods=[
   _descriptor.MethodDescriptor(
     name='ClearCached',
@@ -580,7 +639,7 @@ _HDLINTERFACE = _descriptor.ServiceDescriptor(
     index=3,
     containing_service=None,
     input_type=_GENERATORREQUEST,
-    output_type=elem__pb2._HIERARCHYBLOCK,
+    output_type=_GENERATORRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

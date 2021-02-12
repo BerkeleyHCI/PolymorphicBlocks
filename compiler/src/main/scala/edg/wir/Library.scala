@@ -6,6 +6,7 @@ import edg.ref.ref
 import edg.schema.schema
 import edg.IrPort
 import edg.compiler.ExprValue
+import edg.util.Errorable
 
 
 /** API definition for a library
@@ -31,7 +32,8 @@ trait Library {
   def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock]
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
-  def runGenerator(path: ref.LibraryPath, fnName: String, values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock
+  def runGenerator(path: ref.LibraryPath, fnName: String,
+                   values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
 }
 
 
@@ -84,7 +86,7 @@ class EdgirLibrary(pb: schema.Library) extends Library {
   }
 
   override def runGenerator(path: ref.LibraryPath, fnName: String,
-                            values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+                            values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock] = {
     throw new IllegalArgumentException("Can't run generators in static library")
   }
 }

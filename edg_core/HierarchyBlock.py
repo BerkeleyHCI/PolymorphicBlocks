@@ -610,21 +610,10 @@ class GeneratorBlock(Block):
     fn_args = [self.get(arg_param)
       for arg_param in self._generators[generate_fn_name].fn_args]
 
-    try:
-      fn = getattr(self, generate_fn_name)
-      fn(*fn_args)
-      self._elaboration_state = BlockElaborationState.post_generate
-      return self._def_to_proto()
-    except BaseException as e:
-      import traceback
-      pb = edgir.HierarchyBlock()
-      values_str = ", ".join([f"{edgir.local_path_to_str(path)}={edgir.lit_to_string(value)}"
-                              for (path, value) in generate_values])
-      err_meta = pb.meta.members.node[f'GenerateError_{generate_fn_name}'].error
-      err_meta.message = repr(e) + "\n" + f"with values: {values_str}"
-      err_meta.traceback = traceback.format_exc()
-      # TODO ideally discard this stack frame, since it's not helpful
-      return pb
+    fn = getattr(self, generate_fn_name)
+    fn(*fn_args)
+    self._elaboration_state = BlockElaborationState.post_generate
+    return self._def_to_proto()
 
   def generate(self):
     raise RuntimeError("generate deprecated")

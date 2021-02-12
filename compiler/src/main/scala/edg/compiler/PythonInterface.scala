@@ -61,7 +61,8 @@ class PythonInterface {
   }
 
   def elaborateGeneratorRequest(modules: Seq[String], element: ref.LibraryPath,
-                                fnName: String, values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+                                fnName: String, values: Map[ref.LocalPath, ExprValue]):
+      Errorable[elem.HierarchyBlock] = {
     val request = edgrpc.GeneratorRequest(
       modules=modules, element=Some(element), fn=fnName,
       values=values.map { case (valuePath, valueValue) =>
@@ -75,7 +76,11 @@ class PythonInterface {
       blockingStub.elaborateGenerator(request)
     }
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
-    reply
+    reply.result match {
+      case edgrpc.GeneratorResponse.Result.Generated(elem) => Errorable.Success(elem)
+      case edgrpc.GeneratorResponse.Result.Error(err) => Errorable.Error(err)
+      case edgrpc.GeneratorResponse.Result.Empty => Errorable.Error("empty response")
+    }
   }
 }
 
@@ -184,13 +189,13 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
   }
 
   override def runGenerator(path: ref.LibraryPath, fnName: String,
-                            values: Map[ref.LocalPath, ExprValue]): elem.HierarchyBlock = {
+                            values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock] = {
     generatorCache.get((path, fnName, values)) match {
-      case Some(generated) => generated
+      case Some(generated) => Errorable.Success(generated)
       case None =>
-        val generated = py.elaborateGeneratorRequest(modules, path, fnName, values)
-        generatorCache.put((path, fnName, values), generated)
-        generated
+        val result = py.elaborateGeneratorRequest(modules, path, fnName, values)
+        result.map { generatorCache.put((path, fnName, values), _) }
+        result
     }
   }
 }

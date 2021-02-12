@@ -85,8 +85,6 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
     self.generator(self.pin_assign)  # TODO pass in connected blocks
 
   def pin_assign(self) -> None:
-    super().generate()
-
     # Note: application circuit at LPC15XX 14.6, Figure 49
     system_pins = {
       16: self.pwr_in,
