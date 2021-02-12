@@ -9,6 +9,10 @@ from .SchematicStubGenerator import write_schematic_stubs
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str):
+  if not os.path.exists(target_dir):
+    os.makedirs(target_dir)
+  assert os.path.isdir(target_dir), f"target_dir {target_dir} to compile_board must be directory"
+
   design_filename = os.path.join(target_dir, f'{target_name}.edg')
   netlist_filename = os.path.join(target_dir, f'{target_name}.net')
 

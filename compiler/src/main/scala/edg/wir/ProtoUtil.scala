@@ -11,4 +11,8 @@ object ProtoUtil {
       case None => Seq()
     }
   }
+
+  def toNameOrder(nameOrder: Seq[String]): common.Metadata = {
+    common.Metadata(meta=common.Metadata.Meta.NamespaceOrder(common.NamespaceOrder(names=nameOrder)))
+  }
 }
