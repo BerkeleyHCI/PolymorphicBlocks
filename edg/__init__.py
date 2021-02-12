@@ -5,5 +5,6 @@ from electronics_model import *
 from electronics_abstract_parts import *
 from electronics_lib import *
 
+from .BoardTop import BoardTop
 from .ElectronicsDriver import ElectronicsDriver
 from .ElectronicsDriver import DesignRefinement, DefaultRefinement

@@ -10,7 +10,7 @@ from edg import *
 from edg import TransformUtil as tfu
 
 
-class TestBlinkyBasic(DesignTop):
+class TestBlinkyBasic(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -19,15 +19,8 @@ class TestBlinkyBasic(DesignTop):
     self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
 
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Resistor, ChipResistor),
-      ]
-    )
 
-
-class TestBlinkySimple(Block):
+class TestBlinkySimple(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -42,7 +35,7 @@ class TestBlinkySimple(Block):
     self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
 
 
-class TestBlinkySimpleChain(Block):
+class TestBlinkySimpleChain(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -54,7 +47,7 @@ class TestBlinkySimpleChain(Block):
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
 
-class TestBlinkyBroken(Block):
+class TestBlinkyBroken(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
@@ -70,7 +63,7 @@ class TestBlinkyBroken(Block):
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
 
 
-class TestBlinkyFlattened(Block):
+class TestBlinkyFlattened(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
@@ -142,7 +135,7 @@ class Mcp9700(Block):
       self.vdd_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
 
 
-class TestBlinkyComplete(Block):
+class TestBlinkyComplete(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
