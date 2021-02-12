@@ -53,6 +53,8 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
           (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
       ) =>
         throw new NotImplementedError(s"Unknown step $step in resolving $suffix from $this")
+      case ref.LocalStep.Step.Empty =>
+        throw new NotImplementedError(s"Empty step resolving $suffix from $this")
     } } )
   }
 
