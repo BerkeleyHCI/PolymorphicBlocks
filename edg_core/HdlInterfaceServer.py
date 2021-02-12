@@ -160,8 +160,9 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         replace_superclass=False,
         generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
-      traceback.print_exc()
-      print(f"while serving generator request for {request.element.target.name}")
+      if self.verbose:
+        traceback.print_exc()
+        print(f"while serving generator request for {request.element.target.name}")
       response.error = str(e)
 
     if self.verbose:

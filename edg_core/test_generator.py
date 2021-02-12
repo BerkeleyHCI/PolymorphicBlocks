@@ -183,19 +183,6 @@ class TestGeneratorFailure(GeneratorBlock):
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    compiled = ScalaCompiler.compile(TestGeneratorFailure)
-    pb = compiled.contents
-
-    self.assertIn('GenerateError_errorfn', pb.meta.members.node)
-
-    self.assertIn("TestGeneratorException",
-                  pb.meta.members.node['GenerateError_errorfn'].error.message)
-    self.assertIn("test text",
-                  pb.meta.members.node['GenerateError_errorfn'].error.message)
-    self.assertIn("float_param=41",
-                  pb.meta.members.node['GenerateError_errorfn'].error.message)
-
-    self.assertIn("errorfn",
-                  pb.meta.members.node['GenerateError_errorfn'].error.traceback)
-    self.assertIn("helperfn",
-                  pb.meta.members.node['GenerateError_errorfn'].error.traceback)
+    # TODO some way to check the messages are plumbed through?
+    with self.assertRaises(AssertionError) as context:
+      ScalaCompiler.compile(TestGeneratorFailure)
