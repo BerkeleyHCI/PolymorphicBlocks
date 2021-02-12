@@ -212,7 +212,11 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     // Check the CONNECTED_LINK propagation
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + "outerParam") should
         equal(Some(IntValue(42)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + IndirectStep.Name) should
+        equal(Some(TextValue("link")))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + "innerParam") should
         equal(Some(IntValue(7)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + IndirectStep.Name) should
+        equal(Some(TextValue("link.inner")))
   }
 }

@@ -105,7 +105,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Supplemental elaboration data structures
   // port -> (connected link path, list of params of the connected link)
-  private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[String])]()
+  private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[IndirectStep])]()
   // set of all connected ports, built from root inwards
   private val connectedPorts = mutable.Set[DesignPath]()  // transitive (lack of connects propagates through exports)
   private val directConnectedPorts = mutable.Set[DesignPath]()  // direct (indicates whether the port is involved in a connect in enclosing)
@@ -274,8 +274,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                                            recursive: Boolean): Unit = {
     port match {
       case port @ (_: wir.Port | _: wir.Bundle) =>
-        connectedLinkParams.put(portPath, (linkPath, params))
-        params.foreach { paramName =>
+        val allParams = params.map(IndirectStep.Element(_)) :+ IndirectStep.Name
+        connectedLinkParams.put(portPath, (linkPath, allParams))
+        allParams.foreach { paramName =>
           constProp.addEquality(
             portPath.asIndirect + IndirectStep.ConnectedLink + paramName,
             linkPath.asIndirect + paramName
@@ -317,7 +318,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ref.ref
 
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     // Elaborate ports, generating equivalence constraints as needed
+    // TODO support port.NAME
     elaborateContainedPorts(path, block)
     processParams(path, block)
     for ((name, port) <- block.getElaboratedPorts) {
@@ -478,9 +481,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
-    import edg.ElemBuilder.Constraint
-    import collection.SeqMap
+
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     // Elaborate ports, generating equivalence constraints as needed
+    // TODO support port.NAME
     elaborateContainedPorts(path, link)
     processParams(path, link)
     for ((name, port) <- link.getElaboratedPorts) {

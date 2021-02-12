@@ -137,11 +137,13 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSource + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+    compiler.getValue(linkThroughSource + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     val linkThroughSink0 = IndirectDesignPath() + "sink0" + "port" + IndirectStep.ConnectedLink
     compiler.getValue(linkThroughSink0 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+    compiler.getValue(linkThroughSink0 + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
@@ -196,16 +198,19 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSink0 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink0 + "sinkSum") should equal(Some(FloatValue(6.0)))
     compiler.getValue(linkThroughSink0 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+    compiler.getValue(linkThroughSink0 + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     val linkThroughSink1 = IndirectDesignPath() + "sink1" + "port" + IndirectStep.ConnectedLink
     compiler.getValue(linkThroughSink1 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink1 + "sinkSum") should equal(Some(FloatValue(6.0)))
     compiler.getValue(linkThroughSink1 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+    compiler.getValue(linkThroughSink1 + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     val linkThroughSink2 = IndirectDesignPath() + "sink2" + "port" + IndirectStep.ConnectedLink
     compiler.getValue(linkThroughSink2 + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSink2 + "sinkSum") should equal(Some(FloatValue(6.0)))
     compiler.getValue(linkThroughSink2 + "sinkIntersect") should equal(Some(RangeValue(6.0, 7.0)))
+    compiler.getValue(linkThroughSink2 + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
@@ -277,12 +282,14 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     compiler.getValue(linkThroughSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughSource + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+    compiler.getValue(linkThroughSource + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     // check CONNECTED_LINK through inner (via exports)
     val linkThroughInnerSource = IndirectDesignPath() + "source" + "inner" + "port" + IndirectStep.ConnectedLink
     compiler.getValue(linkThroughInnerSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
     compiler.getValue(linkThroughInnerSource + "sinkSum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(linkThroughInnerSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
+    compiler.getValue(linkThroughInnerSource + IndirectStep.Name) should equal(Some(TextValue("link")))
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
