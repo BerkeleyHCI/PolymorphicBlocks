@@ -34,6 +34,7 @@ object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
   case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
+  case class AbstractBlock(path: DesignPath, superclasses: Seq[ref.LibraryPath]) extends CompilerError
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
   case class FailedAssertion(root: DesignPath, constrName: String,

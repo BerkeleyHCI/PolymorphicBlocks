@@ -243,7 +243,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._ports.finalize()
 
     if (self.__class__, 'abstract') in self._elt_properties:
-      self.abstract = self.Metadata('abstract')
+      assert isinstance(pb, edgir.HierarchyBlock)
+      pb.is_abstract = True
 
     for cls in self._get_block_bases():
       super_pb = pb.superclasses.add()

@@ -31,10 +31,15 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
   override def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
                ports: SeqMap[String, Seq[CompilerError]], blocks: SeqMap[String, Seq[CompilerError]],
                links: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
+    val abstractError = if (block.isAbstract) {
+      Seq(CompilerError.AbstractBlock(path, block.superclasses))
+    } else {
+      Seq()
+    }
     val errors = block.generators.map { case (name, generator) =>
       CompilerError.Generator(path, block.superclasses, generator.fn)
     } ++ ports.values.flatten ++ blocks.values.flatten ++ links.values.flatten
-    errors.toSeq
+    errors.toSeq ++ abstractError
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): Seq[CompilerError] = {
     Seq(CompilerError.LibraryElement(path, block))

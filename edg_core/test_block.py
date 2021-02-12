@@ -4,6 +4,7 @@ from . import *
 from .test_elaboration_common import TestPortBase
 
 
+@abstract_block
 class TestBlockBase(Block):
   def __init__(self) -> None:
     super().__init__()
@@ -22,6 +23,9 @@ class TestBlock(TestBlockBase):
 class BlockBaseProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TestBlockBase()._elaborated_def_to_proto()
+
+  def test_abstract(self) -> None:
+    self.assertEqual(self.pb.is_abstract, True)
 
   def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 1)
@@ -52,6 +56,9 @@ class BlockBaseProtoTestCase(unittest.TestCase):
 class BlockProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TestBlock()._elaborated_def_to_proto()
+
+  def test_not_abstract(self) -> None:
+    self.assertEqual(self.pb.is_abstract, False)
 
   def test_superclass(self) -> None:
     self.assertEqual(len(self.pb.superclasses), 1)
