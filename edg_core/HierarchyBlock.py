@@ -186,7 +186,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
     )
 
-  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, allow_unconnected=False) -> edgir.HierarchyBlock:
     self._blocks.finalize()
     self._connects.finalize()
     self._chains.finalize()
@@ -207,11 +207,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           unconnected_required_ports.append(name + '.' + block._name_of(block_port))
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
 
-    if unconnected_required_ports:
-      required_ports = ', '.join(unconnected_required_ports)
-      raise UnconnectedRequiredPortError(
-        f"In blocks in {type(self)}, "
-        f"required ports {required_ports} not connected")
+    if not allow_unconnected:  # TODO also check avoid-fail-fast as builder option?
+      if unconnected_required_ports:
+        required_ports = ', '.join(unconnected_required_ports)
+        raise UnconnectedRequiredPortError(
+          f"In blocks in {type(self)}, "
+          f"required ports {required_ports} not connected")
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
@@ -558,22 +559,26 @@ class GeneratorBlock(Block):
       assert issubclass(cls, Block)
 
     pb = edgir.HierarchyBlock()
-    if self._elaboration_state == BlockElaborationState.post_generate:  # don't write contents before generate
-      pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
-      pb = self._populate_def_proto_block_base(pb)
-      pb = self._populate_def_proto_block_contents(pb)
-      pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
-                                                                      self._generator_target_params)))
-      pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
-                                                                     self._generator_target_ports)))
+
+    if self._elaboration_state == BlockElaborationState.post_generate:  # don't write generators if invoking the generator
+      # Don't fail fast on unconnected because generators are incremental, and any individual generator may not
+      # leave the generator in a fully complete state.
+      # Don't generate connects because more items might be connected
+      # TODO: in future, be stricter about not having connects split across generators?
+      pb = self._populate_def_proto_hierarchy(pb, allow_unconnected=True)  # specifically generate connect statements first TODO why?
     else:
-      pb = self._populate_def_proto_block_base(pb)
-      pb = self._populate_def_proto_block_contents(pb)  # constraints need to be written and propagated
-      pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
-                                                                      self._generator_target_params)))
-      pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
-                                                                     self._generator_target_ports)))
+      self._connects.finalize()
+
+    pb = self._populate_def_proto_block_base(pb)
+    pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
+                                                                    self._generator_target_params)))
+    pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
+                                                                   self._generator_target_ports)))
+
+    if self._elaboration_state != BlockElaborationState.post_generate:  # don't write generators if invoking the generator
       pb = self._populate_def_proto_block_generator(pb)
+
     return pb
 
   def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
@@ -601,8 +606,11 @@ class GeneratorBlock(Block):
                               generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> edgir.HierarchyBlock:
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
+
     self.contents()
+
     self._elaboration_state = BlockElaborationState.generate
+
     for (name, port) in self._ports.items():
       # TODO cleaner, oddly-stateful, detection of connected_link
       if isinstance(port, Port):
@@ -616,7 +624,9 @@ class GeneratorBlock(Block):
 
     fn = getattr(self, generate_fn_name)
     fn(*fn_args)
+
     self._elaboration_state = BlockElaborationState.post_generate
+
     return self._def_to_proto()
 
   def generate(self):
