@@ -177,7 +177,6 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     }
     elts.get(path) match {
       case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) =>
-        require(!eltsRefinements.isDefinedAt(path))
         (member, refinements)
       case Some(member) => throw new NoSuchElementException(s"Library element at $path not a block, got ${member.getClass}")
       case None => throw new NoSuchElementException(s"Library does not contain $path")

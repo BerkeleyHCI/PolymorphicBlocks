@@ -45,8 +45,8 @@ class Refinements():
 
   def __add__(self, rhs: Refinements) -> Refinements:
     return Refinements(
-      class_refinements=list(*chain(self.class_refinements, rhs.class_refinements)),
-      instance_refinements=list(*chain(self.instance_refinements, rhs.instance_refinements)),
-      class_values=list(*chain(self.class_values, rhs.class_values)),
-      instance_values=list(*chain(self.instance_values, rhs.instance_values)),
+      class_refinements=list(chain(self.class_refinements, rhs.class_refinements)),
+      instance_refinements=list(chain(self.instance_refinements, rhs.instance_refinements)),
+      class_values=list(chain(self.class_values, rhs.class_values)),
+      instance_values=list(chain(self.instance_values, rhs.instance_values)),
     )

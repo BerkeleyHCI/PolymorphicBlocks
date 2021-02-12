@@ -10,7 +10,7 @@ from edg import *
 from edg import TransformUtil as tfu
 
 
-class TestBlinkyBasic(Block):
+class TestBlinkyBasic(DesignTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -18,6 +18,13 @@ class TestBlinkyBasic(Block):
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_refinements=[
+        (Resistor, ChipResistor),
+      ]
+    )
 
 
 class TestBlinkySimple(Block):

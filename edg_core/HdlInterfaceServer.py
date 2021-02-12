@@ -37,6 +37,7 @@ class LibraryElementResolver():
       self.seen_modules.remove(module)
     self.module_contains.pop(module_name, None)
     importlib.reload(module)
+    self._search_module(module)
     return discarded
 
   def _search_module(self, module: ModuleType) -> None:
@@ -132,6 +133,8 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     if self.verbose:
       if response.HasField('error'):
         print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> {response.error}")
+      elif response.HasField('refinements'):
+        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ... (w/ refinements)")
       else:
         print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
 
