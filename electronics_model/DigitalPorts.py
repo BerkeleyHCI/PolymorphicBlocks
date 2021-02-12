@@ -26,8 +26,6 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
 
     self.output_thresholds = self.Parameter(RangeExpr())
     self.input_thresholds = self.Parameter(RangeExpr())
-    self.input_low_threshold = self.Parameter(FloatExpr())
-    self.input_high_threshold = self.Parameter(FloatExpr())
 
     self.pullup_capable = self.Parameter(BoolExpr())
     self.pulldown_capable = self.Parameter(BoolExpr())
@@ -79,6 +77,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
                 source_output_thresholds.intersect(
                   bidirs_output_thresholds.intersect(
                     single_output_thresholds)))
+
     self.assign(self.input_thresholds, (  # TODO: clean up
       self.sinks.min(lambda x: x.input_thresholds).min(self.bidirs.min(lambda x: x.input_thresholds)),
       self.sinks.max(lambda x: x.input_thresholds).max(self.bidirs.max(lambda x: x.input_thresholds))
@@ -180,10 +179,7 @@ class DigitalSinkBridge(CircuitPortBridge):
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
     self.assign(self.inner_link.output_thresholds, self.outer_port.link().output_thresholds)
-    self.assign(self.outer_port.input_thresholds, (
-      self.inner_link.link().input_low_threshold,
-      self.inner_link.link().input_high_threshold
-    ))
+    self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
 
 class DigitalSourceAdapterElectricalSource(CircuitPortAdapter[ElectricalSource]):
@@ -320,10 +316,7 @@ class DigitalBidirBridge(CircuitPortBridge):
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
-    self.assign(self.outer_port.input_thresholds, (
-      self.inner_link.link().input_low_threshold,
-      self.inner_link.link().input_high_threshold
-    ))
+    self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
 
 class DigitalSingleSource(DigitalBase):
