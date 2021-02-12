@@ -4,8 +4,9 @@ import scala.collection.{SeqMap, mutable}
 import edg.schema.schema
 import edg.expr.expr
 import edg.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PortLike, Refinements}
-import edg.wir
+import edg.ref.ref.LocalPath
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
+import edg.{ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
 
 
@@ -221,8 +222,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  protected def topPorts(path: DesignPath, portable: wir.HasMutablePorts): Seq[(DesignPath, wir.PortLike)] = {
-    def inner(path: DesignPath, port: wir.PortLike): Seq[(DesignPath, wir.PortLike)] = port match {
+  protected def topPorts(portable: wir.HasMutablePorts): Seq[(PathSuffix, wir.PortLike)] = {
+    def inner(path: PathSuffix, port: wir.PortLike): Seq[(PathSuffix, wir.PortLike)] = port match {
       case port: wir.Port => Seq((path, port))
       case port: wir.Bundle => Seq((path, port))
       case port: wir.PortArray =>
@@ -232,7 +233,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }
     portable.getElaboratedPorts.toSeq.flatMap { case (subpath, subport) =>
-      inner(path + subpath, subport)
+      inner(PathSuffix() + subpath, subport)
     }
   }
 
@@ -450,8 +451,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Queue up generators as needed
-    val allPortsDeps = topPorts(path, block).map { case (path, port) =>
-      ElaborateRecord.FullConnectedPort(path)
+    val allPortsDeps = topPorts(block).map { case (portSuffix, port) =>
+      ElaborateRecord.FullConnectedPort(path ++ portSuffix)
     }
     for ((generatorFnName, generator) <- block.getGenerators) {
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
@@ -660,11 +661,28 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val generator = block.getGenerators(fnName)
     block.removeGenerator(fnName)
 
+    val allDepValues = generator.dependencies.map { depPath =>
+      depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
+    }.toMap
+    val allPortsConnected = topPorts(block).flatMap { case (portSuffix, port) =>
+      val connectedSuffix = portSuffix + IndirectStep.IsConnected
+      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ connectedSuffix).get
+          .asInstanceOf[BooleanValue]
+      isConnectedValue.value match {
+        case true =>
+          val connectedNameSuffix = portSuffix + IndirectStep.ConnectedLink + IndirectStep.Name
+          val connectedNameValue = constProp.getValue(blockPath.asIndirect ++ connectedNameSuffix).get
+              .asInstanceOf[TextValue]
+          Map(connectedSuffix.asLocalPath() -> isConnectedValue,
+            connectedNameSuffix.asLocalPath() -> connectedNameValue)
+        case false =>
+          Map(connectedSuffix.asLocalPath() -> isConnectedValue)
+      }
+    }
+
     // TODO pass through IS_CONNECTED
     val generatorResult = library.runGenerator(block.getBlockClass, fnName,
-      generator.dependencies.map { depPath =>
-        depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
-      }.toMap
+      allDepValues ++ allPortsConnected
     )
     val generatedPb = generatorResult match {
       case Errorable.Success(generatedPb) =>

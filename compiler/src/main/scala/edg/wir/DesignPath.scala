@@ -10,22 +10,40 @@ import edg.ref.ref
   *
   * Needs a connectivity table to resolve.
   */
-sealed trait IndirectStep
+sealed trait IndirectStep {
+  def asLocalStep: ref.LocalStep
+}
+
 object IndirectStep {  // namespace
   case class Element(name: String) extends IndirectStep {
-    override def toString = name
+    override def toString: String = name
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.Name(name))
+    }
   }
   object IsConnected extends IndirectStep {
     override def toString: String = "IS_CONNECTED"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
+    }
   }
   object Length extends IndirectStep {
     override def toString: String = "LENGTH"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH))
+    }
   }
   object Name extends IndirectStep {
     override def toString: String = "NAME"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME))
+    }
   }
   object ConnectedLink extends IndirectStep {  // block-side port -> link
     override def toString: String = "CONNECTED_LINK"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK))
+    }
   }
 }
 case class IndirectDesignPath(steps: Seq[IndirectStep]) {
@@ -38,6 +56,10 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
 
   def ++(suffix: Seq[String]): IndirectDesignPath = {
     IndirectDesignPath(steps ++ suffix.map { IndirectStep.Element(_) })
+  }
+
+  def ++(suffix: PathSuffix): IndirectDesignPath = {
+    IndirectDesignPath(steps ++ suffix.steps)
   }
 
   def ++(suffix: ref.LocalPath): IndirectDesignPath = {
@@ -104,6 +126,11 @@ case class DesignPath(steps: Seq[String]) {
     DesignPath(steps ++ suffix)
   }
 
+  // Appends a PathSuffix. Errors out if the PathSuffix contains indirect elements.
+  def ++(suffix: PathSuffix): DesignPath = {
+    DesignPath(steps ++ suffix.steps.map(_.asInstanceOf[IndirectStep.Element].name))
+  }
+
   def ++(suffix: ref.LocalPath): DesignPath = {
     DesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => name
@@ -145,4 +172,18 @@ object DesignPath {
   def apply(): DesignPath = DesignPath(Seq())
 
   def unapply(path: DesignPath): Option[Seq[String]] = Some(path.steps)
+}
+
+
+case class PathSuffix(steps: Seq[IndirectStep] = Seq()) {
+  def +(elem: String): PathSuffix = {
+    PathSuffix(steps :+ IndirectStep.Element(elem))
+  }
+  def +(elem: IndirectStep): PathSuffix = {
+    PathSuffix(steps :+ elem)
+  }
+
+  def asLocalPath(): ref.LocalPath = {
+    ref.LocalPath(steps = steps.map(_.asLocalStep))
+  }
 }

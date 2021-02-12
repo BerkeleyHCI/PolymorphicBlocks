@@ -603,6 +603,9 @@ class GeneratorBlock(Block):
     self._elaboration_state = BlockElaborationState.contents
     self.contents()
     self._elaboration_state = BlockElaborationState.generate
+    for (name, port) in self._ports.items():
+      # TODO cleaner, oddly-stateful, detection of connected_link
+      port.link()  # lazy-initialize connected_link refs so it's ready for params
     self._parse_param_values(generate_values)
 
     # TODO: support ValueExpr, perhaps by ConstraintExpr matching or eager conversion to ValueExpr

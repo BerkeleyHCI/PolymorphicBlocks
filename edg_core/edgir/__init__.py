@@ -250,7 +250,7 @@ def localpath_concat(*elts: Union[LocalPath, str, 'ReservedValue']) -> LocalPath
         result.steps.add().CopyFrom(elt_elt)
     elif isinstance(elt, str):
       result.steps.add().name = elt
-    elif elt == CONNECTED_LINK or elt == IS_CONNECTED:
+    elif elt in (CONNECTED_LINK, IS_CONNECTED, LENGTH, NAME):
       result.steps.add().reserved_param = elt
     else:
       raise ValueError(f"unknown localpath elt {elt}")

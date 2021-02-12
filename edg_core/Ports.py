@@ -93,6 +93,8 @@ class Port(BasePort, Generic[PortLinkType]):
     super().__init__()
 
     self.link_type: Type[PortLinkType]
+    # This needs to be lazy-initialized to avoid building ports with links with ports, and so on
+    # TODO: maybe a cleaner solution is to mark port constructors in a Block context or Link context?
     self._link_instance: Optional[PortLinkType] = None
     self.bridge_type: Optional[Type[PortBridge]] = None
     self._bridge_instance: Optional[PortBridge] = None  # internal only
@@ -170,8 +172,9 @@ class Port(BasePort, Generic[PortLinkType]):
       link_refs = self._link_instance._get_ref_map(edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
     else:
       link_refs = IdentityDict([])
-    return super()._get_ref_map(prefix) + IdentityDict(
-      [(self.is_connected(), edgir.localpath_concat(prefix, edgir.IS_CONNECTED))],
+    return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
+      [(self.is_connected(), edgir.localpath_concat(prefix, edgir.IS_CONNECTED)),
+       (self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
       *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for name, param in self._parameters.items()]
     ) + link_refs
 

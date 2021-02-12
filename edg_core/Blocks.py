@@ -11,7 +11,8 @@ from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding, \
+  NameBinding, StringExpr
 from .Ports import BasePort, Port, Bundle
 from .StructuredMetadata import MetaNamespaceOrder
 
@@ -206,11 +207,16 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
+    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
+
     self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
   def _post_init(self):
     assert self._elaboration_state == BlockElaborationState.init
     self._elaboration_state = BlockElaborationState.post_init
+
+  def name(self) -> StringExpr:
+    return self._name
 
   """Overload this method to define the contents of this block"""
   def contents(self):
@@ -355,6 +361,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(
+      [(self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
       *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
       *[port._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, port) in self._ports.items()]
     )
