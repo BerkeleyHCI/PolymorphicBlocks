@@ -9,7 +9,7 @@ class Crystal(DiscreteComponent):
     """Discrete crystal component."""
     super().__init__()
 
-    self.frequency = self.Parameter(RangeExpr(frequency, constr=RangeSubset))
+    self.frequency = self.Parameter(RangeExpr(frequency))
 
     self.crystal = self.Port(CrystalPort(), [InOut])
     self.gnd = self.Port(ElectricalSink(), [Common])

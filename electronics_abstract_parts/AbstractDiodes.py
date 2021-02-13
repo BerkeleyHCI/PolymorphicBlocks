@@ -19,8 +19,8 @@ class Diode(DiscreteSemiconductor):
 
     self.reverse_voltage = self.Parameter(RangeExpr(reverse_voltage))
     self.current = self.Parameter(RangeExpr(current))
-    self.reverse_recovery_time = self.Parameter(RangeExpr(reverse_recovery_time, constr=RangeSubset))
-    self.voltage_drop = self.Parameter(RangeExpr(voltage_drop, constr=RangeSubset))
+    self.reverse_recovery_time = self.Parameter(RangeExpr(reverse_recovery_time))
+    self.voltage_drop = self.Parameter(RangeExpr(voltage_drop))
 
 
 @abstract_block

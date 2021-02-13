@@ -27,9 +27,9 @@ class Fet(DiscreteSemiconductor):
 
     self.drain_voltage = self.Parameter(RangeExpr(drain_voltage))
     self.drain_current = self.Parameter(RangeExpr(drain_current))
-    self.gate_voltage = self.Parameter(RangeExpr(gate_voltage, constr=RangeSubset))
-    self.rds_on = self.Parameter(RangeExpr(rds_on, constr=RangeSubset))
-    self.gate_charge = self.Parameter(RangeExpr(gate_charge, constr=RangeSubset))
+    self.gate_voltage = self.Parameter(RangeExpr(gate_voltage))
+    self.rds_on = self.Parameter(RangeExpr(rds_on))
+    self.gate_charge = self.Parameter(RangeExpr(gate_charge))
     self.power = self.Parameter(RangeExpr(power))
 
 
@@ -59,7 +59,7 @@ class SwitchFet(Fet):
   def __init__(self, frequency: RangeLike = RangeExpr(), drive_current: RangeLike = RangeExpr(), **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.frequency = self.Parameter(RangeExpr(frequency, constr=RangeSubset))
+    self.frequency = self.Parameter(RangeExpr(frequency))
     self.drive_current = self.Parameter(RangeExpr(drive_current))  # positive is turn-on drive, negative is turn-off drive
 
 
