@@ -75,7 +75,11 @@ class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
   DUTYCYCLE_MAX_LIMIT = 0.9
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
-  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float) -> ElectricalSource:
+  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float,
+                          input_voltage: RangeVal, spec_output_voltage: RangeVal,
+                          output_current_max: float, frequency: RangeVal,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          ) -> ElectricalSource:
     """
     Main assumptions in component sizing
     - Operating only in continuous mode TODO: also consider boundary and discontinuous mode
@@ -84,12 +88,9 @@ class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
     TODO unify rated max current with something else, perhaps a block param?
     """
 
-    in_voltage_min, in_voltage_max = self.get(self.pwr_in.link().voltage)
-    out_voltage_min, out_voltage_max = self.get(self.pwr_out.voltage_out)
-    out_voltage_ripple = self.get(self.output_ripple_limit)  # TODO: this adds to tolerance stackups
-    in_voltage_ripple = self.get(self.input_ripple_limit)
-    _, out_current_max = self.get(self.pwr_out.link().current_drawn)
-    freq_min, freq_max = self.get(self.frequency)
+    in_voltage_min, in_voltage_max = input_voltage
+    out_voltage_min, out_voltage_max = spec_output_voltage
+    freq_min, freq_max = frequency
 
     dc_max = out_voltage_max / in_voltage_min / self.WORST_EFFICIENCY_ESTIMATE
     dc_min = out_voltage_min / in_voltage_max
@@ -97,10 +98,10 @@ class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
     assert dc_max <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max {dc_max} outside limit {self.DUTYCYCLE_MAX_LIMIT}"
     assert dc_min >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min {dc_min} outside limit {self.DUTYCYCLE_MIN_LIMIT}"
 
-    ripple_current_min = out_current_max * self.get(self.ripple_current_factor.lower())  # peak-peak
+    ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
     ripple_current_max = max(
-      out_current_max * self.get(self.ripple_current_factor.upper()),  # peak-peak
-      rated_max_current_amps * self.get(self.ripple_current_factor.lower())  # see LMR33630 datasheet, use rating if current draw much lower
+      output_current_max * ripple_factor[1],  # peak-peak
+      rated_max_current_amps * ripple_factor[0]  # see LMR33630 datasheet, use rating if current draw much lower
     )
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
@@ -110,10 +111,10 @@ class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
     else:
       inductance_max = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_min / freq_min / in_voltage_max
 
-    out_capacitance_min = ripple_current_max / 8 / freq_min / out_voltage_ripple  # TODO size based on transient response
-    in_capacitance_min = out_current_max * dc_max * (1 - dc_min) / freq_min / in_voltage_ripple
+    out_capacitance_min = ripple_current_max / 8 / freq_min / spec_output_ripple  # TODO size based on transient response, add to voltage tolerance stackups
+    in_capacitance_min = output_current_max * dc_max * (1 - dc_min) / freq_min / spec_input_ripple
 
-    sw_current_max = out_current_max + ripple_current_max / 2
+    sw_current_max = output_current_max + ripple_current_max / 2
 
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
@@ -136,9 +137,9 @@ class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
 
     inductor_out = self.inductor.b.as_electrical_source()
     self.connect(self.pwr_out, inductor_out)  # TODO this should be modeled w/ the final voltages
-    inductor_in = self.inductor.a.as_electrical_sink()
-    self.connect(switch_node, inductor_in)
-    self.constrain(inductor_in.current_draw == self.inductor.current)
+    self.connect(switch_node, self.inductor.a.as_electrical_sink(
+      voltage_limits=RangeExpr.ALL,
+      current_draw=(0, sw_current_max)*Amp))
 
     return inductor_out
 
@@ -170,7 +171,11 @@ class DiscreteBoostConverter(BoostConverter, GeneratorBlock):
   DUTYCYCLE_MAX_LIMIT = 0.85  # by datasheet
   WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
 
-  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float) -> None:
+  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float,
+                          input_voltage: RangeVal, spec_output_voltage: RangeVal,
+                          output_current_max: float, frequency: RangeVal,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          ) -> None:
     """
     - diode needs to be fast, consider forward voltage drop, forward current (> peak inductor current), reverse volts (> Vout)
 
@@ -180,12 +185,9 @@ class DiscreteBoostConverter(BoostConverter, GeneratorBlock):
     TODO support capacitor ESR calculation
     """
 
-    in_voltage_min, in_voltage_max = self.get(self.pwr_in.link().voltage)
-    out_voltage_min, out_voltage_max = self.get(self.pwr_out.voltage_out)
-    out_voltage_ripple = self.get(self.output_ripple_limit)  # TODO: this adds to tolerance stackups
-    in_voltage_ripple = self.get(self.input_ripple_limit)
-    _, out_current_max = self.get(self.pwr_out.link().current_drawn)
-    freq_min, freq_max = self.get(self.frequency)
+    in_voltage_min, in_voltage_max = input_voltage
+    out_voltage_min, out_voltage_max = spec_output_voltage
+    freq_min, freq_max = frequency
 
     dc_max = 1 - in_voltage_max / out_voltage_min
     dc_min = 1 - in_voltage_min * self.WORST_EFFICIENCY_ESTIMATE / out_voltage_max
@@ -197,19 +199,19 @@ class DiscreteBoostConverter(BoostConverter, GeneratorBlock):
                                                f"in converting {in_voltage_min}-{in_voltage_max} -> " \
                                                f"in converting {out_voltage_min}-{out_voltage_max}"
 
-    ripple_current_min = out_current_max * self.get(self.ripple_current_factor.lower())  # peak-peak
+    ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
     ripple_current_max = max(
-      out_current_max * self.get(self.ripple_current_factor.upper()),  # peak-peak
-      rated_max_current_amps * self.get(self.ripple_current_factor.lower())  # see LMR33630 datasheet, use rating if current draw much lower
+      output_current_max * ripple_factor[1],  # peak-peak
+      rated_max_current_amps * ripple_factor[0]  # see LMR33630 datasheet, use rating if current draw much lower
     )
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     inductance_min = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_max / freq_min / out_voltage_min
     inductance_max = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_min / freq_min / out_voltage_min
-    out_capacitance_min = out_current_max * dc_max / freq_min / out_voltage_ripple
-    in_capacitance_min = (out_current_max / dc_min) * (1 - dc_min) / freq_min / in_voltage_ripple
+    out_capacitance_min = output_current_max * dc_max / freq_min / spec_output_ripple
+    in_capacitance_min = (output_current_max / dc_min) * (1 - dc_min) / freq_min / spec_input_ripple
 
-    sw_current_max = ripple_current_max / 2 + out_current_max / (1 - dc_max)
+    sw_current_max = ripple_current_max / 2 + output_current_max / (1 - dc_max)
 
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
