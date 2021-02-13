@@ -113,11 +113,11 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
-    for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
-      self.library.load_module(module_name)
-
     response = edgrpc.LibraryResponse()
     try:
+      for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
+        self.library.load_module(module_name)
+
       cls = self.library.class_from_path(request.element)
       if cls is None:
         response.error = f"No library elt {request.element}"

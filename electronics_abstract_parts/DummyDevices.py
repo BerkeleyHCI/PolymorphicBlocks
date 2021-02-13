@@ -67,9 +67,9 @@ class MergedElectricalSource(DummyDevice, NetBlock):
 
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL * Volt),
-               current_draw: RangeLike = Default(RangeExpr.ZERO * Amp),
-               impedance: RangeLike = Default(RangeExpr.INF * Ohm)) -> None:
+  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO),
+               impedance: RangeLike = Default(RangeExpr.INF)) -> None:
     super().__init__()
 
     self.io = self.Port(AnalogSink(
