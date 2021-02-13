@@ -453,6 +453,9 @@ class GeneratorBlock(Block):
   ConstrGet3 = TypeVar('ConstrGet3', bound=Any)
   ConstrGet4 = TypeVar('ConstrGet4', bound=Any)
   ConstrGet5 = TypeVar('ConstrGet5', bound=Any)
+  ConstrGet6 = TypeVar('ConstrGet6', bound=Any)
+  ConstrGet7 = TypeVar('ConstrGet7', bound=Any)
+  ConstrGet8 = TypeVar('ConstrGet8', bound=Any)
 
   TargetsType = Iterable[Union[BasePort, ConstraintExpr]]
 
@@ -465,29 +468,47 @@ class GeneratorBlock(Block):
                 *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1],
-                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1],
-                req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3],
                 *, targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1],
-                req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3],
-                req4: ConstraintExpr[Any, Any, ConstrGet4],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 *, targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4, ConstrGet5], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1],
-                req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3],
-                req4: ConstraintExpr[Any, Any, ConstrGet4],
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
+                                    ConstrGet5], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 req5: ConstraintExpr[Any, Any, ConstrGet5],
+                *, targets: TargetsType = []) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
+                                    ConstrGet5, ConstrGet6], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
+                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
+                *, targets: TargetsType = []) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
+                                    ConstrGet5, ConstrGet6, ConstrGet7], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
+                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
+                req7: ConstraintExpr[Any, Any, ConstrGet7],
+                *, targets: TargetsType = []) -> None: ...
+  @overload
+  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
+                                    ConstrGet5, ConstrGet6, ConstrGet7, ConstrGet8], None],
+                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
+                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
+                req7: ConstraintExpr[Any, Any, ConstrGet7], req8: ConstraintExpr[Any, Any, ConstrGet8],
                 *, targets: TargetsType = []) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this

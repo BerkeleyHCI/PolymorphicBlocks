@@ -34,15 +34,20 @@ class Tps561201(DiscreteBuckConverter):
   def contents(self):
     super().contents()
 
+    self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
+    self.assign(self.pwr_out.current_limits, (0, 1.2)*Amp)  # TODO can this be a chip limit?
+    self.assign(self.frequency, 580*kHertz(tol=0))
+    self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
+
     self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.spec_output_voltage,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
-    self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
-    self.constrain(self.pwr_out.current_limits == (0, 1.2)*Amp)
-    self.constrain(self.frequency == 580*kHertz(tol=0))
-    self.constrain(self.efficiency == (0.7, 0.95))  # Efficiency stats from first page for ~>10mA
-
-  def generate_converter(self) -> None:
+  def generate_converter(self, input_voltage: RangeVal, spec_output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
     super().generate()
 
     self.ic = self.Block(Tps561201_Device())
@@ -67,14 +72,18 @@ class Tps561201(DiscreteBuckConverter):
     self.connect(self.fb.out, self.ic.fb)
 
     # TODO dedup across all converters
-    inductor_out = self._generate_converter(self.ic.sw, 1.2)
-    self.constrain(self.ic.pwr_in.current_draw == (
+    inductor_out = self._generate_converter(self.ic.sw, 1.2,
+                                            input_voltage=input_voltage, spec_output_voltage=spec_output_voltage,
+                                            output_current_max=output_current[1], frequency=frequency,
+                                            spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                                            ripple_factor=ripple_factor)
+    self.assign(self.ic.pwr_in.current_draw, (
       self.pwr_out.link().current_drawn.lower() * inductor_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
       self.pwr_out.link().current_drawn.upper() * inductor_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
     ))
-    self.constrain(inductor_out.voltage_out == (
-      0.749*Volt / self.fb.ratio.upper(),
-      0.787*Volt / self.fb.ratio.lower()
+    self.assign(inductor_out.voltage_out, (
+      0.749*Volt / self.fb.selected_ratio.upper(),
+      0.787*Volt / self.fb.selected_ratio.lower()
     ))
 
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
