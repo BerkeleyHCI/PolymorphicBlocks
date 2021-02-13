@@ -34,12 +34,15 @@ class Tps561201(DiscreteBuckConverter):
   def contents(self):
     super().contents()
 
+    self.generator(self.generate_converter,
+                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+
     self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
     self.constrain(self.pwr_out.current_limits == (0, 1.2)*Amp)
     self.constrain(self.frequency == 580*kHertz(tol=0))
     self.constrain(self.efficiency == (0.7, 0.95))  # Efficiency stats from first page for ~>10mA
 
-  def generate(self) -> None:
+  def generate_converter(self) -> None:
     super().generate()
 
     self.ic = self.Block(Tps561201_Device())

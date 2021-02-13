@@ -10,10 +10,13 @@ class DcDcConverter(PowerConditioner):
   def __init__(self, output_voltage: RangeExpr = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])
-    self.pwr_out = self.Port(ElectricalSource(), [Output])
-    self.gnd = self.Port(Ground(), [Common])
-    self.constrain(self.pwr_out.voltage_out.within(output_voltage))
+    self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
+    self.constrain(self.pwr_out.voltage_out.within(self.spec_output_voltage),
+                   "Output voltage must be within spec")
+
+    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])  # TODO mark as future-connected here?
+    self.pwr_out = self.Port(ElectricalSource(), [Output])  # TODO mark as future-connected here?
+    self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
