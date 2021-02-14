@@ -35,7 +35,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
-    self.assign(self.pwr_out.current_limits, (0, 1.2)*Amp)  # TODO can this be a chip limit?
+    self.constrain(self.pwr_out.link().current_drawn.within((0, 1.2)*Amp))  # TODO can this be a chip limit?
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
@@ -75,13 +75,15 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                                             output_current_max=output_current[1], frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
-    self.assign(self.ic.pwr_in.current_draw, (
-      self.pwr_out.link().current_drawn.lower() * inductor_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-      self.pwr_out.link().current_drawn.upper() * inductor_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
+
+    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+      voltage_out=(0.749*Volt / self.fb.selected_ratio.upper(),
+                   0.787*Volt / self.fb.selected_ratio.lower())
     ))
-    self.assign(inductor_out.voltage_out, (
-      0.749*Volt / self.fb.selected_ratio.upper(),
-      0.787*Volt / self.fb.selected_ratio.lower()
+
+    self.assign(self.ic.pwr_in.current_draw, (
+      self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+      self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
     ))
 
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3

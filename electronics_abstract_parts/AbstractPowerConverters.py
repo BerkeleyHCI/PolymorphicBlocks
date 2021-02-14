@@ -86,6 +86,10 @@ class DiscreteBuckConverter(BuckConverter):
                           spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
                           ) -> ElectricalSource:
     """
+    Given the switch node, generates the passive (in and out filter caps, inductor) components,
+    connects them, and returns the output of the inductor as a PassivePort.
+    The caller must connect the PassivePort.
+
     Main assumptions in component sizing
     - Operating only in continuous mode TODO: also consider boundary and discontinuous mode
 
@@ -140,13 +144,11 @@ class DiscreteBuckConverter(BuckConverter):
     self.connect(self.pwr_out, self.out_cap.pwr)
     self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
 
-    inductor_out = self.inductor.b.as_electrical_source()
-    self.connect(self.pwr_out, inductor_out)  # TODO this should be modeled w/ the final voltages
     self.connect(switch_node, self.inductor.a.as_electrical_sink(
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
 
-    return inductor_out
+    return self.inductor.b
 
 
 @abstract_block
