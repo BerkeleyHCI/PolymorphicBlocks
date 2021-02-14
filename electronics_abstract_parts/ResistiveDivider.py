@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import *
 
 from itertools import chain, accumulate, product
@@ -35,7 +36,7 @@ def iv_mult(r: Tuple[float, float], m: float) -> Tuple[float, float]:
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
-  """Abstract, untyped (ElectricalBase) resistive divider"""
+  """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
   E24_SERIES = Resistor.E24_SERIES
 
   @init_in_parent
@@ -190,69 +191,51 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                 self.bottom_res.resistance / (self.top_res.resistance + self.bottom_res.resistance))
 
 
-class VoltageDivider(Filter, GeneratorBlock):
-  """Voltage divider that can be specified as either a target output voltage or a ratio"""
+class VoltageDivider(Filter, Block):
+  """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
+  of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
   def __init__(self, *, output_voltage: RangeLike = RangeExpr(),
                impedance: RangeLike = RangeExpr(),
+               assumed_input_voltage: RangeLike = RangeExpr(),
                tolerance_out_to_in: BoolLike = False) -> None:
     super().__init__()
 
-    self.impedance = self.Parameter(RangeExpr(impedance))
-    self.output_voltage = self.Parameter(RangeExpr(output_voltage))  # calculated in generate
-    self.tolerance_out_to_in = self.Parameter(BoolExpr(tolerance_out_to_in))
+    self.ratio = self.Parameter(RangeExpr())
+    self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
-    self.pwr = self.Port(ElectricalSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=0*Amp(tol=0)  # TODO model static current draw
+    self.input = self.Export(self.div.top.as_electrical_sink(
+      current_draw=RangeExpr(),
+      voltage_limits=RangeExpr.ALL
     ), [Input])
-    self.gnd = self.Port(Ground(), [Common])
-    self.out = self.Port(AnalogSource(
-      voltage_out=RangeExpr(),
-      current_limits=RangeExpr.ZERO,
-      impedance=RangeExpr()  # used instead of current limits
+    self.output = self.Export(self.div.center.as_analog_source(
+      voltage_out=(self.input.link().voltage.lower() * self.div.selected_ratio.lower(),
+                   self.input.link().voltage.upper() * self.div.selected_ratio.upper()),
+      current_limits=RangeExpr.ALL,
+      impedance=self.div.selected_impedance
     ), [Output])
+    self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
 
-    self.selected_ratio = self.Parameter(RangeExpr())
-    self.selected_impedance = self.Parameter(RangeExpr())
-    self.selected_series_impedance = self.Parameter(RangeExpr())
+    ratio_lower = tolerance_out_to_in.then_else(
+      output_voltage.upper() / assumed_input_voltage.upper(),
+      output_voltage.lower() / self.input.link().voltage.lower()
+    )
+    ratio_upper = tolerance_out_to_in.then_else(
+      output_voltage.lower() / assumed_input_voltage.lower(),
+      output_voltage.upper() / self.input.link().voltage.upper()
+    )
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
+    self.constrain(tolerance_out_to_in.then_else(BoolExpr._to_expr_type(True), ratio_lower <= ratio_upper),
+                   "can't generate divider to create output voltage of tighter tolerance than input voltage")
+    self.constrain(tolerance_out_to_in.then_else(ratio_lower <= ratio_upper, BoolExpr._to_expr_type(True)),
+                   "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
 
-    self.generator(self.generate_internal, self.pwr.link().voltage,
-                   self.output_voltage, self.tolerance_out_to_in,
-                   targets=[self.pwr, self.gnd, self.out])
+    self.selected_ratio = self.Parameter(RangeExpr(self.div.selected_ratio))
+    self.selected_impedance = self.Parameter(RangeExpr(self.div.selected_impedance))
+    self.selected_series_impedance = self.Parameter(RangeExpr(self.div.selected_series_impedance))
 
-  def generate_internal(self, input_voltage: RangeVal,
-                        spec_output_voltage: RangeVal,
-                        tolerance_out_to_in: bool) -> None:
-    if tolerance_out_to_in:
-      fb_rat_high = spec_output_voltage[0] / input_voltage[0]
-      fb_rat_low = spec_output_voltage[1] / input_voltage[1]
-      assert fb_rat_low <= fb_rat_high,\
-        f"can't create divider to generate {spec_output_voltage} given {input_voltage} with tighter tolerance"
-    else:
-      fb_rat_high = spec_output_voltage[1] / input_voltage[1]
-      fb_rat_low = spec_output_voltage[0] / input_voltage[0]
-      assert fb_rat_low <= fb_rat_high,\
-        f"can't create divider to generate {spec_output_voltage} of tighter tolerance than {input_voltage}"
-
-    self.divider = self.Block(ResistiveDivider(
-      ratio=(fb_rat_low, fb_rat_high),
-      impedance=self.impedance))
-
-    self.connect(self.pwr, self.divider.top.as_electrical_sink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=0*Amp(tol=0)  # TODO model static current draw
-    ))
-    self.connect(self.out, self.divider.center.as_analog_source(
-      voltage_out=self.divider.selected_ratio * self.pwr.link().voltage,
-      current_limits=RangeExpr.ALL,  # TODO refine w/ actual current draw
-      impedance=self.divider.selected_impedance
-    ))
-    self.connect(self.gnd, self.divider.bottom.as_ground())
-
-    self.assign(self.selected_ratio, self.divider.selected_ratio)
-    self.assign(self.selected_impedance, self.divider.selected_impedance)
-    self.assign(self.selected_series_impedance, self.divider.selected_series_impedance)
+    self.assign(self.input.current_draw, self.output.link().current_draw)
+    # TODO also model static current draw into gnd
 
 
 class SignalDivider(AnalogFilter, Block):

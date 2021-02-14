@@ -84,7 +84,7 @@ class DiscreteBuckConverter(BuckConverter):
                           input_voltage: RangeVal, spec_output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
                           spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
-                          ) -> ElectricalSource:
+                          ) -> Passive:
     """
     Given the switch node, generates the passive (in and out filter caps, inductor) components,
     connects them, and returns the output of the inductor as a PassivePort.

@@ -63,11 +63,12 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.fb = self.Block(VoltageDivider(
       output_voltage=(0.749, 0.787) * Volt,
       impedance=(1, 10) * kOhm,
+      assumed_input_voltage=input_voltage,
       tolerance_out_to_in=True
     ))
-    self.connect(self.fb.pwr, self.pwr_out)
+    self.connect(self.fb.input, self.pwr_out)
     self.connect(self.fb.gnd, self.gnd)
-    self.connect(self.fb.out, self.ic.fb)
+    self.connect(self.fb.output, self.ic.fb)
 
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 1.2,
