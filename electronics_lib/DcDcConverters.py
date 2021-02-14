@@ -65,11 +65,10 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.vbst_cap.neg.as_electrical_sink(), self.ic.sw)
     self.connect(self.vbst_cap.pos.as_electrical_sink(), self.ic.vbst)
 
-    self.fb = self.Block(VoltageDivider(
+    self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(0.749, 0.787) * Volt,
       impedance=(1, 10) * kOhm,
-      assumed_input_voltage=spec_output_voltage,
-      tolerance_out_to_in=True
+      assumed_input_voltage=spec_output_voltage
     ))
     self.connect(self.fb.input, self.pwr_out)
     self.connect(self.fb.gnd, self.gnd)

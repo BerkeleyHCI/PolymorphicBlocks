@@ -187,18 +187,20 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                 self.bottom_res.resistance / (self.top_res.resistance + self.bottom_res.resistance))
 
 
-class VoltageDivider(Filter, Block):
-  """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
-  of the appropriate magnitude (as a fraction of the input voltage)"""
+@abstract_block
+class BaseVoltageDivider(Filter, Block):
+  """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
+  an analog constant-voltage signal.
+  The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by
+  ratio and impedance.
+  Subclasses should define the ratio and impedance spec."""
   @init_in_parent
-  def __init__(self, *, output_voltage: RangeLike = RangeExpr(),
-               impedance: RangeLike = RangeExpr(),
-               assumed_input_voltage: RangeLike = RangeExpr(),
-               tolerance_out_to_in: BoolLike = False) -> None:
+  def __init__(self) -> None:
     super().__init__()
 
     self.ratio = self.Parameter(RangeExpr())
-    self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
+    self.impedance = self.Parameter(RangeExpr())
+    self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=self.impedance))
 
     self.input = self.Export(self.div.top.as_electrical_sink(
       current_draw=RangeExpr(),
@@ -212,26 +214,50 @@ class VoltageDivider(Filter, Block):
     ), [Output])
     self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
 
-    ratio_lower = tolerance_out_to_in.then_else(
-      output_voltage.upper() / assumed_input_voltage.upper(),
-      output_voltage.lower() / self.input.link().voltage.lower()
-    )
-    ratio_upper = tolerance_out_to_in.then_else(
-      output_voltage.lower() / assumed_input_voltage.lower(),
-      output_voltage.upper() / self.input.link().voltage.upper()
-    )
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
-    self.constrain(tolerance_out_to_in.then_else(BoolExpr._to_expr_type(True), ratio_lower <= ratio_upper),
-                   "can't generate divider to create output voltage of tighter tolerance than input voltage")
-    self.constrain(tolerance_out_to_in.then_else(ratio_lower <= ratio_upper, BoolExpr._to_expr_type(True)),
-                   "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
-
     self.selected_ratio = self.Parameter(RangeExpr(self.div.selected_ratio))
     self.selected_impedance = self.Parameter(RangeExpr(self.div.selected_impedance))
     self.selected_series_impedance = self.Parameter(RangeExpr(self.div.selected_series_impedance))
 
     self.assign(self.input.current_draw, self.output.link().current_draw)
     # TODO also model static current draw into gnd
+
+
+class VoltageDivider(BaseVoltageDivider):
+  """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
+  of the appropriate magnitude (as a fraction of the input voltage)"""
+  @init_in_parent
+  def __init__(self, *, output_voltage: RangeLike = RangeExpr(),
+               impedance: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.output_voltage = self.Parameter(RangeExpr(output_voltage))  # TODO eliminate this casting?
+    self.assign(self.impedance, impedance)
+
+    ratio_lower = self.output_voltage.lower() / self.input.link().voltage.lower()
+    ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
+    self.constrain(ratio_lower <= ratio_upper,
+                   "can't generate divider to create output voltage of tighter tolerance than input voltage")
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
+
+
+class FeedbackVoltageDivider(BaseVoltageDivider):
+  """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
+  of the appropriate magnitude (as a fraction of the input voltage)"""
+  @init_in_parent
+  def __init__(self, *, output_voltage: RangeLike = RangeExpr(),
+               impedance: RangeLike = RangeExpr(),
+               assumed_input_voltage: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.output_voltage = self.Parameter(RangeExpr(output_voltage))  # TODO eliminate this casting?
+    self.assumed_input_voltage = self.Parameter(RangeExpr(assumed_input_voltage))  # TODO eliminate this casting?
+    self.assign(self.impedance, impedance)
+
+    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
+    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
+    self.constrain(ratio_lower <= ratio_upper,
+                   "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
 class SignalDivider(AnalogFilter, Block):
