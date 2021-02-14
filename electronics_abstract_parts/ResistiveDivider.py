@@ -175,10 +175,6 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
       resistance=(bottom_resistance * (1 - TOLERANCE), bottom_resistance * (1 + TOLERANCE))
     ))
 
-    # TODO should actually be expr based on actual values - but this gives better bounds since it shares the resistances
-    self.assign(self.selected_ratio,
-                self._ratio_tolerance(top_resistance, bottom_resistance, TOLERANCE))
-
     self.connect(self.top_res.a, self.top)
     self.connect(self.top_res.b, self.center, self.bottom_res.a)
     self.connect(self.bottom_res.b, self.bottom)
