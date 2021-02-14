@@ -44,46 +44,48 @@ def init_in_parent(fn: InitType) -> InitType:
         else:
           arg_val = arg_default
 
-        if isinstance(arg_val, ConstraintExpr) and not arg_val._is_bound():
-          assert arg_val.initializer is None, f"in got non-bound {arg_name} but initialized with {arg_val.initializer}"
-          arg_val = None
+        param_name = '(constr)' + arg_name
+        if param_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
+          prev_val = self._init_params[param_name]
+          assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} ({id(arg_val)}) over prior {prev_val} ({id(prev_val)})"
+        else:  # not previously declared, create a new constructor parameter
+          if isinstance(arg_val, ConstraintExpr) and not arg_val._is_bound():
+            assert arg_val.initializer is None, f"in got non-bound {arg_name} but initialized with {arg_val.initializer}"
+            arg_val = None
 
-        if isinstance(arg_default, param_types):  # only care about ConstraintExpr-like args
-          # TODO unify w/ ConstraintExpr Union-type
-          # TODO check arg_val type, so a better error message is generated
-          if isinstance(arg_default, (bool, BoolExpr)):
-            param_model: ConstraintExpr = BoolExpr(arg_val)
-          elif isinstance(arg_default, (float, int, FloatExpr)):
-            param_model = FloatExpr(arg_val)
-          elif isinstance(arg_default, RangeExpr) or (isinstance(arg_default, tuple) and
-              isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
-            param_model = RangeExpr(arg_val)
-          elif isinstance(arg_default, (str, StringExpr)):
-            param_model = StringExpr(arg_val)
+          if isinstance(arg_default, param_types):  # only care about ConstraintExpr-like args
+            # TODO unify w/ ConstraintExpr Union-type
+            # TODO check arg_val type, so a better error message is generated
+            if isinstance(arg_default, (bool, BoolExpr)):
+              param_model: ConstraintExpr = BoolExpr(arg_val)
+            elif isinstance(arg_default, (float, int, FloatExpr)):
+              param_model = FloatExpr(arg_val)
+            elif isinstance(arg_default, RangeExpr) or (isinstance(arg_default, tuple) and
+                isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
+              param_model = RangeExpr(arg_val)
+            elif isinstance(arg_default, (str, StringExpr)):
+              param_model = StringExpr(arg_val)
+            else:
+              raise ValueError(f"In {fn}, unknown Constraint-like argument {arg_name}={arg_default} of type {type(arg_default)}")
+          elif isinstance(arg_default, (BaseBlock, BasePort)):
+            raise NotImplementedError(f"in {fn}, argument passing for Block and Port types not implemented: {arg_name}={arg_default}")
+          elif arg_default is inspect._empty:  # type: ignore
+            if (arg_param.kind in (arg_param.VAR_POSITIONAL, arg_param.VAR_KEYWORD)):
+              continue  # TODO in future, recurse into these to make sure they're all set
+            raise NotImplementedError(f"in {fn}, argument {arg_name} with no default, TODO support type-hint inference")
           else:
-            raise ValueError(f"Unknown Constraint-like argument to name={arg_name} with default={arg_default} of type={type(arg_default)}")
+            raise NotImplementedError(f"In {fn}, unrecognized argument to Block: {arg_name}={arg_default} of type {type(arg_default)}")
 
-          # Create new parameter in self
-          # TODO internal initializers (subclass fixing superclass initializers) need to be supported properly
-          param_name = '(constr)' + arg_name
-          assert param_name not in self._init_params, f"in {fn}, redefinition of initializer {arg_name}"
+          # Create new parameter in self, and pass through this one instead of the original
           param_bound = param_model._bind(ParamBinding(self))
           self._init_params[param_name] = param_bound
 
-          # Modify the arguments passed through
           if arg_name in kwargs:
             kwargs[arg_name] = param_bound
           elif arg_index < len(args):
             args[arg_index] = param_bound
           else:
             kwargs[arg_name] = param_bound
-
-        elif isinstance(arg_default, (BaseBlock, BasePort)):
-          raise NotImplementedError(f"argument passing for Block and Port types not implemented: {arg_default}")
-        elif arg_default is inspect._empty:  # type: ignore
-          pass
-        else:
-          raise NotImplementedError(f"unrecognized argument to Block: {arg_default} of type {type(arg_default)}")
     finally:
       builder.pop_to(builder_prev)
 
