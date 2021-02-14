@@ -141,7 +141,7 @@ class Passive(CircuitPort[PassiveLink]):
                           PassiveAdapterAnalogSource, PassiveAdapterAnalogSink]
 
   def as_electrical_source(self, **kwargs) -> ElectricalSource:
-    return self._convert(**kwargs)
+    return self._convert(PassiveAdapterElectricalSource(**kwargs))
 
   def as_electrical_sink(self, **kwargs) -> ElectricalSink:
     return self._convert(PassiveAdapterElectricalSink(**kwargs))

@@ -97,7 +97,7 @@ object ExprBuilder {
     def Text(value: String): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Text(lit.TextLit(value)))
 
     def Range(valueMin: Float, valueMax: Float): lit.ValueLit = {
-      require(valueMin <= valueMax)
+      require((valueMin <= valueMax) || (valueMin.isNaN || valueMax.isNaN), s"malformed range ($valueMin, $valueMax)")
       lit.ValueLit(`type` = lit.ValueLit.Type.Range(lit.RangeLit(
         minimum = Some(Floating(valueMin)), maximum = Some(Floating(valueMax)))))
     }

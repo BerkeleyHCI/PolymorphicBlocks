@@ -52,12 +52,12 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 object RangeValue {
   def apply(lower: Double, upper: Double): RangeValue = RangeValue(lower.toFloat, upper.toFloat)  // convenience method
   def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
-  def isEmpty(value: RangeValue): Boolean = value.lower.isNaN && value.upper.isNaN
 }
 
 case class RangeValue(lower: Float, upper: Float) extends ExprValue {
-  // TODO better definition of empty range
-  require(lower <= upper || (lower.isNaN && upper.isNaN))
+  require((lower <= upper) || isEmpty, s"malformed range ($lower, $upper)")
+
+  def isEmpty: Boolean = lower.isNaN || upper.isNaN  // TODO better definition of empty range
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
   override def toStringValue: String = s"($lower, $upper)"

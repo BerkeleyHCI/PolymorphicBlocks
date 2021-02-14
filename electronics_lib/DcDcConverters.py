@@ -29,7 +29,7 @@ class Tps561201_Device(DiscreteChip, CircuitBlock):
     )
 
 
-class Tps561201(DiscreteBuckConverter):
+class Tps561201(DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
   def contents(self):
     super().contents()
@@ -48,8 +48,6 @@ class Tps561201(DiscreteBuckConverter):
   def generate_converter(self, input_voltage: RangeVal, spec_output_voltage: RangeVal,
                          output_current: RangeVal, frequency: RangeVal,
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
-    super().generate()
-
     self.ic = self.Block(Tps561201_Device())
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
@@ -126,7 +124,7 @@ class Tps54202h_Device(DiscreteChip, CircuitBlock):
     )
 
 
-class Tps54202h(DiscreteBuckConverter):
+class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable"""
   def contents(self):
     super().contents()
@@ -224,7 +222,7 @@ class Lmr33630_Device(DiscreteChip, CircuitBlock):
     )
 
 
-class Lmr33630(DiscreteBuckConverter):
+class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOIC-8 EP with integrated switch"""
   DUTYCYCLE_MIN_LIMIT = 0.0
   DUTYCYCLE_MAX_LIMIT = 0.98
@@ -309,7 +307,7 @@ class Ap3012_Device(DiscreteChip, CircuitBlock):
     )
 
 
-class Ap3012(DiscreteBoostConverter):
+class Ap3012(DiscreteBoostConverter, GeneratorBlock):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
   def contents(self):
     super().contents()
