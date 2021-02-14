@@ -76,8 +76,8 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalBidir(voltage_limits=voltage_limits, current_draw=current_draw,
                                       voltage_out=voltage_out, current_limits=current_limits,
-                                      input_thresholds=input_thresholds, output_thresholds=output_thresholds),
-                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable)
+                                      input_thresholds=input_thresholds, output_thresholds=output_thresholds,
+                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
 
 
 class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource]):

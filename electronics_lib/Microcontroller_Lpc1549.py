@@ -501,7 +501,6 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
         raise ValueError(f"unknown pin type {self_port}")
 
 
-
 class Lpc1549_48(Lpc1549):
   DEVICE = Lpc1549_48_Device
 

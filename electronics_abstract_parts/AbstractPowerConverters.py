@@ -65,7 +65,7 @@ class BuckConverter(DcDcSwitchingConverter):
 
 
 @abstract_block
-class DiscreteBuckConverter(BuckConverter, GeneratorBlock):
+class DiscreteBuckConverter(BuckConverter):
   """Provides a helper function to generate the power path for a switching buck converter.
   TODO: support non-synchronous topologies and non-integrated FETs
 
@@ -161,7 +161,7 @@ class BoostConverter(DcDcSwitchingConverter):
 
 
 @abstract_block
-class DiscreteBoostConverter(BoostConverter, GeneratorBlock):
+class DiscreteBoostConverter(BoostConverter):
   """Step-up switching converter, with provisions for passives sizing.
   TODO: support non-integrated FETs
 
