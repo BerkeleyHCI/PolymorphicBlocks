@@ -26,10 +26,10 @@ class ElectricalLink(CircuitLink):
 
     self.assign(self.voltage, self.source.voltage_out)
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
-    self.constrain(self.voltage_limits.contains(self.voltage))
+    self.constrain(self.voltage_limits.contains(self.voltage), "overvoltage")
 
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-    self.constrain(self.source.current_limits.contains(self.current_drawn))
+    self.constrain(self.source.current_limits.contains(self.current_drawn), "overcurrent")
 
 
 class ElectricalSinkBridge(CircuitPortBridge):
