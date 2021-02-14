@@ -2,10 +2,12 @@ from electronics_abstract_parts import *
 
 
 class Tps561201_Device(DiscreteChip, CircuitBlock):
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
     self.pwr_in = self.Port(ElectricalSink(
-      voltage_limits=(4.5, 17)*Volt
+      voltage_limits=(4.5, 17)*Volt,
+      current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
     self.sw = self.Port(ElectricalSource())  # internal switch specs not defined, only bulk current limit defined
@@ -48,7 +50,10 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
   def generate_converter(self, input_voltage: RangeVal, spec_output_voltage: RangeVal,
                          output_current: RangeVal, frequency: RangeVal,
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
-    self.ic = self.Block(Tps561201_Device())
+    self.ic = self.Block(Tps561201_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
 
@@ -80,11 +85,6 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.pwr_out, inductor_out.as_electrical_source(
       voltage_out=(0.749*Volt / self.fb.selected_ratio.upper(),
                    0.787*Volt / self.fb.selected_ratio.lower())
-    ))
-
-    self.assign(self.ic.pwr_in.current_draw, (
-      self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-      self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
     ))
 
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
