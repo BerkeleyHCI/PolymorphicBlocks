@@ -338,7 +338,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         path.asIndirect ++ assign.dst.get,
         path, assign.src.get,
         constrName) // TODO add sourcelocators
-    case (path, constrName, constr, expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_)) =>
+    case (path, constrName, constr,
+        expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_) | expr.ValueExpr.Expr.IfThenElse(_)) =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
     case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))
       if target.steps.last.step.isReservedParam
