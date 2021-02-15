@@ -14,7 +14,11 @@ sealed trait BlockLike extends Pathable {
   def toPb: elem.BlockLike
 }
 
-case class Generator(dependencies: Seq[ref.LocalPath])
+case class Generator(
+    required_params: Seq[ref.LocalPath],
+    required_ports: Seq[ref.LocalPath],
+    connecting_blocks: Seq[ref.LocalPath]
+)
 
 /**
   * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
@@ -36,9 +40,7 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
 
   protected val generators: mutable.SeqMap[String, Generator] = {
     pb.generators.mapValues { generatorPb =>
-      require(generatorPb.conditions.length <= 1, "TODO: support OR-ing of conditions")
-      val prereqs = generatorPb.conditions.headOption.getOrElse(elem.Generator.GeneratorCondition()).prereqs
-      Generator(prereqs)
+      Generator(generatorPb.requiredParams, generatorPb.requiredPorts, generatorPb.connectedBlocks)
     }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 

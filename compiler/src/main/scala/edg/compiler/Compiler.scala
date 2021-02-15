@@ -456,14 +456,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Queue up generators as needed
-    val allPortsDeps = topPorts(block).map { case (portSuffix, port) =>
-      ElaborateRecord.FullConnectedPort(path ++ portSuffix)
-    }
     for ((generatorFnName, generator) <- block.getGenerators) {
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
-        generator.dependencies.map { depPath =>
+        generator.required_params.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        } ++ allPortsDeps
+        } ++ generator.required_ports.map { depPort =>
+          ElaborateRecord.FullConnectedPort(path ++ depPort)
+        }
       )
     }
 
@@ -666,28 +665,28 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val generator = block.getGenerators(fnName)
     block.removeGenerator(fnName)
 
-    val allDepValues = generator.dependencies.map { depPath =>
-      depPath -> constProp.getValue(blockPath.asIndirect ++ depPath).get
+    val reqParamValues = generator.required_params.map { reqParam =>
+      reqParam -> constProp.getValue(blockPath.asIndirect ++ reqParam).get
     }.toMap
-    val allPortsConnected = topPorts(block).flatMap { case (portSuffix, port) =>
-      val connectedSuffix = portSuffix + IndirectStep.IsConnected
-      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ connectedSuffix).get
+    val reqPortValues = generator.required_ports.flatMap { reqPort =>
+      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
+      val isConnectedValue = constProp.getValue(blockPath ++ isConnectedSuffix).get
           .asInstanceOf[BooleanValue]
       isConnectedValue.value match {
         case true =>
-          val connectedNameSuffix = portSuffix + IndirectStep.ConnectedLink + IndirectStep.Name
+          val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
           val connectedNameValue = constProp.getValue(blockPath.asIndirect ++ connectedNameSuffix).get
               .asInstanceOf[TextValue]
-          Map(connectedSuffix.asLocalPath() -> isConnectedValue,
+          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue,
             connectedNameSuffix.asLocalPath() -> connectedNameValue)
         case false =>
-          Map(connectedSuffix.asLocalPath() -> isConnectedValue)
+          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue)
       }
-    }
+    }.toMap
 
     // TODO pass through IS_CONNECTED
     val generatorResult = library.runGenerator(block.getBlockClass, fnName,
-      allDepValues ++ allPortsConnected
+      reqParamValues ++ reqPortValues
     )
     val generatedPb = generatorResult match {
       case Errorable.Success(generatedPb) =>

@@ -614,6 +614,8 @@ class GeneratorBlock(Block):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for (name, record) in self._generators.items():
+      pb.generators[name]  # even if rest of the fields are empty, make sure to create a record
+      # TODO maybe there should be done data here?
       for req_param in record.req_params:
         pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
       for req_port in record.req_ports:

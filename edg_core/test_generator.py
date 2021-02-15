@@ -1,6 +1,5 @@
 import unittest
 
-from typing import Tuple
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
 

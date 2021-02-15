@@ -45,6 +45,22 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK))
     }
   }
+
+  def apply(pb: ref.LocalStep): IndirectStep = pb.step match {
+    case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) =>
+      throw new IllegalArgumentException(s"Can't resolve ALLOCATE into IndirectStep")
+    case ref.LocalStep.Step.ReservedParam(step @
+        (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
+    ) =>
+      throw new NotImplementedError(s"Unknown step $step to resolve into IndirectStep")
+    case ref.LocalStep.Step.Empty =>
+      throw new NotImplementedError(s"Can't resolve Empty into IndirectStep")
+  }
 }
 case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def +(suffix: String): IndirectDesignPath = {
@@ -63,39 +79,11 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   }
 
   def ++(suffix: ref.LocalPath): IndirectDesignPath = {
-    IndirectDesignPath(steps ++ suffix.steps.map { step => step.step match {
-      case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) =>
-        throw new IllegalArgumentException(s"Unexpected step ALLOCATE in resolving $suffix from $this")
-      case ref.LocalStep.Step.ReservedParam(step @
-          (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
-      ) =>
-        throw new NotImplementedError(s"Unknown step $step in resolving $suffix from $this")
-      case ref.LocalStep.Step.Empty =>
-        throw new NotImplementedError(s"Empty step resolving $suffix from $this")
-    } } )
+    IndirectDesignPath(steps ++ suffix.steps.map(IndirectStep(_)))
   }
 
   def toLocalPath: ref.LocalPath = {
-    ref.LocalPath(steps=steps.map{
-      case IndirectStep.Element(name) => ref.LocalStep(step=ref.LocalStep.Step.Name(name))
-      case IndirectStep.IsConnected => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
-        ref.Reserved.IS_CONNECTED
-      ))
-      case IndirectStep.Length => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
-        ref.Reserved.LENGTH
-      ))
-      case IndirectStep.Name => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
-        ref.Reserved.NAME
-      ))
-      case IndirectStep.ConnectedLink => ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(
-        ref.Reserved.CONNECTED_LINK
-      ))
-    })
+    ref.LocalPath(steps=steps.map(_.asLocalStep))
   }
 
   override def toString = steps.map(_.toString).mkString(".")
@@ -181,6 +169,9 @@ case class PathSuffix(steps: Seq[IndirectStep] = Seq()) {
   }
   def +(elem: IndirectStep): PathSuffix = {
     PathSuffix(steps :+ elem)
+  }
+  def ++(suffix: ref.LocalPath): PathSuffix = {
+    PathSuffix(steps ++ suffix.steps.map(IndirectStep(_)))
   }
 
   def asLocalPath(): ref.LocalPath = {
