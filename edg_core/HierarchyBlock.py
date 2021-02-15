@@ -4,11 +4,9 @@ from numbers import Number
 from typing import *
 from itertools import chain
 import collections
-import sys
 
 from . import edgir
 from .Exception import *
-from .Array import Vector
 from .Builder import builder
 from .Blocks import BaseBlock, Link, BlockElaborationState, ConnectedPorts
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr, ParamBinding, AssignBinding
@@ -435,8 +433,10 @@ class GeneratorBlock(Block):
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
-    reqs: Tuple[ConstraintExpr, ...]
-    fn_args: Tuple[ConstraintExpr, ...]
+    req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
+    req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
+    fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
+    connect_blocks: Tuple[Block, ...]  # blocks that this generator can connect to
 
   # DEPRECATED - pending experimentation to see if this can be removed
   # This is an older API that has the .get(...) in the genreator function,
@@ -448,7 +448,7 @@ class GeneratorBlock(Block):
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, ())
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), (), ())
 
   ConstrGet1 = TypeVar('ConstrGet1', bound=Any)
   ConstrGet2 = TypeVar('ConstrGet2', bound=Any)
@@ -463,39 +463,39 @@ class GeneratorBlock(Block):
 
   @overload
   def generator(self, fn: Callable[[], None],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
                                     ConstrGet5], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 req5: ConstraintExpr[Any, Any, ConstrGet5],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
                                     ConstrGet5, ConstrGet6], None],
                 req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
                 req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
                                     ConstrGet5, ConstrGet6, ConstrGet7], None],
@@ -503,7 +503,7 @@ class GeneratorBlock(Block):
                 req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
                 req7: ConstraintExpr[Any, Any, ConstrGet7],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
                                     ConstrGet5, ConstrGet6, ConstrGet7, ConstrGet8], None],
@@ -511,11 +511,11 @@ class GeneratorBlock(Block):
                 req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
                 req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
                 req7: ConstraintExpr[Any, Any, ConstrGet7], req8: ConstraintExpr[Any, Any, ConstrGet8],
-                *, req_ports: Iterable[BasePort], targets: TargetsType = []) -> None: ...
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
-  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr,
-                req_ports: Iterable[BasePort], targets: TargetsType = []) -> None:  # type: ignore
+  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr,  # type: ignore
+                req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None:
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
@@ -529,13 +529,17 @@ class GeneratorBlock(Block):
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, reqs)
+    target_blocks = cast(List[Block], [target for target in targets if isinstance(target, Block)])
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs,
+                                                               tuple(target_blocks))
 
     for target in targets:
       if isinstance(target, BasePort):
         self._generator_target_ports.add(target)
       elif isinstance(target, ConstraintExpr):
         self._generator_target_params.add(target)
+      elif isinstance(target, Block):
+        pass  # written into the GeneratorRecord instead for the compiler
       else:
         raise TypeError(f"unknown generator target type {target}")
 
@@ -608,11 +612,15 @@ class GeneratorBlock(Block):
     assert self._generators, f"{self} did not define any generator functions"
 
     ref_map = self._get_ref_map(edgir.LocalPath())
+
     for (name, record) in self._generators.items():
-      pb.generators[name].fn = name
-      conditions = pb.generators[name].conditions.add()
-      for req in record.reqs:
-        conditions.prereqs.add().CopyFrom(ref_map[req])
+      for req_param in record.req_params:
+        pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
+      for req_port in record.req_ports:
+        pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
+      for connect_block in record.connect_blocks:
+        pb.generators[name].connected_blocks.add().CopyFrom(ref_map[connect_block])
+
     return pb
 
   def _parse_param_values(self, values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> None:
