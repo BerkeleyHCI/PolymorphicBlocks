@@ -20,61 +20,11 @@ class LibraryElementResolver():
     self.seen_modules: Set[ModuleType] = set()
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
 
-  @staticmethod
-  def _module_bfs_order(root_name: str, floor_name: str) -> List[str]:
-    """Starting from a root module, returns all the dependency modules (including root and floor) in BFS order,
-    for modules that ultimately depend on floor, with floor first.
-    A module may only appear once in the output, at the closest point to the floor."""
-    root_module = importlib.import_module(root_name)
-    floor_module = importlib.import_module(floor_name)
-
-    # First, build the inverse dependency graph of modules
-    seen_modules: Set[ModuleType] = set([floor_module])  # don't need to recurse further
-    inverse_deps: Dict[ModuleType, Set[ModuleType]] = {}
-    def build_inverse_deps(module: ModuleType) -> None:
-      if (module.__name__ in sys.builtin_module_names
-          or not hasattr(module, '__file__')  # apparently load six.moves breaks
-          or module in seen_modules):
-        return
-      seen_modules.add(module)
-      for (name, member) in inspect.getmembers(module):
-        if isinstance(member, ModuleType):
-          if "model.UsbPort" in module.__name__:
-            print(member.__name__)
-          inverse_deps.setdefault(member, set()).add(module)
-          build_inverse_deps(member)
-
-    build_inverse_deps(root_module)
-
-    # Topological sort from the floor module up
-    # adapted from https://en.wikipedia.org/wiki/Topological_sorting
-    output: List[str] = []
-    output_seen: Set[ModuleType] = set()  # the "permanent mark"
-
-    def topological_visit(module: ModuleType):
-      if module in output_seen:
-        return
-
-      for inverse_dep_module in inverse_deps.get(module, set()):
-        topological_visit(inverse_dep_module)
-
-      output_seen.add(module)
-      output.insert(0, module.__name__)
-
-    topological_visit(floor_module)
-
-    return output
-
   def load_module(self, module_name: str) -> None:
     """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
     Avoids re-loading previously loaded modules with cacheing.
     """
     module = importlib.import_module(module_name)
-    print("BFS Order: ")
-    print(self._module_bfs_order(module_name, "edg_core.Core"))
-    print("---")
-
-    importlib.reload(module)
     self._search_module(module)
 
   def _search_module(self, module: ModuleType) -> None:
@@ -110,10 +60,9 @@ class LibraryElementResolver():
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def __init__(self, *, verbose: bool = False):
     self.library = LibraryElementResolver()  # dummy empty resolver
-    self.verbose = True
+    self.verbose = verbose
 
   def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
-    print(f"ReloadModule({request.name})")
     self.library = LibraryElementResolver()  # clear old the old resolver
     self.library.load_module(request.name)
     if self.verbose:
