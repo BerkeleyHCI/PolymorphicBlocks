@@ -14,31 +14,68 @@ from .DesignTop import DesignTop
 from .Ports import Port, Bundle
 
 
-# Cacheing layer around library elements that also provides LibraryPath to class
-# (instead of from module and class path) resolution.
+# Index of module(s) recursively, and providing protobuf LibraryPath to class resolution.
 class LibraryElementResolver():
   def __init__(self):
     self.seen_modules: Set[ModuleType] = set()
-    self.module_contains: Dict[str, Set[str]] = {}
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
+
+  @staticmethod
+  def _module_bfs_order(root_name: str, floor_name: str) -> List[str]:
+    """Starting from a root module, returns all the dependency modules (including root and floor) in BFS order,
+    for modules that ultimately depend on floor, with floor first.
+    A module may only appear once in the output, at the closest point to the floor."""
+    root_module = importlib.import_module(root_name)
+    floor_module = importlib.import_module(floor_name)
+
+    # First, build the inverse dependency graph of modules
+    seen_modules: Set[ModuleType] = set([floor_module])  # don't need to recurse further
+    inverse_deps: Dict[ModuleType, Set[ModuleType]] = {}
+    def build_inverse_deps(module: ModuleType) -> None:
+      if (module.__name__ in sys.builtin_module_names
+          or not hasattr(module, '__file__')  # apparently load six.moves breaks
+          or module in seen_modules):
+        return
+      seen_modules.add(module)
+      for (name, member) in inspect.getmembers(module):
+        if isinstance(member, ModuleType):
+          if "model.UsbPort" in module.__name__:
+            print(member.__name__)
+          inverse_deps.setdefault(member, set()).add(module)
+          build_inverse_deps(member)
+
+    build_inverse_deps(root_module)
+
+    # Topological sort from the floor module up
+    # adapted from https://en.wikipedia.org/wiki/Topological_sorting
+    output: List[str] = []
+    output_seen: Set[ModuleType] = set()  # the "permanent mark"
+
+    def topological_visit(module: ModuleType):
+      if module in output_seen:
+        return
+
+      for inverse_dep_module in inverse_deps.get(module, set()):
+        topological_visit(inverse_dep_module)
+
+      output_seen.add(module)
+      output.insert(0, module.__name__)
+
+    topological_visit(floor_module)
+
+    return output
 
   def load_module(self, module_name: str) -> None:
     """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
     Avoids re-loading previously loaded modules with cacheing.
     """
-    self._search_module(importlib.import_module(module_name))
-
-  def discard_module(self, module_name: str) -> Set[str]:
-    discarded = self.module_contains.get(module_name, set())
-    for discard in discarded:
-      self.lib_class_map.pop(discard, None)
     module = importlib.import_module(module_name)
-    if module in self.seen_modules:  # TODO better discard behavior for never seen module
-      self.seen_modules.remove(module)
-    self.module_contains.pop(module_name, None)
+    print("BFS Order: ")
+    print(self._module_bfs_order(module_name, "edg_core.Core"))
+    print("---")
+
     importlib.reload(module)
     self._search_module(module)
-    return discarded
 
   def _search_module(self, module: ModuleType) -> None:
     # avoid repeated work and re-indexing modules
@@ -58,40 +95,33 @@ class LibraryElementResolver():
           assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
         else:  # for ports, recurse into links and stuff
           if issubclass(member, Port):  # TODO for some reason, Links not in __init__ are sometimes not found
-            obj = member()  # TODO can these be clss definitions?
+            obj = member()  # TODO can these be class definitions?
             if hasattr(obj, 'link_type'):
               self._search_module(importlib.import_module(obj.link_type.__module__))
 
         self.lib_class_map[name] = member
-        self.module_contains.setdefault(member.__module__, set()).add(name)
 
   def class_from_path(self, path: edgir.LibraryPath) -> Optional[Type[LibraryElement]]:
     """Assuming modules have been loaded, retrieves a LibraryElement class by LibraryPath."""
     dict_key = path.target.name
-    if dict_key not in self.lib_class_map:
-      return None
-    else:
-      return self.lib_class_map[dict_key]
+    return self.lib_class_map.get(dict_key, None)
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def __init__(self, library: LibraryElementResolver, *, verbose: bool = False):
-    self.library = library
-    self.verbose = verbose
+  def __init__(self, *, verbose: bool = False):
+    self.library = LibraryElementResolver()  # dummy empty resolver
+    self.verbose = True
 
-  def LibraryElementsInModule(self, request: edgrpc.ModuleName, context) -> \
-      Generator[edgir.LibraryPath, None, None]:
-    raise NotImplementedError
-
-  def ClearCached(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
-    discarded = self.library.discard_module(request.name)
-    if self.verbose:
-      print(f"ClearCached({request.name}) -> None (discarding {len(discarded)})")
-    for discard in discarded:
-      pb = edgir.LibraryPath()
-      pb.target.name = discard
-      yield pb
+  def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
+    print(f"ReloadModule({request.name})")
+    self.library = LibraryElementResolver()  # clear old the old resolver
     self.library.load_module(request.name)
+    if self.verbose:
+      print(f"ReloadModule({request.name}) -> None (indexed {len(self.library.lib_class_map)})")
+    for indexed in self.library.lib_class_map.keys():
+      pb = edgir.LibraryPath()
+      pb.target.name = indexed
+      yield pb
 
   @staticmethod
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
@@ -115,9 +145,6 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
     response = edgrpc.LibraryResponse()
     try:
-      for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
-        self.library.load_module(module_name)
-
       cls = self.library.class_from_path(request.element)
       if cls is None:
         response.error = f"No library elt {request.element}"
@@ -132,18 +159,15 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> Error {response.error}")
+        print(f"GetLibraryElement({request.element.target.name}) -> Error {response.error}")
       elif response.HasField('refinements'):
-        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ... (w/ refinements)")
+        print(f"GetLibraryElement({request.element.target.name}) -> ... (w/ refinements)")
       else:
-        print(f"GetLibraryElement([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
+        print(f"GetLibraryElement({request.element.target.name}) -> ...")
 
     return response
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgrpc.GeneratorResponse:
-    for module_name in request.modules:  # TODO: this isn't completely hermetic in terms of library searching
-      self.library.load_module(module_name)
-
     response = edgrpc.GeneratorResponse()
     try:
       generator_type = self.library.class_from_path(request.element)
@@ -167,8 +191,8 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name}) -> Error {response.error}")
+        print(f"ElaborateGenerator({request.element.target.name}) -> Error {response.error}")
       else:
-        print(f"ElaborateGenerator([{', '.join(request.modules)}], {request.element.target.name}) -> ...")
+        print(f"ElaborateGenerator({request.element.target.name}) -> ...")
 
     return response

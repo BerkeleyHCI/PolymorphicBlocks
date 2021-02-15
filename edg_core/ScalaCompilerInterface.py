@@ -41,7 +41,7 @@ class ScalaCompilerInstance:
   def check_started(self) -> None:
     if self.server is None:
       self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-      edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(self.library), self.server)  # type: ignore
+      edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(), self.server)  # type: ignore
       self.server.add_insecure_port('[::]:50051')
       self.server.start()
 

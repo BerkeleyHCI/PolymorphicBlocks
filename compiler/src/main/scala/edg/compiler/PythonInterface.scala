@@ -28,19 +28,18 @@ class PythonInterface {
   }
   debug(s"PyIf:init (${initTime} ms)")
 
-  def clearCache(module: String): Seq[ref.LibraryPath] = {
+  def reloadModule(module: String): Seq[ref.LibraryPath] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      blockingStub.clearCached(request)
+      blockingStub.reloadModule(request)
     }
-    debug(s"PyIf:clearCached module (${reqTime} ms)")
+    debug(s"PyIf:reloadModule $module (${reqTime} ms)")
     reply.toSeq
   }
 
-  def libraryRequest(modules: Seq[String], element: ref.LibraryPath):
+  def libraryRequest(element: ref.LibraryPath):
       Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
     val request = edgrpc.LibraryRequest(
-      modules=modules,
       element=Some(element)
     )
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
@@ -60,11 +59,11 @@ class PythonInterface {
     }
   }
 
-  def elaborateGeneratorRequest(modules: Seq[String], element: ref.LibraryPath,
+  def elaborateGeneratorRequest(element: ref.LibraryPath,
                                 fnName: String, values: Map[ref.LocalPath, ExprValue]):
       Errorable[elem.HierarchyBlock] = {
     val request = edgrpc.GeneratorRequest(
-      modules=modules, element=Some(element), fn=fnName,
+      element=Some(element), fn=fnName,
       values=values.map { case (valuePath, valueValue) =>
         edgrpc.GeneratorRequest.Value(
           path=Some(valuePath),
@@ -91,17 +90,12 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
   private val generatorCache = mutable.HashMap[(ref.LibraryPath, String, Map[ref.LocalPath, ExprValue]),
       elem.HierarchyBlock]()
 
-  private var modules: Seq[String] = Seq()
-  def setModules(mods: Seq[String]): Unit = {
-    modules = mods
-  }
-
   def clearThisCache(): Unit = {
     elts.clear()
     generatorCache.clear()
   }
 
-  def clearCache(module: String): Seq[ref.LibraryPath] = {
+  def discardCached(module: String): Seq[ref.LibraryPath] = {
     val discardKeys = elts.collect {  // TODO this assumes following the naming convention
       case (path, data) if path.getTarget.getName.startsWith(module) => path
     }
@@ -113,13 +107,17 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     }
     generatorCache --= discardGenerator
 
-    val pyDiscardKeys = py.clearCache(module)
-    pyDiscardKeys  // TODO: which set should we report as cleared? currently uses the Python as it is "ground truth"
+    discardKeys.toSeq
+  }
+
+  def reloadModule(module: String): Seq[ref.LibraryPath] = {
+    val pyRefreshedElements = py.reloadModule(module)
+    pyRefreshedElements
   }
 
   private def fetchEltIfNeeded(path: ref.LibraryPath): Unit = {
     if (!elts.contains(path)) {
-      py.libraryRequest(modules, path) match {
+      py.libraryRequest(path) match {
         case Errorable.Success((elem, None)) =>
           elts.put(path, elem.`type`)
         case Errorable.Success((elem, Some(refinements))) =>
@@ -193,7 +191,7 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     generatorCache.get((path, fnName, values)) match {
       case Some(generated) => Errorable.Success(generated)
       case None =>
-        val result = py.elaborateGeneratorRequest(modules, path, fnName, values)
+        val result = py.elaborateGeneratorRequest(path, fnName, values)
         result.map { generatorCache.put((path, fnName, values), _) }
         result
     }

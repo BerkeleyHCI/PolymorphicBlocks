@@ -11,7 +11,6 @@ from google.protobuf.descriptor import (
 
 from google.protobuf.internal.containers import (
     RepeatedCompositeFieldContainer as google___protobuf___internal___containers___RepeatedCompositeFieldContainer,
-    RepeatedScalarFieldContainer as google___protobuf___internal___containers___RepeatedScalarFieldContainer,
 )
 
 from google.protobuf.message import (
@@ -63,18 +62,16 @@ type___ModuleName = ModuleName
 
 class LibraryRequest(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
-    modules: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text] = ...
 
     @property
     def element(self) -> ref_pb2___LibraryPath: ...
 
     def __init__(self,
         *,
-        modules : typing___Optional[typing___Iterable[typing___Text]] = None,
         element : typing___Optional[ref_pb2___LibraryPath] = None,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions___Literal[u"element",b"element"]) -> builtin___bool: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"element",b"element",u"modules",b"modules"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"element",b"element"]) -> None: ...
 type___LibraryRequest = LibraryRequest
 
 class GeneratorRequest(google___protobuf___message___Message):
@@ -97,7 +94,6 @@ class GeneratorRequest(google___protobuf___message___Message):
         def ClearField(self, field_name: typing_extensions___Literal[u"path",b"path",u"value",b"value"]) -> None: ...
     type___Value = Value
 
-    modules: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text] = ...
     fn: typing___Text = ...
 
     @property
@@ -108,13 +104,12 @@ class GeneratorRequest(google___protobuf___message___Message):
 
     def __init__(self,
         *,
-        modules : typing___Optional[typing___Iterable[typing___Text]] = None,
         element : typing___Optional[ref_pb2___LibraryPath] = None,
         fn : typing___Optional[typing___Text] = None,
         values : typing___Optional[typing___Iterable[type___GeneratorRequest.Value]] = None,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions___Literal[u"element",b"element"]) -> builtin___bool: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"element",b"element",u"fn",b"fn",u"modules",b"modules",u"values",b"values"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"element",b"element",u"fn",b"fn",u"values",b"values"]) -> None: ...
 type___GeneratorRequest = GeneratorRequest
 
 class Refinements(google___protobuf___message___Message):

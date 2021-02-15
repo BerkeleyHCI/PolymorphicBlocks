@@ -18,7 +18,9 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
   }
 
   override def compile(request: CompilerRequest): Future[CompilerResult] = {
-    library.setModules(request.modules)
+    request.modules.foreach { module =>
+      library.reloadModule(module)
+    }
 
     try {
       val refinements = Refinements(request.getRefinements)

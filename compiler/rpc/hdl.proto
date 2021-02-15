@@ -16,12 +16,10 @@ message ModuleName {
 }
 
 message LibraryRequest {
-  repeated string modules = 1;  // Python modules to search for the class
   ref.LibraryPath element = 2;  // library element asked for
 }
 
 message GeneratorRequest {
-  repeated string modules = 1;  // Python modules to search for the class
   ref.LibraryPath element = 2;  // path of library element containing the generator
   string fn = 3;  // name of generator function
 
@@ -72,8 +70,9 @@ message GeneratorResponse {
 }
 
 service HdlInterface {
-  rpc ClearCached (ModuleName) returns (stream ref.LibraryPath) { }
-  rpc LibraryElementsInModule (ModuleName) returns (stream ref.LibraryPath) { }
+  // (Re)loads and indexes the module (recursively, with deduplication) and returns all the library elements.
+  // Should be a fast operation, does not elaborate the elements.
+  rpc ReloadModule (ModuleName) returns (stream ref.LibraryPath) { }
 
   rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) { }
   rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) { }
