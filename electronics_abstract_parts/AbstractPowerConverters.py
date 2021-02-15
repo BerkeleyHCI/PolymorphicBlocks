@@ -81,7 +81,7 @@ class DiscreteBuckConverter(BuckConverter):
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
   def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float,
-                          input_voltage: RangeVal, spec_output_voltage: RangeVal,
+                          input_voltage: RangeVal, output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
                           spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
                           ) -> Passive:
@@ -98,7 +98,7 @@ class DiscreteBuckConverter(BuckConverter):
     """
 
     in_voltage_min, in_voltage_max = input_voltage
-    out_voltage_min, out_voltage_max = spec_output_voltage
+    out_voltage_min, out_voltage_max = output_voltage
     freq_min, freq_max = frequency
 
     dc_max = out_voltage_max / in_voltage_min / self.WORST_EFFICIENCY_ESTIMATE

@@ -51,12 +51,12 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                  0.787*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
-                   self.pwr_in.link().voltage,
+                   self.pwr_in.link().voltage, self.pwr_out.voltage_out,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
-  def generate_converter(self, input_voltage: RangeVal,
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
                          output_current: RangeVal, frequency: RangeVal,
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
     self.ic = self.Block(Tps561201_Device(
@@ -79,7 +79,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
 
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 1.2,
-                                            input_voltage=input_voltage, spec_output_voltage=spec_output_voltage,
+                                            input_voltage=input_voltage, output_voltage=output_voltage,
                                             output_current_max=output_current[1], frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)

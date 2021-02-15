@@ -391,7 +391,8 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
                                    self.adc.values(), self.dac.values(),
                                    self.uart.values(), self.spi.values(),
                                    [self.can_0, self.i2c_0, self.usb_0]),
-                   targets=chain([self.swd.swo, self.swd.swdio, self.swd.swclk, self.swd.reset],
+                   targets=chain([self.ic],  # connected block
+                                 [self.swd.swo, self.swd.swdio, self.swd.swclk, self.swd.reset],
                                  self.digital.values(),
                                  self.adc.values(), self.dac.values(),
                                  self.uart.values(), self.spi.values(),

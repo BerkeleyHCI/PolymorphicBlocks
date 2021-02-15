@@ -365,13 +365,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO support port.NAME
     elaborateContainedPorts(path, block)
     processParams(path, block)
-    for ((name, port) <- block.getElaboratedPorts) {
-      if (!directConnectedPorts.contains(path + name)) {
-        // TODO this needs to not be transitive, should only fire for the topmost disconnected
-        // TODO this is hacky, to add the recursive elaboration record
-        setPortConnectedLinkParams(path + name, port, DesignPath(), Seq(), true)
-      }
-    }
 
     // Process constraints:
     // - for connected constraints, add into the connectivity map
@@ -722,6 +715,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def elaborateBlockPortsConnected(blockPath: DesignPath): Unit = {
     val block = resolveBlock(blockPath)
     for ((name, port) <- block.getElaboratedPorts) {
+      if (!directConnectedPorts.contains(blockPath + name)) {
+        // TODO this needs to not be transitive, should only fire for the topmost disconnected
+        // TODO this is hacky, to add the recursive elaboration record
+        setPortConnectedLinkParams(blockPath + name, port, DesignPath(), Seq(), true)
+      }
       processPortConnected(blockPath + name, port)
     }
   }
