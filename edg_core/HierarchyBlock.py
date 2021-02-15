@@ -459,7 +459,7 @@ class GeneratorBlock(Block):
   ConstrGet7 = TypeVar('ConstrGet7', bound=Any)
   ConstrGet8 = TypeVar('ConstrGet8', bound=Any)
 
-  TargetsType = Iterable[Union[BasePort, ConstraintExpr]]
+  TargetsType = Iterable[Union[BasePort, ConstraintExpr, Block]]
 
   @overload
   def generator(self, fn: Callable[[], None],
@@ -529,7 +529,7 @@ class GeneratorBlock(Block):
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    target_blocks = cast(List[Block], [target for target in targets if isinstance(target, Block)])
+    target_blocks = [target for target in targets if isinstance(target, Block)]
     self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs,
                                                                tuple(target_blocks))
 
