@@ -140,11 +140,11 @@ class DiscreteBuckConverter(BuckConverter):
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=(out_capacitance_min, float('inf'))*Farad,
     ))
-    self.connect(self.pwr_in, self.in_cap.pwr)
-    self.connect(self.pwr_out, self.out_cap.pwr)
-    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+    self._pwr_in_net = self.connect(self.pwr_in, self.in_cap.pwr)
+    self._pwr_out_net = self.connect(self.pwr_out, self.out_cap.pwr)
+    self._gnd_net = self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
 
-    self.connect(switch_node, self.inductor.a.as_electrical_sink(
+    self._switch_net = self.connect(switch_node, self.inductor.a.as_electrical_sink(
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
 

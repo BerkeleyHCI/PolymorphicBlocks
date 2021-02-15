@@ -209,6 +209,9 @@ class ConstProp {
     // the initial propagation (if applicable) is tricky
     // we assume that propagations between param1 and its equal nodes, and param2 and its equal nodes, are done prior
     (params.getValue(ExprRef.Param(param1)), params.getValue(ExprRef.Param(param2))) match {
+      case (Some(param1Value), Some(param2Value)) if param1Value == param2Value =>  // nop, already propagated
+        // TODO: are these good semantics?
+        // TODO: should this be recorded for debugging purposes / w/e?
       case (Some(param1Value), Some(param2Value)) =>
         val record1 = discardOverassigns.getOrElseUpdate(param1, OverassignRecord())
         record1.equals.add(param2)

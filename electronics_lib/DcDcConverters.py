@@ -37,7 +37,6 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
-    self.constrain(self.pwr_out.link().current_drawn.within((0, 1.2)*Amp))  # TODO can this be a chip limit?
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
@@ -65,7 +64,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
-    self.connect(self.fb.output, self.ic.fb)
+    self.connect(self.fb.output, self.ic.fb)  # TODO should be in contents, but can't have split nets
     self.connect(self.fb.input, self.pwr_out)
     self.connect(self.fb.gnd, self.gnd)
 
@@ -85,7 +84,8 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                                             ripple_factor=ripple_factor)
 
     self.connect(self.pwr_out, inductor_out.as_electrical_source(
-      voltage_out=RangeExpr()  # leave blank, set in contents()
+      voltage_out=self.pwr_out.voltage_out,  # leave blank, set in contents()
+      current_limits=(0, 1.2)*Amp
     ))
 
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
