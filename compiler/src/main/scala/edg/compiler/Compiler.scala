@@ -20,6 +20,12 @@ object ElaborateRecord {
   case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
   case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateRecord
 
+  // Dependency target, set for a block once it is known whether all the ports are connected or not
+  // (to resolve FullConnectedPort = false), though it may not be known where they are connected to.
+  // This supports elaborating a block (or generator) when the connected-ness of its ports are not necessary
+  // or known.
+  case class BlockPortsConnected(blockPath: DesignPath) extends ElaborateRecord
+
   // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
   // and inserted into the link params data structure
   case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
@@ -365,7 +371,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         // TODO this is hacky, to add the recursive elaboration record
         setPortConnectedLinkParams(path + name, port, DesignPath(), Seq(), true)
       }
-      processPortConnected(path + name, port)
     }
 
     // Process constraints:
@@ -466,10 +471,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       )
     }
 
+    val blockGeneratorsElaborate = block.getGenerators.map { case (generatorFnName, generator) =>
+      val generatorRecord = ElaborateRecord.Generator(path, generatorFnName)
+      generator.connecting_blocks.map { connectingBlockPath =>
+        require(connectingBlockPath.steps.length == 1)  // TODO cleaner way to handle this?
+        (connectingBlockPath.steps.head.getName, generatorRecord)
+      }
+    }.flatten.groupBy(_._1).mapValues(_.map(_._2))
+
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (blockName <- block.getUnelaboratedBlocks.keys) {
       debug(s"Push block to pending: ${path + blockName}")
-      elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
+      val blockElaborateRecord = ElaborateRecord.Block(path + blockName)
+      elaboratePending.addNode(blockElaborateRecord, Seq())
+      elaboratePending.addNode(ElaborateRecord.BlockPortsConnected(path + blockName),
+        Seq(blockElaborateRecord) ++ blockGeneratorsElaborate.getOrElse(blockName, Seq())
+      )
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
@@ -702,6 +719,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.append(generatedDiffBlock)
   }
 
+  protected def elaborateBlockPortsConnected(blockPath: DesignPath): Unit = {
+    val block = resolveBlock(blockPath)
+    for ((name, port) <- block.getElaboratedPorts) {
+      processPortConnected(blockPath + name, port)
+    }
+  }
+
+
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
   def compile(): schema.Design = {
@@ -723,6 +748,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           elaboratePending.setValue(elaborateRecord, None)
         case elaborateRecord @ ElaborateRecord.Generator(blockPath, fnName) =>
           elaborateGenerator(blockPath, fnName)
+          elaboratePending.setValue(elaborateRecord, None)
+        case elaborateRecord @ ElaborateRecord.BlockPortsConnected(blockPath) =>
+          elaborateBlockPortsConnected(blockPath)
           elaboratePending.setValue(elaborateRecord, None)
         case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
       }
