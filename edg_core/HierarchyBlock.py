@@ -583,15 +583,7 @@ class GeneratorBlock(Block):
 
     pb = edgir.HierarchyBlock()
 
-    if self._elaboration_state == BlockElaborationState.post_generate:  # don't write generators if invoking the generator
-      # Don't fail fast on unconnected because generators are incremental, and any individual generator may not
-      # leave the generator in a fully complete state.
-      # Don't generate connects because more items might be connected
-      # TODO: in future, be stricter about not having connects split across generators?
-      pb = self._populate_def_proto_hierarchy(pb, allow_unconnected=True)  # specifically generate connect statements first TODO why?
-    else:
-      self._connects.finalize()
-
+    pb = self._populate_def_proto_hierarchy(pb, allow_unconnected=True)  # specifically generate connect statements first TODO why?
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),

@@ -51,7 +51,8 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 
 object RangeValue {
   def apply(lower: Double, upper: Double): RangeValue = RangeValue(lower.toFloat, upper.toFloat)  // convenience method
-  def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // TODO proper null interval construct
+  def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // cannot be matched on, NaN equality is whack
+  // TODO proper null interval construct
 }
 
 case class RangeValue(lower: Float, upper: Float) extends ExprValue {

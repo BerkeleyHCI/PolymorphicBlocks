@@ -335,73 +335,37 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
 
     self.frequency = self.Parameter(RangeExpr(frequency))  # TODO move into _Device, but const prop needs to ignore inner contents
 
-    #
-    # IO models
-    # TODO models should be in the _Device block, but need to figure how to handle Analog/Digital capable pins first
-    #
-    dio_5v_model = DigitalBidir(
-      voltage_limits=(0, 5) * Volt,
-      current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, self.pwr.link().voltage.upper()),
-      current_limits=(-50, 45) * mAmp,  # TODO this uses short circuit current, which might not be useful, better to model as resistance?
-      input_thresholds=(0.3 * self.pwr.link().voltage.lower(),
-                        0.7 * self.pwr.link().voltage.upper()),
-      output_thresholds=(0 * Volt, self.pwr.link().voltage.lower())
-    )
-
-    i2c_model = DigitalBidir(  # TODO this isn't true bidir, this is an open-drain port
-      voltage_limits=(0 * Volt, self.pwr.link().voltage.upper()),  # no value defined for I2C, use defaults
-      current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, self.pwr.link().voltage.upper()),
-      current_limits=(-20, 0) * mAmp,  # I2C is sink-only
-      input_thresholds=(0.3 * self.pwr.link().voltage.lower(),
-                        0.7 * self.pwr.link().voltage.upper()),
-      output_thresholds=(0 * Volt, self.pwr.link().voltage.lower())  # TODO can't source voltage
-    )
-
-    analog_model = AnalogSink(
-      voltage_limits=(0, self.pwr.link().voltage.upper()),
-      current_draw=(0, 0) * Amp,
-      impedance=(100, float('inf')) * kOhm
-    )
-
-    dac_model = AnalogSource(
-      voltage_out=(0, self.pwr.link().voltage.upper() - 0.3),
-      current_limits=(0, 0) * Amp,  # TODO not given by spec
-      impedance=(300, 300) * Ohm  # Table 25, "typical" rating
-    )
-
     # TODO these should be array types?
     # TODO model current flows from digital ports
     self.digital = ElementDict[DigitalBidir]()
     for i in range(20):
-      self.digital[i] = self.Port(dio_5v_model, optional=True)
+      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
       self._add_assignable_io(self.digital[i])
 
     self.adc = ElementDict[AnalogSink]()
     for i in range(10):
-      self.adc[i] = self.Port(analog_model, optional=True)
+      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
       self._add_assignable_io(self.adc[i])
 
     self.dac = ElementDict[AnalogSource]()
     for i in range(1):
-      self.dac[i] = self.Port(dac_model, optional=True)
+      self.dac[i] = self.Port(AnalogSource.empty(), optional=True)
       self._add_assignable_io(self.dac[i])
 
     self.uart = ElementDict[UartPort]()
     for i in range(3):
-      self.uart[i] = self.Port(UartPort(dio_5v_model), optional=True)
+      self.uart[i] = self.Port(UartPort(DigitalBidir.empty()), optional=True)
       self._add_assignable_io(self.uart[i])
 
     self.spi = ElementDict[SpiMaster]()
     for i in range(2):
-      self.spi[i] = self.Port(SpiMaster(dio_5v_model), optional=True)
+      self.spi[i] = self.Port(SpiMaster(DigitalBidir.empty()), optional=True)
       self._add_assignable_io(self.spi[i])
 
-    self.can_0 = self.Port(CanControllerPort(dio_5v_model), optional=True)
+    self.can_0 = self.Port(CanControllerPort(DigitalBidir.empty()), optional=True)
     self._add_assignable_io(self.can_0)
 
-    self.i2c_0 = self.Port(I2cMaster(i2c_model), optional=True)
+    self.i2c_0 = self.Port(I2cMaster(DigitalBidir.empty()), optional=True)
     self.connect(self.i2c_0, self.ic.i2c_0)
     # self._add_assignable_io(self.i2c_0)  # TODO conflicts with pin assign
 
@@ -429,7 +393,6 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
                                  self.uart.values(), self.spi.values(),
                                  [self.can_0, self.i2c_0, self.usb_0]))  # TODO pass in connected blocks
 
-  def pin_assign(self) -> None:
     #
     # Reference Circuit Block
     #
@@ -439,8 +402,8 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     # TODO associate capacitors with a particular Vdd, Vss pin
     self.pwr_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
-      ImplicitConnect(self.pwr, [Power]),
-      ImplicitConnect(self.gnd, [Common])
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
     ) as imp:
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       for i in range(3):
@@ -476,6 +439,8 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
 
     # TODO capacitive divider in CLKIN mode; in XO mode see external load capacitors table, see LPC15XX 14.3
 
+
+  def pin_assign(self) -> None:
     #
     # Pin Assignment Block
     #
@@ -490,13 +455,35 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps())
 
+    #
+    # IO models
+    #
+    # TODO models should be in the _Device block, but need to figure how to handle Analog/Digital capable pins first
+    # TODO dedup w/ models in the _Device block
+
     for pin_num, self_port in assigned_pins.items():
       if isinstance(self_port, (DigitalSource, DigitalSink, DigitalBidir)):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_digital_bidir())
+        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_digital_bidir(
+          voltage_limits=(0, 5) * Volt,
+          current_draw=(0, 0) * Amp,
+          voltage_out=(0 * Volt, self.pwr.link().voltage.upper()),
+          current_limits=(-50, 45) * mAmp,  # TODO this uses short circuit current, which might not be useful, better to model as resistance?
+          input_thresholds=(0.3 * self.pwr.link().voltage.lower(),
+                            0.7 * self.pwr.link().voltage.upper()),
+          output_thresholds=(0 * Volt, self.pwr.link().voltage.lower())
+        ))
       elif isinstance(self_port, AnalogSink):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_sink())
+        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_sink(
+          voltage_limits=(0, self.pwr.link().voltage.upper()),
+          current_draw=(0, 0) * Amp,
+          impedance=(100, float('inf')) * kOhm
+        ))
       elif isinstance(self_port, AnalogSource):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_source())
+        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_source(
+          voltage_out=(0, self.pwr.link().voltage.upper() - 0.3),
+          current_limits=(0, 0) * Amp,  # TODO not given by spec
+          impedance=(300, 300) * Ohm  # Table 25, "typical" rating
+        ))
       else:
         raise ValueError(f"unknown pin type {self_port}")
 

@@ -1,4 +1,6 @@
+from __future__ import annotations
 from typing import Optional
+
 from edg_core import *
 from .CircuitBlock import CircuitLink
 from .ElectricalPorts import CircuitPort, CircuitPortBridge
@@ -74,6 +76,13 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
 
 
 class AnalogSink(AnalogBase):
+  @staticmethod
+  def empty() -> AnalogSink:
+    """Returns a new port with no parameters defined (instead of unmodeled defaults),
+ such as if the port is to be exported, including as part of a bundle"""
+    return AnalogSink(voltage_limits=RangeExpr(), current_draw=RangeExpr(),
+                      impedance=RangeExpr())
+
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
                impedance: RangeLike = Default(RangeExpr.INF)) -> None:
@@ -91,6 +100,13 @@ class AnalogSink(AnalogBase):
 
 
 class AnalogSource(AnalogBase):
+  @staticmethod
+  def empty() -> AnalogSource:
+    """Returns a new port with no parameters defined (instead of unmodeled defaults),
+  such as if the port is to be exported, including as part of a bundle"""
+    return AnalogSource(voltage_out=RangeExpr(), current_limits=RangeExpr(),
+                        impedance=RangeExpr())
+
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:

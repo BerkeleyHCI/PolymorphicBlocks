@@ -41,13 +41,22 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(0.749, 0.787) * Volt,
+      impedance=(1, 10) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (0.749*Volt / self.fb.selected_ratio.upper(),
+                 0.787*Volt / self.fb.selected_ratio.lower()))
+
     self.generator(self.generate_converter,
-                   self.pwr_in.link().voltage, self.spec_output_voltage,
+                   self.pwr_in.link().voltage,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
-  def generate_converter(self, input_voltage: RangeVal, spec_output_voltage: RangeVal,
+  def generate_converter(self, input_voltage: RangeVal,
                          output_current: RangeVal, frequency: RangeVal,
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
     self.ic = self.Block(Tps561201_Device(
@@ -56,6 +65,9 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
+    self.connect(self.fb.output, self.ic.fb)
+    self.connect(self.fb.input, self.pwr_out)
+    self.connect(self.fb.gnd, self.gnd)
 
     self.hf_in_cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.2.4
     self.connect(self.hf_in_cap.pwr, self.pwr_in)
@@ -65,15 +77,6 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.vbst_cap.neg.as_electrical_sink(), self.ic.sw)
     self.connect(self.vbst_cap.pos.as_electrical_sink(), self.ic.vbst)
 
-    self.fb = self.Block(FeedbackVoltageDivider(
-      output_voltage=(0.749, 0.787) * Volt,
-      impedance=(1, 10) * kOhm,
-      assumed_input_voltage=spec_output_voltage
-    ))
-    self.connect(self.fb.input, self.pwr_out)
-    self.connect(self.fb.gnd, self.gnd)
-    self.connect(self.fb.output, self.ic.fb)
-
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 1.2,
                                             input_voltage=input_voltage, spec_output_voltage=spec_output_voltage,
@@ -82,8 +85,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                                             ripple_factor=ripple_factor)
 
     self.connect(self.pwr_out, inductor_out.as_electrical_source(
-      voltage_out=(0.749*Volt / self.fb.selected_ratio.upper(),
-                   0.787*Volt / self.fb.selected_ratio.lower())
+      voltage_out=RangeExpr()  # leave blank, set in contents()
     ))
 
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3

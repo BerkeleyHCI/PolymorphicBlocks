@@ -51,6 +51,10 @@ object CompilerError {
   case class MissingAssertion(root: DesignPath, constrName: String,
                               value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError
 
+  // TODO should this be an error? Currently a debugging tool
+  case class EmptyRange(param: IndirectDesignPath, root: DesignPath, constrName: String,
+                        value: expr.ValueExpr) extends CompilerError
+
   sealed trait OverAssignCause
   object OverAssignCause {
     case class Assign(target: IndirectDesignPath, root: DesignPath, constrName: String, value: expr.ValueExpr)

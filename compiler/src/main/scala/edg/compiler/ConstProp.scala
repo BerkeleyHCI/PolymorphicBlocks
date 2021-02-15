@@ -268,7 +268,7 @@ class ConstProp {
     case (ExprRef.Param(param), value) => param -> value.asInstanceOf[DepValue.Param].value
   }
 
-  def getErrors: Seq[CompilerError.OverAssign] = {
+  def getErrors: Seq[CompilerError] = {
     // For all the overassigns, return the top-level "first" canonicalized path (merging the equalities)
     val equalityWithDiscard = equality map { case (target, sources) =>
       sources.toSeq ++ (discardOverassigns.get(target) match {
@@ -283,7 +283,7 @@ class ConstProp {
     }.toSet.toSeq//.toSet.toSeq.sortBy(_.steps.head.toString)
        // .sortBy(_.steps.length)
 
-    topPaths.map { topTarget =>
+    val overassignErrors = topPaths.map { topTarget =>
       val seen = mutable.Set[IndirectDesignPath]()
       val assignBuilder = mutable.ListBuffer[CompilerError.OverAssignCause]()
       def processNode(node: IndirectDesignPath): Unit = {  // traverse in DFS
@@ -320,5 +320,15 @@ class ConstProp {
       processNode(topTarget)
       CompilerError.OverAssign(topTarget, assignBuilder.toSeq)
     }
+
+    // Also get all empty range assignments
+    val emptyRangeErrors = params.toMap.collect {
+      case (ExprRef.Param(targetPath), DepValue.Param(range: RangeValue)) if range.isEmpty =>
+        paramSource.get(targetPath).map { case (root, constrName, value) =>
+          CompilerError.EmptyRange(targetPath, root, constrName, value)
+        }
+    }.flatten.toSeq
+
+    overassignErrors ++ emptyRangeErrors
   }
 }
