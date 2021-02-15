@@ -670,7 +670,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }.toMap
     val reqPortValues = generator.required_ports.flatMap { reqPort =>
       val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val isConnectedValue = constProp.getValue(blockPath ++ isConnectedSuffix).get
+      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ isConnectedSuffix).get
           .asInstanceOf[BooleanValue]
       isConnectedValue.value match {
         case true =>

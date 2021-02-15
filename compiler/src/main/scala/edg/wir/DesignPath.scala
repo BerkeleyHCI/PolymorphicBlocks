@@ -114,11 +114,6 @@ case class DesignPath(steps: Seq[String]) {
     DesignPath(steps ++ suffix)
   }
 
-  // Appends a PathSuffix. Errors out if the PathSuffix contains indirect elements.
-  def ++(suffix: PathSuffix): DesignPath = {
-    DesignPath(steps ++ suffix.steps.map(_.asInstanceOf[IndirectStep.Element].name))
-  }
-
   def ++(suffix: ref.LocalPath): DesignPath = {
     DesignPath(steps ++ suffix.steps.map { step => step.step match {
       case ref.LocalStep.Step.Name(name) => name
