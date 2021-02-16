@@ -107,17 +107,25 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     self.rollback = rollback
 
   def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
+    if self.verbose:
+      print(f"ReloadModule({request.name}) -> ", end='')
+
     # nuke it from orbit, because we really don't know how to do better right now
     self.library = LibraryElementResolver()  # clear old the old resolver
 
-    if self.rollback is not None:
-      self.rollback.clear()
-    # TODO the request module doesn't get tracked in RollbackImporter for some reason. So it needs an explicit reload.
-    importlib.reload(importlib.import_module(request.name))
+    try:
+      if self.rollback is not None:
+        self.rollback.clear()
+      # TODO the request module doesn't get tracked in RollbackImporter for some reason. So it needs an explicit reload.
+      importlib.reload(importlib.import_module(request.name))
+    except BaseException as e:
+      if self.verbose:
+        print(f"Error {e}")
+      return
 
     self.library.load_module(request.name)
     if self.verbose:
-      print(f"ReloadModule({request.name}) -> None (indexed {len(self.library.lib_class_map)})")
+      print(f"None (indexed {len(self.library.lib_class_map)})")
     for indexed in self.library.lib_class_map.keys():
       pb = edgir.LibraryPath()
       pb.target.name = indexed
@@ -143,6 +151,9 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
   def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
+    if self.verbose:
+      print(f"GetLibraryElement({request.element.target.name}) -> ", end='')
+
     response = edgrpc.LibraryResponse()
     try:
       cls = self.library.class_from_path(request.element)
@@ -159,15 +170,18 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"GetLibraryElement({request.element.target.name}) -> Error {response.error}")
+        print(f"Error {response.error}")
       elif response.HasField('refinements'):
-        print(f"GetLibraryElement({request.element.target.name}) -> ... (w/ refinements)")
+        print(f"(elt, w/ refinements)")
       else:
-        print(f"GetLibraryElement({request.element.target.name}) -> ...")
+        print(f"(elt)")
 
     return response
 
   def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgrpc.GeneratorResponse:
+    if self.verbose:
+      print(f"ElaborateGenerator({request.element.target.name}) -> ", end='')
+
     response = edgrpc.GeneratorResponse()
     try:
       generator_type = self.library.class_from_path(request.element)
@@ -191,8 +205,8 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"ElaborateGenerator({request.element.target.name}) -> Error {response.error}")
+        print(f"Error {response.error}")
       else:
-        print(f"ElaborateGenerator({request.element.target.name}) -> ...")
+        print(f"(generated)")
 
     return response
