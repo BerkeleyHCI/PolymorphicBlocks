@@ -82,8 +82,8 @@ class SmtDiode(Diode, CircuitBlock, GeneratorBlock):
 
     self.assign(self.reverse_voltage_rating, part['Vr,max'])
     self.assign(self.current_rating, part['I,max'])
-    self.assign(self.voltage_drop, part['Vf,max'])
-    self.assign(self.reverse_recovery_time, part['trr'])
+    self.assign(self.selected_voltage_drop, part['Vf,max'])
+    self.assign(self.selected_reverse_recovery_time, part['trr'])
 
     footprint_pinning = {
       'Diode_SMD:D_SMA': {

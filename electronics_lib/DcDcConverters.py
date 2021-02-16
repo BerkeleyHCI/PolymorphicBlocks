@@ -194,6 +194,7 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
 
 
 class Lmr33630_Device(DiscreteChip, CircuitBlock):
+  @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
     self.vin = self.Port(ElectricalSink(
@@ -313,6 +314,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
 
 
 class Ap3012_Device(DiscreteChip, CircuitBlock):
+  @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     # TODO the power path doesn't actually go through Vin, instead it goes through the inductor
     # But this is modeled here to be similar to the buck case, and the macromodel is valid anyways
