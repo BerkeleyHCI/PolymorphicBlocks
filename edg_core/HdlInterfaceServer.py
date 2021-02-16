@@ -64,26 +64,24 @@ class LibraryElementResolver():
 
 # Module reloading solution from http://pyunit.sourceforge.net/notes/reloading.html
 class RollbackImporter:
-  def __init__(self):
+  def __init__(self) -> None:
     "Creates an instance and installs as the global importer"
-    self.previousModules = sys.modules.copy()
+    self.previousModules: Set[ModuleType] = set(sys.modules.copy().values())
     self.realImport = builtins.__import__
     builtins.__import__ = self._import
-    self.newModules = []
+    self.newModules: List[ModuleType] = []
 
-  def _import(self, name, *args, **kwargs):
+  def _import(self, name: str, *args, **kwargs) -> ModuleType:
     result = self.realImport(name, *args, **kwargs)
-    self.newModules.append((name, result))
+    self.newModules.append(result)
     return result
 
-  def clear(self):
+  def clear(self) -> None:
     oldModules = self.newModules
     self.newModules = []
+    seen: Set[ModuleType] = set()
 
-    seen = []
-
-    reverse_sys_modules = {val: key for key, val in sys.modules.items()}
-    for (modname, module) in oldModules:
+    for module in oldModules:
       if module.__name__ in sys.builtin_module_names \
           or not hasattr(module, '__file__') \
           or not module.__file__ \
@@ -92,17 +90,13 @@ class RollbackImporter:
           or 'edg_core' in module.__file__:  # don't rollback internals, bad things happen
         continue
 
-      if modname in self.previousModules:
+      if module in self.previousModules:
         continue
 
-      # if module in reverse_sys_modules:
-      #   print(f"unload {reverse_sys_modules[module]}")
-      #   del(sys.modules[reverse_sys_modules[module]])  # Force reload when modname next imported
-      #   del(reverse_sys_modules[module])  # don't need to over-delete
       if module not in seen:
         importlib.reload(module)
-        seen.append(module)
-        print(module.__name__)
+        self.newModules.append(module)
+        seen.add(module)
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
