@@ -91,9 +91,9 @@ class BufferedSupply(PowerConditioner, GeneratorBlock):
       high_sense_volt = self.get(self.pwr.link().voltage.upper()) - low_sense_volt_diff
 
       self.set = imp.Block(VoltageDivider(output_voltage=(low_sense_volt, high_sense_volt), impedance=(1, 10) * kOhm))
-      self.connect(self.set.pwr, self.pwr)  # TODO use chain
+      self.connect(self.set.input, self.pwr)  # TODO use chain
       self.amp = imp.Block(Opamp())
-      self.connect(self.set.out, self.amp.inp)
+      self.connect(self.set.output, self.amp.inp)
       self.connect(self.amp.inn, self.sense.b.as_analog_source(
         voltage_out=(0, self.pwr.link().voltage.upper()),
         impedance=0*Ohm(tol=0)

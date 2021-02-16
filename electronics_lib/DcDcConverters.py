@@ -313,10 +313,13 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
 
 
 class Ap3012_Device(DiscreteChip, CircuitBlock):
-  def __init__(self):
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
+    # TODO the power path doesn't actually go through Vin, instead it goes through the inductor
+    # But this is modeled here to be similar to the buck case, and the macromodel is valid anyways
     super().__init__()
     self.pwr_in = self.Port(ElectricalSink(
-      voltage_limits=(2.6, 16)*Volt
+      voltage_limits=(2.6, 16)*Volt,
+      current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
     self.sw = self.Port(ElectricalSource(
@@ -345,41 +348,54 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
   def contents(self):
     super().contents()
-    self.constrain(self.frequency == (1.1, 1.9)*MHertz)
-    self.constrain(self.efficiency == (0.75, 0.8))  # Efficiency stats from first page for ~>10mA
+    self.assign(self.frequency, (1.1, 1.9)*MHertz)
+    self.assign(self.efficiency, (0.75, 0.8))  # Efficiency stats from first page for ~>10mA
 
-  def generate(self) -> None:
-    super().generate()
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(1.17, 1.33) * Volt,
+      impedance=(1, 10) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (1.17*Volt / self.fb.ratio.upper(),
+                 1.33*Volt / self.fb.ratio.lower()))
 
-    self.ic = self.Block(Ap3012_Device())
+    self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.pwr_out.voltage_out,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+
+
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+    self.ic = self.Block(Ap3012_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
 
+    self.connect(self.fb.input, self.pwr_out)
+    self.connect(self.fb.gnd, self.gnd)
+    self.connect(self.fb.output, self.ic.fb)
+
     self.rect = self.Block(Diode(
-      reverse_voltage=(0, self.get(self.pwr_out.link().voltage.upper()))*Volt,
+      reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
       current=self.pwr_out.link().current_drawn,
       voltage_drop=(0, 0.4)*Volt,
       reverse_recovery_time=(0, 500) * nSecond  # guess from Digikey's classification for "fast recovery"
     ))
     self.connect(self.ic.sw, self.rect.anode.as_electrical_sink())
-    diode_out = self.rect.cathode.as_electrical_source()
+    diode_out = self.rect.cathode.as_electrical_source(
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+      current_limits=(0, 0.5)*Amp  # TODO proper switch current modeling?
+    )
     self.connect(diode_out, self.pwr_out)
 
-    self.fb = self.Block(VoltageDivider(
-      output_voltage=(1.17, 1.33) * Volt,
-      impedance=(1, 10) * kOhm,
-      tolerance_out_to_in=True
-    ))
-    self.connect(self.fb.pwr, self.pwr_out)
-    self.connect(self.fb.gnd, self.gnd)
-    self.connect(self.fb.out, self.ic.fb)
-
-    self._generate_converter(self.ic.sw, 0.5)
-    self.constrain(self.ic.pwr_in.current_draw == (
-      self.pwr_out.link().current_drawn.lower() * diode_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-      self.pwr_out.link().current_drawn.upper() * diode_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
-    ))
-    self.constrain(diode_out.voltage_out == (
-      1.17*Volt / self.fb.ratio.upper(),
-      1.33*Volt / self.fb.ratio.lower()
-    ))
+    self._generate_converter(self.ic.sw, 0.5,
+                             input_voltage=input_voltage, output_voltage=output_voltage,
+                             output_current_max=output_current[1], frequency=frequency,
+                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                             ripple_factor=ripple_factor)
