@@ -9,9 +9,7 @@ class HighSideSwitch(Block):
                frequency: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
-      current_draw=RangeExpr()
-    ), [Power])  # amplifier voltage
+    self.pwr = self.Port(ElectricalSink(), [Power])  # amplifier voltage
     self.gnd = self.Port(Ground(), [Common])
 
     self.control = self.Port(DigitalSink(  # logic voltage
@@ -23,8 +21,6 @@ class HighSideSwitch(Block):
       # no current limits, current draw is set by the connected load
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     ), [Output])
-
-    self.assign(self.pwr.current_draw, self.output.link().current_drawn)
 
     self.pull_resistance = self.Parameter(RangeExpr(pull_resistance))
     self.max_rds = self.Parameter(FloatExpr(max_rds))
@@ -71,7 +67,9 @@ class HighSideSwitch(Block):
       drive_current=(-1 * pwr_voltage.lower() / pull_resistance.upper(),
                      pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs
     ))
-    self.connect(self.drv.source.as_electrical_sink(), self.pwr)
+    self.connect(self.drv.source.as_electrical_sink(
+      current_draw=self.output.link().current_drawn
+    ), self.pwr)
     self.connect(self.drv.drain.as_digital_source(), self.output)
     self.connect(self.pre.drain.as_digital_source(), self.drv.gate.as_digital_sink(), self.pull.b.as_digital_bidir())
 

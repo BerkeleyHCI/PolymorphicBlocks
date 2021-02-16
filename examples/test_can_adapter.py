@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from edg import *
@@ -90,3 +89,8 @@ class CanAdapter(BoardTop):
         (['can_reg'], Ap2204k),
       ]
     )
+
+
+class CanAdapterTestCase(unittest.TestCase):
+  def test_design(self) -> None:
+    run_test(CanAdapter)

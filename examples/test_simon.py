@@ -1,8 +1,7 @@
-import os
 import unittest
-import sys
 
 from edg import *
+from .ExampleTestUtils import run_test
 
 
 class DomeButtonConnector(CircuitBlock):
@@ -33,7 +32,7 @@ class DomeButtonConnector(CircuitBlock):
     )
 
 
-class TestSimon(CircuitBlock):
+class TestSimon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -106,7 +105,4 @@ class TestSimon(CircuitBlock):
 
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestSimon(),
-      os.path.splitext(__file__)[0]
-    )
+    run_test(TestSimon)
