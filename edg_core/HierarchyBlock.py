@@ -186,7 +186,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
     )
 
-  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, allow_unconnected=False) -> edgir.HierarchyBlock:
+  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     self._blocks.finalize()
     self._connects.finalize()
     self._chains.finalize()
@@ -199,20 +199,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       if len(connect.ports) > 1:
         all_connected_ports.update(connect.ports)
 
-    unconnected_required_ports: List[str] = []  # aggregate report all unconnected ports
     for name, block in self._blocks.items():
-      # make sure all the blocks internal required ports are connected
-      for block_port in block._required_ports:
-        if block_port not in all_connected_ports:
-          unconnected_required_ports.append(name + '.' + block._name_of(block_port))
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
-
-    if not allow_unconnected:  # TODO also check avoid-fail-fast as builder option?
-      if unconnected_required_ports:
-        required_ports = ', '.join(unconnected_required_ports)
-        raise UnconnectedRequiredPortError(
-          f"In blocks in {type(self)}, "
-          f"required ports {required_ports} not connected")
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
@@ -595,7 +583,7 @@ class GeneratorBlock(Block):
 
     pb = edgir.HierarchyBlock()
 
-    pb = self._populate_def_proto_hierarchy(pb, allow_unconnected=True)  # specifically generate connect statements first TODO why?
+    pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
