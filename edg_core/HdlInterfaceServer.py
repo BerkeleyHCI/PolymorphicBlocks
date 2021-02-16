@@ -85,18 +85,19 @@ class RollbackImporter:
       if module.__name__ in sys.builtin_module_names \
           or not hasattr(module, '__file__') \
           or not module.__file__ \
+          or module in self.previousModules \
           or 'Python37-32' in module.__file__ \
           or 'site-packages' in module.__file__ \
           or 'edg_core' in module.__file__:  # don't rollback internals, bad things happen
-        continue
-
-      if module in self.previousModules:
+        # TODO less heuristic ignore rules?
+        # Specifically do not reload the classes in edg_core, which would break a lot of the internals
+        # this module depends on. Only load anything built on top of core, which aren't referenced to in this code.
         continue
 
       if module not in seen:
         importlib.reload(module)
-        self.newModules.append(module)
-        seen.add(module)
+        self.newModules.append(module)  # these modules must be reloaded again next time, so track them
+        seen.add(module)  # but this deduplicates modules while preserving order
 
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
@@ -111,6 +112,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
 
     if self.rollback is not None:
       self.rollback.clear()
+    # TODO the request module doesn't get tracked in RollbackImporter for some reason. So it needs an explicit reload.
     importlib.reload(importlib.import_module(request.name))
 
     self.library.load_module(request.name)
