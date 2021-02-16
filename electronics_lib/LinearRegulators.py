@@ -20,7 +20,7 @@ class Ld1117_Device(DiscreteChip, CircuitBlock):
       voltage_out=voltage_out,
       current_limits=(0, 0.8) * Amp  # most conservative estimate, up to 1300mA
     ))
-    self.constrain(self.vin.current_draw == self.vout.link().current_drawn + self.quiescent_current)
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.gnd = self.Port(Ground())
 
   def contents(self):
@@ -38,9 +38,12 @@ class Ld1117_Device(DiscreteChip, CircuitBlock):
 
 
 class Ld1117(LinearRegulator, GeneratorBlock):
-  def generate(self):  # TODO can some block params be made available pre-generate?
-    super().generate()
+  def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+    self.generator(self.select_part, self.spec_output_voltage,
+                   targets=[self.pwr_in, self.pwr_out, self.gnd])
 
+  def select_part(self, spec_output_voltage: RangeVal):  # TODO can some block params be made available pre-generate?
     parts = [
       # output voltage, quiescent current
       ((1.140, 1.260), 'LD1117S12TR'),
@@ -49,7 +52,7 @@ class Ld1117(LinearRegulator, GeneratorBlock):
       ((3.235, 3.365), 'LD1117S33TR'),
       ((4.9, 5.1), 'LD1117S50TR'),
     ]
-    output_low, output_high = self.get(self.pwr_out.voltage_out)
+    output_low, output_high = spec_output_voltage
     suitable_parts = [((part_out_min, part_out_max), part_number)
       for (part_out_min, part_out_max), part_number in parts
       if output_low <= part_out_min <= part_out_max <= output_high
@@ -58,8 +61,8 @@ class Ld1117(LinearRegulator, GeneratorBlock):
     (part_out_min, part_out_max), part_number = suitable_parts[0]
 
     self.ic = self.Block(Ld1117_Device(part=part_number, voltage_out=(part_out_min, part_out_max)*Volt))
-    self.constrain(self.dropout == self.ic.dropout)
-    self.constrain(self.quiescent_current == self.ic.quiescent_current)
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
 
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=10 * uFarad(tol=0.2)))
@@ -87,7 +90,7 @@ class Ldl1117_Device(DiscreteChip, CircuitBlock):
       voltage_out=voltage_out,
       current_limits=(0, 1.5) * Amp  # most conservative estimate, typ up to 2A
     ))
-    self.constrain(self.vin.current_draw == self.vout.link().current_drawn + self.quiescent_current)
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.gnd = self.Port(Ground())
 
   def contents(self):
@@ -105,9 +108,12 @@ class Ldl1117_Device(DiscreteChip, CircuitBlock):
 
 
 class Ldl1117(LinearRegulator, GeneratorBlock):
-  def generate(self):  # TODO can some block params be made available pre-generate?
-    super().generate()
+  def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+    self.generator(self.select_part, self.spec_output_voltage,
+                   targets=[self.pwr_in, self.pwr_out, self.gnd])
 
+  def select_part(self, spec_output_voltage: RangeVal):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [
       # output voltage, quiescent current
@@ -119,7 +125,7 @@ class Ldl1117(LinearRegulator, GeneratorBlock):
       (3.3, 'LDL1117S33R'),
       (5.0, 'LDL1117S50R'),
     ]
-    output_low, output_high = self.get(self.pwr_out.voltage_out)
+    output_low, output_high = spec_output_voltage
     suitable_parts = [(part_out_nominal, part_number)
                       for part_out_nominal, part_number in parts
                       if output_low <= part_out_nominal * (1 - TOLERANCE) <=
@@ -129,8 +135,8 @@ class Ldl1117(LinearRegulator, GeneratorBlock):
     part_out_nominal, part_number = suitable_parts[0]
 
     self.ic = self.Block(Ldl1117_Device(part=part_number, voltage_out=part_out_nominal*Volt(tol=TOLERANCE)))
-    self.constrain(self.dropout == self.ic.dropout)
-    self.constrain(self.quiescent_current == self.ic.quiescent_current)
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
 
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
@@ -185,8 +191,10 @@ class Ap2204k_Device(DiscreteChip, CircuitBlock):
 
 class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than top-level blocks
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr()):
+  def __init__(self, output_voltage: RangeLike = RangeExpr()):
     super().__init__()
+
+    self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
 
     self.pwr_in = self.Port(ElectricalSink(), [Power])
     self.pwr_out = self.Port(ElectricalSource())
@@ -196,9 +204,9 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
     self.dropout = self.Parameter(RangeExpr())
     self.quiescent_current = self.Parameter(RangeExpr())
 
-    self.constrain(self.pwr_out.voltage_out.within(voltage_out))
+    self.constrain(self.pwr_out.voltage_out.within(output_voltage))
 
-    self.generator(self.select_part, voltage_out,
+    self.generator(self.select_part, self.spec_output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd, self.en])
 
   def select_part(self, spec_output_voltage: RangeVal):
