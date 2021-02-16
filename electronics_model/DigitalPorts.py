@@ -155,7 +155,7 @@ class DigitalSourceBridge(CircuitPortBridge):
     super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-    self.assign(self.outer_port.link().current_drawn, self.inner_link.current_draw)
+    self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
 
