@@ -3,13 +3,15 @@ from .AbstractFets import SwitchNFet, SwitchPFet
 from .AbstractPassives import Resistor
 
 
-class HighSideSwitch(GeneratorBlock):
+class HighSideSwitch(Block):
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1 * Ohm,
                frequency: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])  # amplifier voltage
+    self.pwr = self.Port(ElectricalSink(
+      current_draw=RangeExpr()
+    ), [Power])  # amplifier voltage
     self.gnd = self.Port(Ground(), [Common])
 
     self.control = self.Port(DigitalSink(  # logic voltage
@@ -22,31 +24,28 @@ class HighSideSwitch(GeneratorBlock):
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     ), [Output])
 
-    self.constrain(self.pwr.current_draw == self.output.link().current_drawn)
+    self.assign(self.pwr.current_draw, self.output.link().current_drawn)
 
     self.pull_resistance = self.Parameter(RangeExpr(pull_resistance))
     self.max_rds = self.Parameter(FloatExpr(max_rds))
     self.frequency = self.Parameter(RangeExpr(frequency))
 
-  def generate(self) -> None:
-    pwr_voltage = self.get(self.pwr.link().voltage)
-    out_current = self.get(self.output.link().current_drawn)
-    pull_resistance = self.get(self.pull_resistance)
-    pull_current_max = pwr_voltage[1] / pull_resistance[0]
-    pull_power_max = pwr_voltage[1] ** 2 / pull_resistance[0]
+    pwr_voltage = self.pwr.link().voltage
+    out_current = self.output.link().current_drawn
+    pull_resistance = self.pull_resistance
+    pull_current_max = pwr_voltage.upper() / pull_resistance.lower()
+    pull_power_max = pwr_voltage.upper() * pwr_voltage.upper() / pull_resistance.lower()
 
     gate_voltage = (3.0, 3.0) #(self.get(self.control.link().voltage)[1],  # TODO with better const prop we should use output_threshold[1]
-                   # self.get(self.control.link().voltage)[1])
-    max_rds = self.get(self.max_rds)
+    # self.get(self.control.link().voltage)[1])
 
-    low_amp_rds_max = pull_resistance[0] / 1000
-    low_amp_power_max = (pull_current_max ** 2) * low_amp_rds_max
+    low_amp_rds_max = pull_resistance.lower() / 1000
 
     self.pre = self.Block(SwitchNFet(
-      drain_voltage=pwr_voltage * Volt,
-      drain_current=(0, pull_current_max) * Amp,
-      gate_voltage=gate_voltage * Volt,
-      rds_on=(0, low_amp_rds_max) * Ohm,  # TODO size on turnon time
+      drain_voltage=pwr_voltage,
+      drain_current=(0, pull_current_max),
+      gate_voltage=gate_voltage,
+      rds_on=(0, low_amp_rds_max),  # TODO size on turnon time
       gate_charge=(0, float('inf')),  # TODO size on turnon time
       power=(0, 0) * Watt,
       frequency=self.frequency,
@@ -61,17 +60,16 @@ class HighSideSwitch(GeneratorBlock):
     ))
     self.connect(self.pull.a.as_electrical_sink(), self.pwr)
 
-    amp_power_max = out_current[1] ** 2 * max_rds
-
     self.drv = self.Block(SwitchPFet(
-      drain_voltage=pwr_voltage * Volt,
-      drain_current=out_current * Amp,
-      gate_voltage=pwr_voltage * Volt,
-      rds_on=(0, max_rds) * Ohm,
+      drain_voltage=pwr_voltage,
+      drain_current=out_current,
+      gate_voltage=pwr_voltage,
+      rds_on=(0, self.max_rds),
       gate_charge=(0, float('inf')),  # TODO size on turnon time
       power=(0, 0) * Watt,
       frequency=self.frequency,
-      drive_current=(-pwr_voltage[0]/pull_resistance[1], pwr_voltage[0]/low_amp_rds_max)  # TODO simultaneously solve both FETs
+      drive_current=(-1 * pwr_voltage.lower() / pull_resistance.upper(),
+                     pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs
     ))
     self.connect(self.drv.source.as_electrical_sink(), self.pwr)
     self.connect(self.drv.drain.as_digital_source(), self.output)
