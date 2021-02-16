@@ -1,6 +1,7 @@
 from types import ModuleType
-from typing import Generator, Optional, Set, Dict, Type, cast, List
+from typing import Generator, Optional, Set, Dict, Type, cast, List, Any
 
+import builtins
 import importlib
 import inspect
 import traceback
@@ -20,6 +21,10 @@ class LibraryElementResolver():
     self.seen_modules: Set[ModuleType] = set()
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
 
+    # Every time we reload, we need to get a fresh handle to the relevant base classes
+    self.LibraryElementType = getattr(importlib.import_module("edg_core"), "LibraryElement")
+    self.PortType = getattr(importlib.import_module("edg_core"), "Port")
+
   def load_module(self, module_name: str) -> None:
     """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
     Avoids re-loading previously loaded modules with cacheing.
@@ -38,13 +43,13 @@ class LibraryElementResolver():
     for (name, member) in inspect.getmembers(module):
       if inspect.ismodule(member):
         self._search_module(member)
-      if inspect.isclass(member) and issubclass(member, LibraryElement) \
+      if inspect.isclass(member) and issubclass(member, self.LibraryElementType) \
           and (member, 'non_library') not in member._elt_properties:
         name = member._static_def_name()
         if name in self.lib_class_map:
           assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
         else:  # for ports, recurse into links and stuff
-          if issubclass(member, Port):  # TODO for some reason, Links not in __init__ are sometimes not found
+          if issubclass(member, self.PortType):  # TODO for some reason, Links not in __init__ are sometimes not found
             obj = member()  # TODO can these be class definitions?
             if hasattr(obj, 'link_type'):
               self._search_module(importlib.import_module(obj.link_type.__module__))
@@ -57,13 +62,63 @@ class LibraryElementResolver():
     return self.lib_class_map.get(dict_key, None)
 
 
+# Module reloading solution from http://pyunit.sourceforge.net/notes/reloading.html
+class RollbackImporter:
+  def __init__(self):
+    "Creates an instance and installs as the global importer"
+    self.previousModules = sys.modules.copy()
+    self.realImport = builtins.__import__
+    builtins.__import__ = self._import
+    self.newModules = []
+
+  def _import(self, name, *args, **kwargs):
+    result = self.realImport(name, *args, **kwargs)
+    self.newModules.append((name, result))
+    return result
+
+  def clear(self):
+    oldModules = self.newModules
+    self.newModules = []
+
+    seen = []
+
+    reverse_sys_modules = {val: key for key, val in sys.modules.items()}
+    for (modname, module) in oldModules:
+      if module.__name__ in sys.builtin_module_names \
+          or not hasattr(module, '__file__') \
+          or not module.__file__ \
+          or 'Python37-32' in module.__file__ \
+          or 'site-packages' in module.__file__ \
+          or 'edg_core' in module.__file__:  # don't rollback internals, bad things happen
+        continue
+
+      if modname in self.previousModules:
+        continue
+
+      # if module in reverse_sys_modules:
+      #   print(f"unload {reverse_sys_modules[module]}")
+      #   del(sys.modules[reverse_sys_modules[module]])  # Force reload when modname next imported
+      #   del(reverse_sys_modules[module])  # don't need to over-delete
+      if module not in seen:
+        importlib.reload(module)
+        seen.append(module)
+        print(module.__name__)
+
+
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def __init__(self, *, verbose: bool = False):
+  def __init__(self, *, verbose: bool = False, rollback: Optional[Any] = None):
     self.library = LibraryElementResolver()  # dummy empty resolver
     self.verbose = verbose
+    self.rollback = rollback
 
   def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
+    # nuke it from orbit, because we really don't know how to do better right now
     self.library = LibraryElementResolver()  # clear old the old resolver
+
+    if self.rollback is not None:
+      self.rollback.clear()
+    importlib.reload(importlib.import_module(request.name))
+
     self.library.load_module(request.name)
     if self.verbose:
       print(f"ReloadModule({request.name}) -> None (indexed {len(self.library.lib_class_map)})")

@@ -253,16 +253,6 @@ class HasMetadata(LibraryElement):
         self._edgdoc[self] = selfdoc
 
       self._sourcelocator = self.Metadata(IdentityDict[Refable, str]())
-      self._sourcelocator[self] = self._get_class_line()
-
-  def _get_class_line(self) -> str:
-    """Returns the source locator for own class definition
-    TODO: line number is broken - there doesn't seem to be a good way of getting a line number
-      this used to return the source locator for the last function of the same name in the same object, but this
-      didn't work for classes since not everyone defines its own __init__
-    TODO: maybe return a more structured type?
-    """
-    return f"{inspect.getsourcefile(self.__class__)}: 0"
 
   def _get_calling_source_locator(self) -> str:
     """Returns the source locator (as a string for now) of the line calling the function this is being called from,
