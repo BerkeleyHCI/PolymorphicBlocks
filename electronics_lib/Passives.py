@@ -177,7 +177,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     # Default to be overridden on a per-device basis
     self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
 
-    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
+    self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage, self.single_nominal_capacitance,
                    self.part_spec, self.footprint_spec)
 
     # Output values
@@ -322,6 +322,9 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
                                      single_nominal_capacitance: RangeVal,
                                      part_spec: str, footprint_spec: str) -> None:
+    # test with
+    # python -m unittest electronics_lib.test_capacitor
+
     # capacitance: user-specified capacitance
     # single nominal capacitance: no single cap with requested capacitance, must generate multiple parallel caps
     # nominal capacitance: selected part's capacitance
@@ -347,7 +350,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     else:
       self.min_package_size = self.PACKAGES[0]
 
-    if voltage < 3.6 or (self.capacitance[0] + self.capacitance[1]) / 2 <= 1e-6:
+    if (voltage < 3.6) or ((self.capacitance[0] + self.capacitance[1]) / 2 <= 1e-6):
       self.derated_capacitance = self.capacitance
     elif self.min_package_size not in self.DERATE_VOLTCO:
       self.derated_capacitance = (0, 0)
