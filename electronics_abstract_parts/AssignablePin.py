@@ -37,12 +37,12 @@ class AssignablePinBlock(GeneratorBlock):
 
     if isinstance(port, CircuitPort) and not isinstance(pin, Iterable):
       if isinstance(pin, (int, str)):
-        builder.get_curr_block().constrain(
-          self._suggested_pins_params[self._name_of(port)] == str(pin)
+        builder.get_curr_block().assign(
+          self._suggested_pins_params[self._name_of(port)], str(pin)
         )
       elif pin is NotConnectedPin:
-        builder.get_curr_block().constrain(
-          self._suggested_pins_params[self._name_of(port)] == '_not_connected'
+        builder.get_curr_block().assign(
+          self._suggested_pins_params[self._name_of(port)], '_not_connected'
         )
       elif pin is AnyPin:
         pass  # no constraint for any-pin
