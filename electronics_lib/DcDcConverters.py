@@ -84,7 +84,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                                             ripple_factor=ripple_factor)
 
     self.connect(self.pwr_out, inductor_out.as_electrical_source(
-      voltage_out=self.pwr_out.voltage_out,  # leave blank, set in contents()
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, 1.2)*Amp
     ))
 
@@ -95,10 +95,12 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
 
 
 class Tps54202h_Device(DiscreteChip, CircuitBlock):
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
     self.pwr_in = self.Port(ElectricalSink(
-      voltage_limits=(4.5, 28)*Volt
+      voltage_limits=(4.5, 28)*Volt,
+      current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
     self.sw = self.Port(ElectricalSource(
@@ -133,13 +135,31 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
   def contents(self):
     super().contents()
 
-    self.constrain(self.frequency == (390, 590)*kHertz)
-    self.constrain(self.efficiency == (0.75, 0.95))  # Efficiency stats from first page for ~>10mA
+    self.assign(self.frequency, (390, 590)*kHertz)
+    self.assign(self.efficiency, (0.75, 0.95))  # Efficiency stats from first page for ~>10mA
 
-  def generate(self) -> None:
-    super().generate()
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(0.581, 0.611) * Volt,
+      impedance=(1, 10) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (0.581*Volt / self.fb.ratio.upper(),
+                 0.611*Volt / self.fb.ratio.lower()))
 
-    self.ic = self.Block(Tps54202h_Device())
+    self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.pwr_out.voltage_out,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+    self.ic = self.Block(Tps54202h_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
 
@@ -156,32 +176,29 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.pwr_in, self.en_res.a.as_electrical_sink())
     self.connect(self.en_res.b.as_digital_source(), self.ic.en)
 
-    self.fb = self.Block(VoltageDivider(
-      output_voltage=(0.581, 0.611) * Volt,
-      impedance=(1, 10) * kOhm,
-      tolerance_out_to_in=True
-    ))
-    self.connect(self.fb.pwr, self.pwr_out)
+    self.connect(self.fb.input, self.pwr_out)
     self.connect(self.fb.gnd, self.gnd)
-    self.connect(self.fb.out, self.ic.fb)
+    self.connect(self.fb.output, self.ic.fb)
 
     # TODO dedup across all converters
-    inductor_out = self._generate_converter(self.ic.sw, 2)
-    self.constrain(self.ic.pwr_in.current_draw == (
-      self.pwr_out.link().current_drawn.lower() * inductor_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-      self.pwr_out.link().current_drawn.upper() * inductor_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
-    ))
-    self.constrain(inductor_out.voltage_out == (
-      0.581*Volt / self.fb.ratio.upper(),
-      0.611*Volt / self.fb.ratio.lower()
+    inductor_out = self._generate_converter(self.ic.sw, 2,
+                                            input_voltage=input_voltage, output_voltage=output_voltage,
+                                            output_current_max=output_current[1], frequency=frequency,
+                                            spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                                            ripple_factor=ripple_factor)
+
+    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+      current_limits=(0, 2)*Amp
     ))
 
 
 class Lmr33630_Device(DiscreteChip, CircuitBlock):
-  def __init__(self):
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
     self.vin = self.Port(ElectricalSink(
-      voltage_limits=(3.8, 36)*Volt
+      voltage_limits=(3.8, 36)*Volt,
+      current_draw=current_draw
     ))
     self.pgnd = self.Port(Ground())
     self.agnd = self.Port(Ground())
@@ -235,13 +252,31 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.constrain(self.pwr_out.voltage_out.within((1, 24)*Volt))
-    self.constrain(self.frequency == 400*kHertz(tol=0))  # TODO also comes in 1.4 and 2.1MHz versions
-    self.constrain(self.efficiency == (0.7, 0.98))  # Efficiency stats from first page for ~>10mA
+    self.assign(self.frequency, 400*kHertz(tol=0))  # TODO also comes in 1.4 and 2.1MHz versions
+    self.assign(self.efficiency, (0.7, 0.98))  # Efficiency stats from first page for ~>10mA
 
-  def generate(self) -> None:
-    super().generate()
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(0.985, 1.015) * Volt,  # TODO dedup w/ the definition in the device?
+      impedance=(10, 100) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (0.985*Volt / self.fb.ratio.upper(),
+                 1.015*Volt / self.fb.ratio.lower()))
 
-    self.ic = self.Block(Lmr33630_Device())
+    self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.pwr_out.voltage_out,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+    self.ic = self.Block(Lmr33630_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
     self.connect(self.pwr_in, self.ic.vin)
     self.connect(self.gnd, self.ic.pgnd, self.ic.agnd)
 
@@ -261,24 +296,19 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.vcc_cap.pos.as_electrical_sink(), self.ic.vcc)
     self.connect(self.vcc_cap.neg.as_electrical_sink(), self.gnd)
 
-    self.fb = self.Block(VoltageDivider(
-      output_voltage=(0.985, 1.015) * Volt,  # TODO dedup w/ the definition in the device?
-      impedance=(10, 100) * kOhm,
-      tolerance_out_to_in=True
-    ))
 
-    self.connect(self.fb.pwr, self.pwr_out)
+    self.connect(self.fb.input, self.pwr_out)
     self.connect(self.fb.gnd, self.gnd)
-    self.connect(self.fb.out, self.ic.fb)
+    self.connect(self.fb.output, self.ic.fb)
 
-    inductor_out = self._generate_converter(self.ic.sw, 3.0)
-    self.constrain(self.ic.vin.current_draw == (
-      self.pwr_out.link().current_drawn.lower() * inductor_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-        self.pwr_out.link().current_drawn.upper() * inductor_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower(),
-    ))
-    self.constrain(inductor_out.voltage_out == (
-      0.985*Volt / self.fb.ratio.upper(),
-      1.015*Volt / self.fb.ratio.lower()
+    inductor_out = self._generate_converter(self.ic.sw, 3.0,
+                                            input_voltage=input_voltage, output_voltage=output_voltage,
+                                            output_current_max=output_current[1], frequency=frequency,
+                                            spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                                            ripple_factor=ripple_factor)
+    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+      current_limits=(0, 3.0)*Amp
     ))
 
 
