@@ -61,23 +61,29 @@ class SmtDiode(Diode, CircuitBlock, GeneratorBlock):
     super().__init__(**kwargs)
     self.reverse_voltage_rating = self.Parameter(RangeExpr())
     self.current_rating = self.Parameter(RangeExpr())
+    self.selected_voltage_drop = self.Parameter(RangeExpr())
+    self.selected_reverse_recovery_time = self.Parameter(RangeExpr())
 
-  def generate(self) -> None:
+    self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
+                   self.reverse_recovery_time)
+
+  def select_part(self, reverse_voltage: RangeVal, current: RangeVal, voltage_drop: RangeVal,
+                  reverse_recovery_time: RangeVal) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
-    parts = self.product_table.filter(RangeContains(Column('Vr,max'), Lit(self.get(self.reverse_voltage)))) \
-      .filter(RangeContains(Column('I,max'), Lit(self.get(self.current)))) \
-      .filter(RangeContains(Lit(self.get(self.voltage_drop)), Column('Vf,max'))) \
-      .filter(RangeContains(Lit(self.get(self.reverse_recovery_time)), Column('trr'))) \
+    parts = self.product_table.filter(RangeContains(Column('Vr,max'), Lit(reverse_voltage))) \
+      .filter(RangeContains(Column('I,max'), Lit(current))) \
+      .filter(RangeContains(Lit(voltage_drop), Column('Vf,max'))) \
+      .filter(RangeContains(Lit(reverse_recovery_time), Column('trr'))) \
       .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
       .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
       .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no diodes matching Vr,max={self.get(self.reverse_voltage)}, I={self.get(self.current)}, "
-                           f"Vf={self.get(self.voltage_drop)}, trr={self.get(self.reverse_recovery_time)}")
+    part = parts.first(err=f"no diodes matching Vr,max={reverse_voltage}, I={current}, "
+                           f"Vf={voltage_drop}, trr={reverse_recovery_time}")
 
-    self.constrain(self.reverse_voltage_rating == part['Vr,max'])
-    self.constrain(self.current_rating == part['I,max'])
-    self.constrain(self.voltage_drop == part['Vf,max'])
-    self.constrain(self.reverse_recovery_time == part['trr'])
+    self.assign(self.reverse_voltage_rating, part['Vr,max'])
+    self.assign(self.current_rating, part['I,max'])
+    self.assign(self.voltage_drop, part['Vf,max'])
+    self.assign(self.reverse_recovery_time, part['trr'])
 
     footprint_pinning = {
       'Diode_SMD:D_SMA': {
