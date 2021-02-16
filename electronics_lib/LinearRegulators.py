@@ -15,6 +15,7 @@ class Ld1117_Device(DiscreteChip, CircuitBlock):
     # Part datasheet, Table 9
     self.vin = self.Port(ElectricalSink(
       voltage_limits=(0, 15) * Volt,
+      current_draw=RangeExpr()
     ))
     self.vout = self.Port(ElectricalSource(
       voltage_out=voltage_out,
@@ -85,6 +86,7 @@ class Ldl1117_Device(DiscreteChip, CircuitBlock):
     # Part datasheet, Table 9
     self.vin = self.Port(ElectricalSink(
       voltage_limits=(2.6, 18) * Volt,
+      current_draw=RangeExpr()
     ))
     self.vout = self.Port(ElectricalSource(
       voltage_out=voltage_out,
@@ -160,6 +162,7 @@ class Ap2204k_Device(DiscreteChip, CircuitBlock):
     # Part datasheet, Recommended Operating Conditions
     self.vin = self.Port(ElectricalSink(
       voltage_limits=(0, 24) * Volt,
+      current_draw=RangeExpr()
     ), [Power])
     self.vout = self.Port(ElectricalSource(
       voltage_out=voltage_out,

@@ -11,5 +11,7 @@ class Crystal(DiscreteComponent):
 
     self.frequency = self.Parameter(RangeExpr(frequency))
 
-    self.crystal = self.Port(CrystalPort(), [InOut])
+    self.crystal = self.Port(CrystalPort(
+      frequency=self.frequency
+    ), [InOut])
     self.gnd = self.Port(ElectricalSink(), [Common])
