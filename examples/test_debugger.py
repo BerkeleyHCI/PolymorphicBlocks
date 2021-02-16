@@ -1,9 +1,7 @@
-import os
 import unittest
-import sys
 
 from edg import *
-import edg_core.TransformUtil as tfu
+from .ExampleTestUtils import run_test
 
 
 class SwdSourceBitBang(Block):
@@ -38,7 +36,7 @@ class SwdSourceBitBang(Block):
     self.connect(self.swo_res.b.as_digital_sink(), self.swd.swo)
 
 
-class Debugger(Block):
+class Debugger(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -124,15 +122,16 @@ class Debugger(Block):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['sw_usb', 'package'], SmtSwitchRa),
+        (['sw_tgt', 'package'], SmtSwitchRa),
+        (['usb_reg'], Ap2204k),
+      ]
+    )
+
 
 class DebuggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      Debugger(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('sw_usb').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('sw_tgt').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('usb_reg'): Ap2204k,
-      }
-    )
+    run_test(Debugger)

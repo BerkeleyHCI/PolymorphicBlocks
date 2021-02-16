@@ -1,8 +1,7 @@
-import os
 import unittest
-import sys
 
 from edg import *
+from .ExampleTestUtils import run_test
 
 
 class LightsConnector(Connector, CircuitBlock):
@@ -62,7 +61,7 @@ class LightsDriver(Block):
         self.connect(driver.output, self.conn.out[i])
 
 
-class TestHighSwitch(CircuitBlock):
+class TestHighSwitch(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -142,7 +141,4 @@ class TestHighSwitch(CircuitBlock):
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestHighSwitch(),
-      os.path.splitext(__file__)[0]
-    )
+    run_test(TestHighSwitch)

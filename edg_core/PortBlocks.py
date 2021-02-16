@@ -31,6 +31,11 @@ class PortBridge(Block):
         "PortBridge can only have outer_port or inner_link ports, got %s" % name
     super().__setattr__(name, value)
 
+  T = TypeVar('T', bound=BasePort)
+  def Port(self, *args, **kwargs) -> T:
+    assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
+    return super().Port(*args, optional=True, **kwargs)
+
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     pb = self._populate_def_proto_block_base(edgir.HierarchyBlock())
     pb = self._populate_def_proto_block_contents(pb)
@@ -71,6 +76,11 @@ class PortAdapter(Block, Generic[AdapterDstType]):
       assert name == '_parent' or name == "src" or name == "dst", \
         "PortAdapter can only have src or dst ports, got %s" % name
     super().__setattr__(name, value)
+
+  T = TypeVar('T', bound=BasePort)
+  def Port(self, *args, **kwargs) -> T:
+    assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
+    return super().Port(*args, optional=True, **kwargs)
 
   # TODO: dedup w/ BaseBlock
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
