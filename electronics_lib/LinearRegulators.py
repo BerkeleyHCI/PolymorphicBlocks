@@ -159,7 +159,7 @@ class Ap2204k_Device(DiscreteChip, CircuitBlock):
       voltage_out=voltage_out,
       current_limits=(0, 0.15) * Amp
     ))
-    self.constrain(self.vin.current_draw == self.vout.link().current_drawn + self.quiescent_current)
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.en = self.Port(DigitalSink(
       voltage_limits=(0, 24) * Volt,
       current_draw=(0, 1)*uAmp,  # TYP rating, min/max bounds not given
@@ -195,11 +195,13 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
 
     self.dropout = self.Parameter(RangeExpr())
     self.quiescent_current = self.Parameter(RangeExpr())
+
     self.constrain(self.pwr_out.voltage_out.within(voltage_out))
 
-  def generate(self):
-    super().generate()
+    self.generator(self.select_part, voltage_out,
+                   targets=[self.pwr_in, self.pwr_out, self.gnd, self.en])
 
+  def select_part(self, spec_output_voltage: RangeVal):
     TOLERANCE = 0.02
     parts = [
       # output voltage, quiescent current
@@ -211,7 +213,7 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
       (1.8, 'AP2204K-1.8'),
       (1.5, 'AP2204K-1.5'),
     ]
-    output_low, output_high = self.get(self.pwr_out.voltage_out)
+    output_low, output_high = spec_output_voltage
     suitable_parts = [(part_out_nominal, part_number)
                       for part_out_nominal, part_number in parts
                       if output_low <= part_out_nominal * (1 - TOLERANCE) <=
@@ -225,8 +227,8 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
     self.connect(self.ic.vout, self.pwr_out)
     self.connect(self.ic.gnd, self.gnd)
     self.connect(self.ic.en, self.en)
-    self.constrain(self.dropout == self.ic.dropout)
-    self.constrain(self.quiescent_current == self.ic.quiescent_current)
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
 
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=1.1 * uFarad(tol=0.2)))
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2 * uFarad(tol=0.2)))
@@ -240,9 +242,9 @@ class Ap2204k(LinearRegulator):
   # TODO unify with _Block version, with optional en and generators
 
   def contents(self):
-    self.ic = self.Block(Ap2204k_Block())
-    self.constrain(self.dropout == self.ic.dropout)
-    self.constrain(self.quiescent_current == self.ic.quiescent_current)
+    self.ic = self.Block(Ap2204k_Block(self.spec_output_voltage))
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
 
     assert self.pwr_in.bridge_type is not None  # TODO get rid of this
     bridge = self.Block(self.pwr_in.bridge_type())
@@ -252,6 +254,3 @@ class Ap2204k(LinearRegulator):
     self.connect(bridge.inner_link.as_digital_source(), self.ic.en)
     self.connect(self.pwr_out, self.ic.pwr_out)
     self.connect(self.gnd, self.ic.gnd)
-
-    self.constrain(self.dropout == self.ic.dropout)
-    self.constrain(self.quiescent_current == self.ic.quiescent_current)

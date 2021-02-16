@@ -191,21 +191,5 @@ class BlinkyTestCase(unittest.TestCase):
   def test_design_flat(self) -> None:
     run_test(TestBlinkyFlattened)
 
-    # ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-    #   TestBlinkyFlattened(),
-    #   os.path.splitext(__file__)[0] + '_flat',
-    #   instance_refinements={
-    #     tfu.Path.empty().append_block('usb_reg'): Tps561201,
-    #   }
-    # )
-
   def test_design_complete(self) -> None:
     run_test(TestBlinkyComplete)
-
-    # ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-    #   TestBlinkyComplete(),
-    #   os.path.splitext(__file__)[0] + '_complete',
-    #   instance_refinements={
-    #     tfu.Path.empty().append_block('usb_reg'): Tps561201,
-    #   }
-    # )

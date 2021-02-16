@@ -2,10 +2,10 @@ import os
 import unittest
 
 from edg import *
-import edg_core.TransformUtil as tfu
+from .ExampleTestUtils import run_test
 
 
-class CanAdapter(Block):
+class CanAdapter(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -81,16 +81,12 @@ class CanAdapter(Block):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
-
-class CanAdapterTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    ElectronicsDriver().generate_write_block(
-      CanAdapter(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('sw_usb').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('sw_can').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('usb_reg'): Ap2204k,
-        tfu.Path.empty().append_block('can_reg'): Ap2204k,
-      }
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['sw_usb', 'package'], SmtSwitchRa),
+        (['sw_can', 'package'], SmtSwitchRa),
+        (['usb_reg'], Ap2204k),
+        (['can_reg'], Ap2204k),
+      ]
     )
