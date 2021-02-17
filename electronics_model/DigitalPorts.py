@@ -84,12 +84,14 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
     ))
     self.constrain(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
-    self.assign(self.pullup_capable , self.bidirs.any(lambda x: x.pullup_capable) |
-                   self.single_sources.any(lambda x: x.pullup_capable))
-    self.assign(self.pulldown_capable, self.bidirs.any(lambda x: x.pulldown_capable) |
-                   self.single_sources.any(lambda x: x.pulldown_capable))
-    self.assign(self.has_low_signal_driver, self.single_sources.any(lambda x: x.low_signal_driver))
-    self.assign(self.has_high_signal_driver, self.single_sources.any(lambda x: x.high_signal_driver))
+    self.assign(self.pullup_capable,
+                self.bidirs.any(lambda x: x.pullup_capable) | self.single_sources.any(lambda x: x.pullup_capable))
+    self.assign(self.pulldown_capable,
+                self.bidirs.any(lambda x: x.pulldown_capable) | self.single_sources.any(lambda x: x.pulldown_capable))
+    self.assign(self.has_low_signal_driver,
+                self.single_sources.any(lambda x: x.low_signal_driver))
+    self.assign(self.has_high_signal_driver,
+                self.single_sources.any(lambda x: x.high_signal_driver))
     self.constrain(self.has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
     self.constrain(self.has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
 
@@ -329,24 +331,6 @@ class DigitalBidirBridge(CircuitPortBridge):
 
 
 class DigitalSingleSource(DigitalBase):
-  @staticmethod
-  def pull_low_from_supply(neg: ElectricalSink) -> DigitalSingleSource:
-    return DigitalSingleSource(
-      voltage_out=neg.link().voltage,
-      output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      pulldown_capable=True,
-      low_signal_driver=True
-    )
-
-  @staticmethod
-  def pull_high_from_supply(pos: ElectricalSink) -> DigitalSingleSource:
-    return DigitalSingleSource(
-      voltage_out=pos.link().voltage,
-      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      pullup_capable=True,
-      high_signal_driver=False
-    )
-
   @staticmethod
   def low_from_supply(neg: ElectricalSink) -> DigitalSingleSource:
     return DigitalSingleSource(

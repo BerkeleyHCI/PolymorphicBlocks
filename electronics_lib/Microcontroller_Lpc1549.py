@@ -475,7 +475,8 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
           current_limits=(-50, 45) * mAmp,  # TODO this uses short circuit current, which might not be useful, better to model as resistance?
           input_thresholds=(0.3 * self.pwr.link().voltage.lower(),
                             0.7 * self.pwr.link().voltage.upper()),
-          output_thresholds=(0 * Volt, self.pwr.link().voltage.lower())
+          output_thresholds=(0 * Volt, self.pwr.link().voltage.lower()),
+          pullup_capable=True, pulldown_capable=True
         ))
       elif isinstance(self_port, AnalogSink):
         self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_sink(

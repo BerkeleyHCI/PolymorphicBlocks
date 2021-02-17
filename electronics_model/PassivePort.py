@@ -164,6 +164,22 @@ class Passive(CircuitPort[PassiveLink]):
   def as_digital_single_source(self, **kwargs) -> DigitalSingleSource:
     return self._convert(PassiveAdapterDigitalSingleSource(**kwargs))
 
+  def as_digital_pull_high_from_supply(self, pos: ElectricalSink) -> DigitalSingleSource:
+    return self._convert(PassiveAdapterDigitalSingleSource(
+      voltage_out=pos.link().voltage,
+      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
+      pullup_capable=True,
+      high_signal_driver=True
+    ))
+
+  def as_digital_pull_low_from_supply(self, neg: ElectricalSink) -> DigitalSingleSource:
+    return self._convert(PassiveAdapterDigitalSingleSource(
+      voltage_out=neg.link().voltage,
+      output_thresholds=(neg.link().voltage.upper(), float('inf')),
+      pulldown_capable=True,
+      low_signal_driver=True
+    ))
+
   def as_analog_source(self, **kwargs) -> AnalogSource:
     return self._convert(PassiveAdapterAnalogSource(**kwargs))
 

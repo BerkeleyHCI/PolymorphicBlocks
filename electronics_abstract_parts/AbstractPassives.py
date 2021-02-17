@@ -36,7 +36,7 @@ class PullupResistor(DiscreteApplication):
     super().__init__()
 
     self.pwr = self.Port(ElectricalSink(), [Power])
-    self.io = self.Port(DigitalSingleSource.pull_high_from_supply(self.pwr), [InOut])
+    self.io = self.Port(DigitalSingleSource(), [InOut])
 
     self.resistance = self.Parameter(RangeExpr(resistance))
 
@@ -45,7 +45,7 @@ class PullupResistor(DiscreteApplication):
     self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
     self.connect(self.pwr, self.res.a.as_electrical_sink())
-    self.connect(self.io, self.res.b.as_digital_single_source())
+    self.connect(self.io, self.res.b.as_digital_pull_high_from_supply(self.pwr))
 
 
 class PulldownResistor(DiscreteApplication):
@@ -58,14 +58,14 @@ class PulldownResistor(DiscreteApplication):
     self.resistance = self.Parameter(RangeExpr(resistance))
 
     self.gnd = self.Port(Ground(), [Common])
-    self.io = self.Port(DigitalSingleSource.pull_low_from_supply(self.gnd), [InOut])
+    self.io = self.Port(DigitalSingleSource(), [InOut])
 
   def contents(self):
     super().contents()
     self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
     self.connect(self.gnd, self.res.a.as_ground())
-    self.connect(self.io, self.res.b.as_digital_single_source())
+    self.connect(self.io, self.res.b.as_digital_pull_low_from_supply(self.gnd))
 
 
 class SeriesPowerResistor(DiscreteApplication):
