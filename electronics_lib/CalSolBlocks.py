@@ -52,6 +52,9 @@ class CalSolCanBlock(CalSolSubcircuit):
 
 
 class CanFuse(PptcFuse, CircuitBlock):
+  def __init__(self):
+    super().__init__(trip_current=150*mAmp(tol=0))
+
   def contents(self):
     super().contents()
 

@@ -29,7 +29,7 @@ class TestDatalogger(BoardTop):
     ) as imp:
       (self.pwr_5v,), _ = self.chain(
         self.pwr_conn.pwr,
-        imp.Block(BuckConverter(output_voltage=(4.85, 5.35)*Volt)),
+        imp.Block(BuckConverter(output_voltage=(4.85, 5.4)*Volt)),
         self.pwr_5v_merge.sink2
       )
 

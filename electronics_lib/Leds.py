@@ -51,7 +51,7 @@ class IndicatorLed(Light):
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
-                  self.signal.link().output_thresholds.upper() / self.target_current_draw.upper())))
+                  self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
 
     self.connect(self.signal, self.package.a.as_digital_sink(
       current_draw=(0, self.signal.link().voltage.upper() / self.res.resistance.lower())

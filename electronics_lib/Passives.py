@@ -57,11 +57,10 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.footprint_spec = self.Parameter(StringExpr(""))
-    self.generator(self.select_resistor, self.resistance, self.power,
+    self.generator(self.select_resistor, self.spec_resistance, self.power,
                    self.footprint_spec)
 
     # Output values
-    self.selected_resistance = self.Parameter(RangeExpr())
     self.selected_power_rating = self.Parameter(RangeExpr())
 
   """Default generator that automatically picks resistors.
@@ -87,7 +86,7 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
     if not suitable_packages:
       raise ValueError(f"Cannot find suitable package for resistor needing {power[1]} W power")
 
-    self.assign(self.selected_resistance, value * Ohm(tol=self.TOLERANCE))
+    self.assign(self.resistance, value * Ohm(tol=self.TOLERANCE))
     self.assign(self.selected_power_rating, suitable_packages[0][0])
 
     self.footprint(

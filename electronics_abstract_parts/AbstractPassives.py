@@ -23,7 +23,8 @@ class Resistor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.resistance = self.Parameter(RangeExpr(resistance))
+    self.spec_resistance = self.Parameter(RangeExpr(resistance))
+    self.resistance = self.Parameter(RangeExpr())
     self.power = self.Parameter(RangeExpr(power))  # operating power range
 
 
