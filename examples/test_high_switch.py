@@ -92,6 +92,12 @@ class TestHighSwitch(BoardTop):
 
       (self.can, ), _ = self.chain(self.mcu.new_io(CanControllerPort, pin=[43, 44]), imp.Block(CalSolCanBlock()))
 
+      # TODO need proper support for exported unconnected ports
+      self.can_gnd_load = self.Block(ElectricalLoad())
+      self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
+      self.can_pwr_load = self.Block(ElectricalLoad())
+      self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
+
       (self.vsense, ), _ = self.chain(
         self.pwr_conn.pwr,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),

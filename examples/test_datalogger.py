@@ -61,6 +61,7 @@ class TestDatalogger(BoardTop):
 
       (self.can, ), _ = self.chain(self.mcu.new_io(CanControllerPort, pin=[51, 53]), imp.Block(CalSolCanBlock()))
 
+      # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(ElectricalLoad())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
       self.can_pwr_load = self.Block(ElectricalLoad())

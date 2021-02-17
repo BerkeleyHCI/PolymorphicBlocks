@@ -49,8 +49,9 @@ class UsbCReceptacle(UsbConnector, CircuitBlock):
     self.usb = self.Port(UsbHostPort(), optional=True)
     self.shield = self.Port(Passive(), optional=True)
 
-    self.cc1 = self.Port(DigitalBidir(), optional=True)  # TODO re-type with USB CC specific type
-    self.cc2 = self.Port(DigitalBidir(), optional=True)
+    # CC is pulled-up on source (DFP) side
+    self.cc1 = self.Port(DigitalBidir(pullup_capable=True), optional=True)  # TODO re-type with USB CC specific type
+    self.cc2 = self.Port(DigitalBidir(pullup_capable=True), optional=True)
 
   def contents(self):
     super().contents()
