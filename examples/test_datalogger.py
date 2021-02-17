@@ -1,11 +1,10 @@
-import os
 import unittest
 
 from edg import *
-from edg import TransformUtil as tfu
+from .ExampleTestUtils import run_test
 
 
-class TestDatalogger(CircuitBlock):
+class TestDatalogger(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -136,15 +135,16 @@ class TestDatalogger(CircuitBlock):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['pwr_5v'], Tps561201),
+        (['pwr_3v3'], Ldl1117),
+        (['buffer', 'amp'], Mcp6001),
+      ]
+    )
+
 
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver().generate_write_block(
-      TestDatalogger(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('pwr_5v'): Tps561201,
-        tfu.Path.empty().append_block('pwr_3v3'): Ldl1117,
-        tfu.Path.empty().append_block('buffer').append_block('amp'): Mcp6001,
-      }
-    )
+    run_test(TestDatalogger)

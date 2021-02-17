@@ -134,13 +134,13 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Stm32f103_48_Device())
 
-    self.pwr = self.Export(self.ic.vdd)
-    self.gnd = self.Export(self.ic.vss)
+    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.gnd = self.Export(self.ic.vss, [Common])
     self.swd = self.Export(self.ic.swd)
     # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
 
-    self.xtal = self.Export(self.ic.osc)  # TODO standardize naming across all MCUs
-    self.xtal_rtc = self.Export(self.ic.osc32)  # TODO standardize naming across all MCUs
+    self.xtal = self.Export(self.ic.osc, optional=True)  # TODO standardize naming across all MCUs
+    self.xtal_rtc = self.Export(self.ic.osc32, optional=True)  # TODO standardize naming across all MCUs
 
     self.digital = ElementDict[DigitalBidir]()
     for i in range(len(self.ic.io_pins)):

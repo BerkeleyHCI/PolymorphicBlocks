@@ -65,11 +65,11 @@ class Xbee_S3b(IntegratedCircuit, CircuitBlock):
     super().__init__()
 
     self.ic = self.Block(Xbee_S3b_Device())
-    self.pwr = self.Export(self.ic.pwr)
-    self.gnd = self.Export(self.ic.gnd)
+    self.pwr = self.Export(self.ic.pwr, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
     self.data = self.Export(self.ic.data)
-    self.rssi = self.Export(self.ic.rssi)
-    self.associate = self.Export(self.ic.associate)
+    self.rssi = self.Export(self.ic.rssi, optional=True)
+    self.associate = self.Export(self.ic.associate, optional=True)
 
   def contents(self):
     super().contents()

@@ -268,20 +268,16 @@ class SignalDivider(AnalogFilter, Block):
     super().__init__()
 
     self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
-    # self.input = self.Port(AnalogSink(
-    #   impedance=self.div.series_impedance
-    # ), [Input])
-    # self.connect(self.input, self.div.top.as_analog_sink())  # TODO debug why adapter args don't work
     self.input = self.Export(self.div.top.as_analog_sink(
       impedance=self.div.selected_series_impedance,
       current_draw=RangeExpr(),
       voltage_limits=RangeExpr.ALL
-    ))
+    ), [Input])
     self.output = self.Export(self.div.center.as_analog_source(
       voltage_out=(self.input.link().voltage.lower() * self.div.selected_ratio.lower(),
                    self.input.link().voltage.upper() * self.div.selected_ratio.upper()),
       current_limits=RangeExpr.ALL,
       impedance=self.div.selected_impedance
-    ))
+    ), [Output])
     self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
     self.assign(self.input.current_draw, self.output.link().current_draw)

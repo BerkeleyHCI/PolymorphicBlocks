@@ -123,9 +123,9 @@ class Mcp9700(Block):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Mcp9700_Device())
-    self.pwr = self.Export(self.ic.vdd)
-    self.gnd = self.Export(self.ic.gnd)
-    self.out = self.Export(self.ic.vout)
+    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.out = self.Export(self.ic.vout, [Output])
 
   def contents(self) -> None:
     super().contents()

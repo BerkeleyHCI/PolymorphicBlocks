@@ -15,7 +15,7 @@ class HalfBridgeWithDriver(Block):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.drv = imp.Block(Ucc21222_HalfbridgeDriver())
-      self.pwr = self.Export(self.drv.pwr)
+      self.pwr = self.Export(self.drv.pwr, [Power])
       self.connect(self.gnd, self.drv.gnd_drv)
       self.pwr_drv = self.Export(self.drv.pwr_drv)
       self.pwr_hv = self.Export(self.drv.pwr_hv)

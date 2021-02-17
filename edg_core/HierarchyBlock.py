@@ -363,19 +363,15 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   import edg_core
   ExportType = TypeVar('ExportType', bound=edg_core.Port)  # Block.Port aliases edg_core.Port
-  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: Optional[bool] = None) -> ExportType:
-    """Exports a port of a child block, tags and optional"""
+  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
+    """Exports a port of a child block, but does not propagate tags or optional."""
     port_parent = port._block_parent()
     assert isinstance(port_parent, Block)
     assert port_parent._parent is self, "can only export ports of contained block"
     assert port._is_bound(), "can only export bound type"
 
-    if optional is None:
-      optional = port not in port_parent._required_ports
-
     new_port: BasePort = self.Port(type(port)(),  # TODO is dropping args safe in all cases?
-                                   list(tags) + list(port_parent._port_tags[port]),
-                                   optional=optional)
+                                   tags, optional=optional)
     self.connect(new_port, port)
     return new_port  # type: ignore
 

@@ -326,12 +326,12 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     super().__init__()
     self.ic = self.Block(self.DEVICE())
 
-    self.pwr = self.Export(self.ic.vdd)
-    self.gnd = self.Export(self.ic.vss)
+    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.gnd = self.Export(self.ic.vss, [Common])
     self.swd = self.Port(SwdTargetPort())  # TODO
 
-    self.xtal = self.Export(self.ic.xtal)
-    self.xtal_rtc = self.Export(self.ic.xtal_rtc)
+    self.xtal = self.Export(self.ic.xtal, optional=True)
+    self.xtal_rtc = self.Export(self.ic.xtal_rtc, optional=True)
 
     self.frequency = self.Parameter(RangeExpr(frequency))  # TODO move into _Device, but const prop needs to ignore inner contents
 

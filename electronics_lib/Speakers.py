@@ -46,8 +46,8 @@ class Lm4871(IntegratedCircuit):
     # TODO should be a SpeakerDriver abstract part
 
     self.ic = self.Block(Lm4871_Device())
-    self.pwr = self.Export(self.ic.pwr)
-    self.gnd = self.Export(self.ic.gnd)
+    self.pwr = self.Export(self.ic.pwr, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.sig = self.Port(AnalogSink(  # TODO these aren't actually documented
       # voltage_limits= ,

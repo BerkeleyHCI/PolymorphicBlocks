@@ -68,12 +68,12 @@ class Pcf2129(RealtimeClock, CircuitBlock):
     self.ic = self.Block(Pcf2129_Device())
     self.pwr = self.Port(ElectricalSink(), [Power])
     self.pwr_bat = self.Export(self.ic.pwr_bat)
-    self.gnd = self.Export(self.ic.gnd)
+    self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.spi = self.Export(self.ic.spi)
     self.cs = self.Export(self.ic.cs)
-    self.clkout = self.Export(self.ic.clkout)
-    self.int = self.Export(self.ic.int)
+    self.clkout = self.Export(self.ic.clkout, optional=True)
+    self.int = self.Export(self.ic.int, optional=True)
 
   def contents(self):
     super().contents()

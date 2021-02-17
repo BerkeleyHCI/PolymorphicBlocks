@@ -86,8 +86,8 @@ class E2154fs091(EInk):
     super().__init__()
 
     self.ic = self.Block(E2154fs091_Device())
-    self.pwr = self.Export(self.ic.pwr)
-    self.gnd = self.Export(self.ic.gnd)
+    self.pwr = self.Export(self.ic.pwr, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.busy = self.Export(self.ic.busy)
     self.reset = self.Export(self.ic.reset)
