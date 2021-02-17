@@ -117,13 +117,13 @@ class SmtFet(Fet, CircuitBlock, GeneratorBlock):
     )
 
 
-class SmtNFet(PFet, SmtFet):
+class SmtNFet(NFet, SmtFet):
   product_table = generate_fet_table([
     'Digikey_NFETs.csv',
   ])
 
 
-class SmtPFet(NFet, SmtFet):
+class SmtPFet(PFet, SmtFet):
   product_table = generate_fet_table([
     'Digikey_PFETs.csv',
   ])
