@@ -203,16 +203,16 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   # 1210: 100v/4.7uF, 50v/10uF, 16v/22uF, 10v/47uF
   # 1812 (though small sample size): 100v/2.2uF, 50v/1uF, 25v/10uF
 
-  product_table = generate_mlcc_table([
-    'Digikey_MLCC_SamsungCl_1pF_E12.csv',
-    'Digikey_MLCC_SamsungCl_1nF_E6.csv',
-    'Digikey_MLCC_SamsungCl_1uF_E3.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
-    'Digikey_MLCC_YageoCc_1uF_E3.csv',
-  ])
+  # product_table = generate_mlcc_table([
+  #   'Digikey_MLCC_SamsungCl_1pF_E12.csv',
+  #   'Digikey_MLCC_SamsungCl_1nF_E6.csv',
+  #   'Digikey_MLCC_SamsungCl_1uF_E3.csv',
+  #   'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
+  #   'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
+  #   'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
+  #   'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
+  #   'Digikey_MLCC_YageoCc_1uF_E3.csv',
+  # ])
 
   DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
     #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
@@ -226,7 +226,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     'Capacitor_SMD:C_1206_3216Metric'
   ]
 
-  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
+  def select_capacitor_not_running(self, capacitance: RangeVal, voltage: RangeVal,
                        single_nominal_capacitance: RangeVal,
                        part_spec: str, footprint_spec: str) -> None:
     def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
@@ -343,31 +343,39 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     #         row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
     #       )
 
-    if self.capacitance > 11e-6:
+    if (capacitance[0] + capacitance[1]) / 2 > 11e-6:
       self.min_package_size = self.PACKAGES[2]
-    elif self.capacitance > 1.1e-6:
+    elif (capacitance[0] + capacitance[1]) / 2 > 1.1e-6:
       self.min_package_size = self.PACKAGES[1]
     else:
       self.min_package_size = self.PACKAGES[0]
 
-    if (voltage < 3.6) or ((self.capacitance[0] + self.capacitance[1]) / 2 <= 1e-6):
-      self.derated_capacitance = self.capacitance
+    print("here")
+
+    if ((voltage[0] + voltage[1])/2 < 3.6) or ((capacitance[0] + capacitance[1]) / 2 <= 1e-6):
+      print("there1")
+      self.derated_capacitance = capacitance
+      print("there2")
     elif self.min_package_size not in self.DERATE_VOLTCO:
+      print("there3")
       self.derated_capacitance = (0, 0)
+      print("there4")
     else:
+      print("there5")
       voltco = self.DERATE_VOLTCO[self.min_package_size]
       self.derated_capacitance = (
-        self.capacitance[0] * (1 - voltco * (voltage[1] - 3.6)),
-        self.capacitance[1] * (1 - voltco * (voltage[0] - 3.6))
+        capacitance[0] * (1 - voltco * (voltage[1] - 3.6)),
+        capacitance[1] * (1 - voltco * (voltage[0] - 3.6))
       )
+      print("there6")
 
     if capacitance[1] >= single_cap_max:
       num_caps = math.ceil(capacitance[0] / self.derated_capacitance[0])
       assert num_caps * self.derated_capacitance[1] < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
       self.assign(self.selected_capacitance, (
-        num_caps * self.capacitance[0],
-        num_caps * self.capacitance[1],
+        num_caps * capacitance[0],
+        num_caps * capacitance[1],
       ))
       self.assign(self.selected_derated_capacitance, (
         num_caps * self.derated_capacitance[0],
@@ -382,7 +390,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
-      self.assign(self.selected_capacitance, self.capacitance)
+      self.assign(self.selected_capacitance, capacitance)
       self.assign(self.selected_derated_capacitance, self.derated_capacitance)
 
       self.footprint(
