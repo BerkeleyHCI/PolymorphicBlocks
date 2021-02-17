@@ -73,12 +73,8 @@ class SeriesPowerResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(
-      voltage_limits=(-float('inf'), float('inf'))
-    ), [Power, Input])
-    self.pwr_out = self.Port(ElectricalSource(
-      current_limits=current_limits
-    ), [Output])
+    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])
+    self.pwr_out = self.Port(ElectricalSource(), [Output])
 
     self.resistance = self.Parameter(RangeExpr(resistance))
     self.current_limits = self.Parameter(RangeExpr(current_limits))
@@ -91,14 +87,18 @@ class SeriesPowerResistor(DiscreteApplication):
       power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
-    self.connect(self.res.a.as_electrical_sink(), self.pwr_in)
-    self.connect(self.res.b.as_electrical_source(), self.pwr_out)
+    self.connect(self.res.a.as_electrical_sink(
+      voltage_limits=(-float('inf'), float('inf')),
+      current_draw=RangeExpr()
+    ), self.pwr_in)
+    self.connect(self.res.b.as_electrical_source(
+      voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
+      current_limits=self.current_limits
+    ), self.pwr_out)
 
     # Note, this is a worst-case current draw that uses passed in current limits, instead of actual current draw
     # This is done to avoid a cyclic dependency
     # TODO: better current limits using actual current drawn
-    self.assign(self.pwr_out.voltage_out,
-                self.pwr_in.link().voltage - self.current_limits * self.resistance)
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 

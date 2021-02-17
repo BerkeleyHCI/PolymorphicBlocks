@@ -4,7 +4,8 @@ from .Categories import *
 
 class ElectricalLoad(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_limit: RangeLike = RangeExpr(), current_draw: RangeLike = RangeExpr()) -> None:
+  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.pwr = self.Port(ElectricalSink(

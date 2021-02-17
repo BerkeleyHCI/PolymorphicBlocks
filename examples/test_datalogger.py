@@ -61,6 +61,11 @@ class TestDatalogger(BoardTop):
 
       (self.can, ), _ = self.chain(self.mcu.new_io(CanControllerPort, pin=[51, 53]), imp.Block(CalSolCanBlock()))
 
+      self.can_gnd_load = self.Block(ElectricalLoad())
+      self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
+      self.can_pwr_load = self.Block(ElectricalLoad())
+      self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
+
       # mcu_i2c = self.mcu.new_io(I2cMaster)  # no devices, ignored for now
       # self.i2c_pullup = imp.Block(I2cPullup())
       # self.connect(self.i2c_pullup.i2c, mcu_i2c)

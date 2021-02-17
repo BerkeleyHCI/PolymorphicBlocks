@@ -9,7 +9,7 @@ class UsbLink(Link):
     super().__init__()
     self.host = self.Port(UsbHostPort())
     self.device = self.Port(UsbDevicePort())
-    self.passive = self.Port(Vector(UsbPassivePort()))
+    self.passive = self.Port(Vector(UsbPassivePort()), optional=True)
 
   def contents(self) -> None:
     super().contents()
