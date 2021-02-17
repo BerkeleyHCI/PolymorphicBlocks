@@ -655,12 +655,8 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
   EMPTY_DIT = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
   EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
 
-  def __init__(self, initializer: Optional[RangeLike]=None, constr: Optional[RangeConstrMode]=None):
-    if initializer is None:
-      assert constr is None, "cannot specify init constr without initializer"
+  def __init__(self, initializer: Optional[RangeLike]=None):
     super().__init__(initializer)
-    assert constr is None or isinstance(constr, RangeConstrMode), f"constr must be initializer constraint mode"
-    self.init_constr = constr
     self._lower = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.min)))
     self._upper = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.max)))
 
@@ -690,14 +686,7 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     if self.initializer is None:
       return BoolExpr._to_expr_type(True)
     else:
-      if self.init_constr is None:
-        return target == self.initializer
-      elif self.init_constr is RangeSubset:
-        return target.within(self.initializer)
-      elif self.init_constr is RangeSuperset:
-        return self.initializer.within(target)
-      else:
-        raise ValueError(f"unknown initializer constraint {self.init_constr}")
+      return target == self.initializer
 
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()

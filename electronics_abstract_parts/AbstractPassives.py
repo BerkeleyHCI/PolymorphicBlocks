@@ -23,7 +23,7 @@ class Resistor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.resistance = self.Parameter(RangeExpr(resistance, constr=RangeSubset))
+    self.resistance = self.Parameter(RangeExpr(resistance))
     self.power = self.Parameter(RangeExpr(power))  # operating power range
 
 
@@ -82,28 +82,24 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.resistance = self.Parameter(RangeExpr(resistance))
     self.current_limits = self.Parameter(RangeExpr(current_limits))
-    self.power = self.Parameter(RangeExpr())
 
   def contents(self):
     super().contents()
 
-    self.constrain(self.power.within((
-      self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
-      self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper()
-    )))
-    self.constrain(self.power == (
-      self.pwr_out.link().current_drawn.lower() * self.pwr_out.link().current_drawn.lower() * self.resistance.lower(),
-      self.pwr_out.link().current_drawn.upper() * self.pwr_out.link().current_drawn.upper() * self.resistance.upper()
+    self.res = self.Block(Resistor(
+      resistance=self.resistance,
+      power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
+             self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
-    self.res = self.Block(Resistor(self.resistance, self.power))
     self.connect(self.res.a.as_electrical_sink(), self.pwr_in)
     self.connect(self.res.b.as_electrical_source(), self.pwr_out)
 
-    # self.constrain(self.pwr_out.voltage_out == self.pwr_in.link().voltage)
-    self.constrain(self.pwr_out.voltage_out == self.pwr_in.link().voltage - self.current_limits * self.resistance)
-    # TODO more exact voltage drop - though this causes a cyclic dependency issue
-    # self.constrain(self.pwr_out.voltage_out == self.pwr_in.link().voltage - self.pwr_out.link().current_drawn * self.resistance)
-    self.constrain(self.pwr_in.current_draw == self.pwr_out.link().current_drawn)
+    # Note, this is a worst-case current draw that uses passed in current limits, instead of actual current draw
+    # This is done to avoid a cyclic dependency
+    # TODO: better current limits using actual current drawn
+    self.assign(self.pwr_out.voltage_out,
+                self.pwr_in.link().voltage - self.current_limits * self.resistance)
+    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
 from electronics_model.ElectricalPorts import ElectricalSinkAdapterAnalogSource  # TODO dehack with better adapters
@@ -137,7 +133,7 @@ class UnpolarizedCapacitor(PassiveComponent):
                part_spec: StringLike = "") -> None:
     super().__init__()
 
-    self.capacitance = self.Parameter(RangeExpr(capacitance, constr=RangeSubset))
+    self.capacitance = self.Parameter(RangeExpr(capacitance))
     self.voltage = self.Parameter(RangeExpr(voltage))  # defined as operating voltage range
 
     self.part_spec = self.Parameter(StringExpr(part_spec))  # TODO this shouldn't be here, but is a hotfix in absence of refinement-defaults
@@ -189,8 +185,8 @@ class Inductor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.inductance = self.Parameter(RangeExpr(inductance, constr=RangeSubset))
+    self.inductance = self.Parameter(RangeExpr(inductance))
     self.current = self.Parameter(RangeExpr(current))  # defined as operating current range, non-directioned
-    self.frequency = self.Parameter(RangeExpr(frequency, constr=RangeSubset))  # defined as operating frequency range
+    self.frequency = self.Parameter(RangeExpr(frequency))  # defined as operating frequency range
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())

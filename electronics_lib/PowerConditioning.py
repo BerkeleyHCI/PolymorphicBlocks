@@ -40,9 +40,7 @@ class BufferedSupply(PowerConditioner):
     self.constrain(self.pwr.current_draw.within(self.pwr_out.link().current_drawn +
                                                 (0, self.charging_current.upper()) +
                                                 (0, 0.05)))  # TODO nonhacky bounds on opamp/sense resistor current draw
-    self.sc_out = self.Port(ElectricalSource(  # TODO This should be done with a power merge block
-      voltage_out=self.pwr.link().voltage
-    ), optional=True)
+    self.sc_out = self.Port(ElectricalSource(), optional=True)
     self.gnd = self.Port(Ground(), [Common])
 
     max_in_voltage = self.pwr.link().voltage.upper()
@@ -74,7 +72,10 @@ class BufferedSupply(PowerConditioner):
         reverse_voltage=(0, max_in_voltage), current=self.charging_current, voltage_drop=self.voltage_drop,
         reverse_recovery_time=(0, float('inf'))
       ))
-      self.connect(self.diode.anode.as_electrical_sink(), self.fet.drain.as_electrical_source(), self.sc_out)
+      self.connect(self.diode.anode.as_electrical_sink(),
+                   self.fet.drain.as_electrical_source(
+                     voltage_out=self.pwr.link().voltage),
+                   self.sc_out)
 
       self.pwr_out_merge = self.Block(MergedElectricalSource())
       self.connect(self.pwr_out_merge.sink1, self.pwr)

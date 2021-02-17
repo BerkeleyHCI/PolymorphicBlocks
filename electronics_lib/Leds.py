@@ -40,7 +40,7 @@ class IndicatorLed(Light):
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength, constr=RangeSubset))
+    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
     self.signal = self.Port(DigitalSink(), [InOut])
@@ -71,7 +71,7 @@ class VoltageIndicatorLed(Light):
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength, constr=RangeSubset))
+    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
     self.signal = self.Port(ElectricalSink(), [InOut])  # TODO should this be Power instead?

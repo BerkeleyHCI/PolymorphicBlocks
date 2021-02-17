@@ -80,7 +80,7 @@ class Pcf2129(RealtimeClock, CircuitBlock):
 
     (self.vdd_res, ), _ = self.chain(
       self.pwr,
-      self.Block(SeriesPowerResistor(330*Ohm(tol=0.01), (0, 800)*uAmp)),
+      self.Block(SeriesPowerResistor(330*Ohm(tol=0.05), (0, 800)*uAmp)),
       self.ic.pwr)
 
     with self.implicit_connect(
