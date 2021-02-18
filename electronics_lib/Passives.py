@@ -226,6 +226,8 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     'Capacitor_SMD:C_1206_3216Metric'
   ]
 
+  UPPER_BOUND = 22e-6
+
   def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
                        single_nominal_capacitance: RangeVal,
                        part_spec: str, footprint_spec: str) -> None:
