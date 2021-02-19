@@ -384,7 +384,7 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
       current_draw=self._io_draw
     ))
     self.connect(self.pwr, self.io_draw.pwr)
-    self.constrain(self.pwr.current_draw.within(self._io_draw + (0, 19)*mAmp))  # TODO fast prop so we can bound it before generation
+    self.require(self.pwr.current_draw.within(self._io_draw + (0, 19)*mAmp))
 
     self.generator(self.pin_assign,
                    req_ports=chain(self.digital.values(),
@@ -401,8 +401,8 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     #
     # Reference Circuit Block
     #
-    self.constrain(self.ic.IRC_FREQUENCY.within(self.frequency) | self.xtal.is_connected(),
-                   "requested frequency out of internal RC range")  # TODO configure clock dividers?
+    self.require(self.ic.IRC_FREQUENCY.within(self.frequency) | self.xtal.is_connected(),
+                 "requested frequency out of internal RC range")  # TODO configure clock dividers?
 
     # TODO associate capacitors with a particular Vdd, Vss pin
     self.pwr_cap = ElementDict[DecouplingCapacitor]()

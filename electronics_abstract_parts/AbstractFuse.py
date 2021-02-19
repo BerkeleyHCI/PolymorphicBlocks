@@ -22,7 +22,7 @@ class Fuse(DiscreteComponent, DiscreteApplication):
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)  # TODO dedup w/ ElectricalBridge?
     self.assign(self.pwr_out.voltage_out, self.pwr_in.link().voltage)
 
-    self.constrain(self.trip_current.upper() > self.pwr_out.link().current_drawn.lower(),
+    self.require(self.trip_current.upper() > self.pwr_out.link().current_drawn.lower(),
                    "expected current draw exceeds fuse trip rating")
 
 

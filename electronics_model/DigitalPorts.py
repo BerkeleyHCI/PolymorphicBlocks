@@ -35,8 +35,8 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
   def contents(self):
     super().contents()
 
-    self.constrain(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
-                   "DigitalLink must have some kind of source")
+    self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
+                 "DigitalLink must have some kind of source")
 
     # TODO RangeBuilder initializer for voltage
     # TODO this and below should be x.voltage_out.min (etc) instead of relying on min over Array[Range]
@@ -55,7 +55,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
     self.assign(self.voltage_limits,
       self.sinks.intersection(lambda x: x.voltage_limits).intersect(self.bidirs.intersection(lambda x: x.voltage_limits))
     )
-    self.constrain(self.voltage_limits.contains(self.voltage), "overvoltage")
+    self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
     self.assign(self.current_drawn,
       self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
@@ -65,7 +65,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
       self.bidirs.intersection(lambda x: x.current_limits)
       )
     )
-    self.constrain(self.current_limits.contains(self.current_drawn), "overcurrent")
+    self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
     source_output_thresholds = self.source.is_connected().then_else(  # TODO: clean up
       self.source.output_thresholds,
@@ -82,7 +82,7 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
       self.sinks.min(lambda x: x.input_thresholds).min(self.bidirs.min(lambda x: x.input_thresholds)),
       self.sinks.max(lambda x: x.input_thresholds).max(self.bidirs.max(lambda x: x.input_thresholds))
     ))
-    self.constrain(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
+    self.require(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
     self.assign(self.pullup_capable,
                 self.bidirs.any(lambda x: x.pullup_capable) | self.single_sources.any(lambda x: x.pullup_capable))
@@ -92,8 +92,8 @@ class DigitalLink(CircuitLink):  # can't subclass ElectricalLink because the con
                 self.single_sources.any(lambda x: x.low_signal_driver))
     self.assign(self.has_high_signal_driver,
                 self.single_sources.any(lambda x: x.high_signal_driver))
-    self.constrain(self.has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
-    self.constrain(self.has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
+    self.require(self.has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
+    self.require(self.has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
 
 
 class DigitalBase(CircuitPort[DigitalLink]):

@@ -37,9 +37,9 @@ class BufferedSupply(PowerConditioner):
 
     self.pwr = self.Port(ElectricalSink(), [Power, Input])
     self.pwr_out = self.Port(ElectricalSource(), [Output])
-    self.constrain(self.pwr.current_draw.within(self.pwr_out.link().current_drawn +
-                                                (0, self.charging_current.upper()) +
-                                                (0, 0.05)))  # TODO nonhacky bounds on opamp/sense resistor current draw
+    self.require(self.pwr.current_draw.within(self.pwr_out.link().current_drawn +
+                                              (0, self.charging_current.upper()) +
+                                              (0, 0.05)))  # TODO nonhacky bounds on opamp/sense resistor current draw
     self.sc_out = self.Port(ElectricalSource(), optional=True)
     self.gnd = self.Port(Ground(), [Common])
 

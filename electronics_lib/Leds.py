@@ -46,7 +46,7 @@ class IndicatorLed(Light):
     self.signal = self.Port(DigitalSink(), [InOut])
     self.gnd = self.Port(Ground(), [Common])
 
-    self.constrain(self.signal.current_draw.within((0, self.target_current_draw.upper())))
+    self.require(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(
@@ -77,7 +77,7 @@ class VoltageIndicatorLed(Light):
     self.signal = self.Port(ElectricalSink(), [InOut])  # TODO should this be Power instead?
     self.gnd = self.Port(Ground(), [Common])
 
-    self.constrain(self.signal.current_draw.within(current_draw))
+    self.require(self.signal.current_draw.within(current_draw))
 
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(
@@ -137,10 +137,10 @@ class IndicatorSinkRgbLed(Light):
     self.blue = self.Port(DigitalSink())
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
-    self.constrain(self.red.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
-    self.constrain(self.green.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
-    self.constrain(self.blue.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
-    self.constrain(self.pwr.current_draw.within((0, 3 * self.target_current_draw.upper())))
+    self.require(self.red.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(self.green.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(self.blue.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(self.pwr.current_draw.within((0, 3 * self.target_current_draw.upper())))
 
     self.package = self.Block(RgbLedCommonAnode())
 

@@ -207,7 +207,7 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
     self.dropout = self.Parameter(RangeExpr())
     self.quiescent_current = self.Parameter(RangeExpr())
 
-    self.constrain(self.pwr_out.voltage_out.within(output_voltage))
+    self.require(self.pwr_out.voltage_out.within(output_voltage))
 
     self.generator(self.select_part, self.spec_output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd, self.en])

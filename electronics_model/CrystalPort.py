@@ -16,7 +16,7 @@ class CrystalLink(Link):
 
   def contents(self) -> None:
     super().contents()
-    self.constrain(self.driver.frequency_limits.contains(self.frequency))
+    self.require(self.driver.frequency_limits.contains(self.frequency))
 
     self.xi = self.connect(self.driver.xtal_in, self.crystal.a)
     self.xo = self.connect(self.driver.xtal_out, self.crystal.b)

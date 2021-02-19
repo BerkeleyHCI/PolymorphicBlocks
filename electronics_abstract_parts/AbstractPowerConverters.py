@@ -16,7 +16,7 @@ class DcDcConverter(PowerConditioner):
     self.pwr_out = self.Port(ElectricalSource(), [Output])  # TODO mark as future-connected here?
     self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
 
-    self.constrain(self.pwr_out.voltage_out.within(self.spec_output_voltage),
+    self.require(self.pwr_out.voltage_out.within(self.spec_output_voltage),
                    "Output voltage must be within spec")
 
 
@@ -29,8 +29,8 @@ class LinearRegulator(DcDcConverter):
     self.quiescent_current = self.Parameter(RangeExpr())
 
     # TODO these constraints establish a theoretical bound, but allows (and demands) subtypes refine to exact values
-    self.constrain(self.pwr_in.current_draw.within(self.pwr_out.link().current_drawn + self.quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
-    self.constrain(self.pwr_in.link().voltage.lower() >= self.pwr_out.link().voltage.upper() + self.dropout.upper())  # TODO more elegant?
+    self.require(self.pwr_in.current_draw.within(self.pwr_out.link().current_drawn + self.quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
+    self.require(self.pwr_in.link().voltage.lower() >= self.pwr_out.link().voltage.upper() + self.dropout.upper())  # TODO more elegant?
 
 
 @abstract_block
@@ -48,7 +48,7 @@ class DcDcSwitchingConverter(DcDcConverter):
     self.output_ripple_limit = self.Parameter(FloatExpr(output_ripple_limit))
     self.efficiency = self.Parameter(RangeExpr())
 
-    self.constrain(self.pwr_in.current_draw.within((
+    self.require(self.pwr_in.current_draw.within((
       self.pwr_out.link().current_drawn * self.pwr_out.voltage_out / self.pwr_in.link().voltage / self.efficiency + (0, 0.01)  # TODO avoid fudge factor
     )))
 

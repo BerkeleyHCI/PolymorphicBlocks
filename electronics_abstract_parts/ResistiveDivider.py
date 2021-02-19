@@ -235,7 +235,7 @@ class VoltageDivider(BaseVoltageDivider):
 
     ratio_lower = self.output_voltage.lower() / self.input.link().voltage.lower()
     ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
-    self.constrain(ratio_lower <= ratio_upper,
+    self.require(ratio_lower <= ratio_upper,
                    "can't generate divider to create output voltage of tighter tolerance than input voltage")
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
@@ -255,7 +255,7 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
 
     ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
     ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
-    self.constrain(ratio_lower <= ratio_upper,
+    self.require(ratio_lower <= ratio_upper,
                    "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 

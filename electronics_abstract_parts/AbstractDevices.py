@@ -16,6 +16,6 @@ class Battery(DiscreteApplication):
 
     self.capacity = self.Parameter(RangeExpr())
 
-    self.constrain(self.pwr.voltage_out.within(voltage))
-    self.constrain(self.pwr.current_limits.contains(current))
-    self.constrain(self.capacity.lower() >= capacity)
+    self.require(self.pwr.voltage_out.within(voltage))
+    self.require(self.pwr.current_limits.contains(current))
+    self.require(self.capacity.lower() >= capacity)

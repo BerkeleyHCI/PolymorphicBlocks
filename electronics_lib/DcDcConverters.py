@@ -36,7 +36,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
   def contents(self):
     super().contents()
 
-    self.constrain(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
+    self.require(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
@@ -252,7 +252,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
   def contents(self):
     super().contents()
 
-    self.constrain(self.pwr_out.voltage_out.within((1, 24)*Volt))
+    self.require(self.pwr_out.voltage_out.within((1, 24)*Volt))
     self.assign(self.frequency, 400*kHertz(tol=0))  # TODO also comes in 1.4 and 2.1MHz versions
     self.assign(self.efficiency, (0.7, 0.98))  # Efficiency stats from first page for ~>10mA
 
