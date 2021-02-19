@@ -734,23 +734,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
 
     while (elaboratePending.getReady.nonEmpty) {
-      elaboratePending.getReady.foreach {
-        case elaborateRecord @ ElaborateRecord.Block(blockPath) =>
-          elaborateBlock(blockPath)
-          elaboratePending.setValue(elaborateRecord, None)
-        case elaborateRecord @ ElaborateRecord.Link(linkPath) =>
-          elaborateLink(linkPath)
-          elaboratePending.setValue(elaborateRecord, None)
-        case elaborateRecord @ ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
-          elaborateConnect(toLinkPortPath, fromLinkPortPath)
-          elaboratePending.setValue(elaborateRecord, None)
-        case elaborateRecord @ ElaborateRecord.Generator(blockPath, fnName) =>
-          elaborateGenerator(blockPath, fnName)
-          elaboratePending.setValue(elaborateRecord, None)
-        case elaborateRecord @ ElaborateRecord.BlockPortsConnected(blockPath) =>
-          elaborateBlockPortsConnected(blockPath)
-          elaboratePending.setValue(elaborateRecord, None)
-        case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
+      elaboratePending.getReady.foreach { elaborateRecord =>
+        onElaborate(elaborateRecord)
+        elaborateRecord match {
+          case elaborateRecord@ElaborateRecord.Block(blockPath) =>
+            elaborateBlock(blockPath)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord@ElaborateRecord.Link(linkPath) =>
+            elaborateLink(linkPath)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord@ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
+            elaborateConnect(toLinkPortPath, fromLinkPortPath)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord@ElaborateRecord.Generator(blockPath, fnName) =>
+            elaborateGenerator(blockPath, fnName)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord@ElaborateRecord.BlockPortsConnected(blockPath) =>
+            elaborateBlockPortsConnected(blockPath)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
+        }
       }
     }
 
