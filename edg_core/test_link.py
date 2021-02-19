@@ -24,21 +24,16 @@ class LinkTestCase(unittest.TestCase):
     # partial test of constraints, only the ones that are more interesting than tested elsewhere
     # namely, ones that deal with map and reduce operations
     expected_constr = edgir.ValueExpr()
-    expected_constr.binary.op = edgir.BinaryExpr.EQ
-    expected_constr.binary.lhs.reduce.op = edgir.ReductionExpr.MINIMUM
-    expected_constr.binary.lhs.reduce.vals.ref.steps.add().name = 'float_param_sink_range'
-    expected_constr.binary.rhs.reduce.op = edgir.ReductionExpr.MINIMUM
-    expected_constr.binary.rhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_constr.binary.rhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    expected_constr.assign.dst.steps.add().name = 'float_param_sink_range'
+    expected_constr.assign.src.binary.op = edgir.BinaryExpr.RANGE
 
-    expected_constr = edgir.ValueExpr()
-    expected_constr.binary.op = edgir.BinaryExpr.EQ
-    expected_constr.binary.lhs.reduce.op = edgir.ReductionExpr.MAXIMUM
-    expected_constr.binary.lhs.reduce.vals.ref.steps.add().name = 'float_param_sink_range'
-    expected_constr.binary.rhs.reduce.op = edgir.ReductionExpr.MAXIMUM
-    expected_constr.binary.rhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_constr.binary.rhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
+    expected_constr.assign.src.binary.lhs.reduce.op = edgir.ReductionExpr.MINIMUM
+    expected_constr.assign.src.binary.lhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_constr.assign.src.binary.lhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
+
+    expected_constr.assign.src.binary.rhs.reduce.op = edgir.ReductionExpr.MAXIMUM
+    expected_constr.assign.src.binary.rhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_constr.assign.src.binary.rhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
     expected_constr = edgir.ValueExpr()

@@ -68,27 +68,13 @@ class BadLinkTestCase(unittest.TestCase):
       self.AboveConnectBlock()._elaborated_def_to_proto()
 
 
-class RequiredPortTestCase(unittest.TestCase):
-  # This needs to be an internal class to avoid this error case being auto-discovered in a library
-  class BadRequiredPortBlock(Block):
-    """A block that does not have the required ports of sub-blocks connected"""
-    def contents(self) -> None:
-      super().contents()
-      self.sink = self.Block(TestBlockImplicitSink())
-      self.connect(self.sink.sink, self.sink.sink)  # just in case
-
-  def test_bad_link(self) -> None:
-    with self.assertRaises(UnconnectedRequiredPortError):
-      self.BadRequiredPortBlock()._elaborated_def_to_proto()
-
-
 class InaccessibleParamTestCase(unittest.TestCase):
   class BadParamReferenceBlock(Block):
     """A block that tries to access deeply nested block parameters"""
     class BadInnerBlock(Block):
       def __init__(self, in_range: RangeExpr) -> None:
         super().__init__()
-        self.constrain(in_range == (0, 1))
+        self.require(in_range == (0, 1))
 
     def __init__(self) -> None:
       super().__init__()

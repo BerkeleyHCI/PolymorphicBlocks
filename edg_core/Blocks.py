@@ -410,7 +410,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)
 
-  def constrain(self, constraint: BoolExpr, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
+  def require(self, constraint: BoolExpr, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
     if not isinstance(constraint, BoolExpr):
       raise TypeError(f"constraint to constrain(...) must be BoolExpr, got {constraint} of type {type(constraint)}")
     if not isinstance(name, (str, type(None))):

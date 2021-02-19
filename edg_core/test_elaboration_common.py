@@ -12,13 +12,13 @@ class TestLink(Link):
 
         self.float_param_sink_sum = self.Parameter(FloatExpr(self.sinks.sum(lambda p: p.float_param)))
         self.float_param_sink_range = self.Parameter(RangeExpr())
-        self.constrain(self.float_param_sink_range.lower() == self.sinks.min(lambda p: p.float_param))
-        self.constrain(self.float_param_sink_range.upper() == self.sinks.max(lambda p: p.float_param))
+        self.assign(self.float_param_sink_range,
+                    (self.sinks.min(lambda p: p.float_param), self.sinks.max(lambda p: p.float_param)))
         self.range_param_sink_common = self.Parameter(RangeExpr(self.sinks.intersection(lambda p: p.range_limit)))
 
-        self.constrain(self.float_param_sink_sum - self.source.float_param == 0)
-        self.constrain(self.source.float_param_limit.contains(self.source.float_param))
-        self.constrain(self.range_param_sink_common.contains(self.source.range_param))
+        self.require(self.float_param_sink_sum - self.source.float_param == 0)
+        self.require(self.source.float_param_limit.contains(self.source.float_param))
+        self.require(self.range_param_sink_common.contains(self.source.range_param))
 
 
 class TestPortBase(Port[TestLink]):
@@ -49,8 +49,8 @@ class TestPortBridge(PortBridge):
         self.outer_port = self.Port(TestPortSink())
         self.inner_link = self.Port(TestPortSource())
 
-        self.constrain(self.outer_port.float_param == self.inner_link.link().float_param_sink_sum)
-        self.constrain(self.outer_port.range_limit == self.inner_link.link().range_param_sink_common)
+        self.assign(self.outer_port.float_param, self.inner_link.link().float_param_sink_sum)
+        self.assign(self.outer_port.range_limit, self.inner_link.link().range_param_sink_common)
 
 
 class TestBlockSink(Block):

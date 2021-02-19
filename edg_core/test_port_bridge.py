@@ -14,24 +14,23 @@ class PortBridgeProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.ports['outer_port'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_constraints(self):
-    self.assertEqual(len(self.pb.constraints), 4)  # include two required-connect constraints
+    self.assertEqual(len(self.pb.constraints), 2)
 
     expected_constr = edgir.ValueExpr()
-    expected_constr.binary.op = edgir.BinaryExpr.EQ
-    expected_constr.binary.lhs.ref.steps.add().name = 'outer_port'
-    expected_constr.binary.lhs.ref.steps.add().name = 'float_param'
-    expected_constr.binary.rhs.ref.steps.add().name = 'inner_link'
-    expected_constr.binary.rhs.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
-    expected_constr.binary.rhs.ref.steps.add().name = 'float_param_sink_sum'
+    expected_constr.assign.dst.steps.add().name = 'outer_port'
+    expected_constr.assign.dst.steps.add().name = 'float_param'
+    expected_constr.assign.src.ref.steps.add().name = 'inner_link'
+    expected_constr.assign.src.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
+    expected_constr.assign.src.ref.steps.add().name = 'float_param_sink_sum'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
     expected_constr = edgir.ValueExpr()
     expected_constr.binary.op = edgir.BinaryExpr.EQ
-    expected_constr.binary.lhs.ref.steps.add().name = 'outer_port'
-    expected_constr.binary.lhs.ref.steps.add().name = 'range_limit'
-    expected_constr.binary.rhs.ref.steps.add().name = 'inner_link'
-    expected_constr.binary.rhs.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
-    expected_constr.binary.rhs.ref.steps.add().name = 'range_param_sink_common'
+    expected_constr.assign.dst.steps.add().name = 'outer_port'
+    expected_constr.assign.dst.steps.add().name = 'range_limit'
+    expected_constr.assign.src.ref.steps.add().name = 'inner_link'
+    expected_constr.assign.src.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
+    expected_constr.assign.src.ref.steps.add().name = 'range_param_sink_common'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
 
