@@ -111,13 +111,13 @@ class TestSimon(BoardTop):
           'rgb_grn_net=14',
           'rgb_blue_net=13',
           'sw_chain_0=27',
-          'btn_drv0_net=5'
+          'btn_drv0_net=5',
           'btn_sw0_net=6',
           'btn_drv0_net=7'
           'btn_sw0_net=8',
           'btn_drv0_net=9'
           'btn_sw0_net=10',
-          'btn_drv0_net=11'
+          'btn_drv0_net=11',
           'btn_sw0_net=12',
         ]))
       ]
