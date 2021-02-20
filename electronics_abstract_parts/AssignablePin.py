@@ -20,7 +20,7 @@ class AssignablePinBlock(GeneratorBlock):
 
   # TODO type signature could be enhanced to only allow iterable pin with Bundle type
   PortType = TypeVar('PortType', bound=Union[CircuitPort, Bundle])
-  def new_io(self, tpe: Type[PortType], *, pin: Optional[Union[PinName, Iterable[PinName]]] = None) -> PortType:
+  def new_io(self, tpe: Type[PortType]) -> PortType:
     # TODO maybe tpe should be a connectable type? or should this be an assign-and-connect op?
     assert tpe in self._remaining_assignable_ios, f"{type(self)} has no IOs of type {tpe}"
     remaining_list = self._remaining_assignable_ios[tpe]

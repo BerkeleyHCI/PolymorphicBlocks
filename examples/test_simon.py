@@ -42,8 +42,8 @@ class TestSimon(BoardTop):
         ImplicitConnect(self.mcu.pwr_5v, [Power]),
         ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
-      (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.new_io(AnalogSource, pin=24),
+      (self.spk_drv, self.spk), self.spk_chain = self.chain(
+        self.mcu.new_io(AnalogSource),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
 
@@ -52,13 +52,13 @@ class TestSimon(BoardTop):
       ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
       self.rgb = imp.Block(IndicatorSinkRgbLed())  # status RGB
-      self.connect(self.mcu.new_io(DigitalBidir, pin=15), self.rgb.red)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=14), self.rgb.green)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=13), self.rgb.blue)
+      self.rgb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
+      self.rgb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
+      self.rgb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
 
-      (self.sw, self.sw_pull), _ = self.chain(
+      (self.sw, self.sw_pull), self.sw_chain = self.chain(
         imp.Block(DigitalSwitch()), imp.Block(PullupResistor(10 * kOhm(tol=0.05))),
-        self.mcu.new_io(DigitalBidir, pin=27))
+        self.mcu.new_io(DigitalBidir))
 
       self.btn = ElementDict[DomeButtonConnector]()
       self.btn_pull = ElementDict[PullupResistor]()
@@ -89,18 +89,39 @@ class TestSimon(BoardTop):
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=5), self.btn_drv[0].control)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=6), self.btn[0].sw1)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=7), self.btn_drv[1].control)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=8), self.btn[1].sw1)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=9), self.btn_drv[2].control)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=10), self.btn[2].sw1)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=11), self.btn_drv[3].control)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=12), self.btn[3].sw1)
+    self.btn_drv0_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[0].control)
+    self.btn_sw0_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[0].sw1)
+    self.btn_drv1_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[1].control)
+    self.btn_sw1_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[1].sw1)
+    self.btn_drv2_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[2].control)
+    self.btn_sw2_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[2].sw1)
+    self.btn_drv3_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[3].control)
+    self.btn_sw3_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[3].sw1)
 
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+          'spk_chain_0=24',
+          'rgb_red_net=15',
+          'rgb_grn_net=14',
+          'rgb_blue_net=13',
+          'sw_chain_0=27',
+          'btn_drv0_net=5'
+          'btn_sw0_net=6',
+          'btn_drv0_net=7'
+          'btn_sw0_net=8',
+          'btn_drv0_net=9'
+          'btn_sw0_net=10',
+          'btn_drv0_net=11'
+          'btn_sw0_net=12',
+        ]))
+      ]
+    )
 
 
 class SimonTestCase(unittest.TestCase):
