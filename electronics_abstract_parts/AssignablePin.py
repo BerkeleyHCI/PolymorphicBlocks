@@ -49,6 +49,5 @@ class AssignablePinBlock(GeneratorBlock):
               pinmap[leaf_port] = NotConnectedPin
             else:
               pinmap[leaf_port] = assign_target_str
-            print(f"{leaf_name}={assigns_by_pin[leaf_name]}")
 
     return pinmap
