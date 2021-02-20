@@ -364,12 +364,8 @@ class Ucc21222_HalfbridgeDriver(IntegratedCircuit, GeneratorBlock):  # TODO bett
     self.pwr_drv = self.Port(ElectricalSink())
     self.gnd_drv = self.Port(Ground())
 
-    self.outa = self.Port(DigitalSource(
-      current_limits=(drive_current.lower() * -1, drive_current.lower())
-    ))
-    self.outb = self.Port(DigitalSource(
-      current_limits=(drive_current.lower() * -1, drive_current.lower())
-    ))
+    self.outa = self.Port(DigitalSource())
+    self.outb = self.Port(DigitalSource())
 
   def generate(self) -> None:
     super().generate()
@@ -419,8 +415,9 @@ class Ucc21222_HalfbridgeDriver(IntegratedCircuit, GeneratorBlock):  # TODO bett
     self.connect(self.pwr_drv, self.boot_res.a.as_electrical_sink())
     self.connect(self.boot_res.b, self.boot_dio.anode)
     self.vdda_cap = self.Block(vddx_cap_model)
-    self.connect(self.boot_dio.cathode.as_electrical_source(), self.vdda_cap.pwr, self.ic.vdda.as_electrical_sink())
-    self.constrain(self.vdda_cap.pwr.link().voltage == self.pwr_drv.link().voltage, unchecked=True)  # TODO account for diode drop  TODO model w/ bootstrap adapter
+    self.connect(self.boot_dio.cathode.as_electrical_source(
+      voltage_out=self.pwr_drv.link().voltage  # TODO account for diode drop  TODO model w/ bootstrap adapter
+    ), self.vdda_cap.pwr, self.ic.vdda.as_electrical_sink())
     self.connect(self.drv_common, self.vdda_cap.gnd, self.ic.vssa.as_electrical_sink(current_draw=(0, 0)*Amp))  # TODO actually model power draw
 
     # calculate required resistances based on datasheet section 9.2.2.5
@@ -450,11 +447,15 @@ class Ucc21222_HalfbridgeDriver(IntegratedCircuit, GeneratorBlock):  # TODO bett
       resistance=(drive_res_min, drive_res_max)*Ohm
     ))
     self.connect(self.ic.outa.as_digital_source(), self.a_gate_res.a.as_digital_sink())
-    self.connect(self.a_gate_res.b.as_digital_source(), self.outa)
+    self.connect(self.a_gate_res.b.as_digital_source(
+      current_limits=(self.drive_current.lower() * -1, self.drive_current.lower())
+    ), self.outa)
 
     self.b_gate_res = self.Block(Resistor(
       resistance=(drive_res_min, drive_res_max)*Ohm
     ))
     self.connect(self.ic.outb.as_digital_source(), self.b_gate_res.a.as_digital_sink())
-    self.connect(self.b_gate_res.b.as_digital_source(), self.outb)
+    self.connect(self.b_gate_res.b.as_digital_source(
+      current_limits=(self.drive_current.lower() * -1, self.drive_current.lower())
+    ), self.outb)
     # TODO propagate actual currents to digital outs
