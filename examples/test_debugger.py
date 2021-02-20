@@ -140,10 +140,10 @@ class Debugger(BoardTop):
           'lcd_led_net=29',
           'lcd_reset_net=20',
           'lcd_rs_net=22',
-          'lcd_spi_net.sck=15'
-          'lcd_spi_net.mosi=17'
-          'lcd_spi_net.miso=NC'
-          'lcd_cs_net=28'
+          'lcd_spi_net.sck=15',
+          'lcd_spi_net.mosi=17',
+          'lcd_spi_net.miso=NC',
+          'lcd_cs_net=28',
           'rgb_usb_red_net=14',
           'rgb_usb_grn_net=12',
           'rgb_usb_blue_net=11',

@@ -150,7 +150,7 @@ class TestHighSwitch(BoardTop):
         (['mcu', 'pin_assigns'], ';'.join([
           'can_chain_0.txd=43',
           'can_chain_0.rxd=44',
-          'vsense_chain_0=21',
+          'vsense_chain_1=21',
           'rgb1_red_net=28',
           'rgb1_grn_net=23',
           'rgb1_blue_net=22',
