@@ -90,8 +90,8 @@ class CanAdapter(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'sw_usb_chain=28',
-          'sw_can_chain=48',
+          'sw_usb_chain_0=28',
+          'sw_can_chain_0=48',
           'lcd_led_net=23',
           'lcd_reset_net=13',
           'lcd_rs_net=15',

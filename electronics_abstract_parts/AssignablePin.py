@@ -34,11 +34,21 @@ class AssignablePinBlock(GeneratorBlock):
     self._remaining_assignable_ios.setdefault(type(port), []).append(port)
 
   def _get_suggested_pin_maps(self, assigns_str: str) -> IdentityDict[CircuitPort, PinName]:
+    assigns_per_pin = [pin_str.split('=') for pin_str in assigns_str.split(';')]
+    assigns_by_pin = {pin_str[0]: pin_str[1] for pin_str in assigns_per_pin}
+
     pinmap: IdentityDict[CircuitPort, PinName] = IdentityDict()
     for top_port in self._all_assignable_ios:
       if self.get(top_port.is_connected()):
-        print(self.get(top_port.link().name()))
-      # for leaf_circuit_port in leaf_circuit_ports("", top_port):
-
+        port_name = self.get(top_port.link().name())
+        for leaf_postfix, leaf_port in leaf_circuit_ports("", top_port):
+          leaf_name = port_name + leaf_postfix
+          if leaf_name in assigns_by_pin:
+            assign_target_str = assigns_by_pin[leaf_name]
+            if assign_target_str == 'NC':
+              pinmap[leaf_port] = NotConnectedPin
+            else:
+              pinmap[leaf_port] = assign_target_str
+            print(f"{leaf_name}={assigns_by_pin[leaf_name]}")
 
     return pinmap
