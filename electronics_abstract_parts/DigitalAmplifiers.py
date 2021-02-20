@@ -99,7 +99,7 @@ class HalfBridgeNFet(Block):
     max_rds = self.max_rds
 
     self.high = self.Block(SwitchNFet(
-      drain_voltage=pwr_voltage * Volt,
+      drain_voltage=pwr_voltage,
       drain_current=(0, out_current.upper()),
       gate_voltage=gate_voltage,
       rds_on=(0, max_rds),
@@ -126,7 +126,7 @@ class HalfBridgeNFet(Block):
                  self.low.drain.as_digital_bidir(
                    voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
                    current_limits=(-1 * self.low.drain_current.upper(), self.high.drain_current.upper()),
-                   output_threshold=(self.gnd.link().voltage.upper(), self.pwr.link().voltage.lower())
+                   output_thresholds=(self.gnd.link().voltage.upper(), self.pwr.link().voltage.lower())
                  ),
                  self.high.source.as_digital_bidir(
                    # unmodeled, the parameters are modeled by the low side FET

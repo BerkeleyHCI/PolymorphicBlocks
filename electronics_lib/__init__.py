@@ -37,11 +37,6 @@ from .Iso1050 import Iso1050dub
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
-from .NatcarBlocks import FreescaleLineCameraConnector, ServoConnector
-from .NatcarBlocks import NatcarBatteryConnector, NatcarBrushedMotorConnector
-from .NatcarBlocks import BeagleBoneBlueAdcConnector, BeagleBoneBlueGpioConnector, BeagleBoneBlueGpsPwmConnector
-from .NatcarBlocks import BeagleBoneBlueDigitalPin
-from .NatcarBlocks import Ucc21222_HalfbridgeDriver, Ucc21222_Device
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4
 from .Mechanicals import Outline_Pn1332
