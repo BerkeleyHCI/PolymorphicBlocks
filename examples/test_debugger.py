@@ -88,34 +88,33 @@ class Debugger(BoardTop):
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_tgt = imp.Block(IndicatorSinkRgbLed())
 
-    # TODO all pin assignments
     # self.connect(self.mcu.new_io(UsbDevicePort, pin=[33, 32]), self.usb.usb)  # TODO once works in MCU def
     self.connect(self.mcu.usb_0, self.usb.usb)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=16), self.target_reg.en)
+    self.target_reg_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_reg.en)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=26), self.target_drv.swclk_in)  # TODO BMP uses pin 15
-    self.connect(self.mcu.new_io(DigitalBidir, pin=27), self.target_drv.swdio_out)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=25), self.target_drv.swdio_in)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=18), self.target_drv.reset_in)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=31), self.target_drv.swo_out)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=21), self.tdi_res.a.as_digital_source())
+    self.target_swclk_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swclk_in)  # TODO BMP uses pin 15
+    self.target_swdio_out_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swdio_out)
+    self.target_swdio_in_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swdio_in)
+    self.target_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.reset_in)
+    self.target_swo_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swo_out)
+    self.target_tdi_net = self.connect(self.mcu.new_io(DigitalBidir), self.tdi_res.a.as_digital_source())
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=29), self.lcd.led)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=20), self.lcd.reset)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=22), self.lcd.rs)
-    self.connect(self.mcu.new_io(SpiMaster, pin=[15, 17, NotConnectedPin]), self.lcd.spi)  # MISO unused
-    self.connect(self.mcu.new_io(DigitalBidir, pin=28), self.lcd.cs)
+    self.lcd_led_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.led)
+    self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
+    self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
+    self.lcd_spi_net = self.connect(self.mcu.new_io(SpiMaster), self.lcd.spi)  # MISO unused
+    self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=14), self.rgb_usb.red)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=12), self.rgb_usb.green)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=11), self.rgb_usb.blue)
+    self.rgb_usb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.red)
+    self.rgb_usb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.green)
+    self.rgb_usb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.blue)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=13), self.rgb_tgt.red)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=30), self.rgb_tgt.green)  # pinning on stock ST-Link
-    self.connect(self.mcu.new_io(DigitalBidir, pin=10), self.rgb_tgt.blue)
+    self.rgb_tgt_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.red)
+    self.rgb_tgt_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.green)  # pinning on stock ST-Link
+    self.rgb_tgt_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.blue)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=38), self.sw_usb.out)
+    self.sw_usb_net = self.connect(self.mcu.new_io(DigitalBidir), self.sw_usb.out)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -128,6 +127,31 @@ class Debugger(BoardTop):
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_tgt', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+          'target_reg_en_net=16',
+          'target_swclk_net=26',
+          'target_swdio_out_net=27',
+          'target_swdio_in_net=25',
+          'target_reset_net=18',
+          'target_swo_net=31',
+          'target_tdi_net=21',
+          'lcd_led_net=29',
+          'lcd_reset_net=20',
+          'lcd_rs_net=22',
+          'lcd_spi_net.sck=15'
+          'lcd_spi_net.mosi=17'
+          'lcd_spi_net.miso=NC'
+          'lcd_cs_net=28'
+          'rgb_usb_red_net=14',
+          'rgb_usb_grn_net=12',
+          'rgb_usb_blue_net=11',
+          'rgb_tgt_red_net=13',
+          'rgb_tgt_grn_net=30',
+          'rgb_tgt_blue_net=10',
+          'sw_usb_net=38',
+        ]))
       ]
     )
 

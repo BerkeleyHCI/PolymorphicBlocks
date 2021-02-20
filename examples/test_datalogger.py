@@ -154,8 +154,8 @@ class TestDatalogger(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'sw_can_chain_0.txd=51',
-          'sw_can_chain_0.rxd=53',
+          'can_chain_0.txd=51',
+          'can_chain_0.rxd=53',
           'sd_spi_net.sck=17',
           'sd_spi_net.mosi=15',
           'sd_spi_net.miso=19',
