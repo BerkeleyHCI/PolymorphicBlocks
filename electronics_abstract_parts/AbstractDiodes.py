@@ -31,8 +31,8 @@ class ZenerDiode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, zener_voltage: RangeLike = RangeExpr(), forward_voltage_drop: RangeLike = RangeExpr()
-               ) -> None:
+  def __init__(self, zener_voltage: RangeLike = RangeExpr(),
+               forward_voltage_drop: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
     self.anode = self.Port(Passive())
@@ -50,14 +50,14 @@ class ProtectionZenerDiode(DiscreteApplication):
     super().__init__()
     self.voltage = self.Parameter(RangeExpr(voltage))
 
-    self.pwr = self.Port(ElectricalSink(
-      voltage_limits=(0, self.voltage.lower()),
-      current_draw=(0, 0)*Amp  # TODO should be leakage current
-    ), [Power, Input])
+    self.pwr = self.Port(ElectricalSink(), [Power, Input])
     self.gnd = self.Port(Ground(), [Common])
 
   def contents(self):
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
-    self.connect(self.diode.cathode.as_electrical_sink(), self.pwr)
+    self.connect(self.diode.cathode.as_electrical_sink(
+      voltage_limits=(0, self.voltage.lower()),
+      current_draw=(0, 0)*Amp  # TODO should be leakage current
+    ), self.pwr)
     self.connect(self.diode.anode.as_electrical_sink(), self.gnd)
