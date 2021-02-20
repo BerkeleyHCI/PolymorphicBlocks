@@ -386,7 +386,7 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     self.connect(self.pwr, self.io_draw.pwr)
     self.require(self.pwr.current_draw.within(self._io_draw + (0, 19)*mAmp))
 
-    self.generator(self.pin_assign,
+    self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=chain(self.digital.values(),
                                    self.adc.values(), self.dac.values(),
                                    self.uart.values(), self.spi.values(),
@@ -445,7 +445,7 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     # TODO capacitive divider in CLKIN mode; in XO mode see external load capacitors table, see LPC15XX 14.3
 
 
-  def pin_assign(self) -> None:
+  def pin_assign(self, pin_assigns_str: str) -> None:
     #
     # Pin Assignment Block
     #
@@ -458,7 +458,7 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
                    self.ic.DIO0_PINS + self.ic.DIO1_PINS),
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps())
+      self._get_suggested_pin_maps(pin_assigns_str))
 
     #
     # IO models

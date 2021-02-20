@@ -81,11 +81,11 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
 
     # TODO model IO draw - need internal source block?
 
-    self.generator(self.pin_assign,
+    self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(), self.dac.values(),
                                         [self.uart_0, self.spi_0, self.can_0])))
 
-  def pin_assign(self) -> None:
+  def pin_assign(self, pin_assigns_str: str) -> None:
     # Note: application circuit at LPC15XX 14.6, Figure 49
     system_pins = {
       16: self.pwr_in,
@@ -106,7 +106,7 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
                     19, 20, 21, 22, 23, 24, 25, 26, 27]),
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps())
+      self._get_suggested_pin_maps(pin_assigns_str))
 
     overassigned_pins = set(assigned_pins.keys()).intersection(set(system_pins.keys()))
     assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"

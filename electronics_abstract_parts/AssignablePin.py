@@ -16,7 +16,7 @@ class AssignablePinBlock(GeneratorBlock):
     self._all_assignable_ios: List[Port] = []
     self._remaining_assignable_ios: Dict[Type[Port], List[Port]] = {}
 
-    self.pin_suggestions = self.Parameter(StringExpr())
+    self.pin_assigns = self.Parameter(StringExpr())
 
   # TODO type signature could be enhanced to only allow iterable pin with Bundle type
   PortType = TypeVar('PortType', bound=Union[CircuitPort, Bundle])
@@ -33,12 +33,12 @@ class AssignablePinBlock(GeneratorBlock):
     self._all_assignable_ios.append(port)
     self._remaining_assignable_ios.setdefault(type(port), []).append(port)
 
-  def _get_suggested_pin_maps(self) -> IdentityDict[CircuitPort, PinName]:
+  def _get_suggested_pin_maps(self, assigns_str: str) -> IdentityDict[CircuitPort, PinName]:
     pinmap: IdentityDict[CircuitPort, PinName] = IdentityDict()
     for top_port in self._all_assignable_ios:
       if self.get(top_port.is_connected()):
         print(self.get(top_port.link().name()))
-      # for leaf_circuit_port in leaf_circuit_ports(top_port):
+      # for leaf_circuit_port in leaf_circuit_ports("", top_port):
 
 
     return pinmap

@@ -175,7 +175,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     ))
     self.connect(self.pwr, self.io_draw.pwr)
 
-    self.generator(self.pin_assign,
+    self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=chain(self.digital.values(),
                                    self.adc.values(),
                                    [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
@@ -203,7 +203,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-  def pin_assign(self) -> None:
+  def pin_assign(self, pin_assigns_str: str) -> None:
     #
     # Pin assignment block
     #
@@ -227,7 +227,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
                           [33, 32]),  # USB - dp, dm
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps())
+      self._get_suggested_pin_maps(pin_assigns_str))
 
     for pin_num, self_port in assigned_pins.items():
       self.connect(self_port, self.ic.io_pins[str(pin_num)])

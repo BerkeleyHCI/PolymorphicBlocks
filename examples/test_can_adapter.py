@@ -51,7 +51,7 @@ class CanAdapter(BoardTop):
     self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir, pin=22), self.lcd.cs)
 
     self.rgb_usb_red_net = self.connect(self.mcu.new_io(DigitalBidir, pin=2), self.rgb_usb.red)
-    self.rgb_usb_grn_net =  self.connect(self.mcu.new_io(DigitalBidir, pin=1), self.rgb_usb.green)
+    self.rgb_usb_grn_net = self.connect(self.mcu.new_io(DigitalBidir, pin=1), self.rgb_usb.green)
     self.rgb_usb_blue_net = self.connect(self.mcu.new_io(DigitalBidir, pin=3), self.rgb_usb.blue)
 
     self.rgb_can_red_net = self.connect(self.mcu.new_io(DigitalBidir, pin=6), self.rgb_can.red)
@@ -87,6 +87,25 @@ class CanAdapter(BoardTop):
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),
         (['can_reg'], Ap2204k),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+          'sw_usb_chain=28',
+          'sw_can_chain=48',
+          'lcd_led_net=23',
+          'lcd_reset_net=13',
+          'lcd_rs_net=15',
+          'lcd_spi_net.sck=21',
+          'lcd_spi_net.miso=18',
+          'lcd_spi_net.mosi=NC',
+          'lcd_cs_net=22',
+          'rgb_usb_red_net=2',
+          'rgb_usb_grn_net=1',
+          'rgb_usb_blue_net=3',
+          'rgb_can_red_net=6',
+          'rgb_can_grn_net=4',
+          'rgb_can_blue_net=7',
+        ]))
       ]
     )
 
