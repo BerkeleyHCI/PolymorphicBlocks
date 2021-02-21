@@ -78,8 +78,8 @@ class ScalaCompilerInstance:
     refinements.populate_proto(request.refinements)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert result.HasField('design'), f"no compiled result, with error {result.error}"
-    # if result.error:
-    #   raise CompilerCheckError(f"error during compilation: \n{result.error}")
+    if result.error:
+      raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign(result)
 
   def close(self):
