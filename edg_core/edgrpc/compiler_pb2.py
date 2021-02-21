@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0e\x63ompiler.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\tlit.proto\x1a\thdl.proto\"v\n\x0f\x43ompilerRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12\"\n\x06\x64\x65sign\x18\x02 \x01(\x0b\x32\x12.edg.schema.Design\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.Refinements\"\xd8\x01\n\x0e\x43ompilerResult\x12$\n\x06\x64\x65sign\x18\x01 \x01(\x0b\x32\x12.edg.schema.DesignH\x00\x12\x0f\n\x05\x65rror\x18\x03 \x01(\tH\x00\x12\x38\n\x0csolvedValues\x18\x02 \x03(\x0b\x32\".edg.compiler.CompilerResult.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLitB\x08\n\x06result2T\n\x08\x43ompiler\x12H\n\x07\x43ompile\x12\x1d.edg.compiler.CompilerRequest\x1a\x1c.edg.compiler.CompilerResult\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0e\x63ompiler.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\tlit.proto\x1a\thdl.proto\"v\n\x0f\x43ompilerRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12\"\n\x06\x64\x65sign\x18\x02 \x01(\x0b\x32\x12.edg.schema.Design\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.Refinements\"\xca\x01\n\x0e\x43ompilerResult\x12\"\n\x06\x64\x65sign\x18\x01 \x01(\x0b\x32\x12.edg.schema.Design\x12\r\n\x05\x65rror\x18\x03 \x01(\t\x12\x38\n\x0csolvedValues\x18\x02 \x03(\x0b\x32\".edg.compiler.CompilerResult.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2T\n\x08\x43ompiler\x12H\n\x07\x43ompile\x12\x1d.edg.compiler.CompilerRequest\x1a\x1c.edg.compiler.CompilerResult\"\x00\x62\x06proto3'
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,hdl__pb2.DESCRIPTOR,])
 
@@ -110,8 +110,8 @@ _COMPILERRESULT_VALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=331,
-  serialized_end=406,
+  serialized_start=327,
+  serialized_end=402,
 )
 
 _COMPILERRESULT = _descriptor.Descriptor(
@@ -154,14 +154,9 @@ _COMPILERRESULT = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
-    _descriptor.OneofDescriptor(
-      name='result', full_name='edg.compiler.CompilerResult.result',
-      index=0, containing_type=None,
-      create_key=_descriptor._internal_create_key,
-    fields=[]),
   ],
   serialized_start=200,
-  serialized_end=416,
+  serialized_end=402,
 )
 
 _COMPILERREQUEST.fields_by_name['design'].message_type = schema__pb2._DESIGN
@@ -171,12 +166,6 @@ _COMPILERRESULT_VALUE.fields_by_name['value'].message_type = lit__pb2._VALUELIT
 _COMPILERRESULT_VALUE.containing_type = _COMPILERRESULT
 _COMPILERRESULT.fields_by_name['design'].message_type = schema__pb2._DESIGN
 _COMPILERRESULT.fields_by_name['solvedValues'].message_type = _COMPILERRESULT_VALUE
-_COMPILERRESULT.oneofs_by_name['result'].fields.append(
-  _COMPILERRESULT.fields_by_name['design'])
-_COMPILERRESULT.fields_by_name['design'].containing_oneof = _COMPILERRESULT.oneofs_by_name['result']
-_COMPILERRESULT.oneofs_by_name['result'].fields.append(
-  _COMPILERRESULT.fields_by_name['error'])
-_COMPILERRESULT.fields_by_name['error'].containing_oneof = _COMPILERRESULT.oneofs_by_name['result']
 DESCRIPTOR.message_types_by_name['CompilerRequest'] = _COMPILERREQUEST
 DESCRIPTOR.message_types_by_name['CompilerResult'] = _COMPILERRESULT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -212,8 +201,8 @@ _COMPILER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=418,
-  serialized_end=502,
+  serialized_start=404,
+  serialized_end=488,
   methods=[
   _descriptor.MethodDescriptor(
     name='Compile',

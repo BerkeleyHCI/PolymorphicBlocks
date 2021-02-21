@@ -17,10 +17,8 @@ message CompilerRequest {
 }
 
 message CompilerResult {
-  oneof result {
-    schema.Design design = 1;
-    string error = 3;
-  }
+  schema.Design design = 1;
+  string error = 3;
 
   message Value {
     ref.LocalPath path = 1;

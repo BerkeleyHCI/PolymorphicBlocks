@@ -26,12 +26,11 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
       val refinements = Refinements(request.getRefinements)
       val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
-      val errors = compiler.getErrors()
-      require(errors.isEmpty, s"got errors: $errors")
       val checker = new DesignStructuralValidate()
-      require(checker.map(compiled).isEmpty)
+      val errors = compiler.getErrors() ++ checker.map(compiled)
       val result = edgcompiler.CompilerResult(
-        result = edgcompiler.CompilerResult.Result.Design(compiled),
+        design = Some(compiled),
+        error = errors.mkString(", "),
         solvedValues = constPropToSolved(compiler.getAllSolved)
       )
       Future.successful(result)
@@ -41,7 +40,7 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
         val pw = new PrintWriter(sw)
         e.printStackTrace(pw)
         Future.successful(edgcompiler.CompilerResult(
-          result = edgcompiler.CompilerResult.Result.Error(sw.toString)
+          error = sw.toString
         ))
     }
   }
