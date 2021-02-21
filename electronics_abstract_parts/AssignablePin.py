@@ -39,6 +39,7 @@ class AssignablePinBlock(GeneratorBlock):
                        if pin_str]
     assigns_by_pin = {pin_str[0]: pin_str[1]
                       for pin_str in assigns_per_pin}
+    assigned_pins: Set[str] = set()
 
     pinmap: IdentityDict[CircuitPort, PinName] = IdentityDict()
     for top_port in self._all_assignable_ios:
@@ -52,5 +53,9 @@ class AssignablePinBlock(GeneratorBlock):
               pinmap[leaf_port] = NotConnectedPin
             else:
               pinmap[leaf_port] = assign_target_str
+            assigned_pins.add(leaf_name)
+
+    unassigned_pins = set(assigns_by_pin.keys()).difference(assigned_pins)
+    assert not unassigned_pins, f"specified pin assigns with invalid names: {', '.join(unassigned_pins)}"
 
     return pinmap

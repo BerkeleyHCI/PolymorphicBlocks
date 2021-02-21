@@ -135,8 +135,8 @@ class TestDatalogger(BoardTop):
     ) as imp:
       div_model = VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)
       (self.v12sense, ), self.v12sense_chain = self.chain(self.pwr_conn.pwr, imp.Block(div_model), self.mcu.new_io(AnalogSink))
-      (self.v5sense, ), self.v5sense = self.chain(self.pwr_5v.pwr_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
-      (self.vscsense, ), self.vscsense = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
+      (self.v5sense, ), self.v5sense_chain = self.chain(self.pwr_5v.pwr_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
+      (self.vscsense, ), self.vscsense_chain = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
 
     self.hole = ElementDict[MountingHole]()
     for i in range(3):
@@ -187,9 +187,9 @@ class TestDatalogger(BoardTop):
           'rgb3_blue_net=38',
           'sw1_chain_0=33',
           'sw2_chain_0=23',
-          'v12sense_chain_0=10',
-          'v5sense_chain_0=9',
-          'vscsense_chain_0=8',
+          'v12sense_chain_1=10',
+          'v5sense_chain_1=9',
+          'vscsense_chain_1=8',
         ]))
       ]
     )
