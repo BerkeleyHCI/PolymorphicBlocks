@@ -507,6 +507,8 @@ class GeneratorBlock(Block):
     :param req_ports: required ports, which can have their .is_connected() and .link().name() value obtained
     :param targets: list of ports and blocks the generator may connect to, to avoid generating initializers
     """
+    targets = list(targets)  # make it reusable if it's once-iterable
+
     assert callable(fn), f"fn {fn} must be a method (callable)"
     fn_name = fn.__name__
     assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"

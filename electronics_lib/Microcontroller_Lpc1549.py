@@ -339,33 +339,33 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
     # TODO model current flows from digital ports
     self.digital = ElementDict[DigitalBidir]()
     for i in range(20):
-      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
+      self.digital[i] = self.Port(DigitalBidir(), optional=True)
       self._add_assignable_io(self.digital[i])
 
     self.adc = ElementDict[AnalogSink]()
     for i in range(10):
-      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
+      self.adc[i] = self.Port(AnalogSink(), optional=True)
       self._add_assignable_io(self.adc[i])
 
     self.dac = ElementDict[AnalogSource]()
     for i in range(1):
-      self.dac[i] = self.Port(AnalogSource.empty(), optional=True)
+      self.dac[i] = self.Port(AnalogSource(), optional=True)
       self._add_assignable_io(self.dac[i])
 
     self.uart = ElementDict[UartPort]()
     for i in range(3):
-      self.uart[i] = self.Port(UartPort(DigitalBidir.empty()), optional=True)
+      self.uart[i] = self.Port(UartPort(), optional=True)
       self._add_assignable_io(self.uart[i])
 
     self.spi = ElementDict[SpiMaster]()
     for i in range(2):
-      self.spi[i] = self.Port(SpiMaster(DigitalBidir.empty()), optional=True)
+      self.spi[i] = self.Port(SpiMaster(), optional=True)
       self._add_assignable_io(self.spi[i])
 
-    self.can_0 = self.Port(CanControllerPort(DigitalBidir.empty()), optional=True)
+    self.can_0 = self.Port(CanControllerPort(), optional=True)
     self._add_assignable_io(self.can_0)
 
-    self.i2c_0 = self.Port(I2cMaster(DigitalBidir.empty()), optional=True)
+    self.i2c_0 = self.Port(I2cMaster(), optional=True)
     self.connect(self.i2c_0, self.ic.i2c_0)
     # self._add_assignable_io(self.i2c_0)  # TODO conflicts with pin assign
 

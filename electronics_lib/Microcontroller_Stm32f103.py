@@ -134,8 +134,8 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Stm32f103_48_Device())
 
-    self.pwr = self.Export(self.ic.vdd, [Power])
-    self.gnd = self.Export(self.ic.vss, [Common])
+    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
     self.swd = self.Export(self.ic.swd)
     # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
 
@@ -164,6 +164,24 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
     # self._add_assignable_io(self.usb_0)  # TODO incompatible with builtin USB circuit
 
+    self.generator(self.pin_assign, self.pin_assigns,
+                   req_ports=chain(self.digital.values(),
+                                   self.adc.values(),
+                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
+                   targets=chain([self.pwr, self.gnd],
+                                 [self.ic],  # connected block
+                                 self.digital.values(),
+                                 self.adc.values(),
+                                 [self.uart_0, self.spi_0, self.can_0, self.usb_0]))  # TODO pass in connected blocks
+
+
+
+  def pin_assign(self, pin_assigns_str: str) -> None:
+    # These are here because we can't split the power with the USB.
+    # TODO support for split nets between generatorrs
+    self.connect(self.pwr, self.ic.vdd)
+    self.connect(self.gnd, self.ic.vss)
+
     io_draw_expr = (0, 0)*mAmp
     for _, io in self.digital.items():
       io_draw_expr = io_draw_expr + io.is_connected().then_else(
@@ -174,15 +192,6 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       current_draw=io_draw_expr
     ))
     self.connect(self.pwr, self.io_draw.pwr)
-
-    self.generator(self.pin_assign, self.pin_assigns,
-                   req_ports=chain(self.digital.values(),
-                                   self.adc.values(),
-                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
-                   targets=chain([self.ic],  # connected block
-                                 self.digital.values(),
-                                 self.adc.values(),
-                                 [self.uart_0, self.spi_0, self.can_0, self.usb_0]))  # TODO pass in connected blocks
 
     #
     # Reference Circuit Block
@@ -203,7 +212,6 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-  def pin_assign(self, pin_assigns_str: str) -> None:
     #
     # Pin assignment block
     #
