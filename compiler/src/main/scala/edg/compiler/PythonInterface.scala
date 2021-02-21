@@ -150,8 +150,8 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
       case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) =>
         require(!eltsRefinements.isDefinedAt(path))
         Errorable.Success(member)
-      case Some(member) => throw new NoSuchElementException(s"Library element at $path not a block, got ${member.getClass}")
-      case None => throw new NoSuchElementException(s"Library does not contain $path")
+      case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")
+      case None => Errorable.Error(s"Library does not contain $path")
     }
   }
   override def getLink(path: ref.LibraryPath): Errorable[elem.Link] = {
