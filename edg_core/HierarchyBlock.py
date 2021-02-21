@@ -507,19 +507,18 @@ class GeneratorBlock(Block):
     :param req_ports: required ports, which can have their .is_connected() and .link().name() value obtained
     :param targets: list of ports and blocks the generator may connect to, to avoid generating initializers
     """
-    targets = list(targets)  # make it reusable if it's once-iterable
-
     assert callable(fn), f"fn {fn} must be a method (callable)"
     fn_name = fn.__name__
     assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    target_blocks = [target for target in targets if isinstance(target, Block)]
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs,
-                                                               tuple(target_blocks))
+
+    target_blocks = []
 
     for target in targets:
+      if isinstance(target, Block):
+        target_blocks.append(target)
       if isinstance(target, BasePort):
         self._generator_target_ports.add(target)
       elif isinstance(target, ConstraintExpr):
@@ -528,6 +527,9 @@ class GeneratorBlock(Block):
         pass  # written into the GeneratorRecord instead for the compiler
       else:
         raise TypeError(f"unknown generator target type {target}")
+
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs,
+                                                               tuple(target_blocks))
 
   # Generator solved-parameter-access interface
   #
