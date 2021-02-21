@@ -175,7 +175,7 @@ class TestDatalogger(BoardTop):
           'ext_uart_net.tx=60',
           'ext_uart_net.rx=61',
           'ext_cts_net=62',
-          'ext_cts_net=59',
+          'ext_rts_net=59',
           'rgb1_red_net=31',
           'rgb1_grn_net=32',
           'rgb1_blue_net=30',
