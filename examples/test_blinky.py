@@ -13,6 +13,13 @@ class TestBlinkyBasic(BoardTop):
     self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
+
 
 class TestBlinkySimple(BoardTop):
   def contents(self):
@@ -28,6 +35,13 @@ class TestBlinkySimple(BoardTop):
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
     self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
+
 
 class TestBlinkySimpleChain(BoardTop):
   def contents(self):
@@ -39,6 +53,13 @@ class TestBlinkySimpleChain(BoardTop):
     ) as imp:
       (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
 
 class TestBlinkyBroken(BoardTop):
@@ -55,6 +76,13 @@ class TestBlinkyBroken(BoardTop):
     ) as imp:
       self.mcu = imp.Block(Lpc1549_48())
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
 
 class TestBlinkyFlattened(BoardTop):
@@ -87,6 +115,9 @@ class TestBlinkyFlattened(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['usb_reg'], Tps561201),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
       ]
     )
 
@@ -170,6 +201,9 @@ class TestBlinkyComplete(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['usb_reg'], Tps561201),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
       ]
     )
 

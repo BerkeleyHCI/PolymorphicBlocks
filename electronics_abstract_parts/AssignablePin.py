@@ -34,8 +34,11 @@ class AssignablePinBlock(GeneratorBlock):
     self._remaining_assignable_ios.setdefault(type(port), []).append(port)
 
   def _get_suggested_pin_maps(self, assigns_str: str) -> IdentityDict[CircuitPort, PinName]:
-    assigns_per_pin = [pin_str.split('=') for pin_str in assigns_str.split(';')]
-    assigns_by_pin = {pin_str[0]: pin_str[1] for pin_str in assigns_per_pin}
+    assigns_per_pin = [pin_str.split('=')
+                       for pin_str in assigns_str.split(';')
+                       if pin_str]
+    assigns_by_pin = {pin_str[0]: pin_str[1]
+                      for pin_str in assigns_per_pin}
 
     pinmap: IdentityDict[CircuitPort, PinName] = IdentityDict()
     for top_port in self._all_assignable_ios:
