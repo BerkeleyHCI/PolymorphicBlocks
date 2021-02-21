@@ -1,15 +1,8 @@
-import sys
-import os
 import unittest
 
 from edg import *
-import edg
+from .ExampleTestUtils import run_test
 
-# --
-from typing import *
-
-from electronics_lib import *
-import electronics_lib
 
 class DistanceSensor(CircuitBlock):
   '''
@@ -199,7 +192,4 @@ class TestMotionControlledDoor(CircuitBlock):
 class MotionControlledDoorTestCase(unittest.TestCase):
   @unittest.skip("needs major refactoring to update to new electronics model")
   def test_design(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestMotionControlledDoor(),
-      os.path.splitext(__file__)[0]
-    )
+    run_test(TestMotionControlledDoor)

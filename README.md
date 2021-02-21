@@ -9,6 +9,8 @@ For a slightly deeper technical overview, including summaries of example project
 
 **This is alpha software, and is a continuing work-in-progress. Backwards compatibility is (currently) not guaranteed.** See [Project Status](#project-status) for more details.
 
+**This is undergoing some heavy refactoring, things are likely broken**
+
 ### Example
 From [the getting started tutorial](getting-started.md), this code defines a board with a USB Type-C connector powering (through a buck converter for 3.3V step-down) a microcontroller which drives a LED and reads a switch.
 
