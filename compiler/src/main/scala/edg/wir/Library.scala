@@ -16,15 +16,15 @@ trait Library {
     if (subclass == superclass) {
       true
     } else {
-      getBlock(subclass).superclasses.exists {
+      getBlock(subclass).get.superclasses.exists {
         isSubclassOf(_, superclass)
       }
     }
   }
 
-  def getBlock(path: ref.LibraryPath): elem.HierarchyBlock
-  def getLink(path: ref.LibraryPath): elem.Link
-  def getPort(path: ref.LibraryPath): IrPort
+  def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock]
+  def getLink(path: ref.LibraryPath): Errorable[elem.Link]
+  def getPort(path: ref.LibraryPath): Errorable[IrPort]
 
   // Returns all elements of the specified type and their path.
   // If the library has a mutable backing, this may change over time.
@@ -66,23 +66,23 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
   }
 
-  override def getBlock(path: ref.LibraryPath): elem.HierarchyBlock = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => member
-    case Some(member) => throw new NoSuchElementException(s"Library element at $path not a block, got ${member.getClass}")
-    case None => throw new NoSuchElementException(s"Library does not contain $path")
+  override def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => Errorable.Success(member)
+    case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")
+    case None => Errorable.Error(s"Library does not contain $path")
   }
 
-  override def getLink(path: ref.LibraryPath): elem.Link = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.Link(member)) => member
-    case Some(member) => throw new NoSuchElementException(s"Library element at $path not a link, got ${member.getClass}")
-    case None => throw new NoSuchElementException(s"Library does not contain $path")
+  override def getLink(path: ref.LibraryPath): Errorable[elem.Link] = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.Link(member)) => Errorable.Success(member)
+    case Some(member) => Errorable.Error(s"Library element at $path not a link, got ${member.getClass}")
+    case None => Errorable.Error(s"Library does not contain $path")
   }
 
-  override def getPort(path: ref.LibraryPath): IrPort = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.Port(member)) => IrPort.Port(member)
-    case Some(schema.Library.NS.Val.Type.Bundle(member)) => IrPort.Bundle(member)
-    case Some(member) => throw new NoSuchElementException(s"Library element at $path not a port-like, got ${member.getClass}")
-    case None => throw new NoSuchElementException(s"Library does not contain $path")
+  override def getPort(path: ref.LibraryPath): Errorable[IrPort] = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.Port(member)) => Errorable.Success(IrPort.Port(member))
+    case Some(schema.Library.NS.Val.Type.Bundle(member)) => Errorable.Success(IrPort.Bundle(member))
+    case Some(member) => Errorable.Error(s"Library element at $path not a port-like, got ${member.getClass}")
+    case None => Errorable.Error(s"Library does not contain $path")
   }
 
   override def runGenerator(path: ref.LibraryPath, fnName: String,

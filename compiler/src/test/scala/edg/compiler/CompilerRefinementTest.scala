@@ -79,9 +79,8 @@ class CompilerRefinementTest extends AnyFlatSpec {
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
       instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("block"))
     ))
-    assertThrows[IllegalArgumentException] {
-      compiler.compile()
-    }
+    compiler.compile()
+    compiler.getErrors() should not be (empty)
   }
 
   "Compiler on design with instance refinement" should "work" in {

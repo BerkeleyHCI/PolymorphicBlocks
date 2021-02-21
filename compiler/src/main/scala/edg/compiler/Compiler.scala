@@ -47,6 +47,7 @@ object CompilerError {
 
   case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError
   case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError
+  case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath) extends CompilerError
 
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
@@ -270,8 +271,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       // especially when block side arrays become a thing
       val newPorts = constProp.getArrayElts(path) match {
         case Some(elts) =>
+          val portPb = library.getPort(libraryPath) match {
+            case Errorable.Success(portPb) => portPb
+            case Errorable.Error(err) =>
+              import edg.elem.elem, edg.IrPort
+              errors += CompilerError.LibraryError(path, libraryPath, err)
+              IrPort.Port(elem.Port())
+          }
+
           elts.map { index =>
-            index -> wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+            index -> wir.PortLike.fromIrPort(portPb, libraryPath)
           }.toMap
         case None =>
           // TODO: this assumes ports without elts set from connects are empty
@@ -292,7 +301,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.PortLibrary =>
         val libraryPath = port.target
         debug(s"Elaborate Port at ${path + portName}: ${readableLibraryPath(libraryPath)}")
-        val newPort = wir.PortLike.fromIrPort(library.getPort(libraryPath), libraryPath)
+
+        val portPb = library.getPort(libraryPath) match {
+          case Errorable.Success(portPb) => portPb
+          case Errorable.Error(err) =>
+            import edg.elem.elem, edg.IrPort
+            errors += CompilerError.LibraryError(path, libraryPath, err)
+            IrPort.Port(elem.Port())
+        }
+        val newPort = wir.PortLike.fromIrPort(portPb, libraryPath)
         hasPorts.elaborate(portName, newPort)
         processPort(path + portName, newPort)
       case port: wir.PortArray =>
@@ -513,9 +530,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case None => (libraryPath, None)
       }
     }
-    require(library.isSubclassOf(refinedLibrary, libraryPath),
-      s"refinement $refinedLibrary must be subclass of original $libraryPath")
-    val block = new wir.Block(library.getBlock(refinedLibrary), Seq(refinedLibrary), unrefinedType)
+
+    val blockPb = library.getBlock(refinedLibrary) match {
+      case Errorable.Success(blockPb) =>
+        if (!library.isSubclassOf(refinedLibrary, libraryPath)) {
+          errors += CompilerError.RefinementSubclassError(path, refinedLibrary, libraryPath)
+        }
+        blockPb
+      case Errorable.Error(err) =>
+        import edg.elem.elem
+        errors += CompilerError.LibraryError(path, refinedLibrary, err)
+        elem.HierarchyBlock()
+    }
+    val block = new wir.Block(blockPb, Seq(refinedLibrary), unrefinedType)
 
     // Populate class-based value refinements
     refinements.classValues.get(refinedLibrary) match {
@@ -656,7 +683,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
     val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LinkLibrary].target
     debug(s"Elaborate link at $path: ${readableLibraryPath(libraryPath)}")
-    val link = new wir.Link(library.getLink(libraryPath), Seq(libraryPath))
+
+    val linkPb = library.getLink(libraryPath) match {
+      case Errorable.Success(linkPb) => linkPb
+      case Errorable.Error(err) =>
+        import edg.elem.elem
+        errors += CompilerError.LibraryError(path, libraryPath, err)
+        elem.Link()
+    }
+    val link = new wir.Link(linkPb, Seq(libraryPath))
 
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 

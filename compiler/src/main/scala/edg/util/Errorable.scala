@@ -1,6 +1,10 @@
 package edg.util
 
 sealed trait Errorable[+T] {
+  // Returns the contained (if Errorable.Success), or throws an exception with the error message
+  // (if Errorable.Error)
+  def get: T
+
   // Default map function on the contained type, that preserves the first error message,
   // and turns null results into an error.
   def map[V](errMsg: => String)(fn: T => V): Errorable[V] = {
@@ -35,6 +39,8 @@ sealed trait Errorable[+T] {
 
 object Errorable {
   case class Success[T](obj: T) extends Errorable[T] {
+    override def get: T = obj
+
     override def map[V](errMsg: => String, failureVal: V)(fn: T => V): Errorable[V] = {
       val result = fn(obj)
       if (result == failureVal) {
@@ -48,6 +54,8 @@ object Errorable {
     }
   }
   case class Error(msg: String) extends Errorable[Nothing] {
+    override def get: Nothing = throw new NoSuchElementException(s"Errorable.Error get ($msg)")
+
     override def map[V](errMsg: => String, failureVal: V)(fn: Nothing => V): Errorable[V] = {
       this
     }
