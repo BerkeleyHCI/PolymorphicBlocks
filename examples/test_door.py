@@ -203,14 +203,3 @@ class MotionControlledDoorTestCase(unittest.TestCase):
       TestMotionControlledDoor(),
       os.path.splitext(__file__)[0]
     )
-
-
-
-
-
-
-
-
-
-
-

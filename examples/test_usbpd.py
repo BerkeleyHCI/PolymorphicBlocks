@@ -1,8 +1,7 @@
-import os
 import unittest
 
 from edg import *
-import edg_core.TransformUtil as tfu
+from .ExampleTestUtils import run_test
 
 
 class UsbPdTest(Block):
@@ -95,17 +94,7 @@ class UsbPdTest(Block):
     self.id = self.Block(IdDots4())
 
 
-class UsbPdTestTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    ElectronicsDriver().generate_write_block(
-      UsbPdTest(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('usb_reg'): Tps54202h,
-        tfu.Path.empty().append_block('reg_5v'): Tps54202h,
-        tfu.Path.empty().append_block('ldo'): Ap2204k,
-        tfu.Path.empty().append_block('csr_amp1').append_block('amp'): Mcp6001,
-        tfu.Path.empty().append_block('csr_amp2').append_block('amp'): Mcp6001,
-        tfu.Path.empty().append_block('rgb').append_block('package'): ThtRgbLed,
-      }
-    )
+class UsbPdTestCase(unittest.TestCase):
+  @unittest.skip("needs to be completed")
+  def test_design_basic(self) -> None:
+    run_test(UsbPdTest)
