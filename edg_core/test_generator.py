@@ -183,5 +183,5 @@ class TestGeneratorFailure(GeneratorBlock):
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
     # TODO some way to check the messages are plumbed through?
-    with self.assertRaises(AssertionError) as context:
+    with self.assertRaises(CompilerCheckError) as context:
       ScalaCompiler.compile(TestGeneratorFailure)

@@ -13,6 +13,10 @@ from .HdlInterfaceServer import HdlInterface, LibraryElementResolver
 from .Refinements import Refinements
 
 
+class CompilerCheckError(BaseException):
+  pass
+
+
 class CompiledDesign:
   def __init__(self, compiled: edgrpc.CompilerResult):
     self.result = compiled
@@ -73,7 +77,8 @@ class ScalaCompilerInstance:
 
     refinements.populate_proto(request.refinements)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
-    assert not result.error, f"error during compilation: \n{result.error}"
+    if result.error:
+      raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign(result)
 
   def close(self):

@@ -219,7 +219,7 @@ class BlinkyTestCase(unittest.TestCase):
     run_test(TestBlinkySimpleChain)
 
   def test_design_broken(self) -> None:
-    with self.assertRaises(InvalidNetlistBlockException):
+    with self.assertRaises(CompilerCheckError):
       run_test(TestBlinkyBroken)
 
   def test_design_flat(self) -> None:

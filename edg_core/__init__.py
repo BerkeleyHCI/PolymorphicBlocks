@@ -23,5 +23,5 @@ from . import TransformUtil
 from . import edgir
 
 from .HdlInterfaceServer import HdlInterface
-from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign
+from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign, CompilerCheckError
 from .Refinements import Refinements
