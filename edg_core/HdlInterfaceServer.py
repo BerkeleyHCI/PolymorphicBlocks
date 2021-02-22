@@ -114,8 +114,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       for indexed in self.library.lib_class_map.keys():
         pb = edgir.LibraryPath()
         pb.target.name = indexed
-
-      yield pb
+        yield pb
     except BaseException as e:
       if self.verbose:
         print(f"Error {e}")
