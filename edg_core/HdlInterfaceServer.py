@@ -90,8 +90,15 @@ class RollbackImporter:
     return module
 
   def clear(self) -> None:
+    inverse_modules = {module: name for name, module in sys.modules.items()}
+    deleted_modules = []
     for module in self.newModules:
-      importlib.reload(module)
+      if module in inverse_modules:
+        name = inverse_modules[module]
+        if name in sys.modules:
+          del sys.modules[name]
+          deleted_modules.append(module)
+    self.newModules = []
 
 class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
   def __init__(self, *, verbose: bool = False, rollback: Optional[Any] = None):
