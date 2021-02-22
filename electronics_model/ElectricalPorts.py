@@ -128,11 +128,11 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     self.src = self.Port(ElectricalSink(
       voltage_limits=(-float('inf'), float('inf'))*Volt,
       current_draw=RangeExpr()
-    ), [Input])
+    ))
     self.dst = self.Port(AnalogSource(
       voltage_out=self.src.link().voltage,
       impedance=(0, 0)*Ohm,  # TODO not actually true, but pretty darn low?
-    ), [Output])
+    ))
 
     # TODO might be an overestimate
     self.assign(self.src.current_draw, self.dst.link().current_draw)  # type: ignore

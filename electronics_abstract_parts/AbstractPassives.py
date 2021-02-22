@@ -120,8 +120,10 @@ class CurrentSenseResistor(DiscreteApplication):
   def contents(self):
     super().contents()
 
-    # TODO dehack with better adapters
-    (self.pwr_adapter, ), _ = self.chain(self.pwr_in, self.Block(ElectricalSinkAdapterAnalogSource()), self.sense_in)
+    # TODO dehack with better adapters that also handle bridging
+    self.pwr_adapter = self.Block(ElectricalSinkAdapterAnalogSource())
+    self.connect(self.pwr_in, self.pwr_adapter.src)
+    self.connect(self.pwr_adapter.dst, self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
 

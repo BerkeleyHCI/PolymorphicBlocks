@@ -240,6 +240,7 @@ class StructuredMetadata():
     raise NotImplementedError
 
 
+@non_library
 class HasMetadata(LibraryElement):
   """A library element with the metadata dict-like field"""
   def __init__(self) -> None:
