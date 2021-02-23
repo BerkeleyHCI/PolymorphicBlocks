@@ -1,4 +1,5 @@
 from electronics_model import *
+from .AbstractPassives import *
 from .Categories import *
 
 
@@ -78,3 +79,21 @@ class DummyAnalogSink(DummyDevice):
       current_draw=current_draw,
       impedance=impedance
     ))
+
+class DummyCapacitor(DummyDevice, Capacitor, CircuitBlock, GeneratorBlock):
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.footprint_spec = self.Parameter(StringExpr(""))
+
+    # Default to be overridden on a per-device basis
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+
+    self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage, self.single_nominal_capacitance,
+                   self.part_spec, self.footprint_spec)
+
+    # Output values
+    self.selected_capacitance = self.Parameter(RangeExpr())
+    self.selected_derated_capacitance = self.Parameter(RangeExpr())
+    self.selected_voltage_rating = self.Parameter(RangeExpr())
