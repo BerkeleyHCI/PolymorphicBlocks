@@ -4,6 +4,7 @@ import math
 import os
 
 from electronics_abstract_parts import *
+from electronics_abstract_parts.DummyDevices import DummyCapacitor
 from .ProductTableUtils import *
 
 
@@ -376,19 +377,25 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
     else:
       self.min_package_size = self.PACKAGES[0]
 
-    if ((voltage[0] + voltage[1])/2 < 3.6) or ((capacitance[0] + capacitance[1]) / 2 <= 1e-6):
-      self.derated_capacitance = capacitance
-    elif self.min_package_size not in self.DERATE_VOLTCO:
-      self.derated_capacitance = (0, 0)
-    else:
-      voltco = self.DERATE_VOLTCO[self.min_package_size]
-      self.derated_capacitance = (
-        capacitance[0] * (1 - voltco * (voltage[1] - 3.6)),
-        capacitance[1] * (1 - voltco * (voltage[0] - 3.6))
-      )
+    if self.get(self.footprint_spec) == "":
+      self.footprint_spec = self.min_package_size
+
+    def derated_capacitance() -> Tuple[float, float]:
+      if ((voltage[0] + voltage[1])/2 < 3.6) or ((capacitance[0] + capacitance[1]) / 2 <= 1e-6):
+        return capacitance
+      elif self.min_package_size not in self.DERATE_VOLTCO:
+        return (0, 0)
+      else:
+        voltco = self.DERATE_VOLTCO[self.min_package_size]
+        return (
+          capacitance[0] * (1 - voltco * (voltage[1] - 3.6)),
+          capacitance[1] * (1 - voltco * (voltage[0] - 3.6))
+        )
+
+    self.derated_capacitance = derated_capacitance()
 
     if capacitance[1] >= single_cap_max:
-      num_caps = math.ceil(capacitance[0] / single_cap_max)
+      num_caps = math.ceil(capacitance[0] / (single_cap_max / 1.25))
       assert num_caps * single_cap_max < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
       self.assign(self.selected_capacitance, (
@@ -400,9 +407,9 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         num_caps * self.derated_capacitance[1],
       ))
 
-      cap_model = SmtCeramicCapacitor(capacitance=self.derated_capacitance,
+      cap_model = DummyCapacitor(capacitance=(0.8 * single_cap_max, single_cap_max),
                                       voltage=self.voltage)
-      self.c = ElementDict[SmtCeramicCapacitor]()
+      self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
@@ -412,12 +419,12 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
       self.assign(self.selected_derated_capacitance, self.derated_capacitance)
 
       self.footprint(
-        'C', self.min_package_size,
+        'C', self.footprint_spec,
         {
           '1': self.pos,
           '2': self.neg,
         },
-        value=f'{UnitUtils.num_to_prefix(value, 3)}'
+        value=f'{UnitUtils.num_to_prefix(value, 3)}F'
         # TODO mfr, part, datasheet
       )
 
