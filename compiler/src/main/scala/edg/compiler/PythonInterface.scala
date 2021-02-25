@@ -8,7 +8,7 @@ import edg.elem.elem
 import edg.ref.ref
 import edg.schema.schema
 import edg.util.{Errorable, timeExec}
-import edg.wir.{Library}
+import edg.wir.Library
 import edg.IrPort
 
 
@@ -190,6 +190,24 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
         val result = py.elaborateGeneratorRequest(path, fnName, values)
         result.map { generatorCache.put((path, fnName, values), _) }
         result
+    }
+  }
+
+  def toLibraryPb: schema.Library = {
+    schema.Library(root=Some(schema.Library.NS(
+      members=elts.toMap.collect { case (path, elt) if !eltsRefinements.contains(path) =>
+        // TODO: in future, refinements should be saved; right now the entire element is ignored
+        // to prevent the block from loading without the refinements
+        path.getTarget.getName -> schema.Library.NS.Val(elt)
+      }
+    )))
+  }
+
+  def loadFromLibraryPb(library: schema.Library): Unit = {
+    library.root.getOrElse(schema.Library.NS()).members foreach { case (name, elt) =>
+      val path = ref.LibraryPath(target=Some(ref.LocalStep(step=ref.LocalStep.Step.Name(name))))
+      require(!elts.isDefinedAt(path), s"overwriting $name in loadFromLibraryPb")
+      elts.put(path, elt.`type`)
     }
   }
 }
