@@ -18,6 +18,20 @@ sealed trait Errorable[+T] {
   // This map doesn't check for result failure, but will propagate parent errors
   def map[V](fn: T => V): Errorable[V]
 
+  // Convenience wrapper for options
+  def flatMap[V](errMsg: => String)(fn: T => Option[V]): Errorable[V] = {
+    map[V](errMsg, null.asInstanceOf[V]) {
+      fn(_) match {
+        case Some(result) => result
+        case None => null.asInstanceOf[V]
+      }
+    }
+  }
+
+  // Convenience wrapper to chain with Errorable functions
+  // TODO: can this be implemented through map or Option flatMap?
+  def flatMap[V](fn: T => Errorable[V]): Errorable[V]
+
   // Special case of map with string output, which returns the result of the function, or the propagated error
   def mapToString(fn: T => String): String
 
@@ -38,16 +52,6 @@ sealed trait Errorable[+T] {
     flatMap(errMsg) {
       case obj: V => Some(obj)
       case obj => None
-    }
-  }
-
-  // Convenience wrapper for options
-  def flatMap[V](errMsg: => String)(fn: T => Option[V]): Errorable[V] = {
-    map[V](errMsg, null.asInstanceOf[V]) {
-      fn(_) match {
-        case Some(result) => result
-        case None => null.asInstanceOf[V]
-      }
     }
   }
 
@@ -78,6 +82,10 @@ object Errorable {
       Success(fn(obj))
     }
 
+    override def flatMap[V](fn: T => Errorable[V]): Errorable[V] = {
+      fn(obj)
+    }
+
     override def mapToString(fn: T => String): String = {
       fn(obj)
     }
@@ -89,6 +97,10 @@ object Errorable {
       this
     }
     override def map[V](fn: Nothing => V): Errorable[V] = {
+      this
+    }
+
+    override def flatMap[V](fn: Nothing => Errorable[V]): Errorable[V] = {
       this
     }
 
