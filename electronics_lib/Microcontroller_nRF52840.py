@@ -25,8 +25,12 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
             voltage_out=(3.5, 6) * Volt,  # according to specs
             current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
-        self.pwr_3v3 = self.Port(ElectricalSource(
+        self.pwr_3v = self.Port(ElectricalSource(
             voltage_out=3.3 * Volt(tol=0.03),  # TODO no specs
+            current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
+        ), optional=True)
+        self.pwr_usb = self.Port(ElectricalSource(
+            voltage_out=5 * Volt(tol=0.03),  # TODO no specs
             current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
         self.gnd = self.Port(GroundSource(), optional=True)
@@ -49,12 +53,12 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
         )
 
         self.digital = ElementDict[DigitalBidir]()
-        for i in range(28):  # note, NRST, LED1 not assigned
+        for i in [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]:  # note, NRST, LED1 not assigned
             self.digital[i] = self.Port(io_model, optional=True)
             self._add_assignable_io(self.digital[i])
 
         self.adc = ElementDict[AnalogSink]()
-        for i in range(8):
+        for i in range(6):
             self.adc[i] = self.Port(adc_model, optional=True)
             self._add_assignable_io(self.adc[i])
 
@@ -63,6 +67,12 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
 
         self.spi_0 = self.Port(SpiMaster(io_model), optional=True)
         self._add_assignable_io(self.spi_0)
+
+        self.usb_0 = self.Port(UsbDevicePort(), optional=True)
+
+        self.swd_swdio = self.Port(DigitalBidir(io_model))
+        self.swd_swclk = self.Port(DigitalSink(io_model))
+        self.swd_reset = self.Port(DigitalSink(io_model))
 
         # TODO model IO draw - need internal source block?
 
@@ -82,9 +92,9 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
         assigned_pins = PinAssignmentUtil(
             # TODO assign fixed-pin digital peripherals here
             AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
-                         [2, 3, 4, 5, 28, 29, 30, 31]),
+                         [0, 1, 2, 3, 4, 5]),
             AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, DigitalBidir)],
-                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 21, 23, 25, 26, 27, 28, 29, 30, 31]),
+                         [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]),
         ).assign(
             [port for port in self._all_assignable_ios if self.get(port.is_connected())],
             self._get_suggested_pin_maps(pin_assigns_str))
