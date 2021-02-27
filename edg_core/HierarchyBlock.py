@@ -386,9 +386,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     elt = tpe._bind(self)
     self._blocks.register(elt)
 
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[elt] = self._get_calling_source_locator()
-
     return elt
 
   def connect(self, *ports: BasePort) -> ConnectedPorts:

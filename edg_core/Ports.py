@@ -252,7 +252,4 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     elt = tpe._bind(self)
     self._ports.register(elt)
 
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[elt] = self._get_calling_source_locator()
-
     return elt
