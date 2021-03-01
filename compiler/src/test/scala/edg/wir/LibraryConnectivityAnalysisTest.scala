@@ -48,4 +48,34 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
     analysis.linkOfPort(LibraryPath("outerPort")) should equal(Some(LibraryPath("outerLink")))
     analysis.linkOfPort(LibraryPath("lol")) should equal(None)
   }
+
+  it should "return connectable ports of links" in {
+    analysis.connectablePorts(LibraryPath("innerLink")) should equal(
+      Some(Set(LibraryPath("innerSource"), LibraryPath("innerSink"))))
+    analysis.connectablePorts(LibraryPath("outerLink")) should equal(
+      Some(Set(LibraryPath("outerPort"))))
+    analysis.connectablePorts(LibraryPath("lol")) should equal(None)
+  }
+
+  it should "return remaining connectable ports of links" in {
+    analysis.connectablePorts(LibraryPath("innerLink"),
+      connected=Seq(LibraryPath("innerSource"))
+    ) should equal(
+      Some(Set(LibraryPath("innerSink"))))
+
+    analysis.connectablePorts(LibraryPath("innerLink"),
+      connected=Seq(LibraryPath("innerSink"))
+    ) should equal(
+      Some(Set(LibraryPath("innerSource"), LibraryPath("innerSink"))))
+
+    analysis.connectablePorts(LibraryPath("innerLink"),
+      connected=Seq(LibraryPath("innerSource"), LibraryPath("innerSink"))
+    ) should equal(
+      Some(Set(LibraryPath("innerSink"))))
+
+    analysis.connectablePorts(LibraryPath("outerLink"),
+      connected=Seq(LibraryPath("outerPort"))
+    ) should equal(
+      Some(Set()))
+  }
 }

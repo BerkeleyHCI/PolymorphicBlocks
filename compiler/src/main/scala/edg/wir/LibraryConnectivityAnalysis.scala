@@ -10,7 +10,6 @@ import edg.elem.elem
   * library as of creation time of this object.
   */
 class LibraryConnectivityAnalysis(library: Library) {
-  private val allPorts: Map[ref.LibraryPath, IrPort] = library.allPorts
   private val allLinks: Map[ref.LibraryPath, elem.Link] = library.allLinks
 
   private def getLeafLibPorts(portLike: elem.PortLike): Seq[ref.LibraryPath] = {
@@ -24,7 +23,7 @@ class LibraryConnectivityAnalysis(library: Library) {
   }
 
   lazy private val portToLinkMap: Map[ref.LibraryPath, ref.LibraryPath] = allLinks.toSeq
-      .flatMap { case (linkPath, link) =>  // to (port path, link path) pairs
+      .flatMap { case (linkPath, link) =>  // expand to all combinations (port path, link path) pairs
         link.ports.values.flatMap { port =>
           getLeafLibPorts(port)
         }.map {
@@ -37,7 +36,7 @@ class LibraryConnectivityAnalysis(library: Library) {
         case pair @ (port, links) =>
           println(s"LibraryConnectivityAnalysis: discarding $port => $links")  // TODO better logging
           pair
-      }.collect {  // discard invalid links
+      }.collect {  // take single link value (and discard invalid multiple link values)
         case pair @ (portPath, Seq(link)) => (portPath, link)
       }.toMap
 
@@ -46,5 +45,37 @@ class LibraryConnectivityAnalysis(library: Library) {
     */
   def linkOfPort(port: ref.LibraryPath): Option[ref.LibraryPath] = {
     portToLinkMap.get(port)
+  }
+
+  /** Returns all the port types that can be connected to this link.
+    * If connected is specified, returns additional port types that can be connected to this link, accounting
+    * for the already-connected links.
+    */
+  def connectablePorts(linkPath: ref.LibraryPath,
+                       connected: Seq[ref.LibraryPath] = Seq()): Option[Set[ref.LibraryPath]] = {
+    val link = allLinks.getOrElse(linkPath, return None)
+    val linkPortTypes = link.ports.values.map(_.is).toSeq
+
+    val singlePorts = linkPortTypes.collect {
+      case elem.PortLike.Is.LibElem(value) => value
+    }
+    val arrayPorts = linkPortTypes.collect {
+      case elem.PortLike.Is.Array(array) =>
+        require(array.superclasses.length == 1)
+        array.superclasses.head
+    }.toSet
+    val nonArrayConnects = connected.filter(!arrayPorts.contains(_))  // ignore flexible-width array ports for counting
+
+    // TODO might be more efficient to do mutable seq subtract ops
+    val singlePortsCounts = singlePorts.groupBy(identity).mapValues(_.size)
+    val connectedCounts = connected.groupBy(identity).mapValues(_.size)
+
+    val remainingSinglePortsCounts = singlePortsCounts.map { case (path, count) =>
+      connectedCounts.get(path) match {
+        case Some(connectedCount) => (path, count - connectedCount)
+        case None => (path, count)
+      }
+    }.filter(_._2 > 0)
+    Some(remainingSinglePortsCounts.map(_._1).toSet ++ arrayPorts)
   }
 }
