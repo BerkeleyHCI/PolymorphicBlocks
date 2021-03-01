@@ -41,7 +41,7 @@ class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
     self.rssi = self.Port(DigitalSource(digital_model), optional=True)
     self.associate = self.Port(DigitalSource(digital_model), optional=True)
 
-    self.vin_reg = self.Port(AnalogSink(adc_model), optional=True)
+    self.vin_reg = self.Port(adc_model, optional=True)
     # self.nshdn = self.Port(DigitalSink(pull_up_model), optional=True)
 
   def contents(self):
