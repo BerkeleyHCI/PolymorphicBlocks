@@ -253,26 +253,6 @@ class HasMetadata(LibraryElement):
       if selfdoc:
         self._edgdoc[self] = selfdoc
 
-      self._sourcelocator = self.Metadata(IdentityDict[Refable, str]())
-
-  def _get_calling_source_locator(self) -> str:
-    """Returns the source locator (as a string for now) of the line calling the function this is being called from,
-    accounting for inheritance (superclass calls to a function of the same name in the same object).
-    TODO: maybe return a more structured type?
-    """
-    stack = inspect.stack()
-    ref_frame = stack[1]  # calling frame
-    func_name = ref_frame[0].f_code.co_name
-
-    for candidate_frame in stack[2:]:  # iterate through to the first frame with a different function name
-      # TODO this used to check for different self object
-      # ('self' not in candidate_frame[0].f_locals or candidate_frame[0].f_locals['self'] is not self)
-      # but this would trip up on chained calls, eg imp.Block(...)
-      # needs a better way to track through these objects?
-      if candidate_frame[0].f_code.co_name != func_name:
-        break
-    return f"{candidate_frame[0].f_code.co_filename}: {candidate_frame[0].f_lineno}"
-
   MetadataType = TypeVar('MetadataType', bound=Union[StructuredMetadata, str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
   def Metadata(self, value: MetadataType) -> MetadataType:
     """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
@@ -294,7 +274,7 @@ class HasMetadata(LibraryElement):
     elif isinstance(src, dict) or isinstance(src, SubElementDict) or isinstance(src, IdentityDict):
       if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
         src.finalize()  # TODO should this be here?
-      if isinstance(src, IdentityDict) and path in [['_edgdoc'], ['_sourcelocator']]:
+      if isinstance(src, IdentityDict) and path in [['_edgdoc']]:
         for key, val in src.items():
           assert isinstance(val, str)
           if key is self:

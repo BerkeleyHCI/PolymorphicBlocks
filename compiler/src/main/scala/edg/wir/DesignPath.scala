@@ -122,7 +122,15 @@ case class DesignPath(steps: Seq[String]) {
     } } )
   }
 
-  override def toString = steps.map(_.toString).mkString(".")
+  override def toString = steps match {
+    case Seq() => "(root)"
+    case steps => steps.map(_.toString).mkString(".")
+  }
+
+  def lastString: String = steps match {
+    case Seq() => "(root)"
+    case steps => steps.last
+  }
 
   def asIndirect: IndirectDesignPath = IndirectDesignPath(steps.map { IndirectStep.Element(_) })
 }

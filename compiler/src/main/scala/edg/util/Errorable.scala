@@ -1,5 +1,7 @@
 package edg.util
 
+import scala.reflect.ClassTag
+
 sealed trait Errorable[+T] {
   // Returns the contained (if Errorable.Success), or throws an exception with the error message
   // (if Errorable.Error)
@@ -23,6 +25,33 @@ sealed trait Errorable[+T] {
         case Some(result) => result
         case None => null.asInstanceOf[V]
       }
+    }
+  }
+
+  // Convenience wrapper to chain with Errorable functions
+  // TODO: can this be implemented through map or Option flatMap?
+  def flatMap[V](fn: T => Errorable[V]): Errorable[V]
+
+  // Special case of map with string output, which returns the result of the function, or the propagated error
+  def mapToString(fn: T => String): String
+
+  // Checks if some property of the contained value is true, otherwise convert to error with message
+  def require(errMsg: => String)(fn: T => Boolean): Errorable[T] = {
+    flatMap(errMsg) { contained =>
+      if (fn(contained)) {
+        Some(contained)
+      } else {
+        None
+      }
+    }
+  }
+
+  // If the contained object is an instance of V, cast it to V, otherwise convert to error with message
+  def mapInstanceOf[V](errMsg: => String)(implicit tag: ClassTag[V]) : Errorable[V] = {
+    // Need the implicit tag so this generates a proper runtime check
+    flatMap(errMsg) {
+      case obj: V => Some(obj)
+      case obj => None
     }
   }
 
@@ -52,6 +81,14 @@ object Errorable {
     override def map[V](fn: T => V): Errorable[V] = {
       Success(fn(obj))
     }
+
+    override def flatMap[V](fn: T => Errorable[V]): Errorable[V] = {
+      fn(obj)
+    }
+
+    override def mapToString(fn: T => String): String = {
+      fn(obj)
+    }
   }
   case class Error(msg: String) extends Errorable[Nothing] {
     override def get: Nothing = throw new NoSuchElementException(s"Errorable.Error get ($msg)")
@@ -61,6 +98,14 @@ object Errorable {
     }
     override def map[V](fn: Nothing => V): Errorable[V] = {
       this
+    }
+
+    override def flatMap[V](fn: Nothing => Errorable[V]): Errorable[V] = {
+      this
+    }
+
+    override def mapToString(fn: Nothing => String): String = {
+      msg
     }
   }
 

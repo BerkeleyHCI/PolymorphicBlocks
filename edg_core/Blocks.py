@@ -423,8 +423,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     if name:  # TODO unify naming API with everything else?
       self.manager.add_element(name, constraint)
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[constraint] = self._get_calling_source_locator()
 
     return constraint
 
@@ -448,8 +446,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     if name:  # TODO unify naming API with everything else?
       self.manager.add_element(name, constraint)
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[constraint] = self._get_calling_source_locator()
 
     return constraint
 
@@ -471,7 +467,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if not builder.stack or builder.stack[0] is self:
       if desc is not None:
         self._edgdoc[elt] = desc
-      self._sourcelocator[elt] = self._get_calling_source_locator()
 
     return elt
 
@@ -491,7 +486,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if not builder.stack or builder.stack[0] is self:
       if desc is not None:
         self._edgdoc[elt] = desc
-      self._sourcelocator[elt] = self._get_calling_source_locator()
 
     return elt
 
