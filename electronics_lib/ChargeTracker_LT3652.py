@@ -36,13 +36,24 @@ class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
       input_threshold_abs=(0.8, 2)*Volt
     )  # TODO: FIX
 
-    self.data = self.Port(UartPort(digital_model), [Input])
-
-    self.rssi = self.Port(DigitalSource(digital_model), optional=True)
-    self.associate = self.Port(DigitalSource(digital_model), optional=True)
+    # self.data = self.Port(UartPort(digital_model), [Input])
+    #
+    # self.rssi = self.Port(DigitalSource(digital_model), optional=True)
+    # self.associate = self.Port(DigitalSource(digital_model), optional=True)
 
     self.vin_reg = self.Port(adc_model, optional=True)
-    # self.nshdn = self.Port(DigitalSink(pull_up_model), optional=True)
+
+    self.nshdn = self.Port(DigitalSink(pull_up_model), optional=True)
+    self.nchrg = self.Port(DigitalSink(pull_up_model), optional=True)
+    self.nfault = self.Port(DigitalSink(pull_up_model), optional=True)
+
+    self.timer = self.Port(DigitalSource(digital_model), optional=True)
+    self.vfb = self.Port(DigitalSource(digital_model), optional=True)
+    self.ntc = self.Port(DigitalSource(digital_model), optional=True)
+    self.bat = self.Port(DigitalSource(digital_model), optional=True)
+    self.sense = self.Port(DigitalSource(digital_model), optional=True)
+    self.boost = self.Port(DigitalSource(digital_model), optional=True)
+    self.sw = self.Port(DigitalSource(digital_model), optional=True)
 
   def contents(self):
     super().contents()
@@ -51,16 +62,16 @@ class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
       {
         '1': self.vin,
         '2': self.vin_reg,
-        # '3': self.nshdn,
-        # '4': self.nchrg,
-        # '5': self.nfault,
-        # '6': self.timer,
-        # '7': self.vfb,
-        # '8': self.ntc,
-        # '9': self.bat,
-        # '10': self.sense,
-        # '11': self.boost,
-        # '12': self.sw,
+        '3': self.nshdn,
+        '4': self.nchrg,
+        '5': self.nfault,
+        '6': self.timer,
+        '7': self.vfb,
+        '8': self.ntc,
+        '9': self.bat,
+        '10': self.sense,
+        '11': self.boost,
+        '12': self.sw,
         '13': self.gnd,
       },
       # mfr='Digi International', part='XBP9B-*',
