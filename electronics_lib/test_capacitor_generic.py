@@ -31,6 +31,39 @@ class BigCapacitorGenericTestTop(Block):
     (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
 
 
+class HighVoltageCapacitorGenericTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(SmtCeramicCapacitorGeneric(
+      capacitance=0.2 * uFarad(tol=0.2),
+      voltage=(0, 20) * Volt
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+
+
+class HighSingleCapacitorGenericTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(SmtCeramicCapacitorGeneric(
+      capacitance=22 * uFarad(tol=0.2),
+      voltage=(0, 20) * Volt
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+
+
+class MediumSingleCapacitorGenericTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(SmtCeramicCapacitorGeneric(
+      capacitance=2 * uFarad(tol=0.2),
+      voltage=(0, 20) * Volt
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+
+
 class CapacitorTestCase(unittest.TestCase):
   def test_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(CapacitorGenericTestTop)
@@ -53,3 +86,18 @@ class CapacitorTestCase(unittest.TestCase):
     self.assertEqual(compiled.get_value(['dut', 'c_2', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'c_2', 'value']), '22uF')
     self.assertEqual(compiled.get_value(['dut', 'c_3', 'footprint_name']), None)
+
+  def test_high_voltage_capacitor(self) -> None:
+    compiled = ScalaCompiler.compile(HighVoltageCapacitorGenericTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '220nF')
+
+  def test_high_single_capacitor(self) -> None:
+    compiled = ScalaCompiler.compile(HighSingleCapacitorGenericTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '22uF')
+
+  def test_medium_single_capacitor(self) -> None:
+    compiled = ScalaCompiler.compile(MediumSingleCapacitorGenericTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '2.2uF')
