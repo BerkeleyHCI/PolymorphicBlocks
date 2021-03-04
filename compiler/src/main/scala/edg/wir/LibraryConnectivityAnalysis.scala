@@ -7,6 +7,10 @@ import edg.elem.elem
 object LibraryConnectivityAnalysis {
   // Shared library path to the base PortBridge class
   val portBridge = ref.LibraryPath(target=Some(ref.LocalStep(step=ref.LocalStep.Step.Name("edg_core.PortBlocks.PortBridge"))))
+  val portBridges = Set(  // TODO this currently is a hack to avoid proper (multiple-level) subclass resolution
+    portBridge,
+    ref.LibraryPath(target=Some(ref.LocalStep(step=ref.LocalStep.Step.Name("electronics_model.CircuitBlock.CircuitPortBridge"))))
+  )
   val portBridgeOuterPort = "outer_port"
   val portBridgeLinkPort = "inner_link"
 
@@ -48,16 +52,17 @@ class LibraryConnectivityAnalysis(library: Library) {
       }.toMap
 
   // exterior side port type -> (link side port type, port bridge type)
-  lazy private val bridgedPortMap: Map[ref.LibraryPath, (ref.LibraryPath, ref.LibraryPath)] = allBlocks.toSeq
+  lazy private val bridgedPortByOuterMap: Map[ref.LibraryPath, (ref.LibraryPath, ref.LibraryPath)] = allBlocks.toSeq
       .collect { case (blockType, block)   // filter by PortBridge superclass
-        if block.superclasses.headOption.contains(LibraryConnectivityAnalysis.portBridge) =>
+        if block.superclasses.nonEmpty &&
+            LibraryConnectivityAnalysis.portBridges.contains(block.superclasses.head) =>
         (blockType,
             block.ports.get(LibraryConnectivityAnalysis.portBridgeOuterPort),
             block.ports.get(LibraryConnectivityAnalysis.portBridgeLinkPort))
       }.collect { // to (exterior port type, (link port type, port bridge type)) pairs
-        case (blockType, Some(srcPort), Some(dstPort)) =>
-          (LibraryConnectivityAnalysis.getLibPortType(srcPort),
-              (LibraryConnectivityAnalysis.getLibPortType(dstPort), blockType))
+        case (blockType, Some(outerPort), Some(linkPort)) =>
+          (LibraryConnectivityAnalysis.getLibPortType(outerPort),
+              (LibraryConnectivityAnalysis.getLibPortType(linkPort), blockType))
       }.groupBy(_._1)  // aggregate by exterior port type
       .collect { case (srcPortType, pairs) if pairs.length == 1 =>  // discard overlaps
         srcPortType -> pairs.map(_._2).head
@@ -89,7 +94,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     (singlePortCounts ++ arrayPorts).toMap
   }
 
-  def bridgedPort(port: ref.LibraryPath): Option[ref.LibraryPath] = {
-    bridgedPortMap.get(port).map(_._1)
+  def bridgedPortByOuter(port: ref.LibraryPath): Option[ref.LibraryPath] = {
+    bridgedPortByOuterMap.get(port).map(_._1)
   }
 }
