@@ -70,36 +70,23 @@ class LibraryConnectivityAnalysis(library: Library) {
     portToLinkMap.get(port)
   }
 
-  /** Returns all the port types that can be connected to this link.
-    * If connected is specified, returns additional port types that can be connected to this link, accounting
-    * for the already-connected links.
+  /** Returns all the port types and counts (0 = infinity) that can be connected to this link.
+    * Returns an empty map if the link is invalid
     */
-  def connectablePorts(linkPath: ref.LibraryPath,
-                       connected: Seq[ref.LibraryPath] = Seq()): Option[Set[ref.LibraryPath]] = {
-    val link = allLinks.getOrElse(linkPath, return None)
+  def connectablePorts(linkPath: ref.LibraryPath): Map[ref.LibraryPath, Int] = {
+    val link = allLinks.getOrElse(linkPath, return Map())
     val linkPortTypes = link.ports.values.map(_.is).toSeq
 
-    val singlePorts = linkPortTypes.collect {
-      case elem.PortLike.Is.LibElem(value) => value
-    }
+    val singlePortCounts = linkPortTypes.collect {  // library, count pairs
+      case elem.PortLike.Is.LibElem(value) => (value, 1)
+    }.groupBy(_._1).mapValues(_.map(_._2).sum)
     val arrayPorts = linkPortTypes.collect {
       case elem.PortLike.Is.Array(array) =>
         require(array.superclasses.length == 1)
-        array.superclasses.head
-    }.toSet
-    val nonArrayConnects = connected.filter(!arrayPorts.contains(_))  // ignore flexible-width array ports for counting
+        (array.superclasses.head, 0)
+    }.toMap
 
-    // TODO might be more efficient to do mutable seq subtract ops
-    val singlePortsCounts = singlePorts.groupBy(identity).mapValues(_.size)
-    val connectedCounts = connected.groupBy(identity).mapValues(_.size)
-
-    val remainingSinglePortsCounts = singlePortsCounts.map { case (path, count) =>
-      connectedCounts.get(path) match {
-        case Some(connectedCount) => (path, count - connectedCount)
-        case None => (path, count)
-      }
-    }.filter(_._2 > 0)
-    Some(remainingSinglePortsCounts.map(_._1).toSet ++ arrayPorts)
+    (singlePortCounts ++ arrayPorts).toMap
   }
 
   def bridgedPort(port: ref.LibraryPath): Option[ref.LibraryPath] = {

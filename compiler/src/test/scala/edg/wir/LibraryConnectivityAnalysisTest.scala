@@ -30,7 +30,8 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
       ),
       "outerLink" -> Link.Link(
         ports = Map(
-          "outerPort" -> Port.Library("outerPort"),
+          "outerPort1" -> Port.Library("outerPort"),
+          "outerPort2" -> Port.Library("outerPort"),
         ),
         links = Map(
           "inner" -> Link.Library("innerLink"),
@@ -68,32 +69,10 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
 
   it should "return connectable ports of links" in {
     analysis.connectablePorts(LibraryPath("innerLink")) should equal(
-      Some(Set(LibraryPath("innerSource"), LibraryPath("innerSink"))))
+      Map(LibraryPath("innerSource") -> 1, LibraryPath("innerSink") -> 0))
     analysis.connectablePorts(LibraryPath("outerLink")) should equal(
-      Some(Set(LibraryPath("outerPort"))))
-    analysis.connectablePorts(LibraryPath("lol")) should equal(None)
-  }
-
-  it should "return remaining connectable ports of links" in {
-    analysis.connectablePorts(LibraryPath("innerLink"),
-      connected=Seq(LibraryPath("innerSource"))
-    ) should equal(
-      Some(Set(LibraryPath("innerSink"))))
-
-    analysis.connectablePorts(LibraryPath("innerLink"),
-      connected=Seq(LibraryPath("innerSink"))
-    ) should equal(
-      Some(Set(LibraryPath("innerSource"), LibraryPath("innerSink"))))
-
-    analysis.connectablePorts(LibraryPath("innerLink"),
-      connected=Seq(LibraryPath("innerSource"), LibraryPath("innerSink"))
-    ) should equal(
-      Some(Set(LibraryPath("innerSink"))))
-
-    analysis.connectablePorts(LibraryPath("outerLink"),
-      connected=Seq(LibraryPath("outerPort"))
-    ) should equal(
-      Some(Set()))
+      Map(LibraryPath("outerPort") -> 2))
+    analysis.connectablePorts(LibraryPath("lol")) should equal(Map())
   }
 
   it should "return port bridges" in {
