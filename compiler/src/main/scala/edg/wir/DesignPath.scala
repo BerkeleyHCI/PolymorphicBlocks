@@ -132,6 +132,8 @@ case class DesignPath(steps: Seq[String]) {
     case steps => steps.last
   }
 
+  def startsWith(other: DesignPath): Boolean = steps.startsWith(other.steps)
+
   def asIndirect: IndirectDesignPath = IndirectDesignPath(steps.map { IndirectStep.Element(_) })
 }
 

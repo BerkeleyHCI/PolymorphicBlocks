@@ -4,6 +4,7 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
+import edg.ExprBuilder.Ref
 
 
 /** Tests compiler Bundle expansion / elaboration, including nested links.
@@ -36,7 +37,23 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
         ),
         // practically invalid, missing connect constraints
       ),
-    )
+    ),
+    blocks = Map(
+      "sourceAdapter" -> Block.Block(
+        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+        ports = Map(
+          LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
+          LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
+        )
+      ),
+      "sinkAdapter" -> Block.Block(
+        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+        ports = Map(
+          LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
+          LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),
+        )
+      ),
+    ),
   )
 
   private val analysis = new LibraryConnectivityAnalysis(new EdgirLibrary(library))
@@ -77,5 +94,11 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
       connected=Seq(LibraryPath("outerPort"))
     ) should equal(
       Some(Set()))
+  }
+
+  it should "return port bridges" in {
+    analysis.bridgedPort(LibraryPath("sinkPort")) should equal(Some(LibraryPath("sourcePort")))
+    analysis.bridgedPort(LibraryPath("sourcePort")) should equal(Some(LibraryPath("sinkPort")))
+    analysis.bridgedPort(LibraryPath("outerPort")) should equal(None)
   }
 }
