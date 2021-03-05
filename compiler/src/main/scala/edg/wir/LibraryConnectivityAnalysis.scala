@@ -88,7 +88,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     val arrayPorts = linkPortTypes.collect {
       case elem.PortLike.Is.Array(array) =>
         require(array.superclasses.length == 1)
-        (array.superclasses.head, 0)
+        (array.superclasses.head, Integer.MAX_VALUE)  // TODO maybe a inf type? but this practically won't matter
     }.toMap
 
     (singlePortCounts ++ arrayPorts).toMap

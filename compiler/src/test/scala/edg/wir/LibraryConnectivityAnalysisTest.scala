@@ -69,7 +69,7 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
 
   it should "return connectable ports of links" in {
     analysis.connectablePorts(LibraryPath("innerLink")) should equal(
-      Map(LibraryPath("innerSource") -> 1, LibraryPath("innerSink") -> 0))
+      Map(LibraryPath("innerSource") -> 1, LibraryPath("innerSink") -> Integer.MAX_VALUE))
     analysis.connectablePorts(LibraryPath("outerLink")) should equal(
       Map(LibraryPath("outerPort") -> 2))
     analysis.connectablePorts(LibraryPath("lol")) should equal(Map())
