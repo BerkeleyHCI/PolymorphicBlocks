@@ -11,8 +11,8 @@ object ElemModifier {
   /** Returns a copy of the design tree, with fn applied to the block at path.
     * Errors out if path does not resolve to a block.
     */
-//  def modifyBlock(path: wir.DesignPath, fn: elem.HierarchyBlock => elem.HierarchyBlock,
-//                  design: schema.Design): schema.Design = {
-//
-//  }
+  def modifyBlock(path: wir.DesignPath, fn: elem.HierarchyBlock => elem.HierarchyBlock,
+                  design: schema.Design): schema.Design = {
+    ???
+  }
 }
