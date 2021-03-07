@@ -406,13 +406,3 @@ def source_locator_of(elt: Union[HierarchyBlock, Port, Link, Bundle], subelt_nam
   sloc_file = sloc_split[0].strip()
   sloc_line = int(sloc_split[2].strip())
   return sloc_file, sloc_line
-
-
-def edgdoc_of(elt: Union[HierarchyBlock, Link, Bundle], subelt_name: str) -> Optional[str]:
-  """Returns the docstring / edgdoc of a subelt in elt.
-  """
-  if '_edgdoc' not in elt.meta.members.node:
-    return None
-  if subelt_name not in elt.meta.members.node['_edgdoc'].members.node:
-    return None
-  return elt.meta.members.node['_edgdoc'].members.node[subelt_name].text_leaf
