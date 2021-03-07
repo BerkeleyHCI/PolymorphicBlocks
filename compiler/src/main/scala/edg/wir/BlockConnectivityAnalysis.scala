@@ -13,6 +13,7 @@ case object Connection {
   ) extends Connection
   case class Export(
     innerBlockPort: DesignPath,
+    exteriorPort: DesignPath
   ) extends Connection
 }
 
