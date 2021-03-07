@@ -2,63 +2,103 @@ package edg.wir
 
 import edg.elem.elem
 import edg.expr.expr
+import edg.ref.ref
 
 
+/** A connection to a link, from the point of view of (and relative to) some block
+  */
 sealed trait Connection
 case object Connection {
   case class Link(
-    link: DesignPath,
-    linkConnects: Seq[DesignPath],  // including bridge link-facing ports
-    bridgedExports: Seq[(DesignPath, DesignPath)]  // (bridge path, exterior port path)
+    containingBlockPath: DesignPath,
+    linkName: String,
+    linkConnects: Seq[(ref.LocalPath, String)],  // including bridge link-facing ports, as (port ref, constr name)
+    bridgedExports: Seq[(ref.LocalPath, String, String)]  // (exterior port ref, bridge block name, constr name)
   ) extends Connection
   case class Export(
-    innerBlockPort: DesignPath,
-    exteriorPort: DesignPath
+    containingBlockPath: DesignPath,
+    constraintName: String,
+    exteriorPort: ref.LocalPath,
+    innerBlockPort: ref.LocalPath
   ) extends Connection
 }
 
 
-/** Class that "wraps" a block to provide connectivity analysis for constrants and links inside the block.
+/** Class that "wraps" a block to provide connectivity analysis for constraints and links inside the block.
   */
 class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBlock) {
-  // All exports, structured as inner block port path -> exterior port path
-  lazy val exportsByInner: Map[DesignPath, DesignPath] = block.constraints
-      .values
-      .map(_.expr)
-      .collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
-        case expr.ValueExpr.Expr.Exported(exported) =>
-          (blockPath ++ exported.getInternalBlockPort.getRef,
-              blockPath ++ exported.getExteriorPort.getRef)
-      }.groupBy(_._1)  // group by inner block
-      .mapValues { pairs =>  // extract only exterior port path from value pairs seq
-        require(pairs.size == 1)
-        pairs.head._2
-      }.toMap
+  lazy val allExports: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // external ref, internal ref, constr name
+    block.constraints
+        .map { case (name, constr) =>
+          (name, constr.expr)
+        }
+        .collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+          case (name, expr.ValueExpr.Expr.Exported(exported)) =>
+            (exported.getExteriorPort.getRef, exported.getInternalBlockPort.getRef, name)
+        }.toSeq
+  }
 
-  lazy val exportsByOuter: Map[DesignPath, DesignPath] = exportsByInner.map { case (k, v) => v -> k }
+  lazy val allConnects: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // block ref, link ref, constr name
+    block.constraints
+        .map { case (name, constr) =>
+          (name, constr.expr)
+        }
+        .collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+          case (name, expr.ValueExpr.Expr.Connected(connected)) =>
+            (connected.getBlockPort.getRef, connected.getLinkPort.getRef, name)
+        }.toSeq
+  }
 
-  // All connects, structured as inner block port path -> inner link path
-  lazy val connectsByBlock: Map[DesignPath, DesignPath] = block.constraints
-      .values
-      .map(_.expr)
-      .collect {  // filter for connected constraints only, and unpack
-        case expr.ValueExpr.Expr.Connected(connected) =>
-          (blockPath ++ connected.getBlockPort.getRef,
-              blockPath ++connected.getLinkPort.getRef)
-      }.groupBy(_._1)  // group by inner block port
-      .mapValues { pairs =>  // extract only link path from value pairs seq
-        require(pairs.size == 1)
-        pairs.head._2
-      }.toMap
+  // All exports, structured as exterior port ref -> (interior port ref, constr name)
+  lazy val exportsByOuter: Map[ref.LocalPath, (ref.LocalPath, String)] = {
+    allExports.groupBy(_._1)
+        .mapValues {
+          case Seq((exteriorRef, interiorRef, constrName)) => (interiorRef, constrName)
+          case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
+        }.toMap
+  }
+
+  // All exports, structured as inner port ref -> (exterior port ref, constr name)
+  lazy val exportsByInner: Map[ref.LocalPath, (ref.LocalPath, String)] = {
+    allExports.groupBy(_._2)
+        .mapValues {
+          case Seq((exteriorRef, interiorRef, constrName)) => (exteriorRef, constrName)
+          case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
+        }.toMap
+  }
+
+  // All exports, structured as inner block port ref -> (link port ref, constr name)
+  lazy val connectsByBlock: Map[ref.LocalPath, (ref.LocalPath, String)] = {
+    allConnects.groupBy(_._1)
+        .mapValues {
+          case Seq((innerRef, linkRef, constrName)) => (linkRef, constrName)
+          case other => throw new IllegalArgumentException(s"unexpected grouped connects $other")
+        }.toMap
+  }
 
   // Returns all internal connected ports
-  def getAllConnectedInternalPorts: Set[DesignPath] = connectsByBlock.keySet
+  def getAllConnectedInternalPorts: Seq[ref.LocalPath] = allConnects.map(_._1)
   // Returns all external (boundary) connected ports
-  def getAllConnectedExternalPorts: Set[DesignPath] = exportsByInner.values.toSet
+  def getAllConnectedExternalPorts: Seq[ref.LocalPath] = allExports.map(_._1)
 
   /** Returns the Connection that portPath is part of, or None if it is not connected.
     */
-  def getConnected(portPath: DesignPath): Option[Connection] = {
-    ???
+  def getConnected(portRef: ref.LocalPath): Option[Connection] = {
+    if (connectsByBlock.contains(portRef)) {
+      require(!exportsByInner.contains(portRef), s"overconnected port $portRef")
+      require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
+      val linkPortPath = connectsByBlock(portRef)
+
+???
+    } else if (exportsByInner.contains(portRef)) {
+      require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
+      val (exteriorRef, constrName) = exportsByInner(portRef)
+      Some(Connection.Export(blockPath, constrName, exteriorRef, portRef))
+    } else if (exportsByOuter.contains(portRef)) {
+      val (innerRef, constrName) = exportsByOuter(portRef)
+      Some(Connection.Export(blockPath, constrName, portRef, innerRef))
+    } else {
+      None
+    }
   }
 }
