@@ -69,8 +69,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         ),
         blocks = Map(
           "bridge" -> Block.Library("sourceFromExtSinkBridge"),
-          "inner1" -> Block.Library("sink1Block"),
-          "inner2" -> Block.Library("sink2Block"),
+          "sink1Block" -> Block.Library("sinkBlock"),
+          "sink2Block" -> Block.Library("sinkBlock"),
         ),
         links = Map(
           "link" -> Link.Library("link")
