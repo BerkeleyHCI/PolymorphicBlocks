@@ -35,7 +35,7 @@ case object Connection {
 
 /** Class that "wraps" a block to provide connectivity analysis for constraints and links inside the block.
   */
-class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBlock) {
+class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   lazy val allExports: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // external ref, internal ref, constr name
     block.constraints
         .map { case (name, constr) =>
@@ -205,7 +205,9 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
       }
     }.toSet
     val exteriorPortTypes = block.ports.toSeq.map { case (portName, portLike) =>
-      val portRef = ref.LocalPath().update(_.steps := Seq(ref.LocalStep().update(_.name := portName)))
+      val portRef = ref.LocalPath().update(_.steps := Seq(
+        ref.LocalStep().update(_.name := portName)
+      ))
       (portRef, typeOfPortLike(portLike))
     }.toSet
     ConnectablePorts(innerPortTypes, exteriorPortTypes)
