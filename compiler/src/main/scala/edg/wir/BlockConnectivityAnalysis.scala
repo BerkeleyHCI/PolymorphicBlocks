@@ -87,9 +87,31 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
     if (connectsByBlock.contains(portRef)) {
       require(!exportsByInner.contains(portRef), s"overconnected port $portRef")
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
-      val linkPortPath = connectsByBlock(portRef)
+      val (linkPortRef, constrName) = connectsByBlock(portRef)
+      require(linkPortRef.steps.nonEmpty)
+      val linkName = linkPortRef.steps.head.getName
+      require(block.links.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
 
-???
+      // Find all connects to the link
+      val allBlockRefConstrs = allConnects.collect {  // filter by link name, and map to (port ref, constr name)
+        case (blockPortRef, linkPortRef, constrName)
+          if linkPortRef.steps.nonEmpty && linkPortRef.steps.head.getName == linkName =>
+          (blockPortRef, constrName)
+      }
+
+      // Find all bridged exports
+      val allExportRefBlockConstrs = allBlockRefConstrs.map {
+        case (blockPortRef, constrName) => (blockPortRef, exportsByInner.get(blockPortRef))
+      }.collect {
+        case (blockPortRef, Some((exteriorPortRef, exportName))) =>
+          (exteriorPortRef, blockPortRef.steps.head.getName, exportName)
+      }
+
+      Some(Connection.Link(
+        blockPath, linkName,
+        allBlockRefConstrs,
+        allExportRefBlockConstrs
+      ))
     } else if (exportsByInner.contains(portRef)) {
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
       val (exteriorRef, constrName) = exportsByInner(portRef)
