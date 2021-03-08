@@ -181,5 +181,19 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
     analysis.getAllConnectedExternalPorts should equal(
       Seq(Ref("port"))
     )
+
+    analysis.allConnectablePortTypes should equal(
+      analysis.ConnectablePorts(
+        innerPortTypes = Set(
+          (Ref("sink1Block", "port"), LibraryPath("sinkPort")),
+          (Ref("sink2Block", "port"), LibraryPath("sinkPort")),
+          (Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort), LibraryPath("sourcePort")),
+          (Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort), LibraryPath("sinkPort")),
+        ),
+        exteriorPortTypes = Set(
+          (Ref("port"), LibraryPath("sinkPort")),
+        )
+      )
+    )
   }
 }

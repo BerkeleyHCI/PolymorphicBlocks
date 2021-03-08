@@ -175,12 +175,39 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
     }
   }
 
-  case class ConnectablePorts(innerPortTypes: Seq[(ref.LocalPath, ref.LibraryPath)],
-                              exteriorPortTypes: Seq[(ref.LocalPath, ref.LibraryPath)])
+  private def typeOfPortLike(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
+    case elem.PortLike.Is.LibElem(lib) => lib
+    case elem.PortLike.Is.Port(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case elem.PortLike.Is.Bundle(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case elem.PortLike.Is.Array(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case other => throw new IllegalArgumentException(s"Unexpected PortLike ${other.getClass}")
+  }
+
+  case class ConnectablePorts(innerPortTypes: Set[(ref.LocalPath, ref.LibraryPath)],
+                              exteriorPortTypes: Set[(ref.LocalPath, ref.LibraryPath)])
   /** Returns all the connectable ports and types of this block,
     * including inner block ports (and their types) and exterior ports (and their non-bridged type)
     */
-  def getConnectablePorts(): ConnectablePorts = {
-???
+  def allConnectablePortTypes: ConnectablePorts = {
+    val innerPortTypes = block.blocks.toSeq.flatMap { case (blockName, blockLike) =>
+      blockLike.getHierarchy.ports.map { case (portName, portLike) =>
+        val portRef = ref.LocalPath().update(_.steps := Seq(
+          ref.LocalStep().update(_.name := blockName),
+          ref.LocalStep().update(_.name := portName)
+        ))
+        (portRef, typeOfPortLike(portLike))
+      }
+    }.toSet
+    val exteriorPortTypes = block.ports.toSeq.map { case (portName, portLike) =>
+      val portRef = ref.LocalPath().update(_.steps := Seq(ref.LocalStep().update(_.name := portName)))
+      (portRef, typeOfPortLike(portLike))
+    }.toSet
+    ConnectablePorts(innerPortTypes, exteriorPortTypes)
   }
 }
