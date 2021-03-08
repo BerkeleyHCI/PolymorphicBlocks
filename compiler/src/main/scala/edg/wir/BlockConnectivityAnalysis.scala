@@ -88,6 +88,37 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
       LibraryConnectivityAnalysis.portBridgeLinkPort)
   }
 
+  /** If innerPortRef cconnects to a bridge block,
+    * returns the exterior port ref, bridge name, and export constraint
+    */
+  private def bridgedToOuterOption(innerPortRef: ref.LocalPath): Option[(ref.LocalPath, String, String)] = {
+    val bridgeName = innerPortRef.steps.head.getName  // name for the block in question, which MAY be a bridge
+    block.blocks.get(bridgeName).map { blockLike =>  // filter by block exists
+      blockLike.getHierarchy
+    }.collect { case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
+      val bridgeOuterRef = ref.LocalPath().update(_.steps := Seq(
+        ref.LocalStep().update(_.name := bridgeName),
+        ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeOuterPort)
+      ))
+      exportsByInner.get(bridgeOuterRef)
+    }.flatten
+    .collect { case (exportedRef, exportConstrName) =>
+      (exportedRef, bridgeName, exportConstrName)
+    }
+  }
+
+  private def bridgedToInnerOption(outerPortRef: ref.LocalPath): Option[ref.LocalPath] = {
+    val bridgeName = outerPortRef.steps.head.getName  // name for the block in question, which MAY be a bridge
+    block.blocks.get(bridgeName).map { blockLike =>  // filter by block exists
+      blockLike.getHierarchy
+    }.collect { case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
+      ref.LocalPath().update(_.steps := Seq(
+        ref.LocalStep().update(_.name := bridgeName),
+        ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeLinkPort)
+      ))
+    }
+  }
+
   private def getConnectedToLink(linkName: String): Connection.Link = {
     val allBlockRefConstrs = allConnects.collect {  // filter by link name, and map to (port ref, constr name)
       case (blockPortRef, linkPortRef, constrName)
@@ -96,23 +127,8 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
     }
 
     // Find all bridged exports
-    val allExportRefBlockConstrs = allBlockRefConstrs.map { // transform to get candidate block
-      case (blockPortRef, constrName) =>
-        val blockName = blockPortRef.steps.head.getName
-        (blockName, block.blocks.get(blockName))
-    }.collect {  // filter by block exists
-      case (connectedBlockName, Some(connectedBlockLike)) =>
-        (connectedBlockName, connectedBlockLike.getHierarchy)
-    }.collect {  // filter by is-bridge, get potential exported port (note, discards unconnected bridges)
-      case (connectedBlockName, connectedBlock) if blockIsBridge(connectedBlock) =>
-        val outerBlockRef = ref.LocalPath().update(_.steps := Seq(
-          ref.LocalStep().update(_.name := connectedBlockName),
-          ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeOuterPort)
-        ))
-        (connectedBlockName, exportsByInner.get(outerBlockRef))
-    }.collect {
-      case (connectedBlockName, Some((exportedRef, exportConstrName))) =>
-        (exportedRef, connectedBlockName, exportConstrName)
+    val allExportRefBlockConstrs = allBlockRefConstrs.flatMap { case (blockPortRef, constrName) =>
+      bridgedToOuterOption(blockPortRef)
     }
 
     Connection.Link(
@@ -137,12 +153,14 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
     } else if (exportsByInner.contains(portRef)) {
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
       val (exteriorRef, constrName) = exportsByInner(portRef)
-      // TODO see if is link
-      Some(Connection.Export(blockPath, constrName, exteriorRef, portRef))
+      bridgedToInnerOption(portRef) match {
+          // TODO: possible edge case with bridge with disconnected inner that would ignore the export
+        case Some(bridgeInnerRef) => getConnected(bridgeInnerRef)
+        case None => Some(Connection.Export(blockPath, constrName, exteriorRef, portRef))
+      }
     } else if (exportsByOuter.contains(portRef)) {
       val (innerRef, constrName) = exportsByOuter(portRef)
-      // TODO see if is link
-      Some(Connection.Export(blockPath, constrName, portRef, innerRef))
+      getConnected(innerRef)  // delegate to handle both export and bridged case
     } else {
       None
     }
