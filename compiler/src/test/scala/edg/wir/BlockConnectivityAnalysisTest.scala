@@ -92,12 +92,11 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       )
     ))
     val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
-    val dutPath = DesignPath() + "dut"
-    val analysis = new BlockConnectivityAnalysis(dutPath,
+    val analysis = new BlockConnectivityAnalysis(DesignPath() + "dut",
       compiled.getContents.blocks("dut").getHierarchy)
 
     analysis.getConnected(Ref("port")) should equal(
-      Some(Connection.Export(dutPath, "export", Ref("port"), Ref("inner", "port")))
+      Some(Connection.Export("export", Ref("port"), Ref("inner", "port")))
     )
 
     analysis.getAllConnectedInternalPorts should equal(
@@ -126,10 +125,10 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
     ))
     val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
     val dutPath = DesignPath()
-    val analysis = new BlockConnectivityAnalysis(dutPath, compiled.getContents)
+    val analysis = new BlockConnectivityAnalysis(DesignPath(), compiled.getContents)
 
     val expectedConnects = Connection.Link(
-      dutPath, "link",
+      "link",
       Seq(
         (Ref("sourceBlock", "port"), "sourceConnect"),
         (Ref("sink1Block", "port"), "sink1Connect"),
@@ -154,12 +153,11 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       )
     ))
     val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
-    val dutPath = DesignPath() + "dut"
-    val analysis = new BlockConnectivityAnalysis(dutPath,
+    val analysis = new BlockConnectivityAnalysis(DesignPath() + "dut",
       compiled.getContents.blocks("dut").getHierarchy)
 
     val expectedConnects = Connection.Link(
-      dutPath, "link",
+      "link",
       Seq(
         (Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort), "sourceConnect"),
         (Ref("sink1Block", "port"), "sink1Connect"),

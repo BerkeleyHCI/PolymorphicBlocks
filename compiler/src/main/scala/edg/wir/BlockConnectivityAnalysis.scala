@@ -10,13 +10,11 @@ import edg.ref.ref
 sealed trait Connection
 case object Connection {
   case class Link(
-    containingBlockPath: DesignPath,
     linkName: String,
     linkConnects: Seq[(ref.LocalPath, String)],  // including bridge link-facing ports, as (port ref, constr name)
     bridgedExports: Seq[(ref.LocalPath, String, String)]  // (exterior port ref, bridge block name, constr name)
   ) extends Connection
   case class Export(
-    containingBlockPath: DesignPath,
     constraintName: String,
     exteriorPort: ref.LocalPath,
     innerBlockPort: ref.LocalPath
@@ -132,7 +130,7 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
     }
 
     Connection.Link(
-      blockPath, linkName,
+      linkName,
       allBlockRefConstrs,
       allExportRefBlockConstrs
     )
@@ -156,7 +154,7 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
       bridgedToInnerOption(portRef) match {
           // TODO: possible edge case with bridge with disconnected inner that would ignore the export
         case Some(bridgeInnerRef) => getConnected(bridgeInnerRef)
-        case None => Some(Connection.Export(blockPath, constrName, exteriorRef, portRef))
+        case None => Some(Connection.Export(constrName, exteriorRef, portRef))
       }
     } else if (exportsByOuter.contains(portRef)) {
       val (innerRef, constrName) = exportsByOuter(portRef)
