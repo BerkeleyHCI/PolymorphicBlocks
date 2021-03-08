@@ -80,6 +80,13 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
     analysis.getConnected(Ref("port")) should equal(
       Some(Connection.Export(dutPath, "export", Ref("port"), Ref("inner", "port")))
     )
+
+    analysis.getAllConnectedInternalPorts should equal(
+      Seq(Ref("inner", "port"))
+    )
+    analysis.getAllConnectedExternalPorts should equal(
+      Seq(Ref("port"))
+    )
   }
 
   it should "get connected for links only" in {
@@ -115,5 +122,9 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
     analysis.getConnected(Ref("sourceBlock", "port")) should equal(Some(expectedConnects))
     analysis.getConnected(Ref("sink1Block", "port")) should equal(Some(expectedConnects))
     analysis.getConnected(Ref("sink2Block", "port")) should equal(Some(expectedConnects))
+
+    analysis.getAllConnectedInternalPorts should equal(
+      Seq(Ref("sourceBlock", "port"), Ref("sink1Block", "port"), Ref("sink2Block", "port"))
+    )
   }
 }

@@ -77,7 +77,7 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
   }
 
   // Returns all internal connected ports
-  def getAllConnectedInternalPorts: Seq[ref.LocalPath] = allConnects.map(_._1)
+  def getAllConnectedInternalPorts: Seq[ref.LocalPath] = allConnects.map(_._1) ++ allExports.map(_._2)
   // Returns all external (boundary) connected ports
   def getAllConnectedExternalPorts: Seq[ref.LocalPath] = allExports.map(_._1)
 
