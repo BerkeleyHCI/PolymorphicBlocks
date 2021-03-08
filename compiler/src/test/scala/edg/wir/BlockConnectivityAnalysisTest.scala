@@ -96,7 +96,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       compiled.getContents.blocks("dut").getHierarchy)
 
     analysis.getConnected(Ref("port")) should equal(
-      Some(Connection.Export("export", Ref("port"), Ref("inner", "port")))
+      Connection.Export("export", Ref("port"), Ref("inner", "port"))
     )
 
     analysis.getAllConnectedInternalPorts should equal(
@@ -124,7 +124,6 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       )
     ))
     val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
-    val dutPath = DesignPath()
     val analysis = new BlockConnectivityAnalysis(DesignPath(), compiled.getContents)
 
     val expectedConnects = Connection.Link(
@@ -137,9 +136,9 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       Seq()
     )
 
-    analysis.getConnected(Ref("sourceBlock", "port")) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("sink1Block", "port")) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("sink2Block", "port")) should equal(Some(expectedConnects))
+    analysis.getConnected(Ref("sourceBlock", "port")) should equal(expectedConnects)
+    analysis.getConnected(Ref("sink1Block", "port")) should equal(expectedConnects)
+    analysis.getConnected(Ref("sink2Block", "port")) should equal(expectedConnects)
 
     analysis.getAllConnectedInternalPorts should equal(
       Seq(Ref("sourceBlock", "port"), Ref("sink1Block", "port"), Ref("sink2Block", "port"))
@@ -168,11 +167,11 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       )
     )
 
-    analysis.getConnected(Ref("sink1Block", "port")) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("sink2Block", "port")) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("port")) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort)) should equal(Some(expectedConnects))
-    analysis.getConnected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort)) should equal(Some(expectedConnects))
+    analysis.getConnected(Ref("sink1Block", "port")) should equal(expectedConnects)
+    analysis.getConnected(Ref("sink2Block", "port")) should equal(expectedConnects)
+    analysis.getConnected(Ref("port")) should equal(expectedConnects)
+    analysis.getConnected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort)) should equal(expectedConnects)
+    analysis.getConnected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort)) should equal(expectedConnects)
 
     analysis.getAllConnectedInternalPorts.toSet should equal(
       Set(Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort),

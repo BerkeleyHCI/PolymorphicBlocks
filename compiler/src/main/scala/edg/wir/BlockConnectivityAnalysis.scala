@@ -3,22 +3,33 @@ package edg.wir
 import edg.elem.elem
 import edg.expr.expr
 import edg.ref.ref
+import edg.ref.ref.LocalPath
 
 
 /** A connection to a link, from the point of view of (and relative to) some block
   */
-sealed trait Connection
+sealed trait Connection {
+  def getPorts: Seq[ref.LocalPath]
+}
 case object Connection {
+  case class Disconnected() extends Connection {
+    override def getPorts: Seq[ref.LocalPath] = Seq()
+  }
+
   case class Link(
     linkName: String,
     linkConnects: Seq[(ref.LocalPath, String)],  // including bridge link-facing ports, as (port ref, constr name)
     bridgedExports: Seq[(ref.LocalPath, String, String)]  // (exterior port ref, bridge block name, constr name)
-  ) extends Connection
+  ) extends Connection {
+    override def getPorts: Seq[ref.LocalPath] = linkConnects.map(_._1) ++ bridgedExports.map(_._1)
+  }
   case class Export(
     constraintName: String,
     exteriorPort: ref.LocalPath,
     innerBlockPort: ref.LocalPath
-  ) extends Connection
+  ) extends Connection {
+    override def getPorts: Seq[LocalPath] = Seq(exteriorPort, innerBlockPort)
+  }
 }
 
 
@@ -138,7 +149,7 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
 
   /** Returns the Connection that portPath is part of, or None if it is not connected.
     */
-  def getConnected(portRef: ref.LocalPath): Option[Connection] = {
+  def getConnected(portRef: ref.LocalPath): Connection = {
     if (connectsByBlock.contains(portRef)) {
       require(!exportsByInner.contains(portRef), s"overconnected port $portRef")
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
@@ -147,20 +158,29 @@ class BlockConnectivityAnalysis(blockPath: DesignPath, block: elem.HierarchyBloc
       val linkName = linkPortRef.steps.head.getName
       require(block.links.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
 
-      Some(getConnectedToLink(linkName))
+      getConnectedToLink(linkName)
     } else if (exportsByInner.contains(portRef)) {
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
       val (exteriorRef, constrName) = exportsByInner(portRef)
       bridgedToInnerOption(portRef) match {
           // TODO: possible edge case with bridge with disconnected inner that would ignore the export
         case Some(bridgeInnerRef) => getConnected(bridgeInnerRef)
-        case None => Some(Connection.Export(constrName, exteriorRef, portRef))
+        case None => Connection.Export(constrName, exteriorRef, portRef)
       }
     } else if (exportsByOuter.contains(portRef)) {
       val (innerRef, constrName) = exportsByOuter(portRef)
       getConnected(innerRef)  // delegate to handle both export and bridged case
     } else {
-      None
+      Connection.Disconnected()
     }
+  }
+
+  case class ConnectablePorts(innerPortTypes: Seq[(ref.LocalPath, ref.LibraryPath)],
+                              exteriorPortTypes: Seq[(ref.LocalPath, ref.LibraryPath)])
+  /** Returns all the connectable ports and types of this block,
+    * including inner block ports (and their types) and exterior ports (and their non-bridged type)
+    */
+  def getConnectablePorts(): ConnectablePorts = {
+???
   }
 }
