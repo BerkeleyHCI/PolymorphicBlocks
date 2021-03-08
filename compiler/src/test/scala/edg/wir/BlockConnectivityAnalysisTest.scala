@@ -18,20 +18,10 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
       "sinkPort" -> Port.Port(),
     ),
     links = Map(
-      "innerLink" -> Link.Link(
+      "link" -> Link.Link(
         ports = Map(
-          "innerSource" -> Port.Library("innerSource"),
-          "innerSinks" -> Port.Array("innerSink")
-        ),
-        // practically invalid, missing connect constraints
-      ),
-      "outerLink" -> Link.Link(
-        ports = Map(
-          "outerPort1" -> Port.Library("outerPort"),
-          "outerPort2" -> Port.Library("outerPort"),
-        ),
-        links = Map(
-          "inner" -> Link.Library("innerLink"),
+          "source" -> Port.Library("source"),
+          "sinks" -> Port.Array("sink")
         ),
         // practically invalid, missing connect constraints
       ),
@@ -78,16 +68,52 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
 
   it should "get connected for direct exports" in {
     val inputDesign = Design(Block.Block(
-      blocks = Map("dut" -> Block.Library("exportSinkBlock"))
+      blocks = Map(
+        "dut" -> Block.Library("exportSinkBlock")
+      )
     ))
     val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
-
     val dutPath = DesignPath() + "dut"
-
     val analysis = new BlockConnectivityAnalysis(dutPath,
       compiled.getContents.blocks("dut").getHierarchy)
+
     analysis.getConnected(Ref("port")) should equal(
       Some(Connection.Export(dutPath, "export", Ref("port"), Ref("inner", "port")))
     )
+  }
+
+  it should "get connected for links only" in {
+    val inputDesign = Design(Block.Block(
+      blocks = Map(
+        "sourceBlock" -> Block.Library("sourceBlock"),
+        "sink1Block" -> Block.Library("sinkBlock"),
+        "sink2Block" -> Block.Library("sinkBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.Connected(Ref("sourceBlock", "port"), Ref("link", "source")),
+        "sink1Connect" -> Constraint.Connected(Ref("sink1Block", "port"), Ref.Allocate(Ref("link", "sinks"))),
+        "sink2Connect" -> Constraint.Connected(Ref("sink2Block", "port"), Ref.Allocate(Ref("link", "sinks"))),
+      )
+    ))
+    val compiled = new Compiler(inputDesign, new wir.EdgirLibrary(library)).compile()
+    val dutPath = DesignPath()
+    val analysis = new BlockConnectivityAnalysis(dutPath, compiled.getContents)
+
+    val expectedConnects = Connection.Link(
+      dutPath, "link",
+      Seq(
+        (Ref("sourceBlock" ,"port"), "sourceConnect"),
+        (Ref("sink1Block" ,"port"), "sink1Connect"),
+        (Ref("sink2Block" ,"port"), "sink2Connect"),
+      ),
+      Seq()
+    )
+
+    analysis.getConnected(Ref("sourceBlock", "port")) should equal(Some(expectedConnects))
+    analysis.getConnected(Ref("sink1Block", "port")) should equal(Some(expectedConnects))
+    analysis.getConnected(Ref("sink2Block", "port")) should equal(Some(expectedConnects))
   }
 }
