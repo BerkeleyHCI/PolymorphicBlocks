@@ -120,7 +120,7 @@ class ElementDict(Generic[ElementType]):
 
   def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
     assert self._parent is not None
-    self._parent[1].add_element(f"{self._parent[0]}_{key}", value)  # TODO perhaps some kind of check to make sure this is required?
+    self._parent[1].add_element(f"{self._parent[0]}[{key}]", value)  # TODO perhaps some kind of check to make sure this is required?
     self.container[key] = value
 
   def __getitem__(self, item: Union[str, int]) -> ElementType:
