@@ -1,5 +1,34 @@
 from electronics_abstract_parts import *
 
+class Tps61023_Device(DiscreteChip, CircuitBlock):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
+    super().__init__()
+    self.vin = self.Port(ElectricalSink(
+      voltage_limits=(0.5, 5.5)*Volt,
+      current_draw=current_draw
+    ))
+    self.gnd = self.Port(Ground())
+    # self.en = self.vin
+    self.sw = self.Port(ElectricalSource())  # internal switch specs not defined, only bulk current limit defined
+    self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
+    self.vout = self.Port(ElectricalSource())
+
+  def contents(self) -> None:
+    super().contents()
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-6',
+      {
+        '1': self.fb,
+        '2': self.vin, # en
+        '3': self.vin,
+        '4': self.gnd,
+        '5': self.sw,
+        '6': self.vout,
+      },
+      mfr='Texas Instruments', part='TPS61023',
+      datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
+    )
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
