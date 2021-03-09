@@ -12,7 +12,9 @@ class TestnRF52840Basic(BoardTop):
     self.mcu = self.Block(Adafruit_ItsyBitsy_BLE())
 
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gnd, self.led.gnd)
+    # self.connect(self.mcu.gnd, self.led.gnd)
+    self.connect(self.led.gnd, self.mcu.gnd)
+    self.this_name = self.Block(IdDots4())
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
 
   def refinements(self) -> Refinements:

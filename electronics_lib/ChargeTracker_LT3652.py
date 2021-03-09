@@ -77,3 +77,8 @@ class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
       # mfr='Digi International', part='XBP9B-*',
       # datasheet='https://www.digi.com/resources/documentation/digidocs/pdfs/90002173.pdf'
     )
+
+class ChargeTracker_LT3652_Module(Block):
+  def contents(self) -> None:
+    super().contents()
+    self.mppt = self.Block(ChargeTracker_LT3652())
