@@ -450,7 +450,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return constraint
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None) -> T:
+  def Port(self, tpe: T, *, optional: bool = False) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
@@ -464,13 +464,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if not optional:
       self._required_ports.add(elt)
 
-    if not builder.stack or builder.stack[0] is self:
-      if desc is not None:
-        self._edgdoc[elt] = desc
-
     return elt
 
-  def Parameter(self, tpe: ConstraintType, *, desc: Optional[str] = None) -> ConstraintType:
+  def Parameter(self, tpe: ConstraintType) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
@@ -482,10 +478,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._parameters.register(elt)
     if elt.initializer is not None:
       self._check_constraint(elt.initializer)
-
-    if not builder.stack or builder.stack[0] is self:
-      if desc is not None:
-        self._edgdoc[elt] = desc
 
     return elt
 

@@ -122,14 +122,14 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         self.rollback.newModules.append(module)
 
       if self.verbose:
-        print(f"None (indexed {len(self.library.lib_class_map)})")
+        print(f"None (indexed {len(self.library.lib_class_map)})", flush=True)
       for indexed in self.library.lib_class_map.keys():
         pb = edgir.LibraryPath()
         pb.target.name = indexed
         yield pb
     except BaseException as e:
       if self.verbose:
-        print(f"Error {e}")
+        print(f"Error {e}", flush=True)
       return
 
   @staticmethod
@@ -166,16 +166,16 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
           cls().refinements().populate_proto(response.refinements)
     except BaseException as e:
       traceback.print_exc()
-      print(f"while serving library element request for {request.element.target.name}")
+      print(f"while serving library element request for {request.element.target.name}", flush=True)
       response.error = str(e)
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"Error {response.error}")
+        print(f"Error {response.error}", flush=True)
       elif response.HasField('refinements'):
-        print(f"(elt, w/ refinements)")
+        print(f"(elt, w/ refinements)", flush=True)
       else:
-        print(f"(elt)")
+        print(f"(elt)", flush=True)
 
     return response
 
@@ -201,13 +201,13 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     except BaseException as e:
       if self.verbose:
         traceback.print_exc()
-        print(f"while serving generator request for {request.element.target.name}")
+        print(f"while serving generator request for {request.element.target.name}", flush=True)
       response.error = str(e)
 
     if self.verbose:
       if response.HasField('error'):
-        print(f"Error {response.error}")
+        print(f"Error {response.error}", flush=True)
       else:
-        print(f"(generated)")
+        print(f"(generated)", flush=True)
 
     return response

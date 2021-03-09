@@ -33,7 +33,8 @@ sealed trait Errorable[+T] {
   def flatMap[V](fn: T => Errorable[V]): Errorable[V]
 
   // Special case of map with string output, which returns the result of the function, or the propagated error
-  def mapToString(fn: T => String): String
+  def mapToString(fn: T => String): String = mapToStringOrElse(fn, identity)
+  def mapToStringOrElse(fn: T => String, errFn: String => String): String
 
   // Checks if some property of the contained value is true, otherwise convert to error with message
   def require(errMsg: => String)(fn: T => Boolean): Errorable[T] = {
@@ -86,7 +87,7 @@ object Errorable {
       fn(obj)
     }
 
-    override def mapToString(fn: T => String): String = {
+    override def mapToStringOrElse(fn: T => String, errFn: String => String): String = {
       fn(obj)
     }
   }
@@ -104,8 +105,8 @@ object Errorable {
       this
     }
 
-    override def mapToString(fn: Nothing => String): String = {
-      msg
+    override def mapToStringOrElse(fn: Nothing => String, errFn: String => String): String = {
+      errFn(msg)
     }
   }
 

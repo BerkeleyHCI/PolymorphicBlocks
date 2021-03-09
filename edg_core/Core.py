@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import *
 from abc import abstractmethod
-import inspect
 
 from . import edgir
 from .Builder import builder
@@ -121,7 +120,7 @@ class ElementDict(Generic[ElementType]):
 
   def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
     assert self._parent is not None
-    self._parent[1].add_element(f"{self._parent[0]}_{key}", value)  # TODO perhaps some kind of check to make sure this is required?
+    self._parent[1].add_element(f"{self._parent[0]}[{key}]", value)  # TODO perhaps some kind of check to make sure this is required?
     self.container[key] = value
 
   def __getitem__(self, item: Union[str, int]) -> ElementType:
@@ -247,12 +246,6 @@ class HasMetadata(LibraryElement):
     super().__init__()
     self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)  # type: ignore
 
-    if not builder.stack or builder.stack[0] is self:  # these are performance-intensive, avoid generating internally
-      self._edgdoc = self.Metadata(IdentityDict[Refable, str]())
-      selfdoc = inspect.getdoc(self)
-      if selfdoc:
-        self._edgdoc[self] = selfdoc
-
   MetadataType = TypeVar('MetadataType', bound=Union[StructuredMetadata, str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
   def Metadata(self, value: MetadataType) -> MetadataType:
     """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
@@ -274,17 +267,9 @@ class HasMetadata(LibraryElement):
     elif isinstance(src, dict) or isinstance(src, SubElementDict) or isinstance(src, IdentityDict):
       if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
         src.finalize()  # TODO should this be here?
-      if isinstance(src, IdentityDict) and path in [['_edgdoc']]:
-        for key, val in src.items():
-          assert isinstance(val, str)
-          if key is self:
-            pb.members.node['self'].text_leaf = val
-          else:
-            pb.members.node[self._name_of(key)].text_leaf = val
-      else:
-        for key, val in src.items():
-          assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key} at {path}'
-          pb.members.node[key].CopyFrom(self._metadata_to_proto(val, path + [key], ref_map))
+      for key, val in src.items():
+        assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key} at {path}'
+        pb.members.node[key].CopyFrom(self._metadata_to_proto(val, path + [key], ref_map))
     elif isinstance(src, list):
       for idx, val in enumerate(src):
         pb.members.node[str(idx)].CopyFrom(self._metadata_to_proto(val, path + [str(idx)], ref_map))

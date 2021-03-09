@@ -132,6 +132,17 @@ case class DesignPath(steps: Seq[String]) {
     case steps => steps.last
   }
 
+  def startsWith(other: DesignPath): Boolean = steps.startsWith(other.steps)
+  def postfixFromOption(prefix: DesignPath): Option[ref.LocalPath] = {
+    if (!startsWith(prefix)) {
+      return None
+    }
+    val postfixSteps = steps.drop(prefix.steps.size)
+    Some(ref.LocalPath(steps=postfixSteps.map { step =>
+      ref.LocalStep().update(_.name := step)
+    }))
+  }
+
   def asIndirect: IndirectDesignPath = IndirectDesignPath(steps.map { IndirectStep.Element(_) })
 }
 

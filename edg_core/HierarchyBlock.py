@@ -346,7 +346,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return ImplicitScope(self, implicits)
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False, **kwargs) -> T:
+  def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False) -> T:
     """Registers a port for this Block"""
     if not isinstance(tpe, Port):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
@@ -356,7 +356,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     for tag in tags:
       tag = assert_type(tag, PortTag, "tag for Port(...)")
 
-    port = super().Port(tpe, optional=optional, **kwargs)
+    port = super().Port(tpe, optional=optional)
 
     self._port_tags[port] = set(tags)
     return port  # type: ignore
