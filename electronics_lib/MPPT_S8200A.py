@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
+class MPPT_S8200A(DiscreteChip, CircuitBlock):
   def __init__(self):
     super().__init__()
 
@@ -78,7 +78,7 @@ class ChargeTracker_LT3652(DiscreteChip, CircuitBlock):
       # datasheet='https://www.digi.com/resources/documentation/digidocs/pdfs/90002173.pdf'
     )
 
-class ChargeTracker_LT3652_Module(Block):
+class MPPT_S8200A_Module(Block):
   def contents(self) -> None:
     super().contents()
-    self.mppt = self.Block(ChargeTracker_LT3652())
+    self.mppt = self.Block(MPPT_S8200A())

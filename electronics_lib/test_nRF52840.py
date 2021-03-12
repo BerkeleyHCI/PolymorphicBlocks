@@ -1,7 +1,7 @@
 import unittest
 
 from edg import *
-from electronics_lib.ChargeTracker_LT3652 import ChargeTracker_LT3652
+from electronics_lib.SolarCharger_LT3652 import SolarCharger_LT3652
 from electronics_lib.Microcontroller_nRF52840 import Adafruit_ItsyBitsy_BLE
 from examples.ExampleTestUtils import run_test
 

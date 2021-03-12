@@ -1,7 +1,7 @@
 import unittest
 
 from edg import *
-from electronics_lib.ChargeTracker_LT3652 import ChargeTracker_LT3652
+from electronics_lib.SolarCharger_LT3652 import SolarCharger_LT3652, SolarCharger_LT3652_Module
 from electronics_lib.DcDcConverters import Tps61023_Device
 from electronics_lib.Microcontroller_nRF52840 import Adafruit_ItsyBitsy_BLE
 from .ExampleTestUtils import run_test
@@ -11,8 +11,9 @@ class RcCarTest(Block):
   def contents(self) -> None:
     super().contents()
     self.mcu = self.Block(Adafruit_ItsyBitsy_BLE())
-    self.mppt = self.Block(ChargeTracker_LT3652())
+    # self.mppt = self.Block(SolarCharger_LT3652())
     self.boost = self.Block(Tps61023_Device())
+    self.mppt = self.Block(SolarCharger_LT3652_Module())
 
     # # USB Domain
     # self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 2)*Amp))  # TODO 4.5 -> 20
