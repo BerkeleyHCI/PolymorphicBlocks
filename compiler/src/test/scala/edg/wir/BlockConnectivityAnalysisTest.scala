@@ -9,8 +9,6 @@ import edg.compiler.Compiler
 import edg.wir
 
 
-/** Tests compiler Bundle expansion / elaboration, including nested links.
-  */
 class BlockConnectivityAnalysisTest extends AnyFlatSpec {
   private val library = Library(
     ports = Map(

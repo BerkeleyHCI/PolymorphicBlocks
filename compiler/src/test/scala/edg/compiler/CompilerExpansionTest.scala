@@ -8,9 +8,9 @@ import edg.ExprBuilder.Ref
 import edg.wir
 
 
-/** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
+/** Library with simple problem structure that can be shared across tests.
   */
-class CompilerExpansionTest extends AnyFlatSpec {
+object CompilerExpansionTest {
   val library = Library(
     ports = Map(
       "sourcePort" -> Port.Port(),
@@ -59,6 +59,13 @@ class CompilerExpansionTest extends AnyFlatSpec {
       ),
     )
   )
+}
+
+
+/** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
+  */
+class CompilerExpansionTest extends AnyFlatSpec {
+
 
   "Compiler on design with single source and sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block(
@@ -100,7 +107,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
     compiler.compile should equal(referenceElaborated)
   }
 
@@ -164,7 +171,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
     compiler.compile should equal(referenceElaborated)
   }
 }
