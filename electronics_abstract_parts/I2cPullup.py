@@ -3,7 +3,7 @@ from .Categories import *
 from .AbstractPassives import PullupResistor
 
 
-class I2cPullup(DiscreteApplication, CircuitBlock):
+class I2cPullup(DiscreteApplication):
   def __init__(self) -> None:
     super().__init__()
 

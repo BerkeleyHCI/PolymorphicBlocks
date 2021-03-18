@@ -145,7 +145,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
     }
   }
 
-  private def getConnectedToLink(linkName: String): Connection.Link = {
+  def getConnectedToLink(linkName: String): Connection.Link = {
     val allBlockRefConstrs = allConnects.collect {  // filter by link name, and map to (port ref, constr name)
       case (blockPortRef, linkPortRef, constrName)
         if linkPortRef.steps.nonEmpty && linkPortRef.steps.head.getName == linkName =>
