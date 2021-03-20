@@ -116,6 +116,7 @@ object ExprBuilder {
 
   object Ref {
     val AllocateStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE))
+    val IsConnectedStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
 
     def apply(path: String*): ref.LocalPath = {
       ref.LocalPath(steps = path.map { step =>
@@ -133,6 +134,16 @@ object ExprBuilder {
       }
       def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
         case init :+ ExprBuilder.Ref.AllocateStep => Some(ref.LocalPath(steps=init))
+        case _ => None
+      }
+    }
+
+    object IsConnected {
+      def apply(prefix: ref.LocalPath): ref.LocalPath = {
+        ref.LocalPath(steps = prefix.steps :+ IsConnectedStep)
+      }
+      def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
+        case init :+ ExprBuilder.Ref.IsConnectedStep => Some(ref.LocalPath(steps=init))
         case _ => None
       }
     }
