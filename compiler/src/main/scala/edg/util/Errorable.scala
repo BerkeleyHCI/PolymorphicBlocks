@@ -7,6 +7,8 @@ sealed trait Errorable[+T] {
   // (if Errorable.Error)
   def get: T
 
+  def toOption: Option[T]
+
   // Default map function on the contained type, that preserves the first error message,
   // and turns null results into an error.
   def map[V](errMsg: => String)(fn: T => V): Errorable[V] = {
@@ -71,6 +73,8 @@ object Errorable {
   case class Success[T](obj: T) extends Errorable[T] {
     override def get: T = obj
 
+    override def toOption: Option[T] = Some(obj)
+
     override def map[V](errMsg: => String, failureVal: V)(fn: T => V): Errorable[V] = {
       val result = fn(obj)
       if (result == failureVal) {
@@ -93,6 +97,8 @@ object Errorable {
   }
   case class Error(msg: String) extends Errorable[Nothing] {
     override def get: Nothing = throw new NoSuchElementException(s"Errorable.Error get ($msg)")
+
+    override def toOption: Option[Nothing] = None
 
     override def map[V](errMsg: => String, failureVal: V)(fn: Nothing => V): Errorable[V] = {
       this
