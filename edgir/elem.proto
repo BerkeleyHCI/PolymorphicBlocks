@@ -108,8 +108,8 @@ message PortLike {
 message HierarchyBlock {
   map<string, edg.init.ValInit>   params = 10;
   map<string, PortLike>          ports  = 11;
-  /** Bridges, which adapt an edge port to a link port - eg, edge ElectricalSink to an internal link
-      ElectricalSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
+  /** Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
+      VoltageSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
       infer these blocks. */
   map<string, BlockLike>          blocks = 12;
   map<string, LinkLike>           links  = 13;

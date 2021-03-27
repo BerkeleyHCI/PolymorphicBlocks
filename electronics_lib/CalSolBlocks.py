@@ -12,10 +12,10 @@ class CalSolCanBlock(CalSolSubcircuit):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
-    self.can_pwr = self.Port(ElectricalSource(), optional=True)
+    self.can_pwr = self.Port(VoltageSource(), optional=True)
     self.can_gnd = self.Port(GroundSource(), optional=True)
 
     self.controller = self.Port(CanTransceiverPort(), [Input])
@@ -94,7 +94,7 @@ class CalSolPowerConnector(Connector, CalSolSubcircuit, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=12 * Volt(tol=0.1),
       current_limits=(0, 3) * Amp  # TODO get actual limits from LVPDB?
     ))
@@ -118,7 +118,7 @@ class CalSolCanConnector(Connector, CalSolSubcircuit, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))
@@ -145,7 +145,7 @@ class CalSolCanConnectorRa(Connector, CalSolSubcircuit, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))
@@ -172,7 +172,7 @@ class M12CanConnector(Connector, CalSolSubcircuit, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))

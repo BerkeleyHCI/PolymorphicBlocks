@@ -4,7 +4,7 @@ from .Categories import *
 
 @abstract_block
 class Fet(DiscreteSemiconductor):
-  """Base class for untyped (ElectricalBase ports) MOSFETs
+  """Base class for untyped MOSFETs
 
   MOSFET equations
   - https://inst.eecs.berkeley.edu/~ee105/fa05/handouts/discussions/Discussion5.pdf (cutoff/linear/saturation regions)

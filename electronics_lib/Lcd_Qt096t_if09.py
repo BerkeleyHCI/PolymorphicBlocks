@@ -6,7 +6,7 @@ class Qt096t_if09_Device(DiscreteChip, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.5, 4.8) * Volt,  # 2.75v typ
       current_draw=(0.02, 2.02) * mAmp  # ST7735S Table 7.3, IDDI + IDD, typ - max
     ))

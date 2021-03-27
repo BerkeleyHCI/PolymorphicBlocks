@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 class Mcp6001_Device(DiscreteChip, CircuitBlock):
   def __init__(self):
     super().__init__()
-    self.vcc = self.Port(ElectricalSink(
+    self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 6.0)*Volt, current_draw=(50, 170)*uAmp
     ), [Power])
     self.vss = self.Port(Ground(), [Common])

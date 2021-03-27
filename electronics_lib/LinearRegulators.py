@@ -13,11 +13,11 @@ class Ld1117_Device(DiscreteChip, CircuitBlock):
     self.dropout = self.Parameter(RangeExpr((0, 1.2) * Volt))
 
     # Part datasheet, Table 9
-    self.vin = self.Port(ElectricalSink(
+    self.vin = self.Port(VoltageSink(
       voltage_limits=(0, 15) * Volt,
       current_draw=RangeExpr()
     ))
-    self.vout = self.Port(ElectricalSource(
+    self.vout = self.Port(VoltageSource(
       voltage_out=voltage_out,
       current_limits=(0, 0.8) * Amp  # most conservative estimate, up to 1300mA
     ))
@@ -84,11 +84,11 @@ class Ldl1117_Device(DiscreteChip, CircuitBlock):
     self.dropout = self.Parameter(RangeExpr((0, 0.6) * Volt))  # worst-case, typ is 0.35
 
     # Part datasheet, Table 9
-    self.vin = self.Port(ElectricalSink(
+    self.vin = self.Port(VoltageSink(
       voltage_limits=(2.6, 18) * Volt,
       current_draw=RangeExpr()
     ))
-    self.vout = self.Port(ElectricalSource(
+    self.vout = self.Port(VoltageSource(
       voltage_out=voltage_out,
       current_limits=(0, 1.5) * Amp  # most conservative estimate, typ up to 2A
     ))
@@ -160,11 +160,11 @@ class Ap2204k_Device(DiscreteChip, CircuitBlock):
     self.quiescent_current = self.Parameter(RangeExpr((0.020, 2.5) * mAmp))  # ground current, not including standby current
 
     # Part datasheet, Recommended Operating Conditions
-    self.vin = self.Port(ElectricalSink(
+    self.vin = self.Port(VoltageSink(
       voltage_limits=(0, 24) * Volt,
       current_draw=RangeExpr()
     ), [Power])
-    self.vout = self.Port(ElectricalSource(
+    self.vout = self.Port(VoltageSource(
       voltage_out=voltage_out,
       current_limits=(0, 0.15) * Amp
     ))
@@ -199,8 +199,8 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
 
     self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
 
-    self.pwr_in = self.Port(ElectricalSink(), [Power])
-    self.pwr_out = self.Port(ElectricalSource())
+    self.pwr_in = self.Port(VoltageSink(), [Power])
+    self.pwr_out = self.Port(VoltageSource())
     self.gnd = self.Port(Ground(), [Common])
     self.en = self.Port(DigitalSink())
 

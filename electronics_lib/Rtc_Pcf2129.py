@@ -6,11 +6,11 @@ class Pcf2129_Device(DiscreteChip, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(1.8, 4.2) * Volt,
       current_draw=(0, 800) * uAmp
     ), [Power])
-    self.pwr_bat = self.Port(ElectricalSink(
+    self.pwr_bat = self.Port(VoltageSink(
       voltage_limits=(1.8, 4.2) * Volt,
       current_draw=(0, 100) * nAmp
     ))
@@ -33,7 +33,7 @@ class Pcf2129_Device(DiscreteChip, CircuitBlock):
     self.clkout = self.Port(opendrain_model, optional=True)
     self.int = self.Port(opendrain_model, optional=True)
 
-    self.bbs = self.Port(ElectricalSource(
+    self.bbs = self.Port(VoltageSource(
       voltage_out=self.pwr_bat.link().voltage
     ))
 
@@ -66,7 +66,7 @@ class Pcf2129(RealtimeClock, CircuitBlock):
     super().__init__()
 
     self.ic = self.Block(Pcf2129_Device())
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.pwr_bat = self.Export(self.ic.pwr_bat)
     self.gnd = self.Export(self.ic.gnd, [Common])
 

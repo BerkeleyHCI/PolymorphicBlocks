@@ -2,29 +2,29 @@ from electronics_model import *
 from .Categories import *
 
 
-class ElectricalLoad(DummyDevice):
+class VoltageLoad(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=voltage_limit,
       current_draw=current_draw
     ), [Power])
 
 
-class ForcedElectricalCurrentDraw(DummyDevice, NetBlock):
+class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
   @init_in_parent
   def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       current_draw=forced_current_draw,
       voltage_limits=RangeExpr.ALL
     ), [Input])
 
-    self.pwr_out = self.Port(ElectricalSource(
+    self.pwr_out = self.Port(VoltageSource(
       voltage_out=self.pwr_in.link().voltage,
       current_limits=RangeExpr.ALL
     ), [Output])
@@ -48,18 +48,18 @@ class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
     ), [Output])
 
 
-class MergedElectricalSource(DummyDevice, NetBlock):
+class MergedVoltageSource(DummyDevice, NetBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(ElectricalSource(
+    self.source = self.Port(VoltageSource(
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL
     ))
-    self.sink1 = self.Port(ElectricalSink(voltage_limits=RangeExpr.ALL,
-                                          current_draw=self.source.link().current_drawn))
-    self.sink2 = self.Port(ElectricalSink(voltage_limits=RangeExpr.ALL,
-                                          current_draw=self.source.link().current_drawn))
+    self.sink1 = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
+                                       current_draw=self.source.link().current_drawn))
+    self.sink2 = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
+                                       current_draw=self.source.link().current_drawn))
 
     self.assign(self.source.voltage_out, (
       self.sink1.link().voltage.lower().min(self.sink2.link().voltage.lower()),

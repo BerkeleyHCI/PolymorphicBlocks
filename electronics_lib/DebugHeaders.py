@@ -9,7 +9,7 @@ class SwdCortexTargetConnector(ProgrammingConnector):
     super().__init__()
 
     # TODO: should these also act as sources?
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdHostPort(), [Output])
 
@@ -94,7 +94,7 @@ class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdTargetPort(), [Input])
     self.tdi = self.Port(DigitalBidir(), optional=True)

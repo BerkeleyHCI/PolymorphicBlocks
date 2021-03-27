@@ -30,6 +30,6 @@ from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 
-from .DummyDevices import ElectricalLoad, ForcedElectricalCurrentDraw, MergedElectricalSource
+from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw
 from .DummyDevices import DummyAnalogSink

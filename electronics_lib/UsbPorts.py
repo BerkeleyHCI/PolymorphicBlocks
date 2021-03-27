@@ -11,7 +11,7 @@ class UsbConnector(Connector):
 class UsbAReceptacle(UsbConnector, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=self.USB2_VOLTAGE_RANGE,
       current_draw=self.USB2_CURRENT_LIMITS
     ), [Power])
@@ -43,7 +43,7 @@ class UsbCReceptacle(UsbConnector, CircuitBlock):
   def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
+    self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
     self.gnd = self.Port(GroundSource())
 
     self.usb = self.Port(UsbHostPort(), optional=True)
@@ -86,7 +86,7 @@ class UsbDeviceConnector(UsbConnector):
   """Abstract base class for a USB device port connector"""
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=self.USB2_VOLTAGE_RANGE,
       current_limits=self.USB2_CURRENT_LIMITS
     ), optional=True)

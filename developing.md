@@ -82,10 +82,10 @@ You can ignore this section, unless you are changing the Protocol Buffer structu
 ### Electronics Model
 `electronics_model` uses the `edg_core` classes to define an electronics model, by adding base classes to support circuit design (pin ports, copper-net links, and footprint blocks) and defining common electronics types. 
 
-- ElectricalSink/Source/Link/Bridge: represents a single copper net, and models runtime voltage and currents as well as their limits
+- VoltageSink/Source/Link/Bridge: represents a single copper net, and models runtime voltage and currents as well as their limits
   Can be used as a base class for other single-copper-net ports.
-- DigitalSink/Source/Link/Bridge: subclass of Electrical*, additionally models logic IO thresholds
-- BaseCircuitBlock: a Block with associated footprints (where pins can be mapped to Electrical* ports) and nets (connections between Electrical* ports)
+- DigitalSink/Source/Link/Bridge: subclass of Voltage*, additionally models logic IO thresholds
+- BaseCircuitBlock: a Block with associated footprints (where pins can be mapped to Voltage* ports) and nets (connections between Voltage* ports)
   This can be used for component-level blocks, links (with nets defining copper connectivity between ports), and hierarchy blocks.
   Not all blocks need a footprint: abstract blocks can rely on a refinement for a footprint, and hierarchy blocks can rely on internal blocks for footprints.
 

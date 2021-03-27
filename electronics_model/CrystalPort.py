@@ -2,7 +2,7 @@ from typing import *
 
 from edg_core import *
 from .PassivePort import Passive
-from .ElectricalPorts import ElectricalSink, ElectricalSource
+from .VoltagePorts import VoltageSink, VoltageSource
 
 
 class CrystalLink(Link):
@@ -27,7 +27,7 @@ class CrystalPort(Bundle[CrystalLink]):
     super().__init__()
     self.link_type = CrystalLink
 
-    self.a = self.Port(Passive())  # TODO replace w/ ElectricalPassive
+    self.a = self.Port(Passive())  # TODO can this have voltages?
     self.b = self.Port(Passive())
 
     self.frequency = self.Parameter(RangeExpr(frequency))

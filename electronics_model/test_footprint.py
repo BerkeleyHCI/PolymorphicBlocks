@@ -9,8 +9,8 @@ class TestBlock(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.port_1 = self.Port(ElectricalSink())
-    self.port_2 = self.Port(ElectricalSink())
+    self.port_1 = self.Port(VoltageSink())
+    self.port_2 = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()

@@ -3,7 +3,7 @@ from typing import Optional
 
 from edg_core import *
 from .CircuitBlock import CircuitLink
-from .ElectricalPorts import CircuitPort, CircuitPortBridge
+from .VoltagePorts import CircuitPort, CircuitPortBridge
 
 
 class AnalogLink(CircuitLink):

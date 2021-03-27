@@ -11,7 +11,7 @@ class SdCard(Memory):
 
     # Power characteristics from SD Physical Layer Simplified Spec Ver 6.00:
     # Voltage range from Fig 6-5, current limits from VDD_W_CURR_MAX table in 5.3.2 - note some cards may draw less
-    self.pwr = self.Port(ElectricalSink(voltage_limits=(2.7, 4.6)*Volt, current_draw=(0, 200)*mAmp), [Power])
+    self.pwr = self.Port(VoltageSink(voltage_limits=(2.7, 4.6) * Volt, current_draw=(0, 200) * mAmp), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO need to peg at 0v
 
     # IO thresholds from NXP AN10911 "SD(HC)-memory card and MMC interface conditioning"

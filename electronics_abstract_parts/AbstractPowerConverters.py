@@ -12,8 +12,8 @@ class DcDcConverter(PowerConditioner):
 
     self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
 
-    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])  # TODO mark as future-connected here?
-    self.pwr_out = self.Port(ElectricalSource(), [Output])  # TODO mark as future-connected here?
+    self.pwr_in = self.Port(VoltageSink(), [Power, Input])  # TODO mark as future-connected here?
+    self.pwr_out = self.Port(VoltageSource(), [Output])  # TODO mark as future-connected here?
     self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
 
     self.require(self.pwr_out.voltage_out.within(self.spec_output_voltage),
@@ -80,7 +80,7 @@ class DiscreteBuckConverter(BuckConverter):
   DUTYCYCLE_MAX_LIMIT = 0.9
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
-  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float,
+  def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: RangeVal, output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
                           spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
@@ -144,7 +144,7 @@ class DiscreteBuckConverter(BuckConverter):
     self._pwr_out_net = self.connect(self.pwr_out, self.out_cap.pwr)
     self._gnd_net = self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
 
-    self._switch_net = self.connect(switch_node, self.inductor.a.as_electrical_sink(
+    self._switch_net = self.connect(switch_node, self.inductor.a.as_voltage_sink(
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
 
@@ -178,7 +178,7 @@ class DiscreteBoostConverter(BoostConverter):
   DUTYCYCLE_MAX_LIMIT = 0.85  # by datasheet
   WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
 
-  def _generate_converter(self, switch_node: ElectricalSource, rated_max_current_amps: float,
+  def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: RangeVal, output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
                           spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
@@ -235,8 +235,8 @@ class DiscreteBoostConverter(BoostConverter):
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=(out_capacitance_min, float('inf'))*Farad,
     ))
-    self.connect(self.pwr_in, self.in_cap.pwr, self.inductor.a.as_electrical_sink())
+    self.connect(self.pwr_in, self.in_cap.pwr, self.inductor.a.as_voltage_sink())
     self.connect(self.pwr_out, self.out_cap.pwr)
     self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
 
-    self.connect(switch_node, self.inductor.b.as_electrical_sink())
+    self.connect(switch_node, self.inductor.b.as_voltage_sink())

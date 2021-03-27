@@ -10,17 +10,17 @@ class TestDatalogger(BoardTop):
     self.pwr_conn = self.Block(CalSolPowerConnector())
     self.usb_conn = self.Block(UsbCReceptacle())
 
-    self.usb_forced_current = self.Block(ForcedElectricalCurrentDraw(forced_current_draw=(0, 0.5)*Amp))
+    self.usb_forced_current = self.Block(ForcedVoltageCurrentDraw(forced_current_draw=(0, 0.5) * Amp))
     self.connect(self.usb_conn.pwr, self.usb_forced_current.pwr_in)
 
-    self.gnd_merge1 = self.Block(MergedElectricalSource())
+    self.gnd_merge1 = self.Block(MergedVoltageSource())
     self.connect(self.usb_conn.gnd, self.gnd_merge1.sink1)
     self.connect(self.pwr_conn.gnd, self.gnd_merge1.sink2)
-    self.gnd_merge2 = self.Block(MergedElectricalSource())
+    self.gnd_merge2 = self.Block(MergedVoltageSource())
     self.connect(self.gnd_merge1.source, self.gnd_merge2.sink1)
     # second slow reserved for the RTC battery
 
-    self.pwr_5v_merge = self.Block(MergedElectricalSource())
+    self.pwr_5v_merge = self.Block(MergedVoltageSource())
     self.connect(self.usb_forced_current.pwr_out, self.pwr_5v_merge.sink1)
 
     with self.implicit_connect(
@@ -61,9 +61,9 @@ class TestDatalogger(BoardTop):
       (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(ElectricalLoad())
+      self.can_gnd_load = self.Block(VoltageLoad())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(ElectricalLoad())
+      self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       # mcu_i2c = self.mcu.new_io(I2cMaster)  # no devices, ignored for now

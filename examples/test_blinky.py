@@ -125,7 +125,7 @@ class Mcp9700_Device(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
     # block boundary (ports, parameters) definition here
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.3, 5.5)*Volt, current_draw=(0, 15)*uAmp
     ), [Power])
     self.vout = self.Port(AnalogSource(

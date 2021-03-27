@@ -202,7 +202,7 @@ class BaseVoltageDivider(Filter, Block):
     self.impedance = self.Parameter(RangeExpr())
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=self.impedance))
 
-    self.input = self.Export(self.div.top.as_electrical_sink(
+    self.input = self.Export(self.div.top.as_voltage_sink(
       current_draw=RangeExpr(),
       voltage_limits=RangeExpr.ALL
     ), [Input])

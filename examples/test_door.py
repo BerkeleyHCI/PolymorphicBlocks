@@ -11,7 +11,7 @@ class DistanceSensor(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vcc = self.Port(ElectricalSink(voltage_limits=(0,5) * Volt, current_draw=(0,15) * mAmp), [Power]) # 5v
+    self.vcc = self.Port(VoltageSink(voltage_limits=(0, 5) * Volt, current_draw=(0, 15) * mAmp), [Power]) # 5v
     self.trigger = self.Port(DigitalSink(voltage_limits=(0, 5) * Volt, current_draw=(0, 15) * mAmp)) # input: digital, triggers distance measuring
     self.echo = self.Port(DigitalSource(voltage_out=(0, 5) * Volt, current_limits=(0, 15) * mAmp))# output: distance, outputs digital signal (distance ~ time high)
     self.gnd = self.Port(Ground(), [Common])
@@ -42,7 +42,7 @@ class MotorDriver(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.power = self.Port(ElectricalSink(voltage_limits=(6.5, 45) * Volt, current_draw=(0, 3.6) * Amp), [Power])
+    self.power = self.Port(VoltageSink(voltage_limits=(6.5, 45) * Volt, current_draw=(0, 3.6) * Amp), [Power])
     self.ground = self.Port(Ground(), [Common])
 
     input_pins = DigitalSink(
@@ -106,11 +106,11 @@ class Ssd1351(CircuitBlock):
 
     # Vcc is 16 volts, needs power converter. Leave it to user to connect it to Vcc.
     # @TODO put constraints
-    self.vcc = self.Port(ElectricalSink(voltage_limits=(0,20) * Volt, current_draw=(0,0.01) * mAmp), [Power])
+    self.vcc = self.Port(VoltageSink(voltage_limits=(0, 20) * Volt, current_draw=(0, 0.01) * mAmp), [Power])
     # @TODO data needs to be SPI bundle
 #     self.data = self.Port(SpiSlave()) # @TODO figure out syntax @todo uncomment the spi
-    self.vddio = self.Port(ElectricalSink(voltage_limits=(0,4) * Volt, current_draw=(0,0.01) * mAmp), [Power])
-    self.vci = self.Port(ElectricalSink(voltage_limits=(0,4) * Volt), [Power])
+    self.vddio = self.Port(VoltageSink(voltage_limits=(0, 4) * Volt, current_draw=(0, 0.01) * mAmp), [Power])
+    self.vci = self.Port(VoltageSink(voltage_limits=(0, 4) * Volt), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     # @TODO external circuitry like decoupling capacitors

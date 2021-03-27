@@ -32,7 +32,7 @@ class UsbPdTest(Block):
     self.connect(self.usb2.pwr, self.diode_merge.pwr_in1)
     self.connect(self.usb_reg.pwr_out, self.diode_merge.pwr_in2)
 
-    self.gnd_merge = self.Block(MergedElectricalSource())
+    self.gnd_merge = self.Block(MergedVoltageSource())
     self.connect(self.usb.gnd, self.gnd_merge.sink1)
     self.connect(self.usb2.gnd, self.gnd_merge.sink2)
 

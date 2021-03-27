@@ -10,7 +10,7 @@ class PowerBarrelJack(BarrelJack):
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(voltage_out=voltage_out, current_limits=current_limits))
+    self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits))
     self.gnd = self.Port(GroundSource())
 
 

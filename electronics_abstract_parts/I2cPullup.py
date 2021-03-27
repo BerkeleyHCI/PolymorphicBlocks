@@ -8,8 +8,8 @@ class I2cPullup(DiscreteApplication):
     super().__init__()
 
     # TODO restrictions on I2C voltage, current draw modeling
-    self.pwr = self.Port(ElectricalSink(current_draw=Default(RangeExpr.ZERO),
-                                        voltage_limits=RangeExpr.ALL),
+    self.pwr = self.Port(VoltageSink(current_draw=Default(RangeExpr.ZERO),
+                                     voltage_limits=RangeExpr.ALL),
                          [Power])
     self.i2c = self.Port(I2cPullupPort(), [InOut])
 

@@ -12,8 +12,8 @@ class TestFakeSource(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSource())
-    self.neg = self.Port(ElectricalSource())
+    self.pos = self.Port(VoltageSource())
+    self.neg = self.Port(VoltageSource())
 
   def contents(self) -> None:
     super().contents()
@@ -31,8 +31,8 @@ class TestFakeSink(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -73,9 +73,9 @@ class TestFakeAdapter(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos_in = self.Port(ElectricalSink())
-    self.pos_out = self.Port(ElectricalSource())
-    self.neg = self.Port(ElectricalSink())
+    self.pos_in = self.Port(VoltageSink())
+    self.pos_out = self.Port(VoltageSource())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -107,8 +107,8 @@ class TestFakeSinkHierarchy(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -134,8 +134,8 @@ class TestFakeDualSinkHierarchy(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()

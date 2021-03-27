@@ -9,7 +9,7 @@ class Cr2032(Battery, CircuitBlock):
   def contents(self):
     super().contents()
 
-    # TODO can this be assigned self.pwr == ElectricalSource(...) directly?
+    # TODO can this be assigned self.pwr == VoltageSource(...) directly?
     self.assign(self.pwr.voltage_out, (2.0, 3.0)*Volt)
     self.assign(self.pwr.current_limits, (0, 10)*mAmp)  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
     self.assign(self.capacity, (210, 210)*mAmp)  # TODO bounds of a few CR2032 cells; should be A*h
@@ -32,7 +32,7 @@ class Li18650(Battery, CircuitBlock):
   def contents(self):
     super().contents()
 
-    # TODO can this be assigned self.pwr == ElectricalSource(...) directly?
+    # TODO can this be assigned self.pwr == VoltageSource(...) directly?
     self.assign(self.pwr.voltage_out, (2.5, 4.2)*Volt)
     self.assign(self.pwr.current_limits, (0, 2)*mAmp)  # arbitrary assuming low capacity, 1 C discharge
     self.assign(self.capacity, (2, 3.6)*Amp)  # TODO should be A*h

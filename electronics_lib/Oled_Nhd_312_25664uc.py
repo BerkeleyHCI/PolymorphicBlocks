@@ -6,7 +6,7 @@ class Nhd_312_25664uc_Device(DiscreteChip, CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(3*0.95, 3.3) * Volt,  # Chapter 5, no minimum given, assuming a -5% tolerance
       current_draw=(0.003, 290) * mAmp  # Chapter 5, typ sleep current to 100% brightness at 3v
     ))

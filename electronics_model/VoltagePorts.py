@@ -10,12 +10,12 @@ if TYPE_CHECKING:
   from .AnalogPort import AnalogSource
 
 
-class ElectricalLink(CircuitLink):
+class VoltageLink(CircuitLink):
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(ElectricalSource())
-    self.sinks = self.Port(Vector(ElectricalSink()))
+    self.source = self.Port(VoltageSource())
+    self.sinks = self.Port(Vector(VoltageSink()))
 
     self.voltage = self.Parameter(RangeExpr())
     self.voltage_limits = self.Parameter(RangeExpr())
@@ -32,18 +32,18 @@ class ElectricalLink(CircuitLink):
     self.require(self.source.current_limits.contains(self.current_drawn), "overcurrent")
 
 
-class ElectricalSinkBridge(CircuitPortBridge):
+class VoltageSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(ElectricalSink(current_draw=RangeExpr()))
+    self.outer_port = self.Port(VoltageSink(current_draw=RangeExpr()))
 
     # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
     # The outer port's voltage_limits is untouched and should be defined in the port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.inner_link = self.Port(ElectricalSource(current_limits=RangeExpr.ALL,
-                                                 voltage_out=RangeExpr()))
+    self.inner_link = self.Port(VoltageSource(current_limits=RangeExpr.ALL,
+                                              voltage_out=RangeExpr()))
 
   def contents(self) -> None:
     super().contents()
@@ -52,18 +52,18 @@ class ElectricalSinkBridge(CircuitPortBridge):
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
-class ElectricalSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
+class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(ElectricalSource(voltage_out=RangeExpr()))
+    self.outer_port = self.Port(VoltageSource(voltage_out=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.inner_link = self.Port(ElectricalSink(voltage_limits=RangeExpr.ALL,
-                                               current_draw=RangeExpr()))
+    self.inner_link = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
+                                            current_draw=RangeExpr()))
 
   def contents(self) -> None:
     super().contents()
@@ -78,21 +78,21 @@ class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
   pass
 
 
-class ElectricalBase(CircuitPort[ElectricalLink]):
+class VoltageBase(CircuitPort[VoltageLink]):
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = ElectricalLink
+    self.link_type = VoltageLink
 
 #     self.isolation_domain = self.Parameter(RefParameter())  # semantics TBD
 #     self.reference = self.Parameter(RefParameter())  # semantics TBD, ideally some concept of implicit domains
 
 
-class ElectricalSink(ElectricalBase):
-  def __init__(self, model: Optional[ElectricalSink] = None,
+class VoltageSink(VoltageBase):
+  def __init__(self, model: Optional[VoltageSink] = None,
                voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
-    self.bridge_type = ElectricalSinkBridge
+    self.bridge_type = VoltageSinkBridge
 
     if model is not None:
       # TODO check that both model and individual parameters aren't overdefined
@@ -103,12 +103,12 @@ class ElectricalSink(ElectricalBase):
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
 
 
-class ElectricalSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
+class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
   @init_in_parent
   def __init__(self):
     from .DigitalPorts import DigitalSource
     super().__init__()
-    self.src = self.Port(ElectricalSink(
+    self.src = self.Port(VoltageSink(
       voltage_limits=RangeExpr.ALL * Volt,
       current_draw=RangeExpr()
     ))
@@ -120,12 +120,12 @@ class ElectricalSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
 
-class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
+class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
   @init_in_parent
   def __init__(self):
     from .AnalogPort import AnalogSource
     super().__init__()
-    self.src = self.Port(ElectricalSink(
+    self.src = self.Port(VoltageSink(
       voltage_limits=(-float('inf'), float('inf'))*Volt,
       current_draw=RangeExpr()
     ))
@@ -138,13 +138,13 @@ class ElectricalSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     self.assign(self.src.current_draw, self.dst.link().current_draw)  # type: ignore
 
 
-class ElectricalSource(ElectricalBase):
-  def __init__(self, model: Optional[ElectricalSource] = None,
+class VoltageSource(VoltageBase):
+  def __init__(self, model: Optional[VoltageSource] = None,
                voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
-    self.bridge_type = ElectricalSourceBridge
-    self.adapter_types = [ElectricalSinkAdapterDigitalSource, ElectricalSinkAdapterAnalogSource]
+    self.bridge_type = VoltageSourceBridge
+    self.adapter_types = [VoltageSinkAdapterDigitalSource, VoltageSinkAdapterAnalogSource]
 
     if model is not None:
       # TODO check that both model and individual parameters aren't overdefined
@@ -155,29 +155,29 @@ class ElectricalSource(ElectricalBase):
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
 
   def as_digital_source(self) -> DigitalSource:
-    return self._convert(ElectricalSinkAdapterDigitalSource())
+    return self._convert(VoltageSinkAdapterDigitalSource())
 
   def as_analog_source(self) -> AnalogSource:
-    return self._convert(ElectricalSinkAdapterAnalogSource())
+    return self._convert(VoltageSinkAdapterAnalogSource())
 
 
-def Ground(current_draw: RangeLike = RangeExpr.ZERO * Amp) -> ElectricalSink:
-  return ElectricalSink(voltage_limits=RangeExpr.ZERO * Volt, current_draw=current_draw)
+def Ground(current_draw: RangeLike = RangeExpr.ZERO * Amp) -> VoltageSink:
+  return VoltageSink(voltage_limits=RangeExpr.ZERO * Volt, current_draw=current_draw)
 
-def GroundSource() -> ElectricalSource:
-  return ElectricalSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ZERO * Amp)
+def GroundSource() -> VoltageSource:
+  return VoltageSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ZERO * Amp)
 
 # Standard port tags for implicit connection scopes / auto-connecting power supplies
-Common = PortTag(ElectricalSink)  # Common ground (0v) port
+Common = PortTag(VoltageSink)  # Common ground (0v) port
 
-Power = PortTag(ElectricalSink)  # General positive voltage port, should only be mutually exclusive with the below
+Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below
 
 # Note: in the current model, no explicit "power tag" is equivalent to digital / noisy supply
 # TODO bring these back, on an optional basis
-# PowerAnalog = PortTag(ElectricalSink)  # Analog power supply, ideally kept isolated from digital supply
-# PowerRf = PortTag(ElectricalSink)  # RF power supply
-# Power1v8 = PortTag(ElectricalSink)  # 1.8v tolerant power input port
-# Power2v5 = PortTag(ElectricalSink)  # 2.5v tolerant power input port
-# Power3v3 = PortTag(ElectricalSink)  # 3.3v tolerant power input port
-# Power5v = PortTag(ElectricalSink)  # 5.0v tolerant power input port
-# Power12v = PortTag(ElectricalSink)  # 12v tolerant power input port
+# PowerAnalog = PortTag(VoltageSink)  # Analog power supply, ideally kept isolated from digital supply
+# PowerRf = PortTag(VoltageSink)  # RF power supply
+# Power1v8 = PortTag(VoltageSink)  # 1.8v tolerant power input port
+# Power2v5 = PortTag(VoltageSink)  # 2.5v tolerant power input port
+# Power3v3 = PortTag(VoltageSink)  # 3.3v tolerant power input port
+# Power5v = PortTag(VoltageSink)  # 5.0v tolerant power input port
+# Power12v = PortTag(VoltageSink)  # 12v tolerant power input port

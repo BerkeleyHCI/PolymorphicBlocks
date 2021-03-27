@@ -112,4 +112,4 @@ class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to 
     self.cap_b = self.Block(cap_model)
     self.connect(self.cap_a.pos, self.crystal.a)
     self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.cap_a.neg.as_electrical_sink(), self.cap_b.neg.as_electrical_sink(), self.gnd)
+    self.connect(self.cap_a.neg.as_voltage_sink(), self.cap_b.neg.as_voltage_sink(), self.gnd)

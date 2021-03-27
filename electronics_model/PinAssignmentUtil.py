@@ -3,7 +3,7 @@ from abc import abstractmethod
 from itertools import chain
 
 from edg_core import *
-from .ElectricalPorts import CircuitPort
+from .VoltagePorts import CircuitPort
 
 
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, CircuitPort]]:
@@ -125,7 +125,7 @@ class PeripheralPinAssign(AssignablePinGroup):
     return None
 
 class PinAssignmentUtil:
-  """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf ElectricalBase
+  """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf CircuitPort
   port to a pin."""
   def __init__(self, *assignables: AssignablePinGroup) -> None:
     self.assignables_by_port = IdentityDict[Port, AssignablePinGroup]()

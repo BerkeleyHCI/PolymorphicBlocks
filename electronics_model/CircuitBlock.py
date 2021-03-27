@@ -7,7 +7,7 @@ from edg_core import edgir, IdentityDict  # TODO: this is ugly
 from edg_core.ConstraintExpr import Refable
 
 if TYPE_CHECKING:
-  from .ElectricalPorts import CircuitPort
+  from .VoltagePorts import CircuitPort
 
 
 class Pinning:
@@ -16,8 +16,7 @@ class Pinning:
 
 
 class CircuitNet:
-  """Electrical net, a copper connection of ElectricalBase "pins", to be used inside Links to denote electrical
-  connectivity."""
+  """Electrical net, a copper connection of "pins", to be used inside Links to denote electrical connectivity."""
   def __init__(self, pins: List[CircuitArrayReduction[CircuitPort]]):
     self.pins = pins
 
@@ -74,7 +73,7 @@ class CircuitBlock(Block):
     Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
     assembly"""
     from edg_core.Blocks import BlockElaborationState, BlockDefinitionError
-    from .ElectricalPorts import CircuitPort
+    from .VoltagePorts import CircuitPort
 
     if self._elaboration_state != BlockElaborationState.contents and \
         self._elaboration_state != BlockElaborationState.generate:

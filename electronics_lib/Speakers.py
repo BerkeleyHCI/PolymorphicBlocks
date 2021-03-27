@@ -7,7 +7,7 @@ class Lm4871_Device(DiscreteChip, CircuitBlock):
   def __init__(self):
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(2.0, 5.5) * Volt,
       current_draw=(6.5, 10 + 433) * mAmp,  # TODO better estimate of speaker current than 1.5W into 8-ohm load
     ), [Power])
