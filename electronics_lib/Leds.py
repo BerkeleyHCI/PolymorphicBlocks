@@ -31,7 +31,7 @@ class ThtLed(Led, FootprintBlock):
 class IndicatorLed(Light):
   """High-side-driven (default, "common cathode") indicator LED"""
   @init_in_parent
-  def __init__(self, wavelength: RangeLike = RangeExpr(), current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers.
@@ -40,7 +40,6 @@ class IndicatorLed(Light):
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
     self.signal = self.Port(DigitalSink(), [InOut])
@@ -64,14 +63,13 @@ class IndicatorLed(Light):
 class VoltageIndicatorLed(Light):
   """LED connected to a voltage rail as an indicator that there is voltage present"""
   @init_in_parent
-  def __init__(self, wavelength: RangeLike = RangeExpr(), current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """
     TODO: support non single color wavelength (eg, color temperature?)
     TODO: support brightness
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
     self.signal = self.Port(VoltageSink(), [InOut])  # TODO should this be Power instead?

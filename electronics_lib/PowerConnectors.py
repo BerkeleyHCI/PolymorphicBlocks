@@ -6,7 +6,7 @@ class PowerBarrelJack(BarrelJack):
   """Barrel jack that models a configurable voltage / max current power supply."""
   @init_in_parent
   def __init__(self,
-               voltage_out: RangeLike = Default(RangeExpr.ALL),
+               voltage_out: RangeLike = RangeExpr(),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
