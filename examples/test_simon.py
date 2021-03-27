@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class DomeButtonConnector(CircuitBlock):
@@ -126,4 +125,4 @@ class TestSimon(BoardTop):
 
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(TestSimon)
+    compile_board_inplace(TestSimon)

@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class DistanceSensor(CircuitBlock):
@@ -192,4 +191,4 @@ class TestMotionControlledDoor(CircuitBlock):
 class MotionControlledDoorTestCase(unittest.TestCase):
   @unittest.skip("needs major refactoring to update to new electronics model")
   def test_design(self) -> None:
-    run_test(TestMotionControlledDoor)
+    compile_board_inplace(TestMotionControlledDoor)

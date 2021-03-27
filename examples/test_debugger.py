@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class SwdSourceBitBang(Block):
@@ -158,4 +157,4 @@ class Debugger(BoardTop):
 
 class DebuggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(Debugger)
+    compile_board_inplace(Debugger)

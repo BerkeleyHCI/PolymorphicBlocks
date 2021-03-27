@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class UsbPdTest(Block):
@@ -97,4 +96,4 @@ class UsbPdTest(Block):
 class UsbPdTestCase(unittest.TestCase):
   @unittest.skip("needs to be completed")
   def test_design_basic(self) -> None:
-    run_test(UsbPdTest)
+    compile_board_inplace(UsbPdTest)

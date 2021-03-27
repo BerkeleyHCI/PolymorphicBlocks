@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class LightsConnector(Connector, CircuitBlock):
@@ -176,4 +175,4 @@ class TestHighSwitch(BoardTop):
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(TestHighSwitch)
+    compile_board_inplace(TestHighSwitch)

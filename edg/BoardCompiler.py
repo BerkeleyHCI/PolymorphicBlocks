@@ -2,13 +2,14 @@ from typing import Type
 
 import os
 from contextlib import suppress
-from edg_core import Block, ScalaCompiler
+from edg_core import Block, ScalaCompiler, CompiledDesign
 from electronics_model import footprint, NetlistGenerator
 
 from .SchematicStubGenerator import write_schematic_stubs
 
 
-def compile_board(design: Type[Block], target_dir: str, target_name: str):
+def compile_board(design: Type[Block], target_dir: str, target_name: str,
+                  errors_fatal: bool = True) -> CompiledDesign:
   if not os.path.exists(target_dir):
     os.makedirs(target_dir)
   assert os.path.isdir(target_dir), f"target_dir {target_dir} to compile_board must be directory"
@@ -32,3 +33,23 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str):
     net_file.write(netlist_string)
 
   write_schematic_stubs(netlist, target_dir, target_name)
+
+  return compiled
+
+
+def compile_board_inplace(design: Type[Block], errors_fatal: bool = True) -> CompiledDesign:
+  """Compiles a board and writes the results in a sub-directory
+  where the module containing the top-level is located"""
+  import inspect
+  import os
+
+  compiled = compile_board(
+    design,
+    os.path.join(os.path.dirname(inspect.getfile(design)), design.__module__.split(".")[-1]),
+    design.__name__,
+    errors_fatal=errors_fatal)
+
+  if compiled.result.error:
+    print(f"error during compilation: \n{compiled.result.error}")
+
+  return compiled

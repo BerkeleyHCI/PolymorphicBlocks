@@ -1,14 +1,17 @@
 from electronics_abstract_parts import *
 
 
+@abstract_block
 class PowerBarrelJack(BarrelJack):
   """Barrel jack that models a configurable voltage / max current power supply."""
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
+  def __init__(self,
+               voltage_out: RangeLike = Default(RangeExpr.ALL),
+               current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
     self.pwr = self.Port(ElectricalSource(voltage_out=voltage_out, current_limits=current_limits))
-    self.gnd = self.Port(GroundSource(), optional=True)  # TODO need to combine GNDs
+    self.gnd = self.Port(GroundSource())
 
 
 class Pj_102a(PowerBarrelJack, CircuitBlock):

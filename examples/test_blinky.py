@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class TestBlinkyBasic(BoardTop):
@@ -210,20 +209,20 @@ class TestBlinkyComplete(BoardTop):
 
 class BlinkyTestCase(unittest.TestCase):
   def test_design_basic(self) -> None:
-    run_test(TestBlinkyBasic)
+    compile_board_inplace(TestBlinkyBasic)
 
   def test_design_simple(self) -> None:
-    run_test(TestBlinkySimple)
+    compile_board_inplace(TestBlinkySimple)
 
   def test_design_simple_chain(self) -> None:
-    run_test(TestBlinkySimpleChain)
+    compile_board_inplace(TestBlinkySimpleChain)
 
   def test_design_broken(self) -> None:
     with self.assertRaises(CompilerCheckError):
-      run_test(TestBlinkyBroken)
+      compile_board_inplace(TestBlinkyBroken)
 
   def test_design_flat(self) -> None:
-    run_test(TestBlinkyFlattened)
+    compile_board_inplace(TestBlinkyFlattened)
 
   def test_design_complete(self) -> None:
-    run_test(TestBlinkyComplete)
+    compile_board_inplace(TestBlinkyComplete)

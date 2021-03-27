@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class TestDatalogger(BoardTop):
@@ -197,4 +196,4 @@ class TestDatalogger(BoardTop):
 
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(TestDatalogger)
+    compile_board_inplace(TestDatalogger)
