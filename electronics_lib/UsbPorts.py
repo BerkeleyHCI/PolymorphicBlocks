@@ -8,7 +8,7 @@ class UsbConnector(Connector):
   USB2_CURRENT_LIMITS = (0, 0.5)*Amp
 
 
-class UsbAReceptacle(UsbConnector, CircuitBlock):
+class UsbAReceptacle(UsbConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink(
@@ -38,7 +38,7 @@ class UsbAReceptacle(UsbConnector, CircuitBlock):
     )
 
 
-class UsbCReceptacle(UsbConnector, CircuitBlock):
+class UsbCReceptacle(UsbConnector, FootprintBlock):
   @init_in_parent
   def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS) -> None:
@@ -114,7 +114,7 @@ class UsbDeviceCReceptacle(UsbDeviceConnector):
       (self.cc2_pull, ), _ = self.chain(imp.Block(pdr_model), self.port.cc2)
 
 
-class UsbEsdDiode(TvsDiode, CircuitBlock):  # TODO maybe this should be a superclass?
+class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a superclass?
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground(), [Common])

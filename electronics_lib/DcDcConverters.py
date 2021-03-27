@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Tps561201_Device(DiscreteChip, CircuitBlock):
+class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
@@ -94,7 +94,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     # self.constrain(self.inductor.inductance.within((3.3, 4.7)*uHenry(tol=0.2)))  # TODO down to 2.2 for lower output voltages
 
 
-class Tps54202h_Device(DiscreteChip, CircuitBlock):
+class Tps54202h_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
@@ -193,7 +193,7 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     ))
 
 
-class Lmr33630_Device(DiscreteChip, CircuitBlock):
+class Lmr33630_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
@@ -313,7 +313,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     ))
 
 
-class Ap3012_Device(DiscreteChip, CircuitBlock):
+class Ap3012_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     # TODO the power path doesn't actually go through Vin, instead it goes through the inductor

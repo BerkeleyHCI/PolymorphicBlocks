@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Lm4871_Device(DiscreteChip, CircuitBlock):
+class Lm4871_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -91,7 +91,7 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Speaker(DiscreteApplication, CircuitBlock):
+class Speaker(DiscreteApplication, FootprintBlock):
   def __init__(self):
     super().__init__()
 

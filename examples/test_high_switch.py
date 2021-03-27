@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class LightsConnector(Connector, CircuitBlock):
+class LightsConnector(Connector, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()

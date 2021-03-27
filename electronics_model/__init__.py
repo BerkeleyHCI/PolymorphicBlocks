@@ -1,6 +1,6 @@
 from edg_core import *
 
-from .CircuitBlock import CircuitBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
+from .CircuitBlock import FootprintBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
 from .VoltagePorts import CircuitPort
 
 from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry

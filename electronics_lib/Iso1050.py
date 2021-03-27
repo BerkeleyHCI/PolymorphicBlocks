@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Iso1050dub_Device(DiscreteChip, CircuitBlock):
+class Iso1050dub_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
     # Table 6.3, recommended operating conditions

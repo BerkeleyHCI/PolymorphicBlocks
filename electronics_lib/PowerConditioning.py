@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Supercap(DiscreteComponent, CircuitBlock):  # TODO actually model supercaps and parts selection
+class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model supercaps and parts selection
   def __init__(self) -> None:
     super().__init__()
     self.pos = self.Port(VoltageSink())

@@ -5,7 +5,7 @@ from edg_core import *
 from . import *
 
 
-class TestBlock(CircuitBlock):
+class TestBlock(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

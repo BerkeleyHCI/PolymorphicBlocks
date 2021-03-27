@@ -22,7 +22,7 @@ class SwdCortexTargetWithTdiConnector(SwdCortexTargetConnector):
     self.tdi = self.Port(DigitalBidir(), optional=True)
 
 
-class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -45,7 +45,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, CircuitBlock):
     )
 
 
-class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -68,7 +68,7 @@ class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, CircuitBlock):
 
 
 # TODO dedup most with legged version
-class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -90,7 +90,7 @@ class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, CircuitBlock):
     )
 
 
-class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, CircuitBlock):
+class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

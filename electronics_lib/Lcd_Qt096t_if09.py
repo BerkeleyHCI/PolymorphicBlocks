@@ -2,7 +2,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Qt096t_if09_Device(DiscreteChip, CircuitBlock):
+class Qt096t_if09_Device(DiscreteChip, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

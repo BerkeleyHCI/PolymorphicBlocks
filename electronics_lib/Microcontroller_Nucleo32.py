@@ -4,7 +4,7 @@ from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO refactor with _Device
+class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
   """
   Nucleo32 F303K8 configured as power source from USB.
   TODO base classes?

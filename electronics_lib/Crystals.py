@@ -30,7 +30,7 @@ def generate_crystal_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard')
 
 
-class SmdCrystal(Crystal, CircuitBlock):
+class SmdCrystal(Crystal, FootprintBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self._in_mfr = self.Parameter(StringExpr())

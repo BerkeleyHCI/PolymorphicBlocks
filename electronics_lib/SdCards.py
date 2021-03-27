@@ -31,7 +31,7 @@ class SdCard(Memory):
     self.cs = self.Port(DigitalSink(dio_model))
 
 
-class SdSocket(SdCard, Connector, CircuitBlock):
+class SdSocket(SdCard, Connector, FootprintBlock):
   """Full-sized SD card socket"""
   def __init__(self) -> None:
     super().__init__()
@@ -66,7 +66,7 @@ class SdSocket(SdCard, Connector, CircuitBlock):
     )
 
 
-class MicroSdSocket(SdCard, Connector, CircuitBlock):
+class MicroSdSocket(SdCard, Connector, FootprintBlock):
   """MicroSD socket"""
   def __init__(self) -> None:
     super().__init__()

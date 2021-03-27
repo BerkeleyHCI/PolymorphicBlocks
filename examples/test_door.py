@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class DistanceSensor(CircuitBlock):
+class DistanceSensor(FootprintBlock):
   '''
   HCSR04 distance sensor
   Datasheet: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
@@ -17,7 +17,7 @@ class DistanceSensor(CircuitBlock):
     self.gnd = self.Port(Ground(), [Common])
 
 
-class DcMotor(CircuitBlock):
+class DcMotor(FootprintBlock):
   '''
   DMN29BA motor
   Datasheet: http://www.e-jpc.com/pdf/dcmotors601-0241.pdf
@@ -33,7 +33,7 @@ class DcMotor(CircuitBlock):
     high_ohm = 480
     self.resistance = self.Parameter(RangeExpr((low_ohm, high_ohm) * Ohm))
 
-class MotorDriver(CircuitBlock):
+class MotorDriver(FootprintBlock):
   '''
   DRV8871 Motor Driver
   Tutorial: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-drv8871-brushed-dc-motor-driver-breakout.pdf
@@ -100,7 +100,7 @@ class MotorDriver(CircuitBlock):
 
 
 # SSD1351: OLED driver chip
-class Ssd1351(CircuitBlock):
+class Ssd1351(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -118,7 +118,7 @@ class Ssd1351(CircuitBlock):
 # --
 
 
-class TestMotionControlledDoor(CircuitBlock):
+class TestMotionControlledDoor(FootprintBlock):
   def contents(self) -> None:
     super().contents()
 

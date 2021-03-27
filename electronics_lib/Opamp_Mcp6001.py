@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Mcp6001_Device(DiscreteChip, CircuitBlock):
+class Mcp6001_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

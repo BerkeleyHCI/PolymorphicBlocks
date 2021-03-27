@@ -46,7 +46,7 @@ def generate_fet_table(TABLES: List[str]) -> ProductTable:
 
 
 @abstract_block
-class SmtFet(Fet, CircuitBlock, GeneratorBlock):
+class SmtFet(Fet, FootprintBlock, GeneratorBlock):
   product_table: ProductTable
 
   @init_in_parent
@@ -130,7 +130,7 @@ class SmtPFet(PFet, SmtFet):
 
 
 @abstract_block
-class SmtSwitchFet(SwitchFet, CircuitBlock, GeneratorBlock):  # TODO dedup w/ DefaultFet
+class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):  # TODO dedup w/ DefaultFet
   product_table: ProductTable
 
   @init_in_parent

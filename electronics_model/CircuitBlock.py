@@ -36,7 +36,7 @@ class NetBaseBlock(BaseBlock):
 
 
 @abstract_block
-class CircuitBlock(Block):
+class FootprintBlock(Block):
   """Block that represents a component that has part(s) and trace(s) on the PCB.
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
   """

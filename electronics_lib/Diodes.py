@@ -49,7 +49,7 @@ def generate_diode_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard')
 
 
-class SmtDiode(Diode, CircuitBlock, GeneratorBlock):
+class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
   product_table = generate_diode_table([
     'Digikey_Diodes_DO214.csv',
     'Digikey_Diodes_DPak_DDPak.csv',
@@ -160,7 +160,7 @@ def generate_zener_diode_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard')
 
 
-class SmtZenerDiode(ZenerDiode, CircuitBlock, GeneratorBlock):
+class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
   product_table = generate_zener_diode_table([
     'Digikey_ZenerDiodes_DO214.csv',
     'Digikey_ZenerDiodes_SOD123_SOD323.csv',

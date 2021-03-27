@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Lpc1549_Device(DiscreteChip, CircuitBlock):
+class Lpc1549_Device(DiscreteChip, FootprintBlock):
   IRC_FREQUENCY = 12*MHertz(tol=0.01)
 
   # TODO remove these once there is a unified pin capability specification

@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Cr2032(Battery, CircuitBlock):
+class Cr2032(Battery, FootprintBlock):
   def __init__(self):
     # This actually initializes in the parent, TODO unhackify this by removing spec processing, see issue #28
     super().__init__(voltage=(2.0, 3.0)*Volt)
@@ -24,7 +24,7 @@ class Cr2032(Battery, CircuitBlock):
     )
 
 
-class Li18650(Battery, CircuitBlock):
+class Li18650(Battery, FootprintBlock):
   def __init__(self):
     # This actually initializes in the parent, TODO unhackify this by removing spec processing, see issue #28
     super().__init__(voltage=(2.5, 4.2)*Volt)

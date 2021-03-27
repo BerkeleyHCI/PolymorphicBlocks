@@ -51,7 +51,7 @@ class CalSolCanBlock(CalSolSubcircuit):
       self.connect(self.transceiver.can_gnd, self.can_gnd)
 
 
-class CanFuse(PptcFuse, CircuitBlock):
+class CanFuse(PptcFuse, FootprintBlock):
   def __init__(self):
     super().__init__(trip_current=150*mAmp(tol=0))
 
@@ -70,7 +70,7 @@ class CanFuse(PptcFuse, CircuitBlock):
     )
 
 
-class CanEsdDiode(TvsDiode, CircuitBlock):
+class CanEsdDiode(TvsDiode, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -90,7 +90,7 @@ class CanEsdDiode(TvsDiode, CircuitBlock):
       part='PESD1CAN,215')
 
 
-class CalSolPowerConnector(Connector, CalSolSubcircuit, CircuitBlock):
+class CalSolPowerConnector(Connector, CalSolSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -114,7 +114,7 @@ class CalSolPowerConnector(Connector, CalSolSubcircuit, CircuitBlock):
     )
 
 
-class CalSolCanConnector(Connector, CalSolSubcircuit, CircuitBlock):
+class CalSolCanConnector(Connector, CalSolSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -141,7 +141,7 @@ class CalSolCanConnector(Connector, CalSolSubcircuit, CircuitBlock):
     )
 
 
-class CalSolCanConnectorRa(Connector, CalSolSubcircuit, CircuitBlock):
+class CalSolCanConnectorRa(Connector, CalSolSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -168,7 +168,7 @@ class CalSolCanConnectorRa(Connector, CalSolSubcircuit, CircuitBlock):
     )
 
 
-class M12CanConnector(Connector, CalSolSubcircuit, CircuitBlock):
+class M12CanConnector(Connector, CalSolSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

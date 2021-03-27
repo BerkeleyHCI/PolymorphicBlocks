@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class SmtLed(Led, CircuitBlock):
+class SmtLed(Led, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -14,7 +14,7 @@ class SmtLed(Led, CircuitBlock):
     )
 
 
-class ThtLed(Led, CircuitBlock):
+class ThtLed(Led, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -91,7 +91,7 @@ class VoltageIndicatorLed(Light):
     self.connect(self.res.b.as_ground(), self.gnd)
 
 
-class SmtRgbLed(RgbLedCommonAnode, CircuitBlock):
+class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -106,7 +106,7 @@ class SmtRgbLed(RgbLedCommonAnode, CircuitBlock):
     )
 
 
-class ThtRgbLed(RgbLedCommonAnode, CircuitBlock):
+class ThtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(

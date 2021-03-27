@@ -10,7 +10,7 @@ from . import footprint as kicad
 
 
 class NetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Type[CircuitBlock]):
+  def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
     net = NetlistGenerator().generate(compiled)
     return kicad.generate_netlist(net.blocks, net.nets)

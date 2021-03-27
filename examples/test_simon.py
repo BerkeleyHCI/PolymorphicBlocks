@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class DomeButtonConnector(CircuitBlock):
+class DomeButtonConnector(FootprintBlock):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()

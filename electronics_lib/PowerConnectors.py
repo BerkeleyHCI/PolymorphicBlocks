@@ -14,7 +14,7 @@ class PowerBarrelJack(BarrelJack):
     self.gnd = self.Port(GroundSource())
 
 
-class Pj_102a(PowerBarrelJack, CircuitBlock):
+class Pj_102a(PowerBarrelJack, FootprintBlock):
   """Barrel jack with 2.1mm ID and 5.5mm OD"""
   def contents(self):
     super().contents()

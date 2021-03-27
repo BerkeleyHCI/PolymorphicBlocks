@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Ld1117_Device(DiscreteChip, CircuitBlock):
+class Ld1117_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):
     super().__init__()
@@ -74,7 +74,7 @@ class Ld1117(LinearRegulator, GeneratorBlock):
     self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)
 
 
-class Ldl1117_Device(DiscreteChip, CircuitBlock):
+class Ldl1117_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):
     super().__init__()
@@ -149,7 +149,7 @@ class Ldl1117(LinearRegulator, GeneratorBlock):
     self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)
 
 
-class Ap2204k_Device(DiscreteChip, CircuitBlock):
+class Ap2204k_Device(DiscreteChip, FootprintBlock):
   # note TI compatible devices: TPS709 (w/ EN disconnected); LP2985, LP2992 (16V + BYP)
   @init_in_parent
   def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):

@@ -4,7 +4,7 @@ from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Stm32f103_48_Device(DiscreteChip, CircuitBlock):
+class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
   """
   STM32F103C8 (QFP-48) microcontroller, Cortex-M3
   https://www.st.com/resource/en/datasheet/stm32f103c8.pdf

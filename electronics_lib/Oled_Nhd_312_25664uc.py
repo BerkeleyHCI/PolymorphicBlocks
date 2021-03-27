@@ -2,7 +2,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Nhd_312_25664uc_Device(DiscreteChip, CircuitBlock):
+class Nhd_312_25664uc_Device(DiscreteChip, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

@@ -121,7 +121,7 @@ class TestBlinkyFlattened(BoardTop):
     )
 
 
-class Mcp9700_Device(CircuitBlock):
+class Mcp9700_Device(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     # block boundary (ports, parameters) definition here
