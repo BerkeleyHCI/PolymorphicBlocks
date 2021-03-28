@@ -12,8 +12,14 @@ class DcDcConverter(PowerConditioner):
 
     self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
 
-    self.pwr_in = self.Port(VoltageSink(), [Power, Input])  # TODO mark as future-connected here?
-    self.pwr_out = self.Port(VoltageSource(), [Output])  # TODO mark as future-connected here?
+    self.pwr_in = self.Port(VoltageSink(
+      voltage_limits=RangeExpr(),
+      current_draw=RangeExpr()
+    ), [Power, Input])  # TODO mark as future-connected here?
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=RangeExpr(),
+      current_limits=RangeExpr()
+    ), [Output])  # TODO mark as future-connected here?
     self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
 
     self.require(self.pwr_out.voltage_out.within(self.spec_output_voltage),

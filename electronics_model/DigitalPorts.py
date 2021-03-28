@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from edg_core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .VoltagePorts import CircuitPort, VoltageSink, VoltageSource
@@ -202,11 +202,20 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
 class DigitalSource(DigitalBase):
   @staticmethod
   def from_supply(neg: VoltageSink, pos: VoltageSink,
-                  current_limits: RangeLike = Default(RangeExpr.ALL)) -> DigitalSource:
+                  current_limits: RangeLike = Default(RangeExpr.ALL), *,
+                  output_threshold_offset: Optional[Tuple[FloatLike, FloatLike]] = None) -> DigitalSource:
+    if output_threshold_offset is not None:
+      output_offset_low = FloatExpr._to_expr_type(output_threshold_offset[0])
+      output_offset_high = FloatExpr._to_expr_type(output_threshold_offset[1])
+      output_threshold = (neg.link().voltage.upper() + output_offset_low,
+                          pos.link().voltage.lower() + output_offset_high)
+    else:
+      output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
+
     return DigitalSource(
       voltage_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
       current_limits=current_limits,
-      output_thresholds=(neg.link().voltage.upper(), pos.link().voltage.lower())
+      output_thresholds=output_threshold
     )
 
   def __init__(self, model: Optional[Union[DigitalSource, DigitalBidir]] = None,
