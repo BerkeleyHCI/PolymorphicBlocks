@@ -96,19 +96,21 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     generatorCache.clear()
   }
 
-  def discardCached(name: String): Seq[ref.LibraryPath] = {
-    val discardKeys = elts.collect {  // TODO this assumes following the naming convention
-      case (path, data) if path.getTarget.getName == name => path
+  /** Discards a type from the cache, returning whether the item existed (and was discarded) */
+  def discardCached(discardType: ref.LibraryPath): Boolean = {
+    val discarded = if (elts.contains(discardType)) {
+      true
+    } else {
+      false
     }
-    elts --= discardKeys
-    eltsRefinements --= discardKeys
-
-    val discardGenerator = generatorCache.collect {  // TODO this assumes following the naming convention
-      case (key @ (path, fn, values), data) if path.getTarget.getName == name => key
+    elts -= discardType
+    eltsRefinements -= discardType
+    generatorCache.filterInPlace {
+      case (key @ (path, fn, values), data) if path == discardType => false
+      case _ => true
     }
-    generatorCache --= discardGenerator
 
-    discardKeys.toSeq
+    discarded
   }
 
   def reloadModule(module: String): Seq[ref.LibraryPath] = {
