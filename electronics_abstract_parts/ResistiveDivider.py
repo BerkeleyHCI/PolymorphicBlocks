@@ -218,7 +218,7 @@ class BaseVoltageDivider(Filter, Block):
     self.selected_impedance = self.Parameter(RangeExpr(self.div.selected_impedance))
     self.selected_series_impedance = self.Parameter(RangeExpr(self.div.selected_series_impedance))
 
-    self.assign(self.input.current_draw, self.output.link().current_draw)
+    self.assign(self.input.current_draw, self.output.link().current_drawn)
     # TODO also model static current draw into gnd
 
 
@@ -280,4 +280,4 @@ class SignalDivider(AnalogFilter, Block):
       impedance=self.div.selected_impedance
     ), [Output])
     self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
-    self.assign(self.input.current_draw, self.output.link().current_draw)
+    self.assign(self.input.current_draw, self.output.link().current_drawn)

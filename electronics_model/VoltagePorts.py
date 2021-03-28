@@ -53,6 +53,7 @@ class VoltageSinkBridge(CircuitPortBridge):
 
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
     self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
+
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
@@ -75,6 +76,7 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO adjust for inner current drawn
+
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
 
