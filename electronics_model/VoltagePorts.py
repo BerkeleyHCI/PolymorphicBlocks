@@ -131,6 +131,8 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
 class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
   @init_in_parent
   def __init__(self):
+    from .AnalogPort import AnalogSource
+
     super().__init__()
     self.src = self.Port(VoltageSink(
       voltage_limits=(-float('inf'), float('inf'))*Volt,
