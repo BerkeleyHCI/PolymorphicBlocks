@@ -20,6 +20,7 @@ class VoltageLink(CircuitLink):
     self.voltage = self.Parameter(RangeExpr())
     self.voltage_limits = self.Parameter(RangeExpr())
     self.current_drawn = self.Parameter(RangeExpr())
+    self.current_limits = self.Parameter(RangeExpr())
 
   def contents(self) -> None:
     super().contents()
@@ -27,16 +28,18 @@ class VoltageLink(CircuitLink):
     self.assign(self.voltage, self.source.voltage_out)
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
+    self.assign(self.current_limits, self.source.current_limits)
 
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-    self.require(self.source.current_limits.contains(self.current_drawn), "overcurrent")
+    self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
 
 class VoltageSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(VoltageSink(current_draw=RangeExpr()))
+    self.outer_port = self.Port(VoltageSink(current_draw=RangeExpr(),
+                                            voltage_limits=RangeExpr()))
 
     # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
     # The outer port's voltage_limits is untouched and should be defined in the port def.
@@ -49,6 +52,7 @@ class VoltageSinkBridge(CircuitPortBridge):
     super().contents()
 
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+    self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
@@ -56,7 +60,8 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(VoltageSource(voltage_out=RangeExpr()))
+    self.outer_port = self.Port(VoltageSource(voltage_out=RangeExpr(),
+                                              current_limits=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
     # The outer port's current_limits is untouched and should be defined in tte port def.
@@ -69,6 +74,7 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
     super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO adjust for inner current drawn
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
 

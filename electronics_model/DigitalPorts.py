@@ -143,6 +143,7 @@ class DigitalSourceBridge(CircuitPortBridge):
     super().__init__()
 
     self.outer_port = self.Port(DigitalSource(voltage_out=RangeExpr(),
+                                              current_limits=RangeExpr(),
                                               output_thresholds=RangeExpr()))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
@@ -157,6 +158,7 @@ class DigitalSourceBridge(CircuitPortBridge):
     super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO subtract internal current drawn
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
@@ -166,7 +168,8 @@ class DigitalSinkBridge(CircuitPortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(DigitalSink(current_draw=RangeExpr(),
+    self.outer_port = self.Port(DigitalSink(voltage_limits=RangeExpr(),
+                                            current_draw=RangeExpr(),
                                             input_thresholds=RangeExpr()))
 
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
@@ -177,6 +180,7 @@ class DigitalSinkBridge(CircuitPortBridge):
   def contents(self) -> None:
     super().contents()
 
+    self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
     self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
@@ -316,6 +320,7 @@ class DigitalBidirBridge(CircuitPortBridge):
     super().__init__()
 
     self.outer_port = self.Port(DigitalBidir(voltage_out=RangeExpr(), current_draw=RangeExpr(),
+                                             voltage_limits=RangeExpr(), current_limits=RangeExpr(),
                                              output_thresholds=RangeExpr(), input_thresholds=RangeExpr()))
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
     self.inner_link = self.Port(DigitalBidir(voltage_limits=RangeExpr.ALL, current_limits=RangeExpr.ALL))
@@ -325,6 +330,8 @@ class DigitalBidirBridge(CircuitPortBridge):
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+    self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
+    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO compensate for internal current draw
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Optional
 
 from edg_core import *
 from .CircuitBlock import CircuitLink
@@ -20,6 +19,8 @@ class AnalogLink(CircuitLink):
     self.voltage = self.Parameter(RangeExpr(self.source.voltage_out))
     self.current_draw = self.Parameter(RangeExpr())
 
+    self.voltage_limits = self.Parameter(RangeExpr())
+    self.current_limits = self.Parameter(RangeExpr())
 
   def contents(self) -> None:
     super().contents()
@@ -28,6 +29,10 @@ class AnalogLink(CircuitLink):
     self.assign(self.current_draw, self.sinks.sum(lambda x: x.current_draw))
     total_conductance = self.sinks.sum(lambda x: x.conductance)
     self.assign(self.sink_impedance, (1 / total_conductance))
+
+    self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
+    self.assign(self.current_limits, self.source.current_limits)
+    self.require(self.current_limits.contains(self.current_draw), "overcurrent")
 
 
 class AnalogBase(CircuitPort[AnalogLink]):
