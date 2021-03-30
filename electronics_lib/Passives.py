@@ -49,7 +49,7 @@ def choose_preferred_number(range: Tuple[float, float], tolerance: float, series
 
 
 @abstract_block
-class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
+class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
   TOLERANCE: float
   PACKAGE_POWER: List[Tuple[float, str]]
 
@@ -167,7 +167,7 @@ def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard') \
 
 
-class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
+class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -354,7 +354,7 @@ def generate_inductor_table(TABLES: List[str]) -> ProductTable:
                     ), missing='discard') \
 
 
-class SmtInductor(Inductor, CircuitBlock, GeneratorBlock):
+class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   product_table = generate_inductor_table([
     'Digikey_Inductors_TdkMlz.csv',
     'Digikey_Inductors_MurataDfe.csv',

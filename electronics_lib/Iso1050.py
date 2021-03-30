@@ -3,14 +3,14 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Iso1050dub_Device(DiscreteChip, CircuitBlock):
+class Iso1050dub_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
     # Table 6.3, recommended operating conditions
-    self.vcc1 = self.Port(ElectricalSink(
+    self.vcc1 = self.Port(VoltageSink(
       voltage_limits=(3, 5.5) * Volt, current_draw=(0, 3.6) * mAmp
     ))
-    self.vcc2 = self.Port(ElectricalSink(
+    self.vcc2 = self.Port(VoltageSink(
       voltage_limits=(4.75, 5.25) * Volt, current_draw=(0, 73)*mAmp
     ))
     self.gnd1 = self.Port(Ground())

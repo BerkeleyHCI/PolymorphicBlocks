@@ -29,13 +29,13 @@ class Resistor(PassiveComponent):
 
 
 class PullupResistor(DiscreteApplication):
-  """Pull-up resistor with an ElectricalSink for automatic implicit connect to a Power line."""
+  """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
   # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.io = self.Port(DigitalSingleSource(), [InOut])
 
     self.resistance = self.Parameter(RangeExpr(resistance))
@@ -44,12 +44,12 @@ class PullupResistor(DiscreteApplication):
     super().contents()
     self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.connect(self.pwr, self.res.a.as_electrical_sink())
+    self.connect(self.pwr, self.res.a.as_voltage_sink())
     self.connect(self.io, self.res.b.as_digital_pull_high_from_supply(self.pwr))
 
 
 class PulldownResistor(DiscreteApplication):
-  """Pull-down resistor with an ElectricalSink for automatic implicit connect to a Ground line."""
+  """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
   # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike = RangeExpr()) -> None:
@@ -74,8 +74,8 @@ class SeriesPowerResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(), [Power, Input])
-    self.pwr_out = self.Port(ElectricalSource(), [Output])
+    self.pwr_in = self.Port(VoltageSink(), [Power, Input])
+    self.pwr_out = self.Port(VoltageSource(), [Output])
 
     self.resistance = self.Parameter(RangeExpr(resistance))
     self.current_limits = self.Parameter(RangeExpr(current_limits))
@@ -88,11 +88,11 @@ class SeriesPowerResistor(DiscreteApplication):
       power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
-    self.connect(self.res.a.as_electrical_sink(
+    self.connect(self.res.a.as_voltage_sink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=RangeExpr()
     ), self.pwr_in)
-    self.connect(self.res.b.as_electrical_source(
+    self.connect(self.res.b.as_voltage_source(
       voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
       current_limits=self.current_limits
     ), self.pwr_out)
@@ -103,7 +103,7 @@ class SeriesPowerResistor(DiscreteApplication):
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
-from electronics_model.ElectricalPorts import ElectricalSinkAdapterAnalogSource  # TODO dehack with better adapters
+from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
 class CurrentSenseResistor(DiscreteApplication):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
@@ -121,7 +121,7 @@ class CurrentSenseResistor(DiscreteApplication):
     super().contents()
 
     # TODO dehack with better adapters that also handle bridging
-    self.pwr_adapter = self.Block(ElectricalSinkAdapterAnalogSource())
+    self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
     self.connect(self.pwr_in, self.pwr_adapter.src)
     self.connect(self.pwr_adapter.dst, self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
@@ -155,7 +155,7 @@ class Capacitor(UnpolarizedCapacitor):
 
 
 class DecouplingCapacitor(DiscreteApplication):
-  """Optionally polarized capacitor used for DC decoupling, with ElectricalSink connections with voltage inference.
+  """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
   # TODO no default capacitance
   # TODO: can this be of type Capacitor instead? Need to think about port refinement semantics
@@ -163,8 +163,8 @@ class DecouplingCapacitor(DiscreteApplication):
   def __init__(self, capacitance: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power, Input])
-    self.gnd = self.Port(ElectricalSink(), [Common, Output])
+    self.pwr = self.Port(VoltageSink(), [Power, Input])
+    self.gnd = self.Port(VoltageSink(), [Common, Output])
 
     self.capacitance = self.Parameter(RangeExpr(capacitance))
 
@@ -172,8 +172,8 @@ class DecouplingCapacitor(DiscreteApplication):
     super().contents()
     self.cap = self.Block(Capacitor(self.capacitance, voltage=(self.pwr.link().voltage - self.gnd.link().voltage)))
 
-    self.connect(self.pwr, self.cap.pos.as_electrical_sink())
-    self.connect(self.gnd, self.cap.neg.as_electrical_sink())
+    self.connect(self.pwr, self.cap.pos.as_voltage_sink())
+    self.connect(self.gnd, self.cap.neg.as_voltage_sink())
 
 
 @abstract_block

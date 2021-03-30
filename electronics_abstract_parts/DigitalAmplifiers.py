@@ -9,7 +9,7 @@ class HighSideSwitch(Block):
                frequency: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])  # amplifier voltage
+    self.pwr = self.Port(VoltageSink(), [Power])  # amplifier voltage
     self.gnd = self.Port(Ground(), [Common])
 
     self.control = self.Port(DigitalSink(  # logic voltage
@@ -54,7 +54,7 @@ class HighSideSwitch(Block):
       resistance=pull_resistance,
       power=(0, pull_power_max)
     ))
-    self.connect(self.pull.a.as_electrical_sink(), self.pwr)
+    self.connect(self.pull.a.as_voltage_sink(), self.pwr)
 
     self.drv = self.Block(SwitchPFet(
       drain_voltage=pwr_voltage,
@@ -67,7 +67,7 @@ class HighSideSwitch(Block):
       drive_current=(-1 * pwr_voltage.lower() / pull_resistance.upper(),
                      pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs
     ))
-    self.connect(self.drv.source.as_electrical_sink(
+    self.connect(self.drv.source.as_voltage_sink(
       current_draw=self.output.link().current_drawn
     ), self.pwr)
     self.connect(self.drv.drain.as_digital_source(), self.output)
@@ -78,7 +78,7 @@ class HalfBridgeNFet(Block):
   @init_in_parent
   def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr()) -> None:
     super().__init__()  # TODO MODEL ALL THESE
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     self.gate_high = self.Port(DigitalSink())
@@ -134,7 +134,7 @@ class HalfBridgeNFet(Block):
     self.connect(self.gate_high, self.high.gate.as_digital_sink(
       current_draw=(0, 0)*Amp  # voltage limits and thresholds are passed through to the FETs
     ))
-    self.connect(self.pwr, self.high.drain.as_electrical_sink(
+    self.connect(self.pwr, self.high.drain.as_voltage_sink(
       current_draw=(0,  # from sink/source current to source only
                     self.output.link().current_drawn.upper().max(-1 * self.output.link().current_drawn.lower()))
     ))

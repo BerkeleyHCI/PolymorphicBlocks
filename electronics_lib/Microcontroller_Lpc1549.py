@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Lpc1549_Device(DiscreteChip, CircuitBlock):
+class Lpc1549_Device(DiscreteChip, FootprintBlock):
   IRC_FREQUENCY = 12*MHertz(tol=0.01)
 
   # TODO remove these once there is a unified pin capability specification
@@ -22,7 +22,7 @@ class Lpc1549_Device(DiscreteChip, CircuitBlock):
     #
     # Common Ports
     #
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
       current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
     ), [Power])
@@ -379,7 +379,7 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
         io.link().current_drawn.intersect((0, float('inf'))*Amp),  # only count sourced current
         (0, 0)*Amp)
     self._io_draw = self.Parameter(RangeExpr(io_draw_expr))
-    self.io_draw = self.Block(ElectricalLoad(
+    self.io_draw = self.Block(VoltageLoad(
       voltage_limit=(-float('inf'), float('inf')),
       current_draw=self._io_draw
     ))

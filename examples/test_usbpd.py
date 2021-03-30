@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class UsbPdTest(Block):
@@ -33,7 +32,7 @@ class UsbPdTest(Block):
     self.connect(self.usb2.pwr, self.diode_merge.pwr_in1)
     self.connect(self.usb_reg.pwr_out, self.diode_merge.pwr_in2)
 
-    self.gnd_merge = self.Block(MergedElectricalSource())
+    self.gnd_merge = self.Block(MergedVoltageSource())
     self.connect(self.usb.gnd, self.gnd_merge.sink1)
     self.connect(self.usb2.gnd, self.gnd_merge.sink2)
 
@@ -97,4 +96,4 @@ class UsbPdTest(Block):
 class UsbPdTestCase(unittest.TestCase):
   @unittest.skip("needs to be completed")
   def test_design_basic(self) -> None:
-    run_test(UsbPdTest)
+    compile_board_inplace(UsbPdTest)

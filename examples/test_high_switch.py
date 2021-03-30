@@ -1,15 +1,14 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
-class LightsConnector(Connector, CircuitBlock):
+class LightsConnector(Connector, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.out = ElementDict[DigitalSink]()
     for i in range(2):
@@ -37,7 +36,7 @@ class LightsDriver(Block):
 
     self.current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     self.control = ElementDict[DigitalSink]()
@@ -93,9 +92,9 @@ class TestHighSwitch(BoardTop):
       (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(ElectricalLoad())
+      self.can_gnd_load = self.Block(VoltageLoad())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(ElectricalLoad())
+      self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       (self.vsense, ), self.vsense_chain = self.chain(
@@ -113,7 +112,7 @@ class TestHighSwitch(BoardTop):
       self.rgb2_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.green)
       self.rgb2_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.blue)
 
-    self.limit_light_current = self.Block(ForcedElectricalCurrentDraw((0, 2.5)*Amp))
+    self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
     self.connect(self.pwr_conn.pwr, self.limit_light_current.pwr_in)
     with self.implicit_connect(
         ImplicitConnect(self.limit_light_current.pwr_out, [Power]),
@@ -176,4 +175,4 @@ class TestHighSwitch(BoardTop):
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(TestHighSwitch)
+    compile_board_inplace(TestHighSwitch)

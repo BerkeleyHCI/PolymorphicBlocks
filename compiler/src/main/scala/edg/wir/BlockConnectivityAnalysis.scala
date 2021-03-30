@@ -33,6 +33,23 @@ case object Connection {
 }
 
 
+object BlockConnectivityAnalysis {
+  def typeOfPortLike(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
+    case elem.PortLike.Is.LibElem(lib) => lib
+    case elem.PortLike.Is.Port(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case elem.PortLike.Is.Bundle(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case elem.PortLike.Is.Array(port) =>
+      require(port.superclasses.length == 1)
+      port.superclasses.head
+    case other => throw new IllegalArgumentException(s"Unexpected PortLike ${other.getClass}")
+  }
+}
+
+
 /** Class that "wraps" a block to provide connectivity analysis for constraints and links inside the block.
   */
 class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
@@ -128,7 +145,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
     }
   }
 
-  private def getConnectedToLink(linkName: String): Connection.Link = {
+  def getConnectedToLink(linkName: String): Connection.Link = {
     val allBlockRefConstrs = allConnects.collect {  // filter by link name, and map to (port ref, constr name)
       case (blockPortRef, linkPortRef, constrName)
         if linkPortRef.steps.nonEmpty && linkPortRef.steps.head.getName == linkName =>
@@ -175,20 +192,6 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
     }
   }
 
-  private def typeOfPortLike(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
-    case elem.PortLike.Is.LibElem(lib) => lib
-    case elem.PortLike.Is.Port(port) =>
-      require(port.superclasses.length == 1)
-      port.superclasses.head
-    case elem.PortLike.Is.Bundle(port) =>
-      require(port.superclasses.length == 1)
-      port.superclasses.head
-    case elem.PortLike.Is.Array(port) =>
-      require(port.superclasses.length == 1)
-      port.superclasses.head
-    case other => throw new IllegalArgumentException(s"Unexpected PortLike ${other.getClass}")
-  }
-
   case class ConnectablePorts(innerPortTypes: Set[(ref.LocalPath, ref.LibraryPath)],
                               exteriorPortTypes: Set[(ref.LocalPath, ref.LibraryPath)])
   /** Returns all the connectable ports and types of this block,
@@ -201,14 +204,14 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
           ref.LocalStep().update(_.name := blockName),
           ref.LocalStep().update(_.name := portName)
         ))
-        (portRef, typeOfPortLike(portLike))
+        (portRef, BlockConnectivityAnalysis.typeOfPortLike(portLike))
       }
     }.toSet
     val exteriorPortTypes = block.ports.toSeq.map { case (portName, portLike) =>
       val portRef = ref.LocalPath().update(_.steps := Seq(
         ref.LocalStep().update(_.name := portName)
       ))
-      (portRef, typeOfPortLike(portLike))
+      (portRef, BlockConnectivityAnalysis.typeOfPortLike(portLike))
     }.toSet
     ConnectablePorts(innerPortTypes, exteriorPortTypes)
   }

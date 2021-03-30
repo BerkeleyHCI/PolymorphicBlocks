@@ -3,11 +3,11 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Lm4871_Device(DiscreteChip, CircuitBlock):
+class Lm4871_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(2.0, 5.5) * Volt,
       current_draw=(6.5, 10 + 433) * mAmp,  # TODO better estimate of speaker current than 1.5W into 8-ohm load
     ), [Power])
@@ -91,7 +91,7 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Speaker(DiscreteApplication, CircuitBlock):
+class Speaker(DiscreteApplication, FootprintBlock):
   def __init__(self):
     super().__init__()
 

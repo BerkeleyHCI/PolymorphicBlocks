@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class SmtLed(Led, CircuitBlock):
+class SmtLed(Led, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -14,7 +14,7 @@ class SmtLed(Led, CircuitBlock):
     )
 
 
-class ThtLed(Led, CircuitBlock):
+class ThtLed(Led, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -31,7 +31,7 @@ class ThtLed(Led, CircuitBlock):
 class IndicatorLed(Light):
   """High-side-driven (default, "common cathode") indicator LED"""
   @init_in_parent
-  def __init__(self, wavelength: RangeLike = RangeExpr(), current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers.
@@ -40,7 +40,6 @@ class IndicatorLed(Light):
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
     self.signal = self.Port(DigitalSink(), [InOut])
@@ -64,17 +63,16 @@ class IndicatorLed(Light):
 class VoltageIndicatorLed(Light):
   """LED connected to a voltage rail as an indicator that there is voltage present"""
   @init_in_parent
-  def __init__(self, wavelength: RangeLike = RangeExpr(), current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """
     TODO: support non single color wavelength (eg, color temperature?)
     TODO: support brightness
     TODO: separate RawLed class or similar for use with constant-current drivers"""
     super().__init__()
 
-    self.wavelength = self.Parameter(RangeExpr(wavelength))
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.signal = self.Port(ElectricalSink(), [InOut])  # TODO should this be Power instead?
+    self.signal = self.Port(VoltageSink(), [InOut])  # TODO should this be Power instead?
     self.gnd = self.Port(Ground(), [Common])
 
     self.require(self.signal.current_draw.within(current_draw))
@@ -84,14 +82,14 @@ class VoltageIndicatorLed(Light):
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
                   self.signal.link().voltage.lower() / self.target_current_draw.lower())))
 
-    self.connect(self.signal, self.package.a.as_electrical_sink(
+    self.connect(self.signal, self.package.a.as_voltage_sink(
       current_draw=self.signal.link().voltage / self.res.resistance
     ))
     self.connect(self.res.a, self.package.k)
     self.connect(self.res.b.as_ground(), self.gnd)
 
 
-class SmtRgbLed(RgbLedCommonAnode, CircuitBlock):
+class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -106,7 +104,7 @@ class SmtRgbLed(RgbLedCommonAnode, CircuitBlock):
     )
 
 
-class ThtRgbLed(RgbLedCommonAnode, CircuitBlock):
+class ThtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -131,7 +129,7 @@ class IndicatorSinkRgbLed(Light):
     # TODO: support brightness
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.red = self.Port(DigitalSink())
     self.green = self.Port(DigitalSink())
     self.blue = self.Port(DigitalSink())
@@ -167,7 +165,7 @@ class IndicatorSinkRgbLed(Light):
       current_draw=(-1 * self.blue.link().voltage.upper() / self.blue_res.resistance.lower(), 0)
     ), self.blue)
 
-    self.connect(self.pwr, self.package.a.as_electrical_sink(
+    self.connect(self.pwr, self.package.a.as_voltage_sink(
       current_draw=(0,
                     self.red.link().voltage.upper() / self.red_res.resistance.lower() +
                     self.green.link().voltage.upper() / self.green_res.resistance.lower() +

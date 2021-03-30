@@ -9,7 +9,7 @@ from .NetlistGenerator import Netlist
 from . import *
 
 
-class TestFakeSpiMaster(CircuitBlock):
+class TestFakeSpiMaster(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -32,7 +32,7 @@ class TestFakeSpiMaster(CircuitBlock):
     )
 
 
-class TestFakeSpiSlave(CircuitBlock):
+class TestFakeSpiSlave(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -53,7 +53,7 @@ class TestFakeSpiSlave(CircuitBlock):
     )
 
 
-class TestSpiCircuit(CircuitBlock):
+class TestSpiCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -66,7 +66,7 @@ class TestSpiCircuit(CircuitBlock):
     self.cs2 = self.connect(self.master.cs_out_2, self.slave2.cs_in)
 
 
-class TestFakeUartBlock(CircuitBlock):
+class TestFakeUartBlock(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -84,7 +84,7 @@ class TestFakeUartBlock(CircuitBlock):
     )
 
 
-class TestUartCircuit(CircuitBlock):
+class TestUartCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -94,7 +94,7 @@ class TestUartCircuit(CircuitBlock):
     self.link = self.connect(self.a.port, self.b.port)
 
 
-class TestFakeCanBlock(CircuitBlock):
+class TestFakeCanBlock(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -112,7 +112,7 @@ class TestFakeCanBlock(CircuitBlock):
     )
 
 
-class TestCanCircuit(CircuitBlock):
+class TestCanCircuit(Block):
   def contents(self) -> None:
     super().contents()
 

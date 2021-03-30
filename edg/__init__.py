@@ -5,4 +5,6 @@ from electronics_model import *
 from electronics_abstract_parts import *
 from electronics_lib import *
 
-from .BoardTop import BoardTop
+from .BoardTop import BoardTop, SimpleBoardTop
+
+from .BoardCompiler import compile_board, compile_board_inplace

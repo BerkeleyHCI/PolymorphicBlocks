@@ -25,7 +25,7 @@ class AssignablePinBlock(GeneratorBlock):
     assert tpe in self._remaining_assignable_ios, f"{type(self)} has no IOs of type {tpe}"
     remaining_list = self._remaining_assignable_ios[tpe]
     assert remaining_list, f"{type(self)} has no more IOs of type {tpe}"
-    port = remaining_list.pop()
+    port = remaining_list.pop(0)
 
     return port  # type: ignore
 

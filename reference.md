@@ -82,9 +82,9 @@ These can be called inside `contents()`:
 ## Port and Link Libraries
 
 ### Single-wire Ports
-- `ElectricalLink`: voltage rail
-  - `ElectricalSource(voltage_out, current_limits)`: voltage source
-  - `ElectricalSink(voltage_limits, current_draw)`: voltage sink (power input)  
+- `VoltageLink`: voltage rail
+  - `VoltageSource(voltage_out, current_limits)`: voltage source
+  - `VoltageSink(voltage_limits, current_draw)`: voltage sink (power input)
 - `DigitalLink`: low-speed (up to ~100 MHz) digital signals, modeling voltage limits and input / output thresholds
   - `DigitalSource(voltage_out, current_limits, output_thresholds)`: digital output-only pin
     - `output_thresholds` is the range of (maximum low output, minimum high output) 
@@ -96,7 +96,7 @@ These can be called inside `contents()`:
   - `AnalogSource(voltage_out, current_limits, impedance)`: analog output
   - `AnalogSink(voltage_limits, current_draw, impedance)`: analog signal input
 - `PassiveLink`: connected copper that contains no additional data
-  - `Passive`: single wire port that contains no additional data, but can be adapted to other types (eg, with `.as_electrical_source(...)`).
+  - `Passive`: single wire port that contains no additional data, but can be adapted to other types (eg, with `.as_voltage_source(...)`).
     Useful for low-level elements (eg, resistors) that can be used in several ways in higher-level constructs (eg, pull-up resistor for digital applications).
 
 ### Bundle Ports
@@ -122,7 +122,7 @@ These can be called inside `contents()`:
 - `SwdLink`: SWD programming net, consisting of `.swdio`, `.swclk`, `.swo`, and `.reset` Digital sub-ports in a point-to-point connection.
   - `SwdHostPort(model)`: SWD host-side (programmer) port
   - `SwdTargetPort(model)`: SWD target-side (DUT) port 
-- `CrystalLink`: crystal net, consisting of `.xi` and `.xo` Electrical sub-ports in a point-to-point connection.
+- `CrystalLink`: crystal net, consisting of `.xi` and `.xo` sub-ports in a point-to-point connection.
   - `CrystalDriver(frequency_limits, voltage_out)`: driver-side port
   - `CrystalPort(frequency)`: crystal-side port, indicating the frequency of the crystal 
 

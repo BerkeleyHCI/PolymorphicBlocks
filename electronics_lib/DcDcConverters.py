@@ -30,18 +30,18 @@ class Tps61023_Device(DiscreteChip, CircuitBlock):
       datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
     )
 
-class Tps561201_Device(DiscreteChip, CircuitBlock):
+class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(4.5, 17)*Volt,
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
-    self.sw = self.Port(ElectricalSource())  # internal switch specs not defined, only bulk current limit defined
+    self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
-    self.vbst = self.Port(ElectricalSource())
+    self.vbst = self.Port(VoltageSource())
 
   def contents(self) -> None:
     super().contents()
@@ -102,8 +102,8 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.hf_in_cap.gnd, self.gnd)
 
     self.vbst_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 6) * Volt))
-    self.connect(self.vbst_cap.neg.as_electrical_sink(), self.ic.sw)
-    self.connect(self.vbst_cap.pos.as_electrical_sink(), self.ic.vbst)
+    self.connect(self.vbst_cap.neg.as_voltage_sink(), self.ic.sw)
+    self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
 
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 1.2,
@@ -112,7 +112,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
 
-    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+    self.connect(self.pwr_out, inductor_out.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, 1.2)*Amp
     ))
@@ -123,20 +123,20 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     # self.constrain(self.inductor.inductance.within((3.3, 4.7)*uHenry(tol=0.2)))  # TODO down to 2.2 for lower output voltages
 
 
-class Tps54202h_Device(DiscreteChip, CircuitBlock):
+class Tps54202h_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(4.5, 28)*Volt,
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
-    self.sw = self.Port(ElectricalSource(
+    self.sw = self.Port(VoltageSource(
       current_limits=(0, 2)*Amp  # most conservative figures, low-side limited. TODO: better ones?
     ))  # internal switch specs not defined, only bulk current limit defined
     self.fb = self.Port(AnalogSink(impedance=(float('inf'), float('inf')) * Ohm))  # TODO specs not given
-    self.boot = self.Port(ElectricalSource())
+    self.boot = self.Port(VoltageSource())
     self.en = self.Port(DigitalSink(  # must be connected, floating is disable
       voltage_limits=(-0.1, 7) * Volt,
       input_thresholds=(1.16, 1.35)*Volt
@@ -197,12 +197,12 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     self.connect(self.hf_in_cap.gnd, self.gnd)
 
     self.boot_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 6) * Volt))
-    self.connect(self.boot_cap.neg.as_electrical_sink(), self.ic.sw)
-    self.connect(self.boot_cap.pos.as_electrical_sink(), self.ic.boot)
+    self.connect(self.boot_cap.neg.as_voltage_sink(), self.ic.sw)
+    self.connect(self.boot_cap.pos.as_voltage_sink(), self.ic.boot)
 
     self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0))  # arbitrary tolerance
     # pull-up resistor not used here because the voltage changes
-    self.connect(self.pwr_in, self.en_res.a.as_electrical_sink())
+    self.connect(self.pwr_in, self.en_res.a.as_voltage_sink())
     self.connect(self.en_res.b.as_digital_source(), self.ic.en)
 
     self.connect(self.fb.input, self.pwr_out)
@@ -216,17 +216,17 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
 
-    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+    self.connect(self.pwr_out, inductor_out.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, 2)*Amp
     ))
 
 
-class Lmr33630_Device(DiscreteChip, CircuitBlock):
+class Lmr33630_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
-    self.vin = self.Port(ElectricalSink(
+    self.vin = self.Port(VoltageSink(
       voltage_limits=(3.8, 36)*Volt,
       current_draw=current_draw
     ))
@@ -241,14 +241,14 @@ class Lmr33630_Device(DiscreteChip, CircuitBlock):
       voltage_limits=(-0.3, 5.5)*Volt,
       impedance=(20, float('inf'))*MOhm  # derived from input current, 50nA @ 1V
     ))
-    self.boot = self.Port(ElectricalSource())  # bootstrap
+    self.boot = self.Port(VoltageSource())  # bootstrap
     # TODO model limits relative to SW as -0.3 - 5.5
 
-    self.sw = self.Port(ElectricalSource(
+    self.sw = self.Port(VoltageSource(
       current_limits=(0, 3)*Amp
     ))
 
-    self.vcc = self.Port(ElectricalSource(  # internal 5v LDO
+    self.vcc = self.Port(VoltageSource(  # internal 5v LDO
       voltage_out=(4.75, 5.25)*Volt,  # TODO has a UVLO
       current_limits=(0, 0)*Amp  # datasheet 9.2.2.8, "avoid loading this output with any external circuitry"
     ))
@@ -317,14 +317,14 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     self.boot_cap = self.Block(Capacitor(
       capacitance=0.1*uFarad(tol=0.2),
       voltage=(0, 10) * Volt))  # datasheet 9.2.2.7
-    self.connect(self.boot_cap.pos.as_electrical_sink(), self.ic.boot)
-    self.connect(self.boot_cap.neg.as_electrical_sink(), self.ic.sw)
+    self.connect(self.boot_cap.pos.as_voltage_sink(), self.ic.boot)
+    self.connect(self.boot_cap.neg.as_voltage_sink(), self.ic.sw)
 
     self.vcc_cap = self.Block(Capacitor(
       capacitance=1*uFarad(tol=0.2),
       voltage=(0, 16) * Volt))  # datasheet 9.2.2.8
-    self.connect(self.vcc_cap.pos.as_electrical_sink(), self.ic.vcc)
-    self.connect(self.vcc_cap.neg.as_electrical_sink(), self.gnd)
+    self.connect(self.vcc_cap.pos.as_voltage_sink(), self.ic.vcc)
+    self.connect(self.vcc_cap.neg.as_voltage_sink(), self.gnd)
 
 
     self.connect(self.fb.input, self.pwr_out)
@@ -336,24 +336,24 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
                                             output_current_max=output_current[1], frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
-    self.connect(self.pwr_out, inductor_out.as_electrical_source(
+    self.connect(self.pwr_out, inductor_out.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, 3.0)*Amp
     ))
 
 
-class Ap3012_Device(DiscreteChip, CircuitBlock):
+class Ap3012_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     # TODO the power path doesn't actually go through Vin, instead it goes through the inductor
     # But this is modeled here to be similar to the buck case, and the macromodel is valid anyways
     super().__init__()
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(2.6, 16)*Volt,
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
-    self.sw = self.Port(ElectricalSource(
+    self.sw = self.Port(VoltageSource(
       current_limits=(0, 500)*mAmp  # TODO how to model sink current limits?!
     ))
     self.fb = self.Port(AnalogSink(impedance=(12500, float('inf')) * kOhm))  # based on input current spec
@@ -418,8 +418,8 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
       voltage_drop=(0, 0.4)*Volt,
       reverse_recovery_time=(0, 500) * nSecond  # guess from Digikey's classification for "fast recovery"
     ))
-    self.connect(self.ic.sw, self.rect.anode.as_electrical_sink())
-    diode_out = self.rect.cathode.as_electrical_source(
+    self.connect(self.ic.sw, self.rect.anode.as_voltage_sink())
+    diode_out = self.rect.cathode.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, 0.5)*Amp  # TODO proper switch current modeling?
     )

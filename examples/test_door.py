@@ -1,10 +1,9 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
-class DistanceSensor(CircuitBlock):
+class DistanceSensor(FootprintBlock):
   '''
   HCSR04 distance sensor
   Datasheet: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
@@ -12,13 +11,13 @@ class DistanceSensor(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vcc = self.Port(ElectricalSink(voltage_limits=(0,5) * Volt, current_draw=(0,15) * mAmp), [Power]) # 5v
+    self.vcc = self.Port(VoltageSink(voltage_limits=(0, 5) * Volt, current_draw=(0, 15) * mAmp), [Power]) # 5v
     self.trigger = self.Port(DigitalSink(voltage_limits=(0, 5) * Volt, current_draw=(0, 15) * mAmp)) # input: digital, triggers distance measuring
     self.echo = self.Port(DigitalSource(voltage_out=(0, 5) * Volt, current_limits=(0, 15) * mAmp))# output: distance, outputs digital signal (distance ~ time high)
     self.gnd = self.Port(Ground(), [Common])
 
 
-class DcMotor(CircuitBlock):
+class DcMotor(FootprintBlock):
   '''
   DMN29BA motor
   Datasheet: http://www.e-jpc.com/pdf/dcmotors601-0241.pdf
@@ -34,7 +33,7 @@ class DcMotor(CircuitBlock):
     high_ohm = 480
     self.resistance = self.Parameter(RangeExpr((low_ohm, high_ohm) * Ohm))
 
-class MotorDriver(CircuitBlock):
+class MotorDriver(FootprintBlock):
   '''
   DRV8871 Motor Driver
   Tutorial: https://cdn-learn.adafruit.com/downloads/pdf/adafruit-drv8871-brushed-dc-motor-driver-breakout.pdf
@@ -43,7 +42,7 @@ class MotorDriver(CircuitBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.power = self.Port(ElectricalSink(voltage_limits=(6.5, 45) * Volt, current_draw=(0, 3.6) * Amp), [Power])
+    self.power = self.Port(VoltageSink(voltage_limits=(6.5, 45) * Volt, current_draw=(0, 3.6) * Amp), [Power])
     self.ground = self.Port(Ground(), [Common])
 
     input_pins = DigitalSink(
@@ -101,17 +100,17 @@ class MotorDriver(CircuitBlock):
 
 
 # SSD1351: OLED driver chip
-class Ssd1351(CircuitBlock):
+class Ssd1351(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
     # Vcc is 16 volts, needs power converter. Leave it to user to connect it to Vcc.
     # @TODO put constraints
-    self.vcc = self.Port(ElectricalSink(voltage_limits=(0,20) * Volt, current_draw=(0,0.01) * mAmp), [Power])
+    self.vcc = self.Port(VoltageSink(voltage_limits=(0, 20) * Volt, current_draw=(0, 0.01) * mAmp), [Power])
     # @TODO data needs to be SPI bundle
 #     self.data = self.Port(SpiSlave()) # @TODO figure out syntax @todo uncomment the spi
-    self.vddio = self.Port(ElectricalSink(voltage_limits=(0,4) * Volt, current_draw=(0,0.01) * mAmp), [Power])
-    self.vci = self.Port(ElectricalSink(voltage_limits=(0,4) * Volt), [Power])
+    self.vddio = self.Port(VoltageSink(voltage_limits=(0, 4) * Volt, current_draw=(0, 0.01) * mAmp), [Power])
+    self.vci = self.Port(VoltageSink(voltage_limits=(0, 4) * Volt), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     # @TODO external circuitry like decoupling capacitors
@@ -119,7 +118,7 @@ class Ssd1351(CircuitBlock):
 # --
 
 
-class TestMotionControlledDoor(CircuitBlock):
+class TestMotionControlledDoor(FootprintBlock):
   def contents(self) -> None:
     super().contents()
 
@@ -192,4 +191,4 @@ class TestMotionControlledDoor(CircuitBlock):
 class MotionControlledDoorTestCase(unittest.TestCase):
   @unittest.skip("needs major refactoring to update to new electronics model")
   def test_design(self) -> None:
-    run_test(TestMotionControlledDoor)
+    compile_board_inplace(TestMotionControlledDoor)

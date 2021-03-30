@@ -10,7 +10,7 @@ class Opamp(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     self.inp = self.Port(AnalogSink())

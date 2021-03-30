@@ -18,8 +18,10 @@ class SpeakerLink(Link):
 
 
 class SpeakerDriverPort(Bundle[SpeakerLink]):
-  def __init__(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr(),
-               impedance: RangeLike = RangeExpr()) -> None:
+  def __init__(self,
+               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),  # TODO dedup w/ AnalogSource?
+               current_limits: RangeLike = Default(RangeExpr.ALL),
+               impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.link_type = SpeakerLink
 
@@ -28,7 +30,7 @@ class SpeakerDriverPort(Bundle[SpeakerLink]):
 
 
 class SpeakerPort(Bundle[SpeakerLink]):
-  def __init__(self, impedance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, impedance: RangeLike = Default(RangeExpr.INF)) -> None:
     super().__init__()
     self.link_type = SpeakerLink
 

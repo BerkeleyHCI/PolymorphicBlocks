@@ -97,4 +97,8 @@ class LibraryConnectivityAnalysis(library: Library) {
   def bridgedPortByOuter(port: ref.LibraryPath): Option[ref.LibraryPath] = {
     bridgedPortByOuterMap.get(port).map(_._1)
   }
+
+  def bridgeByOuter(port: ref.LibraryPath): Option[ref.LibraryPath] = {
+    bridgedPortByOuterMap.get(port).map(_._2)
+  }
 }

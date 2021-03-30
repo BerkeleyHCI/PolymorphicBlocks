@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Outline_Pn1332(Mechanical, CircuitBlock):
+class Outline_Pn1332(Mechanical, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -13,7 +13,7 @@ class Outline_Pn1332(Mechanical, CircuitBlock):
 
 
 @abstract_block
-class MountingHole(Mechanical, CircuitBlock):
+class MountingHole(Mechanical, FootprintBlock):
   FOOTPRINT: str = ''
   VALUE: str = ''
   def __init__(self):

@@ -8,7 +8,7 @@ class CanTransceiver(IntegratedCircuit, Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])  # for isolated converters, this is the logic side supply
+    self.pwr = self.Port(VoltageSink(), [Power])  # for isolated converters, this is the logic side supply
     self.gnd = self.Port(Ground(), [Common])
 
     self.controller = self.Port(CanTransceiverPort(), [Input])
@@ -20,5 +20,5 @@ class IsolatedCanTransceiver(CanTransceiver):
   def __init__(self) -> None:
     super().__init__()
 
-    self.can_pwr = self.Port(ElectricalSink())  # no implicit connect tags for isolated side
+    self.can_pwr = self.Port(VoltageSink())  # no implicit connect tags for isolated side
     self.can_gnd = self.Port(Ground())

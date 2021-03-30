@@ -1,7 +1,6 @@
 import unittest
 
 from edg import *
-from .ExampleTestUtils import run_test
 
 
 class CanAdapter(BoardTop):
@@ -113,4 +112,4 @@ class CanAdapter(BoardTop):
 
 class CanAdapterTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    run_test(CanAdapter)
+    compile_board_inplace(CanAdapter)

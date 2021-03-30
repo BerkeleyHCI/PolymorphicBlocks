@@ -8,12 +8,12 @@ from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from . import *
 
 
-class TestFakeSource(CircuitBlock):
+class TestFakeSource(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSource())
-    self.neg = self.Port(ElectricalSource())
+    self.pos = self.Port(VoltageSource())
+    self.neg = self.Port(VoltageSource())
 
   def contents(self) -> None:
     super().contents()
@@ -27,12 +27,12 @@ class TestFakeSource(CircuitBlock):
     )
 
 
-class TestFakeSink(CircuitBlock):
+class TestFakeSink(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -46,7 +46,7 @@ class TestFakeSink(CircuitBlock):
     )
 
 
-class TestBasicCircuit(CircuitBlock):
+class TestBasicCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -57,7 +57,7 @@ class TestBasicCircuit(CircuitBlock):
     self.gnd = self.connect(self.source.neg, self.sink.neg)
 
 
-class TestMultisinkCircuit(CircuitBlock):
+class TestMultisinkCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -69,13 +69,13 @@ class TestMultisinkCircuit(CircuitBlock):
     self.gnd = self.connect(self.source.neg, self.sink1.neg, self.sink2.neg)
 
 
-class TestFakeAdapter(CircuitBlock):
+class TestFakeAdapter(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos_in = self.Port(ElectricalSink())
-    self.pos_out = self.Port(ElectricalSource())
-    self.neg = self.Port(ElectricalSink())
+    self.pos_in = self.Port(VoltageSink())
+    self.pos_out = self.Port(VoltageSource())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -90,7 +90,7 @@ class TestFakeAdapter(CircuitBlock):
     )
 
 
-class TestMultinetCircuit(CircuitBlock):
+class TestMultinetCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -103,12 +103,12 @@ class TestMultinetCircuit(CircuitBlock):
     self.gnd = self.connect(self.source.neg, self.adapter.neg, self.sink.neg)
 
 
-class TestFakeSinkHierarchy(CircuitBlock):
+class TestFakeSinkHierarchy(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -119,7 +119,7 @@ class TestFakeSinkHierarchy(CircuitBlock):
     self.vneg = self.connect(self.neg, self.block.neg)
 
 
-class TestHierarchyCircuit(CircuitBlock):
+class TestHierarchyCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
@@ -130,12 +130,12 @@ class TestHierarchyCircuit(CircuitBlock):
     self.gnd = self.connect(self.source.neg, self.sink.neg)
 
 
-class TestFakeDualSinkHierarchy(CircuitBlock):
+class TestFakeDualSinkHierarchy(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(ElectricalSink())
-    self.neg = self.Port(ElectricalSink())
+    self.pos = self.Port(VoltageSink())
+    self.neg = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -147,7 +147,7 @@ class TestFakeDualSinkHierarchy(CircuitBlock):
     self.vneg = self.connect(self.neg, self.block1.neg, self.block2.neg)
 
 
-class TestDualHierarchyCircuit(CircuitBlock):
+class TestDualHierarchyCircuit(Block):
   def contents(self) -> None:
     super().contents()
 

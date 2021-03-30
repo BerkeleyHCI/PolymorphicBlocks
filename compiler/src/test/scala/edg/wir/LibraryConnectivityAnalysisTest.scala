@@ -79,5 +79,9 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
     analysis.bridgedPortByOuter(LibraryPath("sinkPort")) should equal(Some(LibraryPath("sourcePort")))
     analysis.bridgedPortByOuter(LibraryPath("sourcePort")) should equal(Some(LibraryPath("sinkPort")))
     analysis.bridgedPortByOuter(LibraryPath("outerPort")) should equal(None)
+
+    analysis.bridgeByOuter(LibraryPath("sinkPort")) should equal(Some(LibraryPath("sourceAdapter")))
+    analysis.bridgeByOuter(LibraryPath("sourcePort")) should equal(Some(LibraryPath("sinkAdapter")))
+    analysis.bridgeByOuter(LibraryPath("outerPort")) should equal(None)
   }
 }

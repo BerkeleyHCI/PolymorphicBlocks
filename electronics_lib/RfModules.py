@@ -1,14 +1,14 @@
 from electronics_abstract_parts import *
 
 
-class Xbee_S3b_Device(DiscreteChip, CircuitBlock):
+class Xbee_S3b_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
 
     # only required pins are Vcc, GND, DOUT, DIN
     # also need RTS, DTR for serial firmware updates
     # DNC pins that are not in use
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(2.1, 3.6) * Volt,
       current_draw=(0.0025, 290) * mAmp  # 2.5uA sleep, 29mA receive, 290 mA max transmit
     ), [Power])
@@ -59,7 +59,7 @@ class Xbee_S3b_Device(DiscreteChip, CircuitBlock):
     )
 
 
-class Xbee_S3b(IntegratedCircuit, CircuitBlock):
+class Xbee_S3b(IntegratedCircuit, FootprintBlock):
   """XBee-PRO 900HP, product numbers XBP9B-*"""
   def __init__(self) -> None:
     super().__init__()
@@ -86,12 +86,12 @@ class Xbee_S3b(IntegratedCircuit, CircuitBlock):
       ))
 
 
-class BlueSmirf(IntegratedCircuit, CircuitBlock):
+class BlueSmirf(IntegratedCircuit, FootprintBlock):
   """SlueSMiRF Gold/Silver"""
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(3, 6) * Volt,  # TODO added a -10% tolerance on the low side so things still work - technically out of spec
       current_draw=(0, 0),  # TODO actually an unspecified default
     ), [Power])

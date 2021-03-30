@@ -4,7 +4,7 @@ from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO refactor with _Device
+class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
   """
   Nucleo32 F303K8 configured as power source from USB.
   TODO base classes?
@@ -17,16 +17,16 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
       # TODO can be lower if don't need 5.0v out
       current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
     ), optional=True)
-    self.pwr_5v = self.Port(ElectricalSource(
+    self.pwr_5v = self.Port(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
     ), optional=True)
-    self.pwr_3v3 = self.Port(ElectricalSource(
+    self.pwr_3v3 = self.Port(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
     ), optional=True)

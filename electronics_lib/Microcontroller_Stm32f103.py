@@ -4,7 +4,7 @@ from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Stm32f103_48_Device(DiscreteChip, CircuitBlock):
+class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
   """
   STM32F103C8 (QFP-48) microcontroller, Cortex-M3
   https://www.st.com/resource/en/datasheet/stm32f103c8.pdf
@@ -13,7 +13,7 @@ class Stm32f103_48_Device(DiscreteChip, CircuitBlock):
     super().__init__()
 
     # TODO separate VddA and VssA, but both must operate at same potential
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,
       current_draw=(0, 50.3)*mAmp  # Table 13
     ), [Power])  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
@@ -134,7 +134,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Stm32f103_48_Device())
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.swd = self.Export(self.ic.swd)
     # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
@@ -187,7 +187,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       io_draw_expr = io_draw_expr + io.is_connected().then_else(
         io.link().current_drawn.intersect((0, float('inf'))*Amp),  # only count sourced current
         (0, 0)*Amp)
-    self.io_draw = self.Block(ElectricalLoad(
+    self.io_draw = self.Block(VoltageLoad(
       voltage_limit=(-float('inf'), float('inf')),
       current_draw=io_draw_expr
     ))

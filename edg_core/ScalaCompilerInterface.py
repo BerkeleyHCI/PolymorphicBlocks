@@ -63,7 +63,8 @@ class ScalaCompilerInstance:
       self.stub = edgrpc.CompilerStub(self.channel)
 
 
-  def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
+  def compile(self, block: Type[Block], refinements: Refinements = Refinements(),
+              errors_fatal: bool = True) -> CompiledDesign:
     self.check_started()
     assert self.stub is not None
 
@@ -78,7 +79,7 @@ class ScalaCompilerInstance:
     refinements.populate_proto(request.refinements)
     result: edgrpc.CompilerResult = self.stub.Compile(request)
     assert result.HasField('design'), f"no compiled result, with error {result.error}"
-    if result.error:
+    if result.error and errors_fatal:
       raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign(result)
 
