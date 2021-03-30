@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from electronics_lib import SmtInductor
 
 
 class SolarCharger_LT3652(DiscreteChip, CircuitBlock):
@@ -48,12 +49,12 @@ class SolarCharger_LT3652(DiscreteChip, CircuitBlock):
     self.nfault = self.Port(DigitalSink(pull_up_model), optional=True)
 
     self.timer = self.Port(Passive(), optional=True)
-    self.vfb = self.Port(DigitalSource(digital_model), optional=True)
+    self.vfb = self.Port(ElectricalSink(digital_model), optional=True)
     self.ntc = self.Port(DigitalSource(digital_model), optional=True)
     self.bat = self.Port(ElectricalSource(digital_model), optional=True)
-    self.sense = self.Port(DigitalSource(digital_model), optional=True)
-    self.boost = self.Port(DigitalSource(digital_model), optional=True)
-    self.sw = self.Port(DigitalSource(digital_model), optional=True)
+    self.sense = self.Port(ElectricalSink(digital_model), optional=True)
+    self.boost = self.Port(ElectricalSink(digital_model), optional=True)
+    self.sw = self.Port(ElectricalSource(digital_model), optional=True)
 
   def contents(self):
     super().contents()
@@ -97,6 +98,15 @@ class SolarCharger_LT3652_Module(CircuitBlock):
     self.vin_cap = self.Block(Capacitor())
     self.vin_r1 = self.Block(Resistor())
     self.vin_r2 = self.Block(Resistor())
+    self.sw_boost_cap = self.Block(Capacitor())
+    self.bat_boost_diode = self.Block(Diode())
+    self.gnd_sw_diode = self.Block(Diode())
+    self.sense_res = self.Block(CurrentSenseResistor())
+    self.bat_r1 = self.Block(Resistor())
+    self.bat_r2 = self.Block(Resistor())
+    self.bat_cap = self.Block(Capacitor())
+    self.ind = self.Block(SmtInductor())
+
     self.footprint(
       'U', 'SolarCharger_LT3652_Module',
       {
@@ -105,15 +115,54 @@ class SolarCharger_LT3652_Module(CircuitBlock):
         '3': self.vout,
       }
     )
-    self.connect(self.gnd, self.solar_charger.gnd)
+    # i/o connections
+    self.connect(self.solar_charger.gnd, self.gnd)
     self.connect(self.solar_charger.vin, self.vin)
     self.connect(self.solar_charger.bat, self.vout)
+
+    # timer
     self.connect(self.solar_charger.timer, self.timer_cap.pos)
     self.connect(self.gnd, self.timer_cap.neg.as_ground())
+
+    # vin cap
     self.connect(self.vin, self.vin_cap.pos.as_electrical_sink())
     self.connect(self.gnd, self.vin_cap.neg.as_ground())
+
+    # vin voltage divider
     self.connect(self.gnd, self.vin_r2.b.as_ground())
     self.connect(self.vin, self.vin_r1.a.as_electrical_sink())
     self.connect(self.solar_charger.vin_reg, self.vin_r1.b.as_analog_sink())
     self.connect(self.vin_r1.b, self.vin_r2.a)
-    # self.connect(self.nshdn, self.vin.as_source())
+
+    # sw boost cap
+    self.connect(self.solar_charger.boost, self.sw_boost_cap.neg.as_electrical_sink())
+    self.connect(self.solar_charger.sw, self.sw_boost_cap.pos.as_electrical_sink())
+
+    # bat boost diode
+    self.connect(self.solar_charger.boost, self.bat_boost_diode.cathode.as_electrical_sink())
+    self.connect(self.solar_charger.bat, self.bat_boost_diode.anode.as_electrical_sink())
+
+    # gnd sw diode
+    self.connect(self.solar_charger.sw, self.gnd_sw_diode.cathode.as_electrical_sink())
+    self.connect(self.gnd, self.gnd_sw_diode.anode.as_ground())
+
+    # bat voltage divider
+    self.connect(self.gnd, self.bat_r2.b.as_ground())
+    self.connect(self.solar_charger.bat, self.bat_r1.a.as_electrical_sink())
+    self.connect(self.solar_charger.vfb, self.bat_r1.b.as_electrical_sink())
+    self.connect(self.bat_r1.b, self.bat_r2.a)
+
+    # bat cap
+    self.connect(self.vout, self.bat_cap.pos.as_electrical_sink())
+    self.connect(self.gnd, self.bat_cap.neg.as_ground())
+
+    # ind
+    self.connect(self.gnd_sw_diode.cathode, self.ind.a)
+    self.connect(self.solar_charger.sense, self.ind.b.as_electrical_sink())
+
+    # vin nshdn
+    self.connect(self.solar_charger.vin, self.solar_charger.nshdn.as_electrical_sink())
+
+    # current sense resistor
+    self.connect(self.solar_charger.sense, self.sense_res.pwr_out)
+    self.connect(self.solar_charger.bat, self.sense_res.pwr_in)
