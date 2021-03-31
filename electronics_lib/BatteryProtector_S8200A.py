@@ -2,16 +2,16 @@ from electronics_abstract_parts import *
 from electronics_lib import SmtInductor, SmtNFet
 
 
-class BatteryProtector_S8200A(DiscreteChip, CircuitBlock):
+class BatteryProtector_S8200A(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
 
     # only required pins are Vcc, GND, DOUT, DIN
     # also need RTS, DTR for serial firmware updates
     # DNC pins that are not in use
-    self.vdd = self.Port(ElectricalSource())
+    self.vdd = self.Port(VoltageSource())
 
-    self.vss = self.Port(ElectricalSink(
+    self.vss = self.Port(VoltageSink(
       voltage_limits=(4.95, 32) * Volt,
       current_draw=(0, 3.5) * mAmp  # 2.5uA sleep, 29mA receive, 290 mA max transmit
     ), [Power])
@@ -39,9 +39,9 @@ class BatteryProtector_S8200A(DiscreteChip, CircuitBlock):
     # )  # TODO: FIX
 
     self.nc = self.Port(Passive(), optional=True)
-    self.do = self.Port(ElectricalSink(digital_model), optional=True)
-    self.vm = self.Port(ElectricalSink(digital_model), optional=True)
-    self.co = self.Port(ElectricalSink(digital_model), optional=True)
+    self.do = self.Port(VoltageSink(digital_model), optional=True)
+    self.vm = self.Port(VoltageSink(digital_model), optional=True)
+    self.co = self.Port(VoltageSink(digital_model), optional=True)
 
 
   def contents(self):
@@ -60,13 +60,13 @@ class BatteryProtector_S8200A(DiscreteChip, CircuitBlock):
       # datasheet='https://www.digi.com/resources/documentation/digidocs/pdfs/90002173.pdf'
     )
 
-class BatteryProtector_S8200A_Module(CircuitBlock):
+class BatteryProtector_S8200A_Module(FootprintBlock):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
-    self.vdd = self.Port(ElectricalSource())
-    self.vss = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSource())
+    self.vss = self.Port(VoltageSink(
       voltage_limits=(0.5, 5.5)*Volt,
       current_draw=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
     ))
@@ -92,26 +92,26 @@ class BatteryProtector_S8200A_Module(CircuitBlock):
     )
     # i/o connections
     self.connect(self.vm_res.b.as_ground(), self.gnd)
-    self.connect(self.vdd_res.b.as_electrical_sink(), self.vdd)
+    self.connect(self.vdd_res.b.as_voltage_sink(), self.vdd)
     self.connect(self.battery_protector.vss, self.vss)
 
     # vdd resistor
-    self.connect(self.battery_protector.vdd, self.vdd_res.a.as_electrical_sink())
+    self.connect(self.battery_protector.vdd, self.vdd_res.a.as_voltage_sink())
 
     # vm resistor
-    self.connect(self.battery_protector.vm, self.vm_res.a.as_electrical_sink())
+    self.connect(self.battery_protector.vm, self.vm_res.a.as_voltage_sink())
 
     # vdd vss cap
-    self.connect(self.battery_protector.vdd, self.vdd_vss_cap.pos.as_electrical_sink())
-    self.connect(self.battery_protector.vss, self.vdd_vss_cap.neg.as_electrical_sink())
+    self.connect(self.battery_protector.vdd, self.vdd_vss_cap.pos.as_voltage_sink())
+    self.connect(self.battery_protector.vss, self.vdd_vss_cap.neg.as_voltage_sink())
 
     # do fet
-    self.connect(self.battery_protector.vss, self.do_fet.source.as_electrical_sink())
-    self.connect(self.battery_protector.do, self.do_fet.gate.as_electrical_sink())
+    self.connect(self.battery_protector.vss, self.do_fet.source.as_voltage_sink())
+    self.connect(self.battery_protector.do, self.do_fet.gate.as_voltage_sink())
 
     # do co
     self.connect(self.do_fet.drain, self.co_fet.drain)
 
     # co fet
     self.connect(self.gnd, self.co_fet.source.as_ground())
-    self.connect(self.battery_protector.co, self.co_fet.gate.as_electrical_sink())
+    self.connect(self.battery_protector.co, self.co_fet.gate.as_voltage_sink())

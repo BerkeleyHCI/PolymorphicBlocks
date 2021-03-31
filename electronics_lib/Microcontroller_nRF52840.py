@@ -3,7 +3,7 @@ from itertools import chain
 
 from electronics_abstract_parts import *
 
-class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO refactor with _Device
+class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
     """
     nRF52840 configured as power source from USB.
     TODO base classes?
@@ -16,20 +16,20 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
     def __init__(self) -> None:
         super().__init__()
 
-        self.pwr_bat = self.Port(ElectricalSink(
+        self.pwr_bat = self.Port(VoltageSink(
             voltage_limits=(3.5, 6) * Volt,  # according to specs
             # TODO can be lower if don't need 5.0v out
             current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
-        self.pwr_vhi = self.Port(ElectricalSource(
+        self.pwr_vhi = self.Port(VoltageSource(
             voltage_out=(3.5, 6) * Volt,  # according to specs
             current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
-        self.pwr_3v = self.Port(ElectricalSource(
+        self.pwr_3v = self.Port(VoltageSource(
             voltage_out=3.3 * Volt(tol=0.03),  # TODO no specs
             current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
-        self.pwr_usb = self.Port(ElectricalSource(
+        self.pwr_usb = self.Port(VoltageSource(
             voltage_out=5 * Volt(tol=0.03),  # TODO no specs
             current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ), optional=True)
@@ -81,6 +81,7 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, CircuitBlock, AssignablePinBlock):
                                             [self.uart_0, self.spi_0])))
 
     def pin_assign(self, pin_assigns_str: str) -> None:
+        system_pins: Dict[str, CircuitPort]
         system_pins = {
             # 16: self.pwr_in,
             # 19: self.pwr_5v,
