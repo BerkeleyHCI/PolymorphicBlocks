@@ -1,18 +1,17 @@
 from electronics_abstract_parts import *
 
-class Tps61023_Device(DiscreteChip, CircuitBlock):
+class Tps61023_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
-    self.vin = self.Port(ElectricalSink(
+    self.vin = self.Port(VoltageSink(
       voltage_limits=(0.5, 5.5)*Volt,
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
-    # self.en = self.vin
-    self.sw = self.Port(ElectricalSource())  # internal switch specs not defined, only bulk current limit defined
+    self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
-    self.vout = self.Port(ElectricalSource())
+    self.vout = self.Port(VoltageSource())
 
   def contents(self) -> None:
     super().contents()

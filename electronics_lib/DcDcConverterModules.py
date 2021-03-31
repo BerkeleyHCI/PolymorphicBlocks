@@ -3,16 +3,16 @@ from electronics_lib import SmtNFet
 from electronics_lib.DcDcConverters import Tps61023_Device
 
 
-class Tps61023_Device_Module(CircuitBlock):
+class Tps61023_Device_Module(FootprintBlock):
     @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vin = self.Port(ElectricalSink(
+        self.vin = self.Port(VoltageSink(
             voltage_limits=(0.5, 5.5)*Volt,
             current_draw=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
         ))
-        self.vout = self.Port(ElectricalSource())
+        self.vout = self.Port(VoltageSource())
 
     def contents(self) -> None:
         super().contents()
@@ -41,19 +41,19 @@ class Tps61023_Device_Module(CircuitBlock):
         self.connect(self.dcdc_converter.vout, self.vout)
 
         # vin cap
-        self.connect(self.dcdc_converter.vin, self.vin_cap.pos.as_electrical_sink())
+        self.connect(self.dcdc_converter.vin, self.vin_cap.pos.as_voltage_sink())
         self.connect(self.dcdc_converter.gnd, self.vin_cap.neg.as_ground())
 
         # vout cap
-        self.connect(self.dcdc_converter.vout, self.vout_cap.pos.as_electrical_sink())
+        self.connect(self.dcdc_converter.vout, self.vout_cap.pos.as_voltage_sink())
         self.connect(self.dcdc_converter.gnd, self.vout_cap.neg.as_ground())
         #
         # inductor
-        self.connect(self.dcdc_converter.sw, self.ind.a.as_electrical_sink())
-        self.connect(self.dcdc_converter.vin, self.ind.b.as_electrical_sink())
+        self.connect(self.dcdc_converter.sw, self.ind.a.as_voltage_sink())
+        self.connect(self.dcdc_converter.vin, self.ind.b.as_voltage_sink())
 
         # voltage divider
         self.connect(self.gnd, self.vout_r2.b.as_ground())
-        self.connect(self.dcdc_converter.vout, self.vout_r1.a.as_electrical_sink())
+        self.connect(self.dcdc_converter.vout, self.vout_r1.a.as_voltage_sink())
         self.connect(self.dcdc_converter.fb, self.vout_r1.b.as_analog_sink())
         self.connect(self.vout_r1.b, self.vout_r2.a)
