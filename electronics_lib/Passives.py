@@ -266,6 +266,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     if len(capacitance_filtered_parts) > 0:  # available in single capacitor
       part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
 
+      self.assign(self.selected_voltage_rating, part['voltage'])
       self.assign(self.selected_capacitance, part['capacitance'])
       self.assign(self.selected_derated_capacitance, part['derated_capacitance'])
 
