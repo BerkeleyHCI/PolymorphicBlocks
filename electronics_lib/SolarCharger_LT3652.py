@@ -41,7 +41,7 @@ class SolarCharger_LT3652(DiscreteChip, FootprintBlock):
     )
 
     self.vfb = self.Port(
-      VoltageSink(
+      AnalogSink(
         voltage_limits=(0, 5) * Volt,
         current_draw=(0, 3.5) * nAmp
       ), optional=True
@@ -132,21 +132,17 @@ class SolarCharger_LT3652_Module(FootprintBlock):
     super().contents()
     self.solar_charger = self.Block(SolarCharger_LT3652())
 
-    self.timer_cap = self.Block(Capacitor())
+    self.timer_cap = self.Block(Capacitor(capacitance=0 * uFarad))
     self.vin_cap = self.Block(Capacitor(capacitance=10 * uFarad))
-    self.vin_r1 = self.Block(Resistor())
-    self.vin_r2 = self.Block(Resistor())
     self.sw_boost_cap = self.Block(Capacitor(capacitance=1 * uFarad))
     self.bat_boost_diode = self.Block(Diode())
     self.gnd_sw_diode = self.Block(Diode())
     self.sense_res = self.Block(CurrentSenseResistor())
-    self.bat_r1 = self.Block(Resistor())
-    self.bat_r2 = self.Block(Resistor())
     self.bat_cap = self.Block(Capacitor(capacitance=10 * uFarad))
     self.ind = self.Block(SmtInductor())
     self.vin_diode = self.Block(Diode())
-
     self.vin_vd = self.Block(VoltageDivider(output_voltage=2.7 * Volt, impedance=RangeExpr()))
+    self.bat_vd = self.Block(VoltageDivider(output_voltage=3.3 * Volt, impedance=RangeExpr()))
 
     self.footprint(
       'U', 'SolarCharger_LT3652_Module',
@@ -173,7 +169,7 @@ class SolarCharger_LT3652_Module(FootprintBlock):
     # vin voltage divider
     self.connect(self.gnd, self.vin_vd.gnd)
     self.connect(self.vin, self.vin_vd.input)
-    self.connect(self.vin_vd.output, self.solar_charger.vin_reg)
+    self.connect(self.solar_charger.vin_reg, self.vin_vd.output)
 
     # sw boost cap
     self.connect(self.solar_charger.boost, self.sw_boost_cap.neg.as_voltage_sink())
@@ -188,10 +184,9 @@ class SolarCharger_LT3652_Module(FootprintBlock):
     self.connect(self.gnd, self.gnd_sw_diode.anode.as_ground())
 
     # bat voltage divider
-    self.connect(self.gnd, self.bat_r2.b.as_ground())
-    self.connect(self.solar_charger.bat, self.bat_r1.a.as_voltage_sink())
-    self.connect(self.solar_charger.vfb, self.bat_r1.b.as_voltage_sink())
-    self.connect(self.bat_r1.b, self.bat_r2.a)
+    self.connect(self.gnd, self.bat_vd.gnd)
+    self.connect(self.solar_charger.bat, self.bat_vd.input)
+    self.connect(self.solar_charger.vfb, self.bat_vd.output)
 
     # bat cap
     self.connect(self.vout, self.bat_cap.pos.as_voltage_sink())
