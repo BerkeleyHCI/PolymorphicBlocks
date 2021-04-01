@@ -83,7 +83,7 @@ class UsbCReceptacle(UsbConnector, FootprintBlock):
 
 @abstract_block
 class UsbDeviceConnector(UsbConnector):
-  """Abstract base class for a USB device port connector"""
+  """Abstract base class for a USB 2.0 device-side port connector"""
   def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSource(
@@ -95,8 +95,34 @@ class UsbDeviceConnector(UsbConnector):
     self.usb = self.Port(UsbHostPort(), optional=True)
 
 
+class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'J', 'Connector_USB:USB_Micro-B_Molex-105017-0001',
+      {
+        '1': self.pwr,
+        '5': self.gnd,
+
+        '2': self.usb.dm,
+        '3': self.usb.dp,
+
+        # '4': TODO: ID pin
+
+        '6': self.gnd,  # actually shield
+      },
+      mfr='Molex', part='105017-0001',
+      datasheet='https://www.molex.com/pdm_docs/sd/1050170001_sd.pdf'
+    )
+
+
 class UsbDeviceCReceptacle(UsbDeviceConnector):
-  """Implementation of a USB device using a Type-C receptable as a upstream-facing port."""
+  """Implementation of a USB device using a Type-C receptacle as a upstream-facing port.
+  Includes pull-down resistors on the CC pins so a Type-C downstream-facing port can supply the default 5v power.
+  High speed pins are left open."""
   def __init__(self) -> None:
     super().__init__()
 

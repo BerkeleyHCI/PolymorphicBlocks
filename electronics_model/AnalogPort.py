@@ -87,6 +87,7 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
+    self.require(self.inner_link.link().source_impedance == RangeExpr.INF, "TODO: non-infinite impedances on AnalogSourceBridge")
     self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO compensate for internal current draw
 
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
