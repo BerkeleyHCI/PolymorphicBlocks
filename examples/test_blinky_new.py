@@ -72,7 +72,7 @@ class NewBlinkyRefactored(SimpleBoardTop):
       ])
 
 
-class Lf21215tmr_Device(FootprintBlock):
+class Ref_Lf21215tmr_Device(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(
@@ -111,10 +111,10 @@ class Lf21215tmr_Device(FootprintBlock):
     )
 
 
-class Lf21215tmr(Block):
+class Ref_Lf21215tmr(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.ic = self.Block(Lf21215tmr_Device())
+    self.ic = self.Block(Ref_Lf21215tmr_Device())
     self.pwr = self.Export(self.ic.vcc, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.out = self.Export(self.ic.vout)
@@ -157,7 +157,7 @@ class NewBlinkyMagsense(SimpleBoardTop):
         self.led[i] = imp.Block(IndicatorLed())
         self.connect(self.mcu.digital[i], self.led[i].signal)
 
-      self.sens = imp.Block(Lf21215tmr())
+      self.sens = imp.Block(Ref_Lf21215tmr())
       self.connect(self.mcu.digital[4], self.sens.out)
 
   def refinements(self) -> Refinements:
@@ -165,6 +165,26 @@ class NewBlinkyMagsense(SimpleBoardTop):
       instance_refinements=[
         (['buck'], Tps561201),
       ])
+
+
+class Ref_Bh1620fvc_Device(FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.vcc = self.Port(
+      VoltageSink(voltage_limits=(2.4, 5.5)*Volt, current_draw=(0.2, 97)*uAmp))
+    self.gnd = self.Port(Ground())
+    self.s_pos = self.Port(AnalogSink(voltage_limits=(3.0, 36.5)*Volt,
+                                      current_draw=100*nAmp(tol=0),
+                                      impedance=Default(RangeExpr.INF)))
+    self.s_neg = self.Port(AnalogSink(voltage_limits=(2.5, 36)*Volt,
+                                      current_draw=100*nAmp(tol=0),
+                                      impedance=Default(RangeExpr.INF)))
+    # block interface (ports, parameters) definition here
+
+  def contents(self) -> None:
+    super().contents()
+    # block implementation (subblocks, internal connections, footprint) here
 
 
 class BlinkyNewTestCase(unittest.TestCase):
