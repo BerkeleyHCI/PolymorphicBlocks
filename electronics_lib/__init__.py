@@ -25,7 +25,7 @@ from .Microcontroller_Stm32f103 import Stm32f103_48_Device, Stm32f103_48
 from .Microcontroller_Nucleo32 import Nucleo_F303k8
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
-from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbDeviceCReceptacle
+from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf

@@ -12,7 +12,7 @@ class Mcp6001_Device(DiscreteChip, FootprintBlock):
     analog_in_model = AnalogSink(
       voltage_limits=(-0.3, self.vcc.link().voltage.lower() + 0.3),
       impedance=(10e13)*Ohm(tol=0),  # no tolerance bounds given on datasheet
-      current_draw=(-19, 19)*pAmp
+      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)

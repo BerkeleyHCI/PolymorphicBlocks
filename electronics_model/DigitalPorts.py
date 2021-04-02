@@ -106,7 +106,7 @@ class DigitalBase(CircuitPort[DigitalLink]):
 class DigitalSink(DigitalBase):
   @staticmethod
   def from_supply(neg: VoltageSink, pos: VoltageSink,
-                  voltage_limit_tolerance: RangeLike = (0, 0)*Volt,
+                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
     if input_threshold_abs is not None:
