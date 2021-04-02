@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Lpc1549_Device(DiscreteChip, FootprintBlock):
+class Lpc1549Base_Device(DiscreteChip, FootprintBlock):
   IRC_FREQUENCY = 12*MHertz(tol=0.01)
 
   # TODO remove these once there is a unified pin capability specification
@@ -86,7 +86,7 @@ class Lpc1549_Device(DiscreteChip, FootprintBlock):
     self.i2c_0 = self.Port(I2cMaster(self.i2c_model[0]), optional=True)
 
 
-class Lpc1549_48_Device(Lpc1549_Device):
+class Lpc1549_48_Device(Lpc1549Base_Device):
   DIO0_PINS = [
     1, 2, 3, 4, 6, 7, 8, 12,  # pin 5 ISP_0 not assigned, 9 reserved for SWD
     13, 15, 18, 21, 22, 23,  # pin 24 ISP_1 not assigned, TODO not assigning 19 - not 5v tolerant
@@ -186,7 +186,7 @@ class Lpc1549_48_Device(Lpc1549_Device):
     )
 
 
-class Lpc1549_64_Device(Lpc1549_Device):
+class Lpc1549_64_Device(Lpc1549Base_Device):
   DIO0_PINS = [  # pin 38 ISP_1, 54 ISP_0 not assigned, pin 12 reserved for SWD,
     1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 16,
     17, 19, 23, 29, 30, 31, 32,  # TODO pin 24 DAC not 5v tolerant
@@ -314,15 +314,15 @@ class Lpc1549_64_Device(Lpc1549_Device):
 
 
 @abstract_block
-class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Device
+class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _Device
   """
   LPC1549JBD48 (QFP-48) microcontroller, Cortex-M3
   https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf
   """
-  DEVICE: Type[Lpc1549_Device] = Lpc1549_Device
+  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device
 
   @init_in_parent
-  def __init__(self, frequency: RangeExpr = Lpc1549_Device.IRC_FREQUENCY) -> None:
+  def __init__(self, frequency: RangeExpr = Lpc1549Base_Device.IRC_FREQUENCY) -> None:
     super().__init__()
     self.ic = self.Block(self.DEVICE())
 
@@ -494,9 +494,9 @@ class Lpc1549(Microcontroller, AssignablePinBlock):  # TODO refactor with _Devic
         raise ValueError(f"unknown pin type {self_port}")
 
 
-class Lpc1549_48(Lpc1549):
+class Lpc1549_48(Lpc1549Base):
   DEVICE = Lpc1549_48_Device
 
 
-class Lpc1549_64(Lpc1549):
+class Lpc1549_64(Lpc1549Base):
   DEVICE = Lpc1549_64_Device
