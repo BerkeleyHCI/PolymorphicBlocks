@@ -70,9 +70,9 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
 
         self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
-        self.swd_swdio = self.Port(DigitalBidir(io_model))
-        self.swd_swclk = self.Port(DigitalSink(io_model))
-        self.swd_reset = self.Port(DigitalSink(io_model))
+        self.swd_swdio = self.Port(DigitalBidir(io_model), optional=True)
+        self.swd_swclk = self.Port(DigitalSink(io_model), optional=True)
+        self.swd_reset = self.Port(DigitalSink(io_model), optional=True)
 
         # TODO model IO draw - need internal source block?
 
