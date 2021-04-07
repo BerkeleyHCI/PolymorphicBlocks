@@ -75,10 +75,10 @@ class FootprintBlock(Block):
     from edg_core.Blocks import BlockElaborationState, BlockDefinitionError
     from .VoltagePorts import CircuitPort
 
-    if self._elaboration_state != BlockElaborationState.contents and \
-        self._elaboration_state != BlockElaborationState.generate:
-      raise BlockDefinitionError(self, "can't call Footprint(...) outside contents or generate",
-                                 "call Footprint(...) inside contents or generate only, and remember to call super().contents() or .generate()")
+    if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents,
+                                       BlockElaborationState.generate):
+      raise BlockDefinitionError(self, "can't call Footprint(...) outside __init__, contents or generate",
+                                 "call Footprint(...) inside those functions, and remember to make the super() call")
 
     # TODO type-check footprints and pins?
     for pin_name, pin_port in pinning.items():
