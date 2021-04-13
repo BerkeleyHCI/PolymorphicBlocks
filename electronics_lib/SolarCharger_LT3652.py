@@ -55,7 +55,7 @@ class SolarCharger_LT3652(DiscreteChip, FootprintBlock):
     )
 
     self.bat = self.Port(
-      VoltageSource(
+      VoltageSink(
         voltage_out=(0, 0.5) * Volt,
         current_limits=(0, 1) * uAmp
       ), optional=True
@@ -108,7 +108,11 @@ class SolarCharger_LT3652(DiscreteChip, FootprintBlock):
 
 class SolarCharger_LT3652_Module(FootprintBlock):
   @init_in_parent
-  def __init__(self, solar_panel_voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self,
+               max_charge_current: FloatLike = FloatExpr(),
+               inductor_ripple_current: FloatLike = FloatExpr(),
+               output_battery_float_voltage: FloatLike = FloatExpr(),
+               vin_max: FloatLike = FloatExpr(),) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
 
@@ -126,7 +130,10 @@ class SolarCharger_LT3652_Module(FootprintBlock):
       )
     )
 
-    self.solar_panel_voltage = solar_panel_voltage
+
+    self.max_charge_current = max_charge_current
+    self.rsense = 0.1/max_charge_current
+    self.ind_val = ((10 * self.rsense)/(inductor_ripple_current/max_charge_current)) * output_battery_float_voltage * (1 - (output_battery_float_voltage/vin_max)) * 10e-6
 
   def contents(self) -> None:
     super().contents()
@@ -137,12 +144,12 @@ class SolarCharger_LT3652_Module(FootprintBlock):
     self.sw_boost_cap = self.Block(Capacitor(capacitance=1 * uFarad))
     self.bat_boost_diode = self.Block(Diode())
     self.gnd_sw_diode = self.Block(Diode())
-    self.sense_res = self.Block(CurrentSenseResistor())
+    self.sense_res = self.Block(CurrentSenseResistor(resistance=self.rsense))
     self.bat_cap = self.Block(Capacitor(capacitance=10 * uFarad))
-    self.ind = self.Block(SmtInductor())
+    self.ind = self.Block(Inductor(inductance=self.ind_val))
     self.vin_diode = self.Block(Diode())
-    self.vin_vd = self.Block(VoltageDivider(output_voltage=2.7 * Volt, impedance=RangeExpr()))
-    self.bat_vd = self.Block(VoltageDivider(output_voltage=3.3 * Volt, impedance=RangeExpr()))
+    self.vin_vd = self.Block(VoltageDivider(output_voltage=2.7 * Volt, impedance=250 * kOhm(tol=0.10)))
+    self.bat_vd = self.Block(VoltageDivider(output_voltage=3.3 * Volt, impedance=250 * kOhm(tol=0.10)))
 
     self.footprint(
       'U', 'SolarCharger_LT3652_Module',
