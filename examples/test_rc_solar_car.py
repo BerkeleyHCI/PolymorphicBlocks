@@ -12,7 +12,10 @@ class RCSolarCar(Block):
     super().contents()
     self.mcu = self.Block(Adafruit_ItsyBitsy_BLE())
     self.boost = self.Block(Tps61023_Device_Module())
-    self.solar_charger = self.Block(SolarCharger_LT3652_Module())
+    self.solar_charger = self.Block(SolarCharger_LT3652_Module(max_charge_current=2,
+                                                               inductor_ripple_current=0.1,
+                                                               output_battery_float_voltage=3.7,
+                                                               vin_max=6))
     self.battery_protector = self.Block(BatteryProtector_S8200A_Module())
     self.li_ion_bat = self.Block(Battery())
     self.solar_panel = self.Block(SolarPanel())
