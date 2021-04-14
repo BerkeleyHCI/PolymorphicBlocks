@@ -6,8 +6,6 @@ from electronics_abstract_parts import *
 class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
     """
     nRF52840 configured as power source from USB.
-    TODO base classes?
-    TODO: union types to configure as sinks
 
     Documentation: https://learn.adafruit.com/adafruit-itsybitsy-nrf52840-express
     """
@@ -17,23 +15,21 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
         super().__init__()
 
         self.pwr_bat = self.Port(VoltageSink(
-            voltage_limits=(3.5, 6) * Volt,  # according to specs
-            # TODO can be lower if don't need 5.0v out
-            current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
+            voltage_limits=(3.5, 6) * Volt
         ), optional=True)
         self.pwr_vhi = self.Port(VoltageSource(
-            voltage_out=(3.5, 6) * Volt,  # according to specs
-            current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
+            voltage_out=(3.5, 6) * Volt,
+            current_limits=(0, 0.5) * Amp
         ), optional=True)
         self.pwr_3v = self.Port(VoltageSource(
-            voltage_out=3.3 * Volt(tol=0.03),  # TODO no specs
-            current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
+            voltage_out=3.3 * Volt(tol=0.10),
+            current_limits=(0, 0.5) * Amp
         ), optional=True)
         self.pwr_usb = self.Port(VoltageSource(
-            voltage_out=5 * Volt(tol=0.03),  # TODO no specs
-            current_limits=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
+            voltage_out=5 * Volt(tol=0.10),
+            current_limits=(0, 0.5) * Amp
         ), optional=True)
-        self.gnd = self.Port(GroundSource(), optional=True)
+        self.gnd = self.Port(Ground(), optional=True)
 
         io_model = DigitalBidir(  # TODO no specs
             voltage_limits=(-0.3, 3.6) * Volt,
