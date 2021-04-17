@@ -25,15 +25,18 @@ class Cr2032(Battery, FootprintBlock):
 
 
 class Li18650(Battery, FootprintBlock):
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, voltage=Default((2.5, 4.2))): # TODO this is broken if we add * Volt here
     # This actually initializes in the parent, TODO unhackify this by removing spec processing, see issue #28
-    super().__init__(voltage=(2.5, 4.2)*Volt)
-
+    super().__init__(voltage=voltage)
+    self.voltage = self.Parameter(RangeExpr(voltage))
   def contents(self):
     super().contents()
+    self.assign(self.pwr.voltage_out, self.voltage)
+    self.require(self.pwr.voltage_out.within((2.5, 4.2)*Volt))
 
     # TODO can this be assigned self.pwr == VoltageSource(...) directly?
-    self.assign(self.pwr.voltage_out, (2.5, 4.2)*Volt)
+    # self.assign(self.pwr.voltage_out, (2.5, 4.2)*Volt)
     self.assign(self.pwr.current_limits, (0, 2)*mAmp)  # arbitrary assuming low capacity, 1 C discharge
     self.assign(self.capacity, (2, 3.6)*Amp)  # TODO should be A*h
 

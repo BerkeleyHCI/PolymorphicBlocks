@@ -35,17 +35,31 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
 
 class BatteryProtector_S8200A(FootprintBlock):
   @init_in_parent
-  def __init__(self) -> None:
+  def __init__(self, battery_voltage: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
     self.battery_protector = self.Block(BatteryProtector_S8200A_Device())
 
-    self.vdd_res = self.Block(Resistor())
-    self.vm_res = self.Block(Resistor())
-    self.vdd_vss_cap = self.Block(Capacitor())
+    self.vdd_res = self.Block(Resistor(resistance=330 * Ohm(tol=0.10)))
+    self.vm_res = self.Block(Resistor(resistance=2 * kOhm(tol=0.10)))
+    self.vdd_vss_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.10), voltage=battery_voltage))
 
-    self.do_fet = self.Block(NFet())
-    self.co_fet = self.Block(NFet())
+    self.do_fet = self.Block(NFet(
+      drain_current=(0, 4.5 / 150) * Amp,
+      power=RangeExpr.ZERO,
+      gate_voltage=(1.5, 3.4) * Volt,
+      gate_charge=RangeExpr.ALL,
+      rds_on=(0, 0.1) * Ohm,
+      drain_voltage=(0, 4.5) * Volt
+    ))
+    self.co_fet = self.Block(NFet(
+      drain_current=(0, 4.5 / 150) * Amp,
+      power=RangeExpr.ZERO,
+      gate_voltage=(1.5, 3.4) * Volt,
+      gate_charge=RangeExpr.ALL,
+      rds_on=(0, 0.1) * Ohm,
+      drain_voltage=(0, 4.5) * Volt
+    ))
 
     self.ebp = self.Port(VoltageSource())
     self.ebm = self.Port(GroundSource())
