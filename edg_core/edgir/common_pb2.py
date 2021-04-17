@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='common.proto',
   package='edg.common',
   syntax='proto3',
-  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\nedg.common\"\x99\x04\n\x08Metadata\x12$\n\x07unknown\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12/\n\x07members\x18\x65 \x01(\x0b\x32\x1c.edg.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x12\x33\n\x0esource_locator\x18n \x01(\x0b\x32\x19.edg.common.SourceLocatorH\x01\x12\x35\n\x0fnamespace_order\x18o \x01(\x0b\x32\x1a.edg.common.NamespaceOrderH\x01\x12\"\n\x05\x65rror\x18p \x01(\x0b\x32\x11.edg.common.ErrorH\x01\x12+\n\ncopper_net\x18x \x01(\x0b\x32\x15.edg.common.CopperNetH\x01\x12*\n\tfootprint\x18y \x01(\x0b\x32\x15.edg.common.FootprintH\x01\x1a\x82\x01\n\x07Members\x12\x34\n\x04node\x18\n \x03(\x0b\x32&.edg.common.Metadata.Members.NodeEntry\x1a\x41\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edg.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\xc7\x01\n\rSourceLocator\x12\x14\n\x0c\x66ile_package\x18\x01 \x01(\t\x12\x13\n\x0bline_offset\x18\x02 \x01(\x05\x12\x12\n\ncol_offset\x18\x03 \x01(\x05\x12\x39\n\x0bsource_type\x18\x04 \x01(\x0e\x32$.edg.common.SourceLocator.SourceType\"<\n\nSourceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nDEFINITION\x10\x01\x12\x11\n\rINSTANTIATION\x10\x02\"\x1f\n\x0eNamespaceOrder\x12\r\n\x05names\x18\x01 \x03(\t\"C\n\x05\x45rror\x12\x0f\n\x07message\x18\x01 \x01(\t\x12)\n\x06source\x18\x02 \x03(\x0b\x32\x19.edg.common.SourceLocator\"\x0b\n\tCopperNet\"\xd2\x01\n\tFootprint\x12\x15\n\rrefdes_prefix\x18\x01 \x01(\t\x12\x16\n\x0e\x66ootprint_name\x18\x15 \x01(\t\x12\x33\n\x07pinning\x18\x03 \x03(\x0b\x32\".edg.common.Footprint.PinningEntry\x12\x0c\n\x04part\x18\n \x01(\t\x12\x14\n\x0cmanufacturer\x18\x0b \x01(\t\x12\r\n\x05value\x18\x0c \x01(\t\x1a.\n\x0cPinningEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x07\n\x05\x45mptyb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63ommon.proto\x12\nedg.common\"\x99\x04\n\x08Metadata\x12$\n\x07unknown\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12/\n\x07members\x18\x65 \x01(\x0b\x32\x1c.edg.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x12\x33\n\x0esource_locator\x18n \x01(\x0b\x32\x19.edg.common.SourceLocatorH\x01\x12\x35\n\x0fnamespace_order\x18o \x01(\x0b\x32\x1a.edg.common.NamespaceOrderH\x01\x12\"\n\x05\x65rror\x18p \x01(\x0b\x32\x11.edg.common.ErrorH\x01\x12+\n\ncopper_net\x18x \x01(\x0b\x32\x15.edg.common.CopperNetH\x01\x12*\n\tfootprint\x18y \x01(\x0b\x32\x15.edg.common.FootprintH\x01\x1a\x82\x01\n\x07Members\x12\x34\n\x04node\x18\n \x03(\x0b\x32&.edg.common.Metadata.Members.NodeEntry\x1a\x41\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edg.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\xc7\x01\n\rSourceLocator\x12\x14\n\x0c\x66ile_package\x18\x01 \x01(\t\x12\x13\n\x0bline_offset\x18\x02 \x01(\x05\x12\x12\n\ncol_offset\x18\x03 \x01(\x05\x12\x39\n\x0bsource_type\x18\x04 \x01(\x0e\x32$.edg.common.SourceLocator.SourceType\"<\n\nSourceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nDEFINITION\x10\x01\x12\x11\n\rINSTANTIATION\x10\x02\"\x1f\n\x0eNamespaceOrder\x12\r\n\x05names\x18\x01 \x03(\t\"V\n\x05\x45rror\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x11\n\ttraceback\x18\x03 \x01(\t\x12)\n\x06source\x18\x02 \x03(\x0b\x32\x19.edg.common.SourceLocator\"\x0b\n\tCopperNet\"\xd2\x01\n\tFootprint\x12\x15\n\rrefdes_prefix\x18\x01 \x01(\t\x12\x16\n\x0e\x66ootprint_name\x18\x15 \x01(\t\x12\x33\n\x07pinning\x18\x03 \x03(\x0b\x32\".edg.common.Footprint.PinningEntry\x12\x0c\n\x04part\x18\n \x01(\t\x12\x14\n\x0cmanufacturer\x18\x0b \x01(\t\x12\r\n\x05value\x18\x0c \x01(\t\x1a.\n\x0cPinningEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x07\n\x05\x45mptyb\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -318,7 +318,14 @@ _ERROR = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='source', full_name='edg.common.Error.source', index=1,
+      name='traceback', full_name='edg.common.Error.traceback', index=1,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='source', full_name='edg.common.Error.source', index=2,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -337,7 +344,7 @@ _ERROR = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=803,
-  serialized_end=870,
+  serialized_end=889,
 )
 
 
@@ -360,8 +367,8 @@ _COPPERNET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=872,
-  serialized_end=883,
+  serialized_start=891,
+  serialized_end=902,
 )
 
 
@@ -398,8 +405,8 @@ _FOOTPRINT_PINNINGENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1050,
-  serialized_end=1096,
+  serialized_start=1069,
+  serialized_end=1115,
 )
 
 _FOOTPRINT = _descriptor.Descriptor(
@@ -463,8 +470,8 @@ _FOOTPRINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=886,
-  serialized_end=1096,
+  serialized_start=905,
+  serialized_end=1115,
 )
 
 
@@ -487,8 +494,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1098,
-  serialized_end=1105,
+  serialized_start=1117,
+  serialized_end=1124,
 )
 
 _METADATA_MEMBERS_NODEENTRY.fields_by_name['value'].message_type = _METADATA

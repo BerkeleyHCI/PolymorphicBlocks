@@ -42,7 +42,7 @@ class I2cMaster(Bundle[I2cLink]):
     self.scl = self.Port(DigitalSource(model))
     self.sda = self.Port(DigitalBidir(model))
 
-    self.frequency = self.Parameter(RangeExpr())
+    self.frequency = self.Parameter(RangeExpr(Default(RangeExpr.EMPTY_ZERO)))
 
 
 class I2cSlave(Bundle[I2cLink]):
@@ -53,4 +53,4 @@ class I2cSlave(Bundle[I2cLink]):
     self.scl = self.Port(DigitalSink(model))
     self.sda = self.Port(DigitalBidir(model))
 
-    self.frequency_limit = self.Parameter(RangeExpr())  # range of acceptable frequencies
+    self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies

@@ -14,10 +14,10 @@ class SwdLink(Link):
   def contents(self) -> None:
     super().contents()
     
-    self.connect(self.host.swdio, self.device.swdio)
-    self.connect(self.host.swclk, self.device.swclk)
-    self.connect(self.host.swo, self.device.swo)
-    self.connect(self.host.reset, self.device.reset)
+    self.swdio = self.connect(self.host.swdio, self.device.swdio)
+    self.swclk = self.connect(self.host.swclk, self.device.swclk)
+    self.swo = self.connect(self.host.swo, self.device.swo)
+    self.reset = self.connect(self.host.reset, self.device.reset)
 
 
 class SwdHostPort(Bundle[SwdLink]):

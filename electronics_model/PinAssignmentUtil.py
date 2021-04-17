@@ -3,14 +3,15 @@ from abc import abstractmethod
 from itertools import chain
 
 from edg_core import *
-from .ElectricalPorts import CircuitPort
+from .VoltagePorts import CircuitPort
 
 
-def leaf_circuit_ports(port: Port) -> Iterable[CircuitPort]:
+def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, CircuitPort]]:
   if isinstance(port, CircuitPort):
-    return [port]
+    return [(prefix, port)]
   elif isinstance(port, Bundle):
-    return chain(*[leaf_circuit_ports(port) for port in port._ports.values()])
+    return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port)
+                   for (name, port) in port._ports.items()])
   else:
     raise ValueError(f"unable to flatten {port}")
 
@@ -51,7 +52,7 @@ class AnyPinAssign(AssignablePinGroup):
       Optional[Dict[ConcretePinName, CircuitPort]]:
     assignments: Dict[ConcretePinName, CircuitPort] = {}
     available_pins = self.pins.difference(assigned).difference(preassigns.values())
-    for leaf_port in leaf_circuit_ports(port):
+    for leaf_name, leaf_port in leaf_circuit_ports("", port):
       if leaf_port in preassigns:
         preassign_pin = preassigns[leaf_port]
         if isinstance(preassign_pin, str):  # shouldn't have ints based on how params propagated
@@ -89,14 +90,14 @@ class PeripheralPinAssign(AssignablePinGroup):
 
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) -> \
       Optional[Dict[ConcretePinName, CircuitPort]]:
-    leaf_ports = list(leaf_circuit_ports(port))
+    leaf_name_ports = list(leaf_circuit_ports("", port))
 
     for group_pins in self.pins:
-      assert len(group_pins) == len(leaf_ports)
+      assert len(group_pins) == len(leaf_name_ports)
 
       group_dict: Dict[ConcretePinName, CircuitPort] = {}
       group_failed = False
-      for available_pins, leaf_port in zip(group_pins, leaf_ports):
+      for available_pins, (leaf_name, leaf_port) in zip(group_pins, leaf_name_ports):
         if group_failed:
           continue
 
@@ -124,7 +125,7 @@ class PeripheralPinAssign(AssignablePinGroup):
     return None
 
 class PinAssignmentUtil:
-  """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf ElectricalBase
+  """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf CircuitPort
   port to a pin."""
   def __init__(self, *assignables: AssignablePinGroup) -> None:
     self.assignables_by_port = IdentityDict[Port, AssignablePinGroup]()

@@ -1,16 +1,14 @@
-import os
 import unittest
-import sys
 
 from edg import *
 
 
-class LightsConnector(Connector, CircuitBlock):
+class LightsConnector(Connector, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.out = ElementDict[DigitalSink]()
     for i in range(2):
@@ -38,7 +36,7 @@ class LightsDriver(Block):
 
     self.current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     self.control = ElementDict[DigitalSink]()
@@ -62,7 +60,7 @@ class LightsDriver(Block):
         self.connect(driver.output, self.conn.out[i])
 
 
-class TestHighSwitch(CircuitBlock):
+class TestHighSwitch(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -91,24 +89,30 @@ class TestHighSwitch(CircuitBlock):
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
       (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
 
-      (self.can, ), _ = self.chain(self.mcu.new_io(CanControllerPort, pin=[43, 44]), imp.Block(CalSolCanBlock()))
+      (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
 
-      (self.vsense, ), _ = self.chain(
+      # TODO need proper support for exported unconnected ports
+      self.can_gnd_load = self.Block(VoltageLoad())
+      self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
+      self.can_pwr_load = self.Block(VoltageLoad())
+      self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
+
+      (self.vsense, ), self.vsense_chain = self.chain(
         self.pwr_conn.pwr,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
-        self.mcu.new_io(AnalogSink, pin=21))
+        self.mcu.new_io(AnalogSink))
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # CAN RGB
-      self.connect(self.mcu.new_io(DigitalBidir, pin=28), self.rgb1.red)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=23), self.rgb1.green)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=22), self.rgb1.blue)
+      self.rgb1_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.red)
+      self.rgb1_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.green)
+      self.rgb1_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.blue)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # system RGB 2
-      self.connect(self.mcu.new_io(DigitalBidir, pin=18), self.rgb2.red)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=15), self.rgb2.green)
-      self.connect(self.mcu.new_io(DigitalBidir, pin=13), self.rgb2.blue)
+      self.rgb2_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.red)
+      self.rgb2_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.green)
+      self.rgb2_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.blue)
 
-    self.limit_light_current = self.Block(ForcedElectricalCurrentDraw((0, 2.5)*Amp))
+    self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
     self.connect(self.pwr_conn.pwr, self.limit_light_current.pwr_in)
     with self.implicit_connect(
         ImplicitConnect(self.limit_light_current.pwr_out, [Power]),
@@ -118,31 +122,57 @@ class TestHighSwitch(CircuitBlock):
       for i in range(4):
         light = self.light[i] = imp.Block(LightsDriver((0, 0.5) * Amp))
 
-      self.connect(self.mcu.new_io(DigitalBidir, pin=12), self.light[0].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=8), self.light[0].control[1])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=7), self.light[1].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=6), self.light[1].control[1])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=4), self.light[2].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=3), self.light[2].control[1])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=2), self.light[3].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=1), self.light[3].control[1])
+      self.light_00_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[0].control[0])
+      self.light_01_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[0].control[1])
+      self.light_10_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[1].control[0])
+      self.light_11_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[1].control[1])
+      self.light_20_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[2].control[0])
+      self.light_21_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[2].control[1])
+      self.light_30_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[3].control[0])
+      self.light_31_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[3].control[1])
 
       for i in range(2):
         light = self.light[4+i] = imp.Block(LightsDriver((0, 3) * Amp))
 
-      self.connect(self.mcu.new_io(DigitalBidir, pin=48), self.light[4].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=47), self.light[4].control[1])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=46), self.light[5].control[0])
-      self.connect(self.mcu.new_io(DigitalBidir, pin=45), self.light[5].control[1])
+      self.light_40_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[4].control[0])
+      self.light_41_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[4].control[1])
+      self.light_50_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[5].control[0])
+      self.light_51_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[5].control[1])
 
     self.hole = ElementDict[MountingHole]()
     for i in range(4):
       self.hole[i] = self.Block(MountingHole_M4())
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+          'can_chain_0.txd=43',
+          'can_chain_0.rxd=44',
+          'vsense_chain_1=21',
+          'rgb1_red_net=28',
+          'rgb1_grn_net=23',
+          'rgb1_blue_net=22',
+          'rgb2_red_net=18',
+          'rgb2_grn_net=15',
+          'rgb2_blue_net=13',
+          'light_00_net=12',
+          'light_01_net=8',
+          'light_10_net=7',
+          'light_11_net=6',
+          'light_20_net=4',
+          'light_21_net=3',
+          'light_30_net=2',
+          'light_31_net=1',
+          'light_40_net=48',
+          'light_41_net=47',
+          'light_50_net=46',
+          'light_51_net=45',
+        ]))
+      ]
+    )
+
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestHighSwitch(),
-      os.path.splitext(__file__)[0]
-    )
+    compile_board_inplace(TestHighSwitch)

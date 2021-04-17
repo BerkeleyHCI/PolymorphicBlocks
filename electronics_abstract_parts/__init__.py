@@ -15,7 +15,7 @@ from .Categories import Label, Mechanical
 from .AbstractDevices import Battery
 from .AbstractPassives import Resistor, UnpolarizedCapacitor, Capacitor, Inductor
 from .AbstractPassives import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor, DecouplingCapacitor
-from .ResistiveDivider import ResistiveDivider, VoltageDivider, SignalDivider
+from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc
 from .AbstractDiodes import Diode, ZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode
@@ -30,6 +30,6 @@ from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 
-from .DummyDevices import ElectricalLoad, ForcedElectricalCurrentDraw, MergedElectricalSource
+from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw
 from .DummyDevices import DummyAnalogSink

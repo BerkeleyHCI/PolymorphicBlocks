@@ -2,7 +2,7 @@ from typing import *
 import unittest
 
 from . import *
-from .test_common import TestPortSink
+from .test_elaboration_common import TestPortSink
 
 
 class TestBundle(Bundle):
@@ -26,5 +26,5 @@ class BundleProtoTestCase(unittest.TestCase):
 
   def test_contains_field(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
-    self.assertEqual(self.pb.ports['a'].lib_elem.target.name, "edg_core.test_common.TestPortSink")
-    self.assertEqual(self.pb.ports['b'].lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports['a'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports['b'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")

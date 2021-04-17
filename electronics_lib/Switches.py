@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class SmtSwitch(Switch, CircuitBlock):
+class SmtSwitch(Switch, FootprintBlock):
   def contents(self) -> None:
     super().contents()
 
@@ -16,7 +16,7 @@ class SmtSwitch(Switch, CircuitBlock):
     )
 
 # TODO right-angle-ness should be a layout-level decision?
-class SmtSwitchRa(Switch, CircuitBlock):
+class SmtSwitchRa(Switch, FootprintBlock):
   def contents(self) -> None:
     super().contents()
 

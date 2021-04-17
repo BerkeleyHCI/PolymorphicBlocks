@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class LeadFreeIndicator(Label, CircuitBlock):
+class LeadFreeIndicator(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -11,7 +11,7 @@ class LeadFreeIndicator(Label, CircuitBlock):
     )
 
 
-class IdDots4(Label, CircuitBlock):
+class IdDots4(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -21,7 +21,7 @@ class IdDots4(Label, CircuitBlock):
     )
 
 
-class DuckLogo(Label, CircuitBlock):
+class DuckLogo(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(

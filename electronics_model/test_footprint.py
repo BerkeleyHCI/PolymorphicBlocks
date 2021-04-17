@@ -5,12 +5,12 @@ from edg_core import *
 from . import *
 
 
-class TestBlock(CircuitBlock):
+class TestBlock(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.port_1 = self.Port(ElectricalSink())
-    self.port_2 = self.Port(ElectricalSink())
+    self.port_1 = self.Port(VoltageSink())
+    self.port_2 = self.Port(VoltageSink())
 
   def contents(self) -> None:
     super().contents()
@@ -29,11 +29,11 @@ class FootprintTestCase(unittest.TestCase):
     self.pb = TestBlock()._elaborated_def_to_proto()
 
   def test_footprint(self):
-    self.assertIn(edgir.EqualsValueExpr(['footprint_name'], 'Resistor_SMD:R_0603_1608Metric'),
+    self.assertIn(edgir.AssignLit(['footprint_name'], 'Resistor_SMD:R_0603_1608Metric'),
                   self.pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['value'], '1k'),
+    self.assertIn(edgir.AssignLit(['value'], '1k'),
                   self.pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['refdes_prefix'], 'R'),
+    self.assertIn(edgir.AssignLit(['refdes_prefix'], 'R'),
                   self.pb.constraints.values())
 
     expected_pinning = edgir.Metadata()

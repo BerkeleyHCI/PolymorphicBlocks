@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import *
 from abc import abstractmethod
-import inspect
 
 from . import edgir
 from .Builder import builder
@@ -121,7 +120,7 @@ class ElementDict(Generic[ElementType]):
 
   def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
     assert self._parent is not None
-    self._parent[1].add_element(f"{self._parent[0]}_{key}", value)  # TODO perhaps some kind of check to make sure this is required?
+    self._parent[1].add_element(f"{self._parent[0]}[{key}]", value)  # TODO perhaps some kind of check to make sure this is required?
     self.container[key] = value
 
   def __getitem__(self, item: Union[str, int]) -> ElementType:
@@ -129,6 +128,9 @@ class ElementDict(Generic[ElementType]):
 
   def items(self) -> ItemsView[Union[str, int], ElementType]:
     return self.container.items()
+
+  def values(self) -> ValuesView[ElementType]:
+    return self.container.values()
 
 
 class ElementMeta(type):
@@ -163,6 +165,14 @@ class Refable():
     return IdentityDict([(self, prefix)])
 
 
+NonLibraryFlag = object()
+NonLibraryType = TypeVar('NonLibraryType', bound=Type['LibraryElement'])
+def non_library(decorated: NonLibraryType) -> NonLibraryType:
+  decorated._elt_properties[(decorated, 'non_library')] = None
+  return decorated
+
+
+@non_library
 class LibraryElement(Refable, metaclass=ElementMeta):
   """Defines a library element, which optionally contains other library elements."""
   _elt_properties: Dict[Any, Any] = {}  # TODO can this be restricted further?
@@ -222,49 +232,21 @@ class LibraryElement(Refable, metaclass=ElementMeta):
   def _def_to_proto(self) -> Union[edgir.PortTypes, edgir.BlockLikeTypes]: ...
 
 
+class StructuredMetadata():
+  """Base class for metadata that is structured (as a class in Python)"""
+  @abstractmethod
+  def _to_proto(self, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
+    raise NotImplementedError
+
+
+@non_library
 class HasMetadata(LibraryElement):
   """A library element with the metadata dict-like field"""
   def __init__(self) -> None:
     super().__init__()
     self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)  # type: ignore
 
-    if not builder.stack or builder.stack[0] is self:  # these are performance-intensive, avoid generating internally
-      self._edgdoc = self.Metadata(IdentityDict[Refable, str]())
-      selfdoc = inspect.getdoc(self)
-      if selfdoc:
-        self._edgdoc[self] = selfdoc
-
-      self._sourcelocator = self.Metadata(IdentityDict[Refable, str]())
-      self._sourcelocator[self] = self._get_class_line()
-
-  def _get_class_line(self) -> str:
-    """Returns the source locator for own class definition
-    TODO: line number is broken - there doesn't seem to be a good way of getting a line number
-      this used to return the source locator for the last function of the same name in the same object, but this
-      didn't work for classes since not everyone defines its own __init__
-    TODO: maybe return a more structured type?
-    """
-    return f"{inspect.getsourcefile(self.__class__)}: 0"
-
-  def _get_calling_source_locator(self) -> str:
-    """Returns the source locator (as a string for now) of the line calling the function this is being called from,
-    accounting for inheritance (superclass calls to a function of the same name in the same object).
-    TODO: maybe return a more structured type?
-    """
-    stack = inspect.stack()
-    ref_frame = stack[1]  # calling frame
-    func_name = ref_frame[0].f_code.co_name
-
-    for candidate_frame in stack[2:]:  # iterate through to the first frame with a different function name
-      # TODO this used to check for different self object
-      # ('self' not in candidate_frame[0].f_locals or candidate_frame[0].f_locals['self'] is not self)
-      # but this would trip up on chained calls, eg imp.Block(...)
-      # needs a better way to track through these objects?
-      if candidate_frame[0].f_code.co_name != func_name:
-        break
-    return f"{candidate_frame[0].f_code.co_filename}: {candidate_frame[0].f_lineno}"
-
-  MetadataType = TypeVar('MetadataType', bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
+  MetadataType = TypeVar('MetadataType', bound=Union[StructuredMetadata, str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
   def Metadata(self, value: MetadataType) -> MetadataType:
     """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
     Value may be changed until proto generation.
@@ -276,34 +258,21 @@ class HasMetadata(LibraryElement):
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
     """Generate metadata from a given object."""
     pb = edgir.Metadata()
-    if isinstance(src, str):
+    if isinstance(src, StructuredMetadata):
+      pb.CopyFrom(src._to_proto(ref_map))
+    elif isinstance(src, str):
       pb.text_leaf = src
     elif isinstance(src, bytes):
       pb.bin_leaf = src
     elif isinstance(src, dict) or isinstance(src, SubElementDict) or isinstance(src, IdentityDict):
       if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
         src.finalize()  # TODO should this be here?
-      if isinstance(src, IdentityDict) and path in [['_edgdoc'], ['_sourcelocator']]:
-        for key, val in src.items():
-          assert isinstance(val, str)
-          if key is self:
-            pb.members.node['self'].text_leaf = val
-          else:
-            pb.members.node[self._name_of(key)].text_leaf = val
-      else:
-        for key, val in src.items():
-          assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key} at {path}'
-          pb.members.node[key].CopyFrom(self._metadata_to_proto(val, path + [key], ref_map))
+      for key, val in src.items():
+        assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key} at {path}'
+        pb.members.node[key].CopyFrom(self._metadata_to_proto(val, path + [key], ref_map))
     elif isinstance(src, list):
       for idx, val in enumerate(src):
         pb.members.node[str(idx)].CopyFrom(self._metadata_to_proto(val, path + [str(idx)], ref_map))
     else:
       raise ValueError(f'must overload _metadata_to_proto to handle unknown value {src} at {path}')
     return pb
-
-
-NonLibraryFlag = object()
-NonLibraryType = TypeVar('NonLibraryType', bound=Type[LibraryElement])
-def non_library(decorated: NonLibraryType) -> NonLibraryType:
-  decorated._elt_properties[(decorated, 'non_library')] = None
-  return decorated

@@ -1,10 +1,10 @@
 from electronics_abstract_parts import *
 
 
-class Mcp6001_Device(DiscreteChip, CircuitBlock):
+class Mcp6001_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
-    self.vcc = self.Port(ElectricalSink(
+    self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 6.0)*Volt, current_draw=(50, 170)*uAmp
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
@@ -12,7 +12,7 @@ class Mcp6001_Device(DiscreteChip, CircuitBlock):
     analog_in_model = AnalogSink(
       voltage_limits=(-0.3, self.vcc.link().voltage.lower() + 0.3),
       impedance=(10e13)*Ohm(tol=0),  # no tolerance bounds given on datasheet
-      current_draw=(-19, 19)*pAmp
+      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)

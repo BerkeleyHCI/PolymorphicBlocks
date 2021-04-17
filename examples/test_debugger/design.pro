@@ -1,6 +1,6 @@
-update=2/7/2020 1:00:59 AM
+update=2/20/2021 11:26:11 PM
 version=1
-last_client=kicad
+last_client=pcbnew
 [general]
 version=1
 RootSch=
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=netlist.net
+LastNetListRead=Debugger.net
 CopperLayerCount=4
 BoardThickness=1.6
 AllowMicroVias=0
@@ -67,4 +67,4 @@ OthersTextUpright=1
 SolderMaskClearance=0.051
 SolderMaskMinWidth=0.25
 SolderPasteClearance=-0.05
-SolderPasteRatio=-0
+SolderPasteRatio=0

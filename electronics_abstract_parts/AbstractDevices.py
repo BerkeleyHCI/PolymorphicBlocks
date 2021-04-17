@@ -5,10 +5,17 @@ from .Categories import *
 @abstract_block
 class Battery(DiscreteApplication):
   @init_in_parent
-  def __init__(self, voltage: RangeLike = RangeExpr(), current: RangeLike = RangeExpr(), capacity: RangeLike = RangeExpr()):
+  def __init__(self, voltage: RangeLike = RangeExpr(),
+               current: RangeLike = Default(RangeExpr.ZERO),
+               capacity: FloatLike = Default(0.0)):
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSource(voltage_out=voltage, current_limits=current))
+    self.pwr = self.Port(VoltageSource(
+      voltage_out=RangeExpr(), current_limits=RangeExpr()))  # set by subclasses
     self.gnd = self.Port(GroundSource())
 
-    self.capacity = self.Parameter(RangeExpr(capacity))
+    self.capacity = self.Parameter(RangeExpr())
+
+    self.require(self.pwr.voltage_out.within(voltage))
+    self.require(self.pwr.current_limits.contains(current))
+    self.require(self.capacity.lower() >= capacity)

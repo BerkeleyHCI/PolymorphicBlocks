@@ -10,7 +10,7 @@ class Opamp(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     self.inp = self.Port(AnalogSink())
@@ -24,8 +24,8 @@ class OpampFollower(AnalogFilter):
 
     self.amp = self.Block(Opamp())
 
-    self.pwr = self.Export(self.amp.pwr)
-    self.gnd = self.Export(self.amp.gnd)
+    self.pwr = self.Export(self.amp.pwr, [Power])
+    self.gnd = self.Export(self.amp.gnd, [Common])
 
     self.input = self.Export(self.amp.inp, [Input])
     self.output = self.Export(self.amp.out, [Output])

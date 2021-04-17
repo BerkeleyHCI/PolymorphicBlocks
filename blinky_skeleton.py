@@ -1,15 +1,11 @@
-import sys
 from edg import *
 
 
-class BlinkyExample(Block):
+class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
-    # implementation here
+    # your implementation here
 
 
-if __name__ == '__main__':
-  ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-    BlinkyExample(),
-    "examples/blinky_example"
-  )
+if __name__ == "__main__":
+  compile_board_inplace(BlinkyExample)

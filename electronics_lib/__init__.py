@@ -25,7 +25,7 @@ from .Microcontroller_Stm32f103 import Stm32f103_48_Device, Stm32f103_48
 from .Microcontroller_Nucleo32 import Nucleo_F303k8
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
-from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbDeviceCReceptacle
+from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
@@ -37,11 +37,6 @@ from .Iso1050 import Iso1050dub
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
-from .NatcarBlocks import FreescaleLineCameraConnector, ServoConnector
-from .NatcarBlocks import NatcarBatteryConnector, NatcarBrushedMotorConnector
-from .NatcarBlocks import BeagleBoneBlueAdcConnector, BeagleBoneBlueGpioConnector, BeagleBoneBlueGpsPwmConnector
-from .NatcarBlocks import BeagleBoneBlueDigitalPin
-from .NatcarBlocks import Ucc21222_HalfbridgeDriver, Ucc21222_Device
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4
 from .Mechanicals import Outline_Pn1332

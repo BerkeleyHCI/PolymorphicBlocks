@@ -1,6 +1,6 @@
-update=9/3/2019 11:14:44 PM
+update=2/20/2021 11:41:59 PM
 version=1
-last_client=kicad
+last_client=pcbnew
 [general]
 version=1
 RootSch=
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=netlist.net
+LastNetListRead=TestHighSwitch.net
 CopperLayerCount=2
 BoardThickness=1.6
 AllowMicroVias=0
@@ -65,4 +65,4 @@ OthersTextUpright=1
 SolderMaskClearance=0.051
 SolderMaskMinWidth=0.25
 SolderPasteClearance=0
-SolderPasteRatio=-0
+SolderPasteRatio=0

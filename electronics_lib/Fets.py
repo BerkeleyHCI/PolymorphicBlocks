@@ -46,7 +46,7 @@ def generate_fet_table(TABLES: List[str]) -> ProductTable:
 
 
 @abstract_block
-class SmtFet(SwitchFet, CircuitBlock, GeneratorBlock):
+class SmtFet(Fet, FootprintBlock, GeneratorBlock):
   product_table: ProductTable
 
   @init_in_parent
@@ -56,27 +56,34 @@ class SmtFet(SwitchFet, CircuitBlock, GeneratorBlock):
     self.drain_current_rating = self.Parameter(RangeExpr())
     self.gate_voltage_rating = self.Parameter(RangeExpr())
     self.power_rating = self.Parameter(RangeExpr())
+    self.selected_rds_on = self.Parameter(RangeExpr())
+    self.selected_gate_charge = self.Parameter(RangeExpr())
 
-  def generate(self) -> None:
-    parts = self.product_table.filter(RangeContains(Column('Vds,max'), Lit(self.get(self.drain_voltage)))) \
-      .filter(RangeContains(Column('Ids,max'), Lit(self.get(self.drain_current)))) \
-      .filter(RangeContains(Column('Vgs'), Lit(self.get(self.gate_voltage)))) \
-      .filter(RangeContains(Lit(self.get(self.rds_on)), Column('Rds,max'))) \
-      .filter(RangeContains(Column('P,max'), Lit(self.get(self.power)))) \
-      .filter(RangeContains(Lit(self.get(self.gate_charge)), Column('Qc'))) \
+    self.generator(self.select_part,
+                   self.drain_voltage, self.drain_current,
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power)
+
+  def select_part(self, drain_voltage: RangeVal, drain_current: RangeVal,
+                  gate_voltage: RangeVal, rds_on: RangeVal, gate_charge: RangeVal, power: RangeVal) -> None:
+    parts = self.product_table.filter(RangeContains(Column('Vds,max'), Lit(drain_voltage))) \
+      .filter(RangeContains(Column('Ids,max'), Lit(drain_current))) \
+      .filter(RangeContains(Column('Vgs'), Lit(gate_voltage))) \
+      .filter(RangeContains(Lit(rds_on), Column('Rds,max'))) \
+      .filter(RangeContains(Column('P,max'), Lit(power))) \
+      .filter(RangeContains(Lit(gate_charge), Column('Qc'))) \
       .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
       .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
       .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no FETs matching Vds={self.get(self.drain_voltage)}, Ids={self.get(self.drain_current)}, "
-                           f"Vgs={self.get(self.gate_voltage)}, Rds={self.get(self.rds_on)}, "
-                           f"Pmax={self.get(self.power)}, Qc={self.get(self.gate_charge)}")
+    part = parts.first(err=f"no FETs matching Vds={drain_voltage}, Ids={drain_current}, "
+                           f"Vgs={gate_voltage}, Rds={rds_on}, "
+                           f"Pmax={power}, Qc={gate_charge}")
 
-    self.constrain(self.drain_voltage_rating == part['Vds,max'])
-    self.constrain(self.drain_current_rating == part['Ids,max'])
-    self.constrain(self.gate_voltage_rating == part['Vgs'])  # TODO: confounded w/ gate drive voltage
-    self.constrain(self.rds_on == part['Rds,max'])
-    self.constrain(self.power_rating == part['P,max'])
-    self.constrain(self.gate_charge == part['Qc'])
+    self.assign(self.drain_voltage_rating, part['Vds,max'])
+    self.assign(self.drain_current_rating, part['Ids,max'])
+    self.assign(self.gate_voltage_rating, part['Vgs'])  # TODO: confounded w/ gate drive voltage
+    self.assign(self.selected_rds_on, part['Rds,max'])
+    self.assign(self.power_rating, part['P,max'])
+    self.assign(self.selected_gate_charge, part['Qc'])
 
     footprint_pinning = {
       'Package_TO_SOT_SMD:SOT-23': {
@@ -110,20 +117,20 @@ class SmtFet(SwitchFet, CircuitBlock, GeneratorBlock):
     )
 
 
-class SmtNFet(PFet, SmtFet):
+class SmtNFet(NFet, SmtFet):
   product_table = generate_fet_table([
     'Digikey_NFETs.csv',
   ])
 
 
-class SmtPFet(NFet, SmtFet):
+class SmtPFet(PFet, SmtFet):
   product_table = generate_fet_table([
     'Digikey_PFETs.csv',
   ])
 
 
 @abstract_block
-class SmtSwitchFet(SwitchFet, CircuitBlock, GeneratorBlock):  # TODO dedup w/ DefaultFet
+class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):  # TODO dedup w/ DefaultFet
   product_table: ProductTable
 
   @init_in_parent
@@ -133,17 +140,25 @@ class SmtSwitchFet(SwitchFet, CircuitBlock, GeneratorBlock):  # TODO dedup w/ De
     self.drain_current_rating = self.Parameter(RangeExpr())
     self.gate_voltage_rating = self.Parameter(RangeExpr())
     self.power_rating = self.Parameter(RangeExpr())
+    self.selected_rds_on = self.Parameter(RangeExpr())
+    self.selected_gate_charge = self.Parameter(RangeExpr())
 
     self.static_power = self.Parameter(RangeExpr())
     self.switching_power = self.Parameter(RangeExpr())
     self.total_power = self.Parameter(RangeExpr())
 
-  def generate(self) -> None:
-    i_max = self.get(self.drain_current.upper())
-    v_max = self.get(self.drain_voltage.upper())
-    gate_drive_rise = self.get(self.drive_current.upper())
-    gate_drive_fall = -self.get(self.drive_current.lower())
-    f_max = self.get(self.frequency.upper())
+    self.generator(self.select_part,
+                   self.frequency, self.drive_current,
+                   self.drain_voltage, self.drain_current,
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power)
+
+  def select_part(self, frequency: RangeVal, drive_current: RangeVal,
+                  drain_voltage: RangeVal, drain_current: RangeVal,
+                  gate_voltage: RangeVal, rds_on: RangeVal, gate_charge: RangeVal, power: RangeVal) -> None:
+    i_max = drain_current[1]
+    v_max = drain_voltage[1]
+    gate_drive_rise, gate_drive_fall = drive_current[1], -drive_current[0]
+    f_max = frequency[1]
     assert gate_drive_rise > 0 and gate_drive_fall > 0, \
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
 
@@ -160,12 +175,12 @@ class SmtSwitchFet(SwitchFet, CircuitBlock, GeneratorBlock):  # TODO dedup w/ De
     def total_power(row: Dict[str, Any]) -> Tuple[float, float]:
       return (0, row['static_power'][1] + row['switching_power'][1])
 
-    parts = self.product_table.filter(RangeContains(Column('Vds,max'), Lit(self.get(self.drain_voltage)))) \
-      .filter(RangeContains(Column('Ids,max'), Lit(self.get(self.drain_current)))) \
-      .filter(RangeContains(Column('Vgs'), Lit(self.get(self.gate_voltage)))) \
-      .filter(RangeContains(Lit(self.get(self.rds_on)), Column('Rds,max'))) \
-      .filter(RangeContains(Column('P,max'), Lit(self.get(self.power)))) \
-      .filter(RangeContains(Lit(self.get(self.gate_charge)), Column('Qc'))) \
+    parts = self.product_table.filter(RangeContains(Column('Vds,max'), Lit(drain_voltage))) \
+      .filter(RangeContains(Column('Ids,max'), Lit(drain_current))) \
+      .filter(RangeContains(Column('Vgs'), Lit(gate_voltage))) \
+      .filter(RangeContains(Lit(rds_on), Column('Rds,max'))) \
+      .filter(RangeContains(Column('P,max'), Lit(power))) \
+      .filter(RangeContains(Lit(gate_charge), Column('Qc'))) \
       .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
       .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
       .derived_column('static_power', static_power) \
@@ -173,19 +188,19 @@ class SmtSwitchFet(SwitchFet, CircuitBlock, GeneratorBlock):  # TODO dedup w/ De
       .derived_column('total_power', total_power) \
       .filter(RangeContains(Column('P,max'), Column('total_power'))) \
       .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no FETs matching Vds={self.get(self.drain_voltage)}, Ids={self.get(self.drain_current)}, "
-                           f"Vgs={self.get(self.gate_voltage)}, Rds={self.get(self.rds_on)}, "
-                           f"Pmax={self.get(self.power)}, Qc={self.get(self.gate_charge)}")
+    part = parts.first(err=f"no FETs matching Vds={drain_voltage}, Ids={drain_current}, "
+                           f"Vgs={gate_voltage}, Rds={rds_on}, "
+                           f"Pmax={power}, Qc={gate_charge}")
 
-    self.constrain(self.drain_voltage_rating == part['Vds,max'])
-    self.constrain(self.drain_current_rating == part['Ids,max'])
-    self.constrain(self.gate_voltage_rating == part['Vgs'])  # TODO: confounded w/ gate drive voltage
-    self.constrain(self.rds_on == part['Rds,max'])
-    self.constrain(self.power_rating == part['P,max'])
-    self.constrain(self.gate_charge == part['Qc'])
-    self.constrain(self.static_power == part['static_power'])
-    self.constrain(self.switching_power == part['switching_power'])
-    self.constrain(self.total_power == part['total_power'])
+    self.assign(self.drain_voltage_rating, part['Vds,max'])
+    self.assign(self.drain_current_rating, part['Ids,max'])
+    self.assign(self.gate_voltage_rating, part['Vgs'])  # TODO: confounded w/ gate drive voltage
+    self.assign(self.selected_rds_on, part['Rds,max'])
+    self.assign(self.power_rating, part['P,max'])
+    self.assign(self.selected_gate_charge, part['Qc'])
+    self.assign(self.static_power, part['static_power'])
+    self.assign(self.switching_power, part['switching_power'])
+    self.assign(self.total_power, part['total_power'])
 
     footprint_pinning = {
       'Package_TO_SOT_SMD:SOT-23': {

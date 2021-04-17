@@ -14,6 +14,7 @@ from .Builder import builder
 from .Core import Refable
 if TYPE_CHECKING:
   from .Ports import BasePort, Port
+  from .Array import Vector
   from .Blocks import BaseBlock
 
 
@@ -125,6 +126,19 @@ class BoolLiteralBinding(LiteralBinding):
     return pb
 
 
+class IntLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: int):
+    self.value = value
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.integer.val = self.value
+    return pb
+
+
 class FloatLiteralBinding(LiteralBinding):
   def __repr__(self) -> str:
     return f"Lit({self.value})"
@@ -135,6 +149,21 @@ class FloatLiteralBinding(LiteralBinding):
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.floating.val = self.value
+    return pb
+
+
+class RangeLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.lower, self.upper})"
+
+  def __init__(self, value: Tuple[Union[float, int], Union[float, int]]):
+    self.lower = value[0]
+    self.upper = value[1]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.range.minimum.floating.val = self.lower
+    pb.literal.range.maximum.floating.val = self.upper
     return pb
 
 
@@ -284,9 +313,69 @@ class IsConnectedBinding(Binding):
     return pb
 
 
+class NameBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Name"
+
+  def __init__(self, src: Union[BaseBlock, BasePort]):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return []
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.NAME
+    return pb
+
+
+class LengthBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Length"
+
+  def __init__(self, src: Vector):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.src]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.LENGTH
+    return pb
+
+
+class AssignBinding(Binding):
+  # Convenience method to make an assign expr without the rest of this proto infrastructure
+  @staticmethod
+  def make_assign(target: ConstraintExpr, value: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.assign.dst.CopyFrom(ref_map[target])
+    pb.assign.src.CopyFrom(value._expr_to_proto(ref_map))
+    return pb
+
+  def __repr__(self) -> str:
+    return f"Assign({self.target}, ...)"
+
+  def __init__(self, target: ConstraintExpr, value: ConstraintExpr):
+    super().__init__()
+    self.target = target
+    self.value = value
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.value]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    return self.make_assign(self.target, self.value, ref_map)
+
+
 ConstraintExprCastable = TypeVar('ConstraintExprCastable')
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-GetType = TypeVar('GetType')
+GetType = TypeVar('GetType', covariant=True)
 class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
@@ -502,6 +591,25 @@ class NumLikeExpr(ConstraintExpr[NumSelfType, ConstraintExprCastable, GetType],
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.le)
 
 
+IntLit = Union[int]
+IntLike = Union[IntLit, 'IntExpr']
+class IntExpr(NumLikeExpr['IntExpr', IntLike, int]):
+  @classmethod
+  def _to_expr_type(cls, input: IntLike) -> IntExpr:
+    if isinstance(input, IntExpr):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, int):
+      return IntExpr()._bind(IntLiteralBinding(input))
+    else:
+      raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
+
+  def _decl_to_proto(self) -> edgir.ValInit:
+    pb = edgir.ValInit()
+    pb.integer.CopyFrom(edgir.Empty())
+    return pb
+
+
 FloatLit = Union[int, float]
 FloatLike = Union[FloatLit, 'FloatExpr']
 class FloatExpr(NumLikeExpr['FloatExpr', FloatLike, float]):
@@ -537,12 +645,18 @@ RangeSuperset = RangeConstrMode()
 RangeLit = Tuple[FloatLit, FloatLit]
 RangeLike = Union[RangeLit, FloatLike, FloatLike, Tuple[FloatLike, FloatLike], 'RangeExpr']
 class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
-  def __init__(self, initializer: Optional[RangeLike]=None, constr: Optional[RangeConstrMode]=None):
-    if initializer is None:
-      assert constr is None, "cannot specify init constr without initializer"
+  # Some range literals for defaults
+  POSITIVE = (0.0, float('inf'))
+  NEGATIVE = (float('-inf'), 0.0)
+  ALL = (float('-inf'), float('inf'))
+  INF = (float('inf'), float('inf'))
+  ZERO = (0.0, 0.0)
+  EMPTY_ZERO = (0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
+  EMPTY_DIT = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
+  EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
+
+  def __init__(self, initializer: Optional[RangeLike]=None):
     super().__init__(initializer)
-    assert constr is None or isinstance(constr, RangeConstrMode), f"constr must be initializer constraint mode"
-    self.init_constr = constr
     self._lower = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.min)))
     self._upper = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.max)))
 
@@ -551,9 +665,12 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     if isinstance(input, RangeExpr):
       assert input._is_bound()
       return input
-    elif isinstance(input, int) or isinstance(input, float) or isinstance(input, FloatExpr):
+    elif isinstance(input, (int, float, FloatExpr)):
       expr = FloatExpr._to_expr_type(input)
       return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
+    elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
+      assert len(input) == 2
+      return RangeExpr()._bind(RangeLiteralBinding((input[0], input[1])))
     elif isinstance(input, tuple):
       assert len(input) == 2
       return RangeExpr()._bind(RangeBuilderBinding(
@@ -569,14 +686,7 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     if self.initializer is None:
       return BoolExpr._to_expr_type(True)
     else:
-      if self.init_constr is None:
-        return target == self.initializer
-      elif self.init_constr is RangeSubset:
-        return target.within(self.initializer)
-      elif self.init_constr is RangeSuperset:
-        return self.initializer.within(target)
-      else:
-        raise ValueError(f"unknown initializer constraint {self.init_constr}")
+      return target == self.initializer
 
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
@@ -659,6 +769,19 @@ class StringExpr(ConstraintExpr['StringExpr', StringLike, str]):
     return isinstance(self.binding, StringLiteralBinding)
 
 
+class AssignExpr(ConstraintExpr['AssignExpr', None, None]):
+  """String expression, can be used as a constraint"""
+  @classmethod
+  def _to_expr_type(cls, input: Any) -> AssignExpr:
+    raise ValueError("can't convert to AssignExpr")
+
+  def _decl_to_proto(self) -> edgir.ValInit:
+    raise ValueError("can't create parameter from AssignExpr")
+
+  def _is_lit(self) -> bool:
+    raise ValueError("can't have literal AssignExpr")
+
+
 # TODO actually implement dimensional analysis and units type checking
 class RangeConstructor:
   def __init__(self, tolerance: float, scale: float = 1, units: str = '') -> None:
@@ -724,3 +847,12 @@ class LiteralConstructor:
       return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
     else:
       raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
+
+
+# TODO this is a placeholder that just returns the constraint itself
+# In the future, it should annotate the value with default-ness
+DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, FloatLike, RangeLike, StringLike])
+def Default(constr: DefaultType) -> DefaultType:
+  if isinstance(constr, ConstraintExpr):
+    assert constr.initializer is not None, "default must have initialzier"
+  return constr

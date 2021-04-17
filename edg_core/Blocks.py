@@ -3,15 +3,18 @@ from __future__ import annotations
 from enum import Enum
 from typing import *
 from abc import abstractmethod
+from itertools import chain
 
 from . import edgir
 from .Exception import *
-from .Array import BaseVector, DerivedVector
+from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding, \
+  NameBinding, StringExpr
 from .Ports import BasePort, Port, Bundle
+from .StructuredMetadata import MetaNamespaceOrder
 
 
 class ConnectedPorts():
@@ -30,7 +33,7 @@ class ConnectedPorts():
     direct_connects: List[Tuple[BasePort, BasePort]]  # internal block ports <> link port
 
     def generate_connections(self) -> ConnectedPorts.Connections:
-      link_ref_map = self.link._get_ref_map(edgir.LocalPath())
+      link_ref_map = self.link._get_ref_map_allocate(edgir.LocalPath())
       bridged_connects = [(port, link_ref_map[tar]) for port, tar in self.bridged_connects]
       direct_connects = [(port, link_ref_map[tar]) for port, tar in self.direct_connects]
       return ConnectedPorts.Connections(type(self.link), bridged_connects, direct_connects)
@@ -148,7 +151,7 @@ class ConnectedPorts():
           # deallocate the port to prevent double connection
           # note, we can't use .remove since it uses __eq__ for comparison
           link_free_ports = [port for port in link_free_ports if port is not link_connect_port]
-            
+
         if port._block_parent() is self.parent:
           self.connect.bridged_connects.append((port, link_connect_port))
         else:
@@ -157,7 +160,7 @@ class ConnectedPorts():
   def generate_connections(self) -> Optional[ConnectedPorts.Connections]:
     if self.connect is not None:
       return self.connect.generate_connections()
-    elif len(self.ports) == 2:
+    elif len(self.ports) == 2:  # for direct exports
       exterior_port = [port for port in self.ports if port._block_parent() is self.parent]
       internal_port = [port for port in self.ports if port._block_parent() is not self.parent]
       assert len(exterior_port) == 1 and len(internal_port) == 1
@@ -202,12 +205,18 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
-    self._constraints = self.manager.new_dict(BoolExpr, anon_prefix='anon_constr')
-    self._inits = IdentityDict[Tuple[Refable, str], BoolExpr]()  # need to delay init constraint binding until after things are named
+    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
+
+    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
+
+    self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
   def _post_init(self):
     assert self._elaboration_state == BlockElaborationState.init
     self._elaboration_state = BlockElaborationState.post_init
+
+  def name(self) -> StringExpr:
+    return self._name
 
   """Overload this method to define the contents of this block"""
   def contents(self):
@@ -229,7 +238,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return [bcls for bcls in cls.__bases__
             if issubclass(bcls, BaseBlock) and (bcls, 'non_library') not in bcls._elt_properties]
 
-  # TODO: can we unify PortBridge into ProtoType? Differnce seems to be in meta and repeated superclasses
+  # TODO: can we unify PortBridge into ProtoType? Difference seems to be in meta and repeated superclasses
   ProtoType = TypeVar('ProtoType', bound=edgir.BlockLikeTypes)
   def _populate_def_proto_block_base(self, pb: ProtoType) -> ProtoType:
     """Populates the structural parts of a block proto: parameters, ports, superclasses"""
@@ -237,13 +246,11 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
            self._elaboration_state == BlockElaborationState.post_generate
 
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
-
     self._ports.finalize()
-    self._ports_order = self.Metadata({str(idx): name for idx, name in enumerate(self._ports.keys_ordered())})
 
     if (self.__class__, 'abstract') in self._elt_properties:
-      self.abstract = self.Metadata('abstract')
+      assert isinstance(pb, edgir.HierarchyBlock)
+      pb.is_abstract = True
 
     for cls in self._get_block_bases():
       super_pb = pb.superclasses.add()
@@ -258,9 +265,70 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._constraints.finalize()  # needed for source locator generation
 
-    ref_map = self._get_ref_map(edgir.LocalPath())
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))  # needed for block ordering; TODO maybe should be in contents?
+    # generate base-block order
+    # TODO unified namespace order
+    # TODO this also appends to end, which may not be desirable
+    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered(),
+                      self._constraints.keys_ordered()):
+      self._namespace_order.append(name)
 
+    ref_map = self._get_ref_map(edgir.LocalPath())
+    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))
+
+    return pb
+
+  def _populate_def_proto_port_init(self, pb: ProtoType,
+                                    ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> ProtoType:
+    # TODO this is structurally ugly!
+    # TODO TODO: for non-generated exported initializers, check and assert default-ness
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+
+    def check_recursive_no_initializer(port: BasePort, path: List[str]) -> None:
+      if isinstance(port, (Port, Bundle)):
+        for (name, subparam) in port._parameters.items():
+          assert subparam.initializer is None, f"unexpected initializer in {port} at {path}"
+
+      if isinstance(port, Bundle):
+        for (name, subport) in port._ports.items():
+          check_recursive_no_initializer(subport, path + [name])
+      elif isinstance(port, Vector):
+        check_recursive_no_initializer(port._get_elt_sample(), path)
+      # TODO needs to be something like sealed types for match comprehensiveness
+
+    def process_port_inits(port: BasePort, path: List[str]) -> None:
+      if port in ignore_ports:
+        return
+
+      if isinstance(port, (Port, Bundle)):
+        for (name, subparam) in port._parameters.items():
+          if subparam.initializer is not None:
+            pb.constraints[f"(init){'.'.join(path + [name])}"].CopyFrom(
+              AssignBinding.make_assign(subparam,
+                                        subparam._to_expr_type(subparam.initializer), ref_map)
+            )
+            self._namespace_order.append(f"(init){'.'.join(path + [name])}")
+
+      if isinstance(port, Bundle):
+        for (name, subport) in port._ports.items():
+          process_port_inits(subport, path + [name])
+      elif isinstance(port, Vector):
+        check_recursive_no_initializer(port._get_elt_sample(), path)
+      # TODO needs to be something like sealed types for match comprehensiveness
+
+    for (name, port) in self._ports.items():
+      process_port_inits(port, [name])
+
+    return pb
+
+  def _populate_def_proto_param_init(self, pb: ProtoType,
+                                    ignore_params: IdentitySet[ConstraintExpr] = IdentitySet()) -> ProtoType:
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+    for (name, param) in self._parameters.items():
+      if param.initializer is not None and param not in ignore_params:
+        pb.constraints[f'(init){name}'].CopyFrom(
+          AssignBinding.make_assign(param, param.initializer, ref_map)
+        )
+        self._namespace_order.append(f'(init){name}')
     return pb
 
   def _populate_def_proto_block_contents(self, pb: ProtoType) -> ProtoType:
@@ -275,14 +343,25 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for (name, constraint) in self._constraints.items():
       pb.constraints[name].CopyFrom(constraint._expr_to_proto(ref_map))
 
-    for ((target, prefix), constraint) in self._inits.items():
-      if not constraint._is_true_lit():
-        pb.constraints[prefix + self._name_of(target)].CopyFrom(constraint._expr_to_proto(ref_map))
+    for (name, port) in self._ports.items():
+      if port in self._required_ports:
+        if isinstance(port, Port):
+          pb.constraints[f'(reqd){name}'].CopyFrom(
+            port.is_connected()._expr_to_proto(ref_map)
+          )
+        elif isinstance(port, Vector):
+          pb.constraints[f'(reqd){name}'].CopyFrom(
+            (port.length() > 0)._expr_to_proto(ref_map)
+          )
+        else:
+          raise ValueError(f"unknown non-optional port type {port}")
+        self._namespace_order.append(f'(reqd){name}')
 
     return pb
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(
+      [(self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
       *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
       *[port._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, port) in self._ports.items()]
     )
@@ -301,7 +380,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     clone._bind_in_place(parent)
     return clone
 
-  def _check_constraint(self, constraint: BoolExpr) -> None:
+  def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
       if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamVariableBinding, ParamBinding)):
         if isinstance(expr.parent, BaseBlock):
@@ -331,7 +410,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)
 
-  def constrain(self, constraint: BoolExpr, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
+  def require(self, constraint: BoolExpr, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
     if not isinstance(constraint, BoolExpr):
       raise TypeError(f"constraint to constrain(...) must be BoolExpr, got {constraint} of type {type(constraint)}")
     if not isinstance(name, (str, type(None))):
@@ -344,13 +423,34 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     if name:  # TODO unify naming API with everything else?
       self.manager.add_element(name, constraint)
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[constraint] = self._get_calling_source_locator()
+
+    return constraint
+
+  ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
+  ConstrCastableType = TypeVar('ConstrCastableType')
+  ConstrGetType = TypeVar('ConstrGetType')
+  def assign(self, target: ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType],
+             value: ConstrCastableType,
+             name: Optional[str] = None) -> AssignExpr:
+    if not isinstance(target, ConstraintExpr):
+      raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
+    if not isinstance(name, (str, type(None))):
+      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+
+    self._check_constraint(target)
+    expr_value = target._to_expr_type(value)
+    self._check_constraint(expr_value)
+
+    constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
+    self._constraints.register(constraint)
+
+    if name:  # TODO unify naming API with everything else?
+      self.manager.add_element(name, constraint)
 
     return constraint
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *, optional: bool = False, desc: Optional[str] = None, _no_init: bool = False) -> T:
+  def Port(self, tpe: T, *, optional: bool = False) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
@@ -360,21 +460,13 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     elt = tpe._bind(self)
     self._ports.register(elt)
-    if isinstance(tpe, Port) and not _no_init:
-      self._inits[elt, '(init)'] = tpe._initializer_to(elt)
-    if not optional:
-      self._inits[elt, '(reqd)'] = elt.is_connected()
-      self._required_ports.add(elt)
 
-    if not builder.stack or builder.stack[0] is self:
-      if desc is not None:
-        self._edgdoc[elt] = desc
-      self._sourcelocator[elt] = self._get_calling_source_locator()
+    if not optional:
+      self._required_ports.add(elt)
 
     return elt
 
-  U = TypeVar('U', bound=ConstraintExpr)
-  def Parameter(self, tpe: U, *, desc: Optional[str] = None) -> U:
+  def Parameter(self, tpe: ConstraintType) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
@@ -384,14 +476,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     elt = tpe._bind(ParamBinding(self))
     self._parameters.register(elt)
-    init_expr = tpe._initializer_to(elt)
-    self._check_constraint(init_expr)
-    self._inits[elt, '(init)'] = init_expr
-
-    if not builder.stack or builder.stack[0] is self:
-      if desc is not None:
-        self._edgdoc[elt] = desc
-      self._sourcelocator[elt] = self._get_calling_source_locator()
+    if elt.initializer is not None:
+      self._check_constraint(elt.initializer)
 
     return elt
 
@@ -425,12 +511,28 @@ class Link(BaseBlock[edgir.Link]):
     super().__init__()
     self.parent: Optional[Port] = None
 
+  # Returns the ref_map, but with a trailing ALLOCATE for BaseVector ports
+  def _get_ref_map_allocate(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+    def map_port_allocate(ref: Refable, path: edgir.LocalPath) -> edgir.LocalPath:
+      if isinstance(ref, BaseVector):
+        new_path = edgir.LocalPath()
+        new_path.CopyFrom(path)
+        new_path.steps.append(edgir.LocalStep(reserved_param=edgir.ALLOCATE))
+        return new_path
+      else:
+        return path
+
+    return IdentityDict([(port, map_port_allocate(port, path))
+                         for port, path in self._get_ref_map(prefix).items()])
+
   def _def_to_proto(self) -> edgir.Link:
     for cls in self._get_block_bases():
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_block_contents(pb)
+    pb = self._populate_def_proto_param_init(pb)
+    # specifically ignore the port initializers
 
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())
@@ -455,6 +557,7 @@ class Link(BaseBlock[edgir.Link]):
         pb.constraints[f"(export){name}_{idx}"].exported.internal_block_port.ref.CopyFrom(
           edgir.localpath_concat(link_path, link_port_path)
         )
+        self._namespace_order.append(f"(export){name}_{idx}")
 
     return pb
 

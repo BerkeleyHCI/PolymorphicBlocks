@@ -1,159 +1,167 @@
 import unittest
-import sys
 
 from . import *
-from .Driver import EmptyRefinement
-from .test_common import TestPortSink, TestBlockSource, TestBlockSink
-from . import test_common
+from .ScalaCompilerInterface import ScalaCompiler
 
 
-class TestGenerator(GeneratorBlock):
+class TestGeneratorAssign(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.range_param = self.Parameter(RangeExpr())
-    self.bool_param = self.Parameter(BoolExpr())
-    self.string_param = self.Parameter(StringExpr())
-    self.port = self.Port(TestPortSink())
+    self.generator(self.float_gen)
 
-  def generate(self) -> None:
-    super().generate()
-    self.sink = self.Block(TestBlockSink())
-    self.test_net = self.connect(self.port, self.sink.sink)
-    # TODO add an internal constraint
+  def float_gen(self) -> None:
+    self.assign(self.float_param, 2.0)
 
 
-class GeneratorBlockTestCase(unittest.TestCase):
-  def setUp(self) -> None:
-    self.driver = Driver([test_common])
-    self.design = self.driver.elaborate_toplevel(TestGenerator())
-
-    # Simulate a solver setting constraints
-    self.design.contents.constraints['set_float_param'].CopyFrom(
-      edgir.EqualsValueExpr(['float_param'], 4.2))
-    self.design.contents.constraints['set_range_param'].CopyFrom(
-      edgir.EqualsValueExpr(['range_param'], (-2.4, -1.2)))
-    self.design.contents.constraints['set_bool_param'].CopyFrom(
-      edgir.EqualsValueExpr(['bool_param'], True))
-    self.design.contents.constraints['set_string_param'].CopyFrom(
-      edgir.EqualsValueExpr(['string_param'], "TeSt"))
-
-    self.design.contents.constraints['set_port_float_param'].CopyFrom(
-      edgir.EqualsValueExpr(['port', 'float_param'], 3.1))
-
-  def test_get(self) -> None:
-    # This is very much whitebox testing, since .get(...) should only be valid inside generate
-    from .Blocks import BlockElaborationState
-
-    generator = TestGenerator()
-    generator._parse_from_proto(self.design.contents)
-    generator._elaboration_state = BlockElaborationState.generate
-
-    self.assertEqual(generator.get(generator.float_param), 4.2)
-    self.assertEqual(generator.get(generator.range_param), (-2.4, -1.2))
-    self.assertEqual(generator.get(generator.range_param.lower()), -2.4)
-    self.assertEqual(generator.get(generator.range_param.upper()), -1.2)
-    self.assertEqual(generator.get(generator.bool_param), True)
-    self.assertEqual(generator.get(generator.string_param), "TeSt")
-
-    self.assertEqual(generator.get(generator.port.float_param), 3.1)
-
-    self.assertEqual(generator.get(generator.port.is_connected()), False)
-
-  def test_generator(self) -> None:
-    pb = self.driver._generate_design(self.design, EmptyRefinement, False, 'TestGenerator')[0].contents  # TODO avoid internal method use
-
-    # Check that constraints still exist
-    self.assertEqual(pb.constraints['set_float_param'], self.design.contents.constraints['set_float_param'])
-    self.assertEqual(pb.constraints['set_range_param'], self.design.contents.constraints['set_range_param'])
-    self.assertEqual(pb.constraints['set_bool_param'], self.design.contents.constraints['set_bool_param'])
-    self.assertEqual(pb.constraints['set_string_param'], self.design.contents.constraints['set_string_param'])
-
-    self.assertEqual(pb.constraints['set_port_float_param'], self.design.contents.constraints['set_port_float_param'])
-
-    # Check that metadata generator is marked as completed
-    self.assertIn('done', pb.meta.members.node['generator'].members.node)
-
-    # Check that the structural ports and parameters are still there
-    self.assertEqual(len(pb.ports), 1)
-    self.assertEqual(pb.ports['port'].port.superclasses[0].target.name,
-                     'edg_core.test_common.TestPortSink')
-
-    self.assertEqual(len(pb.params), 4)
-    self.assertTrue(pb.params['float_param'].HasField('floating'))
-    self.assertTrue(pb.params['range_param'].HasField('range'))
-    self.assertTrue(pb.params['bool_param'].HasField('boolean'))
-    self.assertTrue(pb.params['string_param'].HasField('text'))
-
-    # Check that the generated blocks and constraints exist
-    self.assertEqual(len(pb.blocks), 1)
-    self.assertEqual(pb.blocks['sink'].hierarchy.superclasses[0].target.name,
-                     'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink'].hierarchy.ports['sink'].port.superclasses[0].target.name,
-                     'edg_core.test_common.TestPortSink')
-
-    self.assertEqual(len(pb.links), 0)
-
-    expected_conn = edgir.ValueExpr()
-    expected_conn.exported.exterior_port.ref.steps.add().name = 'port'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
-
-
-class TestGeneratorNotConnected(GeneratorBlock):
+class TestGeneratorDependency(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.port = self.Port(TestPortSink(), optional=True)
+    self.float_preset = self.Parameter(FloatExpr(3.0))
+    self.float_param = self.Parameter(FloatExpr())
+    self.generator(self.float_gen, self.float_preset)
 
-  def generate(self) -> None:
-    assert not self.get(self.port.is_connected())
+  def float_gen(self, float_preset: float) -> None:
+    self.assign(self.float_param, float_preset * 2)
 
 
-class TestGeneratorNotConnectedTop(Block):
+class TestGeneratorMultiDependency(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.port = self.Port(TestPortSink())  # TODO replace with internal dummy block
+    self.float_preset = self.Parameter(FloatExpr(5.0))
+    self.float_param1 = self.Parameter(FloatExpr())
+    self.float_param2 = self.Parameter(FloatExpr())
+    self.generator(self.float_gen1, self.float_preset)
+    self.generator(self.float_gen2, self.float_param1)
 
-  def contents(self) -> None:
-    super().contents()
-    self.exported_block = self.Block(TestGeneratorNotConnected())  # export without connection treated as not connected
-    self.connect(self.port, self.exported_block.port)
+  def float_gen1(self, float_preset: float) -> None:
+    self.assign1 = self.assign(self.float_param1, float_preset * 3)
 
-    self.notconnected_block = self.Block(TestGeneratorNotConnected())
-
-
-class GeneratorNotConnectTestCase(unittest.TestCase):
-  def test_notconnected(self) -> None:
-    self.driver = Driver([test_common, sys.modules[__name__]])
-    self.design = self.driver.generate_block(TestGeneratorNotConnectedTop())  # assertion in the design
+  def float_gen2(self, float_param1: float) -> None:
+    # TODO better name inference to avoid name collisions in multiple generates
+    self.assign2 = self.assign(self.float_param2, float_param1 + 7)
 
 
-class TestGeneratorConnected(GeneratorBlock):
+class TestGenerator(unittest.TestCase):
+  def test_generator_assign(self):
+    compiled = ScalaCompiler.compile(TestGeneratorAssign)
+
+    self.assertEqual(compiled.get_value(['float_param']), 2.0)
+
+  def test_generator_dependency(self):
+    compiled = ScalaCompiler.compile(TestGeneratorDependency)
+
+    self.assertEqual(compiled.get_value(['float_param']), 6.0)
+
+  def test_generator_multi_dependency(self):
+    compiled = ScalaCompiler.compile(TestGeneratorMultiDependency)
+
+    self.assertEqual(compiled.get_value(['float_param1']), 15.0)
+    self.assertEqual(compiled.get_value(['float_param2']), 22.0)
+
+
+class TestLink(Link):
   def __init__(self) -> None:
     super().__init__()
-    self.port = self.Port(TestPortSink())
+    self.source = self.Port(TestPortSource(), optional=True)
+    self.sinks = self.Port(Vector(TestPortSink()), optional=True)
+    self.source_float = self.Parameter(FloatExpr(self.source.float_param))
+    self.sinks_range = self.Parameter(RangeExpr(self.sinks.intersection(lambda x: x.range_param)))
 
-  def generate(self) -> None:
-    super().generate()
-    assert self.get(self.port.is_connected())
+
+class TestPortSource(Port[TestLink]):
+  def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
+    super().__init__()
+    self.link_type = TestLink
+    self.float_param = self.Parameter(FloatExpr(float_value))
+
+
+class TestPortSink(Port[TestLink]):
+  def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+    self.link_type = TestLink
+    self.range_param = self.Parameter(RangeExpr(range_value))
+
+
+class TestBlockSource(Block):
+  @init_in_parent
+  def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
+    super().__init__()
+    self.port = self.Port(TestPortSource(float_value))
+
+
+class TestBlockSink(Block):
+  @init_in_parent
+  def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+    self.port = self.Port(TestPortSink(range_value))
+
+
+class TestGeneratorIsConnected(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.port = self.Port(TestPortSource(2.0), optional=True)
+    self.generator(self.generate_assign, req_ports=[self.port])
+    self.connected = self.Parameter(BoolExpr())
+
+  def generate_assign(self) -> None:
+    if self.get(self.port.is_connected()):
+      self.assign(self.connected, True)
+    else:
+      self.assign(self.connected, False)
 
 
 class TestGeneratorConnectedTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.generator = self.Block(TestGeneratorIsConnected())
+    self.sink = self.Block(TestBlockSink((0.5, 2.5)))
+    self.link = self.connect(self.generator.port, self.sink.port)
+
+
+class TestGeneratorNotConnectedTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.generator = self.Block(TestGeneratorIsConnected())
+
+
+class TestGeneratorInnerConnect(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
+    self.port = self.Port(TestPortSource(), optional=True)
+    self.generator(self.generate)
 
-  def contents(self) -> None:
-    super().contents()
-    self.src_block = self.Block(TestBlockSource())
-    self.connected_block = self.Block(TestGeneratorConnected())
-    self.connect(self.src_block.source, self.connected_block.port)
+  def generate(self) -> None:
+    self.inner = self.Block(TestBlockSource(4.5))
+    self.connect(self.inner.port, self.port)
 
 
-class GeneratorConnectedTestCase(unittest.TestCase):
-  def test_connected(self) -> None:
-    self.driver = Driver([test_common, sys.modules[__name__]])
-    self.design = self.driver.generate_block(TestGeneratorConnectedTop())  # assertion in the design
+class TestGeneratorInnerConnectTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.generator = self.Block(TestGeneratorInnerConnect())
+    self.sink = self.Block(TestBlockSink((1.5, 3.5)))
+    self.link = self.connect(self.generator.port, self.sink.port)
+
+
+class TestGeneratorConnect(unittest.TestCase):
+  def test_generator_connected(self):
+    compiled = ScalaCompiler.compile(TestGeneratorConnectedTop)
+
+    self.assertEqual(compiled.get_value(['generator', 'connected']), True)
+    self.assertEqual(compiled.get_value(['link', 'source_float']), 2.0)
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (0.5, 2.5))
+
+  def test_generator_not_connected(self):
+    compiled = ScalaCompiler.compile(TestGeneratorNotConnectedTop)
+
+    self.assertEqual(compiled.get_value(['generator', 'connected']), False)
+
+  def test_generator_inner_connect(self):
+    compiled = ScalaCompiler.compile(TestGeneratorInnerConnectTop)
+
+    self.assertEqual(compiled.get_value(['link', 'source_float']), 4.5)
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (1.5, 3.5))
 
 
 class TestGeneratorException(BaseException):
@@ -163,20 +171,17 @@ class TestGeneratorException(BaseException):
 class TestGeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
+    self.float_param = self.Parameter(FloatExpr(41.0))  # to test context in error messages
+    self.generator(self.errorfn, self.float_param)
 
-  def generate(self) -> None:
-    super().generate()
-    raise TestGeneratorException("test_text")
+  def errorfn(self, float_param: float) -> None:
+    def helperfn() -> None:
+      raise TestGeneratorException("test text")
+    helperfn()
 
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    self.driver = Driver([])
-    self.design = self.driver.generate_block(TestGeneratorFailure(), continue_on_error=True)
-    self.assertIn("TestGeneratorException",
-                  self.design.contents.meta.members.node['error'].members.node['generator'].text_leaf)
-    self.assertIn("test_text",
-                  self.design.contents.meta.members.node['error'].members.node['generator'].text_leaf)
-    self.assertIn("in generate at (root) for edg_core.test_generator.TestGeneratorFailure",
-                  self.design.contents.meta.members.node['error'].members.node['generator'].text_leaf)
-    self.assertIn('traceback', self.design.contents.meta.members.node)
+    # TODO some way to check the messages are plumbed through?
+    with self.assertRaises(CompilerCheckError) as context:
+      ScalaCompiler.compile(TestGeneratorFailure)

@@ -1,9 +1,10 @@
 from typing import *
 
+from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO refactor with _Device
+class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
   """
   Nucleo32 F303K8 configured as power source from USB.
   TODO base classes?
@@ -16,16 +17,16 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(ElectricalSink(
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
       # TODO can be lower if don't need 5.0v out
       current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
     ), optional=True)
-    self.pwr_5v = self.Port(ElectricalSource(
+    self.pwr_5v = self.Port(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
     ), optional=True)
-    self.pwr_3v3 = self.Port(ElectricalSource(
+    self.pwr_3v3 = self.Port(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
     ), optional=True)
@@ -80,9 +81,11 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
 
     # TODO model IO draw - need internal source block?
 
-  def generate(self) -> None:
-    super().generate()
+    self.generator(self.pin_assign, self.pin_assigns,
+                   req_ports=list(chain(self.digital.values(), self.adc.values(), self.dac.values(),
+                                        [self.uart_0, self.spi_0, self.can_0])))
 
+  def pin_assign(self, pin_assigns_str: str) -> None:
     # Note: application circuit at LPC15XX 14.6, Figure 49
     system_pins = {
       16: self.pwr_in,
@@ -103,7 +106,7 @@ class Nucleo_F303k8(Microcontroller, CircuitBlock, AssignablePinBlock):  # TODO 
                     19, 20, 21, 22, 23, 24, 25, 26, 27]),
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps())
+      self._get_suggested_pin_maps(pin_assigns_str))
 
     overassigned_pins = set(assigned_pins.keys()).intersection(set(system_pins.keys()))
     assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"

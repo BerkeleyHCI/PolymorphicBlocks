@@ -7,12 +7,12 @@ This project has optional static typing annotations for Python which can be chec
 If you have mypy installed, you can typecheck code using:
 
 ```
-mypy --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples -p compiler_gui
+mypy --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples
 ```
 
 Or faster, with mypy in daemon mode:
 ```
-dmypy run -- --follow-imports=error --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples -p compiler_gui
+dmypy run -- --follow-imports=error --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples
 ```
 
 Note: since mypy currently doesn't infer return types (see mypy issue 4409), some defs might be incomplete, so the type check is leaky and we can't currently use `--disallow-incomplete-defs` or `--disallow-untyped-defs`.
@@ -23,29 +23,15 @@ If that doesn't get resolved, we might go through and manually annotate all retu
 python -m unittest discover
 ```
 
+Or, to run tests for a specific package (eg, `edg_core` in this command):
+```
+python -m unittest discover -s edg_core -t .
+```
+
 PROTIP: run both by combining the commands with `&&`
 
 
 ## Setup
-
-### Building Java dependencies
-The Compiler GUI calls into a Java stub program via py4j to invoke [ELK](https://www.eclipse.org/elk/) functions for block diagram layout. 
-
-You can ignore this section, unless you need modify the Java ELK stub.
-
-#### IntelliJ Project Setup
-- Open `frontend\compiler_gui\resources\java\py4j_elk` in IntelliJ
-- From main menu > File > Project Structure:
-  - In Project Settings > Libraries, add these as Maven libraries:
-    - net.sf.py4j:py4j:0.10.8.1
-    - org.eclipse.elk:org.eclipse.elk.alg.graphviz.dot:0.5.0
-    - org.eclipse.elk:org.eclipse.elk.alg.layered:0.5.0
-    - org.eclipse.elk:org.eclipse.elk.graph.json:0.5.0
-  - In Project Settings > Modules, ensure py4j_elk is added as a Module, and the `src/` folder is marked as source
-  - In Project Settings > Modules, add a JAR build, "from module with dependencies".
-    - For "Main class", choose "org.edg.Main"
-    - For "JAR files from libraries", select "copy to the output directory and link via manifest", to avoid signature mismatches
-
 
 ## Code Architecture
 _Some documentation may be out of date._
@@ -96,10 +82,10 @@ You can ignore this section, unless you are changing the Protocol Buffer structu
 ### Electronics Model
 `electronics_model` uses the `edg_core` classes to define an electronics model, by adding base classes to support circuit design (pin ports, copper-net links, and footprint blocks) and defining common electronics types. 
 
-- ElectricalSink/Source/Link/Bridge: represents a single copper net, and models runtime voltage and currents as well as their limits
+- VoltageSink/Source/Link/Bridge: represents a single copper net, and models runtime voltage and currents as well as their limits
   Can be used as a base class for other single-copper-net ports.
-- DigitalSink/Source/Link/Bridge: subclass of Electrical*, additionally models logic IO thresholds
-- BaseCircuitBlock: a Block with associated footprints (where pins can be mapped to Electrical* ports) and nets (connections between Electrical* ports)
+- DigitalSink/Source/Link/Bridge: subclass of Voltage*, additionally models logic IO thresholds
+- BaseCircuitBlock: a Block with associated footprints (where pins can be mapped to Voltage* ports) and nets (connections between Voltage* ports)
   This can be used for component-level blocks, links (with nets defining copper connectivity between ports), and hierarchy blocks.
   Not all blocks need a footprint: abstract blocks can rely on a refinement for a footprint, and hierarchy blocks can rely on internal blocks for footprints.
 

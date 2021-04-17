@@ -1,8 +1,6 @@
-import os
 import unittest
 
 from edg import *
-import edg_core.TransformUtil as tfu
 
 
 class UsbPdTest(Block):
@@ -34,7 +32,7 @@ class UsbPdTest(Block):
     self.connect(self.usb2.pwr, self.diode_merge.pwr_in1)
     self.connect(self.usb_reg.pwr_out, self.diode_merge.pwr_in2)
 
-    self.gnd_merge = self.Block(MergedElectricalSource())
+    self.gnd_merge = self.Block(MergedVoltageSource())
     self.connect(self.usb.gnd, self.gnd_merge.sink1)
     self.connect(self.usb2.gnd, self.gnd_merge.sink2)
 
@@ -95,17 +93,7 @@ class UsbPdTest(Block):
     self.id = self.Block(IdDots4())
 
 
-class UsbPdTestTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    ElectronicsDriver().generate_write_block(
-      UsbPdTest(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('usb_reg'): Tps54202h,
-        tfu.Path.empty().append_block('reg_5v'): Tps54202h,
-        tfu.Path.empty().append_block('ldo'): Ap2204k,
-        tfu.Path.empty().append_block('csr_amp1').append_block('amp'): Mcp6001,
-        tfu.Path.empty().append_block('csr_amp2').append_block('amp'): Mcp6001,
-        tfu.Path.empty().append_block('rgb').append_block('package'): ThtRgbLed,
-      }
-    )
+class UsbPdTestCase(unittest.TestCase):
+  @unittest.skip("needs to be completed")
+  def test_design_basic(self) -> None:
+    compile_board_inplace(UsbPdTest)

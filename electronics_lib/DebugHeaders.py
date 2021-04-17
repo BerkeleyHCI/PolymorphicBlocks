@@ -9,7 +9,7 @@ class SwdCortexTargetConnector(ProgrammingConnector):
     super().__init__()
 
     # TODO: should these also act as sources?
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdHostPort(), [Output])
 
@@ -22,7 +22,7 @@ class SwdCortexTargetWithTdiConnector(SwdCortexTargetConnector):
     self.tdi = self.Port(DigitalBidir(), optional=True)
 
 
-class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -45,7 +45,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, CircuitBlock):
     )
 
 
-class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -68,7 +68,7 @@ class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, CircuitBlock):
 
 
 # TODO dedup most with legged version
-class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, CircuitBlock):
+class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -90,11 +90,11 @@ class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, CircuitBlock):
     )
 
 
-class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, CircuitBlock):
+class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(ElectricalSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdTargetPort(), [Input])
     self.tdi = self.Port(DigitalBidir(), optional=True)

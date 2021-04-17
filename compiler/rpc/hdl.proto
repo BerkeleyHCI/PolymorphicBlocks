@@ -1,0 +1,79 @@
+/** Defines a gRPC service provided in Python that exposes HDL-to-edgir elaboration for a compiler in a
+    different process / language.
+*/
+
+syntax = "proto3";
+package edg.compiler;
+
+import "schema.proto";
+import "ref.proto";
+import "elem.proto";
+import "lit.proto";
+
+
+message ModuleName {
+  string name = 1;
+}
+
+message LibraryRequest {
+  ref.LibraryPath element = 2;  // library element asked for
+}
+
+message GeneratorRequest {
+  ref.LibraryPath element = 2;  // path of library element containing the generator
+  string fn = 3;  // name of generator function
+
+  message Value {
+    ref.LocalPath path = 1;
+    lit.ValueLit value = 2;
+  }
+
+  repeated Value values = 4;
+}
+
+message Refinements {
+  message Subclass {
+    oneof source {
+      ref.LocalPath path = 1;
+      ref.LibraryPath cls = 2;
+    }
+    ref.LibraryPath replacement = 3;
+  }
+  message Value {
+    message ClassParamPath {
+      ref.LibraryPath cls = 1;
+      ref.LocalPath param_path = 2;
+    }
+    oneof source {
+      ref.LocalPath path = 1;
+      ClassParamPath cls_param = 2;
+    }
+    lit.ValueLit value = 3;
+  }
+  repeated Subclass subclasses = 1;
+  repeated Value values = 2;
+}
+
+message LibraryResponse {
+  oneof result {
+    schema.Library.NS.Val element = 1;
+    string error = 2;  // TODO source locators
+  }
+  Refinements refinements = 3;  // only valid if element is a top-level block, and not error
+}
+
+message GeneratorResponse {
+  oneof result {
+    elem.HierarchyBlock generated = 1;
+    string error = 2;  // TODO source locators
+  }
+}
+
+service HdlInterface {
+  // (Re)loads and indexes the module (recursively, with deduplication) and returns all the library elements.
+  // Should be a fast operation, does not elaborate the elements.
+  rpc ReloadModule (ModuleName) returns (stream ref.LibraryPath) { }
+
+  rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) { }
+  rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) { }
+}

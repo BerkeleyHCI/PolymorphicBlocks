@@ -30,9 +30,9 @@ def generate_crystal_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard')
 
 
-class SmdCrystal(Crystal, CircuitBlock):
-  def __init__(self):
-    super().__init__()
+class SmdCrystal(Crystal, FootprintBlock):
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
     self._in_mfr = self.Parameter(StringExpr())
     self._in_part = self.Parameter(StringExpr())
     self._in_value = self.Parameter(StringExpr())
@@ -65,25 +65,30 @@ class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to 
     Should include load capacitors."""
     super().__init__()
 
-    self.frequency = self.Parameter(RangeExpr(frequency, constr=RangeSubset))
+    self.frequency = self.Parameter(RangeExpr(frequency))
 
     self.crystal = self.Port(CrystalPort(), [InOut])
     self.gnd = self.Port(Ground(), [Common])
 
-  def generate(self):
-    super().generate()
-    self.package = self.Block(SmdCrystal())
+    self.generator(self.select_part, self.frequency,
+                   targets=[self.crystal, self.gnd])
 
+    # Output values
+    self.selected_frequency = self.Parameter(RangeExpr())
+
+  def select_part(self, frequency: RangeVal):
     # TODO this should be part of the crystal block, but that needs a post-generate elaborate
-    parts = self.product_table.filter(RangeContains(Lit(self.get(self.frequency)), Column('frequency'))) \
+    parts = self.product_table.filter(RangeContains(Lit(frequency), Column('frequency'))) \
       .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no crystal matching f={self.get(self.frequency)}")
+    part = parts.first(err=f"no crystal matching f={frequency}")
 
-    self.constrain(self.package._in_mfr == part['Manufacturer'])
-    self.constrain(self.package._in_part == part['Manufacturer Part Number'])
-    self.constrain(self.package.frequency == part['frequency'])
-    self.constrain(self.package._in_value == f"{part['Frequency']}, {part['Load Capacitance']}")
-    self.constrain(self.package._in_datasheet == part['Datasheets'])
+    self.package = self.Block(SmdCrystal(frequency=self.selected_frequency))
+
+    self.assign(self.package._in_mfr, part['Manufacturer'])
+    self.assign(self.package._in_part, part['Manufacturer Part Number'])
+    self.assign(self.selected_frequency, part['frequency'])
+    self.assign(self.package._in_value, f"{part['Frequency']}, {part['Load Capacitance']}")
+    self.assign(self.package._in_datasheet, part['Datasheets'])
 
     self.connect(self.crystal, self.package.crystal)
     self.connect(self.gnd, self.package.gnd)
@@ -107,4 +112,4 @@ class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to 
     self.cap_b = self.Block(cap_model)
     self.connect(self.cap_a.pos, self.crystal.a)
     self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.cap_a.neg.as_electrical_sink(), self.cap_b.neg.as_electrical_sink(), self.gnd)
+    self.connect(self.cap_a.neg.as_voltage_sink(), self.cap_b.neg.as_voltage_sink(), self.gnd)

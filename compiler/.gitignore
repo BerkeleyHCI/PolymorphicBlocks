@@ -1,0 +1,13 @@
+*.class
+*.log
+
+/bin/
+/project/target
+/project/project
+/target/
+/.bsp
+
+.idea
+.project
+
+worksheet.*

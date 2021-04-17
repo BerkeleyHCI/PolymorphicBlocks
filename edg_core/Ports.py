@@ -7,9 +7,10 @@ from itertools import chain
 from . import edgir
 from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .IdentityDict import IdentityDict
-from .ConstraintExpr import ConstraintExpr, RangeExpr, ParamBinding, BoolExpr, IsConnectedBinding, ParamVariableBinding
+from .ConstraintExpr import ConstraintExpr, RangeExpr, ParamBinding, BoolExpr, IsConnectedBinding, ParamVariableBinding, NameBinding, StringExpr
 from .Builder import builder
 from .Exception import *
+from .StructuredMetadata import MetaNamespaceOrder
 if TYPE_CHECKING:
   from .Blocks import BaseBlock, Link
   from .PortBlocks import PortBridge, PortAdapter
@@ -39,9 +40,6 @@ class BasePort(HasMetadata):
       return None
     else:
       raise ValueError(f"Unknown parent type {self.parent}")
-
-  @abstractmethod
-  def is_connected(self) -> BoolExpr: ...
 
   @abstractmethod
   def _def_to_proto(self) -> edgir.PortTypes:  # TODO: this might not be valid for Vector types?
@@ -95,16 +93,21 @@ class Port(BasePort, Generic[PortLinkType]):
     super().__init__()
 
     self.link_type: Type[PortLinkType]
+    # This needs to be lazy-initialized to avoid building ports with links with ports, and so on
+    # TODO: maybe a cleaner solution is to mark port constructors in a Block context or Link context?
     self._link_instance: Optional[PortLinkType] = None
     self.bridge_type: Optional[Type[PortBridge]] = None
     self._bridge_instance: Optional[PortBridge] = None  # internal only
     self.adapter_types: List[Type[PortAdapter]] = []
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+
+    self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
     self.manager_ignored.update(['_is_connected'])
     self._is_connected = BoolExpr()._bind(ParamVariableBinding(IsConnectedBinding(self)))
+    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
 
   def _bridge(self) -> Optional[PortBridge]:
     """Creates a (unbound) bridge and returns it."""
@@ -138,20 +141,6 @@ class Port(BasePort, Generic[PortLinkType]):
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     return adapter_inst.dst
 
-  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
-    # TODO unify w/ _initializer_to?
-    return IdentityDict([(param, param.initializer)
-                         for param in self._parameters.values() if param.initializer is not None])
-
-  def _initializer_to(self, target: BasePort) -> BoolExpr:
-    assert not self._is_bound(), f"model for initializer must be literal-like and not be bound"
-    assert isinstance(target, type(self)), "target of initializer must be same type"  # TODO should be type equivalent, but breaks type checkers
-    assert target._is_bound(), "target for initializer must be bound"
-
-    param_init_exprs = [self_param._initializer_to(target._parameters[name])
-                        for name, self_param in self._parameters.items()]
-    return BoolExpr._combine_and(param_init_exprs)
-
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.lib_elem.target.name = self._get_def_name()
@@ -159,7 +148,6 @@ class Port(BasePort, Generic[PortLinkType]):
 
   def _def_to_proto(self) -> edgir.PortTypes:
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
 
     pb = edgir.Port()
 
@@ -172,6 +160,9 @@ class Port(BasePort, Generic[PortLinkType]):
     for (name, param) in self._parameters.items():
       pb.params[name].CopyFrom(param._decl_to_proto())
 
+    for name in self._parameters.keys_ordered():
+      self._namespace_order.append(name)
+
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 
     return pb
@@ -181,8 +172,9 @@ class Port(BasePort, Generic[PortLinkType]):
       link_refs = self._link_instance._get_ref_map(edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
     else:
       link_refs = IdentityDict([])
-    return super()._get_ref_map(prefix) + IdentityDict(
-      [(self.is_connected(), edgir.localpath_concat(prefix, edgir.IS_CONNECTED))],
+    return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
+      [(self.is_connected(), edgir.localpath_concat(prefix, edgir.IS_CONNECTED)),
+       (self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
       *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for name, param in self._parameters.items()]
     ) + link_refs
 
@@ -191,6 +183,9 @@ class Port(BasePort, Generic[PortLinkType]):
 
   def is_connected(self) -> BoolExpr:
     return self._is_connected
+
+  def name(self) -> StringExpr:
+    return self._name
 
   def link(self) -> PortLinkType:
     """Returns the link connected to this port, if this port is bound."""
@@ -218,25 +213,9 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
 
-  def _initializers(self) -> IdentityDict[ConstraintExpr, ConstraintExpr]:
-    # TODO unify w/ _initializer_to?
-    return IdentityDict(chain(*[super()._initializers().items()],
-                              *[port._initializers().items() for port in self._ports.values()]
-                              ))
-
-  def _initializer_to(self, target: BasePort) -> BoolExpr:
-    assert isinstance(target, type(self)), "initializer must be of same type as target"  # TODO should be type equivalent, but breaks type checkers
-    param_exprs = super()._initializer_to(target)
-    port_init_exprs = [self_port._initializer_to(target._ports[name])
-                       for name, self_port in self._ports.items()]
-    return BoolExpr._combine_and([param_exprs] + port_init_exprs)
-
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()
-    self._params_order = self.Metadata({str(idx): name for idx, name in enumerate(self._parameters.keys_ordered())})
-
     self._ports.finalize()
-    self._ports_order = self.Metadata({str(idx): name for idx, name in enumerate(self._ports.keys_ordered())})
 
     pb = edgir.Bundle()
 
@@ -251,6 +230,9 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       pb.params[name].CopyFrom(param._decl_to_proto())
     for (name, port) in self._ports.items():
       pb.ports[name].CopyFrom(port._instance_to_proto())
+
+    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered()):
+      self._namespace_order.append(name)
 
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 
@@ -269,8 +251,5 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     elt = tpe._bind(self)
     self._ports.register(elt)
-
-    if not builder.stack or builder.stack[0] is self:
-      self._sourcelocator[elt] = self._get_calling_source_locator()
 
     return elt

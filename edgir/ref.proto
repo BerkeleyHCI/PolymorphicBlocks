@@ -25,10 +25,11 @@ enum Reserved {
   CONNECTED_LINK = 1;
 
   /** reserved parameters */
-  IS_CONNECTED = 40;
+  IS_CONNECTED = 40;  // true implies CONNECTED_LINK resolves; not available on PortArray
 //  EXISTS = 41;
   LENGTH = 42;  // available on PortArray and LinkArray
   ALLOCATE = 43;  // available on PortArray
+  NAME = 44;
 }
 
 /** This is an actual step you take within the local

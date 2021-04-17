@@ -49,14 +49,19 @@ def choose_preferred_number(range: Tuple[float, float], tolerance: float, series
 
 
 @abstract_block
-class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
+class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
   TOLERANCE: float
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.power_rated = self.Parameter(RangeExpr())
+    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_resistor, self.spec_resistance, self.power,
+                   self.footprint_spec)
+
+    # Output values
+    self.selected_power_rating = self.Parameter(RangeExpr())
 
   """Default generator that automatically picks resistors.
   For value, preferentially picks the lowest-step E-series (E1 before E3 before E6 ...) value meeting the needs,
@@ -64,8 +69,7 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
   exact value at 1%.
   If below 1% tolerance is needed, fails. TODO: non-preferentially pick tolerances down to 0.1%, though pricey!
   Picks the minimum (down to 0603, up to 2512) SMD size for the power requirement. TODO: consider PTH types"""
-  def generate(self) -> None:
-    resistance = self.get(self.resistance)
+  def select_resistor(self, resistance: RangeVal, power: RangeVal, footprint_spec: str) -> None:
     value = choose_preferred_number(resistance, self.TOLERANCE, self.E24_SERIES_ZIGZAG, 2)
 
     if value is None:  # failed to find a preferred resistor, choose the center within tolerance
@@ -76,16 +80,14 @@ class ESeriesResistor(Resistor, CircuitBlock, GeneratorBlock):
         raise ValueError(f"Cannot generate 1% resistor within {resistance}")
       value = center
 
-    constr_packages = self.get_opt(self.footprint_name)  # TODO support separators
-    _, reqd_power_min = self.get(self.power)
     # TODO we only need the first really so this is a bit inefficient
-    suitable_packages = [(power, package) for power, package in self.PACKAGE_POWER
-                         if power >= reqd_power_min and (constr_packages is None or package == constr_packages)]
+    suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
+                         if package_power >= power[1] and (not footprint_spec or package == footprint_spec)]
     if not suitable_packages:
-      raise ValueError(f"Cannot find suitable package for resistor needing {reqd_power_min} W power")
+      raise ValueError(f"Cannot find suitable package for resistor needing {power[1]} W power")
 
-    self.constrain(self.resistance == value * Ohm(tol=self.TOLERANCE))
-    self.constrain(self.power_rated == suitable_packages[0][0])
+    self.assign(self.resistance, value * Ohm(tol=self.TOLERANCE))
+    self.assign(self.selected_power_rating, suitable_packages[0][0])
 
     self.footprint(
       'R', suitable_packages[0][1],
@@ -165,14 +167,23 @@ def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
                     }), missing='discard') \
 
 
-class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
+class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self.single_nominal_capacitance = self.Parameter(RangeExpr())
-    self.nominal_capacitance = self.Parameter(RangeExpr())
-    # defaulted to true in generate logic, since this doesn't exist in Capacitor and during instantiation replacement
-    self.voltage_rating = self.Parameter(RangeExpr())
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.footprint_spec = self.Parameter(StringExpr(""))
+
+    # Default to be overridden on a per-device basis
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+
+    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
+                   self.part_spec, self.footprint_spec)
+
+    # Output values
+    self.selected_capacitance = self.Parameter(RangeExpr())
+    self.selected_derated_capacitance = self.Parameter(RangeExpr())
+    self.selected_voltage_rating = self.Parameter(RangeExpr())
 
   # Chosen by a rough scan over available parts on Digikey
   # at voltages 10v, 16v, 25v, 50v, 100v, 250v
@@ -209,10 +220,11 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
   }
 
-  def generate(self) -> None:
-    (voltage_lower, voltage_upper) = self.get(self.voltage)
+  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
+                       single_nominal_capacitance: RangeVal,
+                       part_spec: str, footprint_spec: str) -> None:
     def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
-      if voltage_upper < 3.6:  # x-intercept at 3.6v
+      if voltage[1] < 3.6:  # x-intercept at 3.6v
         return row['capacitance']
       if (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
         return row['capacitance']
@@ -220,21 +232,11 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         return (0, 0)  # can't derate, generate obviously bogus and ignored value
       voltco = self.DERATE_VOLTCO[row['footprint']]
       return (
-        row['capacitance'][0] * (1 - voltco * (voltage_upper - 3.6)),
-        row['capacitance'][1] * (1 - voltco * (voltage_lower - 3.6))
+        row['capacitance'][0] * (1 - voltco * (voltage[1] - 3.6)),
+        row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
       )
 
-    if self._has(self.capacitance):
-      cap_low, cap_high = self.get(self.capacitance)
-    else:
-      assert self._has(self.part), "must specify either capacitance or part number"
-      cap_low = -float('inf')
-      cap_high = float('inf')
-
-    if self._has(self.single_nominal_capacitance):
-      single_cap_max = self.get(self.single_nominal_capacitance.upper()) * 1.2  # TODO tolerance elsewhere
-    else:
-      single_cap_max = float('inf')
+    single_cap_max = single_nominal_capacitance[1]
 
     parts = self.product_table \
       .filter(Implication(  # enforce minimum package size by capacitance
@@ -251,21 +253,22 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
       StringContains(Column('Package / Case'), [
         '1206 (3216 Metric)',
       ]))) \
-      .filter(RangeContains(Column('voltage'), Lit(self.get(self.voltage)))) \
-      .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
-      .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
+      .filter(RangeContains(Column('voltage'), Lit(voltage))) \
+      .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
+      .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
       .filter(RangeContains(RangeFromUpper(Lit(single_cap_max)), Column('capacitance'))) \
       .derived_column('derated_capacitance', derated_capacitance)
 
-    capacitance_filtered_parts = parts.filter(RangeContains(Lit((cap_low, cap_high)), Column('derated_capacitance'))) \
+    capacitance_filtered_parts = parts.filter(RangeContains(Lit(capacitance), Column('derated_capacitance'))) \
       .sort(Column('Unit Price (USD)')) \
       .sort(Column('footprint'))  # this kind of gets at smaller first
 
     if len(capacitance_filtered_parts) > 0:  # available in single capacitor
-      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({cap_low}, {cap_high}) F")
+      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
 
-      self.constrain(self.capacitance == part['derated_capacitance'])
-      self.constrain(self.nominal_capacitance == part['capacitance'])
+      self.assign(self.selected_voltage_rating, part['voltage'])
+      self.assign(self.selected_capacitance, part['capacitance'])
+      self.assign(self.selected_derated_capacitance, part['derated_capacitance'])
 
       self.footprint(
         'C', part['footprint'],
@@ -277,38 +280,38 @@ class SmtCeramicCapacitor(Capacitor, CircuitBlock, GeneratorBlock):
         value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
         datasheet=part['Datasheets']
       )
-    elif cap_high >= single_cap_max or cap_high > 22e-6:  # parallel capacitors, TODO remove arbitrary 22e-6 "heuristic"
+    elif capacitance[1] >= single_cap_max:
       parts = parts.sort(Column('Unit Price (USD)')) \
         .sort(Column('footprint')) \
         .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
-      part = parts.first(err=f"no parallel capacitors in ({cap_low}, {cap_high}) F")
+      part = parts.first(err=f"no parallel capacitors in ({capacitance}) F")
 
-      num_caps = math.ceil(cap_low / part['derated_capacitance'][0])
-      assert num_caps * part['derated_capacitance'][1] < cap_high, "can't generate parallel caps within max capacitance limit"
+      num_caps = math.ceil(capacitance[0] / part['derated_capacitance'][0])
+      assert num_caps * part['derated_capacitance'][1] < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      self.constrain(self.capacitance == (
-        num_caps * part['derated_capacitance'][0],
-        num_caps * part['derated_capacitance'][1],
-      ))
-      self.constrain(self.nominal_capacitance == (
+      self.assign(self.selected_capacitance, (
         num_caps * part['capacitance'][0],
         num_caps * part['capacitance'][1],
       ))
+      self.assign(self.selected_derated_capacitance, (
+        num_caps * part['derated_capacitance'][0],
+        num_caps * part['derated_capacitance'][1],
+      ))
 
       cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
-                                      voltage=self.voltage)  # TODO eliminate voltage
+                                      voltage=self.voltage,
+                                      part_spec=part['Manufacturer Part Number'])
       self.c = ElementDict[SmtCeramicCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
-        self.constrain(self.c[i].part == part['Manufacturer Part Number'])
 
       # TODO CircuitBlocks probably shouldn't have hierarchy?
-      self.constrain(self.mfr == part['Manufacturer'])
-      self.constrain(self.part == part['Manufacturer Part Number'])
+      self.assign(self.mfr, part['Manufacturer'])
+      self.assign(self.part, part['Manufacturer Part Number'])
     else:
-      raise ValueError(f"no single capacitors in ({cap_low}, {cap_high}) F")
+      raise ValueError(f"no single capacitors in ({capacitance}) F")
 
 
 def generate_inductor_table(TABLES: List[str]) -> ProductTable:
@@ -352,7 +355,7 @@ def generate_inductor_table(TABLES: List[str]) -> ProductTable:
                     ), missing='discard') \
 
 
-class SmtInductor(Inductor, CircuitBlock, GeneratorBlock):
+class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   product_table = generate_inductor_table([
     'Digikey_Inductors_TdkMlz.csv',
     'Digikey_Inductors_MurataDfe.csv',
@@ -365,23 +368,33 @@ class SmtInductor(Inductor, CircuitBlock, GeneratorBlock):
     super().__init__(**kwargs)
     self.current_rating = self.Parameter(RangeExpr())
     self.frequency_rating = self.Parameter(RangeExpr())
+    self.part_spec = self.Parameter(StringExpr(""))
+    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
+                   self.part_spec, self.footprint_spec)
 
-  def generate(self) -> None:
+    # Output values
+    self.selected_inductance = self.Parameter(RangeExpr())
+    self.selected_current_rating = self.Parameter(RangeExpr())
+    self.selected_frequency_rating = self.Parameter(RangeExpr())
+
+  def select_inductor(self, inductance: RangeVal, current: RangeVal, frequency: RangeVal,
+               part_spec: str, footprint_spec: str) -> None:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
-    parts = self.product_table.filter(RangeContains(Lit(self.get(self.inductance)), Column('inductance'))) \
+    parts = self.product_table.filter(RangeContains(Lit(inductance), Column('inductance'))) \
         .filter(RangeContains(Lit((-float('inf'), 1)), Column('dc_resistance'))) \
-        .filter(RangeContains(Column('frequency'), Lit(self.get(self.frequency)))) \
-        .filter(RangeContains(Column('current'), Lit(self.get(self.current)))) \
-        .filter(ContainsString(Column('Manufacturer Part Number'), self.get_opt(self.part))) \
-        .filter(ContainsString(Column('footprint'), self.get_opt(self.footprint_name))) \
+        .filter(RangeContains(Column('frequency'), Lit(frequency))) \
+        .filter(RangeContains(Column('current'), Lit(current))) \
+        .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
+        .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
         .sort(Column('footprint'))  \
         .sort(Column('Unit Price (USD)'))
 
-    part = parts.first(err=f"no inductors in {self.get(self.inductance)} H, {self.get(self.current)} A, {self.get(self.frequency)} Hz")
+    part = parts.first(err=f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
-    self.constrain(self.inductance == part['inductance'])
-    self.constrain(self.current_rating == part['current'])
-    self.constrain(self.frequency_rating == part['frequency'])
+    self.assign(self.selected_inductance, part['inductance'])
+    self.assign(self.selected_current_rating, part['current'])
+    self.assign(self.selected_frequency_rating, part['frequency'])
 
     self.footprint(
       'L', part['footprint'],

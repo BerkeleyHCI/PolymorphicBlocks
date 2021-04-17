@@ -1,4 +1,4 @@
-update=2/2/2020 7:52:22 PM
+update=2/20/2021 11:46:14 PM
 version=1
 last_client=pcbnew
 [general]
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=netlist.net
+LastNetListRead=CanAdapter.net
 CopperLayerCount=4
 BoardThickness=1.6
 AllowMicroVias=0
@@ -67,7 +67,7 @@ OthersTextUpright=1
 SolderMaskClearance=0.051
 SolderMaskMinWidth=0.25
 SolderPasteClearance=-0.05
-SolderPasteRatio=-0
+SolderPasteRatio=0
 [pcbnew/Layer.In1.Cu]
 Name=In1.Cu
 Type=1

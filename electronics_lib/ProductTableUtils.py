@@ -7,6 +7,8 @@ from typing import *
 SourceMap = Callable[[Dict[str, Any]], Optional[Any]]
 SourceFilter = Callable[[Dict[str, Any]], bool]
 
+DoubleFloatRoundErrorFactor = 1e-7  # approximate multiplier to account for double <-> float rounding issues
+
 
 class ProductTable():  # internal helper type
   def __init__(self, header: List[str], rows: List[List[Any]]):
@@ -183,6 +185,17 @@ def RangeContains(containing: SourceMap, contained: SourceMap) -> SourceFilter:
   def inner(row: Dict[str, Any]) -> bool:
     containing_value = cast(tuple, containing(row))
     contained_value = cast(tuple, contained(row))
+    # Expand the containing value by floating point error
+    if containing_value[0] >= 0:
+      containing_value = (containing_value[0] * (1 - DoubleFloatRoundErrorFactor), containing_value[1])
+    else:
+      containing_value = (containing_value[0] * (1 + DoubleFloatRoundErrorFactor), containing_value[1])
+
+    if containing_value[1] >= 0:
+      containing_value = (containing_value[0], containing_value[1] * (1 + DoubleFloatRoundErrorFactor))
+    else:
+      containing_value = (containing_value[0], containing_value[1] * (1 - DoubleFloatRoundErrorFactor))
+
     return containing_value[0] <= contained_value[0] and containing_value[1] >= contained_value[1]
   return inner
 

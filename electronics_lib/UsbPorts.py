@@ -8,10 +8,10 @@ class UsbConnector(Connector):
   USB2_CURRENT_LIMITS = (0, 0.5)*Amp
 
 
-class UsbAReceptacle(UsbConnector, CircuitBlock):
+class UsbAReceptacle(UsbConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=self.USB2_VOLTAGE_RANGE,
       current_draw=self.USB2_CURRENT_LIMITS
     ), [Power])
@@ -38,19 +38,20 @@ class UsbAReceptacle(UsbConnector, CircuitBlock):
     )
 
 
-class UsbCReceptacle(UsbConnector, CircuitBlock):
+class UsbCReceptacle(UsbConnector, FootprintBlock):
   @init_in_parent
   def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
+    self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
     self.gnd = self.Port(GroundSource())
 
     self.usb = self.Port(UsbHostPort(), optional=True)
     self.shield = self.Port(Passive(), optional=True)
 
-    self.cc1 = self.Port(DigitalBidir(), optional=True)  # TODO re-type with USB CC specific type
-    self.cc2 = self.Port(DigitalBidir(), optional=True)
+    # CC is pulled-up on source (DFP) side
+    self.cc1 = self.Port(DigitalBidir(pullup_capable=True), optional=True)  # TODO re-type with USB CC specific type
+    self.cc2 = self.Port(DigitalBidir(pullup_capable=True), optional=True)
 
   def contents(self):
     super().contents()
@@ -82,10 +83,10 @@ class UsbCReceptacle(UsbConnector, CircuitBlock):
 
 @abstract_block
 class UsbDeviceConnector(UsbConnector):
-  """Abstract base class for a USB device port connector"""
+  """Abstract base class for a USB 2.0 device-side port connector"""
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(ElectricalSource(
+    self.pwr = self.Port(VoltageSource(
       voltage_out=self.USB2_VOLTAGE_RANGE,
       current_limits=self.USB2_CURRENT_LIMITS
     ), optional=True)
@@ -94,8 +95,34 @@ class UsbDeviceConnector(UsbConnector):
     self.usb = self.Port(UsbHostPort(), optional=True)
 
 
+class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'J', 'Connector_USB:USB_Micro-B_Molex-105017-0001',
+      {
+        '1': self.pwr,
+        '5': self.gnd,
+
+        '2': self.usb.dm,
+        '3': self.usb.dp,
+
+        # '4': TODO: ID pin
+
+        '6': self.gnd,  # actually shield
+      },
+      mfr='Molex', part='105017-0001',
+      datasheet='https://www.molex.com/pdm_docs/sd/1050170001_sd.pdf'
+    )
+
+
 class UsbDeviceCReceptacle(UsbDeviceConnector):
-  """Implementation of a USB device using a Type-C receptable as a upstream-facing port."""
+  """Implementation of a USB device using a Type-C receptacle as a upstream-facing port.
+  Includes pull-down resistors on the CC pins so a Type-C downstream-facing port can supply the default 5v power.
+  High speed pins are left open."""
   def __init__(self) -> None:
     super().__init__()
 
@@ -113,7 +140,7 @@ class UsbDeviceCReceptacle(UsbDeviceConnector):
       (self.cc2_pull, ), _ = self.chain(imp.Block(pdr_model), self.port.cc2)
 
 
-class UsbEsdDiode(TvsDiode, CircuitBlock):  # TODO maybe this should be a superclass?
+class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a superclass?
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground(), [Common])

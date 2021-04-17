@@ -108,8 +108,8 @@ message PortLike {
 message HierarchyBlock {
   map<string, edg.init.ValInit>   params = 10;
   map<string, PortLike>          ports  = 11;
-  /** Bridges, which adapt an edge port to a link port - eg, edge ElectricalSink to an internal link
-      ElectricalSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
+  /** Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
+      VoltageSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
       infer these blocks. */
   map<string, BlockLike>          blocks = 12;
   map<string, LinkLike>           links  = 13;
@@ -119,7 +119,7 @@ message HierarchyBlock {
 
   repeated edg.ref.LibraryPath superclasses = 20;  // in library: superclasses; in design: reference to library class
   edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise empty
-  Generator generator = 22;  // optional, and removed upon invocation
+  map<string, Generator> generators = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if abstract superclass, and should error
 
@@ -127,15 +127,23 @@ message HierarchyBlock {
 }
 
 message Generator {
-  string module = 1;  // Python module containing the class of the generator
-  string class = 2;  // Python class name for the generator
+  string fn = 1;  // Python function name for the generator. TODO dupe of the key in the containing map?
 
-  message GeneratorCondition {
-    repeated ref.LocalPath prereqs = 1;  // list of parameters that must be defined for the generator to fire
-    // these are also the only parameters that may be accessed from the generator
-  }
-  repeated GeneratorCondition conditions = 3;  // ANY of these conditions being satisfied will fire this generator
-  // overall, this defines conditions as an OR of any of several AND clauses of parameters being defined
+  // Parameters that must be defined for the generator to fire.
+  // These parameters are the only ones accessible to the generator.
+  // TODO: perhaps should be a more general ValueExpr?
+  repeated ref.LocalPath required_params = 2;
+
+  // Ports that must have defined connected-ness for the generator to fire.
+  // This makes the port's IS_CONNECTED and CONNECTED_LINK.NAME available.
+  repeated ref.LocalPath required_ports = 3;
+
+  // Internal blocks that this generator can (but not necessarily) make connections to.
+  // TODO generalize to include all ports to allow appending connections?
+  repeated ref.LocalPath connected_blocks = 4;
+
+  // TODO: how to allow multiple generators based on different input combinations?
+  // Perhaps a way for generators to obliviate one another?
 }
 
 message BlockLike {

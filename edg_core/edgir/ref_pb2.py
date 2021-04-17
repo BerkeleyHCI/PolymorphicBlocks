@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='ref.proto',
   package='edg.ref',
   syntax='proto3',
-  serialized_pb=_b('\n\tref.proto\x12\x07\x65\x64g.ref\x1a\x0c\x63ommon.proto\x1a\nname.proto\"P\n\tLocalStep\x12+\n\x0ereserved_param\x18\x01 \x01(\x0e\x32\x11.edg.ref.ReservedH\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x42\x06\n\x04step\"S\n\tLocalPath\x12!\n\x05steps\x18\x01 \x03(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata\"\xa0\x01\n\x0bLibraryPath\x12$\n\x05start\x18\x01 \x01(\x0b\x32\x15.edg.name.LibraryName\x12\"\n\x05steps\x18\x02 \x03(\x0b\x32\x13.edg.name.Namespace\x12\"\n\x06target\x18\x03 \x01(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata*Y\n\x08Reserved\x12\r\n\tUNDEFINED\x10\x00\x12\x12\n\x0e\x43ONNECTED_LINK\x10\x01\x12\x10\n\x0cIS_CONNECTED\x10(\x12\n\n\x06LENGTH\x10*\x12\x0c\n\x08\x41LLOCATE\x10+b\x06proto3')
+  serialized_pb=_b('\n\tref.proto\x12\x07\x65\x64g.ref\x1a\x0c\x63ommon.proto\x1a\nname.proto\"P\n\tLocalStep\x12+\n\x0ereserved_param\x18\x01 \x01(\x0e\x32\x11.edg.ref.ReservedH\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x42\x06\n\x04step\"S\n\tLocalPath\x12!\n\x05steps\x18\x01 \x03(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata\"\xa0\x01\n\x0bLibraryPath\x12$\n\x05start\x18\x01 \x01(\x0b\x32\x15.edg.name.LibraryName\x12\"\n\x05steps\x18\x02 \x03(\x0b\x32\x13.edg.name.Namespace\x12\"\n\x06target\x18\x03 \x01(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata*c\n\x08Reserved\x12\r\n\tUNDEFINED\x10\x00\x12\x12\n\x0e\x43ONNECTED_LINK\x10\x01\x12\x10\n\x0cIS_CONNECTED\x10(\x12\n\n\x06LENGTH\x10*\x12\x0c\n\x08\x41LLOCATE\x10+\x12\x08\n\x04NAME\x10,b\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,name__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -53,11 +53,15 @@ _RESERVED = _descriptor.EnumDescriptor(
       name='ALLOCATE', index=4, number=43,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NAME', index=5, number=44,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
   serialized_start=378,
-  serialized_end=467,
+  serialized_end=477,
 )
 _sym_db.RegisterEnumDescriptor(_RESERVED)
 
@@ -67,6 +71,7 @@ CONNECTED_LINK = 1
 IS_CONNECTED = 40
 LENGTH = 42
 ALLOCATE = 43
+NAME = 44
 
 
 

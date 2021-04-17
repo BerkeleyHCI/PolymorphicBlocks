@@ -4,54 +4,62 @@ import unittest
 from electronics_abstract_parts import *
 import electronics_model
 import electronics_abstract_parts
+from .test_passive_common import *
 from . import *
 
-class ResistorTestCase(unittest.TestCase):
-  def setUp(self) -> None:
-    self.driver = Driver([electronics_model, electronics_abstract_parts])
 
-  def test_basic_resistor(self) -> None:
-    pb = self.driver.generate_block(ChipResistor(
+class ResistorTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(ChipResistor(
       resistance=1 * kOhm(tol=0.1),
       power=(0, 0)*Watt
-    )).contents
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
 
-    self.assertIn(edgir.EqualsValueExpr(['footprint_name'], 'Resistor_SMD:R_0603_1608Metric'),
-                  pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['value'], '1k, 1%, 0.1W'),
-                  pb.constraints.values())
 
-  def test_power_resistor(self) -> None:
-    pb = self.driver.generate_block(ChipResistor(
+class PowerResistorTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(ChipResistor(
       resistance=1 * kOhm(tol=0.1),
       power=(0, .24)*Watt
-    )).contents
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
 
-    self.assertIn(edgir.EqualsValueExpr(['footprint_name'], 'Resistor_SMD:R_1206_3216Metric'),
-                  pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['value'], '1k, 1%, 0.25W'),
-                  pb.constraints.values())
 
-  def test_non_e12_resistor(self) -> None:
-    pb = self.driver.generate_block(ChipResistor(
+class NonE12ResistorTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(ChipResistor(
       resistance=8.06 * kOhm(tol=0.01),
       power=(0, 0)*Watt
-    )).contents
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
 
-    self.assertIn(edgir.EqualsValueExpr(['footprint_name'], 'Resistor_SMD:R_0603_1608Metric'),
-                  pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['value'], '8.06k, 1%, 0.1W'),
-                  pb.constraints.values())
+
+class ResistorTestCase(unittest.TestCase):
+  def test_basic_resistor(self) -> None:
+    compiled = ScalaCompiler.compile(ResistorTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.1W')
+
+  def test_power_resistor(self) -> None:
+    compiled = ScalaCompiler.compile(PowerResistorTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25W')
+
+  def test_non_e12_resistor(self) -> None:
+    compiled = ScalaCompiler.compile(NonE12ResistorTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '8.06k, 1%, 0.1W')
 
   def test_footprint(self) -> None:
-    pb = self.driver.generate_block(ChipResistor(
-      resistance=1 * kOhm(tol=0.1),
-      power=(0, 0)*Watt,
-    ), {
-      TransformUtil.Path.empty().append_param('footprint_name'): 'Resistor_SMD:R_1206_3216Metric',
-    }).contents
-
-    self.assertIn(edgir.EqualsValueExpr(['footprint_name'], 'Resistor_SMD:R_1206_3216Metric'),
-                  pb.constraints.values())
-    self.assertIn(edgir.EqualsValueExpr(['value'], '1k, 1%, 0.25W'),
-                  pb.constraints.values())
+    compiled = ScalaCompiler.compile(ResistorTestTop, Refinements(
+      instance_values=[(['dut', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric')]
+    ))
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25W')

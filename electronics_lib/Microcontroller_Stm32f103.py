@@ -4,7 +4,7 @@ from itertools import chain
 from electronics_abstract_parts import *
 
 
-class Stm32f103_48_Device(DiscreteChip, CircuitBlock):
+class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
   """
   STM32F103C8 (QFP-48) microcontroller, Cortex-M3
   https://www.st.com/resource/en/datasheet/stm32f103c8.pdf
@@ -13,7 +13,7 @@ class Stm32f103_48_Device(DiscreteChip, CircuitBlock):
     super().__init__()
 
     # TODO separate VddA and VssA, but both must operate at same potential
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,
       current_draw=(0, 50.3)*mAmp  # Table 13
     ), [Power])  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
@@ -134,13 +134,13 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Stm32f103_48_Device())
 
-    self.pwr = self.Export(self.ic.vdd)
-    self.gnd = self.Export(self.ic.vss)
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
     self.swd = self.Export(self.ic.swd)
     # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
 
-    self.xtal = self.Export(self.ic.osc)  # TODO standardize naming across all MCUs
-    self.xtal_rtc = self.Export(self.ic.osc32)  # TODO standardize naming across all MCUs
+    self.xtal = self.Export(self.ic.osc, optional=True)  # TODO standardize naming across all MCUs
+    self.xtal_rtc = self.Export(self.ic.osc32, optional=True)  # TODO standardize naming across all MCUs
 
     self.digital = ElementDict[DigitalBidir]()
     for i in range(len(self.ic.io_pins)):
@@ -164,19 +164,34 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
     # self._add_assignable_io(self.usb_0)  # TODO incompatible with builtin USB circuit
 
+    self.generator(self.pin_assign, self.pin_assigns,
+                   req_ports=chain(self.digital.values(),
+                                   self.adc.values(),
+                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
+                   targets=chain([self.pwr, self.gnd],
+                                 [self.ic],  # connected block
+                                 self.digital.values(),
+                                 self.adc.values(),
+                                 [self.uart_0, self.spi_0, self.can_0, self.usb_0]))  # TODO pass in connected blocks
+
+
+
+  def pin_assign(self, pin_assigns_str: str) -> None:
+    # These are here because we can't split the power with the USB.
+    # TODO support for split nets between generatorrs
+    self.connect(self.pwr, self.ic.vdd)
+    self.connect(self.gnd, self.ic.vss)
+
     io_draw_expr = (0, 0)*mAmp
     for _, io in self.digital.items():
       io_draw_expr = io_draw_expr + io.is_connected().then_else(
         io.link().current_drawn.intersect((0, float('inf'))*Amp),  # only count sourced current
         (0, 0)*Amp)
-    self.io_draw = self.Block(ElectricalLoad(
+    self.io_draw = self.Block(VoltageLoad(
       voltage_limit=(-float('inf'), float('inf')),
       current_draw=io_draw_expr
     ))
     self.connect(self.pwr, self.io_draw.pwr)
-
-  def generate(self) -> None:
-    super().generate()
 
     #
     # Reference Circuit Block
@@ -220,7 +235,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
                           [33, 32]),  # USB - dp, dm
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps())
+      self._get_suggested_pin_maps(pin_assigns_str))
 
     for pin_num, self_port in assigned_pins.items():
       self.connect(self_port, self.ic.io_pins[str(pin_num)])

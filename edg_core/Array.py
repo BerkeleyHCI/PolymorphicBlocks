@@ -5,7 +5,7 @@ from typing import *
 from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, ParamBinding
+from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, ParamBinding, IntExpr, LengthBinding, ParamVariableBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -98,6 +98,7 @@ class BaseVector(BaseContainerPort):
     pass
 
 
+# A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
 VectorType = TypeVar('VectorType', bound='BasePort', covariant=True)
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
@@ -129,10 +130,9 @@ class DerivedVector(BaseVector, Generic[VectorType]):
   def _type_of(self) -> Hashable:
     return (self.target._type_of(),)
 
-  def is_connected(self) -> BoolExpr:
-    raise RuntimeError()  # TODO maybe revisit this eventually
 
-
+# An 'elastic' array of ports type, with unspecified length at declaration time, and length
+# determined by connections in the parent block.
 @non_library
 class Vector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -145,8 +145,8 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self.tpe = tpe
     self.elt_sample = tpe._bind(self, ignore_context=True)
-    if isinstance(tpe, Port):
-      assert not tpe._initializers().items(), "vector types may not have initializers"
+
+    self._length = IntExpr()._bind(ParamVariableBinding(LengthBinding(self)))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -170,10 +170,8 @@ class Vector(BaseVector, Generic[VectorType]):
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self.elt_sample._get_ref_map(edgir.LocalPath())
 
-  def is_connected(self) -> BoolExpr:
-    """Returns true if ANY element is connected"""
-    # TODO maybe also a length() option?
-    return ArrayExpr(BoolExpr())._bind(MapExtractBinding(self, self.elt_sample.is_connected())).any()
+  def length(self) -> IntExpr:
+    return self._length
 
   def _type_of(self) -> Hashable:
     return (self.elt_sample._type_of(),)

@@ -1,20 +1,23 @@
 from typing import *
 import unittest
 
-from . import test_common, test_hierarchy_block
-from . import *
+from . import test_common, test_hierarchy_block  # needed for library detection
+from . import edgir
+from .HdlInterfaceServer import LibraryElementResolver
+import importlib
+
 
 class LibGenTestCase(unittest.TestCase):
   def test_library_detect(self):
-    pb = Driver([test_common, test_hierarchy_block]).generate_library_proto()
-    pb_keys = pb.root.members.keys()
+    lib = LibraryElementResolver()
+    lib.load_module(importlib.import_module(self.__module__))
 
-    self.assertIn('edg_core.test_common.TestLink', pb_keys)
-    self.assertIn('edg_core.test_common.TestPortBridge', pb_keys)
-    self.assertIn('edg_core.test_common.TestPortBase', pb_keys)
-    self.assertIn('edg_core.test_common.TestPortSink', pb_keys)
-    self.assertIn('edg_core.test_common.TestPortSource', pb_keys)
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestLink')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestPortBridge')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestPortBase')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestPortSink')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestPortSource')))
 
-    self.assertIn('edg_core.test_common.TestBlockSink', pb_keys)
-    self.assertIn('edg_core.test_common.TestBlockSource', pb_keys)
-    self.assertIn('edg_core.test_hierarchy_block.TopHierarchyBlock', pb_keys)
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestBlockSink')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_common.TestBlockSource')))
+    self.assertIsNotNone(lib.class_from_path(edgir.libpath('edg_core.test_hierarchy_block.TopHierarchyBlock')))

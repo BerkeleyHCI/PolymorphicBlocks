@@ -73,6 +73,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_0'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
     expected_conn.connected.block_port.ref.steps.add().name = 'inout'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, pb.constraints.values())
@@ -80,6 +81,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_0'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
     expected_conn.connected.block_port.ref.steps.add().name = 'inputoutput'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, pb.constraints.values())
@@ -94,6 +96,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_1'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
     expected_conn.connected.block_port.ref.steps.add().name = 'input'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, pb.constraints.values())

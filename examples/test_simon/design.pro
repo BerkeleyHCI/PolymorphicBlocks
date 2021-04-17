@@ -1,6 +1,6 @@
-update=9/8/2019 11:18:51 PM
+update=2/20/2021 11:43:13 PM
 version=1
-last_client=kicad
+last_client=pcbnew
 [general]
 version=1
 RootSch=
@@ -15,7 +15,7 @@ LibDir=
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=netlist.net
+LastNetListRead=TestSimon.net
 CopperLayerCount=2
 BoardThickness=1.6
 AllowMicroVias=0
@@ -63,4 +63,4 @@ OthersTextUpright=1
 SolderMaskClearance=0.051
 SolderMaskMinWidth=0.25
 SolderPasteClearance=0
-SolderPasteRatio=-0
+SolderPasteRatio=0

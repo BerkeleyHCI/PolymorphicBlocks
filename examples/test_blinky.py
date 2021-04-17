@@ -1,12 +1,9 @@
-import os
 import unittest
-import sys
 
 from edg import *
-from edg import TransformUtil as tfu
 
 
-class TestBlinkyBasic(Block):
+class TestBlinkyBasic(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -15,8 +12,15 @@ class TestBlinkyBasic(Block):
     self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
-class TestBlinkySimple(Block):
+
+class TestBlinkySimple(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -30,8 +34,15 @@ class TestBlinkySimple(Block):
     self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
     self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
-class TestBlinkySimpleChain(Block):
+
+class TestBlinkySimpleChain(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
@@ -42,8 +53,15 @@ class TestBlinkySimpleChain(Block):
       (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
-class TestBlinkyBroken(Block):
+
+class TestBlinkyBroken(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
@@ -58,8 +76,15 @@ class TestBlinkyBroken(Block):
       self.mcu = imp.Block(Lpc1549_48())
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
-class TestBlinkyFlattened(Block):
+
+class TestBlinkyFlattened(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
@@ -85,12 +110,22 @@ class TestBlinkyFlattened(Block):
       (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['usb_reg'], Tps561201),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
 
-class Mcp9700_Device(CircuitBlock):
+
+class Mcp9700_Device(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     # block boundary (ports, parameters) definition here
-    self.vdd = self.Port(ElectricalSink(
+    self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.3, 5.5)*Volt, current_draw=(0, 15)*uAmp
     ), [Power])
     self.vout = self.Port(AnalogSource(
@@ -118,9 +153,9 @@ class Mcp9700(Block):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Mcp9700_Device())
-    self.pwr = self.Export(self.ic.vdd)
-    self.gnd = self.Export(self.ic.gnd)
-    self.out = self.Export(self.ic.vout)
+    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.out = self.Export(self.ic.vout, [Output])
 
   def contents(self) -> None:
     super().contents()
@@ -131,7 +166,7 @@ class Mcp9700(Block):
       self.vdd_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
 
 
-class TestBlinkyComplete(Block):
+class TestBlinkyComplete(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
@@ -161,47 +196,33 @@ class TestBlinkyComplete(Block):
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
       (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.new_io(AnalogSink))
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['usb_reg'], Tps561201),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], "")
+      ]
+    )
+
 
 class BlinkyTestCase(unittest.TestCase):
   def test_design_basic(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestBlinkyBasic(),
-      os.path.splitext(__file__)[0] + '_basic'
-    )
+    compile_board_inplace(TestBlinkyBasic)
 
   def test_design_simple(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestBlinkySimple(),
-      os.path.splitext(__file__)[0] + '_simple'
-    )
+    compile_board_inplace(TestBlinkySimple)
 
   def test_design_simple_chain(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestBlinkySimpleChain(),
-      os.path.splitext(__file__)[0] + '_simple_chain'
-    )
+    compile_board_inplace(TestBlinkySimpleChain)
 
   def test_design_broken(self) -> None:
-    with self.assertRaises(InvalidNetlistBlockException):
-      ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-        TestBlinkyBroken(),
-        os.path.splitext(__file__)[0] + '_broken'
-      )
+    with self.assertRaises(CompilerCheckError):
+      compile_board_inplace(TestBlinkyBroken)
 
   def test_design_flat(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestBlinkyFlattened(),
-      os.path.splitext(__file__)[0] + '_flat',
-      instance_refinements={
-        tfu.Path.empty().append_block('usb_reg'): Tps561201,
-      }
-    )
+    compile_board_inplace(TestBlinkyFlattened)
 
   def test_design_complete(self) -> None:
-    ElectronicsDriver([sys.modules[__name__]]).generate_write_block(
-      TestBlinkyComplete(),
-      os.path.splitext(__file__)[0] + '_complete',
-      instance_refinements={
-        tfu.Path.empty().append_block('usb_reg'): Tps561201,
-      }
-    )
+    compile_board_inplace(TestBlinkyComplete)

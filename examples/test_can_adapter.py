@@ -1,11 +1,9 @@
-import os
 import unittest
 
 from edg import *
-import edg_core.TransformUtil as tfu
 
 
-class CanAdapter(Block):
+class CanAdapter(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -34,30 +32,29 @@ class CanAdapter(Block):
       (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
 
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
-      (self.xcvr, ), _ = self.chain(self.mcu.new_io(CanControllerPort, pin=[8, 12]), imp.Block(Iso1050dub()))
+      (self.xcvr, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(Iso1050dub()))
 
-      (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir, pin=28))
-      (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir, pin=48))
+      (self.sw_usb, ), self.sw_usb_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw_can, ), self.sw_can_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
       self.lcd = imp.Block(Qt096t_if09())
 
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_can = imp.Block(IndicatorSinkRgbLed())
 
-    # TODO all pin assignments
-    self.connect(self.mcu.new_io(DigitalBidir, pin=23), self.lcd.led)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=13), self.lcd.reset)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=15), self.lcd.rs)
-    self.connect(self.mcu.new_io(SpiMaster, pin=[21, 18, NotConnectedPin]), self.lcd.spi)  # MISO unused
-    self.connect(self.mcu.new_io(DigitalBidir, pin=22), self.lcd.cs)
+    self.lcd_led_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.led)
+    self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
+    self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
+    self.lcd_spi_net = self.connect(self.mcu.new_io(SpiMaster), self.lcd.spi)  # MISO unused
+    self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=2), self.rgb_usb.red)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=1), self.rgb_usb.green)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=3), self.rgb_usb.blue)
+    self.rgb_usb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.red)
+    self.rgb_usb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.green)
+    self.rgb_usb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.blue)
 
-    self.connect(self.mcu.new_io(DigitalBidir, pin=6), self.rgb_can.red)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=4), self.rgb_can.green)
-    self.connect(self.mcu.new_io(DigitalBidir, pin=7), self.rgb_can.blue)
+    self.rgb_can_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.red)
+    self.rgb_can_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.green)
+    self.rgb_can_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.blue)
 
     # Isolated CAN Domain
     # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
@@ -81,16 +78,38 @@ class CanAdapter(Block):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['sw_usb', 'package'], SmtSwitchRa),
+        (['sw_can', 'package'], SmtSwitchRa),
+        (['usb_reg'], Ap2204k),
+        (['can_reg'], Ap2204k),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+          'can_chain_0.txd=8',
+          'can_chain_0.rxd=12',
+          'sw_usb_chain_0=28',
+          'sw_can_chain_0=48',
+          'lcd_led_net=23',
+          'lcd_reset_net=13',
+          'lcd_rs_net=15',
+          'lcd_spi_net.sck=21',
+          'lcd_spi_net.mosi=18',
+          'lcd_spi_net.miso=NC',
+          'lcd_cs_net=22',
+          'rgb_usb_red_net=2',
+          'rgb_usb_grn_net=1',
+          'rgb_usb_blue_net=3',
+          'rgb_can_red_net=6',
+          'rgb_can_grn_net=4',
+          'rgb_can_blue_net=7',
+        ]))
+      ]
+    )
+
 
 class CanAdapterTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    ElectronicsDriver().generate_write_block(
-      CanAdapter(),
-      os.path.splitext(__file__)[0],
-      instance_refinements={
-        tfu.Path.empty().append_block('sw_usb').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('sw_can').append_block('package'): SmtSwitchRa,
-        tfu.Path.empty().append_block('usb_reg'): Ap2204k,
-        tfu.Path.empty().append_block('can_reg'): Ap2204k,
-      }
-    )
+    compile_board_inplace(CanAdapter)

@@ -7,7 +7,7 @@ from edg_core import edgir, IdentityDict  # TODO: this is ugly
 from edg_core.ConstraintExpr import Refable
 
 if TYPE_CHECKING:
-  from .ElectricalPorts import CircuitPort
+  from .VoltagePorts import CircuitPort
 
 
 class Pinning:
@@ -16,8 +16,7 @@ class Pinning:
 
 
 class CircuitNet:
-  """Electrical net, a copper connection of ElectricalBase "pins", to be used inside Links to denote electrical
-  connectivity."""
+  """Electrical net, a copper connection of "pins", to be used inside Links to denote electrical connectivity."""
   def __init__(self, pins: List[CircuitArrayReduction[CircuitPort]]):
     self.pins = pins
 
@@ -37,7 +36,7 @@ class NetBaseBlock(BaseBlock):
 
 
 @abstract_block
-class CircuitBlock(Block):
+class FootprintBlock(Block):
   """Block that represents a component that has part(s) and trace(s) on the PCB.
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
   """
@@ -74,12 +73,12 @@ class CircuitBlock(Block):
     Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
     assembly"""
     from edg_core.Blocks import BlockElaborationState, BlockDefinitionError
-    from .ElectricalPorts import CircuitPort
+    from .VoltagePorts import CircuitPort
 
-    if self._elaboration_state != BlockElaborationState.contents and \
-        self._elaboration_state != BlockElaborationState.generate:
-      raise BlockDefinitionError(self, "can't call Footprint(...) outside contents or generate",
-                                 "call Footprint(...) inside contents or generate only, and remember to call super().contents() or .generate()")
+    if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents,
+                                       BlockElaborationState.generate):
+      raise BlockDefinitionError(self, "can't call Footprint(...) outside __init__, contents or generate",
+                                 "call Footprint(...) inside those functions, and remember to make the super() call")
 
     # TODO type-check footprints and pins?
     for pin_name, pin_port in pinning.items():
@@ -88,24 +87,24 @@ class CircuitBlock(Block):
 
     self.pinning = self.Metadata(pinning)
 
-    self.constrain(self.footprint_name == footprint)
-    self.constrain(self.refdes_prefix == refdes)
+    self.assign(self.footprint_name, footprint)
+    self.assign(self.refdes_prefix, refdes)
     if mfr is not None:
-      self.constrain(self.mfr == mfr)
+      self.assign(self.mfr, mfr)
     else:
-      self.constrain(self.mfr == '')
+      self.assign(self.mfr, '')
     if part is not None:
-      self.constrain(self.part == part)
+      self.assign(self.part, part)
     else:
-      self.constrain(self.part == '')
+      self.assign(self.part, '')
     if value is not None:
-      self.constrain(self.value == value)
+      self.assign(self.value, value)
     else:
-      self.constrain(self.value == '')
+      self.assign(self.value, '')
     if datasheet is not None:
-      self.constrain(self.datasheet == datasheet)
+      self.assign(self.datasheet, datasheet)
     else:
-      self.constrain(self.datasheet == '')
+      self.assign(self.datasheet, '')
 
 
 @abstract_block
