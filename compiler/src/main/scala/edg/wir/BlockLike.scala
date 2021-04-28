@@ -109,6 +109,8 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
 
   override def isElaborated: Boolean = true
 
+  def getBlockClass = pb.getSelfClass
+
   override def getParams: Map[String, init.ValInit] = pb.params
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {

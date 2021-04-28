@@ -737,6 +737,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case Errorable.Success(generatedPb) =>
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
+        import edg.elem.elem
         errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
         elem.HierarchyBlock()
     }
