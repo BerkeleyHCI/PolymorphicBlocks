@@ -151,11 +151,8 @@ class Port(BasePort, Generic[PortLinkType]):
 
     pb = edgir.Port()
 
-    bases = [bcls for bcls in self.__class__.__bases__
-             if issubclass(bcls, Port) and (bcls, 'non_library') not in bcls._elt_properties]
-    for cls in bases:
-      super_pb = pb.superclasses.add()
-      super_pb.target.name = cls._static_def_name()
+    pb.self_class.target.name = self._get_def_name()
+    # TODO: also add superclass types?
 
     for (name, param) in self._parameters.items():
       pb.params[name].CopyFrom(param._decl_to_proto())
@@ -219,12 +216,8 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     pb = edgir.Bundle()
 
-    bases = [bcls for bcls in self.__class__.__bases__
-             if issubclass(bcls, Port) and (bcls, 'non_library') not in bcls._elt_properties]
-    for cls in bases:
-      assert issubclass(cls, Bundle)  # TODO move elsewhere, but Bundle subtypes must only inherit from Bundle
-      super_pb = pb.superclasses.add()
-      super_pb.target.name = cls._static_def_name()
+    pb.self_class.target.name = self._get_def_name()
+    # TODO: also add superclass types?
 
     for (name, param) in self._parameters.items():
       pb.params[name].CopyFrom(param._decl_to_proto())

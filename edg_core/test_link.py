@@ -18,7 +18,7 @@ class LinkTestCase(unittest.TestCase):
   def test_port_def(self):
     self.assertEqual(len(self.pb.ports), 2)
     self.assertEqual(self.pb.ports['source'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
-    self.assertEqual(self.pb.ports['sinks'].array.superclasses[0].target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports['sinks'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_constraints(self):
     # partial test of constraints, only the ones that are more interesting than tested elsewhere

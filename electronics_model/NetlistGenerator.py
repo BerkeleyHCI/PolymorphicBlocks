@@ -36,7 +36,7 @@ class NetlistCollect(TransformUtil.Transform):
       raise InvalidNetlistBlockException(f"attempt to netlist with abstract block at {path}")
 
     if isinstance(block, edgir.HierarchyBlock):
-      self.hierarchy[path] = block.superclasses[0].target.name
+      self.hierarchy[path] = block.self_class.target.name
 
     # TODO handle mixed net/connect operations
     if isinstance(block, edgir.Link) and 'nets' in block.meta.members.node:

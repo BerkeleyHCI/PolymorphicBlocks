@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='elem.proto',
   package='edg.elem',
   syntax='proto3',
-  serialized_pb=_b('\n\nelem.proto\x12\x08\x65\x64g.elem\x1a\x0c\x63ommon.proto\x1a\ninit.proto\x1a\nexpr.proto\x1a\tref.proto\"\xc3\x02\n\x04Port\x12*\n\x06params\x18\n \x03(\x0b\x32\x1a.edg.elem.Port.ParamsEntry\x12\x34\n\x0b\x63onstraints\x18\x0b \x03(\x0b\x32\x1f.edg.elem.Port.ConstraintsEntry\x12*\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xb7\x03\n\x06\x42undle\x12,\n\x06params\x18\n \x03(\x0b\x32\x1c.edg.elem.Bundle.ParamsEntry\x12*\n\x05ports\x18\x0b \x03(\x0b\x32\x1b.edg.elem.Bundle.PortsEntry\x12\x36\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32!.edg.elem.Bundle.ConstraintsEntry\x12*\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xcc\x01\n\tPortArray\x12*\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x05ports\x18\r \x03(\x0b\x32\x1e.edg.elem.PortArray.PortsEntry\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\"\xcc\x01\n\x08PortLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12\x1e\n\x04port\x18\x03 \x01(\x0b\x32\x0e.edg.elem.PortH\x00\x12$\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x13.edg.elem.PortArrayH\x00\x12\"\n\x06\x62undle\x18\x06 \x01(\x0b\x32\x10.edg.elem.BundleH\x00\x42\x04\n\x02is\"\x8a\x07\n\x0eHierarchyBlock\x12\x34\n\x06params\x18\n \x03(\x0b\x32$.edg.elem.HierarchyBlock.ParamsEntry\x12\x32\n\x05ports\x18\x0b \x03(\x0b\x32#.edg.elem.HierarchyBlock.PortsEntry\x12\x34\n\x06\x62locks\x18\x0c \x03(\x0b\x32$.edg.elem.HierarchyBlock.BlocksEntry\x12\x32\n\x05links\x18\r \x03(\x0b\x32#.edg.elem.HierarchyBlock.LinksEntry\x12>\n\x0b\x63onstraints\x18\x0e \x03(\x0b\x32).edg.elem.HierarchyBlock.ConstraintsEntry\x12#\n\x05\x63lass\x18\x17 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x0fprerefine_class\x18\x15 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12<\n\ngenerators\x18\x16 \x03(\x0b\x32(.edg.elem.HierarchyBlock.GeneratorsEntry\x12\x13\n\x0bis_abstract\x18\x1e \x01(\x08\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1a\x42\n\x0b\x42locksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.elem.BlockLike:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\x1a\x46\n\x0fGeneratorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.elem.Generator:\x02\x38\x01\"\x9e\x01\n\tGenerator\x12\n\n\x02\x66n\x18\x01 \x01(\t\x12+\n\x0frequired_params\x18\x02 \x03(\x0b\x32\x12.edg.ref.LocalPath\x12*\n\x0erequired_ports\x18\x03 \x03(\x0b\x32\x12.edg.ref.LocalPath\x12,\n\x10\x63onnected_blocks\x18\x04 \x03(\x0b\x32\x12.edg.ref.LocalPath\"\x94\x01\n\tBlockLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12-\n\thierarchy\x18\x04 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x42\x06\n\x04type\"\x9b\x04\n\x04Link\x12*\n\x06params\x18\n \x03(\x0b\x32\x1a.edg.elem.Link.ParamsEntry\x12(\n\x05ports\x18\x0b \x03(\x0b\x32\x19.edg.elem.Link.PortsEntry\x12(\n\x05links\x18\r \x03(\x0b\x32\x19.edg.elem.Link.LinksEntry\x12\x34\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32\x1f.edg.elem.Link.ConstraintsEntry\x12*\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xc1\x03\n\tLinkArray\x12*\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x05ports\x18\x0b \x03(\x0b\x32\x1e.edg.elem.LinkArray.PortsEntry\x12\x39\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32$.edg.elem.LinkArray.ConstraintsEntry\x12-\n\x05links\x18\r \x03(\x0b\x32\x1e.edg.elem.LinkArray.LinksEntry\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\"\xaa\x01\n\x08LinkLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12\x1e\n\x04link\x18\x03 \x01(\x0b\x32\x0e.edg.elem.LinkH\x00\x12$\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x13.edg.elem.LinkArrayH\x00\x42\x06\n\x04typeb\x06proto3')
+  serialized_pb=_b('\n\nelem.proto\x12\x08\x65\x64g.elem\x1a\x0c\x63ommon.proto\x1a\ninit.proto\x1a\nexpr.proto\x1a\tref.proto\"\xc1\x02\n\x04Port\x12*\n\x06params\x18\n \x03(\x0b\x32\x1a.edg.elem.Port.ParamsEntry\x12\x34\n\x0b\x63onstraints\x18\x0b \x03(\x0b\x32\x1f.edg.elem.Port.ConstraintsEntry\x12(\n\nself_class\x18\x14 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xb5\x03\n\x06\x42undle\x12,\n\x06params\x18\n \x03(\x0b\x32\x1c.edg.elem.Bundle.ParamsEntry\x12*\n\x05ports\x18\x0b \x03(\x0b\x32\x1b.edg.elem.Bundle.PortsEntry\x12\x36\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32!.edg.elem.Bundle.ConstraintsEntry\x12(\n\nself_class\x18\x14 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xca\x01\n\tPortArray\x12(\n\nself_class\x18\x14 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x05ports\x18\r \x03(\x0b\x32\x1e.edg.elem.PortArray.PortsEntry\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\"\xcc\x01\n\x08PortLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12\x1e\n\x04port\x18\x03 \x01(\x0b\x32\x0e.edg.elem.PortH\x00\x12$\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x13.edg.elem.PortArrayH\x00\x12\"\n\x06\x62undle\x18\x06 \x01(\x0b\x32\x10.edg.elem.BundleH\x00\x42\x04\n\x02is\"\x8f\x07\n\x0eHierarchyBlock\x12\x34\n\x06params\x18\n \x03(\x0b\x32$.edg.elem.HierarchyBlock.ParamsEntry\x12\x32\n\x05ports\x18\x0b \x03(\x0b\x32#.edg.elem.HierarchyBlock.PortsEntry\x12\x34\n\x06\x62locks\x18\x0c \x03(\x0b\x32$.edg.elem.HierarchyBlock.BlocksEntry\x12\x32\n\x05links\x18\r \x03(\x0b\x32#.edg.elem.HierarchyBlock.LinksEntry\x12>\n\x0b\x63onstraints\x18\x0e \x03(\x0b\x32).edg.elem.HierarchyBlock.ConstraintsEntry\x12(\n\nself_class\x18\x17 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x0fprerefine_class\x18\x15 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12<\n\ngenerators\x18\x16 \x03(\x0b\x32(.edg.elem.HierarchyBlock.GeneratorsEntry\x12\x13\n\x0bis_abstract\x18\x1e \x01(\x08\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1a\x42\n\x0b\x42locksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.elem.BlockLike:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\x1a\x46\n\x0fGeneratorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.elem.Generator:\x02\x38\x01\"\x9e\x01\n\tGenerator\x12\n\n\x02\x66n\x18\x01 \x01(\t\x12+\n\x0frequired_params\x18\x02 \x03(\x0b\x32\x12.edg.ref.LocalPath\x12*\n\x0erequired_ports\x18\x03 \x03(\x0b\x32\x12.edg.ref.LocalPath\x12,\n\x10\x63onnected_blocks\x18\x04 \x03(\x0b\x32\x12.edg.ref.LocalPath\"\x94\x01\n\tBlockLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12-\n\thierarchy\x18\x04 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x42\x06\n\x04type\"\x99\x04\n\x04Link\x12*\n\x06params\x18\n \x03(\x0b\x32\x1a.edg.elem.Link.ParamsEntry\x12(\n\x05ports\x18\x0b \x03(\x0b\x32\x19.edg.elem.Link.PortsEntry\x12(\n\x05links\x18\r \x03(\x0b\x32\x19.edg.elem.Link.LinksEntry\x12\x34\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32\x1f.edg.elem.Link.ConstraintsEntry\x12(\n\nself_class\x18\x14 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.init.ValInit:\x02\x38\x01\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\xbf\x03\n\tLinkArray\x12(\n\nself_class\x18\x14 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12-\n\x05ports\x18\x0b \x03(\x0b\x32\x1e.edg.elem.LinkArray.PortsEntry\x12\x39\n\x0b\x63onstraints\x18\x0c \x03(\x0b\x32$.edg.elem.LinkArray.ConstraintsEntry\x12-\n\x05links\x18\r \x03(\x0b\x32\x1e.edg.elem.LinkArray.LinksEntry\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a@\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.PortLike:\x02\x38\x01\x1aG\n\x10\x43onstraintsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\x1a@\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.edg.elem.LinkLike:\x02\x38\x01\"\xaa\x01\n\x08LinkLike\x12&\n\tundefined\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12(\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12\x1e\n\x04link\x18\x03 \x01(\x0b\x32\x0e.edg.elem.LinkH\x00\x12$\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x13.edg.elem.LinkArrayH\x00\x42\x06\n\x04typeb\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,init__pb2.DESCRIPTOR,expr__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -64,8 +64,8 @@ _PORT_PARAMSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=260,
-  serialized_end=324,
+  serialized_start=258,
+  serialized_end=322,
 )
 
 _PORT_CONSTRAINTSENTRY = _descriptor.Descriptor(
@@ -101,8 +101,8 @@ _PORT_CONSTRAINTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=326,
-  serialized_end=397,
+  serialized_start=324,
+  serialized_end=395,
 )
 
 _PORT = _descriptor.Descriptor(
@@ -127,9 +127,9 @@ _PORT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='superclasses', full_name='edg.elem.Port.superclasses', index=2,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='self_class', full_name='edg.elem.Port.self_class', index=2,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -153,7 +153,7 @@ _PORT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=74,
-  serialized_end=397,
+  serialized_end=395,
 )
 
 
@@ -190,8 +190,8 @@ _BUNDLE_PARAMSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=260,
-  serialized_end=324,
+  serialized_start=258,
+  serialized_end=322,
 )
 
 _BUNDLE_PORTSENTRY = _descriptor.Descriptor(
@@ -227,8 +227,8 @@ _BUNDLE_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=766,
+  serialized_start=698,
+  serialized_end=762,
 )
 
 _BUNDLE_CONSTRAINTSENTRY = _descriptor.Descriptor(
@@ -264,8 +264,8 @@ _BUNDLE_CONSTRAINTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=326,
-  serialized_end=397,
+  serialized_start=324,
+  serialized_end=395,
 )
 
 _BUNDLE = _descriptor.Descriptor(
@@ -297,9 +297,9 @@ _BUNDLE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='superclasses', full_name='edg.elem.Bundle.superclasses', index=3,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='self_class', full_name='edg.elem.Bundle.self_class', index=3,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -322,8 +322,8 @@ _BUNDLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=400,
-  serialized_end=839,
+  serialized_start=398,
+  serialized_end=835,
 )
 
 
@@ -360,8 +360,8 @@ _PORTARRAY_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=766,
+  serialized_start=698,
+  serialized_end=762,
 )
 
 _PORTARRAY = _descriptor.Descriptor(
@@ -372,9 +372,9 @@ _PORTARRAY = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='superclasses', full_name='edg.elem.PortArray.superclasses', index=0,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='self_class', full_name='edg.elem.PortArray.self_class', index=0,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -404,8 +404,8 @@ _PORTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=842,
-  serialized_end=1046,
+  serialized_start=838,
+  serialized_end=1040,
 )
 
 
@@ -466,8 +466,8 @@ _PORTLIKE = _descriptor.Descriptor(
       name='is', full_name='edg.elem.PortLike.is',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1049,
-  serialized_end=1253,
+  serialized_start=1043,
+  serialized_end=1247,
 )
 
 
@@ -504,8 +504,8 @@ _HIERARCHYBLOCK_PARAMSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=260,
-  serialized_end=324,
+  serialized_start=258,
+  serialized_end=322,
 )
 
 _HIERARCHYBLOCK_PORTSENTRY = _descriptor.Descriptor(
@@ -541,8 +541,8 @@ _HIERARCHYBLOCK_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=766,
+  serialized_start=698,
+  serialized_end=762,
 )
 
 _HIERARCHYBLOCK_BLOCKSENTRY = _descriptor.Descriptor(
@@ -578,8 +578,8 @@ _HIERARCHYBLOCK_BLOCKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1885,
-  serialized_end=1951,
+  serialized_start=1884,
+  serialized_end=1950,
 )
 
 _HIERARCHYBLOCK_LINKSENTRY = _descriptor.Descriptor(
@@ -615,8 +615,8 @@ _HIERARCHYBLOCK_LINKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1953,
-  serialized_end=2017,
+  serialized_start=1952,
+  serialized_end=2016,
 )
 
 _HIERARCHYBLOCK_CONSTRAINTSENTRY = _descriptor.Descriptor(
@@ -652,8 +652,8 @@ _HIERARCHYBLOCK_CONSTRAINTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=326,
-  serialized_end=397,
+  serialized_start=324,
+  serialized_end=395,
 )
 
 _HIERARCHYBLOCK_GENERATORSENTRY = _descriptor.Descriptor(
@@ -689,8 +689,8 @@ _HIERARCHYBLOCK_GENERATORSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2092,
-  serialized_end=2162,
+  serialized_start=2091,
+  serialized_end=2161,
 )
 
 _HIERARCHYBLOCK = _descriptor.Descriptor(
@@ -736,7 +736,7 @@ _HIERARCHYBLOCK = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='class', full_name='edg.elem.HierarchyBlock.class', index=5,
+      name='self_class', full_name='edg.elem.HierarchyBlock.self_class', index=5,
       number=23, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -782,8 +782,8 @@ _HIERARCHYBLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1256,
-  serialized_end=2162,
+  serialized_start=1250,
+  serialized_end=2161,
 )
 
 
@@ -834,8 +834,8 @@ _GENERATOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2165,
-  serialized_end=2323,
+  serialized_start=2164,
+  serialized_end=2322,
 )
 
 
@@ -882,8 +882,8 @@ _BLOCKLIKE = _descriptor.Descriptor(
       name='type', full_name='edg.elem.BlockLike.type',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2326,
-  serialized_end=2474,
+  serialized_start=2325,
+  serialized_end=2473,
 )
 
 
@@ -920,8 +920,8 @@ _LINK_PARAMSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=260,
-  serialized_end=324,
+  serialized_start=258,
+  serialized_end=322,
 )
 
 _LINK_PORTSENTRY = _descriptor.Descriptor(
@@ -957,8 +957,8 @@ _LINK_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=766,
+  serialized_start=698,
+  serialized_end=762,
 )
 
 _LINK_LINKSENTRY = _descriptor.Descriptor(
@@ -994,8 +994,8 @@ _LINK_LINKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1953,
-  serialized_end=2017,
+  serialized_start=1952,
+  serialized_end=2016,
 )
 
 _LINK_CONSTRAINTSENTRY = _descriptor.Descriptor(
@@ -1031,8 +1031,8 @@ _LINK_CONSTRAINTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=326,
-  serialized_end=397,
+  serialized_start=324,
+  serialized_end=395,
 )
 
 _LINK = _descriptor.Descriptor(
@@ -1071,9 +1071,9 @@ _LINK = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='superclasses', full_name='edg.elem.Link.superclasses', index=4,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='self_class', full_name='edg.elem.Link.self_class', index=4,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -1096,8 +1096,8 @@ _LINK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2477,
-  serialized_end=3016,
+  serialized_start=2476,
+  serialized_end=3013,
 )
 
 
@@ -1134,8 +1134,8 @@ _LINKARRAY_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=766,
+  serialized_start=698,
+  serialized_end=762,
 )
 
 _LINKARRAY_CONSTRAINTSENTRY = _descriptor.Descriptor(
@@ -1171,8 +1171,8 @@ _LINKARRAY_CONSTRAINTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=326,
-  serialized_end=397,
+  serialized_start=324,
+  serialized_end=395,
 )
 
 _LINKARRAY_LINKSENTRY = _descriptor.Descriptor(
@@ -1208,8 +1208,8 @@ _LINKARRAY_LINKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1953,
-  serialized_end=2017,
+  serialized_start=1952,
+  serialized_end=2016,
 )
 
 _LINKARRAY = _descriptor.Descriptor(
@@ -1220,9 +1220,9 @@ _LINKARRAY = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='superclasses', full_name='edg.elem.LinkArray.superclasses', index=0,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='self_class', full_name='edg.elem.LinkArray.self_class', index=0,
+      number=20, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -1266,8 +1266,8 @@ _LINKARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3019,
-  serialized_end=3468,
+  serialized_start=3016,
+  serialized_end=3463,
 )
 
 
@@ -1321,8 +1321,8 @@ _LINKLIKE = _descriptor.Descriptor(
       name='type', full_name='edg.elem.LinkLike.type',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=3471,
-  serialized_end=3641,
+  serialized_start=3466,
+  serialized_end=3636,
 )
 
 _PORT_PARAMSENTRY.fields_by_name['value'].message_type = init__pb2._VALINIT
@@ -1331,7 +1331,7 @@ _PORT_CONSTRAINTSENTRY.fields_by_name['value'].message_type = expr__pb2._VALUEEX
 _PORT_CONSTRAINTSENTRY.containing_type = _PORT
 _PORT.fields_by_name['params'].message_type = _PORT_PARAMSENTRY
 _PORT.fields_by_name['constraints'].message_type = _PORT_CONSTRAINTSENTRY
-_PORT.fields_by_name['superclasses'].message_type = ref__pb2._LIBRARYPATH
+_PORT.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _PORT.fields_by_name['meta'].message_type = common__pb2._METADATA
 _BUNDLE_PARAMSENTRY.fields_by_name['value'].message_type = init__pb2._VALINIT
 _BUNDLE_PARAMSENTRY.containing_type = _BUNDLE
@@ -1342,11 +1342,11 @@ _BUNDLE_CONSTRAINTSENTRY.containing_type = _BUNDLE
 _BUNDLE.fields_by_name['params'].message_type = _BUNDLE_PARAMSENTRY
 _BUNDLE.fields_by_name['ports'].message_type = _BUNDLE_PORTSENTRY
 _BUNDLE.fields_by_name['constraints'].message_type = _BUNDLE_CONSTRAINTSENTRY
-_BUNDLE.fields_by_name['superclasses'].message_type = ref__pb2._LIBRARYPATH
+_BUNDLE.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _BUNDLE.fields_by_name['meta'].message_type = common__pb2._METADATA
 _PORTARRAY_PORTSENTRY.fields_by_name['value'].message_type = _PORTLIKE
 _PORTARRAY_PORTSENTRY.containing_type = _PORTARRAY
-_PORTARRAY.fields_by_name['superclasses'].message_type = ref__pb2._LIBRARYPATH
+_PORTARRAY.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _PORTARRAY.fields_by_name['ports'].message_type = _PORTARRAY_PORTSENTRY
 _PORTARRAY.fields_by_name['meta'].message_type = common__pb2._METADATA
 _PORTLIKE.fields_by_name['undefined'].message_type = common__pb2._EMPTY
@@ -1386,7 +1386,7 @@ _HIERARCHYBLOCK.fields_by_name['ports'].message_type = _HIERARCHYBLOCK_PORTSENTR
 _HIERARCHYBLOCK.fields_by_name['blocks'].message_type = _HIERARCHYBLOCK_BLOCKSENTRY
 _HIERARCHYBLOCK.fields_by_name['links'].message_type = _HIERARCHYBLOCK_LINKSENTRY
 _HIERARCHYBLOCK.fields_by_name['constraints'].message_type = _HIERARCHYBLOCK_CONSTRAINTSENTRY
-_HIERARCHYBLOCK.fields_by_name['class'].message_type = ref__pb2._LIBRARYPATH
+_HIERARCHYBLOCK.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _HIERARCHYBLOCK.fields_by_name['prerefine_class'].message_type = ref__pb2._LIBRARYPATH
 _HIERARCHYBLOCK.fields_by_name['generators'].message_type = _HIERARCHYBLOCK_GENERATORSENTRY
 _HIERARCHYBLOCK.fields_by_name['meta'].message_type = common__pb2._METADATA
@@ -1417,7 +1417,7 @@ _LINK.fields_by_name['params'].message_type = _LINK_PARAMSENTRY
 _LINK.fields_by_name['ports'].message_type = _LINK_PORTSENTRY
 _LINK.fields_by_name['links'].message_type = _LINK_LINKSENTRY
 _LINK.fields_by_name['constraints'].message_type = _LINK_CONSTRAINTSENTRY
-_LINK.fields_by_name['superclasses'].message_type = ref__pb2._LIBRARYPATH
+_LINK.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _LINK.fields_by_name['meta'].message_type = common__pb2._METADATA
 _LINKARRAY_PORTSENTRY.fields_by_name['value'].message_type = _PORTLIKE
 _LINKARRAY_PORTSENTRY.containing_type = _LINKARRAY
@@ -1425,7 +1425,7 @@ _LINKARRAY_CONSTRAINTSENTRY.fields_by_name['value'].message_type = expr__pb2._VA
 _LINKARRAY_CONSTRAINTSENTRY.containing_type = _LINKARRAY
 _LINKARRAY_LINKSENTRY.fields_by_name['value'].message_type = _LINKLIKE
 _LINKARRAY_LINKSENTRY.containing_type = _LINKARRAY
-_LINKARRAY.fields_by_name['superclasses'].message_type = ref__pb2._LIBRARYPATH
+_LINKARRAY.fields_by_name['self_class'].message_type = ref__pb2._LIBRARYPATH
 _LINKARRAY.fields_by_name['ports'].message_type = _LINKARRAY_PORTSENTRY
 _LINKARRAY.fields_by_name['constraints'].message_type = _LINKARRAY_CONSTRAINTSENTRY
 _LINKARRAY.fields_by_name['links'].message_type = _LINKARRAY_LINKSENTRY

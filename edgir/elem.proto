@@ -27,7 +27,7 @@ message Port {
   map<string, edg.init.ValInit> params = 10;
   map<string, edg.expr.ValueExpr> constraints = 11;
 
-  repeated edg.ref.LibraryPath superclasses = 20;
+  edg.ref.LibraryPath self_class = 20;
 
 //  /** Those superclasses that must apply to the env
 //      this bundle is within.*/
@@ -54,7 +54,7 @@ message Bundle {
   map<string, PortLike> ports = 11;
   map<string, edg.expr.ValueExpr> constraints = 12;
 
-  repeated edg.ref.LibraryPath superclasses = 20;
+  edg.ref.LibraryPath self_class = 20;
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
@@ -65,9 +65,9 @@ message Bundle {
 }
 
 message PortArray {
-  /* The superclass that appllies to every port in the set/array. Used
+  /* The class that applies to every port in the set/array. Used
      when a new port is instantiated by the front or back end. */
-  repeated edg.ref.LibraryPath superclasses = 20;
+  edg.ref.LibraryPath self_class = 20;
 
   /* Only designs should contain actual ports here */
   map<string, PortLike> ports = 13;
@@ -88,23 +88,6 @@ message PortLike {
   }
 }
 
-//message Block {
-//
-//  map<string, edg.init.ValInit> params = 10;
-//  map<string, PortLike>        ports = 11;
-////  map<string, EnvLike>     environments = 12;
-//  map<string, edg.expr.ValueExpr> constraints = 13;
-//
-//  repeated edg.ref.LibraryPath superclasses = 20;
-//
-////  oneof impl {
-////    edg.common.Empty none = 40;
-////    edg.impl.BlockImpl val = 42;
-////  }
-//
-//  edg.common.Metadata meta = 127;
-//}
-
 message HierarchyBlock {
   map<string, edg.init.ValInit>   params = 10;
   map<string, PortLike>          ports  = 11;
@@ -117,12 +100,13 @@ message HierarchyBlock {
       Connections between internal; block and edge (of this block) ports are represented by exported constraints. */
   map<string, edg.expr.ValueExpr> constraints = 14;
 
-  edg.ref.LibraryPath class = 23;  // self class, equivalent to the library name
+  edg.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
+  // TODO add this back in after migration
 //  repeated edg.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
   edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
   map<string, Generator> generators = 22;  // optional, and removed upon invocation
 
-  bool is_abstract = 30;  // true if abstract superclass, and should error
+  bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
 
   edg.common.Metadata meta = 127;
 }
@@ -165,7 +149,7 @@ message Link {
   map<string, LinkLike>           links  = 13;
   map<string, edg.expr.ValueExpr> constraints = 12;
 
-  repeated edg.ref.LibraryPath superclasses = 20;
+  edg.ref.LibraryPath self_class = 20;
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
@@ -176,9 +160,9 @@ message Link {
 }
 
 message LinkArray {
-  /* The superclass that applies to every link in the set/array. Used
+  /* The class that applies to every link in the set/array. Used
      when a new link is instantiated by the front or back end. */
-  repeated edg.ref.LibraryPath superclasses = 20;
+  edg.ref.LibraryPath self_class = 20;
 
   /* Only designs should contain an implementation here */
   map<string, PortLike>          ports  = 11;  // the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
