@@ -117,8 +117,9 @@ message HierarchyBlock {
       Connections between internal; block and edge (of this block) ports are represented by exported constraints. */
   map<string, edg.expr.ValueExpr> constraints = 14;
 
-  repeated edg.ref.LibraryPath superclasses = 20;  // in library: superclasses; in design: reference to library class
-  edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise empty
+  edg.ref.LibraryPath class = 23;  // self class, equivalent to the library name
+//  repeated edg.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
+  edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
   map<string, Generator> generators = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if abstract superclass, and should error

@@ -373,9 +373,6 @@ class HierarchyBlock(google___protobuf___message___Message):
     def constraints(self) -> typing___MutableMapping[typing___Text, expr_pb2___ValueExpr]: ...
 
     @property
-    def superclasses(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[ref_pb2___LibraryPath]: ...
-
-    @property
     def prerefine_class(self) -> ref_pb2___LibraryPath: ...
 
     @property
@@ -391,14 +388,13 @@ class HierarchyBlock(google___protobuf___message___Message):
         blocks : typing___Optional[typing___Mapping[typing___Text, type___BlockLike]] = None,
         links : typing___Optional[typing___Mapping[typing___Text, type___LinkLike]] = None,
         constraints : typing___Optional[typing___Mapping[typing___Text, expr_pb2___ValueExpr]] = None,
-        superclasses : typing___Optional[typing___Iterable[ref_pb2___LibraryPath]] = None,
         prerefine_class : typing___Optional[ref_pb2___LibraryPath] = None,
         generators : typing___Optional[typing___Mapping[typing___Text, type___Generator]] = None,
         is_abstract : typing___Optional[builtin___bool] = None,
         meta : typing___Optional[common_pb2___Metadata] = None,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal[u"meta",b"meta",u"prerefine_class",b"prerefine_class"]) -> builtin___bool: ...
-    def ClearField(self, field_name: typing_extensions___Literal[u"blocks",b"blocks",u"constraints",b"constraints",u"generators",b"generators",u"is_abstract",b"is_abstract",u"links",b"links",u"meta",b"meta",u"params",b"params",u"ports",b"ports",u"prerefine_class",b"prerefine_class",u"superclasses",b"superclasses"]) -> None: ...
+    def HasField(self, field_name: typing_extensions___Literal[u"class",b"class",u"meta",b"meta",u"prerefine_class",b"prerefine_class"]) -> builtin___bool: ...
+    def ClearField(self, field_name: typing_extensions___Literal[u"blocks",b"blocks",u"class",b"class",u"constraints",b"constraints",u"generators",b"generators",u"is_abstract",b"is_abstract",u"links",b"links",u"meta",b"meta",u"params",b"params",u"ports",b"ports",u"prerefine_class",b"prerefine_class"]) -> None: ...
 type___HierarchyBlock = HierarchyBlock
 
 class Generator(google___protobuf___message___Message):
