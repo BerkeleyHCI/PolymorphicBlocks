@@ -90,18 +90,18 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceBlock",
+        "source" -> Block.Block(selfClass="sourceBlock",
           params = Map(
             "innerParam" -> ValInit.Integer,
             "outerParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Bundle(superclass="outerPort",
+            "port" -> Port.Bundle(selfClass="outerPort",
               params = Map(
                 "param" -> ValInit.Integer,
               ),
               ports = Map(
-                "inner" -> Port.Port(superclass="innerPort",
+                "inner" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),
@@ -116,17 +116,17 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="outerLink",
+        "link" -> Link.Link(selfClass="outerLink",
           params = Map(
             "outerParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "outerPort" -> Port.Bundle(superclass="outerPort",
+            "outerPort" -> Port.Bundle(selfClass="outerPort",
               params = Map(
                 "param" -> ValInit.Integer,
               ),
               ports = Map(
-                "inner" -> Port.Port(superclass="innerPort",
+                "inner" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),
@@ -135,12 +135,12 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
             ),
           ),
           links = Map(
-            "inner" -> Link.Link(superclass="innerLink",
+            "inner" -> Link.Link(selfClass="innerLink",
               params = Map(
                 "innerParam" -> ValInit.Integer,
               ),
               ports = Map(
-                "innerPort" -> Port.Port(superclass="innerPort",
+                "innerPort" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),

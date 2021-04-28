@@ -26,8 +26,7 @@ case class Generator(
   * BlockLike / LinkLike lib_elem are kept in the proto, unmodified.
   * This is to allow efficient transformation at any point in the design tree without re-writing the root.
   */
-class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
-            unrefinedType: Option[ref.LibraryPath]) extends BlockLike
+class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
   private val NAMESPACE_META_KEY = "_namespace_order"  // TODO this should be more based on type matching instead of keys
 
@@ -108,10 +107,6 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
     newPb
   }
 
-  def getBlockClass: ref.LibraryPath = {
-    require(superclasses.length == 1, s"unexpected multiple superclasses $superclasses")
-    superclasses.head
-  }
   override def isElaborated: Boolean = true
 
   override def getParams: Map[String, init.ValInit] = pb.params
@@ -139,8 +134,10 @@ class Block(pb: elem.HierarchyBlock, superclasses: Seq[ref.LibraryPath],
     }
 
     pb.copy(
-      superclasses=superclasses,
-      prerefineClass=unrefinedType,
+      prerefineClass=unrefinedType match {
+        case None => pb.prerefineClass
+        case Some(prerefineClass) => Some(prerefineClass)
+      },
       ports=ports.view.mapValues(_.toPb).toMap,
       blocks=blocks.view.mapValues(_.toPb).toMap,
       links=links.view.mapValues(_.toPb).toMap,

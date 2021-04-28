@@ -49,14 +49,14 @@ object ElemBuilder {
               blocks: Map[String, elem.BlockLike] = Map(),
               links: Map[String, elem.LinkLike] = Map(),
               constraints: Map[String, expr.ValueExpr] = Map(),
-              superclass: String = "",
+              selfClass: String = "",
               prerefine: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
       params=params, ports=ports, blocks=blocks, links=links,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
       },
       prerefineClass=prerefine match {
         case "" => None
@@ -77,13 +77,13 @@ object ElemBuilder {
              ports: Map[String, elem.PortLike] = Map(),
              links: Map[String, elem.LinkLike] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclass: String = "",
+             selfClass: String = "",
             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Link(elem.Link(
       params=params, ports=ports, links=links,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
       }
     )))
   }
@@ -98,38 +98,38 @@ object ElemBuilder {
 
     def Port(params: Map[String, init.ValInit] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclass: String = ""
+             selfClass: String = ""
             ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Port(elem.Port(
       params=params,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case selfClass => Some(LibraryPath(selfClass))
       }
     )))
 
     def Bundle(params: Map[String, init.ValInit] = Map(),
                ports: Map[String, elem.PortLike] = Map(),
                constraints: Map[String, expr.ValueExpr] = Map(),
-               superclass: String = ""
+               selfClass: String = ""
               ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Bundle(elem.Bundle(
       params=params, ports=ports,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
       }
     )))
 
     // Unelaborated (unknown length) PortArray, containing just a superclass reference
-    def Array(superclass: String): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
-      superclasses=Seq(LibraryPath(superclass))
+    def Array(selfClass: String): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
+      selfClass=Some(LibraryPath(selfClass))
     )))
 
     // Fully elaborated (known length) PortArray
-    def Array(superclass: String, count: Int, port: elem.PortLike): elem.PortLike =
+    def Array(selfClass: String, count: Int, port: elem.PortLike): elem.PortLike =
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
-        superclasses=Seq(LibraryPath(superclass)),
+        selfClass=Some(LibraryPath(selfClass)),
         ports=(0 until count).map { i =>
           i.toString -> port
         }.toMap

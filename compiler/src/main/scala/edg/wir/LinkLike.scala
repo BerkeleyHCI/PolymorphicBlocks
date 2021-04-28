@@ -15,7 +15,7 @@ sealed trait LinkLike extends Pathable {
 /**
   * Similar to Block, see documentation there.
   */
-class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
+class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
   private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
@@ -41,7 +41,6 @@ class Link(pb: elem.Link, superclasses: Seq[ref.LibraryPath]) extends LinkLike
   // Serializes this to protobuf
   def toEltPb: elem.Link = {
     pb.copy(
-      superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
       links=links.view.mapValues(_.toPb).toMap,
       constraints=constraints.toMap

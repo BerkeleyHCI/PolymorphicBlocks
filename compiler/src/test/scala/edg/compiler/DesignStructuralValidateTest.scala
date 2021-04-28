@@ -15,14 +15,14 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
     val dsv = new DesignStructuralValidate()
     val dut = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceContainerBlock",
+        "source" -> Block.Block(selfClass="sourceContainerBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sourcePort"),
+            "port" -> Port.Port(selfClass="sourcePort"),
           ),
           blocks = Map(
-            "inner" -> Block.Block(superclass="sourceBlock",
+            "inner" -> Block.Block(selfClass="sourceBlock",
               ports = Map(
-                "port" -> Port.Port(superclass="sourcePort"),
+                "port" -> Port.Port(selfClass="sourcePort"),
               )
             )
           ),
@@ -30,14 +30,14 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
             "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
           )
         ),
-        "sink" -> Block.Block(superclass="sinkContainerBlock",
+        "sink" -> Block.Block(selfClass="sinkContainerBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           ),
           blocks = Map(
-            "inner" -> Block.Block(superclass="sinkBlock",
+            "inner" -> Block.Block(selfClass="sinkBlock",
               ports = Map(
-                "port" -> Port.Port(superclass="sinkPort"),
+                "port" -> Port.Port(selfClass="sinkPort"),
               )
             )
           ),
@@ -47,10 +47,10 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="link",
+        "link" -> Link.Link(selfClass="link",
           ports = Map(
-            "source" -> Port.Port(superclass="sourcePort"),
-            "sink" -> Port.Port(superclass="sinkPort"),
+            "source" -> Port.Port(selfClass="sourcePort"),
+            "sink" -> Port.Port(selfClass="sinkPort"),
           )
         )
       ),
@@ -78,7 +78,7 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
     val dsv = new DesignStructuralValidate()
     val dut = Design(Block.Block(
       blocks = Map(
-        "test" -> Block.Block(superclass="testBlock",
+        "test" -> Block.Block(selfClass="testBlock",
           ports = Map(
             "port" -> Port.Library("testPort"),
           ),

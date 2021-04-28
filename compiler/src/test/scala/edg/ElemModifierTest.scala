@@ -13,12 +13,12 @@ class ElemModifierTest extends AnyFlatSpec {
 
   val design: schema.Design = Design(Block.Block(
     blocks = Map (
-      "inner" -> Block.Block(superclass="original")
+      "inner" -> Block.Block(selfClass="original")
     )
   ).getHierarchy)
 
   it should "be able to add blocks in design root" in {
-    val inserted = Block.Block(superclass="new")
+    val inserted = Block.Block(selfClass="new")
     val transformed = ElemModifier.modifyBlock(DesignPath(), design) { block =>
       block.update(
         _.blocks :+= ("testInserted", inserted)
@@ -30,7 +30,7 @@ class ElemModifierTest extends AnyFlatSpec {
   }
 
   it should "be able to add blocks in nested blocks" in {
-    val inserted = Block.Block(superclass="new")
+    val inserted = Block.Block(selfClass="new")
     val transformed = ElemModifier.modifyBlock(DesignPath() + "inner", design) { block =>
       block.update(
         _.blocks :+= ("innerInserted", inserted)

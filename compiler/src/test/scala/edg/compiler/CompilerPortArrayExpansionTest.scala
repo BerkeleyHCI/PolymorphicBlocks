@@ -113,32 +113,32 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceBlock",
+        "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sourcePort"),
+            "port" -> Port.Port(selfClass="sourcePort"),
           )
         ),
-        "sink0" -> Block.Block(superclass="sinkBlock",
+        "sink0" -> Block.Block(selfClass="sinkBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           )
         ),
-        "sink1" -> Block.Block(superclass="sinkBlock",
+        "sink1" -> Block.Block(selfClass="sinkBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           )
         ),
-        "sink2" -> Block.Block(superclass="sinkBlock",
+        "sink2" -> Block.Block(selfClass="sinkBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           )
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="link",
+        "link" -> Link.Link(selfClass="link",
           ports = Map(
-            "source" -> Port.Port(superclass="sourcePort"),
-            "sinks" -> Port.Array(superclass="sinkPort", 3, Port.Port(superclass="sinkPort")),
+            "source" -> Port.Port(selfClass="sourcePort"),
+            "sinks" -> Port.Array(selfClass="sinkPort", 3, Port.Port(selfClass="sinkPort")),
           )
         )
       ),
@@ -187,17 +187,17 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceBlock",
+        "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sourcePort"),
+            "port" -> Port.Port(selfClass="sourcePort"),
           )
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="link",
+        "link" -> Link.Link(selfClass="link",
           ports = Map(
-            "source" -> Port.Port(superclass="sourcePort"),
-            "sinks" -> Port.Array(superclass="sinkPort", 0, Port.Port(superclass="sinkPort")),
+            "source" -> Port.Port(selfClass="sourcePort"),
+            "sinks" -> Port.Array(selfClass="sinkPort", 0, Port.Port(selfClass="sinkPort")),
           )
         )
       ),

@@ -36,14 +36,14 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         )
       ),
       "sourceFromExtSinkBridge" -> Block.Block(
-        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+        selfClass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
       "sinkFromExtSourceBridge" -> Block.Block(
-        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+        selfClass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),

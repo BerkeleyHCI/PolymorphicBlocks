@@ -83,22 +83,22 @@ class CompilerExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceBlock",
+        "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sourcePort"),
+            "port" -> Port.Port(selfClass="sourcePort"),
           )
         ),
-        "sink" -> Block.Block(superclass="sinkBlock",
+        "sink" -> Block.Block(selfClass="sinkBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           )
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="link",
+        "link" -> Link.Link(selfClass="link",
           ports = Map(
-            "source" -> Port.Port(superclass="sourcePort"),
-            "sink" -> Port.Port(superclass="sinkPort"),
+            "source" -> Port.Port(selfClass="sourcePort"),
+            "sink" -> Port.Port(selfClass="sinkPort"),
           )
         )
       ),
@@ -127,14 +127,14 @@ class CompilerExpansionTest extends AnyFlatSpec {
     ))
     val referenceElaborated = Design(Block.Block(
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceContainerBlock",
+        "source" -> Block.Block(selfClass="sourceContainerBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sourcePort"),
+            "port" -> Port.Port(selfClass="sourcePort"),
           ),
           blocks = Map(
-            "inner" -> Block.Block(superclass="sourceBlock",
+            "inner" -> Block.Block(selfClass="sourceBlock",
               ports = Map(
-                "port" -> Port.Port(superclass="sourcePort"),
+                "port" -> Port.Port(selfClass="sourcePort"),
               )
             )
           ),
@@ -142,14 +142,14 @@ class CompilerExpansionTest extends AnyFlatSpec {
             "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
           )
         ),
-        "sink" -> Block.Block(superclass="sinkContainerBlock",
+        "sink" -> Block.Block(selfClass="sinkContainerBlock",
           ports = Map(
-            "port" -> Port.Port(superclass="sinkPort"),
+            "port" -> Port.Port(selfClass="sinkPort"),
           ),
           blocks = Map(
-            "inner" -> Block.Block(superclass="sinkBlock",
+            "inner" -> Block.Block(selfClass="sinkBlock",
               ports = Map(
-                "port" -> Port.Port(superclass="sinkPort"),
+                "port" -> Port.Port(selfClass="sinkPort"),
               )
             )
           ),
@@ -159,10 +159,10 @@ class CompilerExpansionTest extends AnyFlatSpec {
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="link",
+        "link" -> Link.Link(selfClass="link",
           ports = Map(
-            "source" -> Port.Port(superclass="sourcePort"),
-            "sink" -> Port.Port(superclass="sinkPort"),
+            "source" -> Port.Port(selfClass="sourcePort"),
+            "sink" -> Port.Port(selfClass="sinkPort"),
           )
         )
       ),

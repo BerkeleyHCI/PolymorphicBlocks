@@ -26,7 +26,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
         )
       ),
       "subclassBlock" -> Block.Block(
-        superclass="superclassBlock",
+        selfClass="superclassBlock",
         params = Map(
           "superParam" -> ValInit.Integer,
           "subParam" -> ValInit.Integer,
@@ -57,14 +57,14 @@ class CompilerRefinementTest extends AnyFlatSpec {
   "Compiler on design with subclass refinement" should "work" in {
     val expected = Design(Block.Block(
       blocks = Map(
-        "block" -> Block.Block(superclass="subclassBlock",
+        "block" -> Block.Block(selfClass="subclassBlock",
           prerefine="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
             "subParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Port(superclass="port"),
+            "port" -> Port.Port(selfClass="port"),
           )
         ),
       )
@@ -86,14 +86,14 @@ class CompilerRefinementTest extends AnyFlatSpec {
   "Compiler on design with instance refinement" should "work" in {
     val expected = Design(Block.Block(
       blocks = Map(
-        "block" -> Block.Block(superclass="subclassBlock",
+        "block" -> Block.Block(selfClass="subclassBlock",
           prerefine="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
             "subParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Port(superclass="port"),
+            "port" -> Port.Port(selfClass="port"),
           )
         ),
       )
@@ -107,12 +107,12 @@ class CompilerRefinementTest extends AnyFlatSpec {
   "Compiler on design with subclass values" should "work" in {
     val expected = Design(Block.Block(
       blocks = Map(
-        "block" -> Block.Block(superclass="superclassBlock",
+        "block" -> Block.Block(selfClass="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Port(superclass="port"),
+            "port" -> Port.Port(selfClass="port"),
           )
         ),
       )
@@ -129,12 +129,12 @@ class CompilerRefinementTest extends AnyFlatSpec {
   "Compiler on design with path values" should "work" in {
     val expected = Design(Block.Block(
       blocks = Map(
-        "block" -> Block.Block(superclass="superclassBlock",
+        "block" -> Block.Block(selfClass="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Port(superclass="port"),
+            "port" -> Port.Port(selfClass="port"),
           )
         ),
       )
