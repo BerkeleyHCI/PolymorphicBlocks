@@ -37,7 +37,7 @@ class ElemModifierTest extends AnyFlatSpec {
       )
     }
     transformed.getContents.blocks("inner").getHierarchy.blocks.get("innerInserted") should equal(Some(inserted))
-    transformed.getContents.blocks("inner").getHierarchy.superclasses should equal(
-      design.getContents.blocks("inner").getHierarchy.superclasses)
+    transformed.getContents.blocks("inner").getHierarchy.getSelfClass should equal(
+      design.getContents.blocks("inner").getHierarchy.getSelfClass)
   }
 }
