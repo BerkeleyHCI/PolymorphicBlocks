@@ -4,7 +4,7 @@ import math
 import os
 
 from electronics_abstract_parts import *
-from electronics_abstract_parts.DummyDevices import DummyCapacitor
+from electronics_abstract_parts.Categories import DummyDevice
 from .ProductTableUtils import *
 
 
@@ -379,9 +379,6 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
                                      single_nominal_capacitance: RangeVal,
                                      part_spec: str, footprint_spec: str) -> None:
 
-    # test with
-    # python -m unittest electronics_lib.test_capacitor
-
     # capacitance: user-specified capacitance
     # single nominal capacitance: no single cap with requested capacitance, must generate multiple parallel caps
     # nominal capacitance: selected part's capacitance
@@ -419,7 +416,6 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         for package in sorted(self.PACKAGE_SPECS.keys()):
           package_derated_capacitance = valid_package_min_nominal_capacitance(package, capacitance, voltage)
           if package_derated_capacitance:
-            print(self.PACKAGE_SPECS[package]['name'])
             return (self.PACKAGE_SPECS[package]['name'], package_derated_capacitance)
         return ("", (0, 0))
       else:
@@ -464,9 +460,61 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
           '2': self.neg,
         },
         value=f'{UnitUtils.num_to_prefix(value, 3)}F'
-        # TODO mfr, part, datasheet
       )
 
+class DummyCapacitor(DummyDevice, Capacitor, CircuitBlock, GeneratorBlock):
+
+  """
+  Capacitor that does not derate, used for splitting a generic capacitor into multiple when desired capacitance is too high
+  """
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.footprint_spec = self.Parameter(StringExpr(""))
+
+    # Default to be overridden on a per-device basis
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+
+    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
+                   self.part_spec, self.footprint_spec)
+
+    # Output values
+    self.selected_capacitance = self.Parameter(RangeExpr())
+    self.selected_derated_capacitance = self.Parameter(RangeExpr())
+    self.selected_voltage_rating = self.Parameter(RangeExpr())
+
+  PACKAGE_MIN_CAP = {
+    'Capacitor_SMD:C_0603_1608Metric': 1e-7,
+    'Capacitor_SMD:C_0805_2012Metric': 1.1e-6,
+    'Capacitor_SMD:C_1206_3216Metric': 11e-6
+  }
+
+  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
+                       single_nominal_capacitance: RangeVal,
+                       part_spec: str, footprint_spec: str) -> None:
+
+    avg_cap = (capacitance[0] + capacitance[1]) / 2
+    for package_name in sorted(self.PACKAGE_MIN_CAP.keys())[::-1]:
+      if avg_cap > self.PACKAGE_MIN_CAP[package_name]:
+        self.calculated_package_size = package_name
+        break
+
+    if not (footprint_spec == ""):
+      self.calculated_package_size = footprint_spec
+
+    self.assign(self.selected_capacitance, capacitance)
+    self.assign(self.selected_derated_capacitance, capacitance)
+
+    self.footprint(
+      'C', self.calculated_package_size,
+      {
+        '1': self.pos,
+        '2': self.neg,
+      },
+      value=f'{UnitUtils.num_to_prefix(capacitance[0], 3)}F'
+    )
 
 def generate_inductor_table(TABLES: List[str]) -> ProductTable:
   tables = []
