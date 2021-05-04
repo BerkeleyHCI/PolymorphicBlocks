@@ -67,7 +67,7 @@ class MediumSingleCapacitorGenericTestTop(Block):
 class CapacitorTestCase(unittest.TestCase):
   def test_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(CapacitorGenericTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0402_1105Metric')
     self.assertEqual(compiled.get_value(['dut', 'value']), '100nF')
 
   def test_capacitor_footprint(self) -> None:

@@ -3,7 +3,7 @@ from itertools import chain
 
 
 @abstract_block
-class E24_SeriesDevice(Block):
+class E24SeriesDevice(Block):
   """Non-physical "E24 series device" used to affect parameters."""
 
   E24_SERIES = [
@@ -42,7 +42,7 @@ class DiscreteSemiconductor(DiscreteComponent):
 
 
 @abstract_block
-class PassiveComponent(DiscreteComponent, E24_SeriesDevice):
+class PassiveComponent(DiscreteComponent, E24SeriesDevice):
   """Passives components, typically used as part of an application circuit."""
   pass
 

@@ -186,24 +186,6 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  # Chosen by a rough scan over available parts on Digikey
-  # at voltages 10v, 16v, 25v, 50v, 100v, 250v
-  # and capacitances 1.0, 2.2, 4.7
-  #
-  # For Class-1 dielectric (C0G/NP0), 20% tolerance
-  # 0402: 50v/1nF
-  # 0603: 100v/1nF, 50v/2.2nF ?
-  # 0805: 100v/2.2nF, 50v/10nF
-  # 1206: 100v/10nF
-  #
-  # For Class-2 dielectric (X**), 20% tolerance
-  # 0402: 50v/10nF, 25v/0.1uF, 10v/2.2uF
-  # 0603: 50v/0.1uF, 25v/1uF, 16v/2.2uF, 10v/10uF
-  # 0805: 100v/0.1uF, 50v/0.1uF (maybe 0.22uF), 25v/10uF
-  # 1206: 100v/0.1uF, 50v/4.7uF, 25v/10uF, 10v/22uF
-  # 1210: 100v/4.7uF, 50v/10uF, 16v/22uF, 10v/47uF
-  # 1812 (though small sample size): 100v/2.2uF, 50v/1uF, 25v/10uF
-
   product_table = generate_mlcc_table([
     'Digikey_MLCC_SamsungCl_1pF_E12.csv',
     'Digikey_MLCC_SamsungCl_1nF_E6.csv',
@@ -333,21 +315,70 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
-    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
-    'Capacitor_SMD:C_0805_2012Metric': 0.08,
-    'Capacitor_SMD:C_1206_3216Metric': 0.04,
-  }
+  # Chosen by a rough scan over available parts on Digikey
+  # at voltages 10v, 16v, 25v, 50v, 100v, 250v
+  # and capacitances 1.0, 2.2, 4.7
+  #
+  # For Class-1 dielectric (C0G/NP0), 20% tolerance
+  # 0402: 50v/1nF
+  # 0603: 100v/1nF, 50v/2.2nF ?
+  # 0805: 100v/2.2nF, 50v/10nF
+  # 1206: 100v/10nF
+  #
+  # For Class-2 dielectric (X**), 20% tolerance
+  # 0402:                   50v /                0.1uF,     25v / 0.1uF,                      10v / 2.2uF
+  # 0603:                   50v /                0.1uF,     25v /   1uF,     16v / 2.2uF,     10v /  10uF
+  # 0805: 100v / 0.1uF,     50v / 0.1uF (maybe 0.22uF),     25v /  10uF
+  # 1206: 100v / 0.1uF,     50v /                4.7uF,     25v /  10uF,                      10v /  22uF
+  # 1210: 100v / 4.7uF,     50v /                 10uF,                      16v /  22uF,     10v /  47uF
+  # 1812: 100v / 2.2uF,     50v /                  1uF,     25v /  10uF (though small sample size)
 
-  PACKAGES = [
-    'Capacitor_SMD:C_0603_1608Metric',
-    'Capacitor_SMD:C_0805_2012Metric',
-    'Capacitor_SMD:C_1206_3216Metric'
-  ]
+  # derating coefficients in terms of %capacitance / V over 3.6
+  # 'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
+
+  PACKAGE_SPECS = {
+    402: {
+      'name'    : 'Capacitor_SMD:C_0402_1105Metric',
+      'max'     :  1e-7,
+      'derate'  : 0,
+      'vc_pairs': {             50:   1e-7, 25: 1e-7,             10: 2.2e-6},
+    },
+    603: {
+      'name'    : 'Capacitor_SMD:C_0603_1608Metric',
+      'max'     : 1.1e-6,
+      'derate'  : 0,
+      'vc_pairs': {             50:   1e-7, 25: 1e-6, 16: 2.2e-6, 10:   1e-5},
+    },
+    805:{
+      'name'    : 'Capacitor_SMD:C_0805_2012Metric',
+      'max'     : 11e-6,
+      'derate'  : 0.08,
+      'vc_pairs': {100:   1e-7, 50:   1e-7, 25: 1e-5, },
+    },
+    1206: {
+      'name'    : 'Capacitor_SMD:C_1206_3216Metric',
+      'max'     : float('inf'),
+      'derate'  : 0.04,
+      'vc_pairs': {100:   1e-7, 50: 4.7e-6, 25: 1e-5,             10: 2.2e-5},
+    },
+    1210: {
+      'name'    : 'Capacitor_SMD:C_1210_3225Metric',
+      'max'     : float('inf'),
+      'derate'  : 0,
+      'vc_pairs': {100: 4.7e-6, 50:   1e-5,           16: 2.2e-5, 10: 4.7e-5},
+    },
+    1812: {
+      'name'    : 'Capacitor_SMD:C_1812_4532Metric',
+      'max'     : float('inf'),
+      'derate'  : 0,
+      'vc_pairs': {100: 2.2e-6, 50:   1e-6, 25: 1e-5, },
+    },
+  }
 
   def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
                                      single_nominal_capacitance: RangeVal,
                                      part_spec: str, footprint_spec: str) -> None:
+
     # test with
     # python -m unittest electronics_lib.test_capacitor
 
@@ -355,44 +386,52 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
     # single nominal capacitance: no single cap with requested capacitance, must generate multiple parallel caps
     # nominal capacitance: selected part's capacitance
 
+
+    def valid_package_min_nominal_capacitance(package: int, capacitance: RangeVal, voltage: RangeVal) -> Tuple[float, float]:
+      """
+      Calculates if the package is a valid choice for the given capacitance and voltage.
+      If the package is a valid choice, the function returns the minimum nominal capacitance
+      for the specs. If the package is not valid, the function returns False.
+      """
+
+      avg_cap = (capacitance[0] + capacitance[1]) / 2
+      avg_volt = (voltage[0] + voltage[1]) / 2
+
+      # Calculate derated capacitance for the package
+      if (avg_volt <= 3.6) or (avg_cap <= 1e-6):
+        min_nominal_capacitance = capacitance
+      else:
+        voltco = self.PACKAGE_SPECS[package]['derate']
+        min_nominal_capacitance = (
+          capacitance[0] / (1 - voltco * (voltage[1] - 3.6)),
+          capacitance[1] / (1 - voltco * (voltage[0] - 3.6))
+        )
+      # Check if package is still valid for the derated capacitance
+      if self.PACKAGE_SPECS[package]['max'] >= avg_cap:
+        for v, c in self.PACKAGE_SPECS[package]['vc_pairs'].items():
+          if v > voltage[1] and c > min_nominal_capacitance[1]:
+            return min_nominal_capacitance
+      return False
+
+    def select_package(capacitance: RangeVal, voltage: RangeVal) -> Tuple[float, float]:
+
+      if footprint_spec == "":
+        for package in sorted(self.PACKAGE_SPECS.keys()):
+          package_derated_capacitance = valid_package_min_nominal_capacitance(package, capacitance, voltage)
+          if package_derated_capacitance:
+            print(self.PACKAGE_SPECS[package]['name'])
+            return (self.PACKAGE_SPECS[package]['name'], package_derated_capacitance)
+        return ("", (0, 0))
+      else:
+        package = int(footprint_spec.split('_')[2])
+        package_derated_capacitance = valid_package_min_nominal_capacitance(package, capacitance, voltage)
+        if package_derated_capacitance:
+          return (footprint_spec, package_derated_capacitance)
+      return (footprint_spec, (0, 0))
+
     value = choose_preferred_number(capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
     single_cap_max = single_nominal_capacitance[1]
-
-    # enforce minimum package size by capacitance
-    #   if > 1.1 uF, only use 0805 or 1206
-    #   if > 11 uF, only use 1206
-    # derate capacitance
-    #   if voltage < 3.6, don't derate
-    #   if capacitance < 1uF, don't derate
-    #   if footprint not in self.DERATE_VOLTCO, can't derate, generate obviously bogus and ignored value
-    #   else derate by returning (
-    #         row['capacitance'][0] * (1 - voltco * (voltage[1] - 3.6)),
-    #         row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
-    #       )
-
-    if (capacitance[0] + capacitance[1]) / 2 > 11e-6:
-      self.min_package_size = self.PACKAGES[2]
-    elif (capacitance[0] + capacitance[1]) / 2 > 1.1e-6:
-      self.min_package_size = self.PACKAGES[1]
-    else:
-      self.min_package_size = self.PACKAGES[0]
-
-    if self.get(self.footprint_spec) == "":
-      self.footprint_spec = self.min_package_size
-
-    def derated_capacitance() -> Tuple[float, float]:
-      if ((voltage[0] + voltage[1])/2 < 3.6) or ((capacitance[0] + capacitance[1]) / 2 <= 1e-6):
-        return capacitance
-      elif self.min_package_size not in self.DERATE_VOLTCO:
-        return (0, 0)
-      else:
-        voltco = self.DERATE_VOLTCO[self.min_package_size]
-        return (
-          capacitance[0] * (1 - voltco * (voltage[1] - 3.6)),
-          capacitance[1] * (1 - voltco * (voltage[0] - 3.6))
-        )
-
-    self.derated_capacitance = derated_capacitance()
+    valid_footprint_spec, min_nominal_capacitance = select_package(capacitance, voltage)
 
     if capacitance[1] >= single_cap_max:
       num_caps = math.ceil(capacitance[0] / (single_cap_max / 1.25))
@@ -403,8 +442,8 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         num_caps * capacitance[1],
       ))
       self.assign(self.selected_derated_capacitance, (
-        num_caps * self.derated_capacitance[0],
-        num_caps * self.derated_capacitance[1],
+        num_caps * min_nominal_capacitance[0],
+        num_caps * min_nominal_capacitance[1],
       ))
 
       cap_model = DummyCapacitor(capacitance=(0.8 * single_cap_max, single_cap_max),
@@ -416,10 +455,10 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         self.connect(self.c[i].neg, self.neg)
     else:
       self.assign(self.selected_capacitance, capacitance)
-      self.assign(self.selected_derated_capacitance, self.derated_capacitance)
+      self.assign(self.selected_derated_capacitance, min_nominal_capacitance)
 
       self.footprint(
-        'C', self.footprint_spec,
+        'C', valid_footprint_spec,
         {
           '1': self.pos,
           '2': self.neg,
