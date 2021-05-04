@@ -47,7 +47,7 @@ class HighSingleCapacitorGenericTestTop(Block):
     super().__init__()
     self.dut = self.Block(SmtCeramicCapacitorGeneric(
       capacitance=22 * uFarad(tol=0.2),
-      voltage=(0, 20) * Volt
+      voltage=(0, 10) * Volt
     ))
     (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
     (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
@@ -59,6 +59,16 @@ class MediumSingleCapacitorGenericTestTop(Block):
     self.dut = self.Block(SmtCeramicCapacitorGeneric(
       capacitance=2 * uFarad(tol=0.2),
       voltage=(0, 20) * Volt
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+
+class NonE24CapacitorGenericTestTop(Block):
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(SmtCeramicCapacitorGeneric(
+      capacitance=0.14 * uFarad(tol=0.2),
+      voltage=(0, 3.3) * Volt
     ))
     (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
     (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
@@ -94,10 +104,15 @@ class CapacitorTestCase(unittest.TestCase):
 
   def test_high_single_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(HighSingleCapacitorGenericTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1210_3225Metric')
     self.assertEqual(compiled.get_value(['dut', 'value']), '22uF')
 
   def test_medium_single_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(MediumSingleCapacitorGenericTestTop)
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'value']), '2.2uF')
+
+  def test_non_e24_capacitor(self) -> None:
+    compiled = ScalaCompiler.compile(NonE24CapacitorGenericTestTop)
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '150nF')

@@ -305,7 +305,8 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
     self.footprint_spec = self.Parameter(StringExpr(""))
 
     # Default to be overridden on a per-device basis
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+    self.single_cap_max = 22e-6
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, self.single_cap_max * 1.25)))  # maximum capacitance in a single part
 
     self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage, self.single_nominal_capacitance,
                    self.part_spec, self.footprint_spec)
@@ -383,14 +384,12 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
     # single nominal capacitance: no single cap with requested capacitance, must generate multiple parallel caps
     # nominal capacitance: selected part's capacitance
 
-
     def valid_package_min_nominal_capacitance(package: int, capacitance: RangeVal, voltage: RangeVal) -> Tuple[float, float]:
       """
       Calculates if the package is a valid choice for the given capacitance and voltage.
       If the package is a valid choice, the function returns the minimum nominal capacitance
       for the specs. If the package is not valid, the function returns False.
       """
-
       avg_cap = (capacitance[0] + capacitance[1]) / 2
       avg_volt = (voltage[0] + voltage[1]) / 2
 
@@ -403,10 +402,11 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
           capacitance[0] / (1 - voltco * (voltage[1] - 3.6)),
           capacitance[1] / (1 - voltco * (voltage[0] - 3.6))
         )
+
       # Check if package is still valid for the derated capacitance
       if self.PACKAGE_SPECS[package]['max'] >= avg_cap:
         for v, c in self.PACKAGE_SPECS[package]['vc_pairs'].items():
-          if v > voltage[1] and c > min_nominal_capacitance[1]:
+          if v >= voltage[1] and c >= min_nominal_capacitance[1]:
             return min_nominal_capacitance
       return False
 
@@ -426,23 +426,22 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
       return (footprint_spec, (0, 0))
 
     value = choose_preferred_number(capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
-    single_cap_max = single_nominal_capacitance[1]
     valid_footprint_spec, min_nominal_capacitance = select_package(capacitance, voltage)
 
-    if capacitance[1] >= single_cap_max:
-      num_caps = math.ceil(capacitance[0] / (single_cap_max / 1.25))
-      assert num_caps * single_cap_max < capacitance[1], "can't generate parallel caps within max capacitance limit"
+    if capacitance[1] > single_nominal_capacitance[1] or valid_footprint_spec == "":
+      num_caps = math.ceil(capacitance[0] / self.single_cap_max)
+      assert num_caps * self.single_cap_max < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      self.assign(self.selected_capacitance, (
+      self.assign(self.selected_derated_capacitance, (
         num_caps * capacitance[0],
         num_caps * capacitance[1],
       ))
-      self.assign(self.selected_derated_capacitance, (
+      self.assign(self.selected_capacitance, (
         num_caps * min_nominal_capacitance[0],
         num_caps * min_nominal_capacitance[1],
       ))
 
-      cap_model = DummyCapacitor(capacitance=(0.8 * single_cap_max, single_cap_max),
+      cap_model = DummyCapacitor(capacitance=(self.single_cap_max, self.single_cap_max),
                                       voltage=self.voltage)
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
@@ -450,8 +449,8 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
-      self.assign(self.selected_capacitance, capacitance)
-      self.assign(self.selected_derated_capacitance, min_nominal_capacitance)
+      self.assign(self.selected_derated_capacitance, capacitance)
+      self.assign(self.selected_capacitance, min_nominal_capacitance)
 
       self.footprint(
         'C', valid_footprint_spec,
@@ -495,20 +494,20 @@ class DummyCapacitor(DummyDevice, Capacitor, CircuitBlock, GeneratorBlock):
                        single_nominal_capacitance: RangeVal,
                        part_spec: str, footprint_spec: str) -> None:
 
-    avg_cap = (capacitance[0] + capacitance[1]) / 2
-    for package_name in sorted(self.PACKAGE_MIN_CAP.keys())[::-1]:
-      if avg_cap > self.PACKAGE_MIN_CAP[package_name]:
-        self.calculated_package_size = package_name
-        break
+    # avg_cap = (capacitance[0] + capacitance[1]) / 2
+    # for package_name in sorted(self.PACKAGE_MIN_CAP.keys())[::-1]:
+    #   if avg_cap > self.PACKAGE_MIN_CAP[package_name]:
+    #     self.calculated_package_size = package_name
+    #     break
 
-    if not (footprint_spec == ""):
-      self.calculated_package_size = footprint_spec
+    # if not (footprint_spec == ""):
+    #   self.calculated_package_size = footprint_spec
 
     self.assign(self.selected_capacitance, capacitance)
     self.assign(self.selected_derated_capacitance, capacitance)
 
     self.footprint(
-      'C', self.calculated_package_size,
+      'C', sorted(self.PACKAGE_MIN_CAP.keys())[-1], # TODO fix to a parameter footprint
       {
         '1': self.pos,
         '2': self.neg,
