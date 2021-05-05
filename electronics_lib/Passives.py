@@ -338,44 +338,37 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   # 'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
 
   class SmtCeramicCapacitorGenericPackageSpecs(NamedTuple):
-    name: str
     max: float
     derate: float
     vc_pairs: dict
 
   PACKAGE_SPECS = {
-    402: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_0402_1105Metric',
+    'Capacitor_SMD:C_0402_1105Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=1e-7,
       derate=0,
       vc_pairs={             50:   1e-7, 25: 1e-7,             10: 2.2e-6},
     ),
-    603: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_0603_1608Metric',
+    'Capacitor_SMD:C_0603_1608Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=1.1e-6,
       derate=0,
       vc_pairs={             50:   1e-7, 25: 1e-6, 16: 2.2e-6, 10:   1e-5},
     ),
-    805: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_0805_2012Metric',
+    'Capacitor_SMD:C_0805_2012Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=11e-6,
       derate=0.08,
       vc_pairs={100:   1e-7, 50:   1e-7, 25: 1e-5, },
     ),
-    1206: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_1206_3216Metric',
+    'Capacitor_SMD:C_1206_3216Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=float('inf'),
       derate=0.04,
       vc_pairs={100:   1e-7, 50: 4.7e-6, 25: 1e-5,             10: 2.2e-5},
     ),
-    1210: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_1210_3225Metric',
+    'Capacitor_SMD:C_1210_3225Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=float('inf'),
       derate=0,
       vc_pairs={100: 4.7e-6, 50:   1e-5,           16: 2.2e-5, 10: 4.7e-5},
     ),
-    1812: SmtCeramicCapacitorGenericPackageSpecs(
-      name='Capacitor_SMD:C_1812_4532Metric',
+    'Capacitor_SMD:C_1812_4532Metric': SmtCeramicCapacitorGenericPackageSpecs(
       max=float('inf'),
       derate=0,
       vc_pairs={100: 2.2e-6, 50:   1e-6, 25: 1e-5, },
@@ -422,11 +415,10 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         for package in sorted(self.PACKAGE_SPECS.keys()):
           package_derated_capacitance = valid_package_min_nominal_capacitance(package, capacitance, voltage)
           if package_derated_capacitance:
-            return (self.PACKAGE_SPECS[package].name, package_derated_capacitance)
+            return (package, package_derated_capacitance)
         return ("", (0, 0))
       else:
-        package = int(footprint_spec.split('_')[2])
-        package_derated_capacitance = valid_package_min_nominal_capacitance(package, capacitance, voltage)
+        package_derated_capacitance = valid_package_min_nominal_capacitance(footprint_spec, capacitance, voltage)
         if package_derated_capacitance:
           return (footprint_spec, package_derated_capacitance)
       return (footprint_spec, (0, 0))
