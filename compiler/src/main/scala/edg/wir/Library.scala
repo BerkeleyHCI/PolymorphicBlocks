@@ -16,11 +16,9 @@ trait Library {
     if (subclass == superclass) {
       true
     } else {
-      ???
-      // TODO uncomment this once superclasses restored
-//      getBlock(subclass).get.superclasses.exists {
-//        isSubclassOf(_, superclass)
-//      }
+      getBlock(subclass).get.superclasses.exists {
+        isSubclassOf(_, superclass)
+      }
     }
   }
 
