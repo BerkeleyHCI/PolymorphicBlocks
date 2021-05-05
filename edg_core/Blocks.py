@@ -253,7 +253,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       pb.is_abstract = True
 
     pb.self_class.target.name = self._get_def_name()
-    pb.prerefine_class.target.name = self._get_def_name()
 
     for cls in self._get_block_bases():
       super_pb = pb.superclasses.add()

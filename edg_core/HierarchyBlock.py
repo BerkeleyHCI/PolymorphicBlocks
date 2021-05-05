@@ -278,7 +278,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     for cls in self._get_block_bases():
       assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
 
-    pb = self._populate_def_proto_hierarchy(edgir.HierarchyBlock())  # specifically generate connect statements first
+    pb = edgir.HierarchyBlock()
+    pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
+    pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
@@ -579,7 +581,7 @@ class GeneratorBlock(Block):
       assert issubclass(cls, Block)
 
     pb = edgir.HierarchyBlock()
-
+    pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
     pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)

@@ -101,8 +101,7 @@ message HierarchyBlock {
   map<string, edg.expr.ValueExpr> constraints = 14;
 
   edg.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
-  // TODO add this back in after migration
-//  repeated edg.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
+  repeated edg.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
   edg.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
   map<string, Generator> generators = 22;  // optional, and removed upon invocation
 

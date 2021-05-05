@@ -17,7 +17,7 @@ class GeneratorMockupTest extends AnyFlatSpec {
         "port" -> Port.Library("outerSourcePort"),
       )
     )
-    val block = new wir.Block(blockPb.getHierarchy, Seq(LibraryPath("block")), None)
+    val block = new wir.Block(blockPb.getHierarchy, None)
 
     val generatorExample = Block.Block(
       ports = Map(
