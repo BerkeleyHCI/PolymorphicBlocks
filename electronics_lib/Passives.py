@@ -341,47 +341,54 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   # 'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
 
   class SmtCeramicCapacitorGenericPackageSpecs(NamedTuple):
+    name: str # package name
     max: float # maximum nominal capacitance
     derate: float # derating coefficient in terms of %capacitance / V over 3.6
     vc_pairs: dict # rough estimate of what the maximum nominal capacitance is at certain voltages
 
-  PACKAGE_SPECS = {
-    'Capacitor_SMD:C_0402_1105Metric': SmtCeramicCapacitorGenericPackageSpecs(
+  # package specs in increasing order by size
+  PACKAGE_SPECS = [
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_0402_1005Metric',
       max=1e-7,
       derate=0,
       vc_pairs={             50:   1e-7, 25: 1e-7,             10: 2.2e-6},
     ),
-    'Capacitor_SMD:C_0603_1608Metric': SmtCeramicCapacitorGenericPackageSpecs(
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_0603_1608Metric',
       max=1.1e-6,
       derate=0,
       vc_pairs={             50:   1e-7, 25: 1e-6, 16: 2.2e-6, 10:   1e-5},
     ),
-    'Capacitor_SMD:C_0805_2012Metric': SmtCeramicCapacitorGenericPackageSpecs(
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_0805_2012Metric',
       max=11e-6,
       derate=0.08,
       vc_pairs={100:   1e-7, 50:   1e-7, 25: 1e-5, },
     ),
-    'Capacitor_SMD:C_1206_3216Metric': SmtCeramicCapacitorGenericPackageSpecs(
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_1206_3216Metric',
       max=22e-6,
       derate=0.04,
       vc_pairs={100:   1e-7, 50: 4.7e-6, 25: 1e-5,             10: 2.2e-5},
     ),
-    'Capacitor_SMD:C_1210_3225Metric': SmtCeramicCapacitorGenericPackageSpecs(
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_1210_3225Metric',
       max=4.7e-5,
       derate=0,
       vc_pairs={100: 4.7e-6, 50:   1e-5,           16: 2.2e-5, 10: 4.7e-5},
     ),
-    'Capacitor_SMD:C_1812_4532Metric': SmtCeramicCapacitorGenericPackageSpecs(
+    SmtCeramicCapacitorGenericPackageSpecs(
+      name='Capacitor_SMD:C_1812_4532Metric',
       max=1e-4,
       derate=0,
       vc_pairs={100: 2.2e-6, 50:   1e-6, 25: 1e-5, },
     ),
-  }
+  ]
 
   def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
                                      single_nominal_capacitance: RangeVal,
                                      footprint_spec: str, derating_coeff: FloatExpr) -> None:
-
     """
     Selects a generic capacitor without using product tables
 
@@ -400,7 +407,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       if derating_coeff > 0:
         assert not (footprint_spec == ""), "package must be specified when using a derating coefficient"
 
-        if ((voltage[0] + voltage[1]) / 2 > 3.6) and ((capacitance[0] + capacitance[1]) / 2 > 1e-6):
+        if (voltage[1] > 3.6) and (capacitance[1] > 1e-6):
           min_nom_cap = (
             capacitance[0] / (1 - derating_coeff * (voltage[1] - 3.6)),
             capacitance[1] / (1 - derating_coeff * (voltage[0] - 3.6))
@@ -414,15 +421,15 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     def select_package(min_nominal_capacitance: RangeVal, voltage: RangeVal) -> Tuple[str, Tuple[float, float]]:
 
       if footprint_spec == "":
-        package_options = sorted(self.PACKAGE_SPECS.keys())
+        package_options = self.PACKAGE_SPECS
       else:
-        package_options = [footprint_spec]
+        package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint_spec]
 
       for package in package_options:
-        if self.PACKAGE_SPECS[package].max >= min_nominal_capacitance[1]:
-            for v, c in self.PACKAGE_SPECS[package].vc_pairs.items():
-              if v >= voltage[1] and c >= min_nominal_capacitance[1]:
-                return (package, min_nominal_capacitance)
+        if package.max >= min_nominal_capacitance[1]:
+            for package_max_voltage, package_max_capacitance in package.vc_pairs.items():
+              if package_max_voltage >= voltage[1] and package_max_capacitance >= min_nominal_capacitance[1]:
+                return (package.name, min_nominal_capacitance)
       return None
 
     min_nominal_capacitance = calculate_min_nominal_capacitance()
@@ -465,7 +472,6 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       )
 
 class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
-
   """
   Capacitor that does not derate, used for splitting a generic capacitor into multiple when desired capacitance is too high
   """
