@@ -89,13 +89,13 @@ class CapacitorTestCase(unittest.TestCase):
 
   def test_multi_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(BigCapacitorGenericTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'c_0', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c_0', 'value']), '22uF')
-    self.assertEqual(compiled.get_value(['dut', 'c_1', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c_1', 'value']), '22uF')
-    self.assertEqual(compiled.get_value(['dut', 'c_2', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c_2', 'value']), '22uF')
-    self.assertEqual(compiled.get_value(['dut', 'c_3', 'footprint_name']), None)
+    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'value']), '22uF')
+    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), '22uF')
+    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), '22uF')
+    self.assertEqual(compiled.get_value(['dut', 'c[3]', 'footprint_name']), None)
 
   def test_high_voltage_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(HighVoltageCapacitorGenericTestTop)

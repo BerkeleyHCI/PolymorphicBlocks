@@ -30,8 +30,8 @@ def zigzag_range(start: int, end: int) -> Sequence[int]:
 def round_sig(x: float, sig: int) -> float:
   return round(x, sig-int(math.floor(math.log10(abs(x))))-1)
 
-def choose_preferred_number(range: Tuple[float, float], tolerance: float, series: List[float], sig: int) -> \
-        Optional[float]:
+def choose_preferred_number(range: Tuple[float, float], tolerance: float, series: List[float], sig: int) ->\
+    Optional[float]:
   lower_pow10 = math.floor(math.log10(range[0]))
   upper_pow10 = math.ceil(math.log10(range[1]))
 
@@ -153,11 +153,11 @@ def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
   # TODO maybe do voltage derating
   # TODO also consider minimum symmetric voltage
   return table.derived_column('capacitance',
-                              RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Column('Tolerance')),
-                              missing='discard') \
+                               RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Column('Tolerance')),
+                               missing='discard') \
     .derived_column('nominal_capacitance',
-                    ParseValue(Column('Capacitance'), 'F'),
-                    missing='discard') \
+                     ParseValue(Column('Capacitance'), 'F'),
+                     missing='discard') \
     .derived_column('voltage',
                     RangeFromUpper(ParseValue(Column('Voltage - Rated'), 'V'))) \
     .derived_column('footprint',
@@ -223,11 +223,11 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     parts = self.product_table \
       .filter(Implication(  # enforce minimum package size by capacitance
-      RangeContains(
-        Lit((1.1e-6, float('inf'))),
-        RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
-      StringContains(Column('Package / Case'), [
-        '0805 (2012 Metric)', '1206 (3216 Metric)',
+        RangeContains(
+          Lit((1.1e-6, float('inf'))),
+          RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
+        StringContains(Column('Package / Case'), [
+          '0805 (2012 Metric)', '1206 (3216 Metric)',
       ]))) \
       .filter(Implication(
       RangeContains(
@@ -297,7 +297,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
       raise ValueError(f"no single capacitors in ({capacitance}) F")
 
 
-class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
+class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -461,7 +461,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, CircuitBlock, GeneratorBlock):
         value=f'{UnitUtils.num_to_prefix(value, 3)}F'
       )
 
-class DummyCapacitor(DummyDevice, Capacitor, CircuitBlock, GeneratorBlock):
+class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
 
   """
   Capacitor that does not derate, used for splitting a generic capacitor into multiple when desired capacitance is too high
@@ -527,7 +527,7 @@ def generate_inductor_table(TABLES: List[str]) -> ProductTable:
   # TODO: take min of current rating and saturation current
   # TODO maybe 10x the frequency to be safe
   return table.derived_column('inductance',
-                              RangeFromTolerance(ParseValue(Column('Inductance'), 'H'), Column('Tolerance'))) \
+                               RangeFromTolerance(ParseValue(Column('Inductance'), 'H'), Column('Tolerance'))) \
     .derived_column('frequency',
                     RangeFromUpper(ParseValue(Column('Frequency - Self Resonant'), 'Hz')),
                     missing='discard') \
@@ -580,16 +580,16 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
     self.selected_frequency_rating = self.Parameter(RangeExpr())
 
   def select_inductor(self, inductance: RangeVal, current: RangeVal, frequency: RangeVal,
-                      part_spec: str, footprint_spec: str) -> None:
+               part_spec: str, footprint_spec: str) -> None:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
     parts = self.product_table.filter(RangeContains(Lit(inductance), Column('inductance'))) \
-      .filter(RangeContains(Lit((-float('inf'), 1)), Column('dc_resistance'))) \
-      .filter(RangeContains(Column('frequency'), Lit(frequency))) \
-      .filter(RangeContains(Column('current'), Lit(current))) \
-      .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
-      .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
-      .sort(Column('footprint')) \
-      .sort(Column('Unit Price (USD)'))
+        .filter(RangeContains(Lit((-float('inf'), 1)), Column('dc_resistance'))) \
+        .filter(RangeContains(Column('frequency'), Lit(frequency))) \
+        .filter(RangeContains(Column('current'), Lit(current))) \
+        .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
+        .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
+        .sort(Column('footprint')) \
+        .sort(Column('Unit Price (USD)'))
 
     part = parts.first(err=f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
@@ -607,4 +607,3 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
       value=f"{part['Inductance']}, {part['Current Rating (Amps)']}",
       datasheet=part['Datasheets']
     )
-
