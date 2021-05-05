@@ -588,7 +588,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
         .filter(RangeContains(Column('current'), Lit(current))) \
         .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
         .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
-        .sort(Column('footprint')) \
+        .sort(Column('footprint'))  \
         .sort(Column('Unit Price (USD)'))
 
     part = parts.first(err=f"no inductors in {inductance} H, {current} A, {frequency} Hz")
