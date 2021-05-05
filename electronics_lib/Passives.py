@@ -452,7 +452,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       ))
 
       cap_model = DummyCapacitor(capacitance=(self.SINGLE_CAP_MAX, self.SINGLE_CAP_MAX),
-                                      voltage=self.voltage)
+                                      voltage=self.voltage, footprint_spec=next(package for package in self.PACKAGE_SPECS if package.max >= self.SINGLE_CAP_MAX).name)
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
@@ -477,46 +477,20 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
   """
 
   @init_in_parent
-  def __init__(self, *args, **kwargs):
+  def __init__(self, footprint_spec: StringLike = "", *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.footprint_spec = self.Parameter(StringExpr(""))
-
-    # Default to be overridden on a per-device basis
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
-
-    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
-                   self.part_spec, self.footprint_spec)
+    self.footprint_spec = self.Parameter(StringExpr(footprint_spec))
+    self.generator(self.select_capacitor, self.capacitance, self.footprint_spec)
 
     # Output values
     self.selected_capacitance = self.Parameter(RangeExpr())
-    self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  PACKAGE_MIN_CAP = {
-    'Capacitor_SMD:C_0603_1608Metric': 1e-7,
-    'Capacitor_SMD:C_0805_2012Metric': 1.1e-6,
-    'Capacitor_SMD:C_1206_3216Metric': 11e-6
-  }
-
-  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
-                       single_nominal_capacitance: RangeVal,
-                       part_spec: str, footprint_spec: str) -> None:
-
-    # avg_cap = (capacitance[0] + capacitance[1]) / 2
-    # for package_name in sorted(self.PACKAGE_MIN_CAP.keys())[::-1]:
-    #   if avg_cap > self.PACKAGE_MIN_CAP[package_name]:
-    #     self.calculated_package_size = package_name
-    #     break
-
-    # if not (footprint_spec == ""):
-    #   self.calculated_package_size = footprint_spec
-
+  def select_capacitor(self, capacitance: RangeVal, footprint_spec: str) -> None:
     self.assign(self.selected_capacitance, capacitance)
-    self.assign(self.selected_derated_capacitance, capacitance)
-
     self.footprint(
-      'C', sorted(self.PACKAGE_MIN_CAP.keys())[-1], # TODO fix to a parameter footprint
+      'C', footprint_spec,
       {
         '1': self.pos,
         '2': self.neg,
