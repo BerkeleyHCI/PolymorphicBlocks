@@ -11,12 +11,12 @@ import edg.wir
 
 class BlockConnectivityAnalysisTest extends AnyFlatSpec {
   private val library = Library(
-    ports = Map(
-      "sourcePort" -> Port.Port(),
-      "sinkPort" -> Port.Port(),
+    ports = Seq(
+      Port.Port("sourcePort"),
+      Port.Port("sinkPort"),
     ),
-    links = Map(
-      "link" -> Link.Link(
+    links = Seq(
+      Link.Link("link",
         ports = Map(
           "source" -> Port.Library("source"),
           "sinks" -> Port.Array("sink")
@@ -24,33 +24,33 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         // practically invalid, missing connect constraints
       ),
     ),
-    blocks = Map(
-      "sourceBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block("sourceBlock",
         ports = Map(
           "port" -> Port.Library("sourcePort"),
         )
       ),
-      "sinkBlock" -> Block.Block(
+      Block.Block("sinkBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         )
       ),
-      "sourceFromExtSinkBridge" -> Block.Block(
-        selfClass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+      Block.Block("sourceFromExtSinkBridge",
+        superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
-      "sinkFromExtSourceBridge" -> Block.Block(
-        selfClass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+      Block.Block("sinkFromExtSourceBridge",
+        superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),
         )
       ),
 
-      "exportSinkBlock" -> Block.Block(
+      Block.Block("exportSinkBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         ),
@@ -61,7 +61,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      "bridgedSinkBlock" -> Block.Block(
+      Block.Block("bridgedSinkBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         ),
@@ -84,7 +84,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
   )
 
   it should "get connected for direct exports" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "dut" -> Block.Library("exportSinkBlock")
       )
@@ -105,7 +105,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
   }
 
   it should "get connected for links only" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "sourceBlock" -> Block.Library("sourceBlock"),
         "sink1Block" -> Block.Library("sinkBlock"),
@@ -143,7 +143,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
   }
 
   it should "get connected for mixed link and exports" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "dut" -> Block.Library("bridgedSinkBlock")
       )

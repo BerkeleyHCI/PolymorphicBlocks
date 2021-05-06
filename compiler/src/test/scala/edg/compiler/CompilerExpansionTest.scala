@@ -12,22 +12,22 @@ import edg.wir
   */
 object CompilerExpansionTest {
   val library = Library(
-    ports = Map(
-      "sourcePort" -> Port.Port(),
-      "sinkPort" -> Port.Port(),
+    ports = Seq(
+       Port.Port("sourcePort"),
+       Port.Port("sinkPort"),
     ),
-    blocks = Map(
-      "sourceBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block("sourceBlock",
         ports = Map(
           "port" -> Port.Library("sourcePort"),
         )
       ),
-      "sinkBlock" -> Block.Block(
+      Block.Block("sinkBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         )
       ),
-      "sourceContainerBlock" -> Block.Block(
+      Block.Block("sourceContainerBlock",
         ports = Map(
           "port" -> Port.Library("sourcePort"),
         ),
@@ -38,7 +38,7 @@ object CompilerExpansionTest {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      "sinkContainerBlock" -> Block.Block(
+      Block.Block("sinkContainerBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         ),
@@ -50,8 +50,8 @@ object CompilerExpansionTest {
         )
       ),
     ),
-    links = Map(
-      "link" -> Link.Link(
+    links = Seq(
+      Link.Link("link",
         ports = Map(
           "source" -> Port.Library("sourcePort"),
           "sink" -> Port.Library("sinkPort"),
@@ -68,7 +68,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
 
 
   "Compiler on design with single source and sink" should "expand blocks" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
         "sink" -> Block.Library("sinkBlock"),
@@ -81,7 +81,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val referenceElaborated = Design(Block.Block(
+    val referenceElaborated = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
@@ -112,7 +112,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
   }
 
   "Compiler on design with single nested source and sink" should "expand blocks" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceContainerBlock"),
         "sink" -> Block.Library("sinkContainerBlock"),
@@ -125,7 +125,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val referenceElaborated = Design(Block.Block(
+    val referenceElaborated = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Block(selfClass="sourceContainerBlock",
           ports = Map(

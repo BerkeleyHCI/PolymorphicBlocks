@@ -52,7 +52,7 @@ class LibraryConnectivityAnalysis(library: Library) {
   // exterior side port type -> (link side port type, port bridge type)
   lazy private val bridgedPortByOuterMap: Map[ref.LibraryPath, (ref.LibraryPath, ref.LibraryPath)] = allBlocks.toSeq
       .collect { case (blockType, block)   // filter by PortBridge class
-        if LibraryConnectivityAnalysis.portBridges.contains(block.getSelfClass) =>
+        if block.superclasses.toSet.intersect(LibraryConnectivityAnalysis.portBridges).nonEmpty =>
         (blockType,
             block.ports.get(LibraryConnectivityAnalysis.portBridgeOuterPort),
             block.ports.get(LibraryConnectivityAnalysis.portBridgeLinkPort))

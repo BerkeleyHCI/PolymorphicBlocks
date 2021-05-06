@@ -13,34 +13,34 @@ import edg.wir
   */
 class CompilerPortArrayExpansionTest extends AnyFlatSpec {
   val library = Library(
-    ports = Map(
-      "sourcePort" -> Port.Port(),
-      "sinkPort" -> Port.Port(),
-      "outerSourcePort" -> Port.Bundle(
+    ports = Seq(
+      Port.Port("sourcePort"),
+      Port.Port("sinkPort"),
+      Port.Bundle("outerSourcePort",
         ports = Map(
           "a" -> Port.Library("sourcePort"),
           "b" -> Port.Library("sourcePort"),
         )
       ),
-      "outerSinkPort" -> Port.Bundle(
+      Port.Bundle("outerSinkPort",
         ports = Map(
           "a" -> Port.Library("sinkPort"),
           "b" -> Port.Library("sinkPort"),
         )
       ),
     ),
-    blocks = Map(
-      "sourceBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block("sourceBlock",
         ports = Map(
           "port" -> Port.Library("sourcePort"),
         )
       ),
-      "sinkBlock" -> Block.Block(
+      Block.Block("sinkBlock",
         ports = Map(
           "port" -> Port.Library("sinkPort"),
         )
       ),
-      "outerSourceBlock" -> Block.Block(
+      Block.Block("outerSourceBlock",
         ports = Map(
           "port" -> Port.Library("outerSourcePort"),
         ),
@@ -51,7 +51,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      "outerSinkBlock" -> Block.Block(
+      Block.Block("outerSinkBlock",
         ports = Map(
           "port" -> Port.Library("outerSinkPort"),
         ),
@@ -63,14 +63,14 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         )
       ),
     ),
-    links = Map(
-      "link" -> Link.Link(
+    links = Seq(
+      Link.Link("link",
         ports = Map(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
         )
       ),
-      "outerLink" -> Link.Link(
+      Link.Link("outerLink",
         ports = Map(
           "source" -> Port.Library("outerSourcePort"),
           "sinks" -> Port.Array("outerSinkPort"),
@@ -94,7 +94,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
   )
 
   "Compiler on design with source and array sink" should "expand blocks" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
@@ -111,7 +111,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "sink2Connect" -> Constraint.Connected(Ref("sink2", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
-    val referenceElaborated = Design(Block.Block(
+    val referenceElaborated = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
@@ -174,7 +174,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
 
 
   "Compiler on design with source and array sink" should "support empty arrays" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -185,7 +185,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       )
     ))
-    val referenceElaborated = Design(Block.Block(
+    val referenceElaborated = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Block(selfClass="sourceBlock",
           ports = Map(
@@ -211,7 +211,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
   }
 
   "Compiler on design with bundle source and array bundle sink" should "expand link connections" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("outerSourceBlock"),
         "sink0" -> Block.Library("outerSinkBlock"),

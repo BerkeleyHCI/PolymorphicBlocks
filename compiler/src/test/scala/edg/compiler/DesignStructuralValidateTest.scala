@@ -13,7 +13,7 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
 
   it should "return no errors on a elaborated design" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block(
+    val dut = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Block(selfClass="sourceContainerBlock",
           ports = Map(
@@ -64,7 +64,7 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
 
   it should "return errors on block libraries" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block(
+    val dut = Design(Block.Block("topDesign",
       blocks = Map(
         "test" -> Block.Library("testBlock"),
       )
@@ -76,7 +76,7 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
 
   it should "return errors on port and link libraries" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block(
+    val dut = Design(Block.Block("topDesign",
       blocks = Map(
         "test" -> Block.Block(selfClass="testBlock",
           ports = Map(

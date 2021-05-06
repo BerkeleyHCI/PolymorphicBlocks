@@ -13,11 +13,11 @@ import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
   */
 class CompilerRefinementTest extends AnyFlatSpec {
   val library = Library(
-    ports = Map(
-      "port" -> Port.Port(),
+    ports = Seq(
+      Port.Port("port"),
     ),
-    blocks = Map(
-      "superclassBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block("superclassBlock",
         params = Map(
           "superParam" -> ValInit.Integer,
         ),
@@ -25,8 +25,8 @@ class CompilerRefinementTest extends AnyFlatSpec {
           "port" -> Port.Library("port"),
         )
       ),
-      "subclassBlock" -> Block.Block(
-        selfClass="superclassBlock",
+      Block.Block("subclassBlock",
+        superclasses = Seq("superclassBlock"),
         params = Map(
           "superParam" -> ValInit.Integer,
           "subParam" -> ValInit.Integer,
@@ -35,7 +35,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
           "port" -> Port.Library("port"),
         )
       ),
-      "block" -> Block.Block(  // specifically no superclass
+      Block.Block("block",  // specifically no superclass
         params = Map(
           "superParam" -> ValInit.Integer,
         ),
@@ -44,20 +44,21 @@ class CompilerRefinementTest extends AnyFlatSpec {
         )
       ),
     ),
-    links = Map(
+    links = Seq(
     )
   )
 
-  val inputDesign = Design(Block.Block(
+  val inputDesign = Design(Block.Block("topDesign",
     blocks = Map(
       "block" -> Block.Library("superclassBlock"),
     )
   ))
 
   "Compiler on design with subclass refinement" should "work" in {
-    val expected = Design(Block.Block(
+    val expected = Design(Block.Block("topDesign",
       blocks = Map(
-        "block" -> Block.Block(selfClass="subclassBlock",
+        "block" -> Block.Block("subclassBlock",
+          superclasses=Seq("superclassBlock"),
           prerefine="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
@@ -84,9 +85,10 @@ class CompilerRefinementTest extends AnyFlatSpec {
   }
 
   "Compiler on design with instance refinement" should "work" in {
-    val expected = Design(Block.Block(
+    val expected = Design(Block.Block("topDesign",
       blocks = Map(
-        "block" -> Block.Block(selfClass="subclassBlock",
+        "block" -> Block.Block("subclassBlock",
+          superclasses=Seq("superclassBlock"),
           prerefine="superclassBlock",
           params = Map(
             "superParam" -> ValInit.Integer,
@@ -105,7 +107,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
   }
 
   "Compiler on design with subclass values" should "work" in {
-    val expected = Design(Block.Block(
+    val expected = Design(Block.Block("topDesign",
       blocks = Map(
         "block" -> Block.Block(selfClass="superclassBlock",
           params = Map(
@@ -127,7 +129,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
   }
 
   "Compiler on design with path values" should "work" in {
-    val expected = Design(Block.Block(
+    val expected = Design(Block.Block("topDesign",
       blocks = Map(
         "block" -> Block.Block(selfClass="superclassBlock",
           params = Map(

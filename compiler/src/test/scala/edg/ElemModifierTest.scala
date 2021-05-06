@@ -11,7 +11,7 @@ import edg.wir.DesignPath
 class ElemModifierTest extends AnyFlatSpec {
   behavior of "ElemModifier"
 
-  val design: schema.Design = Design(Block.Block(
+  val design: schema.Design = Design(Block.Block("topDesign",
     blocks = Map (
       "inner" -> Block.Block(selfClass="original")
     )
