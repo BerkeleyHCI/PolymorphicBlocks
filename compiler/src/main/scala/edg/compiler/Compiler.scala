@@ -735,13 +735,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     )
     val generatedPb = generatorResult match {
       case Errorable.Success(generatedPb) =>
+        require(generatedPb.getSelfClass == block.getBlockClass)
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
         import edg.elem.elem
         errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
         elem.HierarchyBlock()
     }
-    require(generatedPb.getSelfClass == block.getBlockClass)
 
     val generatedDiffBlock = new wir.Block(generatedPb, None)
     processBlock(blockPath, generatedDiffBlock)
