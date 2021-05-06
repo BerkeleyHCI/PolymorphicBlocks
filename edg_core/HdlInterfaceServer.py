@@ -137,7 +137,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     obj = elt_cls()
     if isinstance(obj, Block):
       block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}",
-                                               replace_superclass=False,)
+                                               replace_superclass=False)
       return edgir.Library.NS.Val(hierarchy_block=block_proto)
     elif isinstance(obj, Link):
       link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}",
