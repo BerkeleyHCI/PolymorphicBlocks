@@ -17,13 +17,11 @@ if __name__ == '__main__':
     obj = cls()
     if isinstance(obj, edg_core.Block):
       print(f"Elaborating block {name}")
-      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {cls}",
-                                               replace_superclass=False)
+      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {cls}")
       pb.root.members[name].hierarchy_block.CopyFrom(block_proto)
     elif isinstance(obj, edg_core.Link):
       print(f"Elaborating link {name}")
-      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {cls}",
-                                              replace_superclass=False)
+      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {cls}")
       pb.root.members[name].link.CopyFrom(link_proto)
     elif isinstance(obj, edg_core.Bundle):  # TODO: note Bundle extends Port, so this must come first
       print(f"Elaborating bundle {name}")
