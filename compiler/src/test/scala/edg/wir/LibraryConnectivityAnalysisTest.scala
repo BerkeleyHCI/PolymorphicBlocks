@@ -11,24 +11,24 @@ import edg.ExprBuilder.Ref
   */
 class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
   private val library = Library(
-    ports = Map(
-      "innerSource" -> Port.Port(),
-      "innerSink" -> Port.Port(),
-      "outerPort" -> Port.Bundle(
+    ports = Seq(
+      Port.Port("innerSource"),
+      Port.Port("innerSink"),
+      Port.Bundle("outerPort",
         ports = Map(
           "inner" -> Port.Library("innerPort"),
         )
       ),
     ),
-    links = Map(
-      "innerLink" -> Link.Link(
+    links = Seq(
+      Link.Link("innerLink",
         ports = Map(
           "innerSource" -> Port.Library("innerSource"),
           "innerSinks" -> Port.Array("innerSink")
         ),
         // practically invalid, missing connect constraints
       ),
-      "outerLink" -> Link.Link(
+      Link.Link("outerLink",
         ports = Map(
           "outerPort1" -> Port.Library("outerPort"),
           "outerPort2" -> Port.Library("outerPort"),
@@ -39,16 +39,16 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
         // practically invalid, missing connect constraints
       ),
     ),
-    blocks = Map(
-      "sourceAdapter" -> Block.Block(
-        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+    blocks = Seq(
+      Block.Block("sourceAdapter",
+        superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
-      "sinkAdapter" -> Block.Block(
-        superclass=LibraryConnectivityAnalysis.portBridge.getTarget.getName,
+      Block.Block("sinkAdapter",
+        superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = Map(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),

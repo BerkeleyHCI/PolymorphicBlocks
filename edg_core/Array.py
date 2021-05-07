@@ -161,7 +161,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
-    pb.array.superclasses.add().target.name = self.elt_sample._get_def_name()
+    pb.array.self_class.target.name = self.elt_sample._get_def_name()
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:

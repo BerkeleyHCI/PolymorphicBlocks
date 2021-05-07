@@ -1,6 +1,7 @@
 package edg
 
 import com.google.protobuf.ByteString
+import edg.EdgirUtils.SimpleLibraryPath
 
 
 /** Convenience functions for building edg ir element trees with less proto boilerplate
@@ -44,19 +45,20 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Block(params: Map[String, init.ValInit] = Map(),
+    def Block(selfClass: String,
+              superclasses: Seq[String] = Seq(),
+              params: Map[String, init.ValInit] = Map(),
               ports: Map[String, elem.PortLike] = Map(),
               blocks: Map[String, elem.BlockLike] = Map(),
               links: Map[String, elem.LinkLike] = Map(),
               constraints: Map[String, expr.ValueExpr] = Map(),
-              superclass: String = "",
               prerefine: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
       params=params, ports=ports, blocks=blocks, links=links,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=Some(LibraryPath(selfClass)),
+      superclasses=superclasses map {
+        LibraryPath(_)
       },
       prerefineClass=prerefine match {
         case "" => None
@@ -73,17 +75,17 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Link(params: Map[String, init.ValInit] = Map(),
+    def Link(selfClass: String,
+             params: Map[String, init.ValInit] = Map(),
              ports: Map[String, elem.PortLike] = Map(),
              links: Map[String, elem.LinkLike] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclass: String = "",
             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Link(elem.Link(
       params=params, ports=ports, links=links,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
       }
     )))
   }
@@ -96,40 +98,40 @@ object ElemBuilder {
       value=LibraryPath(name)
     ))
 
-    def Port(params: Map[String, init.ValInit] = Map(),
+    def Port(selfClass: String,
+             params: Map[String, init.ValInit] = Map(),
              constraints: Map[String, expr.ValueExpr] = Map(),
-             superclass: String = ""
             ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Port(elem.Port(
       params=params,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case selfClass => Some(LibraryPath(selfClass))
       }
     )))
 
-    def Bundle(params: Map[String, init.ValInit] = Map(),
+    def Bundle(selfClass: String,
+               params: Map[String, init.ValInit] = Map(),
                ports: Map[String, elem.PortLike] = Map(),
                constraints: Map[String, expr.ValueExpr] = Map(),
-               superclass: String = ""
               ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Bundle(elem.Bundle(
       params=params, ports=ports,
       constraints=constraints,
-      superclasses=superclass match {
-        case "" => Seq()
-        case superclass => Seq(LibraryPath(superclass))
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
       }
     )))
 
     // Unelaborated (unknown length) PortArray, containing just a superclass reference
-    def Array(superclass: String): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
-      superclasses=Seq(LibraryPath(superclass))
+    def Array(selfClass: String): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
+      selfClass=Some(LibraryPath(selfClass))
     )))
 
     // Fully elaborated (known length) PortArray
-    def Array(superclass: String, count: Int, port: elem.PortLike): elem.PortLike =
+    def Array(selfClass: String, count: Int, port: elem.PortLike): elem.PortLike =
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
-        superclasses=Seq(LibraryPath(superclass)),
+        selfClass=Some(LibraryPath(selfClass)),
         ports=(0 until count).map { i =>
           i.toString -> port
         }.toMap
@@ -140,25 +142,25 @@ object ElemBuilder {
     ref.LocalStep(step=ref.LocalStep.Step.Name(name))
   ))
 
-  def Library(blocks: Map[String, elem.BlockLike] = Map(),
-              links: Map[String, elem.LinkLike] = Map(),
-              ports: Map[String, elem.PortLike] = Map()): schema.Library = {
+  def Library(blocks: Seq[elem.BlockLike] = Seq(),
+              links: Seq[elem.LinkLike] = Seq(),
+              ports: Seq[elem.PortLike] = Seq()): schema.Library = {
     schema.Library(root=Some(schema.Library.NS(members=
-      blocks.mapValues { _.`type` match {
+      blocks.map { _.`type` match {
         case elem.BlockLike.Type.Hierarchy(block) =>
-          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.HierarchyBlock(block))
+          block.getSelfClass.toFullString -> schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.HierarchyBlock(block))
         case block => throw new NotImplementedError(s"Unknown BlockLike in library $block")
       }}.toMap ++
-      links.mapValues { _.`type` match {
+      links.map { _.`type` match {
         case elem.LinkLike.Type.Link(link) =>
-          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Link (link))
+          link.getSelfClass.toFullString -> schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Link (link))
         case link => throw new NotImplementedError(s"Unknown LinkLike in library $link")
       }}.toMap ++
-      ports.mapValues { _.`is` match {
+      ports.map { _.`is` match {
         case elem.PortLike.Is.Port(port) =>
-          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Port(port))
+          port.getSelfClass.toFullString -> schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Port(port))
         case elem.PortLike.Is.Bundle(bundle) =>
-          schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Bundle(bundle))
+          bundle.getSelfClass.toFullString -> schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Bundle(bundle))
         case port => throw new NotImplementedError(s"Unknown PortLike in library $port")
       }}.toMap
     )))

@@ -32,12 +32,12 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
                ports: SeqMap[String, Seq[CompilerError]], blocks: SeqMap[String, Seq[CompilerError]],
                links: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
     val abstractError = if (block.isAbstract) {
-      Seq(CompilerError.AbstractBlock(path, block.superclasses))
+      Seq(CompilerError.AbstractBlock(path, block.getSelfClass))
     } else {
       Seq()
     }
     val errors = block.generators.map { case (name, generator) =>
-      CompilerError.Generator(path, block.superclasses, generator.fn)
+      CompilerError.Generator(path, block.getSelfClass, generator.fn)
     } ++ ports.values.flatten ++ blocks.values.flatten ++ links.values.flatten
     errors.toSeq ++ abstractError
   }

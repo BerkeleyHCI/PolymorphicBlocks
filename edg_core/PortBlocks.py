@@ -37,7 +37,9 @@ class PortBridge(Block):
     return super().Port(tpe, *args, optional=True, **kwargs)
 
   def _def_to_proto(self) -> edgir.HierarchyBlock:
-    pb = self._populate_def_proto_block_base(edgir.HierarchyBlock())
+    pb = edgir.HierarchyBlock()
+    pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
+    pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb)
     pb = self._populate_def_proto_port_init(pb)
