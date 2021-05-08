@@ -1,4 +1,5 @@
 from electronics_model import *
+from .AbstractPassives import *
 from .Categories import *
 
 
