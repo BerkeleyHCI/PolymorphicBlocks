@@ -67,7 +67,7 @@ class DeratedCapacitorGenericTestTop(Block):
   def __init__(self):
     super().__init__()
     self.dut = self.Block(SmtCeramicCapacitorGeneric(
-      capacitance=11 * uFarad(tol=0.2),
+      capacitance=1 * uFarad(tol=0.2),
       voltage=(0, 5) * Volt
     ))
     (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
@@ -77,7 +77,7 @@ class BigMultiCapacitorGenericTestTop(Block):
   def __init__(self):
     super().__init__()
     self.dut = self.Block(SmtCeramicCapacitorGeneric(
-      capacitance=(100, 1000) * uFarad,
+      capacitance=(50, 1000) * uFarad,
       voltage=(0, 5) * Volt
     ))
     (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
@@ -125,15 +125,15 @@ class CapacitorTestCase(unittest.TestCase):
   def test_derated_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(DeratedCapacitorGenericTestTop, Refinements(
       instance_values=[(['dut', 'footprint_spec'], 'Capacitor_SMD:C_1206_3216Metric'),
-                       (['dut', 'derating_coeff'], 0.04),]
+                       (['dut', 'derating_coeff'], 0.5),]
     ))
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '10uF')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '2.2uF')
 
   def test_derated_multi_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(BigMultiCapacitorGenericTestTop, Refinements(
       instance_values=[(['dut', 'footprint_spec'], 'Capacitor_SMD:C_1206_3216Metric'),
-                       (['dut', 'derating_coeff'], 0.04),]
+                       (['dut', 'derating_coeff'], 0.5),]
     ))
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'value']), '22uF')

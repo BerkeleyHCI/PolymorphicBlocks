@@ -306,7 +306,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     super().__init__(*args, **kwargs)
 
     self.footprint_spec = self.Parameter(StringExpr(""))
-    self.derating_coeff = self.Parameter(FloatExpr(0))
+    self.derating_coeff = self.Parameter(FloatExpr(1))
 
     # Default to be overridden on a per-device basis
     self.single_nominal_capacitance = self.Parameter(RangeExpr((0, self.SINGLE_CAP_MAX * 1.25)))  # maximum capacitance in a single part
@@ -388,7 +388,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
 
   def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
                                      single_nominal_capacitance: RangeVal,
-                                     footprint_spec: str, derating_coeff: FloatExpr) -> None:
+                                     footprint_spec: str, derating_coeff: float) -> None:
     """
     Selects a generic capacitor without using product tables
 
@@ -400,25 +400,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
 
-    def calculate_min_nominal_capacitance(desired_capacitance: RangeVal) -> Tuple[float, float]:
-      """
-      Calculates the minimum nominal capacitance based on the user-specified derating coefficient
-      """
-      if derating_coeff > 0:
-        assert not (footprint_spec == ""), "package must be specified when using a derating coefficient"
-
-        if (voltage[1] > 3.6) and (desired_capacitance[1] > 1e-6):
-          min_nom_cap = (
-            desired_capacitance[0] / (1 - derating_coeff * (voltage[1] - 3.6)),
-            desired_capacitance[1] / (1 - derating_coeff * (voltage[0] - 3.6))
-          )
-          assert min_nom_cap[0] > 0, "supplied derating coefficient results in negative capacitance lower bound"
-          assert min_nom_cap[1] > 0, "supplied derating coefficient results in negative capacitance upper bound"
-          assert min_nom_cap[0] <= min_nom_cap[1], "supplied derating coefficient results in invalid capacitance range"
-          return min_nom_cap
-      return desired_capacitance
-
-    def select_package(min_nominal_capacitance: RangeVal, voltage: RangeVal) -> Tuple[str, Tuple[float, float]]:
+    def select_package(min_nominal_capacitance: RangeVal, voltage: RangeVal) -> Optional[str]:
 
       if footprint_spec == "":
         package_options = self.PACKAGE_SPECS
@@ -429,33 +411,27 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         if package.max >= min_nominal_capacitance[1]:
             for package_max_voltage, package_max_capacitance in package.vc_pairs.items():
               if package_max_voltage >= voltage[1] and package_max_capacitance >= min_nominal_capacitance[1]:
-                return (package.name, min_nominal_capacitance)
+                return package.name
       return None
 
-    min_nominal_capacitance = calculate_min_nominal_capacitance(capacitance)
-    is_valid_footprint = select_package(min_nominal_capacitance, voltage)
-    if is_valid_footprint is not None:
-      valid_footprint_spec, min_nominal_capacitance = is_valid_footprint
-      value = choose_preferred_number(min_nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
+    min_nominal_capacitance = (capacitance[0] / derating_coeff, capacitance[1] / derating_coeff)
 
-    if (is_valid_footprint is None) or (min_nominal_capacitance[1] > single_nominal_capacitance[1]):
+    if min_nominal_capacitance[1] > single_nominal_capacitance[1]:
       num_caps = math.ceil(min_nominal_capacitance[0] / self.SINGLE_CAP_MAX)
-      # split_min_nominal_capacitance = calculate_min_nominal_capacitance((capacitance[0] / num_caps, capacitance[1] / num_caps))
-      # split_value = choose_preferred_number((split_min_nominal_capacitance[0], min(split_min_nominal_capacitance[1], self.SINGLE_CAP_MAX)), 0, self.E24_SERIES_ZIGZAG, 2)
-      # while(split_value * num_caps < capacitance[0]):
-      #   num_caps += 1
-      #   split_min_nominal_capacitance = calculate_min_nominal_capacitance((capacitance[0] / num_caps, capacitance[1] / num_caps))
-      #   split_value = choose_preferred_number((split_min_nominal_capacitance[0], min(split_min_nominal_capacitance[1], self.SINGLE_CAP_MAX)), 0, self.E24_SERIES_ZIGZAG, 2)
+      assert num_caps * self.SINGLE_CAP_MAX < min_nominal_capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      assert num_caps * self.SINGLE_CAP_MAX < capacitance[1], "can't generate parallel caps within max capacitance limit"
-
-      self.assign(self.selected_capacitance, (
+      self.assign(self.selected_derated_capacitance, (
         num_caps * capacitance[0],
         num_caps * capacitance[1],
       ))
 
+      self.assign(self.selected_capacitance, (
+        num_caps * min_nominal_capacitance[0],
+        num_caps * min_nominal_capacitance[1],
+      ))
+
       if footprint_spec == "":
-        split_package = next(package for package in self.PACKAGE_SPECS if package.max >= self.SINGLE_CAP_MAX).name
+        split_package = 'Capacitor_SMD:C_1206_3216Metric'
       else:
         split_package = footprint_spec
 
@@ -467,6 +443,10 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
+      valid_footprint_spec = select_package(min_nominal_capacitance, voltage)
+      assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"
+      value = choose_preferred_number(min_nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
+      assert value is not None, "cannot generate a preferred number"
       self.assign(self.selected_derated_capacitance, capacitance)
       self.assign(self.selected_capacitance, min_nominal_capacitance)
 
