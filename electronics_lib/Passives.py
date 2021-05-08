@@ -400,23 +400,23 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
 
-    def calculate_min_nominal_capacitance() -> Tuple[float, float]:
+    def calculate_min_nominal_capacitance(desired_capacitance: RangeVal) -> Tuple[float, float]:
       """
       Calculates the minimum nominal capacitance based on the user-specified derating coefficient
       """
       if derating_coeff > 0:
         assert not (footprint_spec == ""), "package must be specified when using a derating coefficient"
 
-        if (voltage[1] > 3.6) and (capacitance[1] > 1e-6):
+        if (voltage[1] > 3.6) and (desired_capacitance[1] > 1e-6):
           min_nom_cap = (
-            capacitance[0] / (1 - derating_coeff * (voltage[1] - 3.6)),
-            capacitance[1] / (1 - derating_coeff * (voltage[0] - 3.6))
+            desired_capacitance[0] / (1 - derating_coeff * (voltage[1] - 3.6)),
+            desired_capacitance[1] / (1 - derating_coeff * (voltage[0] - 3.6))
           )
           assert min_nom_cap[0] > 0, "supplied derating coefficient results in negative capacitance lower bound"
           assert min_nom_cap[1] > 0, "supplied derating coefficient results in negative capacitance upper bound"
           assert min_nom_cap[0] <= min_nom_cap[1], "supplied derating coefficient results in invalid capacitance range"
           return min_nom_cap
-      return capacitance
+      return desired_capacitance
 
     def select_package(min_nominal_capacitance: RangeVal, voltage: RangeVal) -> Tuple[str, Tuple[float, float]]:
 
@@ -432,27 +432,35 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
                 return (package.name, min_nominal_capacitance)
       return None
 
-    min_nominal_capacitance = calculate_min_nominal_capacitance()
+    min_nominal_capacitance = calculate_min_nominal_capacitance(capacitance)
     is_valid_footprint = select_package(min_nominal_capacitance, voltage)
     if is_valid_footprint is not None:
       valid_footprint_spec, min_nominal_capacitance = is_valid_footprint
       value = choose_preferred_number(min_nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
 
-    if (is_valid_footprint is None) or (capacitance[1] > single_nominal_capacitance[1]):
-      num_caps = math.ceil(capacitance[0] / self.SINGLE_CAP_MAX)
+    if (is_valid_footprint is None) or (min_nominal_capacitance[1] > single_nominal_capacitance[1]):
+      num_caps = math.ceil(min_nominal_capacitance[0] / self.SINGLE_CAP_MAX)
+      # split_min_nominal_capacitance = calculate_min_nominal_capacitance((capacitance[0] / num_caps, capacitance[1] / num_caps))
+      # split_value = choose_preferred_number((split_min_nominal_capacitance[0], min(split_min_nominal_capacitance[1], self.SINGLE_CAP_MAX)), 0, self.E24_SERIES_ZIGZAG, 2)
+      # while(split_value * num_caps < capacitance[0]):
+      #   num_caps += 1
+      #   split_min_nominal_capacitance = calculate_min_nominal_capacitance((capacitance[0] / num_caps, capacitance[1] / num_caps))
+      #   split_value = choose_preferred_number((split_min_nominal_capacitance[0], min(split_min_nominal_capacitance[1], self.SINGLE_CAP_MAX)), 0, self.E24_SERIES_ZIGZAG, 2)
+
       assert num_caps * self.SINGLE_CAP_MAX < capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      self.assign(self.selected_derated_capacitance, (
-        num_caps * capacitance[0],
-        num_caps * capacitance[1],
-      ))
       self.assign(self.selected_capacitance, (
         num_caps * capacitance[0],
         num_caps * capacitance[1],
       ))
 
+      if footprint_spec == "":
+        split_package = next(package for package in self.PACKAGE_SPECS if package.max >= self.SINGLE_CAP_MAX).name
+      else:
+        split_package = footprint_spec
+
       cap_model = DummyCapacitor(capacitance=(self.SINGLE_CAP_MAX, self.SINGLE_CAP_MAX),
-                                      voltage=self.voltage, footprint_spec=next(package for package in self.PACKAGE_SPECS if package.max >= self.SINGLE_CAP_MAX).name)
+                                      voltage=self.voltage, footprint_spec=split_package)
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
