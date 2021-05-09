@@ -396,7 +396,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
 
-    def select_package(nominal_capacitance: RangeVal, voltage: RangeVal) -> Optional[str]:
+    def select_package(nominal_capacitance: float, voltage: RangeVal) -> Optional[str]:
 
       if footprint_spec == "":
         package_options = self.PACKAGE_SPECS
@@ -404,9 +404,9 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint_spec]
 
       for package in package_options:
-        if package.max >= nominal_capacitance[1]:
+        if package.max >= nominal_capacitance:
             for package_max_voltage, package_max_capacitance in package.vc_pairs.items():
-              if package_max_voltage >= voltage[1] and package_max_capacitance >= nominal_capacitance[1]:
+              if package_max_voltage >= voltage[1] and package_max_capacitance >= nominal_capacitance:
                 return package.name
       return None
 
@@ -434,11 +434,11 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
-      valid_footprint_spec = select_package(nominal_capacitance, voltage)
-      assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"
       value = choose_preferred_number(nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
       assert value is not None, "cannot generate a preferred number"
-      self.assign(self.selected_nominal_capacitance, nominal_capacitance)
+      valid_footprint_spec = select_package(value, voltage)
+      assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"
+      self.assign(self.selected_nominal_capacitance, value)
 
       self.footprint(
         'C', valid_footprint_spec,

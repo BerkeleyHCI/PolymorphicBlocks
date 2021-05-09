@@ -87,7 +87,7 @@ class BigMultiCapacitorGenericTestTop(Block):
 class CapacitorTestCase(unittest.TestCase):
   def test_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(CapacitorGenericTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0402_1005Metric')
     self.assertEqual(compiled.get_value(['dut', 'value']), '100nF')
 
   def test_capacitor_footprint(self) -> None:
@@ -114,7 +114,7 @@ class CapacitorTestCase(unittest.TestCase):
 
   def test_high_single_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(HighSingleCapacitorGenericTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1210_3225Metric')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'value']), '22uF')
 
   def test_medium_single_capacitor(self) -> None:
