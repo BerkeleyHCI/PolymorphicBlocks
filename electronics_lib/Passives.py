@@ -299,24 +299,21 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
 class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
 
-  SINGLE_CAP_MAX = 22e-6
+  SINGLE_CAP_MAX = 22e-6 # maximum capacitance in a single part
+  MAX_CAP_PACKAGE = 'Capacitor_SMD:C_1206_3216Metric' # default package for largest possible capacitor
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
     self.footprint_spec = self.Parameter(StringExpr(""))
-    self.derating_coeff = self.Parameter(FloatExpr(1))
+    self.derating_coeff = self.Parameter(FloatExpr(1)) # simple multiplier for capacitance derating, does not scale with package or applied voltage
 
-    # Default to be overridden on a per-device basis
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, self.SINGLE_CAP_MAX * 1.25)))  # maximum capacitance in a single part
-
-    self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage, self.single_nominal_capacitance,
+    self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage, 
                    self.footprint_spec, self.derating_coeff)
 
     # Output values
-    self.selected_capacitance = self.Parameter(RangeExpr())
-    self.selected_derated_capacitance = self.Parameter(RangeExpr())
+    self.selected_nominal_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
   # Chosen by a rough scan over available parts on Digikey
@@ -344,7 +341,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     name: str # package name
     max: float # maximum nominal capacitance
     derate: float # derating coefficient in terms of %capacitance / V over 3.6
-    vc_pairs: dict # rough estimate of what the maximum nominal capacitance is at certain voltages
+    vc_pairs: Dict[float, float] # rough estimate of what the maximum nominal capacitance is at certain voltages
 
   # package specs in increasing order by size
   PACKAGE_SPECS = [
@@ -387,7 +384,6 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   ]
 
   def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
-                                     single_nominal_capacitance: RangeVal,
                                      footprint_spec: str, derating_coeff: float) -> None:
     """
     Selects a generic capacitor without using product tables
@@ -400,7 +396,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
 
-    def select_package(min_nominal_capacitance: RangeVal, voltage: RangeVal) -> Optional[str]:
+    def select_package(nominal_capacitance: RangeVal, voltage: RangeVal) -> Optional[str]:
 
       if footprint_spec == "":
         package_options = self.PACKAGE_SPECS
@@ -408,30 +404,25 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint_spec]
 
       for package in package_options:
-        if package.max >= min_nominal_capacitance[1]:
+        if package.max >= nominal_capacitance[1]:
             for package_max_voltage, package_max_capacitance in package.vc_pairs.items():
-              if package_max_voltage >= voltage[1] and package_max_capacitance >= min_nominal_capacitance[1]:
+              if package_max_voltage >= voltage[1] and package_max_capacitance >= nominal_capacitance[1]:
                 return package.name
       return None
 
-    min_nominal_capacitance = (capacitance[0] / derating_coeff, capacitance[1] / derating_coeff)
+    nominal_capacitance = (capacitance[0] / derating_coeff, capacitance[1] / derating_coeff)
 
-    if min_nominal_capacitance[1] > single_nominal_capacitance[1]:
-      num_caps = math.ceil(min_nominal_capacitance[0] / self.SINGLE_CAP_MAX)
-      assert num_caps * self.SINGLE_CAP_MAX < min_nominal_capacitance[1], "can't generate parallel caps within max capacitance limit"
+    num_caps = math.ceil(nominal_capacitance[0] / self.SINGLE_CAP_MAX)
+    if num_caps > 1:
+      assert num_caps * self.SINGLE_CAP_MAX < nominal_capacitance[1], "can't generate parallel caps within max capacitance limit"
 
-      self.assign(self.selected_derated_capacitance, (
-        num_caps * capacitance[0],
-        num_caps * capacitance[1],
-      ))
-
-      self.assign(self.selected_capacitance, (
-        num_caps * min_nominal_capacitance[0],
-        num_caps * min_nominal_capacitance[1],
+      self.assign(self.selected_nominal_capacitance, (
+        num_caps * nominal_capacitance[0],
+        num_caps * nominal_capacitance[1],
       ))
 
       if footprint_spec == "":
-        split_package = 'Capacitor_SMD:C_1206_3216Metric'
+        split_package = self.MAX_CAP_PACKAGE
       else:
         split_package = footprint_spec
 
@@ -443,12 +434,11 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
-      valid_footprint_spec = select_package(min_nominal_capacitance, voltage)
+      valid_footprint_spec = select_package(nominal_capacitance, voltage)
       assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"
-      value = choose_preferred_number(min_nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
+      value = choose_preferred_number(nominal_capacitance, 0, self.E24_SERIES_ZIGZAG, 2)
       assert value is not None, "cannot generate a preferred number"
-      self.assign(self.selected_derated_capacitance, capacitance)
-      self.assign(self.selected_capacitance, min_nominal_capacitance)
+      self.assign(self.selected_nominal_capacitance, nominal_capacitance)
 
       self.footprint(
         'C', valid_footprint_spec,
@@ -471,12 +461,7 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
     self.footprint_spec = self.Parameter(StringExpr(footprint_spec))
     self.generator(self.select_capacitor, self.capacitance, self.footprint_spec)
 
-    # Output values
-    self.selected_capacitance = self.Parameter(RangeExpr())
-    self.selected_voltage_rating = self.Parameter(RangeExpr())
-
   def select_capacitor(self, capacitance: RangeVal, footprint_spec: str) -> None:
-    self.assign(self.selected_capacitance, capacitance)
     self.footprint(
       'C', footprint_spec,
       {
