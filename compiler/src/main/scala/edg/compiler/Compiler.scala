@@ -43,7 +43,7 @@ object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
 
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
-  case class Generator(path: DesignPath, targets: Seq[ref.LibraryPath], fn: String) extends CompilerError
+  case class Generator(path: DesignPath, target: ref.LibraryPath, fn: String) extends CompilerError
 
   case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError
   case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError
@@ -52,7 +52,7 @@ object CompilerError {
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
 
-  case class AbstractBlock(path: DesignPath, superclasses: Seq[ref.LibraryPath]) extends CompilerError
+  case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError
   case class FailedAssertion(root: DesignPath, constrName: String,
                              value: expr.ValueExpr, result: ExprValue) extends CompilerError
   case class MissingAssertion(root: DesignPath, constrName: String,
@@ -162,7 +162,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Seed compilation with the root
   //
-  private val root = new wir.Block(inputDesignPb.getContents, inputDesignPb.getContents.superclasses, None)
+  private val root = new wir.Block(inputDesignPb.getContents, None)
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
   def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
@@ -280,7 +280,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           }
 
           elts.map { index =>
-            index -> wir.PortLike.fromIrPort(portPb, libraryPath)
+            index -> wir.PortLike.fromIrPort(portPb)
           }.toMap
         case None =>
           // TODO: this assumes ports without elts set from connects are empty
@@ -309,7 +309,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             errors += CompilerError.LibraryError(path, libraryPath, err)
             IrPort.Port(elem.Port())
         }
-        val newPort = wir.PortLike.fromIrPort(portPb, libraryPath)
+        val newPort = wir.PortLike.fromIrPort(portPb)
         hasPorts.elaborate(portName, newPort)
         processPort(path + portName, newPort)
       case port: wir.PortArray =>
@@ -542,7 +542,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         errors += CompilerError.LibraryError(path, refinedLibrary, err)
         elem.HierarchyBlock()
     }
-    val block = new wir.Block(blockPb, Seq(refinedLibrary), unrefinedType)
+    val block = new wir.Block(blockPb, unrefinedType)
 
     // Populate class-based value refinements
     refinements.classValues.get(refinedLibrary) match {
@@ -691,7 +691,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         errors += CompilerError.LibraryError(path, libraryPath, err)
         elem.Link()
     }
-    val link = new wir.Link(linkPb, Seq(libraryPath))
+    val link = new wir.Link(linkPb)
 
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
@@ -735,6 +735,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     )
     val generatedPb = generatorResult match {
       case Errorable.Success(generatedPb) =>
+        require(generatedPb.getSelfClass == block.getBlockClass)
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
         import edg.elem.elem
@@ -742,7 +743,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elem.HierarchyBlock()
     }
 
-    val generatedDiffBlock = new wir.Block(generatedPb, Seq(block.getBlockClass), None)
+    val generatedDiffBlock = new wir.Block(generatedPb, None)
     processBlock(blockPath, generatedDiffBlock)
     block.append(generatedDiffBlock)
   }

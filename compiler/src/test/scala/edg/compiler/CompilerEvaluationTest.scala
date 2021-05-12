@@ -14,21 +14,21 @@ import edg.wir.{IndirectDesignPath, IndirectStep}
 class CompilerEvaluationTest extends AnyFlatSpec {
   import edg.expr.expr.ReductionExpr.Op
   val library = Library(
-    ports = Map(
-      "sourcePort" -> Port.Port(
+    ports = Seq(
+      Port.Port("sourcePort",
         params = Map(
           "floatVal" -> ValInit.Floating,
         )
       ),
-      "sinkPort" -> Port.Port(
+      Port.Port("sinkPort",
         params = Map(
           "sumVal" -> ValInit.Floating,
           "intersectVal" -> ValInit.Range,
         )
       ),
     ),
-    blocks = Map(
-      "sourceBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block("sourceBlock",
         params = Map(
           "floatVal" -> ValInit.Floating,
         ),
@@ -39,7 +39,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
           "propFloatVal" -> ValueExpr.Assign(Ref("port", "floatVal"), ValueExpr.Ref("floatVal")),
         )
       ),
-      "sinkBlock" -> Block.Block(
+      Block.Block("sinkBlock",
         params = Map(
           "sumVal" -> ValInit.Floating,
           "intersectVal" -> ValInit.Range,
@@ -52,7 +52,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
           "propIntersectVal" -> ValueExpr.Assign(Ref("port", "intersectVal"), ValueExpr.Ref("intersectVal")),
         )
       ),
-      "sourceContainerBlock" -> Block.Block(
+      Block.Block("sourceContainerBlock",
         params = Map(
           "floatVal" -> ValInit.Floating,
         ),
@@ -68,8 +68,8 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         )
       ),
     ),
-    links = Map(
-      "link" -> Link.Link(
+    links = Seq(
+      Link.Link("link",
         ports = Map(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
@@ -93,7 +93,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   )
 
   "Compiler on design with assign constraints" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("designTop",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
@@ -159,7 +159,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with assign constraints and multiple connects to link" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
@@ -234,7 +234,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with empty port arrays" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -258,7 +258,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with exports" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceContainerBlock"),
         "sink0" -> Block.Library("sinkBlock"),
@@ -299,7 +299,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with disconnected ports" should "indicate disconnected" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -317,7 +317,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with disconnected exported ports" should "indicate disconnected" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceContainerBlock"),
       ),
@@ -337,7 +337,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
   }
 
   "Compiler on design with assign constraints" should "resolve if-then-else without defined non-taken branch" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       params = Map(
         "condTrue" -> ValInit.Boolean,
         "condFalse" -> ValInit.Boolean,

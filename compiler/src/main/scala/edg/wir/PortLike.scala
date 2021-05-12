@@ -13,15 +13,14 @@ sealed trait PortLike extends Pathable {
 
 object PortLike {
   import edg.IrPort
-  def fromIrPort(irPort: IrPort, libraryPath: ref.LibraryPath): PortLike = irPort match {
-    case IrPort.Port(port) => new Port(port, Seq(libraryPath))
-    case IrPort.Bundle(bundle) => new Bundle(bundle, Seq(libraryPath))
+  def fromIrPort(irPort: IrPort): PortLike = irPort match {
+    case IrPort.Port(port) => new Port(port)
+    case IrPort.Bundle(bundle) => new Bundle(bundle)
     case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
   }
-
 }
 
-class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
+class Port(pb: elem.Port) extends PortLike
     with HasParams {
   override def isElaborated: Boolean = true
 
@@ -33,9 +32,7 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
   }
 
   def toEltPb: elem.Port = {
-    pb.copy(
-      superclasses = superclasses
-    )
+    pb
   }
 
   def toPb: elem.PortLike = {
@@ -43,7 +40,7 @@ class Port(pb: elem.Port, superclasses: Seq[ref.LibraryPath]) extends PortLike
   }
 }
 
-class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLike
+class Bundle(pb: elem.Bundle) extends PortLike
     with HasMutablePorts with HasParams {
   private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
@@ -64,7 +61,6 @@ class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLi
 
   def toEltPb: elem.Bundle = {
     pb.copy(
-      superclasses=superclasses,
       ports=ports.view.mapValues(_.toPb).toMap,
     )
   }
@@ -75,8 +71,6 @@ class Bundle(pb: elem.Bundle, superclasses: Seq[ref.LibraryPath]) extends PortLi
 }
 
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
-  require(pb.superclasses.length == 1)
-
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
 
@@ -92,7 +86,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
       }
   }
 
-  def getType: ref.LibraryPath = pb.superclasses.head
+  def getType: ref.LibraryPath = pb.getSelfClass
 
   def setPorts(newPorts: Map[String, PortLike]): Unit = {
     require(ports.isEmpty)

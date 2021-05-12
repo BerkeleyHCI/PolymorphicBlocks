@@ -13,13 +13,15 @@ import edg.wir.{IndirectDesignPath, IndirectStep}
   */
 class CompilerBundleExpansionTest extends AnyFlatSpec {
   val library = Library(
-    ports = Map(
-      "innerPort" -> Port.Port(
+    ports = Seq(
+      Port.Port(
+        selfClass = "innerPort",
         params = Map(
           "param" -> ValInit.Integer,
         ),
       ),
-      "outerPort" -> Port.Bundle(
+      Port.Bundle(
+        selfClass = "outerPort",
         params = Map(
           "param" -> ValInit.Integer,
         ),
@@ -28,8 +30,9 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         )
       ),
     ),
-    blocks = Map(
-      "sourceBlock" -> Block.Block(
+    blocks = Seq(
+      Block.Block(
+        selfClass = "sourceBlock",
         params = Map(
           "innerParam" -> ValInit.Integer,
           "outerParam" -> ValInit.Integer,
@@ -43,8 +46,9 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         )
       )
     ),
-    links = Map(
-      "innerLink" -> Link.Link(
+    links = Seq(
+      Link.Link(
+        selfClass = "innerLink",
         params = Map(
           "innerParam" -> ValInit.Integer,
         ),
@@ -55,7 +59,8 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
           "innerParamVal" -> ValueExpr.Assign(Ref("innerParam"), ValueExpr.Ref("innerPort", "param")),
         )
       ),
-      "outerLink" -> Link.Link(
+      Link.Link(
+        selfClass = "outerLink",
         params = Map(
           "outerParam" -> ValInit.Integer,
         ),
@@ -74,7 +79,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
   )
 
   "Compiler on design with bundles" should "expand structurally" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -88,20 +93,20 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val referenceElaborated = Design(Block.Block(
+    val referenceElaborated = Design(Block.Block("topDesign",
       blocks = Map(
-        "source" -> Block.Block(superclass="sourceBlock",
+        "source" -> Block.Block(selfClass="sourceBlock",
           params = Map(
             "innerParam" -> ValInit.Integer,
             "outerParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "port" -> Port.Bundle(superclass="outerPort",
+            "port" -> Port.Bundle(selfClass="outerPort",
               params = Map(
                 "param" -> ValInit.Integer,
               ),
               ports = Map(
-                "inner" -> Port.Port(superclass="innerPort",
+                "inner" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),
@@ -116,17 +121,17 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         ),
       ),
       links = Map(
-        "link" -> Link.Link(superclass="outerLink",
+        "link" -> Link.Link(selfClass="outerLink",
           params = Map(
             "outerParam" -> ValInit.Integer,
           ),
           ports = Map(
-            "outerPort" -> Port.Bundle(superclass="outerPort",
+            "outerPort" -> Port.Bundle(selfClass="outerPort",
               params = Map(
                 "param" -> ValInit.Integer,
               ),
               ports = Map(
-                "inner" -> Port.Port(superclass="innerPort",
+                "inner" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),
@@ -135,12 +140,12 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
             ),
           ),
           links = Map(
-            "inner" -> Link.Link(superclass="innerLink",
+            "inner" -> Link.Link(selfClass="innerLink",
               params = Map(
                 "innerParam" -> ValInit.Integer,
               ),
               ports = Map(
-                "innerPort" -> Port.Port(superclass="innerPort",
+                "innerPort" -> Port.Port(selfClass="innerPort",
                   params = Map(
                     "param" -> ValInit.Integer,
                   ),
@@ -188,7 +193,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
   }
 
   "Compiler on design with bundles" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block(
+    val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
       ),

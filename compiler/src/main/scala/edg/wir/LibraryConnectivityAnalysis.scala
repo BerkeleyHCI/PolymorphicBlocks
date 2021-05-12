@@ -17,9 +17,7 @@ object LibraryConnectivityAnalysis {
   // TODO these should go in utils or something?
   def getLibPortType(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
       case elem.PortLike.Is.LibElem(value) => value
-      case elem.PortLike.Is.Array(array) =>
-        require(array.superclasses.length == 1)
-        array.superclasses.head
+      case elem.PortLike.Is.Array(array) => array.getSelfClass
       case isOther => throw new IllegalArgumentException(s"unexpected $isOther")
   }
 }
@@ -53,9 +51,8 @@ class LibraryConnectivityAnalysis(library: Library) {
 
   // exterior side port type -> (link side port type, port bridge type)
   lazy private val bridgedPortByOuterMap: Map[ref.LibraryPath, (ref.LibraryPath, ref.LibraryPath)] = allBlocks.toSeq
-      .collect { case (blockType, block)   // filter by PortBridge superclass
-        if block.superclasses.nonEmpty &&
-            LibraryConnectivityAnalysis.portBridges.contains(block.superclasses.head) =>
+      .collect { case (blockType, block)   // filter by PortBridge class
+        if block.superclasses.toSet.intersect(LibraryConnectivityAnalysis.portBridges).nonEmpty =>
         (blockType,
             block.ports.get(LibraryConnectivityAnalysis.portBridgeOuterPort),
             block.ports.get(LibraryConnectivityAnalysis.portBridgeLinkPort))
@@ -87,8 +84,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     }.groupBy(_._1).mapValues(_.map(_._2).sum)
     val arrayPorts = linkPortTypes.collect {
       case elem.PortLike.Is.Array(array) =>
-        require(array.superclasses.length == 1)
-        (array.superclasses.head, Integer.MAX_VALUE)  // TODO maybe a inf type? but this practically won't matter
+        (array.getSelfClass, Integer.MAX_VALUE)  // TODO maybe a inf type? but this practically won't matter
     }.toMap
 
     (singlePortCounts ++ arrayPorts).toMap
