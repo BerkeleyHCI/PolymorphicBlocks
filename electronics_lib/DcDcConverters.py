@@ -9,8 +9,8 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
-    self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
-    self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
+    self.sw = self.Port(VoltageSource())
+    self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))
     self.vout = self.Port(VoltageSource())
 
   def contents(self) -> None:
@@ -36,7 +36,7 @@ class Tps61023(FootprintBlock):
     self.gnd = self.Port(Ground())
     self.vin = self.Port(VoltageSink(
       voltage_limits=(0.5, 5.5)*Volt,
-      current_draw=(0, 0.5) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
+      current_draw=(0, 30) * uAmp
     ))
     self.vout = self.Port(VoltageSource())
 
@@ -51,7 +51,7 @@ class Tps61023(FootprintBlock):
     self.vout_r2 = self.Block(Resistor())
 
     self.footprint(
-      'U', 'BatteryProtector_S8200A_Module',
+      'U', 'Tps61023',
       {
         '1': self.gnd,
         '2': self.vin,

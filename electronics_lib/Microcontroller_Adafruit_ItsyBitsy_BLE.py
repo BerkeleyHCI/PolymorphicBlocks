@@ -49,7 +49,7 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
         )
 
         self.digital = ElementDict[DigitalBidir]()
-        for i in [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]:  # note, NRST, LED1 not assigned
+        for i in [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]:
             self.digital[i] = self.Port(io_model, optional=True)
             self._add_assignable_io(self.digital[i])
 
@@ -70,24 +70,15 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
         self.swd_swclk = self.Port(DigitalSink(io_model), optional=True)
         self.swd_reset = self.Port(DigitalSink(io_model), optional=True)
 
-        # TODO model IO draw - need internal source block?
-
         self.generator(self.pin_assign, self.pin_assigns,
                        req_ports=list(chain(self.digital.values(), self.adc.values(),
                                             [self.uart_0, self.spi_0])))
 
     def pin_assign(self, pin_assigns_str: str) -> None:
         system_pins: Dict[str, CircuitPort]
-        system_pins = {
-            # 16: self.pwr_in,
-            # 19: self.pwr_5v,
-            # 29: self.pwr_3v3,
-            # 4: self.gnd,
-            # 17: self.gnd,
-        }
+        system_pins = {}
 
         assigned_pins = PinAssignmentUtil(
-            # TODO assign fixed-pin digital peripherals here
             AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
                          [0, 1, 2, 3, 4, 5]),
             AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, DigitalBidir)],
