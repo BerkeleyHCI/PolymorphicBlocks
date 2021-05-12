@@ -31,31 +31,31 @@ class DesignInstantiationTestCase(unittest.TestCase):
     compiled_design = ScalaCompiler.compile(TopHierarchyBlock)
     pb = compiled_design.contents
 
-    self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.TopHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.TopHierarchyBlock')
 
     self.assertEqual(len(pb.blocks), 3)
 
-    self.assertEqual(pb.blocks['source'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['source'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSource')
-    self.assertEqual(pb.blocks['source'].hierarchy.ports['source'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['source'].hierarchy.ports['source'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSource')
 
-    self.assertEqual(pb.blocks['sink1'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink1'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink1'].hierarchy.ports['sink'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink1'].hierarchy.ports['sink'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
 
-    self.assertEqual(pb.blocks['sink2'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink2'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink2'].hierarchy.ports['sink'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink2'].hierarchy.ports['sink'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
 
-    self.assertEqual(pb.links['test_net'].link.superclasses[0].target.name, 'edg_core.test_common.TestLink')
-    self.assertEqual(pb.links['test_net'].link.ports['source'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.self_class.target.name, 'edg_core.test_common.TestLink')
+    self.assertEqual(pb.links['test_net'].link.ports['source'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSource")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
     expected_conn = edgir.ValueExpr()
@@ -85,16 +85,16 @@ class DesignInstantiationTestCase(unittest.TestCase):
     compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlockTop)
     pb = compiled_design.contents.blocks['block'].hierarchy
 
-    self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
 
     self.assertEqual(len(pb.ports), 1)
-    self.assertEqual(pb.ports['exported'].port.superclasses[0].target.name,
+    self.assertEqual(pb.ports['exported'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
 
     self.assertEqual(len(pb.blocks), 1)
-    self.assertEqual(pb.blocks['sink'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink'].hierarchy.ports['sink'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink'].hierarchy.ports['sink'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
 
     self.assertEqual(len(pb.links), 0)
@@ -109,36 +109,36 @@ class DesignInstantiationTestCase(unittest.TestCase):
     compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlockTop)
     pb = compiled_design.contents.blocks['block'].hierarchy
 
-    self.assertEqual(pb.superclasses[0].target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
 
     self.assertEqual(len(pb.ports), 1)
-    self.assertEqual(pb.ports['source_port'].port.superclasses[0].target.name,
+    self.assertEqual(pb.ports['source_port'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
     self.assertEqual(len(pb.blocks), 3)
-    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestPortBridge')
-    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.ports['inner_link'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.ports['inner_link'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSource")
-    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.ports['outer_port'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['(bridge)source_port'].hierarchy.ports['outer_port'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
-    self.assertEqual(pb.blocks['sink1'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink1'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink1'].hierarchy.ports['sink'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink1'].hierarchy.ports['sink'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
-    self.assertEqual(pb.blocks['sink2'].hierarchy.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink2'].hierarchy.self_class.target.name,
                      'edg_core.test_common.TestBlockSink')
-    self.assertEqual(pb.blocks['sink2'].hierarchy.ports['sink'].port.superclasses[0].target.name,
+    self.assertEqual(pb.blocks['sink2'].hierarchy.ports['sink'].port.self_class.target.name,
                      'edg_core.test_common.TestPortSink')
 
     self.assertEqual(len(pb.links), 1)
-    self.assertEqual(pb.links['test_net'].link.superclasses[0].target.name, 'edg_core.test_common.TestLink')
-    self.assertEqual(pb.links['test_net'].link.ports['source'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.self_class.target.name, 'edg_core.test_common.TestLink')
+    self.assertEqual(pb.links['test_net'].link.ports['source'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSource")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.superclasses[0].target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
     expected_conn = edgir.ValueExpr()

@@ -61,6 +61,8 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.is_abstract, False)
 
   def test_superclass(self) -> None:
+    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_block.TestBlock")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_block.TestBlock")
     self.assertEqual(len(self.pb.superclasses), 1)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
 

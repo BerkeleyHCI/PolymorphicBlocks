@@ -12,14 +12,14 @@ class GeneratorMockupTest extends AnyFlatSpec {
   behavior of "Block"
 
   it should "dedup generator protos" in {
-    val blockPb = Block.Block(
+    val blockPb = Block.Block("topDesign",
       ports = Map(
         "port" -> Port.Library("outerSourcePort"),
       )
     )
-    val block = new wir.Block(blockPb.getHierarchy, Seq(LibraryPath("block")), None)
+    val block = new wir.Block(blockPb.getHierarchy, None)
 
-    val generatorExample = Block.Block(
+    val generatorExample = Block.Block("topDesign",
       ports = Map(
         "port" -> Port.Library("outerSourcePort"),
       ),
@@ -31,7 +31,7 @@ class GeneratorMockupTest extends AnyFlatSpec {
       )
     )
 
-    val expectedDiff = Block.Block(
+    val expectedDiff = Block.Block("topDesign",
       blocks = Map(
         "inner" -> Block.Library("sourceBlock"),
       ),
