@@ -1,5 +1,5 @@
 from electronics_lib import *
-from electronics_lib.Microcontroller_nRF52840 import Adafruit_ItsyBitsy_BLE
+from electronics_lib.Microcontroller_Adafruit_ItsyBitsy_BLE import Adafruit_ItsyBitsy_BLE
 
 
 class BoardTop(DesignTop):

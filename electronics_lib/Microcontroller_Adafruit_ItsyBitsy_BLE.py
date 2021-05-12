@@ -3,7 +3,7 @@ from itertools import chain
 
 from electronics_abstract_parts import *
 
-class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock):  # TODO refactor with _Device
+class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock):
     """
     nRF52840 configured as power source from USB.
 

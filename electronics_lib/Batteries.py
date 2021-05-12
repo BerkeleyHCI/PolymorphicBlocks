@@ -36,7 +36,6 @@ class Li18650(Battery, FootprintBlock):
     self.require(self.pwr.voltage_out.within((2.5, 4.2)*Volt))
 
     # TODO can this be assigned self.pwr == VoltageSource(...) directly?
-    # self.assign(self.pwr.voltage_out, (2.5, 4.2)*Volt)
     self.assign(self.pwr.current_limits, (0, 2)*mAmp)  # arbitrary assuming low capacity, 1 C discharge
     self.assign(self.capacity, (2, 3.6)*Amp)  # TODO should be A*h
 

@@ -5,16 +5,16 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
 
-    self.vss = self.Port(Ground()) # voltage_limits=(-0.3, 12) * Volt, current_draw=(0.7, 5.5) * uAmp
+    self.vss = self.Port(Ground())
     self.vdd = self.Port(VoltageSink(
       voltage_limits=self.vss.voltage_limits + RangeExpr._to_expr_type((-0.3, 12) * Volt),
       current_draw=(0.7, 5.5) * uAmp
     ))
 
     self.nc = self.Port(Passive(), optional=True)
-    self.vm = self.Port(Passive(), optional=True) # voltage_limits=self.vdd.voltage_limits + RangeExpr._to_expr_type((-28, 0.3) * Volt), current_draw=(0.7, 5.5) * uAmp
-    self.do = self.Port(Passive(), optional=True) # voltage_limits=(self.vss.voltage_limits.lower() - 0.3 * Volt, self.vdd.voltage_limits.upper() + 0.3 * Volt), current_draw=(0.7, 5.5) * uAmp
-    self.co = self.Port(Passive(), optional=True) # voltage_limits=(self.vm.voltage_limits.lower() - 0.3 * Volt, self.vdd.voltage_limits.upper() + 0.3 * Volt), current_draw=(0.7, 5.5) * uAmp
+    self.vm = self.Port(Passive(), optional=True)
+    self.do = self.Port(Passive(), optional=True)
+    self.co = self.Port(Passive(), optional=True)
 
 
   def contents(self):
