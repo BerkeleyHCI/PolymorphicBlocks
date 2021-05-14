@@ -34,7 +34,7 @@ class Li18650(Battery, FootprintBlock):
     super().contents()
 
     # TODO can this be assigned self.pwr == VoltageSource(...) directly?
-    self.assign(self.pwr.current_limits, (0, 2)*mAmp)  # arbitrary assuming low capacity, 1 C discharge
+    self.assign(self.pwr.current_limits, (0, 2)*Amp)  # arbitrary assuming low capacity, 1 C discharge
     self.assign(self.capacity, (2, 3.6)*Amp)  # TODO should be A*h
 
     self.footprint(
