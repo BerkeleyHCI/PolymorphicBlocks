@@ -6,9 +6,9 @@ from electronics_lib.Microcontroller_Adafruit_ItsyBitsy_BLE import Adafruit_Itsy
 class BLECircuit(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
-    self.battery_voltage = (3.5, 4.2) * Volt
+    self.battery_voltage = (3.6, 4.2) * Volt
     self.mcu = self.Block(Adafruit_ItsyBitsy_BLE())
-    self.battery_protector = self.Block(BatteryProtector_S8200A(battery_voltage=self.battery_voltage))
+    self.battery_protector = self.Block(BatteryProtector_S8200A())
     self.li_ion_bat = self.Block(Li18650(voltage=self.battery_voltage))
     self.led = self.Block(IndicatorLed())
 

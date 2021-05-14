@@ -15,7 +15,10 @@ class Battery(DiscreteApplication):
     self.gnd = self.Port(GroundSource())
 
     self.capacity = self.Parameter(RangeExpr())
+    self.voltage = self.Parameter(RangeExpr(voltage))
 
     self.require(self.pwr.voltage_out.within(voltage))
     self.require(self.pwr.current_limits.contains(current))
     self.require(self.capacity.lower() >= capacity)
+
+    self.assign(self.pwr.voltage_out, self.voltage)

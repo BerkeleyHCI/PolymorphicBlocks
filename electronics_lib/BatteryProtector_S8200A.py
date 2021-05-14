@@ -11,16 +11,16 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
       current_draw=(0.7, 5.5) * uAmp
     ))
 
-    self.nc = self.Port(Passive(), optional=True)
-    self.vm = self.Port(Passive(), optional=True)
-    self.do = self.Port(Passive(), optional=True)
-    self.co = self.Port(Passive(), optional=True)
+    self.nc = self.Port(Passive(), optional=True) # no connection
+    self.vm = self.Port(Passive())
+    self.do = self.Port(Passive())
+    self.co = self.Port(Passive())
 
 
   def contents(self):
     super().contents()
     self.footprint(
-      'U', 'BatteryProtector_S8200A',
+      'U', 'Package_TO_SOT_SMD:SOT-23-6',
       {
         '1': self.do,
         '2': self.vm,
@@ -35,14 +35,21 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
 
 class BatteryProtector_S8200A(FootprintBlock):
   @init_in_parent
-  def __init__(self, battery_voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self) -> None:
     super().__init__()
 
     self.battery_protector = self.Block(BatteryProtector_S8200A_Device())
 
-    self.vdd_res = self.Block(Resistor(resistance=330 * Ohm(tol=0.10)))
+
+    self.ebp = self.Port(VoltageSource())
+    self.ebm = self.Port(GroundSource())
+    self.vdd = self.Port(VoltageSink(
+      voltage_limits=self.battery_protector.vdd.voltage_limits,
+    ))
+    self.vss = self.Export(self.battery_protector.vss)
+
     self.vm_res = self.Block(Resistor(resistance=2 * kOhm(tol=0.10)))
-    self.vdd_vss_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.10), voltage=battery_voltage))
+    self.vdd_vss_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.10), voltage=self.vdd.link().voltage))
 
     self.do_fet = self.Block(NFet(
       drain_current=(0, 4.5 / 150) * Amp,
@@ -61,21 +68,18 @@ class BatteryProtector_S8200A(FootprintBlock):
       drain_voltage=(0, 4.5) * Volt
     ))
 
-    self.ebp = self.Port(VoltageSource())
-    self.ebm = self.Port(GroundSource())
-    self.vdd = self.Export(self.battery_protector.vdd)
-    self.vss = self.Export(self.battery_protector.vss)
 
   def contents(self) -> None:
     super().contents()
 
+    (self.vdd_res, ), _ = self.chain(
+      self.vdd,
+      self.Block(SeriesPowerResistor(330 * Ohm(tol=0.10), (0 * uAmp, self.battery_protector.vdd.current_draw.upper()))), # while 330 is preferred, the actual acceptable range is 150-1k
+      self.battery_protector.vdd)
+
     # i/o connections
     self.connect(self.vm_res.b.as_ground_source(), self.ebm)
     self.connect(self.battery_protector.vdd, self.ebp)
-    self.connect(self.vdd_res.b.as_voltage_sink(), self.vdd)
-
-    # vdd resistor
-    self.connect(self.battery_protector.vdd, self.vdd_res.a.as_voltage_sink())
 
     # vm resistor
     self.connect(self.battery_protector.vm, self.vm_res.a)

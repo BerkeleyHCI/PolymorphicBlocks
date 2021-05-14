@@ -15,7 +15,7 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
         super().__init__()
 
         self.pwr_bat = self.Port(VoltageSink(
-            voltage_limits=(3.5, 6) * Volt
+            voltage_limits=(3.5, 6) * Volt,
         ), optional=True)
         self.pwr_vhi = self.Port(VoltageSource(
             voltage_out=(3.5, 6) * Volt,
