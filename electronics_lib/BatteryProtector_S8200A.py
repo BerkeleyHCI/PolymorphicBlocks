@@ -106,5 +106,5 @@ class BatteryProtector_S8200A(FootprintBlock):
     self.connect(self.do_fet.drain, self.co_fet.drain)
 
     # co fet
-    self.connect(self.gnd_out, self.co_fet.source.as_ground())
+    self.connect(self.gnd_out, self.co_fet.source.as_ground_source())
     self.connect(self.battery_protector.co, self.co_fet.gate)

@@ -11,7 +11,7 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.sw = self.Port(VoltageSource())
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))
-    self.vout = self.Port(VoltageSource())
+    self.vout = self.Port(Passive()) # TODO model as voltage source
 
   def contents(self) -> None:
     super().contents()
@@ -29,57 +29,53 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
       datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
     )
 
-class Tps61023(FootprintBlock):
-  @init_in_parent
-  def __init__(self) -> None:
-    super().__init__()
-    self.gnd = self.Port(Ground())
-    self.vin = self.Port(VoltageSink(
-      voltage_limits=(0.5, 5.5)*Volt,
-      current_draw=(0, 30) * uAmp
-    ))
-    self.vout = self.Port(VoltageSource())
+class Tps61023(DiscreteBoostConverter, GeneratorBlock):
 
-  def contents(self) -> None:
+  def contents(self):
     super().contents()
-    self.dcdc_converter = self.Block(Tps61023_Device())
+    self.assign(self.frequency, (0.5, 1)*MHertz)
+    self.assign(self.efficiency, (0.7, 0.97))
 
-    self.vin_cap = self.Block(Capacitor())
-    self.vout_cap = self.Block(Capacitor())
-    self.ind = self.Block(Inductor())
-    self.vout_r1 = self.Block(Resistor())
-    self.vout_r2 = self.Block(Resistor())
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(580, 610) * mVolt,
+      impedance=(1, 300) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (2.2*Volt / self.fb.ratio.upper(),
+                 5.5*Volt / self.fb.ratio.lower()))
 
-    self.footprint(
-      'U', 'Tps61023',
-      {
-        '1': self.gnd,
-        '2': self.vin,
-        '3': self.vout,
-      }
-    )
-    # i/o connections
-    self.connect(self.dcdc_converter.gnd, self.gnd)
-    self.connect(self.dcdc_converter.vin, self.vin)
-    self.connect(self.dcdc_converter.vout, self.vout)
+    self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.spec_output_voltage,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
-    # vin cap
-    self.connect(self.dcdc_converter.vin, self.vin_cap.pos.as_voltage_sink())
-    self.connect(self.dcdc_converter.gnd, self.vin_cap.neg.as_ground())
 
-    # vout cap
-    self.connect(self.dcdc_converter.vout, self.vout_cap.pos.as_voltage_sink())
-    self.connect(self.dcdc_converter.gnd, self.vout_cap.neg.as_ground())
-    #
-    # inductor
-    self.connect(self.dcdc_converter.sw, self.ind.a.as_voltage_sink())
-    self.connect(self.dcdc_converter.vin, self.ind.b.as_voltage_sink())
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+    self.ic = self.Block(Tps61023_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
+    self.connect(self.pwr_in, self.ic.vin)
+    self.connect(self.gnd, self.ic.gnd)
 
-    # voltage divider
-    self.connect(self.gnd, self.vout_r2.b.as_ground())
-    self.connect(self.dcdc_converter.vout, self.vout_r1.a.as_voltage_sink())
-    self.connect(self.dcdc_converter.fb, self.vout_r1.b.as_analog_sink())
-    self.connect(self.vout_r1.b, self.vout_r2.a)
+    self.connect(self.fb.input, self.pwr_out)
+    self.connect(self.fb.gnd, self.gnd)
+    self.connect(self.fb.output, self.ic.fb)
+
+    self._generate_converter(self.ic.sw, 0.5,
+                             input_voltage=input_voltage, output_voltage=output_voltage,
+                             output_current_max=output_current[1], frequency=frequency,
+                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                             ripple_factor=ripple_factor)
+
+    self.connect(self.pwr_out, self.ic.vout.as_voltage_source(
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+      current_limits=(0, 1.2)*Amp
+    ))
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent

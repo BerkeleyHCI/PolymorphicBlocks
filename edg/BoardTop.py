@@ -1,5 +1,4 @@
 from electronics_lib import *
-from electronics_lib.Microcontroller_Adafruit_ItsyBitsy_BLE import Adafruit_ItsyBitsy_BLE
 
 
 class BoardTop(DesignTop):
@@ -33,6 +32,5 @@ class SimpleBoardTop(BoardTop):
         (Lpc1549_64, ['pin_assigns'], ''),
         (Stm32f103_48, ['pin_assigns'], ''),
         (Nucleo_F303k8, ['pin_assigns'], ''),
-        (Adafruit_ItsyBitsy_BLE, ['pin_assigns'], ''),
       ]
     )
