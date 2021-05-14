@@ -37,5 +37,5 @@ if __name__ == "__main__":
   compile_board_inplace(BLECircuit)
 
 class BLECircuitTestCase(unittest.TestCase):
-  def test_design_basic(self) -> None:
+  def test_design_ble(self) -> None:
     compile_board_inplace(BLECircuit)
