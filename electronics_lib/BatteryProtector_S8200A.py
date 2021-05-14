@@ -48,20 +48,20 @@ class BatteryProtector_S8200A(FootprintBlock):
     self.gnd_in = self.Export(self.battery_protector.vss)
 
     self.do_fet = self.Block(NFet(
-      drain_current=(0, 4.5 / 150) * Amp,
+      drain_current=self.pwr_in.link().current_drawn,
       power=RangeExpr.ZERO,
-      gate_voltage=(1.5, 3.4) * Volt,
+      gate_voltage=self.pwr_in.link().voltage.upper(),
       gate_charge=RangeExpr.ALL,
-      rds_on=(0, 0.1) * Ohm,
-      drain_voltage=(0, 4.5) * Volt
+      rds_on=Default((0, 0.1)),
+      drain_voltage=self.pwr_in.link().voltage.upper()
     ))
     self.co_fet = self.Block(NFet(
-      drain_current=(0, 4.5 / 150) * Amp,
+      drain_current=self.pwr_in.link().current_drawn,
       power=RangeExpr.ZERO,
-      gate_voltage=(1.5, 3.4) * Volt,
+      gate_voltage=self.pwr_in.link().voltage.upper(),
       gate_charge=RangeExpr.ALL,
-      rds_on=(0, 0.1) * Ohm,
-      drain_voltage=(0, 4.5) * Volt
+      rds_on=Default((0, 0.1)),
+      drain_voltage=self.pwr_in.link().voltage.upper()
     ))
 
   def contents(self) -> None:
