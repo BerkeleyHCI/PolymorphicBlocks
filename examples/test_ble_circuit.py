@@ -12,11 +12,11 @@ class BLECircuit(SimpleBoardTop):
     self.li_ion_bat = self.Block(Li18650(voltage=self.battery_voltage))
     self.led = self.Block(IndicatorLed())
 
-    self.link_protect_neg = self.connect(self.battery_protector.ebm, self.mcu.gnd)
-    self.link_protect_pos = self.connect(self.battery_protector.ebp, self.mcu.pwr_bat)
+    self.link_protect_neg = self.connect(self.battery_protector.gnd_out, self.mcu.gnd)
+    self.link_protect_pos = self.connect(self.battery_protector.pwr_out, self.mcu.pwr_bat)
 
-    self.link_bat_neg = self.connect(self.li_ion_bat.gnd, self.battery_protector.vss)
-    self.link_bat_pos = self.connect(self.li_ion_bat.pwr, self.battery_protector.vdd)
+    self.link_bat_neg = self.connect(self.li_ion_bat.gnd, self.battery_protector.gnd_in)
+    self.link_bat_pos = self.connect(self.li_ion_bat.pwr, self.battery_protector.pwr_in)
 
     self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.led.signal, self.mcu.digital[0])

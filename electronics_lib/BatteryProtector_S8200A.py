@@ -41,15 +41,15 @@ class BatteryProtector_S8200A(FootprintBlock):
     self.battery_protector = self.Block(BatteryProtector_S8200A_Device())
 
 
-    self.ebp = self.Port(VoltageSource())
-    self.ebm = self.Port(GroundSource())
-    self.vdd = self.Port(VoltageSink(
+    self.pwr_out = self.Port(VoltageSource())
+    self.gnd_out = self.Port(GroundSource())
+    self.pwr_in = self.Port(VoltageSink(
       voltage_limits=self.battery_protector.vdd.voltage_limits,
     ))
-    self.vss = self.Export(self.battery_protector.vss)
+    self.gnd_in = self.Export(self.battery_protector.vss)
 
-    self.vm_res = self.Block(Resistor(resistance=2 * kOhm(tol=0.10)))
-    self.vdd_vss_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.10), voltage=self.vdd.link().voltage))
+    # self.vm_res = self.Block(Resistor(resistance=2 * kOhm(tol=0.10)))
+    # self.vdd_vss_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.10), voltage=self.vdd.link().voltage))
 
     self.do_fet = self.Block(NFet(
       drain_current=(0, 4.5 / 150) * Amp,
@@ -73,20 +73,30 @@ class BatteryProtector_S8200A(FootprintBlock):
     super().contents()
 
     (self.vdd_res, ), _ = self.chain(
-      self.vdd,
+      self.pwr_in,
       self.Block(SeriesPowerResistor(330 * Ohm(tol=0.10), (0 * uAmp, self.battery_protector.vdd.current_draw.upper()))), # while 330 is preferred, the actual acceptable range is 150-1k
       self.battery_protector.vdd)
 
     # i/o connections
-    self.connect(self.vm_res.b.as_ground_source(), self.ebm)
-    self.connect(self.battery_protector.vdd, self.ebp)
+    # self.connect(self.vm_res.b.as_ground_source(), self.ebm)
+    self.connect(self.battery_protector.vdd, self.pwr_out)
 
     # vm resistor
-    self.connect(self.battery_protector.vm, self.vm_res.a)
+    # self.connect(self.battery_protector.vm, self.vm_res.a)
+
+    (self.vm_res, ), _ = self.chain(
+      self.battery_protector.vm.as_voltage_sink(),
+      self.Block(SeriesPowerResistor(2 * kOhm(tol=0.10), (0 * uAmp, self.battery_protector.vdd.current_draw.upper()))),
+      self.gnd_out)
 
     # vdd vss cap
-    self.connect(self.battery_protector.vdd, self.vdd_vss_cap.pos.as_voltage_sink())
-    self.connect(self.battery_protector.vss, self.vdd_vss_cap.neg.as_ground())
+    # self.connect(self.battery_protector.vdd, self.vdd_vss_cap.pos.as_voltage_sink())
+    # self.connect(self.battery_protector.vss, self.vdd_vss_cap.neg.as_ground())
+
+    (self.vdd_vss_cap, ), _ = self.chain(
+      self.battery_protector.vdd,
+      self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.10))),
+      self.battery_protector.vss)
 
     # do fet
     self.connect(self.battery_protector.vss, self.do_fet.source.as_ground())
@@ -96,5 +106,5 @@ class BatteryProtector_S8200A(FootprintBlock):
     self.connect(self.do_fet.drain, self.co_fet.drain)
 
     # co fet
-    self.connect(self.ebm, self.co_fet.source.as_ground())
+    self.connect(self.gnd_out, self.co_fet.source.as_ground())
     self.connect(self.battery_protector.co, self.co_fet.gate)
