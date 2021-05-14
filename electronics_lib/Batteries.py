@@ -10,7 +10,6 @@ class Cr2032(Battery, FootprintBlock):
     super().contents()
 
     # TODO can this be assigned self.pwr == VoltageSource(...) directly?
-    self.assign(self.pwr.voltage_out, (2.0, 3.0)*Volt)
     self.assign(self.pwr.current_limits, (0, 10)*mAmp)  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
     self.assign(self.capacity, (210, 210)*mAmp)  # TODO bounds of a few CR2032 cells; should be A*h
 

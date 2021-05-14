@@ -31,14 +31,18 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
 
 class Tps61023(DiscreteBoostConverter, GeneratorBlock):
 
+  VALLEY_SWITCH_CURRENT_LIMIT = 3.7
+
   def contents(self):
     super().contents()
+
+    self.require(self.pwr_out.voltage_out.within((2.2, 5.5)*Volt))
     self.assign(self.frequency, (0.5, 1)*MHertz)
     self.assign(self.efficiency, (0.7, 0.97))
 
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(580, 610) * mVolt,
-      impedance=(1, 300) * kOhm,
+      impedance=(100, 300) * kOhm,
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
@@ -66,15 +70,16 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
     self.connect(self.fb.gnd, self.gnd)
     self.connect(self.fb.output, self.ic.fb)
 
-    self._generate_converter(self.ic.sw, 0.5,
+    self._generate_converter(self.ic.sw, self.VALLEY_SWITCH_CURRENT_LIMIT,
                              input_voltage=input_voltage, output_voltage=output_voltage,
                              output_current_max=output_current[1], frequency=frequency,
                              spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                              ripple_factor=ripple_factor)
 
+    # TODO add constraint on effective inductance and capacitance range
     self.connect(self.pwr_out, self.ic.vout.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
-      current_limits=(0, 1.2)*Amp
+      current_limits=(0, self.VALLEY_SWITCH_CURRENT_LIMIT)*Amp
     ))
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):

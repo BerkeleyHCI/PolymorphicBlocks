@@ -1,3 +1,5 @@
+import unittest
+
 from edg import *
 from electronics_lib.BatteryProtector_S8200A import BatteryProtector_S8200A
 from electronics_lib.DcDcConverters import Tps61023
@@ -33,3 +35,7 @@ class BLECircuit(SimpleBoardTop):
 
 if __name__ == "__main__":
   compile_board_inplace(BLECircuit)
+
+class BLECircuitTestCase(unittest.TestCase):
+  def test_design_basic(self) -> None:
+    compile_board_inplace(BLECircuit)
