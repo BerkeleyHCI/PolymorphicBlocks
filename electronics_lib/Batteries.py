@@ -44,3 +44,24 @@ class Li18650(Battery, FootprintBlock):
       },
       mfr='Keystone', part='1042'
     )
+
+class AABattery(Battery, FootprintBlock):
+  def __init__(self):
+    # This actually initializes in the parent, TODO unhackify this by removing spec processing, see issue #28
+    super().__init__(voltage=(1.3, 1.7)*Volt)
+
+  def contents(self):
+    super().contents()
+
+    # TODO can this be assigned self.pwr == VoltageSource(...) directly?
+    self.assign(self.pwr.current_limits, (0, 1)*Amp)
+    self.assign(self.capacity, (2, 3)*Amp)  # TODO should be A*h
+
+    self.footprint(
+      'U', 'Battery:BatteryHolder_Keystone_2461_1x57mm',
+      {
+        '1': self.pwr,
+        '2': self.gnd,
+      },
+      mfr='Keystone', part='2461'
+    )

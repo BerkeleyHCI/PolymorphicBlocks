@@ -37,6 +37,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
     super().contents()
 
     self.require(self.pwr_out.voltage_out.within((2.2, 5.5)*Volt))
+    self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
     self.assign(self.frequency, (0.5, 1)*MHertz)
     self.assign(self.efficiency, (0.7, 0.97))
 
@@ -118,6 +119,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.require(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
+    self.require(self.pwr_out.voltage_out.lower() <= self.pwr_in.voltage_limits.lower())
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
@@ -215,6 +217,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable"""
   def contents(self):
     super().contents()
+
+    self.require(self.pwr_out.voltage_out.lower() <= self.pwr_in.voltage_limits.lower())
 
     self.assign(self.frequency, (390, 590)*kHertz)
     self.assign(self.efficiency, (0.75, 0.95))  # Efficiency stats from first page for ~>10mA
@@ -334,6 +338,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.require(self.pwr_out.voltage_out.within((1, 24)*Volt))
+    self.require(self.pwr_out.voltage_out.lower() <= self.pwr_in.voltage_limits.lower())
     self.assign(self.frequency, 400*kHertz(tol=0))  # TODO also comes in 1.4 and 2.1MHz versions
     self.assign(self.efficiency, (0.7, 0.98))  # Efficiency stats from first page for ~>10mA
 
@@ -431,6 +436,9 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
   def contents(self):
     super().contents()
+
+    self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
+
     self.assign(self.frequency, (1.1, 1.9)*MHertz)
     self.assign(self.efficiency, (0.75, 0.8))  # Efficiency stats from first page for ~>10mA
 

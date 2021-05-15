@@ -49,7 +49,7 @@ class BatteryProtector_S8200A(Block):
     self.do_fet = self.Block(NFet(
       drain_current=self.pwr_in.link().current_drawn,
       power=RangeExpr.ZERO,
-      gate_voltage=self.pwr_in.link().voltage.upper(),
+      gate_voltage=self.pwr_in.link().voltage,
       gate_charge=RangeExpr.ALL,
       rds_on=Default((0, 0.1)),
       drain_voltage=self.pwr_in.link().voltage
@@ -57,7 +57,7 @@ class BatteryProtector_S8200A(Block):
     self.co_fet = self.Block(NFet(
       drain_current=self.pwr_in.link().current_drawn,
       power=RangeExpr.ZERO,
-      gate_voltage=self.pwr_in.link().voltage.upper(),
+      gate_voltage=self.pwr_in.link().voltage,
       gate_charge=RangeExpr.ALL,
       rds_on=Default((0, 0.1)),
       drain_voltage=self.pwr_in.link().voltage

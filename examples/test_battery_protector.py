@@ -8,10 +8,9 @@ from electronics_lib.DcDcConverters import Tps61023
 class BatteryProtectorCircuit(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
-    self.battery_voltage = (1, 1.5) * Volt
     self.mcu = self.Block(Stm32f103_48())
     self.battery_protector = self.Block(BatteryProtector_S8200A())
-    self.li_ion_bat = self.Block(Li18650(voltage=self.battery_voltage))
+    self.li_ion_bat = self.Block(Li18650(voltage=(2.5, 4.2) * Volt))
     self.led = self.Block(VoltageIndicatorLed())
     self.boost = self.Block(Tps61023(output_voltage=3.3 * Volt(tol=0.07)))
     self.swd = self.Block(SwdCortexTargetHeader())
