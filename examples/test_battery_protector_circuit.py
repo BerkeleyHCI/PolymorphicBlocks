@@ -5,7 +5,7 @@ from electronics_lib.BatteryProtector_S8200A import BatteryProtector_S8200A
 from electronics_lib.DcDcConverters import Tps61023
 
 
-class BLECircuit(SimpleBoardTop):
+class BatteryProtectorCircuit(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.battery_voltage = (1, 1.5) * Volt
@@ -34,8 +34,8 @@ class BLECircuit(SimpleBoardTop):
 
 
 if __name__ == "__main__":
-  compile_board_inplace(BLECircuit)
+  compile_board_inplace(BatteryProtectorCircuit)
 
-class BLECircuitTestCase(unittest.TestCase):
-  def test_design_ble(self) -> None:
-    compile_board_inplace(BLECircuit)
+class BatteryProtectorCircuitTestCase(unittest.TestCase):
+  def test_design_battery_protector(self) -> None:
+    compile_board_inplace(BatteryProtectorCircuit)
