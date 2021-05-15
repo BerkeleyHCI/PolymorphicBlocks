@@ -58,7 +58,7 @@ class AABattery(Battery, FootprintBlock):
     self.assign(self.capacity, (2, 3)*Amp)  # TODO should be A*h
 
     self.footprint(
-      'U', 'Battery:BatteryHolder_Keystone_2461_1x57mm',
+      'U', 'Battery:BatteryHolder_Keystone_2460_1xAA',
       {
         '1': self.pwr,
         '2': self.gnd,

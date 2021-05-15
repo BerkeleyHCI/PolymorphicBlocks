@@ -41,9 +41,7 @@ class BatteryProtector_S8200A(Block):
 
     self.pwr_out = self.Port(VoltageSource())
     self.gnd_out = self.Port(GroundSource())
-    self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=self.ic.vdd.voltage_limits,
-    ))
+    self.pwr_in = self.Port(VoltageSink())
     self.gnd_in = self.Export(self.ic.vss)
 
     self.do_fet = self.Block(NFet(
