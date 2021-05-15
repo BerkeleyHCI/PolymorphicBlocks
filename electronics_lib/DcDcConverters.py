@@ -1,5 +1,87 @@
 from electronics_abstract_parts import *
 
+class Tps61023_Device(DiscreteChip, FootprintBlock):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike = RangeExpr()):
+    super().__init__()
+    self.vin = self.Port(VoltageSink(
+      voltage_limits=(0.5, 5.5)*Volt,
+      current_draw=current_draw
+    ))
+    self.gnd = self.Port(Ground())
+    self.sw = self.Port(VoltageSource())
+    self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))
+    self.vout = self.Port(Passive()) # TODO model as voltage source
+
+  def contents(self) -> None:
+    super().contents()
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-6',
+      {
+        '1': self.fb,
+        '2': self.vin, # en
+        '3': self.vin,
+        '4': self.gnd,
+        '5': self.sw,
+        '6': self.vout,
+      },
+      mfr='Texas Instruments', part='TPS61023',
+      datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
+    )
+
+class Tps61023(DiscreteBoostConverter, GeneratorBlock):
+
+  VALLEY_SWITCH_CURRENT_LIMIT = 3.7
+
+  def contents(self):
+    super().contents()
+
+    self.require(self.pwr_out.voltage_out.within((2.2, 5.5)*Volt))
+    self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
+    self.assign(self.frequency, (0.5, 1)*MHertz)
+    self.assign(self.efficiency, (0.7, 0.97))
+
+    self.fb = self.Block(FeedbackVoltageDivider(
+      output_voltage=(580, 610) * mVolt,
+      impedance=(100, 300) * kOhm,
+      assumed_input_voltage=self.spec_output_voltage
+    ))
+    self.assign(self.pwr_out.voltage_out,
+                (580*mVolt / self.fb.ratio.upper(),
+                 610*mVolt / self.fb.ratio.lower()))
+
+    self.generator(self.generate_converter,
+                   self.pwr_in.link().voltage, self.spec_output_voltage,
+                   self.pwr_out.link().current_drawn,
+                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+
+
+  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
+                         output_current: RangeVal, frequency: RangeVal,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+    self.ic = self.Block(Tps61023_Device(
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+    ))
+    self.connect(self.pwr_in, self.ic.vin)
+    self.connect(self.gnd, self.ic.gnd)
+
+    self.connect(self.fb.input, self.pwr_out)
+    self.connect(self.fb.gnd, self.gnd)
+    self.connect(self.fb.output, self.ic.fb)
+
+    self._generate_converter(self.ic.sw, self.VALLEY_SWITCH_CURRENT_LIMIT,
+                             input_voltage=input_voltage, output_voltage=output_voltage,
+                             output_current_max=output_current[1], frequency=frequency,
+                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+                             ripple_factor=ripple_factor)
+
+    # TODO add constraint on effective inductance and capacitance range
+    self.connect(self.pwr_out, self.ic.vout.as_voltage_source(
+      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+      current_limits=(0, self.VALLEY_SWITCH_CURRENT_LIMIT)*Amp
+    ))
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
@@ -37,6 +119,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.require(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
+    self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
     self.assign(self.frequency, 580*kHertz(tol=0))
     self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
@@ -134,6 +217,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable"""
   def contents(self):
     super().contents()
+
+    self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
     self.assign(self.frequency, (390, 590)*kHertz)
     self.assign(self.efficiency, (0.75, 0.95))  # Efficiency stats from first page for ~>10mA
@@ -253,6 +338,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     super().contents()
 
     self.require(self.pwr_out.voltage_out.within((1, 24)*Volt))
+    self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
     self.assign(self.frequency, 400*kHertz(tol=0))  # TODO also comes in 1.4 and 2.1MHz versions
     self.assign(self.efficiency, (0.7, 0.98))  # Efficiency stats from first page for ~>10mA
 
@@ -350,6 +436,9 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
   def contents(self):
     super().contents()
+
+    self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
+
     self.assign(self.frequency, (1.1, 1.9)*MHertz)
     self.assign(self.efficiency, (0.75, 0.8))  # Efficiency stats from first page for ~>10mA
 
