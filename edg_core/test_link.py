@@ -9,6 +9,13 @@ class LinkTestCase(unittest.TestCase):
   def setUp(self):
     self.pb = TestLink()._elaborated_def_to_proto()
 
+  def test_self_class(self):
+    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_elaboration_common.TestLink")
+
+  def test_superclasses(self):
+    self.assertEqual(len(self.pb.superclasses), 1)
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_elaboration_common.TestLinkBase")
+
   def test_param_def(self):
     self.assertEqual(len(self.pb.params), 3)
     self.assertTrue(self.pb.params['float_param_sink_sum'].HasField('floating'))

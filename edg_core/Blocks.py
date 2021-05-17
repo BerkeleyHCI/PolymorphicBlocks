@@ -233,11 +233,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._elaboration_state = BlockElaborationState.post_contents
     return self._def_to_proto()
 
-  @classmethod
-  def _get_block_bases(cls) -> List[Type['BaseBlock']]:
-    return [bcls for bcls in cls.__bases__
-            if issubclass(bcls, BaseBlock) and (bcls, 'non_library') not in bcls._elt_properties]
-
   # TODO: can we unify PortBridge into ProtoType? Difference seems to be in meta and repeated superclasses
   ProtoType = TypeVar('ProtoType', bound=edgir.BlockLikeTypes)
   def _populate_def_proto_block_base(self, pb: ProtoType) -> ProtoType:
@@ -254,7 +249,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    for cls in self._get_block_bases():
+    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       super_pb = pb.superclasses.add()
       super_pb.target.name = cls._static_def_name()
 
@@ -528,7 +523,7 @@ class Link(BaseBlock[edgir.Link]):
                          for port, path in self._get_ref_map(prefix).items()])
 
   def _def_to_proto(self) -> edgir.Link:
-    for cls in self._get_block_bases():
+    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())

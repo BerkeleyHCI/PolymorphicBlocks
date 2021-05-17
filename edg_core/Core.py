@@ -254,6 +254,12 @@ class HasMetadata(LibraryElement):
     self._metadata.register(value)
     return value
 
+  BaseType = TypeVar('BaseType', bound='HasMetadata')
+  @classmethod
+  def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
+    return [bcls for bcls in cls.__bases__
+            if issubclass(bcls, base_type) and (bcls, 'non_library') not in bcls._elt_properties]
+
   def _metadata_to_proto(self, src: Any, path: List[str],
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
     """Generate metadata from a given object."""
