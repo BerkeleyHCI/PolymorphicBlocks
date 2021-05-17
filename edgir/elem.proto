@@ -29,6 +29,7 @@ message Port {
 
   edg.ref.LibraryPath self_class = 20;
   repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  /** Those superclasses that must apply to the env
 //      this bundle is within.*/
@@ -57,6 +58,7 @@ message Bundle {
 
   edg.ref.LibraryPath self_class = 20;
   repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+// TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
@@ -152,6 +154,7 @@ message Link {
 
   edg.ref.LibraryPath self_class = 20;
   repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
