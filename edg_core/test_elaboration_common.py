@@ -4,7 +4,13 @@ from . import *
 but do not make a valid compilation problem"""
 
 
-class TestLink(Link):
+class TestLinkBase(Link):
+    """Inheritance base for TestLink"""
+    def __init__(self) -> None:
+        super().__init__()
+
+
+class TestLink(TestLinkBase):
     def __init__(self) -> None:
         super().__init__()
         self.source = self.Port(TestPortSource(), optional=True)

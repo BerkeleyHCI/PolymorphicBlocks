@@ -6,6 +6,7 @@ from . import edgir
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
+from .Blocks import BaseBlock
 from .HierarchyBlock import Block, abstract_block
 
 
@@ -44,7 +45,7 @@ class PortBridge(Block):
     pb = self._populate_def_proto_param_init(pb)
     pb = self._populate_def_proto_port_init(pb)
 
-    for cls in self._get_block_bases():
+    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       assert issubclass(cls, PortBridge)
 
     return pb

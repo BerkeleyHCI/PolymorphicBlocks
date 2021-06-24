@@ -275,7 +275,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
-    for cls in self._get_block_bases():
+    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
 
     pb = edgir.HierarchyBlock()
@@ -577,7 +577,7 @@ class GeneratorBlock(Block):
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     # TODO dedup w/ HierarchyBlock._def_to_proto
-    for cls in self._get_block_bases():
+    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       assert issubclass(cls, Block)
 
     pb = edgir.HierarchyBlock()

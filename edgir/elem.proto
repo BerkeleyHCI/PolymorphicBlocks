@@ -28,6 +28,8 @@ message Port {
   map<string, edg.expr.ValueExpr> constraints = 11;
 
   edg.ref.LibraryPath self_class = 20;
+  repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  /** Those superclasses that must apply to the env
 //      this bundle is within.*/
@@ -55,6 +57,8 @@ message Bundle {
   map<string, edg.expr.ValueExpr> constraints = 12;
 
   edg.ref.LibraryPath self_class = 20;
+  repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+// TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
@@ -149,6 +153,8 @@ message Link {
   map<string, edg.expr.ValueExpr> constraints = 12;
 
   edg.ref.LibraryPath self_class = 20;
+  repeated edg.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
 //  oneof impl {
 //    edg.common.Empty none = 40;
