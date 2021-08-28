@@ -125,11 +125,21 @@ object ArrayValue {
     }
   }
 
-  object ExtractRange {
-    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
-      case FullRangeValue(eltMin, eltMax) => (eltMin, eltMax)
-    }.map(_.unzip)
+  // Extracts the min and maxes from an array of ranges, returning an empty array if any of the contents are empty
+  object ExtactRangePropagatingEmpty {
+
   }
+
+  // Extracts the min and maxes from an array of ranges, discarding any empty values
+  object ExtractRangeDiscardingEmpty {
+
+  }
+
+//  object ExtractRange {
+//    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
+//      case FullRangeValue(eltMin, eltMax) => (eltMin, eltMax)
+//    }.map(_.unzip)
+//  }
 
   object ExtractBoolean {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Boolean]] = seqMapOption(vals.values) {
