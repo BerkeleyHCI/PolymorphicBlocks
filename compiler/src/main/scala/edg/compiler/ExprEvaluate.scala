@@ -233,7 +233,7 @@ object ExprEvaluate {
       }
 
     case (expr.ReductionExpr.Op.HULL, ArrayValue.Empty(_)) =>  // TODO empty range construct?
-      RangeValue(0, 0)  // TODO this is a nasty hack! - should return an invalid value
+      RangeEmpty
     case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(valMins, valMaxs)) =>
       RangeValue(valMins.min, valMaxs.max)
 

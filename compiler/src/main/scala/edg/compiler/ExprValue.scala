@@ -50,19 +50,26 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 }
 
 object RangeValue {
-  def apply(lower: Double, upper: Double): RangeValue = RangeValue(lower.toFloat, upper.toFloat)  // convenience method
-  def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // cannot be matched on, NaN equality is whack
-  // TODO proper null interval construct
+  def apply(lower: Double, upper: Double): RangeValue =
+    NumericRangeValue(lower.toFloat, upper.toFloat)  // convenience method
+
+  def empty: RangeValue = RangeEmpty
 }
 
-case class RangeValue(lower: Float, upper: Float) extends ExprValue {
-  require((lower <= upper) || isEmpty, s"malformed range ($lower, $upper)")
+sealed trait RangeValue extends ExprValue
 
-  def isEmpty: Boolean = lower.isNaN || upper.isNaN  // TODO better definition of empty range
+case class NumericRangeValue(lower: Float, upper: Float) extends RangeValue {
+  require(lower <= upper, s"malformed range ($lower, $upper)")
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
   override def toStringValue: String = s"($lower, $upper)"
 }
+
+case object RangeEmpty extends RangeValue {  // an empty range, analogous to an empty set
+  override def toLit: lit.ValueLit = Literal.Range(Float.NaN, Float.NaN)
+  override def toStringValue: String = s"(${Float.NaN}, ${Float.NaN})"
+}
+
 case class BooleanValue(value: Boolean) extends ExprValue {
   override def toLit: lit.ValueLit = Literal.Boolean(value)
   override def toStringValue: String = value.toString
