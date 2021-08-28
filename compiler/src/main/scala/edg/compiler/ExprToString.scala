@@ -91,6 +91,7 @@ class ExprToString() extends ValueExprMap[String] {
       case Op.MINIMUM => Some("min")
       case Op.SET_EXTRACT => Some("setExtract")
       case Op.INTERSECTION => Some("intersection")
+      case Op.HULL => Some("hull")
       case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }

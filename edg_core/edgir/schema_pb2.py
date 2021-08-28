@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -21,10 +20,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='schema.proto',
   package='edg.schema',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\x0cschema.proto\x12\nedg.schema\x1a\x0c\x63ommon.proto\x1a\nelem.proto\"\x87\x04\n\x07Library\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.edg.schema.Library.LibIdent\x12\x0f\n\x07imports\x18\x02 \x03(\t\x12$\n\x04root\x18\n \x01(\x0b\x32\x16.edg.schema.Library.NS\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\x1a\xdc\x02\n\x02NS\x12\x34\n\x07members\x18\x01 \x03(\x0b\x32#.edg.schema.Library.NS.MembersEntry\x1a\xd3\x01\n\x03Val\x12\x1e\n\x04port\x18\n \x01(\x0b\x32\x0e.edg.elem.PortH\x00\x12\"\n\x06\x62undle\x18\x0b \x01(\x0b\x32\x10.edg.elem.BundleH\x00\x12\x33\n\x0fhierarchy_block\x18\r \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x12\x1e\n\x04link\x18\x0e \x01(\x0b\x32\x0e.edg.elem.LinkH\x00\x12+\n\tnamespace\x18\x14 \x01(\x0b\x32\x16.edg.schema.Library.NSH\x00\x42\x06\n\x04type\x1aJ\n\x0cMembersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.edg.schema.Library.NS.Val:\x02\x38\x01\x1a\x18\n\x08LibIdent\x12\x0c\n\x04name\x18\x01 \x01(\t\"4\n\x06\x44\x65sign\x12*\n\x08\x63ontents\x18\x02 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockb\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -42,42 +41,42 @@ _LIBRARY_NS_VAL = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bundle', full_name='edg.schema.Library.NS.Val.bundle', index=1,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='hierarchy_block', full_name='edg.schema.Library.NS.Val.hierarchy_block', index=2,
       number=13, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='link', full_name='edg.schema.Library.NS.Val.link', index=3,
       number=14, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='namespace', full_name='edg.schema.Library.NS.Val.namespace', index=4,
       number=20, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -103,21 +102,21 @@ _LIBRARY_NS_MEMBERSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='edg.schema.Library.NS.MembersEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -140,14 +139,14 @@ _LIBRARY_NS = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_LIBRARY_NS_VAL, _LIBRARY_NS_MEMBERSENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -170,14 +169,14 @@ _LIBRARY_LIBIDENT = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -200,35 +199,35 @@ _LIBRARY = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='imports', full_name='edg.schema.Library.imports', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='root', full_name='edg.schema.Library.root', index=2,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.schema.Library.meta', index=3,
       number=127, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_LIBRARY_NS, _LIBRARY_LIBIDENT, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -252,14 +251,14 @@ _DESIGN = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -301,6 +300,7 @@ _LIBRARY.fields_by_name['meta'].message_type = common__pb2._METADATA
 _DESIGN.fields_by_name['contents'].message_type = elem__pb2._HIERARCHYBLOCK
 DESCRIPTOR.message_types_by_name['Library'] = _LIBRARY
 DESCRIPTOR.message_types_by_name['Design'] = _DESIGN
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Library = _reflection.GeneratedProtocolMessageType('Library', (_message.Message,), dict(
 
@@ -349,6 +349,5 @@ Design = _reflection.GeneratedProtocolMessageType('Design', (_message.Message,),
 _sym_db.RegisterMessage(Design)
 
 
-_LIBRARY_NS_MEMBERSENTRY.has_options = True
-_LIBRARY_NS_MEMBERSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_LIBRARY_NS_MEMBERSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

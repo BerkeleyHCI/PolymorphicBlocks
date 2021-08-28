@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,10 +19,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='impl.proto',
   package='edg.impl',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\nimpl.proto\x12\x08\x65\x64g.impl\x1a\x0c\x63ommon.proto\"/\n\tBlockImpl\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\".\n\x08PortImpl\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\".\n\x08LinkImpl\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\"5\n\x0f\x45nvironmentImpl\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadatab\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -41,14 +40,14 @@ _BLOCKIMPL = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -72,14 +71,14 @@ _PORTIMPL = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -103,14 +102,14 @@ _LINKIMPL = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -134,14 +133,14 @@ _ENVIRONMENTIMPL = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -159,6 +158,7 @@ DESCRIPTOR.message_types_by_name['BlockImpl'] = _BLOCKIMPL
 DESCRIPTOR.message_types_by_name['PortImpl'] = _PORTIMPL
 DESCRIPTOR.message_types_by_name['LinkImpl'] = _LINKIMPL
 DESCRIPTOR.message_types_by_name['EnvironmentImpl'] = _ENVIRONMENTIMPL
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 BlockImpl = _reflection.GeneratedProtocolMessageType('BlockImpl', (_message.Message,), dict(
   DESCRIPTOR = _BLOCKIMPL,

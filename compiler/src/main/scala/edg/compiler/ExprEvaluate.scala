@@ -209,11 +209,6 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
-    // TODO max / min on Array[Range] is a bit of a hack (but kinda makes sense?) - perhaps should be removed
-    // TODO define a default in case of empty?
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
-
     // TODO this is definitely a hack in the absence of a proper range extractor
     case (expr.ReductionExpr.Op.MAXIMUM, RangeValue(lower, upper)) => FloatValue(upper)
     case (expr.ReductionExpr.Op.MINIMUM, RangeValue(lower, upper)) => FloatValue(lower)
@@ -227,7 +222,7 @@ object ExprEvaluate {
       throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $reduce")
     }
 
-    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>
+    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>  // TODO empty range construct?
       RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
     case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
       val (minMax, maxMin) = (valMaxs.min, valMins.max)
@@ -236,6 +231,10 @@ object ExprEvaluate {
       } else {  // null set
         RangeValue.empty
       }
+
+    // TODO empty case for hull?
+    case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(valMins, valMaxs)) =>
+      RangeValue(valMins.min, valMaxs.max)
 
     case _ => throw new ExprEvaluateException(s"Unknown reduce op in ${reduce.op} $vals from $reduce")
   }

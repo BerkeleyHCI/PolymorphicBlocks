@@ -202,6 +202,10 @@ message ReductionExpr {
     /** Intersection :: (Set_like s) => s Range -> Range
         May produce an empty range */
     INTERSECTION = 13;
+
+    /** Hull :: (Set_like s) => s Range -> Range
+        Like a union operator, but produces one range that */
+    HULL = 14;
   }
   Op op = 1;
   ValueExpr vals = 4;

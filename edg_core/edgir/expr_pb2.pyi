@@ -132,6 +132,7 @@ class ReductionExpr(google___protobuf___message___Message):
         MINIMUM = typing___cast(ReductionExpr.OpValue, 11)
         SET_EXTRACT = typing___cast(ReductionExpr.OpValue, 12)
         INTERSECTION = typing___cast(ReductionExpr.OpValue, 13)
+        HULL = typing___cast(ReductionExpr.OpValue, 14)
     UNDEFINED = typing___cast(ReductionExpr.OpValue, 0)
     SUM = typing___cast(ReductionExpr.OpValue, 1)
     ALL_TRUE = typing___cast(ReductionExpr.OpValue, 2)
@@ -142,6 +143,7 @@ class ReductionExpr(google___protobuf___message___Message):
     MINIMUM = typing___cast(ReductionExpr.OpValue, 11)
     SET_EXTRACT = typing___cast(ReductionExpr.OpValue, 12)
     INTERSECTION = typing___cast(ReductionExpr.OpValue, 13)
+    HULL = typing___cast(ReductionExpr.OpValue, 14)
     type___Op = Op
 
     op: type___ReductionExpr.OpValue = ...
