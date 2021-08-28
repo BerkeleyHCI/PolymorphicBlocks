@@ -29,12 +29,12 @@ object ExprEvaluate {
   def evalBinary(binary: expr.BinaryExpr, lhs: ExprValue, rhs: ExprValue): ExprValue = binary.op match {
     // Note promotion rules: range takes precedence, then float, then int
     case expr.BinaryExpr.Op.ADD => (lhs, rhs) match {
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         val all = Seq(lhsMin + rhsMin, lhsMin + rhsMax, lhsMax + rhsMin, lhsMax + rhsMax)
         RangeValue(all.min, all.max)
-      case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
         RangeValue(lhsMin + rhs, lhsMax + rhs)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+      case (FloatPromotable(lhs), FullRangeValue(rhsMin, rhsMax)) =>
         RangeValue(lhs + rhsMin, lhs + rhsMax)
       case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs + rhs)
       case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs + rhs)
@@ -42,12 +42,12 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.SUB => (lhs, rhs) match {
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         val all = Seq(lhsMin - rhsMin, lhsMin - rhsMax, lhsMax - rhsMin, lhsMax - rhsMax)
         RangeValue(all.min, all.max)
-      case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
         RangeValue(lhsMin - rhs, lhsMax - rhs)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+      case (FloatPromotable(lhs), FullRangeValue(rhsMin, rhsMax)) =>
         RangeValue(lhs - rhsMin, lhs - rhsMax)
       case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs - rhs)
       case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs - rhs)
@@ -55,12 +55,12 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.MULT => (lhs, rhs) match {
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)
         RangeValue(all.min, all.max)
-      case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
         RangeValue(lhsMin * rhs, lhsMax * rhs)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+      case (FloatPromotable(lhs), FullRangeValue(rhsMin, rhsMax)) =>
         RangeValue(lhs * rhsMin, lhs * rhsMax)
       case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs * rhs)
       case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs * rhs)
@@ -68,12 +68,12 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.DIV => (lhs, rhs) match {
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         val all = Seq(lhsMin / rhsMin, lhsMin / rhsMax, lhsMax / rhsMin, lhsMax / rhsMax)
         RangeValue(all.min, all.max)
-      case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
         RangeValue(lhsMin / rhs, lhsMax / rhs)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+      case (FloatPromotable(lhs), FullRangeValue(rhsMin, rhsMax)) =>
         RangeValue(lhs / rhsMin, lhs / rhsMax)
       case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs / rhs)
       case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs / rhs)
@@ -100,18 +100,23 @@ object ExprEvaluate {
 
     case expr.BinaryExpr.Op.EQ => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         BooleanValue(lhsMin == rhsMin && lhsMax == rhsMax)
+      case (RangeEmpty, RangeEmpty) => BooleanValue(true)
+      case (_: RangeValue, _: RangeValue) => BooleanValue(false)  // type mismatch by priority
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs == rhs)  // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs == rhs)
       case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs == rhs)
       case (TextValue(lhs), TextValue(rhs)) => BooleanValue(lhs == rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
+    // TODO dedup w/ above?
     case expr.BinaryExpr.Op.NEQ => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         BooleanValue(lhsMin != rhsMin || lhsMax != rhsMax)
+      case (RangeEmpty, RangeEmpty) => BooleanValue(false)
+      case (_: RangeValue, _: RangeValue) => BooleanValue(true)  // type mismatch by priority
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs != rhs)  // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs != rhs)
       case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs != rhs)
@@ -121,28 +126,28 @@ object ExprEvaluate {
 
     case expr.BinaryExpr.Op.GT => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMin > rhsMax)
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMin > rhsMax)
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs > rhs) // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs > rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.GTE => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMin >= rhsMax)
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMin >= rhsMax)
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs >= rhs) // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs >= rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.LT => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMax < rhsMin)
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMax < rhsMin)
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs < rhs) // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs < rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.LTE => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMax <= rhsMin)
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) => BooleanValue(lhsMax <= rhsMin)
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs <= rhs) // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs <= rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
@@ -160,7 +165,9 @@ object ExprEvaluate {
     }
 
     case expr.BinaryExpr.Op.INTERSECTION => (lhs, rhs) match {
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (RangeEmpty, _) => RangeEmpty  // anything intersecting with empty is empty
+      case (_, RangeEmpty) => RangeEmpty
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         val (minMax, maxMin) = (math.min(lhsMax, rhsMax), math.max(lhsMin, rhsMin))
         if (maxMin <= minMax) {
           RangeValue(maxMin, minMax)
@@ -170,9 +177,12 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.SUBSET => (lhs, rhs) match {  // lhs contained within rhs
-      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+      case (RangeEmpty, _: FullRangeValue) => BooleanValue(true)  // empty contained within anything
+      case (_: FullRangeValue, RangeEmpty) => BooleanValue(false)  // empty contains nothing
+      case (FloatPromotable(_), RangeEmpty) => BooleanValue(false)  // empty contains nothing, not even single points
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
         BooleanValue(rhsMin <= lhsMin && rhsMax >= lhsMax)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>BooleanValue(rhsMin <= lhs && rhsMax >= lhs)
+      case (FloatPromotable(lhs), FullRangeValue(rhsMin, rhsMax)) => BooleanValue(rhsMin <= lhs && rhsMax >= lhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operands types in $lhs ${binary.op} $rhs from $binary")
     }
 
@@ -210,8 +220,8 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
     // TODO this is definitely a hack in the absence of a proper range extractor
-    case (expr.ReductionExpr.Op.MAXIMUM, RangeValue(lower, upper)) => FloatValue(upper)
-    case (expr.ReductionExpr.Op.MINIMUM, RangeValue(lower, upper)) => FloatValue(lower)
+    case (expr.ReductionExpr.Op.MAXIMUM, FullRangeValue(lower, upper)) => FloatValue(upper)
+    case (expr.ReductionExpr.Op.MINIMUM, FullRangeValue(lower, upper)) => FloatValue(lower)
 
     // TODO this should be a user-level assertion instead of a compiler error
     case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
@@ -224,6 +234,8 @@ object ExprEvaluate {
 
     case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>  // TODO empty range construct?
       RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
+
+    // TODO intersection if it contains an empty
     case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
       val (minMax, maxMin) = (valMaxs.min, valMins.max)
       if (maxMin <= minMax) {
@@ -232,6 +244,7 @@ object ExprEvaluate {
         RangeValue.empty
       }
 
+    // TODO hull if it contains an empty
     case (expr.ReductionExpr.Op.HULL, ArrayValue.Empty(_)) =>  // TODO empty range construct?
       RangeEmpty
     case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(valMins, valMaxs)) =>

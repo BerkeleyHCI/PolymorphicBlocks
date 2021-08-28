@@ -326,7 +326,7 @@ class ConstProp {
 
     // Also get all empty range assignments
     val emptyRangeErrors = params.toMap.collect {
-      case (ExprRef.Param(targetPath), DepValue.Param(range: RangeValue)) if range.isEmpty =>
+      case (ExprRef.Param(targetPath), DepValue.Param(RangeEmpty)) =>
         paramSource.get(targetPath).map { case (root, constrName, value) =>
           CompilerError.EmptyRange(targetPath, root, constrName, value)
         }

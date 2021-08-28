@@ -51,14 +51,15 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 
 object RangeValue {
   def apply(lower: Double, upper: Double): RangeValue =
-    NumericRangeValue(lower.toFloat, upper.toFloat)  // convenience method
+    FullRangeValue(lower.toFloat, upper.toFloat)  // convenience method
 
   def empty: RangeValue = RangeEmpty
 }
 
 sealed trait RangeValue extends ExprValue
 
-case class NumericRangeValue(lower: Float, upper: Float) extends RangeValue {
+// TODO better name - basically means "not empty / null set"
+case class FullRangeValue(lower: Float, upper: Float) extends RangeValue {
   require(lower <= upper, s"malformed range ($lower, $upper)")
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
@@ -126,7 +127,7 @@ object ArrayValue {
 
   object ExtractRange {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
-      case RangeValue(eltMin, eltMax) => (eltMin, eltMax)
+      case FullRangeValue(eltMin, eltMax) => (eltMin, eltMax)
     }.map(_.unzip)
   }
 
