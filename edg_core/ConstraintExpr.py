@@ -26,8 +26,9 @@ class ReductionOp(Enum):
   all_equal = 4
   all_unique = 5
   intersection = 6
-  op_and = 7,
-  op_or = 8,
+  hull = 7
+  op_and = 8
+  op_or = 9
 
 
 class BinaryNumOp(Enum):
@@ -214,6 +215,7 @@ class ReductionOpBinding(Binding):
       ReductionOp.all_equal: edgir.ReductionExpr.ALL_EQ,
       ReductionOp.all_unique: edgir.ReductionExpr.ALL_UNIQUE,
       ReductionOp.intersection: edgir.ReductionExpr.INTERSECTION,
+      ReductionOp.hull: edgir.ReductionExpr.HULL,
       ReductionOp.op_and: edgir.ReductionExpr.ALL_TRUE,
       ReductionOp.op_or: edgir.ReductionExpr.ANY_TRUE,
     }

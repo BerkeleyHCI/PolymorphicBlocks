@@ -201,11 +201,11 @@ object ExprEvaluate {
 
     case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
 
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.Empty(_)) => FloatValue(Float.NegativeInfinity)  // TODO type needs to be dynamic
+    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.Empty(_)) => FloatValue(Float.NegativeInfinity)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
 
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.Empty(_)) => FloatValue(Float.PositiveInfinity)  // TODO type needs to be dynamic
+    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.Empty(_)) => FloatValue(Float.PositiveInfinity)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
@@ -232,7 +232,8 @@ object ExprEvaluate {
         RangeValue.empty
       }
 
-    // TODO empty case for hull?
+    case (expr.ReductionExpr.Op.HULL, ArrayValue.Empty(_)) =>  // TODO empty range construct?
+      RangeValue(0, 0)  // TODO this is a nasty hack! - should return an invalid value
     case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(valMins, valMaxs)) =>
       RangeValue(valMins.min, valMaxs.max)
 

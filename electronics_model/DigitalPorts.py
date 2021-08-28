@@ -40,10 +40,10 @@ class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constr
 
     # TODO RangeBuilder initializer for voltage
     # TODO this and below should be x.voltage_out.min (etc) instead of relying on min over Array[Range]
-    bidirs_voltage_min = self.bidirs.min(lambda x: x.voltage_out)
-    bidirs_voltage_max = self.bidirs.max(lambda x: x.voltage_out)
-    single_voltage_min = self.single_sources.min(lambda x: x.voltage_out)
-    single_voltage_max = self.single_sources.max(lambda x: x.voltage_out)
+    bidirs_voltage_min = self.bidirs.hull(lambda x: x.voltage_out).lower()
+    bidirs_voltage_max = self.bidirs.hull(lambda x: x.voltage_out).upper()
+    single_voltage_min = self.single_sources.hull(lambda x: x.voltage_out).lower()
+    single_voltage_max = self.single_sources.hull(lambda x: x.voltage_out).upper()
     self.assign(self.voltage, self.source.is_connected().then_else(  # TODO: really clean up
       # TODO get rid of _to_expr_type?
       RangeExpr._to_expr_type((self.source.voltage_out.lower().min(bidirs_voltage_min.min(single_voltage_min)),
@@ -79,8 +79,8 @@ class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constr
                     single_output_thresholds)))
 
     self.assign(self.input_thresholds, (  # TODO: clean up
-      self.sinks.min(lambda x: x.input_thresholds).min(self.bidirs.min(lambda x: x.input_thresholds)),
-      self.sinks.max(lambda x: x.input_thresholds).max(self.bidirs.max(lambda x: x.input_thresholds))
+      self.sinks.hull(lambda x: x.input_thresholds).lower().min(self.bidirs.hull(lambda x: x.input_thresholds).lower()),
+      self.sinks.hull(lambda x: x.input_thresholds).upper().max(self.bidirs.hull(lambda x: x.input_thresholds).upper())
     ))
     self.require(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
