@@ -52,23 +52,20 @@ case class IntValue(value: BigInt) extends FloatPromotable {
 }
 
 object RangeValue {
-  def apply(lower: Double, upper: Double): RangeValue =
-    FullRangeValue(lower.toFloat, upper.toFloat)  // convenience method
-
-  def empty: RangeValue = RangeEmpty
+  def apply(lower: Double, upper: Double): RangeType =
+    RangeValue(lower.toFloat, upper.toFloat)  // convenience method
 }
 
-sealed trait RangeValue extends ExprValue
+sealed trait RangeType extends ExprValue
 
-// TODO better name - basically means "not empty / null set"
-case class FullRangeValue(lower: Float, upper: Float) extends RangeValue {
+case class RangeValue(lower: Float, upper: Float) extends RangeType {
   require(lower <= upper, s"malformed range ($lower, $upper)")
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
   override def toStringValue: String = s"($lower, $upper)"
 }
 
-case object RangeEmpty extends RangeValue {  // an empty range, analogous to an empty set
+case object RangeEmpty extends RangeType {  // an empty range, analogous to an empty set
   override def toLit: lit.ValueLit = Literal.Range(Float.NaN, Float.NaN)
   override def toStringValue: String = s"(${Float.NaN}, ${Float.NaN})"
 }
@@ -140,7 +137,7 @@ object ArrayValue {
     case class EmptyArray() extends ExtractedRange
 
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[ExtractedRange] = seqMapOption(vals.values) {
-      case FullRangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
+      case RangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
       case RangeEmpty => None
     }.map { valueOpts =>
       val containsNone = valueOpts.contains(None)

@@ -96,7 +96,7 @@ class ConstProp {
       case init.ValInit.Val.Integer(_) => classOf[IntValue]
       case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
       case init.ValInit.Val.Text(_) => classOf[TextValue]
-      case init.ValInit.Val.Range(_) => classOf[RangeValue]
+      case init.ValInit.Val.Range(_) => classOf[RangeType]
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
     paramTypes.put(target, paramType)
