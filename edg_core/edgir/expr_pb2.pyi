@@ -73,6 +73,7 @@ class BinaryExpr(google___protobuf___message___Message):
         MAX = typing___cast(BinaryExpr.OpValue, 45)
         MIN = typing___cast(BinaryExpr.OpValue, 46)
         INTERSECTION = typing___cast(BinaryExpr.OpValue, 51)
+        HULL = typing___cast(BinaryExpr.OpValue, 54)
         SUBSET = typing___cast(BinaryExpr.OpValue, 53)
         RANGE = typing___cast(BinaryExpr.OpValue, 1)
     UNDEFINED = typing___cast(BinaryExpr.OpValue, 0)
@@ -93,6 +94,7 @@ class BinaryExpr(google___protobuf___message___Message):
     MAX = typing___cast(BinaryExpr.OpValue, 45)
     MIN = typing___cast(BinaryExpr.OpValue, 46)
     INTERSECTION = typing___cast(BinaryExpr.OpValue, 51)
+    HULL = typing___cast(BinaryExpr.OpValue, 54)
     SUBSET = typing___cast(BinaryExpr.OpValue, 53)
     RANGE = typing___cast(BinaryExpr.OpValue, 1)
     type___Op = Op

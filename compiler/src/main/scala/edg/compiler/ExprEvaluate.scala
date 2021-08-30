@@ -176,6 +176,14 @@ object ExprEvaluate {
         }
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
+    case expr.BinaryExpr.Op.HULL => (lhs, rhs) match {
+      case (RangeEmpty, rhs: FullRangeValue) => rhs
+      case (lhs: FullRangeValue, RangeEmpty) => lhs
+      case (FullRangeValue(lhsMin, lhsMax), FullRangeValue(rhsMin, rhsMax)) =>
+        RangeValue(math.min(lhsMin, rhsMin), math.max(lhsMax, rhsMax))
+      case (RangeEmpty, RangeEmpty) => RangeEmpty
+      case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+    }
     case expr.BinaryExpr.Op.SUBSET => (lhs, rhs) match {  // lhs contained within rhs
       case (RangeEmpty, _: FullRangeValue) => BooleanValue(true)  // empty contained within anything
       case (_: FullRangeValue, RangeEmpty) => BooleanValue(false)  // empty contains nothing

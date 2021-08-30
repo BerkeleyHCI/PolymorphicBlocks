@@ -112,6 +112,11 @@ message BinaryExpr {
       May produce an empty range */
     INTERSECTION = 51;
 
+    /** hull :: (Range a) => (lhs :: a, rhs :: a) -> Set a
+      Given two input ranges, return the hull (union with all the inner missing bits filled in)
+    */
+    HULL = 54;
+
     /** intersects :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool */
 //    INTERSECTS = 52;
 

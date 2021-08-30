@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='edg.expr',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\nexpr.proto\x12\x08\x65\x64g.expr\x1a\nname.proto\x1a\tref.proto\x1a\x0c\x63ommon.proto\x1a\tlit.proto\x1a\ntype.proto\"\xc5\x02\n\nBinaryExpr\x12#\n\x02op\x18\x01 \x01(\x0e\x32\x17.edg.expr.BinaryExpr.Op\x12 \n\x03lhs\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03rhs\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xcd\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x41\x44\x44\x10\n\x12\x07\n\x03SUB\x10\x0b\x12\x08\n\x04MULT\x10\x0c\x12\x07\n\x03\x44IV\x10\r\x12\x07\n\x03\x41ND\x10\x14\x12\x06\n\x02OR\x10\x15\x12\x07\n\x03XOR\x10\x16\x12\x0b\n\x07IMPLIES\x10\x17\x12\x06\n\x02\x45Q\x10\x1e\x12\x07\n\x03NEQ\x10\x1f\x12\x06\n\x02GT\x10(\x12\x07\n\x03GTE\x10)\x12\x06\n\x02LT\x10*\x12\x07\n\x03LTE\x10,\x12\x07\n\x03MAX\x10-\x12\x07\n\x03MIN\x10.\x12\x10\n\x0cINTERSECTION\x10\x33\x12\n\n\x06SUBSET\x10\x35\x12\t\n\x05RANGE\x10\x01\"\xf8\x01\n\rReductionExpr\x12&\n\x02op\x18\x01 \x01(\x0e\x32\x1a.edg.expr.ReductionExpr.Op\x12!\n\x04vals\x18\x04 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\x9b\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03SUM\x10\x01\x12\x0c\n\x08\x41LL_TRUE\x10\x02\x12\x0c\n\x08\x41NY_TRUE\x10\x03\x12\n\n\x06\x41LL_EQ\x10\x04\x12\x0e\n\nALL_UNIQUE\x10\x05\x12\x0b\n\x07MAXIMUM\x10\n\x12\x0b\n\x07MINIMUM\x10\x0b\x12\x0f\n\x0bSET_EXTRACT\x10\x0c\x12\x10\n\x0cINTERSECTION\x10\r\x12\x08\n\x04HULL\x10\x0e\"W\n\tRangeExpr\x12$\n\x07minimum\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12$\n\x07maximum\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"|\n\nStructExpr\x12,\n\x04vals\x18\x01 \x03(\x0b\x32\x1e.edg.expr.StructExpr.ValsEntry\x1a@\n\tValsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\x9b\x01\n\x0eIfThenElseExpr\x12!\n\x04\x63ond\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03tru\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03\x66\x61l\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\"Y\n\x0b\x45xtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x05index\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"Z\n\x0eMapExtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x04path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPath\"`\n\rConnectedExpr\x12\'\n\nblock_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12&\n\tlink_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"l\n\x0c\x45xportedExpr\x12*\n\rexterior_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\x30\n\x13internal_block_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"O\n\nAssignExpr\x12\x1f\n\x03\x64st\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x03src\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xae\x04\n\tValueExpr\x12$\n\x07literal\x18\x01 \x01(\x0b\x32\x11.edg.lit.ValueLitH\x00\x12&\n\x06\x62inary\x18\x02 \x01(\x0b\x32\x14.edg.expr.BinaryExprH\x00\x12)\n\x06reduce\x18\x04 \x01(\x0b\x32\x17.edg.expr.ReductionExprH\x00\x12&\n\x06struct\x18\x07 \x01(\x0b\x32\x14.edg.expr.StructExprH\x00\x12$\n\x05range\x18\x08 \x01(\x0b\x32\x13.edg.expr.RangeExprH\x00\x12.\n\nifThenElse\x18\n \x01(\x0b\x32\x18.edg.expr.IfThenElseExprH\x00\x12(\n\x07\x65xtract\x18\x0c \x01(\x0b\x32\x15.edg.expr.ExtractExprH\x00\x12/\n\x0bmap_extract\x18\x0e \x01(\x0b\x32\x18.edg.expr.MapExtractExprH\x00\x12,\n\tconnected\x18\x0f \x01(\x0b\x32\x17.edg.expr.ConnectedExprH\x00\x12*\n\x08\x65xported\x18\x10 \x01(\x0b\x32\x16.edg.expr.ExportedExprH\x00\x12&\n\x06\x61ssign\x18\x11 \x01(\x0b\x32\x14.edg.expr.AssignExprH\x00\x12!\n\x03ref\x18\x63 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x06\n\x04\x65xprb\x06proto3')
+  serialized_pb=_b('\n\nexpr.proto\x12\x08\x65\x64g.expr\x1a\nname.proto\x1a\tref.proto\x1a\x0c\x63ommon.proto\x1a\tlit.proto\x1a\ntype.proto\"\xcf\x02\n\nBinaryExpr\x12#\n\x02op\x18\x01 \x01(\x0e\x32\x17.edg.expr.BinaryExpr.Op\x12 \n\x03lhs\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03rhs\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xd7\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03\x41\x44\x44\x10\n\x12\x07\n\x03SUB\x10\x0b\x12\x08\n\x04MULT\x10\x0c\x12\x07\n\x03\x44IV\x10\r\x12\x07\n\x03\x41ND\x10\x14\x12\x06\n\x02OR\x10\x15\x12\x07\n\x03XOR\x10\x16\x12\x0b\n\x07IMPLIES\x10\x17\x12\x06\n\x02\x45Q\x10\x1e\x12\x07\n\x03NEQ\x10\x1f\x12\x06\n\x02GT\x10(\x12\x07\n\x03GTE\x10)\x12\x06\n\x02LT\x10*\x12\x07\n\x03LTE\x10,\x12\x07\n\x03MAX\x10-\x12\x07\n\x03MIN\x10.\x12\x10\n\x0cINTERSECTION\x10\x33\x12\x08\n\x04HULL\x10\x36\x12\n\n\x06SUBSET\x10\x35\x12\t\n\x05RANGE\x10\x01\"\xf8\x01\n\rReductionExpr\x12&\n\x02op\x18\x01 \x01(\x0e\x32\x1a.edg.expr.ReductionExpr.Op\x12!\n\x04vals\x18\x04 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\x9b\x01\n\x02Op\x12\r\n\tUNDEFINED\x10\x00\x12\x07\n\x03SUM\x10\x01\x12\x0c\n\x08\x41LL_TRUE\x10\x02\x12\x0c\n\x08\x41NY_TRUE\x10\x03\x12\n\n\x06\x41LL_EQ\x10\x04\x12\x0e\n\nALL_UNIQUE\x10\x05\x12\x0b\n\x07MAXIMUM\x10\n\x12\x0b\n\x07MINIMUM\x10\x0b\x12\x0f\n\x0bSET_EXTRACT\x10\x0c\x12\x10\n\x0cINTERSECTION\x10\r\x12\x08\n\x04HULL\x10\x0e\"W\n\tRangeExpr\x12$\n\x07minimum\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12$\n\x07maximum\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"|\n\nStructExpr\x12,\n\x04vals\x18\x01 \x03(\x0b\x32\x1e.edg.expr.StructExpr.ValsEntry\x1a@\n\tValsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr:\x02\x38\x01\"\x9b\x01\n\x0eIfThenElseExpr\x12!\n\x04\x63ond\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03tru\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x03\x66\x61l\x18\x03 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadata\"Y\n\x0b\x45xtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\"\n\x05index\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"Z\n\x0eMapExtractExpr\x12&\n\tcontainer\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12 \n\x04path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPath\"`\n\rConnectedExpr\x12\'\n\nblock_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12&\n\tlink_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"l\n\x0c\x45xportedExpr\x12*\n\rexterior_port\x18\x01 \x01(\x0b\x32\x13.edg.expr.ValueExpr\x12\x30\n\x13internal_block_port\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"O\n\nAssignExpr\x12\x1f\n\x03\x64st\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x03src\x18\x02 \x01(\x0b\x32\x13.edg.expr.ValueExpr\"\xae\x04\n\tValueExpr\x12$\n\x07literal\x18\x01 \x01(\x0b\x32\x11.edg.lit.ValueLitH\x00\x12&\n\x06\x62inary\x18\x02 \x01(\x0b\x32\x14.edg.expr.BinaryExprH\x00\x12)\n\x06reduce\x18\x04 \x01(\x0b\x32\x17.edg.expr.ReductionExprH\x00\x12&\n\x06struct\x18\x07 \x01(\x0b\x32\x14.edg.expr.StructExprH\x00\x12$\n\x05range\x18\x08 \x01(\x0b\x32\x13.edg.expr.RangeExprH\x00\x12.\n\nifThenElse\x18\n \x01(\x0b\x32\x18.edg.expr.IfThenElseExprH\x00\x12(\n\x07\x65xtract\x18\x0c \x01(\x0b\x32\x15.edg.expr.ExtractExprH\x00\x12/\n\x0bmap_extract\x18\x0e \x01(\x0b\x32\x18.edg.expr.MapExtractExprH\x00\x12,\n\tconnected\x18\x0f \x01(\x0b\x32\x17.edg.expr.ConnectedExprH\x00\x12*\n\x08\x65xported\x18\x10 \x01(\x0b\x32\x16.edg.expr.ExportedExprH\x00\x12&\n\x06\x61ssign\x18\x11 \x01(\x0b\x32\x14.edg.expr.AssignExprH\x00\x12!\n\x03ref\x18\x63 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x06\n\x04\x65xprb\x06proto3')
   ,
   dependencies=[name__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,common__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,type__pb2.DESCRIPTOR,])
 
@@ -109,18 +109,22 @@ _BINARYEXPR_OP = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SUBSET', index=18, number=53,
+      name='HULL', index=18, number=54,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='RANGE', index=19, number=1,
+      name='SUBSET', index=19, number=53,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='RANGE', index=20, number=1,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=205,
-  serialized_end=410,
+  serialized_end=420,
 )
 _sym_db.RegisterEnumDescriptor(_BINARYEXPR_OP)
 
@@ -177,8 +181,8 @@ _REDUCTIONEXPR_OP = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=506,
-  serialized_end=661,
+  serialized_start=516,
+  serialized_end=671,
 )
 _sym_db.RegisterEnumDescriptor(_REDUCTIONEXPR_OP)
 
@@ -225,7 +229,7 @@ _BINARYEXPR = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=85,
-  serialized_end=410,
+  serialized_end=420,
 )
 
 
@@ -263,8 +267,8 @@ _REDUCTIONEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=413,
-  serialized_end=661,
+  serialized_start=423,
+  serialized_end=671,
 )
 
 
@@ -301,8 +305,8 @@ _RANGEEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=663,
-  serialized_end=750,
+  serialized_start=673,
+  serialized_end=760,
 )
 
 
@@ -339,8 +343,8 @@ _STRUCTEXPR_VALSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=812,
-  serialized_end=876,
+  serialized_start=822,
+  serialized_end=886,
 )
 
 _STRUCTEXPR = _descriptor.Descriptor(
@@ -369,8 +373,8 @@ _STRUCTEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=752,
-  serialized_end=876,
+  serialized_start=762,
+  serialized_end=886,
 )
 
 
@@ -421,8 +425,8 @@ _IFTHENELSEEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=879,
-  serialized_end=1034,
+  serialized_start=889,
+  serialized_end=1044,
 )
 
 
@@ -459,8 +463,8 @@ _EXTRACTEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1036,
-  serialized_end=1125,
+  serialized_start=1046,
+  serialized_end=1135,
 )
 
 
@@ -497,8 +501,8 @@ _MAPEXTRACTEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1127,
-  serialized_end=1217,
+  serialized_start=1137,
+  serialized_end=1227,
 )
 
 
@@ -535,8 +539,8 @@ _CONNECTEDEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1219,
-  serialized_end=1315,
+  serialized_start=1229,
+  serialized_end=1325,
 )
 
 
@@ -573,8 +577,8 @@ _EXPORTEDEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1317,
-  serialized_end=1425,
+  serialized_start=1327,
+  serialized_end=1435,
 )
 
 
@@ -611,8 +615,8 @@ _ASSIGNEXPR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1427,
-  serialized_end=1506,
+  serialized_start=1437,
+  serialized_end=1516,
 )
 
 
@@ -729,8 +733,8 @@ _VALUEEXPR = _descriptor.Descriptor(
       name='expr', full_name='edg.expr.ValueExpr.expr',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1509,
-  serialized_end=2067,
+  serialized_start=1519,
+  serialized_end=2077,
 )
 
 _BINARYEXPR.fields_by_name['op'].enum_type = _BINARYEXPR_OP
