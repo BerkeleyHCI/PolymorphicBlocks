@@ -223,11 +223,9 @@ object ExprEvaluate {
 
     case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
 
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.Empty(_)) => FloatValue(Float.NegativeInfinity)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
 
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.Empty(_)) => FloatValue(Float.PositiveInfinity)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
@@ -255,7 +253,7 @@ object ExprEvaluate {
         val (minMax, maxMin) = (valMaxs.min, valMins.max)
         if (maxMin <= minMax) {
           RangeValue(maxMin, minMax)
-        } else {  // does not intersect, mull set
+        } else {  // does not intersect, null set
           RangeEmpty
         }
       // The implicit initial value of intersect is the full range
