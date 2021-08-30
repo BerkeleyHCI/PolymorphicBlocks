@@ -51,12 +51,12 @@ case class IntValue(value: BigInt) extends FloatPromotable {
   override def toStringValue: String = value.toString
 }
 
+sealed trait RangeType extends ExprValue
+
 object RangeValue {
   def apply(lower: Double, upper: Double): RangeType =
     RangeValue(lower.toFloat, upper.toFloat)  // convenience method
 }
-
-sealed trait RangeType extends ExprValue
 
 case class RangeValue(lower: Float, upper: Float) extends RangeType {
   require(lower <= upper, s"malformed range ($lower, $upper)")
@@ -137,6 +137,7 @@ object ArrayValue {
     case class EmptyArray() extends ExtractedRange
 
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[ExtractedRange] = seqMapOption(vals.values) {
+      // the outer option returns None if it encounters a non-Range value
       case RangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
       case RangeEmpty => None
     }.map { valueOpts =>

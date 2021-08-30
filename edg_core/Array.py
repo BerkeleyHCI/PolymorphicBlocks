@@ -220,14 +220,14 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self.elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
+    if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to min(...) must return Float, got {param} of type {type(param)}")
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).min()
 
   def max(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self.elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
+    if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to max(...) must return Float, got {param} of type {type(param)}")
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).max()

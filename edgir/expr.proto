@@ -113,7 +113,7 @@ message BinaryExpr {
     INTERSECTION = 51;
 
     /** hull :: (Range a) => (lhs :: a, rhs :: a) -> Set a
-      Given two input ranges, return the hull (union with all the inner missing bits filled in)
+      Given two input ranges, returns the convex hull (union with all the inner missing bits filled in)
     */
     HULL = 54;
 
@@ -209,7 +209,7 @@ message ReductionExpr {
     INTERSECTION = 13;
 
     /** Hull :: (Set_like s) => s Range -> Range
-        Like a union operator, but produces one range that */
+        Returns the convex hull (union with all the inner missing bits filled in) */
     HULL = 14;
   }
   Op op = 1;
