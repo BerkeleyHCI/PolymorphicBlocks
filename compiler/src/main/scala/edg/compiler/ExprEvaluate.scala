@@ -199,7 +199,11 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.SUM, ArrayValue.Empty(_)) => FloatValue(0)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
-    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(valMins, valMaxs)) => RangeValue(valMins.sum, valMaxs.sum)
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
+      case _ => RangeEmpty  // TODO how should sum behave on empty ranges?
+
+    }
 
     case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
     case (expr.ReductionExpr.Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
@@ -232,23 +236,27 @@ object ExprEvaluate {
       throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $reduce")
     }
 
-    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>  // TODO empty range construct?
-      RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
+    // Any empty value means the expression result is empty
+    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) =>
+        val (minMax, maxMin) = (valMaxs.min, valMins.max)
+        if (maxMin <= minMax) {
+          RangeValue(maxMin, minMax)
+        } else {  // does not intersect, mull set
+          RangeEmpty
+        }
+      // The implicit initial value of intersect is the full range
+      // TODO are these good semantics?
+      case ArrayValue.ExtractRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
+      case _ => RangeEmpty
+    }
 
-    // TODO intersection if it contains an empty
-    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
-      val (minMax, maxMin) = (valMaxs.min, valMins.max)
-      if (maxMin <= minMax) {
-        RangeValue(maxMin, minMax)
-      } else {  // null set
-        RangeValue.empty
-      }
-
-    // TODO hull if it contains an empty
-    case (expr.ReductionExpr.Op.HULL, ArrayValue.Empty(_)) =>  // TODO empty range construct?
-      RangeEmpty
-    case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(valMins, valMaxs)) =>
-      RangeValue(valMins.min, valMaxs.max)
+    // Any value is used (empty effectively discarded)
+    case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
+      case ArrayValue.ExtractRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
+      case _ => RangeEmpty
+    }
 
     case _ => throw new ExprEvaluateException(s"Unknown reduce op in ${reduce.op} $vals from $reduce")
   }

@@ -63,9 +63,9 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(7.0, 10.0)
     )) should equal(RangeValue(7.0, 7.0))
-    assert(evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
+    evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0)
-    )).asInstanceOf[RangeValue].isEmpty)
+    )) should equal(RangeEmpty)
 
     evalTest.map(ValueExpr.BinOp(Op.SUBSET,
       ValueExpr.Literal(6.0), ValueExpr.Literal(5.0, 7.0)

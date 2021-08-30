@@ -1,8 +1,10 @@
 package edg.compiler
 
 import edg.lit.lit
+
 import scala.collection.mutable
 import edg.ExprBuilder.Literal
+import edg.compiler.CompilerError.EmptyRange
 
 
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
@@ -125,21 +127,32 @@ object ArrayValue {
     }
   }
 
-  // Extracts the min and maxes from an array of ranges, returning an empty array if any of the contents are empty
-  object ExtactRangePropagatingEmpty {
+  // Extracts the min and maxes from an array of ranges
+  object ExtractRange {
+    sealed trait ExtractedRange
+    // Array of ranges with no empty values
+    case class FullRange(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
+    // Array of ranges with empty values and full values
+    case class RangeWithEmpty(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
+    // Array of ranges with only empty values
+    case class EmptyRange() extends ExtractedRange
+    // Empty input array (contains neither ranges nor empty ranges
+    case class EmptyArray() extends ExtractedRange
 
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[ExtractedRange] = seqMapOption(vals.values) {
+      case FullRangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
+      case RangeEmpty => None
+    }.map { valueOpts =>
+      val containsNone = valueOpts.contains(None)
+      val containedRanges = valueOpts.flatten.unzip
+      (containsNone, containedRanges) match {
+        case (true, (Seq(), Seq())) => EmptyRange()
+        case (false, (Seq(), Seq())) => EmptyArray()
+        case (true, (mins, maxs)) => RangeWithEmpty(mins, maxs)
+        case (false, (mins, maxs)) => FullRange(mins, maxs)
+      }
+    }
   }
-
-  // Extracts the min and maxes from an array of ranges, discarding any empty values
-  object ExtractRangeDiscardingEmpty {
-
-  }
-
-//  object ExtractRange {
-//    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
-//      case FullRangeValue(eltMin, eltMax) => (eltMin, eltMax)
-//    }.map(_.unzip)
-//  }
 
   object ExtractBoolean {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Boolean]] = seqMapOption(vals.values) {
