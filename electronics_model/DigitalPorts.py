@@ -38,18 +38,9 @@ class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constr
     self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
                  "DigitalLink must have some kind of source")
 
-    # TODO RangeBuilder initializer for voltage
-    # TODO this and below should be x.voltage_out.min (etc) instead of relying on min over Array[Range]
-    bidirs_voltage_min = self.bidirs.hull(lambda x: x.voltage_out).lower()
-    bidirs_voltage_max = self.bidirs.hull(lambda x: x.voltage_out).upper()
-    single_voltage_min = self.single_sources.hull(lambda x: x.voltage_out).lower()
-    single_voltage_max = self.single_sources.hull(lambda x: x.voltage_out).upper()
-    self.assign(self.voltage, self.source.is_connected().then_else(  # TODO: really clean up
-      # TODO get rid of _to_expr_type?
-      RangeExpr._to_expr_type((self.source.voltage_out.lower().min(bidirs_voltage_min.min(single_voltage_min)),
-                               self.source.voltage_out.upper().max(bidirs_voltage_max.max(single_voltage_max)))),
-      RangeExpr._to_expr_type((bidirs_voltage_min.min(single_voltage_min),
-                               bidirs_voltage_max.max(single_voltage_max)))
+    self.assign(self.voltage, self.source.is_connected().then_else(
+      self.bidirs.hull(lambda x: x.voltage_out).hull(self.source.voltage_out),
+      self.bidirs.hull(lambda x: x.voltage_out).hull(self.single_sources.hull(lambda x: x.voltage_out))
     ))
 
     self.assign(self.voltage_limits,
@@ -78,10 +69,9 @@ class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constr
                   bidirs_output_thresholds.intersect(
                     single_output_thresholds)))
 
-    self.assign(self.input_thresholds, (  # TODO: clean up
-      self.sinks.hull(lambda x: x.input_thresholds).lower().min(self.bidirs.hull(lambda x: x.input_thresholds).lower()),
-      self.sinks.hull(lambda x: x.input_thresholds).upper().max(self.bidirs.hull(lambda x: x.input_thresholds).upper())
-    ))
+    self.assign(self.input_thresholds,
+      self.sinks.hull(lambda x: x.input_thresholds).hull(self.bidirs.hull(lambda x: x.input_thresholds)),
+    )
     self.require(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
     self.assign(self.pullup_capable,

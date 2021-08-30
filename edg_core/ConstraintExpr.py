@@ -258,6 +258,7 @@ class BinaryOpBinding(Binding):
       ReductionOp.min: edgir.BinaryExpr.MIN,
       ReductionOp.max: edgir.BinaryExpr.MAX,
       ReductionOp.intersection: edgir.BinaryExpr.INTERSECTION,
+      ReductionOp.hull: edgir.BinaryExpr.HULL,
     }
 
     super().__init__()
@@ -706,6 +707,9 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
 
   def intersect(self, other: RangeLike) -> RangeExpr:
     return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.intersection)
+
+  def hull(self, other: RangeLike) -> RangeExpr:
+    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.hull)
 
   def lower(self) -> FloatExpr:
     return self._lower
