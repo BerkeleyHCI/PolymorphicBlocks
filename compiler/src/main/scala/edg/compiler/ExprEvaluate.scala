@@ -227,6 +227,11 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.MAXIMUM, FullRangeValue(lower, upper)) => FloatValue(upper)
     case (expr.ReductionExpr.Op.MINIMUM, FullRangeValue(lower, upper)) => FloatValue(lower)
 
+    // TODO can we have stricter semantics to avoid min(RangeEmpty) and max(RangeEmpty)?
+    // This just NaNs out so at least it propagates
+    case (expr.ReductionExpr.Op.MAXIMUM, RangeEmpty) => FloatValue(Float.NaN)
+    case (expr.ReductionExpr.Op.MINIMUM, RangeEmpty) => FloatValue(Float.NaN)
+
     // TODO this should be a user-level assertion instead of a compiler error
     case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
       throw new ExprEvaluateException(s"SetExtract with empty values from $reduce")
