@@ -84,6 +84,9 @@ class ArrayExpr(ConstraintExpr['ArrayExpr', 'ArrayExpr', Any], Generic[ArrayType
   def intersection(self) -> ArrayType:
     return self.create_reduce_op(ReductionOp.intersection)
 
+  def hull(self) -> ArrayType:
+    return self.create_reduce_op(ReductionOp.hull)
+
   def equal_any(self) -> ArrayType:
     return self.create_reduce_op(ReductionOp.equal_any)
 
@@ -215,18 +218,17 @@ class Vector(BaseVector, Generic[VectorType]):
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).sum()  #type:ignore
 
-  # TODO should these work on Ranges? Return min-of-lower / max-of-upper?
-  def min(self, selector: Callable[[VectorType], Union[FloatExpr, RangeExpr]]) -> FloatExpr:
+  def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self.elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
-      raise TypeError(f"selector to min(...) must return Float/RangeExpr, got {param} of type {type(param)}")
+    if not isinstance(param, FloatExpr):  # TODO check that returned type is child
+      raise TypeError(f"selector to min(...) must return Float, got {param} of type {type(param)}")
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).min()
 
-  def max(self, selector: Callable[[VectorType], Union[FloatExpr, RangeExpr]]) -> FloatExpr:
+  def max(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self.elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
-      raise TypeError(f"selector to max(...) must return Float/RangeExpr, got {param} of type {type(param)}")
+    if not isinstance(param, FloatExpr):  # TODO check that returned type is child
+      raise TypeError(f"selector to max(...) must return Float, got {param} of type {type(param)}")
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).max()
 
@@ -236,3 +238,10 @@ class Vector(BaseVector, Generic[VectorType]):
       raise TypeError(f"selector to intersection(...) must return RangeExpr, got {param} of type {type(param)}")
 
     return ArrayExpr(param)._bind(MapExtractBinding(self, param)).intersection()
+
+  def hull(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr:
+    param = selector(self.elt_sample)
+    if not isinstance(param, RangeExpr):  # TODO check that returned type is child
+      raise TypeError(f"selector to hull(...) must return RangeExpr, got {param} of type {type(param)}")
+
+    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).hull()

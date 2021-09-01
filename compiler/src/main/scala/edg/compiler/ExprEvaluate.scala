@@ -102,16 +102,21 @@ object ExprEvaluate {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
         BooleanValue(lhsMin == rhsMin && lhsMax == rhsMax)
+      case (RangeEmpty, RangeEmpty) => BooleanValue(true)
+      case (_: RangeType, _: RangeType) => BooleanValue(false)  // type mismatch by priority
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs == rhs)  // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs == rhs)
       case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs == rhs)
       case (TextValue(lhs), TextValue(rhs)) => BooleanValue(lhs == rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
+    // TODO dedup w/ above?
     case expr.BinaryExpr.Op.NEQ => (lhs, rhs) match {
       // TODO can optionally support Range <-> Float ops later if desired, it's a 'type error' now
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
         BooleanValue(lhsMin != rhsMin || lhsMax != rhsMax)
+      case (RangeEmpty, RangeEmpty) => BooleanValue(false)
+      case (_: RangeType, _: RangeType) => BooleanValue(true)  // type mismatch by priority
       case (IntValue(lhs), IntValue(rhs)) => BooleanValue(lhs != rhs)  // prioritize int compare before promotion
       case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs != rhs)
       case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs != rhs)
@@ -160,19 +165,32 @@ object ExprEvaluate {
     }
 
     case expr.BinaryExpr.Op.INTERSECTION => (lhs, rhs) match {
+      case (RangeEmpty, _) => RangeEmpty  // anything intersecting with empty is empty
+      case (_, RangeEmpty) => RangeEmpty
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
         val (minMax, maxMin) = (math.min(lhsMax, rhsMax), math.max(lhsMin, rhsMin))
         if (maxMin <= minMax) {
           RangeValue(maxMin, minMax)
         } else {  // null set
-          RangeValue.empty
+          RangeEmpty
         }
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
+    case expr.BinaryExpr.Op.HULL => (lhs, rhs) match {
+      case (RangeEmpty, rhs: RangeValue) => rhs
+      case (lhs: RangeValue, RangeEmpty) => lhs
+      case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+        RangeValue(math.min(lhsMin, rhsMin), math.max(lhsMax, rhsMax))
+      case (RangeEmpty, RangeEmpty) => RangeEmpty
+      case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+    }
     case expr.BinaryExpr.Op.SUBSET => (lhs, rhs) match {  // lhs contained within rhs
+      case (RangeEmpty, _: RangeValue) => BooleanValue(true)  // empty contained within anything
+      case (_: RangeValue, RangeEmpty) => BooleanValue(false)  // empty contains nothing
+      case (FloatPromotable(_), RangeEmpty) => BooleanValue(false)  // empty contains nothing, not even single points
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
         BooleanValue(rhsMin <= lhsMin && rhsMax >= lhsMax)
-      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>BooleanValue(rhsMin <= lhs && rhsMax >= lhs)
+      case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) => BooleanValue(rhsMin <= lhs && rhsMax >= lhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operands types in $lhs ${binary.op} $rhs from $binary")
     }
 
@@ -189,7 +207,11 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.SUM, ArrayValue.Empty(_)) => FloatValue(0)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
-    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(valMins, valMaxs)) => RangeValue(valMins.sum, valMaxs.sum)
+    case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
+      case _ => RangeEmpty  // TODO how should sum behave on empty ranges?
+
+    }
 
     case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
     case (expr.ReductionExpr.Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
@@ -201,22 +223,20 @@ object ExprEvaluate {
 
     case (expr.ReductionExpr.Op.ALL_UNIQUE, ArrayValue(vals)) => BooleanValue(vals.size == vals.toSet.size)
 
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.Empty(_)) => FloatValue(Float.NegativeInfinity)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.max)
     case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.max)
 
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.Empty(_)) => FloatValue(Float.PositiveInfinity)  // TODO type needs to be dynamic
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
     case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
-
-    // TODO max / min on Array[Range] is a bit of a hack (but kinda makes sense?) - perhaps should be removed
-    // TODO define a default in case of empty?
-    case (expr.ReductionExpr.Op.MAXIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMaxs.max)
-    case (expr.ReductionExpr.Op.MINIMUM, ArrayValue.ExtractRange(valMins, valMaxs)) => FloatValue(valMins.min)
 
     // TODO this is definitely a hack in the absence of a proper range extractor
     case (expr.ReductionExpr.Op.MAXIMUM, RangeValue(lower, upper)) => FloatValue(upper)
     case (expr.ReductionExpr.Op.MINIMUM, RangeValue(lower, upper)) => FloatValue(lower)
+
+    // TODO can we have stricter semantics to avoid min(RangeEmpty) and max(RangeEmpty)?
+    // This just NaNs out so at least it propagates
+    case (expr.ReductionExpr.Op.MAXIMUM, RangeEmpty) => FloatValue(Float.NaN)
+    case (expr.ReductionExpr.Op.MINIMUM, RangeEmpty) => FloatValue(Float.NaN)
 
     // TODO this should be a user-level assertion instead of a compiler error
     case (expr.ReductionExpr.Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
@@ -227,15 +247,27 @@ object ExprEvaluate {
       throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $reduce")
     }
 
-    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.Empty(_)) =>
-      RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
-    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(valMins, valMaxs)) =>
-      val (minMax, maxMin) = (valMaxs.min, valMins.max)
-      if (maxMin <= minMax) {
-        RangeValue(maxMin, minMax)
-      } else {  // null set
-        RangeValue.empty
-      }
+    // Any empty value means the expression result is empty
+    case (expr.ReductionExpr.Op.INTERSECTION, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) =>
+        val (minMax, maxMin) = (valMaxs.min, valMins.max)
+        if (maxMin <= minMax) {
+          RangeValue(maxMin, minMax)
+        } else {  // does not intersect, null set
+          RangeEmpty
+        }
+      // The implicit initial value of intersect is the full range
+      // TODO are these good semantics?
+      case ArrayValue.ExtractRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
+      case _ => RangeEmpty
+    }
+
+    // Any value is used (empty effectively discarded)
+    case (expr.ReductionExpr.Op.HULL, ArrayValue.ExtractRange(extracted)) => extracted match {
+      case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
+      case ArrayValue.ExtractRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
+      case _ => RangeEmpty
+    }
 
     case _ => throw new ExprEvaluateException(s"Unknown reduce op in ${reduce.op} $vals from $reduce")
   }

@@ -54,6 +54,7 @@ class ExprToString() extends ValueExprMap[String] {
         case Op.MAX | Op.MIN => None
         case Op.INTERSECTION => Some("∩")
         case Op.SUBSET => Some("⊆")
+        case Op.HULL => Some("h∪")
         case Op.RANGE => None
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
@@ -65,7 +66,7 @@ class ExprToString() extends ValueExprMap[String] {
         case Op.GT | Op.GTE | Op.LT | Op.LTE => None
         case Op.MAX => Some("max")
         case Op.MIN => Some("min")
-        case Op.INTERSECTION | Op.SUBSET => None
+        case Op.INTERSECTION | Op.HULL | Op.SUBSET => None
         case Op.RANGE => Some("range")
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
@@ -91,6 +92,7 @@ class ExprToString() extends ValueExprMap[String] {
       case Op.MINIMUM => Some("min")
       case Op.SET_EXTRACT => Some("setExtract")
       case Op.INTERSECTION => Some("intersection")
+      case Op.HULL => Some("hull")
       case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }

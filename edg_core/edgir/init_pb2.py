@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -25,10 +24,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='init.proto',
   package='edg.init',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\ninit.proto\x12\x08\x65\x64g.init\x1a\nexpr.proto\x1a\nname.proto\x1a\tref.proto\x1a\x0c\x63ommon.proto\x1a\tlit.proto\x1a\ntype.proto\"\xb5\x02\n\x07ValInit\x12%\n\x08\x66loating\x18\x01 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12$\n\x07integer\x18\x02 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12$\n\x07\x62oolean\x18\x03 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12!\n\x04text\x18\x04 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12 \n\x03set\x18\x08 \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12#\n\x06struct\x18\t \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\"\n\x05range\x18\n \x01(\x0b\x32\x11.edg.common.EmptyH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x05\n\x03valb\x06proto3')
   ,
   dependencies=[expr__pb2.DESCRIPTOR,name__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,common__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,type__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -46,63 +45,63 @@ _VALINIT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='integer', full_name='edg.init.ValInit.integer', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='boolean', full_name='edg.init.ValInit.boolean', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='text', full_name='edg.init.ValInit.text', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='set', full_name='edg.init.ValInit.set', index=4,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='struct', full_name='edg.init.ValInit.struct', index=5,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='range', full_name='edg.init.ValInit.range', index=6,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.init.ValInit.meta', index=7,
       number=127, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -145,6 +144,7 @@ _VALINIT.oneofs_by_name['val'].fields.append(
   _VALINIT.fields_by_name['range'])
 _VALINIT.fields_by_name['range'].containing_oneof = _VALINIT.oneofs_by_name['val']
 DESCRIPTOR.message_types_by_name['ValInit'] = _VALINIT
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ValInit = _reflection.GeneratedProtocolMessageType('ValInit', (_message.Message,), dict(
   DESCRIPTOR = _VALINIT,

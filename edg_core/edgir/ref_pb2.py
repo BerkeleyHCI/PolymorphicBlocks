@@ -8,7 +8,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -22,10 +21,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='ref.proto',
   package='edg.ref',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\tref.proto\x12\x07\x65\x64g.ref\x1a\x0c\x63ommon.proto\x1a\nname.proto\"P\n\tLocalStep\x12+\n\x0ereserved_param\x18\x01 \x01(\x0e\x32\x11.edg.ref.ReservedH\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x42\x06\n\x04step\"S\n\tLocalPath\x12!\n\x05steps\x18\x01 \x03(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata\"\xa0\x01\n\x0bLibraryPath\x12$\n\x05start\x18\x01 \x01(\x0b\x32\x15.edg.name.LibraryName\x12\"\n\x05steps\x18\x02 \x03(\x0b\x32\x13.edg.name.Namespace\x12\"\n\x06target\x18\x03 \x01(\x0b\x32\x12.edg.ref.LocalStep\x12#\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x14.edg.common.Metadata*c\n\x08Reserved\x12\r\n\tUNDEFINED\x10\x00\x12\x12\n\x0e\x43ONNECTED_LINK\x10\x01\x12\x10\n\x0cIS_CONNECTED\x10(\x12\n\n\x06LENGTH\x10*\x12\x0c\n\x08\x41LLOCATE\x10+\x12\x08\n\x04NAME\x10,b\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,name__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _RESERVED = _descriptor.EnumDescriptor(
   name='Reserved',
@@ -35,31 +34,31 @@ _RESERVED = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='UNDEFINED', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CONNECTED_LINK', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='IS_CONNECTED', index=2, number=40,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='LENGTH', index=3, number=42,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='ALLOCATE', index=4, number=43,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='NAME', index=5, number=44,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=378,
   serialized_end=477,
 )
@@ -88,21 +87,21 @@ _LOCALSTEP = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='edg.ref.LocalStep.name', index=1,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -129,21 +128,21 @@ _LOCALPATH = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.ref.LocalPath.meta', index=1,
       number=255, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -167,35 +166,35 @@ _LIBRARYPATH = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='steps', full_name='edg.ref.LibraryPath.steps', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='target', full_name='edg.ref.LibraryPath.target', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.ref.LibraryPath.meta', index=3,
       number=255, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -222,6 +221,7 @@ DESCRIPTOR.message_types_by_name['LocalStep'] = _LOCALSTEP
 DESCRIPTOR.message_types_by_name['LocalPath'] = _LOCALPATH
 DESCRIPTOR.message_types_by_name['LibraryPath'] = _LIBRARYPATH
 DESCRIPTOR.enum_types_by_name['Reserved'] = _RESERVED
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 LocalStep = _reflection.GeneratedProtocolMessageType('LocalStep', (_message.Message,), dict(
   DESCRIPTOR = _LOCALSTEP,

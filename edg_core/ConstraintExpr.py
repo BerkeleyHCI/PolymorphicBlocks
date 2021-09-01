@@ -26,8 +26,9 @@ class ReductionOp(Enum):
   all_equal = 4
   all_unique = 5
   intersection = 6
-  op_and = 7,
-  op_or = 8,
+  hull = 7
+  op_and = 8
+  op_or = 9
 
 
 class BinaryNumOp(Enum):
@@ -214,6 +215,7 @@ class ReductionOpBinding(Binding):
       ReductionOp.all_equal: edgir.ReductionExpr.ALL_EQ,
       ReductionOp.all_unique: edgir.ReductionExpr.ALL_UNIQUE,
       ReductionOp.intersection: edgir.ReductionExpr.INTERSECTION,
+      ReductionOp.hull: edgir.ReductionExpr.HULL,
       ReductionOp.op_and: edgir.ReductionExpr.ALL_TRUE,
       ReductionOp.op_or: edgir.ReductionExpr.ANY_TRUE,
     }
@@ -256,6 +258,7 @@ class BinaryOpBinding(Binding):
       ReductionOp.min: edgir.BinaryExpr.MIN,
       ReductionOp.max: edgir.BinaryExpr.MAX,
       ReductionOp.intersection: edgir.BinaryExpr.INTERSECTION,
+      ReductionOp.hull: edgir.BinaryExpr.HULL,
     }
 
     super().__init__()
@@ -704,6 +707,9 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
 
   def intersect(self, other: RangeLike) -> RangeExpr:
     return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.intersection)
+
+  def hull(self, other: RangeLike) -> RangeExpr:
+    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.hull)
 
   def lower(self) -> FloatExpr:
     return self._lower

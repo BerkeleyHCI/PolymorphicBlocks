@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,10 +19,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='name.proto',
   package='edg.name',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\nname.proto\x12\x08\x65\x64g.name\x1a\x0c\x63ommon.proto\"M\n\tNamespace\x12\x0f\n\x05\x62\x61sic\x18\x01 \x01(\tH\x00\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.MetadataB\x0b\n\tnamespace\"?\n\x0bLibraryName\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\"\n\x04meta\x18\x7f \x01(\x0b\x32\x14.edg.common.Metadatab\x06proto3')
   ,
   dependencies=[common__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -41,21 +40,21 @@ _NAMESPACE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.name.Namespace.meta', index=1,
       number=127, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -82,21 +81,21 @@ _LIBRARYNAME = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='meta', full_name='edg.name.LibraryName.meta', index=1,
       number=127, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -113,6 +112,7 @@ _NAMESPACE.fields_by_name['basic'].containing_oneof = _NAMESPACE.oneofs_by_name[
 _LIBRARYNAME.fields_by_name['meta'].message_type = common__pb2._METADATA
 DESCRIPTOR.message_types_by_name['Namespace'] = _NAMESPACE
 DESCRIPTOR.message_types_by_name['LibraryName'] = _LIBRARYNAME
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Namespace = _reflection.GeneratedProtocolMessageType('Namespace', (_message.Message,), dict(
   DESCRIPTOR = _NAMESPACE,

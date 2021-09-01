@@ -112,6 +112,11 @@ message BinaryExpr {
       May produce an empty range */
     INTERSECTION = 51;
 
+    /** hull :: (Range a) => (lhs :: a, rhs :: a) -> Set a
+      Given two input ranges, returns the convex hull (union with all the inner missing bits filled in)
+    */
+    HULL = 54;
+
     /** intersects :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool */
 //    INTERSECTS = 52;
 
@@ -202,6 +207,10 @@ message ReductionExpr {
     /** Intersection :: (Set_like s) => s Range -> Range
         May produce an empty range */
     INTERSECTION = 13;
+
+    /** Hull :: (Set_like s) => s Range -> Range
+        Returns the convex hull (union with all the inner missing bits filled in) */
+    HULL = 14;
   }
   Op op = 1;
   ValueExpr vals = 4;

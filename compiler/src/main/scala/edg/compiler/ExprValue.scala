@@ -1,8 +1,10 @@
 package edg.compiler
 
 import edg.lit.lit
+
 import scala.collection.mutable
 import edg.ExprBuilder.Literal
+import edg.compiler.CompilerError.EmptyRange
 
 
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
@@ -49,20 +51,25 @@ case class IntValue(value: BigInt) extends FloatPromotable {
   override def toStringValue: String = value.toString
 }
 
+sealed trait RangeType extends ExprValue
+
 object RangeValue {
-  def apply(lower: Double, upper: Double): RangeValue = RangeValue(lower.toFloat, upper.toFloat)  // convenience method
-  def empty: RangeValue = RangeValue(Float.NaN, Float.NaN)  // cannot be matched on, NaN equality is whack
-  // TODO proper null interval construct
+  def apply(lower: Double, upper: Double): RangeType =
+    RangeValue(lower.toFloat, upper.toFloat)  // convenience method
 }
 
-case class RangeValue(lower: Float, upper: Float) extends ExprValue {
-  require((lower <= upper) || isEmpty, s"malformed range ($lower, $upper)")
-
-  def isEmpty: Boolean = lower.isNaN || upper.isNaN  // TODO better definition of empty range
+case class RangeValue(lower: Float, upper: Float) extends RangeType {
+  require(lower <= upper, s"malformed range ($lower, $upper)")
 
   override def toLit: lit.ValueLit = Literal.Range(lower, upper)
   override def toStringValue: String = s"($lower, $upper)"
 }
+
+case object RangeEmpty extends RangeType {  // an empty range, analogous to an empty set
+  override def toLit: lit.ValueLit = Literal.Range(Float.NaN, Float.NaN)
+  override def toStringValue: String = s"(${Float.NaN}, ${Float.NaN})"
+}
+
 case class BooleanValue(value: Boolean) extends ExprValue {
   override def toLit: lit.ValueLit = Literal.Boolean(value)
   override def toStringValue: String = value.toString
@@ -117,10 +124,32 @@ object ArrayValue {
     }
   }
 
+  // Extracts the min and maxes from an array of ranges
   object ExtractRange {
-    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[(Seq[Float], Seq[Float])] = seqMapOption(vals.values) {
-      case RangeValue(eltMin, eltMax) => (eltMin, eltMax)
-    }.map(_.unzip)
+    sealed trait ExtractedRange
+    // Array of ranges with no empty values
+    case class FullRange(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
+    // Array of ranges with empty values and full values
+    case class RangeWithEmpty(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
+    // Array of ranges with only empty values
+    case class EmptyRange() extends ExtractedRange
+    // Empty input array (contains neither ranges nor empty ranges
+    case class EmptyArray() extends ExtractedRange
+
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[ExtractedRange] = seqMapOption(vals.values) {
+      // the outer option returns None if it encounters a non-Range value
+      case RangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
+      case RangeEmpty => None
+    }.map { valueOpts =>
+      val containsNone = valueOpts.contains(None)
+      val containedRanges = valueOpts.flatten.unzip
+      (containsNone, containedRanges) match {
+        case (true, (Seq(), Seq())) => EmptyRange()
+        case (false, (Seq(), Seq())) => EmptyArray()
+        case (true, (mins, maxs)) => RangeWithEmpty(mins, maxs)
+        case (false, (mins, maxs)) => FullRange(mins, maxs)
+      }
+    }
   }
 
   object ExtractBoolean {

@@ -63,9 +63,24 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(7.0, 10.0)
     )) should equal(RangeValue(7.0, 7.0))
-    assert(evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
+    evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0)
-    )).asInstanceOf[RangeValue].isEmpty)
+    )) should equal(RangeEmpty)
+    // TODO test with empty ranges?
+
+    evalTest.map(ValueExpr.BinOp(Op.HULL,
+      ValueExpr.Literal(4.0, 6.0), ValueExpr.Literal(5.0, 7.0)
+    )) should equal(RangeValue(4.0, 7.0))
+    evalTest.map(ValueExpr.BinOp(Op.HULL,
+      ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(4.0, 6.0)
+    )) should equal(RangeValue(4.0, 7.0))
+    evalTest.map(ValueExpr.BinOp(Op.HULL,
+      ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(7.0, 10.0)
+    )) should equal(RangeValue(5.0, 10.0))
+    evalTest.map(ValueExpr.BinOp(Op.HULL,
+      ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0)
+    )) should equal(RangeValue(5.0, 10.0))
+    // TODO test with empty ranges?
 
     evalTest.map(ValueExpr.BinOp(Op.SUBSET,
       ValueExpr.Literal(6.0), ValueExpr.Literal(5.0, 7.0)
