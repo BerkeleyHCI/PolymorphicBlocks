@@ -21,5 +21,6 @@ from . import TransformUtil
 from . import edgir
 
 from .HdlInterfaceServer import HdlInterface
+from .BufferDeserializer import BufferDeserializer, BufferSerializer
 from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign, CompilerCheckError
 from .Refinements import Refinements

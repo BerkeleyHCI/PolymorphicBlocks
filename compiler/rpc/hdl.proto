@@ -1,5 +1,6 @@
-/** Defines a gRPC service provided in Python that exposes HDL-to-edgir elaboration for a compiler in a
-    different process / language.
+/** Defines messages for a service provided in Python that exposes
+    HDL-to-edgir elaboration for a compiler in a different process / language.
+
 */
 
 syntax = "proto3";
@@ -54,6 +55,10 @@ message Refinements {
   repeated Value values = 2;
 }
 
+message DiscardResponse {
+  repeated ref.LibraryPath discarded = 1;
+}
+
 message LibraryResponse {
   oneof result {
     schema.Library.NS.Val element = 1;
@@ -69,11 +74,27 @@ message GeneratorResponse {
   }
 }
 
+message HdlRequest {
+  oneof request {
+    ModuleName discard_module = 1;  // discard from cache all library elements contained within a Python module
+    LibraryRequest get_library_element = 2;  // returns the IR for a library element
+    GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
+  }
+}
+
+message HdlResponse {
+  oneof response {
+    DiscardResponse discard_module = 1;  // list of discarded library elements
+    LibraryResponse get_library_element = 2;
+    GeneratorResponse elaborate_generator = 3;
+  }
+}
+
+// TODO remove me after refactoring
 service HdlInterface {
   // (Re)loads and indexes the module (recursively, with deduplication) and returns all the library elements.
   // Should be a fast operation, does not elaborate the elements.
-  rpc ReloadModule (ModuleName) returns (stream ref.LibraryPath) { }
-
-  rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) { }
-  rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) { }
+  rpc ReloadModule (ModuleName) returns (stream ref.LibraryPath) {}
+  rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) {}
+  rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) {}
 }

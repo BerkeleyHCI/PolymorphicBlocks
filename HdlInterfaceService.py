@@ -1,15 +1,14 @@
-import grpc  # type: ignore
-from concurrent import futures
 from edg_core import HdlInterface, edgrpc
 from edg_core.HdlInterfaceServer import LibraryElementResolver, RollbackImporter
 
+import sys
+import io
+
+from edg_core import BufferDeserializer, BufferSerializer
+
 
 if __name__ == '__main__':
-  server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-  library = LibraryElementResolver()
-  edgrpc.add_HdlInterfaceServicer_to_server(HdlInterface(verbose=True, rollback=RollbackImporter()), server)
-  server.add_insecure_port('[::]:50051')
-  server.start()
-  print("started server")
+  stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
+  stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 
-  server.wait_for_termination()
+  print(stdin_deserializer.read())
