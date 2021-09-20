@@ -8,20 +8,13 @@ import edg.schema.schema
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
-import io.grpc.internal.DnsNameResolverProvider
-import io.grpc.netty.NettyChannelBuilder
-
-import java.io.{InputStream, OutputStream}
-import java.nio.{ByteBuffer, ByteOrder}
+import java.io.{File, InputStream, OutputStream}
 
 
 class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: OutputStream) {
   def write(message: MessageType): Unit = {
-//    val bb = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN)  // network order
-//    bb.putInt(message.serializedSize)
-//    stream.write(bb.array())
-//    message.writeTo(stream)
     message.writeDelimitedTo(stream)
+    stream.flush()
   }
 }
 
@@ -29,43 +22,22 @@ class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: 
 class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
     message: scalapb.GeneratedMessageCompanion[MessageType], stream: InputStream) {
   def read(): MessageType = {
-//    val bb = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN)  // network order
-//    while (bb.position() < 4) {
-//      bb.put(stream.readNBytes(4 - bb.position()))
-//    }
-//    val size = bb.getInt(0)
-
-//    message.parseFrom(stream)
-
     message.parseDelimitedFrom(stream).get
-
-//    bb.putInt(message.serializedSize)
-//    stream.write(bb.array())
-//    message.writeTo(stream)
   }
 }
 
 
-class PythonInterface {
+class PythonInterface(serverFile: File) {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  protected val process = new ProcessBuilder("python", "HdlInterfaceServer.py").start()
-  val serializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
-  val deserializer = new ProtobufStreamDeserializer(edgrpc.HdlResponse, process.getInputStream)
-
-  //Process(Seq("python", "HdlInterfaceServer.py")).run
-
-//  val ((channel, blockingStub), initTime) = timeExec {
-//    val channel = NettyChannelBuilder
-//        .forAddress("localhost", 50051)
-//        .nameResolverFactory(new DnsNameResolverProvider())
-//        .usePlaintext
-//        .build
-//    val blockingStub = edgrpc.HdlInterfaceGrpc.blockingStub(channel)
-//    (channel, blockingStub)
-//  }
+  require(serverFile.exists())
+  protected val process = new ProcessBuilder("python", serverFile.getAbsolutePath)
+      .redirectError(ProcessBuilder.Redirect.INHERIT)
+      .start()
+  protected val serializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
+  protected val deserializer = new ProtobufStreamDeserializer(edgrpc.HdlResponse, process.getInputStream)
 
   def reloadModule(module: String): Seq[ref.LibraryPath] = {
     val request = edgrpc.ModuleName(module)
@@ -74,7 +46,6 @@ class PythonInterface {
         request=edgrpc.HdlRequest.Request.ReloadModule(value=request)))
       val reply = deserializer.read()
       reply.getReloadModule.indexed
-//      blockingStub.reloadModule(request)
     }
     debug(s"PyIf:reloadModule $module (${reqTime} ms)")
     reply
@@ -90,7 +61,6 @@ class PythonInterface {
         request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
       val reply = deserializer.read()
       reply.getGetLibraryElement
-//      blockingStub.getLibraryElement(request)
     }
 
     reply.result match {
@@ -123,8 +93,6 @@ class PythonInterface {
         request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
       val reply = deserializer.read()
       reply.getElaborateGenerator
-
-//      blockingStub.elaborateGenerator(request)
     }
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
     reply.result match {

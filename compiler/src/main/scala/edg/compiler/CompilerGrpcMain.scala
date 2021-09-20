@@ -5,7 +5,7 @@ import edg.compiler.{compiler => edgcompiler}
 import edg.compiler.compiler.{CompilerRequest, CompilerResult}
 import io.grpc.netty.NettyServerBuilder
 
-import java.io.{PrintWriter, StringWriter}
+import java.io.{File, PrintWriter, StringWriter}
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -51,7 +51,7 @@ object CompilerGrpcMain {
   def main(args: Array[String]): Unit = {
     val port = 50052
 
-    val pyIf = new PythonInterface()
+    val pyIf = new PythonInterface(new File("HdlInterfaceServer.py"))  // use relative path
     val compilerService = new CompilerImpl(new PythonInterfaceLibrary(pyIf))
 
     val server = NettyServerBuilder

@@ -106,22 +106,17 @@ class HdlInterface():  # type: ignore
     self.rollback = rollback
 
   def ReloadModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
-    try:
-      # nuke it from orbit, because we really don't know how to do better right now
-      self.library = LibraryElementResolver()  # clear old the old resolver
-      if self.rollback is not None:
-        self.rollback.clear()
+    # nuke it from orbit, because we really don't know how to do better right now
+    self.library = LibraryElementResolver()  # clear old the old resolver
+    if self.rollback is not None:
+      self.rollback.clear()
 
-      module = importlib.import_module(request.name)
-      self.library.load_module(module)
-      if self.rollback is not None:
-        self.rollback.newModules.append(module)
-      return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
-              for indexed in self.library.lib_class_map.keys()]
-    except BaseException as e:
-      # TODO pipe full error into response
-      print(f"Error {e}", flush=True)
-      return []
+    module = importlib.import_module(request.name)
+    self.library.load_module(module)
+    if self.rollback is not None:
+      self.rollback.newModules.append(module)
+    return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
+            for indexed in self.library.lib_class_map.keys()]
 
   @staticmethod
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
