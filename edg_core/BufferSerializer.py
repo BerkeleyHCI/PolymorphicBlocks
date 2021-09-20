@@ -1,7 +1,6 @@
 from typing import TypeVar, Generic, Type, BinaryIO
 
 import google.protobuf as protobuf
-import io
 import struct
 
 
