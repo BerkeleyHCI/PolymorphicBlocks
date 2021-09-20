@@ -30,19 +30,21 @@ class ProtobufStdioSubprocess
 }
 
 
-
 class PythonInterface(serverFile: File) {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  require(serverFile.exists())
-  protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse,
-    Seq("python", serverFile.getAbsolutePath)
-  )
+  protected val process = if (serverFile.exists()) {
+    Errorable.Success(new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
+      edgrpc.HdlResponse,
+      Seq("python", serverFile.getAbsolutePath)))
+  } else {
+    Errorable.Error(s"No HDL Interface Stub at ${serverFile.getAbsolutePath}")
+  }
 
-  def reloadModule(module: String): Seq[ref.LibraryPath] = {
+
+  def reloadModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
@@ -55,7 +57,7 @@ class PythonInterface(serverFile: File) {
   }
 
   def libraryRequest(element: ref.LibraryPath):
-      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
+      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = process.flatMap { process =>
     val request = edgrpc.LibraryRequest(
       element=Some(element)
     )
@@ -81,7 +83,7 @@ class PythonInterface(serverFile: File) {
 
   def elaborateGeneratorRequest(element: ref.LibraryPath,
                                 fnName: String, values: Map[ref.LocalPath, ExprValue]):
-      Errorable[elem.HierarchyBlock] = {
+      Errorable[elem.HierarchyBlock] = process.flatMap { process =>
     val request = edgrpc.GeneratorRequest(
       element=Some(element), fn=fnName,
       values=values.map { case (valuePath, valueValue) =>
@@ -136,7 +138,7 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     discarded
   }
 
-  def reloadModule(module: String): Seq[ref.LibraryPath] = {
+  def reloadModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val pyRefreshedElements = py.reloadModule(module)
     pyRefreshedElements
   }
