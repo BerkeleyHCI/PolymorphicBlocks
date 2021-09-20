@@ -119,6 +119,7 @@ class HdlInterface():  # type: ignore
       return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
               for indexed in self.library.lib_class_map.keys()]
     except BaseException as e:
+      # TODO pipe full error into response
       print(f"Error {e}", flush=True)
       return []
 
@@ -171,8 +172,7 @@ class HdlInterface():  # type: ignore
         generator_obj, f"in generate {request.fn} for {request.element}",
         generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
-      traceback.print_exc()
-      print(f"while serving generator request for {request.element.target.name}", flush=True)
+      # TODO pipe full stack trace into proto
       response.error = str(e)
 
     return response
