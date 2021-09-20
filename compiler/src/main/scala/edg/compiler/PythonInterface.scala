@@ -11,20 +11,24 @@ import edg.IrPort
 import java.io.{File, InputStream, OutputStream}
 
 
-class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: OutputStream) {
-  def write(message: MessageType): Unit = {
-    message.writeDelimitedTo(stream)
-    stream.flush()
+class ProtobufStdioSubprocess
+    [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
+    responseType: scalapb.GeneratedMessageCompanion[ResponseType],
+    args: Seq[String]) {
+  protected val process = new ProcessBuilder(args: _*)
+      .redirectError(ProcessBuilder.Redirect.INHERIT)
+      .start()
+
+  def write(message: RequestType): Unit = {
+    message.writeDelimitedTo(process.getOutputStream)
+    process.getOutputStream.flush()
+  }
+
+  def read(): ResponseType = {
+    responseType.parseDelimitedFrom(process.getInputStream).get
   }
 }
 
-
-class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
-    message: scalapb.GeneratedMessageCompanion[MessageType], stream: InputStream) {
-  def read(): MessageType = {
-    message.parseDelimitedFrom(stream).get
-  }
-}
 
 
 class PythonInterface(serverFile: File) {
@@ -33,18 +37,17 @@ class PythonInterface(serverFile: File) {
   protected def debug(msg: => String): Unit = { }
 
   require(serverFile.exists())
-  protected val process = new ProcessBuilder("python", serverFile.getAbsolutePath)
-      .redirectError(ProcessBuilder.Redirect.INHERIT)
-      .start()
-  protected val serializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
-  protected val deserializer = new ProtobufStreamDeserializer(edgrpc.HdlResponse, process.getInputStream)
+  protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
+    edgrpc.HdlResponse,
+    Seq("python", serverFile.getAbsolutePath)
+  )
 
   def reloadModule(module: String): Seq[ref.LibraryPath] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      serializer.write(edgrpc.HdlRequest(
+      process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.ReloadModule(value=request)))
-      val reply = deserializer.read()
+      val reply = process.read()
       reply.getReloadModule.indexed
     }
     debug(s"PyIf:reloadModule $module (${reqTime} ms)")
@@ -57,9 +60,9 @@ class PythonInterface(serverFile: File) {
       element=Some(element)
     )
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
-      serializer.write(edgrpc.HdlRequest(
+      process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
-      val reply = deserializer.read()
+      val reply = process.read()
       reply.getGetLibraryElement
     }
 
@@ -89,9 +92,9 @@ class PythonInterface(serverFile: File) {
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      serializer.write(edgrpc.HdlRequest(
+      process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
-      val reply = deserializer.read()
+      val reply = process.read()
       reply.getElaborateGenerator
     }
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
