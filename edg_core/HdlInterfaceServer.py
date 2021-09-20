@@ -100,16 +100,12 @@ class RollbackImporter:
           deleted_modules.append(module)
     self.newModules = []
 
-class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def __init__(self, *, verbose: bool = False, rollback: Optional[Any] = None):
+class HdlInterface():  # type: ignore
+  def __init__(self, *, rollback: Optional[Any] = None):
     self.library = LibraryElementResolver()  # dummy empty resolver
-    self.verbose = verbose
     self.rollback = rollback
 
-  def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
-    if self.verbose:
-      print(f"ReloadModule({request.name}) -> ", end='', flush=True)
-
+  def ReloadModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
     try:
       # nuke it from orbit, because we really don't know how to do better right now
       self.library = LibraryElementResolver()  # clear old the old resolver
@@ -120,17 +116,11 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       self.library.load_module(module)
       if self.rollback is not None:
         self.rollback.newModules.append(module)
-
-      if self.verbose:
-        print(f"None (indexed {len(self.library.lib_class_map)})", flush=True)
-      for indexed in self.library.lib_class_map.keys():
-        pb = edgir.LibraryPath()
-        pb.target.name = indexed
-        yield pb
+      return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
+              for indexed in self.library.lib_class_map.keys()]
     except BaseException as e:
-      if self.verbose:
-        print(f"Error {e}", flush=True)
-      return
+      print(f"Error {e}", flush=True)
+      return []
 
   @staticmethod
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
@@ -149,10 +139,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     else:
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
-  def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
-    if self.verbose:
-      print(f"GetLibraryElement({request.element.target.name}) -> ", end='', flush=True)
-
+  def GetLibraryElement(self, request: edgrpc.LibraryRequest) -> edgrpc.LibraryResponse:
     response = edgrpc.LibraryResponse()
     try:
       cls = self.library.class_from_path(request.element)
@@ -166,21 +153,9 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
       traceback.print_exc()
       print(f"while serving library element request for {request.element.target.name}", flush=True)
       response.error = str(e)
-
-    if self.verbose:
-      if response.HasField('error'):
-        print(f"Error {response.error}", flush=True)
-      elif response.HasField('refinements'):
-        print(f"(elt, w/ refinements)", flush=True)
-      else:
-        print(f"(elt)", flush=True)
-
     return response
 
-  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgrpc.GeneratorResponse:
-    if self.verbose:
-      print(f"ElaborateGenerator({request.element.target.name}) -> ", end='', flush=True)
-
+  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest) -> edgrpc.GeneratorResponse:
     response = edgrpc.GeneratorResponse()
     try:
       generator_type = self.library.class_from_path(request.element)
@@ -196,15 +171,8 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         generator_obj, f"in generate {request.fn} for {request.element}",
         generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
-      if self.verbose:
-        traceback.print_exc()
-        print(f"while serving generator request for {request.element.target.name}", flush=True)
+      traceback.print_exc()
+      print(f"while serving generator request for {request.element.target.name}", flush=True)
       response.error = str(e)
-
-    if self.verbose:
-      if response.HasField('error'):
-        print(f"Error {response.error}", flush=True)
-      else:
-        print(f"(generated)", flush=True)
 
     return response
