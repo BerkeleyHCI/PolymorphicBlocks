@@ -1,8 +1,6 @@
 package edg.compiler
 
 import collection.mutable
-import io.grpc.internal.DnsNameResolverProvider
-import io.grpc.netty.NettyChannelBuilder
 import edg.compiler.{hdl => edgrpc}
 import edg.elem.elem
 import edg.ref.ref
@@ -11,21 +9,61 @@ import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
 
+import java.io.{InputStream, OutputStream}
+import java.nio.{ByteBuffer, ByteOrder}
+
+
+class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: OutputStream) {
+  def write(message: MessageType): Unit = {
+//    val bb = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN)  // network order
+//    bb.putInt(message.serializedSize)
+//    stream.write(bb.array())
+//    message.writeTo(stream)
+    message.writeDelimitedTo(stream)
+  }
+}
+
+
+class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
+    message: scalapb.GeneratedMessageCompanion[MessageType], stream: InputStream) {
+  def read(): MessageType = {
+//    val bb = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN)  // network order
+//    while (bb.position() < 4) {
+//      bb.put(stream.readNBytes(4 - bb.position()))
+//    }
+//    val size = bb.getInt(0)
+
+//    message.parseFrom(stream)
+
+    message.parseDelimitedFrom(stream)
+
+//    bb.putInt(message.serializedSize)
+//    stream.write(bb.array())
+//    message.writeTo(stream)
+  }
+}
+
 
 class PythonInterface {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  val ((channel, blockingStub), initTime) = timeExec {
-    val channel = NettyChannelBuilder
-        .forAddress("localhost", 50051)
-        .nameResolverFactory(new DnsNameResolverProvider())
-        .usePlaintext
-        .build
-    val blockingStub = edgrpc.HdlInterfaceGrpc.blockingStub(channel)
-    (channel, blockingStub)
-  }
+  protected val process = new ProcessBuilder("python", "HdlInterfaceServer.py").start()
+  process.getOutputStream
+
+  //Process(Seq("python", "HdlInterfaceServer.py")).run
+
+
+//  val ((channel, blockingStub), initTime) = timeExec {
+//    val channel = NettyChannelBuilder
+//        .forAddress("localhost", 50051)
+//        .nameResolverFactory(new DnsNameResolverProvider())
+//        .usePlaintext
+//        .build
+//    val blockingStub = edgrpc.HdlInterfaceGrpc.blockingStub(channel)
+//    (channel, blockingStub)
+//  }
   debug(s"PyIf:init (${initTime} ms)")
 
   def reloadModule(module: String): Seq[ref.LibraryPath] = {
