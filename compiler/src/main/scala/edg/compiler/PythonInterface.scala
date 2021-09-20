@@ -8,6 +8,8 @@ import edg.schema.schema
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
+import io.grpc.internal.DnsNameResolverProvider
+import io.grpc.netty.NettyChannelBuilder
 
 import java.io.{InputStream, OutputStream}
 import java.nio.{ByteBuffer, ByteOrder}
@@ -35,7 +37,7 @@ class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
 
 //    message.parseFrom(stream)
 
-    message.parseDelimitedFrom(stream)
+    message.parseDelimitedFrom(stream).get
 
 //    bb.putInt(message.serializedSize)
 //    stream.write(bb.array())
@@ -50,10 +52,10 @@ class PythonInterface {
   protected def debug(msg: => String): Unit = { }
 
   protected val process = new ProcessBuilder("python", "HdlInterfaceServer.py").start()
-  process.getOutputStream
+  val serializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
+  val deserializer = new ProtobufStreamDeserializer(edgrpc.HdlResponse, process.getInputStream)
 
   //Process(Seq("python", "HdlInterfaceServer.py")).run
-
 
 //  val ((channel, blockingStub), initTime) = timeExec {
 //    val channel = NettyChannelBuilder
@@ -64,15 +66,18 @@ class PythonInterface {
 //    val blockingStub = edgrpc.HdlInterfaceGrpc.blockingStub(channel)
 //    (channel, blockingStub)
 //  }
-  debug(s"PyIf:init (${initTime} ms)")
 
   def reloadModule(module: String): Seq[ref.LibraryPath] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      blockingStub.reloadModule(request)
+      serializer.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.ReloadModule(value=request)))
+      val reply = deserializer.read()
+      reply.getReloadModule.indexed
+//      blockingStub.reloadModule(request)
     }
     debug(s"PyIf:reloadModule $module (${reqTime} ms)")
-    reply.toSeq
+    reply
   }
 
   def libraryRequest(element: ref.LibraryPath):
@@ -81,7 +86,11 @@ class PythonInterface {
       element=Some(element)
     )
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
-      blockingStub.getLibraryElement(request)
+      serializer.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
+      val reply = deserializer.read()
+      reply.getGetLibraryElement
+//      blockingStub.getLibraryElement(request)
     }
 
     reply.result match {
@@ -110,7 +119,12 @@ class PythonInterface {
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      blockingStub.elaborateGenerator(request)
+      serializer.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
+      val reply = deserializer.read()
+      reply.getElaborateGenerator
+
+//      blockingStub.elaborateGenerator(request)
     }
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
     reply.result match {
