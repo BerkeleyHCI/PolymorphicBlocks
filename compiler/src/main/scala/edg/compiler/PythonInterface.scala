@@ -8,7 +8,7 @@ import edg.schema.schema
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
-import java.io.{File, InputStream, OutputStream}
+import java.io.File
 
 
 class ProtobufStdioSubprocess

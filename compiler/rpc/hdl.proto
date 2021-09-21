@@ -89,12 +89,3 @@ message HdlResponse {
     GeneratorResponse elaborate_generator = 3;
   }
 }
-
-// TODO remove me after refactoring
-service HdlInterface {
-  // (Re)loads and indexes the module (recursively, with deduplication) and returns all the library elements.
-  // Should be a fast operation, does not elaborate the elements.
-  rpc ReloadModule (ModuleName) returns (stream ref.LibraryPath) {}
-  rpc GetLibraryElement (LibraryRequest) returns (LibraryResponse) {}
-  rpc ElaborateGenerator (GeneratorRequest) returns (GeneratorResponse) {}
-}

@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Generator, Optional, Set, Dict, Type, cast, List, Any
+from typing import Optional, Set, Dict, Type, cast, List, Any
 
 import builtins
 import importlib
@@ -99,6 +99,7 @@ class RollbackImporter:
           del sys.modules[name]
           deleted_modules.append(module)
     self.newModules = []
+
 
 class HdlInterface():  # type: ignore
   def __init__(self, *, rollback: Optional[Any] = None):
