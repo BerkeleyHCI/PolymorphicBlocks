@@ -4,10 +4,15 @@ from edg_core import HdlInterface, edgrpc
 from edg_core.HdlInterfaceServer import RollbackImporter
 from edg_core import BufferDeserializer, BufferSerializer
 
+# This magic line of code makes the reloading in HdlInterfaceServer not break.
+# Otherwise, for some reason, it sees duplicate modules.
+# I don't know why this works, or what the root cause is, but this makes things work...
+# Possibly because even the test case code in edg_core getting rolled back causes issues?
+# even if nothing else in core depends on that test code
 from blinky_skeleton import *
 
 if __name__ == '__main__':
-  verbose = True
+  verbose = False
 
   def eprint(*args, **kwargs):
     # Print to stderr, to avoid messing up the stdout communication channel

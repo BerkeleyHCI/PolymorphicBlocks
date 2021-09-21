@@ -39,8 +39,6 @@ class LibraryElementResolver():
       return
     self.seen_modules.add(module)
 
-    if 'edg' in module.__file__:
-      print(f"SEARCH: {module.__name__} ({type(module)}) <- {above}", file=sys.stderr)
     for (name, member) in inspect.getmembers(module):
       if inspect.ismodule(member):  # recurse into visible modules
         self._search_module(member, module.__name__)
@@ -79,8 +77,6 @@ class RollbackImporter:
 
   def _import(self, name: str, *args, **kwargs) -> ModuleType:
     module = self.realImport(name, *args, **kwargs)
-    if hasattr(module, '__file__') and 'edg' in module.__file__:
-      print(f"IMPORT: {module.__name__}", file=sys.stderr)
     if module not in self.newModules \
         and module.__name__ not in sys.builtin_module_names \
         and hasattr(module, '__file__') \
@@ -100,8 +96,6 @@ class RollbackImporter:
       if module in inverse_modules:
         name = inverse_modules[module]
         if name in sys.modules:
-          if hasattr(module, '__file__') and 'edg' in module.__file__:
-            print(f"DISCARD: {module.__name__}", file=sys.stderr)
           del sys.modules[name]
           deleted_modules.append(module)
     self.newModules = []
@@ -153,8 +147,7 @@ class HdlInterface():  # type: ignore
         if issubclass(cls, DesignTop):  # TODO don't create another instance, perhaps refinements should be static?
           cls().refinements().populate_proto(response.refinements)
     except BaseException as e:
-      traceback.print_exc()
-      print(f"while serving library element request for {request.element.target.name}", flush=True)
+      # TODO - include traceback in error message? traceback.print_exc()
       response.error = str(e)
     return response
 
