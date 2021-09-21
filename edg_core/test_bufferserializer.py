@@ -12,7 +12,7 @@ class BufferSerializerTestCase(unittest.TestCase):
     pb2.text.val = "!" * 200
 
     buffer = io.BytesIO()
-    serializer = BufferSerializer(buffer)
+    serializer = BufferSerializer[edgir.ValueLit](buffer)
     serializer.write(pb1)
     serializer.write(pb2)
 

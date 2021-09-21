@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, BinaryIO, Optional
+from typing import TypeVar, Generic, Type, BinaryIO, Optional, IO
 
 import google.protobuf as protobuf
 import struct
@@ -12,7 +12,7 @@ class BufferSerializer(Generic[MessageType]):
   Serializes a protobuf message and writes it into the byte buffer,
   using a delimited framing consistent with the Java implementation.
   """
-  def __init__(self, buffer: BinaryIO):
+  def __init__(self, buffer: IO[bytes]):
     self.buffer = buffer
 
   def write(self, message: MessageType) -> None:
@@ -29,7 +29,7 @@ class BufferDeserializer(Generic[MessageType]):
   Deserializes protobuf-serialized messages from a byte buffer and returns it one message at a time,
   using a delimited framing consistent with the Java implementation.
   """
-  def __init__(self, message_type: Type[MessageType], buffer: BinaryIO):
+  def __init__(self, message_type: Type[MessageType], buffer: IO[bytes]):
     self.message_type = message_type
     self.buffer = buffer
 

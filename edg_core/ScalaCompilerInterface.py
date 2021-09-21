@@ -32,8 +32,8 @@ class ScalaCompilerInstance:
 
   def __init__(self):
     self.process: Optional[Any] = None
-    self.request_serializer: Optional[BufferSerializer] = None
-    self.response_deserializer: Optional[BufferDeserializer] = None
+    self.request_serializer: Optional[BufferSerializer[edgrpc.CompilerRequest]] = None
+    self.response_deserializer: Optional[BufferDeserializer[edgrpc.CompilerResult]] = None
 
   def check_started(self) -> None:
     if self.process is None:
@@ -48,6 +48,7 @@ class ScalaCompilerInstance:
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE)
 
+      assert self.process.stdin is not None
       self.request_serializer = BufferSerializer[edgrpc.CompilerRequest](self.process.stdin)
       assert self.process.stdout is not None
       self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
@@ -56,6 +57,8 @@ class ScalaCompilerInstance:
   def compile(self, block: Type[Block], refinements: Refinements = Refinements(),
               errors_fatal: bool = True) -> CompiledDesign:
     self.check_started()
+    assert self.request_serializer is not None
+    assert self.response_deserializer is not None
 
     request = edgrpc.CompilerRequest(
       modules=[block.__module__],
@@ -69,7 +72,7 @@ class ScalaCompilerInstance:
 
     self.request_serializer.write(request)
     result = self.response_deserializer.read()
-
+    assert result is not None
     assert result.HasField('design'), f"no compiled result, with error {result.error}"
     if result.error and errors_fatal:
       raise CompilerCheckError(f"error during compilation: \n{result.error}")
