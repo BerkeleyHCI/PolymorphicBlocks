@@ -106,6 +106,9 @@ class HdlInterface():  # type: ignore
     self.library = LibraryElementResolver()  # dummy empty resolver
     self.rollback = rollback
 
+    test = LibraryElementResolver()  # clear old the old resolver
+    test.load_module(importlib.import_module("blinky_skeleton"))
+
   def ReloadModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
     # nuke it from orbit, because we really don't know how to do better right now
     self.library = LibraryElementResolver()  # clear old the old resolver

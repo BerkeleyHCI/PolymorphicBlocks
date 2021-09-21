@@ -46,10 +46,15 @@ object CompilerServerMain {
     val pyLib = new PythonInterfaceLibrary(pyIf)
 
     while (true) {
-      val request = compiler.CompilerRequest.parseDelimitedFrom(System.in).get
-      val result = compile(request, pyLib)
-      result.writeDelimitedTo(System.out)
-      System.out.flush()
+      val request = compiler.CompilerRequest.parseDelimitedFrom(System.in)
+      request match {
+        case Some(request) =>
+          val result = compile(request, pyLib)
+          result.writeDelimitedTo(System.out)
+          System.out.flush()
+        case None =>  // end of stream
+          System.exit(0)
+      }
     }
   }
 }

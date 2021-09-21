@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, BinaryIO
+from typing import TypeVar, Generic, Type, BinaryIO, Optional
 
 import google.protobuf as protobuf
 import struct
@@ -34,18 +34,24 @@ class BufferDeserializer(Generic[MessageType]):
     self.buffer = buffer
 
   # Returns the next message from the buffer
-  def read(self) -> MessageType:
+  def read(self) -> Optional[MessageType]:
     from google.protobuf.internal.decoder import _DecodeVarint32  # type: ignore
     # from https://cwiki.apache.org/confluence/display/GEODE/Delimiting+Protobuf+Messages
     current = b''
     while len(current) == 0 or current[-1] & 0x80 == 0x80:
-      current = current + self.buffer.read(1)
+      new = self.buffer.read(1)
+      if not new:
+        return None
+      current = current + new
     size, new_pos = _DecodeVarint32(current, 0)
     assert new_pos == len(current)
 
     current = b''
     while len(current) < size:
-      current = current + self.buffer.read(size - len(current))
+      new = self.buffer.read(size - len(current))
+      if not new:
+        return None
+      current = current + new
     assert(len(current) == size)
 
     message = self.message_type()

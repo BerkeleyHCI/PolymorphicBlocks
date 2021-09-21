@@ -21,6 +21,9 @@ if __name__ == '__main__':
 
   while True:
     request = stdin_deserializer.read()
+    if request is None:  # end of stream
+      sys.exit(0)
+
     response = edgrpc.HdlResponse()
     if request.HasField('reload_module'):
       eprint(f"ReloadModule({request.reload_module.name}) -> ", end='')
