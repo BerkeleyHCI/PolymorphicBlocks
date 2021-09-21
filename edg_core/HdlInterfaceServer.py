@@ -4,7 +4,6 @@ from typing import Optional, Set, Dict, Type, cast, List, Any
 import builtins
 import importlib
 import inspect
-import traceback
 import sys
 
 from . import edgrpc, edgir
@@ -31,7 +30,7 @@ class LibraryElementResolver():
     """
     self._search_module(module)
 
-  def _search_module(self, module: ModuleType, above: any = None) -> None:
+  def _search_module(self, module: ModuleType) -> None:
     # avoid repeated work and re-indexing modules
     if (module.__name__ in sys.builtin_module_names
         or not hasattr(module, '__file__')  # apparently load six.moves breaks
@@ -41,7 +40,7 @@ class LibraryElementResolver():
 
     for (name, member) in inspect.getmembers(module):
       if inspect.ismodule(member):  # recurse into visible modules
-        self._search_module(member, module.__name__)
+        self._search_module(member)
 
       if inspect.isclass(member) and issubclass(member, self.LibraryElementType) \
           and (member, 'non_library') not in member._elt_properties:  # process elements
@@ -51,12 +50,12 @@ class LibraryElementResolver():
           continue  # don't need to re-index
 
         for mro in member.mro():
-          self._search_module(importlib.import_module(mro.__module__), module.__name__)
+          self._search_module(importlib.import_module(mro.__module__))
 
         if issubclass(member, self.PortType):  # TODO for some reason, Links not in __init__ are sometimes not found
           obj = member()  # TODO can these be class definitions?
           if hasattr(obj, 'link_type'):
-            self._search_module(importlib.import_module(obj.link_type.__module__), module.__name__)
+            self._search_module(importlib.import_module(obj.link_type.__module__))
 
         self.lib_class_map[name] = member
 
