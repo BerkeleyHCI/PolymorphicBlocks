@@ -31,7 +31,7 @@ class LibraryElementResolver():
     """
     self._search_module(module)
 
-  def _search_module(self, module: ModuleType) -> None:
+  def _search_module(self, module: ModuleType, above: any = None) -> None:
     # avoid repeated work and re-indexing modules
     if (module.__name__ in sys.builtin_module_names
         or not hasattr(module, '__file__')  # apparently load six.moves breaks
@@ -39,9 +39,11 @@ class LibraryElementResolver():
       return
     self.seen_modules.add(module)
 
+    if 'edg' in module.__file__:
+      print(f"SEARCH: {module.__name__} ({type(module)}) <- {above}", file=sys.stderr)
     for (name, member) in inspect.getmembers(module):
       if inspect.ismodule(member):  # recurse into visible modules
-        self._search_module(member)
+        self._search_module(member, module.__name__)
 
       if inspect.isclass(member) and issubclass(member, self.LibraryElementType) \
           and (member, 'non_library') not in member._elt_properties:  # process elements
@@ -51,12 +53,12 @@ class LibraryElementResolver():
           continue  # don't need to re-index
 
         for mro in member.mro():
-          self._search_module(importlib.import_module(mro.__module__))
+          self._search_module(importlib.import_module(mro.__module__), module.__name__)
 
         if issubclass(member, self.PortType):  # TODO for some reason, Links not in __init__ are sometimes not found
           obj = member()  # TODO can these be class definitions?
           if hasattr(obj, 'link_type'):
-            self._search_module(importlib.import_module(obj.link_type.__module__))
+            self._search_module(importlib.import_module(obj.link_type.__module__), module.__name__)
 
         self.lib_class_map[name] = member
 
@@ -77,6 +79,8 @@ class RollbackImporter:
 
   def _import(self, name: str, *args, **kwargs) -> ModuleType:
     module = self.realImport(name, *args, **kwargs)
+    if hasattr(module, '__file__') and 'edg' in module.__file__:
+      print(f"IMPORT: {module.__name__}", file=sys.stderr)
     if module not in self.newModules \
         and module.__name__ not in sys.builtin_module_names \
         and hasattr(module, '__file__') \
@@ -96,6 +100,8 @@ class RollbackImporter:
       if module in inverse_modules:
         name = inverse_modules[module]
         if name in sys.modules:
+          if hasattr(module, '__file__') and 'edg' in module.__file__:
+            print(f"DISCARD: {module.__name__}", file=sys.stderr)
           del sys.modules[name]
           deleted_modules.append(module)
     self.newModules = []
@@ -105,9 +111,6 @@ class HdlInterface():  # type: ignore
   def __init__(self, *, rollback: Optional[Any] = None):
     self.library = LibraryElementResolver()  # dummy empty resolver
     self.rollback = rollback
-
-    test = LibraryElementResolver()  # clear old the old resolver
-    test.load_module(importlib.import_module("blinky_skeleton"))
 
   def ReloadModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
     # nuke it from orbit, because we really don't know how to do better right now

@@ -4,9 +4,10 @@ from edg_core import HdlInterface, edgrpc
 from edg_core.HdlInterfaceServer import RollbackImporter
 from edg_core import BufferDeserializer, BufferSerializer
 
+from blinky_skeleton import *
 
 if __name__ == '__main__':
-  verbose = False
+  verbose = True
 
   def eprint(*args, **kwargs):
     # Print to stderr, to avoid messing up the stdout communication channel
