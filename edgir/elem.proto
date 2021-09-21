@@ -22,8 +22,36 @@ import "expr.proto";
 import "ref.proto";
 
 
-message Port {
+/** Text (such as for block labels and tooltips) that can include values from the design.
+ */
+message DescriptiveText {
+  // Guidelines for short descriptions
+  // - Example use case: appears on the block diagram
+  // - Plaintext only
+  // - First line should be very short and concise, used as the block title
+  // - Additional lines can be shown if there is space
+  // Guidelines for long descriptions
+  // - Example use case: tooltip on hover
+  // - Should be self-contained (do not de-duplicate
+  // - Supports HTML tags - values that are directly spliced in can be part of the HTML tags
+  //   (though be aware of possible undefined values)
+  // TODO: is there a way to provide undefined defaults? should this be part of the ValueExpr?
+  message Element {
+    oneof element {
+      string str = 1;
+      edg.expr.ValueExpr value = 2;
+      // Semantics for values:
+      // Expressions that result in parameter types (float, text, ...): its value
+      // Elements (blocks, ports, ...): the corresponding descriptive text of that element
+      // Anything else: some kind of error message spliced in
+    }
+  }
+  // Straight concatenation of strings and values, without separating spaces or newlines or anything
+  repeated Element elements = 1;
+}
 
+
+message Port {
   map<string, edg.init.ValInit> params = 10;
   map<string, edg.expr.ValueExpr> constraints = 11;
 
@@ -39,6 +67,9 @@ message Port {
 //    edg.common.Empty none = 40;
 //    edg.impl.PortImpl val = 41;
 //  }
+
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
 
   edg.common.Metadata meta = 127;
 }
@@ -65,6 +96,9 @@ message Bundle {
 //    edg.impl.PortImpl val = 41;
 //  }
 
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
+
   edg.common.Metadata meta = 127;
 }
 
@@ -75,6 +109,9 @@ message PortArray {
 
   /* Only designs should contain actual ports here */
   map<string, PortLike> ports = 13;
+
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
 
   edg.common.Metadata meta = 127;
 }
@@ -110,6 +147,9 @@ message HierarchyBlock {
   map<string, Generator> generators = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
+
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
 
   edg.common.Metadata meta = 127;
 }
@@ -161,6 +201,9 @@ message Link {
 //    edg.impl.LinkImpl val = 43;
 //  }
 
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
+
   edg.common.Metadata meta = 127;
 }
 
@@ -173,6 +216,9 @@ message LinkArray {
   map<string, PortLike>          ports  = 11;  // the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
   map<string, edg.expr.ValueExpr> constraints = 12;  // includes all exported constraints to map link ports to my ports
   map<string, LinkLike> links = 13;
+
+  DescriptiveText short_desc = 101;
+  DescriptiveText long_desc = 102;
 
   edg.common.Metadata meta = 127;
 }
