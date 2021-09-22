@@ -26,7 +26,7 @@ class DependencyGraph[KeyType, ValueType] {
       case None =>  // nothing if no previous dependencies
     }
     require(!values.isDefinedAt(node), s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies")
-    val remainingDeps = mutable.Set(dependencies: _*) -- values.keySet
+    val remainingDeps = (dependencies.toSet -- values.keySet).to(mutable.Set)
 
     deps.put(node, remainingDeps)
     for (dependency <- remainingDeps) {
@@ -79,7 +79,7 @@ class DependencyGraph[KeyType, ValueType] {
 
   // Returns all the KeyTypes that have no values. NOT a fast operation.
   def getMissing: Set[KeyType] = {
-    (deps.keySet -- values.keySet).toSet
+    deps.keySet.toSet -- values.keySet
   }
 
   def getMissingBlocking: Map[KeyType, Seq[KeyType]] = {

@@ -108,7 +108,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
-    compiler.compile should equal(referenceElaborated)
+    compiler.compile() should equal(referenceElaborated)
   }
 
   "Compiler on design with single nested source and sink" should "expand blocks" in {
@@ -172,6 +172,6 @@ class CompilerExpansionTest extends AnyFlatSpec {
       )
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
-    compiler.compile should equal(referenceElaborated)
+    compiler.compile() should equal(referenceElaborated)
   }
 }

@@ -158,7 +158,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Hook method to be overridden, eg for status
   //
-  def onElaborate(record: ElaborateRecord) { }
+  def onElaborate(record: ElaborateRecord): Unit = { }
 
   // Seed compilation with the root
   //
@@ -491,7 +491,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         require(connectingBlockPath.steps.length == 1)  // TODO cleaner way to handle this?
         (connectingBlockPath.steps.head.getName, generatorRecord)
       }
-    }.flatten.groupBy(_._1).mapValues(_.map(_._2))
+    }.flatten.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known

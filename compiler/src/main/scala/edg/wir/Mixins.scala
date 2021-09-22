@@ -20,7 +20,7 @@ trait HasMutablePorts {
 
   protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, PortLike] = {
-    pb.mapValues { _.`is` match {
+    pb.view.mapValues { _.`is` match {
       case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
       case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-port $like")
@@ -39,7 +39,7 @@ trait HasMutableBlocks {
 
   protected def parseBlocks(pb: Map[String, elem.BlockLike], nameOrder: Seq[String]):
   mutable.SeqMap[String, BlockLike] =
-    pb.mapValues { _.`type` match {
+    pb.view.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
     }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
@@ -56,7 +56,7 @@ trait HasMutableLinks {
 
   protected def parseLinks(pb: Map[String, elem.LinkLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, LinkLike] =
-    pb.mapValues { _.`type` match {
+    pb.view.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
     }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)

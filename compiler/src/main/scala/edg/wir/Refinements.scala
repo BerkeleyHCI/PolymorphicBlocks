@@ -26,7 +26,7 @@ object Refinements {
     val classValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.ClsParam(clsParam) =>
         clsParam.getCls -> (clsParam.getParamPath -> ExprValue.fromLit(value.getValue))
-    } }.groupBy(_._1).mapValues(_.map(_._2)).toMap
+    } }.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
 
     val instanceValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.Path(path) =>

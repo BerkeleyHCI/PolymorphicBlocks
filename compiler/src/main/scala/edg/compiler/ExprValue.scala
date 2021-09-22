@@ -105,7 +105,7 @@ object ArrayValue {
   object Empty {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Unit] = {
       if (vals.values.isEmpty) {
-        Some()
+        Some(())
       } else {
         None
       }
