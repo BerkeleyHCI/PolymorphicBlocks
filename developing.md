@@ -15,6 +15,8 @@ Or faster, with mypy in daemon mode:
 dmypy run -- --follow-imports=error --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples
 ```
 
+Or, using the [Mypy plugin for Intellij](https://plugins.jetbrains.com/plugin/13348-mypy-official-), but adding `--check-untyped-defs` to the [configuration](https://github.com/dropbox/mypy-PyCharm-plugin#configuration).
+
 Note: since mypy currently doesn't infer return types (see mypy issue 4409), some defs might be incomplete, so the type check is leaky and we can't currently use `--disallow-incomplete-defs` or `--disallow-untyped-defs`.
 If that doesn't get resolved, we might go through and manually annotate all return types. 
 
