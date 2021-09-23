@@ -1,15 +1,13 @@
 import cProfile, pstats, io
 from pstats import SortKey
 
-from examples.test_datalogger import *
+from edg import compile_board_inplace
+from examples.test_datalogger import TestDatalogger
 
 if __name__ == '__main__':
-
-  ElectronicsDriver()  # pre-generate libs
-
   pr = cProfile.Profile()
   pr.enable()
-  ElectronicsDriver().generate_write_block(TestDatalogger(), 'examples/test_datalogger')
+  compile_board_inplace(TestDatalogger)
   pr.disable()
 
   s = io.StringIO()
