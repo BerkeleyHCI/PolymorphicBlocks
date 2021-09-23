@@ -1,4 +1,6 @@
 # Simple tool that scans for libraries and dumps the whole thing to a proto file
+from typing import cast
+
 from edg_core.HdlInterfaceServer import LibraryElementResolver
 import edg_core
 import edg
@@ -22,13 +24,14 @@ if __name__ == '__main__':
     elif isinstance(obj, edg_core.Link):
       print(f"Elaborating link {name}")
       link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {cls}")
+      assert isinstance(link_proto, edg_core.edgir.Link)  # TODO this needs to be cleaned up
       pb.root.members[name].link.CopyFrom(link_proto)
     elif isinstance(obj, edg_core.Bundle):  # TODO: note Bundle extends Port, so this must come first
       print(f"Elaborating bundle {name}")
       pb.root.members[name].bundle.CopyFrom(obj._def_to_proto())
     elif isinstance(obj, edg_core.Port):
       print(f"Elaborating port {name}")
-      pb.root.members[name].port.CopyFrom(obj._def_to_proto())
+      pb.root.members[name].port.CopyFrom(cast(edg_core.edgir.Port, obj._def_to_proto()))
     else:
       print(f"Unknown category for class {cls}")
 
