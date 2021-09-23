@@ -27,6 +27,11 @@ PinName = Union[str, int, SpecialPin]
 ConcretePinName = str
 
 
+class AssignedPins(NamedTuple):
+  assigned_pins: Dict[ConcretePinName, CircuitPort]  # map of internal pin name -> edge leaf port
+  not_connected: List[CircuitPort]  # list of edge leaf ports that are marked as NC
+
+
 class AssignablePinGroup():
   """Base class for assignable pin definitions"""
   @abstractmethod
@@ -58,7 +63,7 @@ class AnyPinAssign(AssignablePinGroup):
         if isinstance(preassign_pin, str):  # shouldn't have ints based on how params propagated
           assert preassign_pin in self.pins, f"preassign for {preassign_pin}={port} not in pin set {self.pins} for {self}"
           assignments[preassign_pin] = leaf_port
-        elif preassign_pin == NotConnectedPin:
+        elif preassign_pin is NotConnectedPin:
           pass
         else:
           raise ValueError(f"bad preassign value {preassign_pin}")
