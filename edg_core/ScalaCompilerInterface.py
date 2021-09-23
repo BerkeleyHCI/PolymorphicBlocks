@@ -3,7 +3,8 @@ from typing import Optional, Any, Type, Iterable, Union
 import os
 import subprocess
 
-from . import edgir, edgrpc, BufferSerializer, BufferDeserializer
+from . import edgir, edgrpc
+from .BufferSerializer import BufferSerializer, BufferDeserializer
 from .Core import builder
 from .HierarchyBlock import Block
 from .DesignTop import DesignTop
