@@ -230,11 +230,12 @@ class DigitalSource(DigitalBase):
     return self._convert(DigitalSourceAdapterVoltageSource())
 
 
-class DigitalBidirNotConnected(NotConnectableBlock):
+class DigitalBidirNotConnected(NotConnectableBlock['DigitalBidir']):
   """Not-connected dummy block for Digital bidir ports"""
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(DigitalBidir())
+
 
 class DigitalBidir(DigitalBase, NotConnectablePort):
   @staticmethod

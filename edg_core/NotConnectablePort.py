@@ -1,14 +1,15 @@
-from typing import cast
+from typing import cast, Generic
 from .Ports import Port
 from .HierarchyBlock import Block
 from .Builder import builder
 from .Exception import *
 
 
-class NotConnectableBlock(Block):
+NotConnectablePortType = TypeVar('NotConnectablePortType', bound=Port, covariant=True)
+class NotConnectableBlock(Block, Generic[NotConnectablePortType]):
   def __init__(self):
     super().__init__()
-    self.port: Port
+    self.port: NotConnectablePortType
 
 
 class NotConnectablePort(Port):
@@ -16,7 +17,7 @@ class NotConnectablePort(Port):
   and connects this port to it."""
   def __init__(self) -> None:
     super().__init__()
-    self.not_connected_type: Type[NotConnectableBlock]
+    self.not_connected_type: Type[NotConnectableBlock[Port]]  # TODO type check this!
 
   def not_connected(self) -> Block:
     """Marks this edge port as not connected, can be called on a boundary port only."""
