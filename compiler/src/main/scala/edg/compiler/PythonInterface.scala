@@ -113,11 +113,23 @@ class PythonInterface(serverFile: File) {
 }
 
 
-class PythonInterfaceLibrary(py: PythonInterface) extends Library {
+class PythonInterfaceLibrary() extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
   private val eltsRefinements = mutable.HashMap[ref.LibraryPath, edgrpc.Refinements]()
   private val generatorCache = mutable.HashMap[(ref.LibraryPath, String, Map[ref.LocalPath, ExprValue]),
       elem.HierarchyBlock]()
+
+  protected var py: Option[PythonInterface] = None
+
+  // Runs some block of code with the specified Python interface.
+  def withPythonInterface[T](withInterface: PythonInterface)(fn: => T): T = {
+    require(py.isEmpty)
+    py = Some(withInterface)
+    val result = fn
+    require(py.contains(withInterface))
+    py = None
+    result
+  }
 
   def clearThisCache(): Unit = {
     elts.clear()
@@ -143,13 +155,13 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
   }
 
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
-    py.indexModule(module)
+    py.get.indexModule(module)
   }
 
   def getLibrary(path: ref.LibraryPath): Errorable[schema.Library.NS.Val.Type] = {
     elts.get(path) match {
       case Some(value) => Errorable.Success(value)
-      case None => py.libraryRequest(path) match { // not in cache, fetch from Python
+      case None => py.get.libraryRequest(path) match { // not in cache, fetch from Python
         case Errorable.Success((elem, refinementsOpt)) =>
           elts.put(path, elem.`type`)
           refinementsOpt.foreach {
@@ -218,7 +230,7 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     generatorCache.get((path, fnName, values)) match {
       case Some(generated) => Errorable.Success(generated)
       case None =>
-        val result = py.elaborateGeneratorRequest(path, fnName, values)
+        val result = py.get.elaborateGeneratorRequest(path, fnName, values)
         result.map { generatorCache.put((path, fnName, values), _) }
         result
     }

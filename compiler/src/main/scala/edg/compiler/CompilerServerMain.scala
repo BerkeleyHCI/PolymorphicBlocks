@@ -47,17 +47,18 @@ object CompilerServerMain {
 
   def main(args: Array[String]): Unit = {
     val pyIf = new PythonInterface(new File("HdlInterfaceService.py"))  // use relative path
-    val pyLib = new PythonInterfaceLibrary(pyIf)
-
-    while (true) {
-      val request = compiler.CompilerRequest.parseDelimitedFrom(System.in)
-      request match {
-        case Some(request) =>
-          val result = compile(request, pyLib)
-          result.writeDelimitedTo(System.out)
-          System.out.flush()
-        case None =>  // end of stream
-          System.exit(0)
+    val pyLib = new PythonInterfaceLibrary()
+    pyLib.withPythonInterface(pyIf) {
+      while (true) {
+        val request = compiler.CompilerRequest.parseDelimitedFrom(System.in)
+        request match {
+          case Some(request) =>
+            val result = compile(request, pyLib)
+            result.writeDelimitedTo(System.out)
+            System.out.flush()
+          case None => // end of stream
+            System.exit(0)
+        }
       }
     }
   }
