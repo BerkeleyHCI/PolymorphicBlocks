@@ -23,7 +23,7 @@ class NotConnectablePort(Port):
     # TODO should this be a more general infrastructural function?
     # TODO dedup w/ Port._convert
     block_parent = cast(Block, self._block_parent())
-    if block_parent is None or block_parent.parent is None:
+    if block_parent is None:
       raise UnconnectableError(f"{self} must be bound to mark not-connected")
     if block_parent is not builder.get_curr_block():
       raise UnconnectableError(f"can only mark not-connected on ports of the current block")
