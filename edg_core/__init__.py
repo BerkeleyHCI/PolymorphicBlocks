@@ -4,6 +4,7 @@ from .ConstraintExpr import RangeLit as RangeVal
 from .ConstraintExpr import RangeSubset, RangeSuperset
 from .ConstraintExpr import Default
 from .Ports import Port, Bundle
+from .NotConnectablePort import NotConnectableBlock, NotConnectablePort
 from .Blocks import Link
 from .DesignTop import DesignTop
 from .HierarchyBlock import Block, GeneratorBlock, ImplicitConnect, init_in_parent, abstract_block

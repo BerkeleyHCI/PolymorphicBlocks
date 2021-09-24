@@ -82,5 +82,4 @@ class Qt096t_if09(Lcd, Block):
     self.connect(self.vdd_cap.pwr, self.pwr)
     self.connect(self.vdd_cap.gnd, self.gnd)
 
-    self.miso_nc = self.Block(self.spi.miso.not_connected())
-    self.connect(self.spi.miso, self.miso_nc.port)
+    self.spi.miso.not_connected()

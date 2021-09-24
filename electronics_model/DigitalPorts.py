@@ -230,18 +230,13 @@ class DigitalSource(DigitalBase):
     return self._convert(DigitalSourceAdapterVoltageSource())
 
 
-class DigitalBidirNotConnected(Block):
+class DigitalBidirNotConnected(NotConnectableBlock):
   """Not-connected dummy block for Digital bidir ports"""
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(DigitalBidir())
 
-class DigitalBidir(DigitalBase):
-  def not_connected(self) -> DigitalBidirNotConnected:
-    """Marks this port as not connected, can be called on a boundary port only."""
-    # TODO should this be a more general infrastructural function?
-    return DigitalBidirNotConnected()
-
+class DigitalBidir(DigitalBase, NotConnectablePort):
   @staticmethod
   def from_supply(neg: VoltageSink, pos: VoltageSink,
                   voltage_limit_tolerance: RangeLike = (0, 0)*Volt,
@@ -302,6 +297,7 @@ class DigitalBidir(DigitalBase):
                pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.bridge_type = DigitalBidirBridge
+    self.not_connected_type = DigitalBidirNotConnected
 
     if model is not None:
       # TODO check that both model and individual parameters aren't overdefined
