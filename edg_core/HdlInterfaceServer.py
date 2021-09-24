@@ -65,56 +65,13 @@ class LibraryElementResolver():
     return self.lib_class_map.get(dict_key, None)
 
 
-# Module reloading solution from http://pyunit.sourceforge.net/notes/reloading.html
-class RollbackImporter:
-  def __init__(self) -> None:
-    "Creates an instance and installs as the global importer"
-    self.previousModules: Set[ModuleType] = set(sys.modules.copy().values())
-    self.realImport = builtins.__import__
-    builtins.__import__ = self._import
-    self.newModules: List[ModuleType] = []
-
-  def _import(self, name: str, *args, **kwargs) -> ModuleType:
-    module = self.realImport(name, *args, **kwargs)
-    if module not in self.newModules \
-        and module.__name__ not in sys.builtin_module_names \
-        and hasattr(module, '__file__') \
-        and module.__file__ \
-        and module not in self.previousModules \
-        and 'Python37-32' not in module.__file__ \
-        and 'site-packages' not in module.__file__ \
-        and 'edg_core' not in module.__file__:  # don't rollback internals, bad things happen
-      self.newModules.append(module)
-
-    return module
-
-  def clear(self) -> None:
-    inverse_modules = {module: name for name, module in sys.modules.items()}
-    deleted_modules = []
-    for module in self.newModules:
-      if module in inverse_modules:
-        name = inverse_modules[module]
-        if name in sys.modules:
-          del sys.modules[name]
-          deleted_modules.append(module)
-    self.newModules = []
-
-
 class HdlInterface():  # type: ignore
-  def __init__(self, *, rollback: Optional[Any] = None):
+  def __init__(self):
     self.library = LibraryElementResolver()  # dummy empty resolver
-    self.rollback = rollback
 
-  def ReloadModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
-    # nuke it from orbit, because we really don't know how to do better right now
-    self.library = LibraryElementResolver()  # clear old the old resolver
-    if self.rollback is not None:
-      self.rollback.clear()
-
+  def IndexModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
     module = importlib.import_module(request.name)
     self.library.load_module(module)
-    if self.rollback is not None:
-      self.rollback.newModules.append(module)
     return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
             for indexed in self.library.lib_class_map.keys()]
 

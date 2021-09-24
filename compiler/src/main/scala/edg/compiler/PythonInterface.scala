@@ -30,6 +30,10 @@ class ProtobufStdioSubprocess
 }
 
 
+/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
+  * them down to IR.
+  * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
+  */
 class PythonInterface(serverFile: File) {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
@@ -44,15 +48,15 @@ class PythonInterface(serverFile: File) {
   }
 
 
-  def reloadModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
-        request=edgrpc.HdlRequest.Request.ReloadModule(value=request)))
+        request=edgrpc.HdlRequest.Request.IndexModule(value=request)))
       val reply = process.read()
-      reply.getReloadModule.indexed
+      reply.getIndexModule.indexed
     }
-    debug(s"PyIf:reloadModule $module (${reqTime} ms)")
+    debug(s"PyIf:indexModule $module (${reqTime} ms)")
     reply
   }
 
@@ -138,9 +142,8 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     discarded
   }
 
-  def reloadModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
-    val pyRefreshedElements = py.reloadModule(module)
-    pyRefreshedElements
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
+    py.indexModule(module)
   }
 
   def getLibrary(path: ref.LibraryPath): Errorable[schema.Library.NS.Val.Type] = {

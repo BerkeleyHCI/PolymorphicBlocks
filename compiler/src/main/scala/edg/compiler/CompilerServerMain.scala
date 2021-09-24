@@ -7,6 +7,10 @@ import edg.compiler.compiler.{CompilerRequest, CompilerResult}
 import java.io.{File, PrintWriter, StringWriter}
 
 
+/** A Scala-based EDG compiler interface as a server.
+  * Because this uses a persistent HdlInterfaceService, this should not be used where HDL changes are expected
+  * during its lifetime. This is suitable for unit tests, but not for long-term user interaction.
+  */
 object CompilerServerMain {
   private def constPropToSolved(vals: Map[IndirectDesignPath, ExprValue]): Seq[edgcompiler.CompilerResult.Value] = {
     vals.map { case (path, value) => edgcompiler.CompilerResult.Value(
@@ -17,7 +21,7 @@ object CompilerServerMain {
 
   def compile(request: CompilerRequest, library: PythonInterfaceLibrary): CompilerResult = {
     request.modules.foreach { module =>
-      library.reloadModule(module)
+      library.indexModule(module)
     }
 
     try {

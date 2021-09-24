@@ -55,7 +55,7 @@ message Refinements {
   repeated Value values = 2;
 }
 
-message ReloadResponse {
+message IndexResponse {
   repeated ref.LibraryPath indexed = 1;
 }
 
@@ -76,7 +76,7 @@ message GeneratorResponse {
 
 message HdlRequest {
   oneof request {
-    ModuleName reload_module = 1;  // reload a Python module and returns its contents
+    ModuleName index_module = 1;  // returns an index of IR elements in a Python module
     LibraryRequest get_library_element = 2;  // returns the IR for a library element
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
   }
@@ -84,7 +84,7 @@ message HdlRequest {
 
 message HdlResponse {
   oneof response {
-    ReloadResponse reload_module = 1;  // list of discarded library elements
+    IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
   }

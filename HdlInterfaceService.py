@@ -1,7 +1,6 @@
 import sys
 
 from edg_core import HdlInterface, edgrpc
-from edg_core.HdlInterfaceServer import RollbackImporter
 from edg_core import BufferDeserializer, BufferSerializer
 
 # This magic line of code makes the reloading in HdlInterfaceServer not break.
@@ -19,7 +18,7 @@ if __name__ == '__main__':
     if verbose:
       print(*args, **kwargs, file=sys.stderr, flush=True)
 
-  server = HdlInterface(rollback=RollbackImporter())
+  server = HdlInterface()
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 
@@ -31,18 +30,18 @@ if __name__ == '__main__':
       sys.exit(0)
 
     response = edgrpc.HdlResponse()
-    if request.HasField('reload_module'):
-      eprint(f"ReloadModule({request.reload_module.name}) -> ", end='')
+    if request.HasField('index_module'):
+      eprint(f"IndexModule({request.index_module.name}) -> ", end='')
 
       indexed = []
       try:
-        indexed = server.ReloadModule(request.reload_module)
+        indexed = server.IndexModule(request.index_module)
       except BaseException as e:
         # TODO pipe full error into response
         eprint(f"Error {e}")
 
       eprint(f"(Indexed {len(indexed)})")
-      response.reload_module.indexed.extend(indexed)
+      response.index_module.indexed.extend(indexed)
     elif request.HasField('get_library_element'):
       if verbose:
         eprint(f"GetLibraryElement({request.get_library_element.element.target.name}) -> ", end='')

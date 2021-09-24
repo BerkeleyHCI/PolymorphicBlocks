@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='edg.compiler',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"7\n\x0eLibraryRequest\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xc8\x01\n\x10GeneratorRequest\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\xfd\x03\n\x0bRefinements\x12\x36\n\nsubclasses\x18\x01 \x03(\x0b\x32\".edg.compiler.Refinements.Subclass\x12/\n\x06values\x18\x02 \x03(\x0b\x32\x1f.edg.compiler.Refinements.Value\x1a\x88\x01\n\x08Subclass\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12#\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12)\n\x0breplacement\x18\x03 \x01(\x0b\x32\x14.edg.ref.LibraryPathB\x08\n\x06source\x1a\xf9\x01\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\x43\n\tcls_param\x18\x02 \x01(\x0b\x32..edg.compiler.Refinements.Value.ClassParamPathH\x00\x12 \n\x05value\x18\x03 \x01(\x0b\x32\x11.edg.lit.ValueLit\x1a[\n\x0e\x43lassParamPath\x12!\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12&\n\nparam_path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPathB\x08\n\x06source\"7\n\x0eReloadResponse\x12%\n\x07indexed\x18\x01 \x03(\x0b\x32\x14.edg.ref.LibraryPath\"\x8b\x01\n\x0fLibraryResponse\x12-\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1a.edg.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.RefinementsB\x08\n\x06result\"]\n\x11GeneratorResponse\x12-\n\tgenerated\x18\x01 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xc6\x01\n\nHdlRequest\x12\x31\n\rreload_module\x18\x01 \x01(\x0b\x32\x18.edg.compiler.ModuleNameH\x00\x12;\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1c.edg.compiler.LibraryRequestH\x00\x12=\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1e.edg.compiler.GeneratorRequestH\x00\x42\t\n\x07request\"\xce\x01\n\x0bHdlResponse\x12\x35\n\rreload_module\x18\x01 \x01(\x0b\x32\x1c.edg.compiler.ReloadResponseH\x00\x12<\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1d.edg.compiler.LibraryResponseH\x00\x12>\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1f.edg.compiler.GeneratorResponseH\x00\x42\n\n\x08response2\xff\x01\n\x0cHdlInterface\x12\x42\n\x0cReloadModule\x12\x18.edg.compiler.ModuleName\x1a\x14.edg.ref.LibraryPath\"\x00\x30\x01\x12R\n\x11GetLibraryElement\x12\x1c.edg.compiler.LibraryRequest\x1a\x1d.edg.compiler.LibraryResponse\"\x00\x12W\n\x12\x45laborateGenerator\x12\x1e.edg.compiler.GeneratorRequest\x1a\x1f.edg.compiler.GeneratorResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\thdl.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\nelem.proto\x1a\tlit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"7\n\x0eLibraryRequest\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\"\xc8\x01\n\x10GeneratorRequest\x12%\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x34\n\x06values\x18\x04 \x03(\x0b\x32$.edg.compiler.GeneratorRequest.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit\"\xfd\x03\n\x0bRefinements\x12\x36\n\nsubclasses\x18\x01 \x03(\x0b\x32\".edg.compiler.Refinements.Subclass\x12/\n\x06values\x18\x02 \x03(\x0b\x32\x1f.edg.compiler.Refinements.Value\x1a\x88\x01\n\x08Subclass\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12#\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x14.edg.ref.LibraryPathH\x00\x12)\n\x0breplacement\x18\x03 \x01(\x0b\x32\x14.edg.ref.LibraryPathB\x08\n\x06source\x1a\xf9\x01\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPathH\x00\x12\x43\n\tcls_param\x18\x02 \x01(\x0b\x32..edg.compiler.Refinements.Value.ClassParamPathH\x00\x12 \n\x05value\x18\x03 \x01(\x0b\x32\x11.edg.lit.ValueLit\x1a[\n\x0e\x43lassParamPath\x12!\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x14.edg.ref.LibraryPath\x12&\n\nparam_path\x18\x02 \x01(\x0b\x32\x12.edg.ref.LocalPathB\x08\n\x06source\"6\n\rIndexResponse\x12%\n\x07indexed\x18\x01 \x03(\x0b\x32\x14.edg.ref.LibraryPath\"\x8b\x01\n\x0fLibraryResponse\x12-\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1a.edg.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.RefinementsB\x08\n\x06result\"]\n\x11GeneratorResponse\x12-\n\tgenerated\x18\x01 \x01(\x0b\x32\x18.edg.elem.HierarchyBlockH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xc5\x01\n\nHdlRequest\x12\x30\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x18.edg.compiler.ModuleNameH\x00\x12;\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1c.edg.compiler.LibraryRequestH\x00\x12=\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1e.edg.compiler.GeneratorRequestH\x00\x42\t\n\x07request\"\xcc\x01\n\x0bHdlResponse\x12\x33\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x1b.edg.compiler.IndexResponseH\x00\x12<\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1d.edg.compiler.LibraryResponseH\x00\x12>\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1f.edg.compiler.GeneratorResponseH\x00\x42\n\n\x08responseb\x06proto3')
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,elem__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,])
 
@@ -343,15 +343,15 @@ _REFINEMENTS = _descriptor.Descriptor(
 )
 
 
-_RELOADRESPONSE = _descriptor.Descriptor(
-  name='ReloadResponse',
-  full_name='edg.compiler.ReloadResponse',
+_INDEXRESPONSE = _descriptor.Descriptor(
+  name='IndexResponse',
+  full_name='edg.compiler.IndexResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='indexed', full_name='edg.compiler.ReloadResponse.indexed', index=0,
+      name='indexed', full_name='edg.compiler.IndexResponse.indexed', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -370,7 +370,7 @@ _RELOADRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=875,
-  serialized_end=930,
+  serialized_end=929,
 )
 
 
@@ -417,8 +417,8 @@ _LIBRARYRESPONSE = _descriptor.Descriptor(
       name='result', full_name='edg.compiler.LibraryResponse.result',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=933,
-  serialized_end=1072,
+  serialized_start=932,
+  serialized_end=1071,
 )
 
 
@@ -458,8 +458,8 @@ _GENERATORRESPONSE = _descriptor.Descriptor(
       name='result', full_name='edg.compiler.GeneratorResponse.result',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1074,
-  serialized_end=1167,
+  serialized_start=1073,
+  serialized_end=1166,
 )
 
 
@@ -471,7 +471,7 @@ _HDLREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='reload_module', full_name='edg.compiler.HdlRequest.reload_module', index=0,
+      name='index_module', full_name='edg.compiler.HdlRequest.index_module', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -506,8 +506,8 @@ _HDLREQUEST = _descriptor.Descriptor(
       name='request', full_name='edg.compiler.HdlRequest.request',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1170,
-  serialized_end=1368,
+  serialized_start=1169,
+  serialized_end=1366,
 )
 
 
@@ -519,7 +519,7 @@ _HDLRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='reload_module', full_name='edg.compiler.HdlResponse.reload_module', index=0,
+      name='index_module', full_name='edg.compiler.HdlResponse.index_module', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -554,8 +554,8 @@ _HDLRESPONSE = _descriptor.Descriptor(
       name='response', full_name='edg.compiler.HdlResponse.response',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1371,
-  serialized_end=1577,
+  serialized_start=1369,
+  serialized_end=1573,
 )
 
 _LIBRARYREQUEST.fields_by_name['element'].message_type = ref__pb2._LIBRARYPATH
@@ -589,7 +589,7 @@ _REFINEMENTS_VALUE.oneofs_by_name['source'].fields.append(
 _REFINEMENTS_VALUE.fields_by_name['cls_param'].containing_oneof = _REFINEMENTS_VALUE.oneofs_by_name['source']
 _REFINEMENTS.fields_by_name['subclasses'].message_type = _REFINEMENTS_SUBCLASS
 _REFINEMENTS.fields_by_name['values'].message_type = _REFINEMENTS_VALUE
-_RELOADRESPONSE.fields_by_name['indexed'].message_type = ref__pb2._LIBRARYPATH
+_INDEXRESPONSE.fields_by_name['indexed'].message_type = ref__pb2._LIBRARYPATH
 _LIBRARYRESPONSE.fields_by_name['element'].message_type = schema__pb2._LIBRARY_NS_VAL
 _LIBRARYRESPONSE.fields_by_name['refinements'].message_type = _REFINEMENTS
 _LIBRARYRESPONSE.oneofs_by_name['result'].fields.append(
@@ -605,24 +605,24 @@ _GENERATORRESPONSE.fields_by_name['generated'].containing_oneof = _GENERATORRESP
 _GENERATORRESPONSE.oneofs_by_name['result'].fields.append(
   _GENERATORRESPONSE.fields_by_name['error'])
 _GENERATORRESPONSE.fields_by_name['error'].containing_oneof = _GENERATORRESPONSE.oneofs_by_name['result']
-_HDLREQUEST.fields_by_name['reload_module'].message_type = _MODULENAME
+_HDLREQUEST.fields_by_name['index_module'].message_type = _MODULENAME
 _HDLREQUEST.fields_by_name['get_library_element'].message_type = _LIBRARYREQUEST
 _HDLREQUEST.fields_by_name['elaborate_generator'].message_type = _GENERATORREQUEST
 _HDLREQUEST.oneofs_by_name['request'].fields.append(
-  _HDLREQUEST.fields_by_name['reload_module'])
-_HDLREQUEST.fields_by_name['reload_module'].containing_oneof = _HDLREQUEST.oneofs_by_name['request']
+  _HDLREQUEST.fields_by_name['index_module'])
+_HDLREQUEST.fields_by_name['index_module'].containing_oneof = _HDLREQUEST.oneofs_by_name['request']
 _HDLREQUEST.oneofs_by_name['request'].fields.append(
   _HDLREQUEST.fields_by_name['get_library_element'])
 _HDLREQUEST.fields_by_name['get_library_element'].containing_oneof = _HDLREQUEST.oneofs_by_name['request']
 _HDLREQUEST.oneofs_by_name['request'].fields.append(
   _HDLREQUEST.fields_by_name['elaborate_generator'])
 _HDLREQUEST.fields_by_name['elaborate_generator'].containing_oneof = _HDLREQUEST.oneofs_by_name['request']
-_HDLRESPONSE.fields_by_name['reload_module'].message_type = _RELOADRESPONSE
+_HDLRESPONSE.fields_by_name['index_module'].message_type = _INDEXRESPONSE
 _HDLRESPONSE.fields_by_name['get_library_element'].message_type = _LIBRARYRESPONSE
 _HDLRESPONSE.fields_by_name['elaborate_generator'].message_type = _GENERATORRESPONSE
 _HDLRESPONSE.oneofs_by_name['response'].fields.append(
-  _HDLRESPONSE.fields_by_name['reload_module'])
-_HDLRESPONSE.fields_by_name['reload_module'].containing_oneof = _HDLRESPONSE.oneofs_by_name['response']
+  _HDLRESPONSE.fields_by_name['index_module'])
+_HDLRESPONSE.fields_by_name['index_module'].containing_oneof = _HDLRESPONSE.oneofs_by_name['response']
 _HDLRESPONSE.oneofs_by_name['response'].fields.append(
   _HDLRESPONSE.fields_by_name['get_library_element'])
 _HDLRESPONSE.fields_by_name['get_library_element'].containing_oneof = _HDLRESPONSE.oneofs_by_name['response']
@@ -633,7 +633,7 @@ DESCRIPTOR.message_types_by_name['ModuleName'] = _MODULENAME
 DESCRIPTOR.message_types_by_name['LibraryRequest'] = _LIBRARYREQUEST
 DESCRIPTOR.message_types_by_name['GeneratorRequest'] = _GENERATORREQUEST
 DESCRIPTOR.message_types_by_name['Refinements'] = _REFINEMENTS
-DESCRIPTOR.message_types_by_name['ReloadResponse'] = _RELOADRESPONSE
+DESCRIPTOR.message_types_by_name['IndexResponse'] = _INDEXRESPONSE
 DESCRIPTOR.message_types_by_name['LibraryResponse'] = _LIBRARYRESPONSE
 DESCRIPTOR.message_types_by_name['GeneratorResponse'] = _GENERATORRESPONSE
 DESCRIPTOR.message_types_by_name['HdlRequest'] = _HDLREQUEST
@@ -700,12 +700,12 @@ _sym_db.RegisterMessage(Refinements.Subclass)
 _sym_db.RegisterMessage(Refinements.Value)
 _sym_db.RegisterMessage(Refinements.Value.ClassParamPath)
 
-ReloadResponse = _reflection.GeneratedProtocolMessageType('ReloadResponse', (_message.Message,), dict(
-  DESCRIPTOR = _RELOADRESPONSE,
+IndexResponse = _reflection.GeneratedProtocolMessageType('IndexResponse', (_message.Message,), dict(
+  DESCRIPTOR = _INDEXRESPONSE,
   __module__ = 'hdl_pb2'
-  # @@protoc_insertion_point(class_scope:edg.compiler.ReloadResponse)
+  # @@protoc_insertion_point(class_scope:edg.compiler.IndexResponse)
   ))
-_sym_db.RegisterMessage(ReloadResponse)
+_sym_db.RegisterMessage(IndexResponse)
 
 LibraryResponse = _reflection.GeneratedProtocolMessageType('LibraryResponse', (_message.Message,), dict(
   DESCRIPTOR = _LIBRARYRESPONSE,
@@ -735,47 +735,5 @@ HdlResponse = _reflection.GeneratedProtocolMessageType('HdlResponse', (_message.
   ))
 _sym_db.RegisterMessage(HdlResponse)
 
-
-
-_HDLINTERFACE = _descriptor.ServiceDescriptor(
-  name='HdlInterface',
-  full_name='edg.compiler.HdlInterface',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  serialized_start=1580,
-  serialized_end=1835,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='ReloadModule',
-    full_name='edg.compiler.HdlInterface.ReloadModule',
-    index=0,
-    containing_service=None,
-    input_type=_MODULENAME,
-    output_type=ref__pb2._LIBRARYPATH,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='GetLibraryElement',
-    full_name='edg.compiler.HdlInterface.GetLibraryElement',
-    index=1,
-    containing_service=None,
-    input_type=_LIBRARYREQUEST,
-    output_type=_LIBRARYRESPONSE,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='ElaborateGenerator',
-    full_name='edg.compiler.HdlInterface.ElaborateGenerator',
-    index=2,
-    containing_service=None,
-    input_type=_GENERATORREQUEST,
-    output_type=_GENERATORRESPONSE,
-    serialized_options=None,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_HDLINTERFACE)
-
-DESCRIPTOR.services_by_name['HdlInterface'] = _HDLINTERFACE
 
 # @@protoc_insertion_point(module_scope)

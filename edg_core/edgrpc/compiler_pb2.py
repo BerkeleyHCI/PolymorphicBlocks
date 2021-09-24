@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='edg.compiler',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0e\x63ompiler.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\tlit.proto\x1a\thdl.proto\"v\n\x0f\x43ompilerRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12\"\n\x06\x64\x65sign\x18\x02 \x01(\x0b\x32\x12.edg.schema.Design\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.Refinements\"\xca\x01\n\x0e\x43ompilerResult\x12\"\n\x06\x64\x65sign\x18\x01 \x01(\x0b\x32\x12.edg.schema.Design\x12\r\n\x05\x65rror\x18\x03 \x01(\t\x12\x38\n\x0csolvedValues\x18\x02 \x03(\x0b\x32\".edg.compiler.CompilerResult.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLit2T\n\x08\x43ompiler\x12H\n\x07\x43ompile\x12\x1d.edg.compiler.CompilerRequest\x1a\x1c.edg.compiler.CompilerResult\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0e\x63ompiler.proto\x12\x0c\x65\x64g.compiler\x1a\x0cschema.proto\x1a\tref.proto\x1a\tlit.proto\x1a\thdl.proto\"v\n\x0f\x43ompilerRequest\x12\x0f\n\x07modules\x18\x01 \x03(\t\x12\"\n\x06\x64\x65sign\x18\x02 \x01(\x0b\x32\x12.edg.schema.Design\x12.\n\x0brefinements\x18\x03 \x01(\x0b\x32\x19.edg.compiler.Refinements\"\xca\x01\n\x0e\x43ompilerResult\x12\"\n\x06\x64\x65sign\x18\x01 \x01(\x0b\x32\x12.edg.schema.Design\x12\r\n\x05\x65rror\x18\x03 \x01(\t\x12\x38\n\x0csolvedValues\x18\x02 \x03(\x0b\x32\".edg.compiler.CompilerResult.Value\x1aK\n\x05Value\x12 \n\x04path\x18\x01 \x01(\x0b\x32\x12.edg.ref.LocalPath\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.edg.lit.ValueLitb\x06proto3')
   ,
   dependencies=[schema__pb2.DESCRIPTOR,ref__pb2.DESCRIPTOR,lit__pb2.DESCRIPTOR,hdl__pb2.DESCRIPTOR,])
 
@@ -189,29 +189,5 @@ CompilerResult = _reflection.GeneratedProtocolMessageType('CompilerResult', (_me
 _sym_db.RegisterMessage(CompilerResult)
 _sym_db.RegisterMessage(CompilerResult.Value)
 
-
-
-_COMPILER = _descriptor.ServiceDescriptor(
-  name='Compiler',
-  full_name='edg.compiler.Compiler',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  serialized_start=404,
-  serialized_end=488,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='Compile',
-    full_name='edg.compiler.Compiler.Compile',
-    index=0,
-    containing_service=None,
-    input_type=_COMPILERREQUEST,
-    output_type=_COMPILERRESULT,
-    serialized_options=None,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_COMPILER)
-
-DESCRIPTOR.services_by_name['Compiler'] = _COMPILER
 
 # @@protoc_insertion_point(module_scope)
