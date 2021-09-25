@@ -215,7 +215,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     #
     # Pin assignment block
     #
-    assigned_pins = PinAssignmentUtil(
+    assigned_pins, not_connected = PinAssignmentUtil(
       # TODO assign fixed-pin digital peripherals here
       # TODO
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],

@@ -95,7 +95,7 @@ class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TOD
       17: self.gnd,
     }
 
-    assigned_pins = PinAssignmentUtil(
+    assigned_pins, not_connected = PinAssignmentUtil(
       # TODO assign fixed-pin digital peripherals here
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSource)],
                    [22, 23, 24]),  # TODO account for only two DACs
