@@ -95,7 +95,7 @@ class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TOD
       17: self.gnd,
     }
 
-    assigned_pins, not_connected = PinAssignmentUtil(
+    assigned_pins = PinAssignmentUtil(
       # TODO assign fixed-pin digital peripherals here
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSource)],
                    [22, 23, 24]),  # TODO account for only two DACs
@@ -108,13 +108,17 @@ class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TOD
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
 
-    overassigned_pins = set(assigned_pins.keys()).intersection(set(system_pins.keys()))
+    overassigned_pins = set(assigned_pins.assigned_pins.keys()).intersection(set(system_pins.keys()))
     assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"
 
     all_pins = {
-      **{str(pin): port for pin, port in assigned_pins.items()},
+      **{str(pin): port for pin, port in assigned_pins.assigned_pins.items()},
       **{str(pin): port for pin, port in system_pins.items()}
     }
+
+    for self_port in assigned_pins.not_connected:
+      assert isinstance(self_port, NotConnectablePort), f"non-NotConnectablePort {self_port.name()} marked NC"
+      self_port.not_connected()
 
     self.footprint(
       'U', 'calisco:Nucleo32',

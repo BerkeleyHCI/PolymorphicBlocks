@@ -215,7 +215,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     #
     # Pin assignment block
     #
-    assigned_pins, not_connected = PinAssignmentUtil(
+    assigned_pins = PinAssignmentUtil(
       # TODO assign fixed-pin digital peripherals here
       # TODO
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
@@ -237,8 +237,12 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
 
-    for pin_num, self_port in assigned_pins.items():
+    for pin_num, self_port in assigned_pins.assigned_pins.items():
       self.connect(self_port, self.ic.io_pins[str(pin_num)])
+
+    for self_port in assigned_pins.not_connected:
+      assert isinstance(self_port, NotConnectablePort), f"non-NotConnectablePort {self_port.name()} marked NC"
+      self_port.not_connected()
 
     if self.get(self.usb_0.is_connected()):
       self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
