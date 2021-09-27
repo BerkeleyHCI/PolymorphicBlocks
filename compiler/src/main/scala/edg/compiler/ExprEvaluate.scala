@@ -68,16 +68,29 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.DIV => (lhs, rhs) match {
+      // TODO should floating division by 0 error out, NaN out, or go to inf?
+      // For this, there's explicit asserts to make it consistent with the erroring out in the int case
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+        require((rhsMin <= 0 && rhsMax <= 0) || (rhsMin >= 0 && rhsMax >= 0),
+          s"division by range including 0: ${lhs} ${binary.op} ${rhs} from $binary")
         val all = Seq(lhsMin / rhsMin, lhsMin / rhsMax, lhsMax / rhsMin, lhsMax / rhsMax)
         RangeValue(all.min, all.max)
       case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
-        RangeValue(lhsMin / rhs, lhsMax / rhs)
+        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
+        RangeValue(lhsMin / rhs, lhsMax / rhs)  // rhs = 0
       case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+        require((rhsMin <= 0 && rhsMax <= 0) || (rhsMin >= 0 && rhsMax >= 0),
+          s"division by range including 0: ${lhs} ${binary.op} ${rhs} from $binary")
         RangeValue(lhs / rhsMin, lhs / rhsMax)
-      case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs / rhs)
-      case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs / rhs)
-      case (IntValue(lhs), IntValue(rhs)) => IntValue(lhs / rhs)
+      case (FloatValue(lhs), FloatPromotable(rhs)) =>
+        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
+        FloatValue(lhs / rhs)
+      case (FloatPromotable(lhs), FloatValue(rhs)) =>
+        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
+        FloatValue(lhs / rhs)
+      case (IntValue(lhs), IntValue(rhs)) =>
+        // div 0 caught by integer semantics
+        IntValue(lhs / rhs)
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
 
