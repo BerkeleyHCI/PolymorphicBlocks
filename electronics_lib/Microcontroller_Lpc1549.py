@@ -465,8 +465,7 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
     #
     # TODO models should be in the _Device block, but need to figure how to handle Analog/Digital capable pins first
     # TODO dedup w/ models in the _Device block
-
-    for pin_num, self_port in assigned_pins.items():
+    for pin_num, self_port in assigned_pins.assigned_pins.items():
       if isinstance(self_port, (DigitalSource, DigitalSink, DigitalBidir)):
         self.connect(self_port, self.ic.io_pins[str(pin_num)].as_digital_bidir(
           voltage_limits=(0, 5) * Volt,
@@ -492,6 +491,10 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
         ))
       else:
         raise ValueError(f"unknown pin type {self_port}")
+
+    for self_port in assigned_pins.not_connected:
+      assert isinstance(self_port, NotConnectablePort), f"non-NotConnectablePort {self_port.name()} marked NC"
+      self_port.not_connected()
 
 
 class Lpc1549_48(Lpc1549Base):

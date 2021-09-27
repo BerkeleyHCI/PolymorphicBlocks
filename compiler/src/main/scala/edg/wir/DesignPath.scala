@@ -96,7 +96,6 @@ object IndirectDesignPath {
 
 /**
   * Absolute path (from the design root) to some element.
-  * TODO: should exclude link ports, since the block side port is treated as authoritative.
   */
 case class DesignPath(steps: Seq[String]) {
   // Separates into (prefix, last) where last is the last element, and prefix is a DesignPath of all but the last

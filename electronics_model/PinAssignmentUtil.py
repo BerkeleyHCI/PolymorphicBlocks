@@ -27,6 +27,11 @@ PinName = Union[str, int, SpecialPin]
 ConcretePinName = str
 
 
+class AssignedPins(NamedTuple):
+  assigned_pins: Dict[ConcretePinName, CircuitPort]  # map of internal pin name -> edge leaf port
+  not_connected: List[CircuitPort]  # list of edge leaf ports that are marked as NC
+
+
 class AssignablePinGroup():
   """Base class for assignable pin definitions"""
   @abstractmethod
@@ -34,7 +39,7 @@ class AssignablePinGroup():
 
   @abstractmethod
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) ->\
-      Optional[Dict[ConcretePinName, CircuitPort]]: ...  # returns an assignment of all leaf ports given a top-level port
+      Optional[AssignedPins]: ...  # returns an assignment of all leaf ports given a top-level port
 
 
 class AnyPinAssign(AssignablePinGroup):
@@ -49,8 +54,9 @@ class AnyPinAssign(AssignablePinGroup):
     return self.all_ports
 
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) ->\
-      Optional[Dict[ConcretePinName, CircuitPort]]:
+      Optional[AssignedPins]:
     assignments: Dict[ConcretePinName, CircuitPort] = {}
+    not_connected: List[CircuitPort] = []
     available_pins = self.pins.difference(assigned).difference(preassigns.values())
     for leaf_name, leaf_port in leaf_circuit_ports("", port):
       if leaf_port in preassigns:
@@ -58,15 +64,15 @@ class AnyPinAssign(AssignablePinGroup):
         if isinstance(preassign_pin, str):  # shouldn't have ints based on how params propagated
           assert preassign_pin in self.pins, f"preassign for {preassign_pin}={port} not in pin set {self.pins} for {self}"
           assignments[preassign_pin] = leaf_port
-        elif preassign_pin == NotConnectedPin:
-          pass
+        elif preassign_pin is NotConnectedPin:
+          not_connected.append(leaf_port)
         else:
           raise ValueError(f"bad preassign value {preassign_pin}")
       elif not available_pins:
         return None
       else:
         assignments[available_pins.pop()] = leaf_port
-    return assignments
+    return AssignedPins(assigned_pins=assignments, not_connected=not_connected)
 
 
 class PeripheralPinAssign(AssignablePinGroup):
@@ -89,13 +95,14 @@ class PeripheralPinAssign(AssignablePinGroup):
     return self.all_ports
 
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) -> \
-      Optional[Dict[ConcretePinName, CircuitPort]]:
+      Optional[AssignedPins]:
     leaf_name_ports = list(leaf_circuit_ports("", port))
 
     for group_pins in self.pins:
       assert len(group_pins) == len(leaf_name_ports)
 
       group_dict: Dict[ConcretePinName, CircuitPort] = {}
+      not_connected: List[CircuitPort] = []
       group_failed = False
       for available_pins, (leaf_name, leaf_port) in zip(group_pins, leaf_name_ports):
         if group_failed:
@@ -105,7 +112,7 @@ class PeripheralPinAssign(AssignablePinGroup):
           preassign_pin = preassigns[leaf_port]
 
           if preassign_pin is NotConnectedPin:
-            pass
+            not_connected.append(leaf_port)
           elif isinstance(preassign_pin, str):
             if preassign_pin in available_pins:
               group_dict[preassign_pin] = leaf_port
@@ -121,7 +128,7 @@ class PeripheralPinAssign(AssignablePinGroup):
             group_failed = True
 
       if not group_failed:
-        return group_dict
+        return AssignedPins(assigned_pins=group_dict, not_connected=not_connected)
     return None
 
 class PinAssignmentUtil:
@@ -135,10 +142,12 @@ class PinAssignmentUtil:
         self.assignables_by_port[port] = assignable
 
   def assign(self, ports: Iterable[Port], preassigns: IdentityDict[CircuitPort, PinName] = IdentityDict()) ->\
-      Dict[ConcretePinName, CircuitPort]:
+      AssignedPins:
     assignments: Dict[ConcretePinName, CircuitPort] = {}
+    not_connects: List[CircuitPort] = []
     for port in ports:
       port_assignment = self.assignables_by_port[port].assign(port, preassigns, set(assignments.keys()))
       assert port_assignment is not None  # TODO more robust and backtracking
-      assignments.update(port_assignment)
-    return assignments
+      assignments.update(port_assignment.assigned_pins)
+      not_connects.extend(port_assignment.not_connected)
+    return AssignedPins(assigned_pins=assignments, not_connected=not_connects)
