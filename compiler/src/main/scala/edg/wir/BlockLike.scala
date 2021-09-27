@@ -38,7 +38,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   protected val meta: mutable.SeqMap[String, common.Metadata] = mutable.SeqMap() ++ pb.getMeta.getMembers.node
 
   protected val generators: mutable.SeqMap[String, Generator] = {
-    pb.generators.mapValues { generatorPb =>
+    pb.generators.view.mapValues { generatorPb =>
       Generator(generatorPb.requiredParams, generatorPb.requiredPorts, generatorPb.connectedBlocks)
     }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
@@ -63,7 +63,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
     val overlapConstraints = that.constraints.keySet.intersect(constraints.keySet)
     require(overlapConstraints.isEmpty, s"Block append with overlapping constraints $overlapConstraints")
     constraints ++= that.constraints
-    val overlapMetaKeys = that.meta.keySet.intersect(meta.keySet) - NAMESPACE_META_KEY
+    val overlapMetaKeys = that.meta.keySet.toSet.intersect(meta.keySet) - NAMESPACE_META_KEY
     require(overlapMetaKeys.isEmpty, s"Block append meta with overlapping keys $overlapMetaKeys")
     meta ++= that.meta
     this

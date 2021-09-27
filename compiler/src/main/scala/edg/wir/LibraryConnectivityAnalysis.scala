@@ -39,7 +39,7 @@ class LibraryConnectivityAnalysis(library: Library) {
           (_, linkPath)
         }
       } .groupBy(_._1)  // port path -> seq[(port path, link path) pairs]
-      .mapValues(_.map(_._2).distinct)  // flatten into: port path -> seq[link path]
+      .view.mapValues(_.map(_._2).distinct)  // flatten into: port path -> seq[link path]
       .map {  // debugging pass only
         case pair @ (port, Seq(link)) => pair
         case pair @ (port, links) =>
@@ -81,7 +81,7 @@ class LibraryConnectivityAnalysis(library: Library) {
 
     val singlePortCounts = linkPortTypes.collect {  // library, count pairs
       case elem.PortLike.Is.LibElem(value) => (value, 1)
-    }.groupBy(_._1).mapValues(_.map(_._2).sum)
+    }.groupBy(_._1).view.mapValues(_.map(_._2).sum)
     val arrayPorts = linkPortTypes.collect {
       case elem.PortLike.Is.Array(array) =>
         (array.getSelfClass, Integer.MAX_VALUE)  // TODO maybe a inf type? but this practically won't matter

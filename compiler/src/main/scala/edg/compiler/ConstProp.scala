@@ -262,7 +262,7 @@ class ConstProp {
     * Ignores indirect references.
     */
   def getUnsolved: Set[DesignPath] = {
-    paramTypes.keySet -- params.knownValueKeys.collect {
+    paramTypes.keySet.toSet -- params.knownValueKeys.collect {
       case ExprRef.Param(param) => param
     }.flatMap(DesignPath.fromIndirectOption)
   }

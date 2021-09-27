@@ -72,7 +72,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   // All exports, structured as exterior port ref -> (interior port ref, constr name)
   lazy val exportsByOuter: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allExports.groupBy(_._1)
-        .mapValues {
+        .view.mapValues{
           case Seq((exteriorRef, interiorRef, constrName)) => (interiorRef, constrName)
           case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
         }.toMap
@@ -81,7 +81,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   // All exports, structured as inner port ref -> (exterior port ref, constr name)
   lazy val exportsByInner: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allExports.groupBy(_._2)
-        .mapValues {
+        .view.mapValues {
           case Seq((exteriorRef, interiorRef, constrName)) => (exteriorRef, constrName)
           case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
         }.toMap
@@ -90,7 +90,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   // All exports, structured as inner block port ref -> (link port ref, constr name)
   lazy val connectsByBlock: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allConnects.groupBy(_._1)
-        .mapValues {
+        .view.mapValues {
           case Seq((innerRef, linkRef, constrName)) => (linkRef, constrName)
           case other => throw new IllegalArgumentException(s"unexpected grouped connects $other")
         }.toMap
