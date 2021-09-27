@@ -1,5 +1,7 @@
-/** Defines a gRPC service that provides EDG compilation services.
+/** Defines messages for a service that provides EDG compilation services.
     Interface to the HDL (eg, library fetch) is not included here.
+
+    This no longer uses gRPC to avoid complexity of sockets.
 */
 syntax = "proto3";
 package edg.compiler;
@@ -25,8 +27,4 @@ message CompilerResult {
     lit.ValueLit value = 2;
   }
   repeated Value solvedValues = 2;
-}
-
-service Compiler {
-  rpc Compile (CompilerRequest) returns (CompilerResult) { }
 }

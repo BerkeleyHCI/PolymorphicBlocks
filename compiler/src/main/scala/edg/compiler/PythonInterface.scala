@@ -1,8 +1,6 @@
 package edg.compiler
 
 import collection.mutable
-import io.grpc.internal.DnsNameResolverProvider
-import io.grpc.netty.NettyChannelBuilder
 import edg.compiler.{hdl => edgrpc}
 import edg.elem.elem
 import edg.ref.ref
@@ -10,40 +8,68 @@ import edg.schema.schema
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
+import java.io.File
 
 
-class PythonInterface {
+class ProtobufStdioSubprocess
+    [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
+    responseType: scalapb.GeneratedMessageCompanion[ResponseType],
+    args: Seq[String]) {
+  protected val process = new ProcessBuilder(args: _*)
+      .redirectError(ProcessBuilder.Redirect.INHERIT)
+      .start()
+
+  def write(message: RequestType): Unit = {
+    message.writeDelimitedTo(process.getOutputStream)
+    process.getOutputStream.flush()
+  }
+
+  def read(): ResponseType = {
+    responseType.parseDelimitedFrom(process.getInputStream).get
+  }
+}
+
+
+/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
+  * them down to IR.
+  * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
+  */
+class PythonInterface(serverFile: File) {
   // TODO better debug toggle
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  val ((channel, blockingStub), initTime) = timeExec {
-    val channel = NettyChannelBuilder
-        .forAddress("localhost", 50051)
-        .nameResolverFactory(new DnsNameResolverProvider())
-        .usePlaintext
-        .build
-    val blockingStub = edgrpc.HdlInterfaceGrpc.blockingStub(channel)
-    (channel, blockingStub)
+  protected val process = if (serverFile.exists()) {
+    Errorable.Success(new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
+      edgrpc.HdlResponse,
+      Seq("python", serverFile.getAbsolutePath)))
+  } else {
+    Errorable.Error(s"No HDL Interface Stub at ${serverFile.getAbsolutePath}")
   }
-  debug(s"PyIf:init (${initTime} ms)")
 
-  def reloadModule(module: String): Seq[ref.LibraryPath] = {
+
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      blockingStub.reloadModule(request)
+      process.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.IndexModule(value=request)))
+      val reply = process.read()
+      reply.getIndexModule.indexed
     }
-    debug(s"PyIf:reloadModule $module (${reqTime} ms)")
-    reply.toSeq
+    debug(s"PyIf:indexModule $module (${reqTime} ms)")
+    reply
   }
 
   def libraryRequest(element: ref.LibraryPath):
-      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
+      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = process.flatMap { process =>
     val request = edgrpc.LibraryRequest(
       element=Some(element)
     )
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
-      blockingStub.getLibraryElement(request)
+      process.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
+      val reply = process.read()
+      reply.getGetLibraryElement
     }
 
     reply.result match {
@@ -61,7 +87,7 @@ class PythonInterface {
 
   def elaborateGeneratorRequest(element: ref.LibraryPath,
                                 fnName: String, values: Map[ref.LocalPath, ExprValue]):
-      Errorable[elem.HierarchyBlock] = {
+      Errorable[elem.HierarchyBlock] = process.flatMap { process =>
     val request = edgrpc.GeneratorRequest(
       element=Some(element), fn=fnName,
       values=values.map { case (valuePath, valueValue) =>
@@ -72,7 +98,10 @@ class PythonInterface {
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      blockingStub.elaborateGenerator(request)
+      process.write(edgrpc.HdlRequest(
+        request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
+      val reply = process.read()
+      reply.getElaborateGenerator
     }
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
     reply.result match {
@@ -84,11 +113,23 @@ class PythonInterface {
 }
 
 
-class PythonInterfaceLibrary(py: PythonInterface) extends Library {
+class PythonInterfaceLibrary() extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
   private val eltsRefinements = mutable.HashMap[ref.LibraryPath, edgrpc.Refinements]()
   private val generatorCache = mutable.HashMap[(ref.LibraryPath, String, Map[ref.LocalPath, ExprValue]),
       elem.HierarchyBlock]()
+
+  protected var py: Option[PythonInterface] = None
+
+  // Runs some block of code with the specified Python interface.
+  def withPythonInterface[T](withInterface: PythonInterface)(fn: => T): T = {
+    require(py.isEmpty)
+    py = Some(withInterface)
+    val result = fn
+    require(py.contains(withInterface))
+    py = None
+    result
+  }
 
   def clearThisCache(): Unit = {
     elts.clear()
@@ -113,15 +154,14 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     discarded
   }
 
-  def reloadModule(module: String): Seq[ref.LibraryPath] = {
-    val pyRefreshedElements = py.reloadModule(module)
-    pyRefreshedElements
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
+    py.get.indexModule(module)
   }
 
   def getLibrary(path: ref.LibraryPath): Errorable[schema.Library.NS.Val.Type] = {
     elts.get(path) match {
       case Some(value) => Errorable.Success(value)
-      case None => py.libraryRequest(path) match { // not in cache, fetch from Python
+      case None => py.get.libraryRequest(path) match { // not in cache, fetch from Python
         case Errorable.Success((elem, refinementsOpt)) =>
           elts.put(path, elem.`type`)
           refinementsOpt.foreach {
@@ -190,7 +230,7 @@ class PythonInterfaceLibrary(py: PythonInterface) extends Library {
     generatorCache.get((path, fnName, values)) match {
       case Some(generated) => Errorable.Success(generated)
       case None =>
-        val result = py.elaborateGeneratorRequest(path, fnName, values)
+        val result = py.get.elaborateGeneratorRequest(path, fnName, values)
         result.map { generatorCache.put((path, fnName, values), _) }
         result
     }

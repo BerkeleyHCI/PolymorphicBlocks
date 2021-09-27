@@ -3,13 +3,15 @@ package edg.compiler
 import edg.wir.{IndirectDesignPath, Refinements}
 import edg.compiler.{compiler => edgcompiler}
 import edg.compiler.compiler.{CompilerRequest, CompilerResult}
-import io.grpc.netty.NettyServerBuilder
 
-import java.io.{PrintWriter, StringWriter}
-import scala.concurrent.{ExecutionContext, Future}
+import java.io.{File, PrintWriter, StringWriter}
 
 
-private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.CompilerGrpc.Compiler {
+/** A Scala-based EDG compiler interface as a server.
+  * Because this uses a persistent HdlInterfaceService, this should not be used where HDL changes are expected
+  * during its lifetime. This is suitable for unit tests, but not for long-term user interaction.
+  */
+object CompilerServerMain {
   private def constPropToSolved(vals: Map[IndirectDesignPath, ExprValue]): Seq[edgcompiler.CompilerResult.Value] = {
     vals.map { case (path, value) => edgcompiler.CompilerResult.Value(
       path=Some(path.toLocalPath),
@@ -17,9 +19,9 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
     )}.toSeq
   }
 
-  override def compile(request: CompilerRequest): Future[CompilerResult] = {
+  def compile(request: CompilerRequest, library: PythonInterfaceLibrary): CompilerResult = {
     request.modules.foreach { module =>
-      library.reloadModule(module)
+      library.indexModule(module)
     }
 
     try {
@@ -33,37 +35,31 @@ private class CompilerImpl(library: PythonInterfaceLibrary) extends edgcompiler.
         error = errors.mkString(", "),
         solvedValues = constPropToSolved(compiler.getAllSolved)
       )
-      Future.successful(result)
+      result
     } catch {
       case e: Throwable =>
         val sw = new StringWriter()
         val pw = new PrintWriter(sw)
         e.printStackTrace(pw)
-        Future.successful(edgcompiler.CompilerResult(
-          error = sw.toString
-        ))
+        edgcompiler.CompilerResult(error = sw.toString)
     }
   }
-}
 
-
-object CompilerGrpcMain {
   def main(args: Array[String]): Unit = {
-    val port = 50052
-
-    val pyIf = new PythonInterface()
-    val compilerService = new CompilerImpl(new PythonInterfaceLibrary(pyIf))
-
-    val server = NettyServerBuilder
-        .forPort(port)
-        .addService(edgcompiler.CompilerGrpc.bindService(compilerService, ExecutionContext.global))
-        .build
-        .start
-
-    sys.addShutdownHook {
-      server.shutdown()
+    val pyIf = new PythonInterface(new File("HdlInterfaceService.py"))  // use relative path
+    val pyLib = new PythonInterfaceLibrary()
+    pyLib.withPythonInterface(pyIf) {
+      while (true) {
+        val request = compiler.CompilerRequest.parseDelimitedFrom(System.in)
+        request match {
+          case Some(request) =>
+            val result = compile(request, pyLib)
+            result.writeDelimitedTo(System.out)
+            System.out.flush()
+          case None => // end of stream
+            System.exit(0)
+        }
+      }
     }
-
-    scala.io.StdIn.readLine
   }
 }

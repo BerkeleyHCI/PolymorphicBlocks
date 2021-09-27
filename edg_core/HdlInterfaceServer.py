@@ -1,10 +1,9 @@
 from types import ModuleType
-from typing import Generator, Optional, Set, Dict, Type, cast, List, Any
+from typing import Optional, Set, Dict, Type, cast, List, Any
 
 import builtins
 import importlib
 import inspect
-import traceback
 import sys
 
 from . import edgrpc, edgir
@@ -66,71 +65,15 @@ class LibraryElementResolver():
     return self.lib_class_map.get(dict_key, None)
 
 
-# Module reloading solution from http://pyunit.sourceforge.net/notes/reloading.html
-class RollbackImporter:
-  def __init__(self) -> None:
-    "Creates an instance and installs as the global importer"
-    self.previousModules: Set[ModuleType] = set(sys.modules.copy().values())
-    self.realImport = builtins.__import__
-    builtins.__import__ = self._import
-    self.newModules: List[ModuleType] = []
-
-  def _import(self, name: str, *args, **kwargs) -> ModuleType:
-    module = self.realImport(name, *args, **kwargs)
-    if module not in self.newModules \
-        and module.__name__ not in sys.builtin_module_names \
-        and hasattr(module, '__file__') \
-        and module.__file__ \
-        and module not in self.previousModules \
-        and 'Python37-32' not in module.__file__ \
-        and 'site-packages' not in module.__file__ \
-        and 'edg_core' not in module.__file__:  # don't rollback internals, bad things happen
-      self.newModules.append(module)
-
-    return module
-
-  def clear(self) -> None:
-    inverse_modules = {module: name for name, module in sys.modules.items()}
-    deleted_modules = []
-    for module in self.newModules:
-      if module in inverse_modules:
-        name = inverse_modules[module]
-        if name in sys.modules:
-          del sys.modules[name]
-          deleted_modules.append(module)
-    self.newModules = []
-
-class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
-  def __init__(self, *, verbose: bool = False, rollback: Optional[Any] = None):
+class HdlInterface():  # type: ignore
+  def __init__(self):
     self.library = LibraryElementResolver()  # dummy empty resolver
-    self.verbose = verbose
-    self.rollback = rollback
 
-  def ReloadModule(self, request: edgrpc.ModuleName, context) -> Generator[edgir.LibraryPath, None, None]:
-    if self.verbose:
-      print(f"ReloadModule({request.name}) -> ", end='', flush=True)
-
-    try:
-      # nuke it from orbit, because we really don't know how to do better right now
-      self.library = LibraryElementResolver()  # clear old the old resolver
-      if self.rollback is not None:
-        self.rollback.clear()
-
-      module = importlib.import_module(request.name)
-      self.library.load_module(module)
-      if self.rollback is not None:
-        self.rollback.newModules.append(module)
-
-      if self.verbose:
-        print(f"None (indexed {len(self.library.lib_class_map)})", flush=True)
-      for indexed in self.library.lib_class_map.keys():
-        pb = edgir.LibraryPath()
-        pb.target.name = indexed
-        yield pb
-    except BaseException as e:
-      if self.verbose:
-        print(f"Error {e}", flush=True)
-      return
+  def IndexModule(self, request: edgrpc.ModuleName) -> List[edgir.LibraryPath]:
+    module = importlib.import_module(request.name)
+    self.library.load_module(module)
+    return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
+            for indexed in self.library.lib_class_map.keys()]
 
   @staticmethod
   def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
@@ -149,10 +92,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
     else:
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
-  def GetLibraryElement(self, request: edgrpc.LibraryRequest, context) -> edgrpc.LibraryResponse:
-    if self.verbose:
-      print(f"GetLibraryElement({request.element.target.name}) -> ", end='', flush=True)
-
+  def GetLibraryElement(self, request: edgrpc.LibraryRequest) -> edgrpc.LibraryResponse:
     response = edgrpc.LibraryResponse()
     try:
       cls = self.library.class_from_path(request.element)
@@ -163,24 +103,11 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         if issubclass(cls, DesignTop):  # TODO don't create another instance, perhaps refinements should be static?
           cls().refinements().populate_proto(response.refinements)
     except BaseException as e:
-      traceback.print_exc()
-      print(f"while serving library element request for {request.element.target.name}", flush=True)
+      # TODO - include traceback in error message? traceback.print_exc()
       response.error = str(e)
-
-    if self.verbose:
-      if response.HasField('error'):
-        print(f"Error {response.error}", flush=True)
-      elif response.HasField('refinements'):
-        print(f"(elt, w/ refinements)", flush=True)
-      else:
-        print(f"(elt)", flush=True)
-
     return response
 
-  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest, context) -> edgrpc.GeneratorResponse:
-    if self.verbose:
-      print(f"ElaborateGenerator({request.element.target.name}) -> ", end='', flush=True)
-
+  def ElaborateGenerator(self, request: edgrpc.GeneratorRequest) -> edgrpc.GeneratorResponse:
     response = edgrpc.GeneratorResponse()
     try:
       generator_type = self.library.class_from_path(request.element)
@@ -196,15 +123,7 @@ class HdlInterface(edgrpc.HdlInterfaceServicer):  # type: ignore
         generator_obj, f"in generate {request.fn} for {request.element}",
         generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
-      if self.verbose:
-        traceback.print_exc()
-        print(f"while serving generator request for {request.element.target.name}", flush=True)
+      # TODO pipe full stack trace into proto
       response.error = str(e)
-
-    if self.verbose:
-      if response.HasField('error'):
-        print(f"Error {response.error}", flush=True)
-      else:
-        print(f"(generated)", flush=True)
 
     return response
