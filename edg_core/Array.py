@@ -5,7 +5,8 @@ from typing import *
 from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, ParamBinding, IntExpr, LengthBinding, ParamVariableBinding
+from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
+  ParamBinding, IntExpr, LengthBinding, ParamVariableBinding, NumLikeExpr
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -95,6 +96,15 @@ class ArrayExpr(ConstraintExpr['ArrayExpr', 'ArrayExpr', Any], Generic[ArrayType
     return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
 
 
+ArrayNumLikeSelfType = TypeVar('ArrayNumLikeSelfType', bound=NumLikeExpr)
+ArrayNumLikeCastableType = TypeVar('ArrayNumLikeCastableType')
+ArrayNumLikeGetType = TypeVar('ArrayNumLikeGetType')
+class ArrayNumLikeExpr(ArrayExpr[NumLikeExpr[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]],
+                       Generic[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]):
+  def __rdiv__(self, other: ArrayNumLikeCastableType) -> ArrayNumLikeExpr[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]:
+    pass
+
+
 @non_library
 class BaseVector(BaseContainerPort):
   def _get_elt_sample(self) -> BasePort:
@@ -179,8 +189,11 @@ class Vector(BaseVector, Generic[VectorType]):
   def _type_of(self) -> Hashable:
     return (self.elt_sample._type_of(),)
 
+  ExtractNumLikeType = TypeVar('ExtractNumLikeType', bound=NumLikeExpr)
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], ExtractNumLikeType]) -> ArrayNumLikeExpr[ExtractNumLikeType]: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ArrayExpr[ExtractConstraintType]: ...
   @overload
