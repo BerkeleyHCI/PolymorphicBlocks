@@ -19,10 +19,9 @@ if TYPE_CHECKING:
   from .Ports import BasePort
 
 
-ConstraintExprCastable = TypeVar('ConstraintExprCastable')
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-GetType = TypeVar('GetType', covariant=True)
-class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]):
+WrappedType = TypeVar('WrappedType', covariant=True)
+class ConstraintExpr(Refable, Generic[WrappedType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
   """
@@ -38,11 +37,11 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
 
   @classmethod
   @abstractmethod
-  def _to_expr_type(cls, input: ConstraintExprCastable) -> SelfType:
+  def _to_expr_type(cls: Type[SelfType], input: Union[SelfType, WrappedType]) -> SelfType:
     """Casts the input from an equivalent-type to the self-type."""
     raise NotImplementedError
 
-  def __init__(self: SelfType, initializer: Optional[ConstraintExprCastable] = None):
+  def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
     self.binding: Optional[Binding] = None
     if isinstance(initializer, type(self)) and not initializer._is_bound():  # model passed in
       self.initializer: Optional[SelfType] = initializer.initializer
@@ -98,8 +97,9 @@ class ConstraintExpr(Refable, Generic[SelfType, ConstraintExprCastable, GetType]
 
 
 BoolLike = Union[bool, 'BoolExpr']
-class BoolExpr(ConstraintExpr['BoolExpr', BoolLike, bool]):
+class BoolExpr(ConstraintExpr[bool]):
   """Boolean expression, can be used as a constraint"""
+
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
@@ -173,13 +173,12 @@ class BoolExpr(ConstraintExpr['BoolExpr', BoolLike, bool]):
       return reduce(combine_exprs, sub_exprs)
 
 
-NumSelfType = TypeVar('NumSelfType', bound='NumLikeExpr')
-class NumLikeExpr(ConstraintExpr[NumSelfType, ConstraintExprCastable, GetType],
-    Generic[NumSelfType, ConstraintExprCastable, GetType]):
+NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
+class NumLikeExpr(ConstraintExpr[WrappedType]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
   @classmethod
-  def _create_binary_op(cls, lhs: NumSelfType, rhs: NumSelfType, op: Union[BinaryNumOp, ReductionOp]) -> NumSelfType:
+  def _create_binary_op(cls, lhs: SelfType, rhs: SelfType, op: Union[BinaryNumOp, ReductionOp]) -> SelfType:
     """Creates a new expression that is the result of a binary operation on inputs"""
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
@@ -188,28 +187,28 @@ class NumLikeExpr(ConstraintExpr[NumSelfType, ConstraintExprCastable, GetType],
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __add__(self: NumSelfType, rhs: ConstraintExprCastable) -> NumSelfType:
+  def __add__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.add)
 
-  def __radd__(self: NumSelfType, lhs: ConstraintExprCastable) -> NumSelfType:
+  def __radd__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.add)
 
-  def __sub__(self: NumSelfType, rhs: ConstraintExprCastable) -> NumSelfType:
+  def __sub__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.sub)
 
-  def __rsub__(self: NumSelfType, lhs: ConstraintExprCastable) -> NumSelfType:
+  def __rsub__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.sub)
 
-  def __mul__(self: NumSelfType, rhs: ConstraintExprCastable) -> NumSelfType:
+  def __mul__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.mul)
 
-  def __rmul__(self: NumSelfType, lhs: ConstraintExprCastable) -> NumSelfType:
+  def __rmul__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.mul)
 
-  def __truediv__(self: NumSelfType, rhs: ConstraintExprCastable) -> NumSelfType:
+  def __truediv__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.div)
 
-  def __rtruediv__(self: NumSelfType, lhs: ConstraintExprCastable) -> NumSelfType:
+  def __rtruediv__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.div)
 
   @classmethod
@@ -221,25 +220,24 @@ class NumLikeExpr(ConstraintExpr[NumSelfType, ConstraintExprCastable, GetType],
     assert lhs._is_bound() and rhs._is_bound()
     return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __ne__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __ne__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ne)
 
-  def __gt__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __gt__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.gt)
 
-  def __ge__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __ge__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ge)
 
-  def __lt__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __lt__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.lt)
 
-  def __le__(self: NumSelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __le__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.le)
 
 
-IntLit = Union[int]
-IntLike = Union[IntLit, 'IntExpr']
-class IntExpr(NumLikeExpr['IntExpr', IntLike, int]):
+IntLike = Union['IntExpr', int]
+class IntExpr(NumLikeExpr[int]):
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -256,9 +254,8 @@ class IntExpr(NumLikeExpr['IntExpr', IntLike, int]):
     return pb
 
 
-FloatLit = Union[int, float]
-FloatLike = Union[FloatLit, 'FloatExpr']
-class FloatExpr(NumLikeExpr['FloatExpr', FloatLike, float]):
+FloatLike = Union['FloatExpr', float]
+class FloatExpr(NumLikeExpr[float]):
   @classmethod
   def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -281,16 +278,8 @@ class FloatExpr(NumLikeExpr['FloatExpr', FloatLike, float]):
     return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.max)
 
 
-class RangeConstrMode:
-  pass
-
-RangeSubset = RangeConstrMode()
-RangeSuperset = RangeConstrMode()
-
-
-RangeLit = Tuple[FloatLit, FloatLit]
-RangeLike = Union[RangeLit, FloatLike, FloatLike, Tuple[FloatLike, FloatLike], 'RangeExpr']
-class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
+RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike]]
+class RangeExpr(NumLikeExpr[Tuple[float, float]]):
   # Some range literals for defaults
   POSITIVE = (0.0, float('inf'))
   NEGATIVE = (float('-inf'), 0.0)
@@ -301,7 +290,9 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
   EMPTY_DIT = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
   EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
 
-  def __init__(self, initializer: Optional[RangeLike]=None):
+  def __init__(self, initializer: Optional[RangeLike] = None):
+    if initializer is not None:  # must cast non-empty initializer type, because range supports wider initializers
+      initializer = self._to_expr_type(initializer)
     super().__init__(initializer)
     self._lower = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.min)))
     self._upper = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.max)))
@@ -375,7 +366,7 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
   # special option to allow range * float
-  def __mul__(self, rhs: ConstraintExprCastable) -> RangeExpr:
+  def __mul__(self, rhs: RangeLike) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
       rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
     elif not isinstance(rhs, FloatExpr):
@@ -385,7 +376,7 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     return self._create_range_float_binary_op(self, rhs_cast, BinaryNumOp.mul)
 
   # special option to allow range / float
-  def __truediv__(self, rhs: ConstraintExprCastable) -> RangeExpr:
+  def __truediv__(self, rhs: RangeLike) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
       rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
     elif not isinstance(rhs, FloatExpr):
@@ -395,8 +386,8 @@ class RangeExpr(NumLikeExpr['RangeExpr', RangeLike, Tuple[float, float]]):
     return self._create_range_float_binary_op(self, rhs_cast, BinaryNumOp.div)
 
 
-StringLike = Union[str, 'StringExpr']
-class StringExpr(ConstraintExpr['StringExpr', StringLike, str]):
+StringLike = Union['StringExpr', str]
+class StringExpr(ConstraintExpr[str]):
   """String expression, can be used as a constraint"""
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
@@ -418,8 +409,8 @@ class StringExpr(ConstraintExpr['StringExpr', StringLike, str]):
     return isinstance(self.binding, StringLiteralBinding)
 
 
-class AssignExpr(ConstraintExpr['AssignExpr', None, None]):
-  """String expression, can be used as a constraint"""
+class AssignExpr(ConstraintExpr[None]):
+  """Assignment expression, should be an internal type"""
   @classmethod
   def _to_expr_type(cls, input: Any) -> AssignExpr:
     raise ValueError("can't convert to AssignExpr")
@@ -439,11 +430,11 @@ class RangeConstructor:
     self.units = units
 
   @overload
-  def __rmul__(self, other: FloatLit) -> RangeExpr: ...
+  def __rmul__(self, other: FloatLike) -> RangeExpr: ...
   @overload
-  def __rmul__(self, other: RangeLit) -> RangeExpr: ...
+  def __rmul__(self, other: RangeLike) -> RangeExpr: ...
 
-  def __rmul__(self, other: Union[FloatLit, RangeLit]) -> RangeExpr:
+  def __rmul__(self, other: Union[FloatLike, RangeLike]) -> RangeExpr:
     if isinstance(other, Number):
       values = [
         other * self.scale * (1 - self.tolerance),
@@ -484,12 +475,11 @@ class LiteralConstructor:
       return RangeConstructor(tol, self.scale, self.units)
 
   @overload
-  def __rmul__(self, other: FloatLit) -> FloatExpr: ...
-
+  def __rmul__(self, other: FloatLike) -> FloatExpr: ...
   @overload
-  def __rmul__(self, other: RangeLit) -> RangeExpr: ...
+  def __rmul__(self, other: RangeLike) -> RangeExpr: ...
 
-  def __rmul__(self, other: Union[FloatLit, RangeLit]) -> Union[FloatExpr, RangeExpr]:
+  def __rmul__(self, other: Union[FloatLike, RangeLike]) -> Union[FloatExpr, RangeExpr]:
     if isinstance(other, (int, float)):
       return FloatExpr._to_expr_type(other * self.scale)
     elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
@@ -500,7 +490,7 @@ class LiteralConstructor:
 
 # TODO this is a placeholder that just returns the constraint itself
 # In the future, it should annotate the value with default-ness
-DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, FloatLike, RangeLike, StringLike])
+DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, IntLike, FloatLike, RangeLike, StringLike])
 def Default(constr: DefaultType) -> DefaultType:
   if isinstance(constr, ConstraintExpr):
     assert constr.initializer is not None, "default must have initialzier"

@@ -432,14 +432,14 @@ class GeneratorBlock(Block):
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
     self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), (), ())
 
-  ConstrGet1 = TypeVar('ConstrGet1', bound=Any)
-  ConstrGet2 = TypeVar('ConstrGet2', bound=Any)
-  ConstrGet3 = TypeVar('ConstrGet3', bound=Any)
-  ConstrGet4 = TypeVar('ConstrGet4', bound=Any)
-  ConstrGet5 = TypeVar('ConstrGet5', bound=Any)
-  ConstrGet6 = TypeVar('ConstrGet6', bound=Any)
-  ConstrGet7 = TypeVar('ConstrGet7', bound=Any)
-  ConstrGet8 = TypeVar('ConstrGet8', bound=Any)
+  ConstrType1 = TypeVar('ConstrType1', bound=Any)
+  ConstrType2 = TypeVar('ConstrType2', bound=Any)
+  ConstrType3 = TypeVar('ConstrType3', bound=Any)
+  ConstrType4 = TypeVar('ConstrType4', bound=Any)
+  ConstrType5 = TypeVar('ConstrType5', bound=Any)
+  ConstrType6 = TypeVar('ConstrType6', bound=Any)
+  ConstrType7 = TypeVar('ConstrType7', bound=Any)
+  ConstrType8 = TypeVar('ConstrType8', bound=Any)
 
   TargetsType = Iterable[Union[BasePort, ConstraintExpr, Block]]
 
@@ -447,52 +447,52 @@ class GeneratorBlock(Block):
   def generator(self, fn: Callable[[], None],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1],
+  def generator(self, fn: Callable[[ConstrType1], None],
+                req1: ConstraintExpr[ConstrType1],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
-                                    ConstrGet5], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
-                req5: ConstraintExpr[Any, Any, ConstrGet5],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
-                                    ConstrGet5, ConstrGet6], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
-                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
-                                    ConstrGet5, ConstrGet6, ConstrGet7], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
-                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
-                req7: ConstraintExpr[Any, Any, ConstrGet7],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6, ConstrType7], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
+                req7: ConstraintExpr[ConstrType7],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
   @overload
-  def generator(self, fn: Callable[[ConstrGet1, ConstrGet2, ConstrGet3, ConstrGet4,
-                                    ConstrGet5, ConstrGet6, ConstrGet7, ConstrGet8], None],
-                req1: ConstraintExpr[Any, Any, ConstrGet1], req2: ConstraintExpr[Any, Any, ConstrGet2],
-                req3: ConstraintExpr[Any, Any, ConstrGet3], req4: ConstraintExpr[Any, Any, ConstrGet4],
-                req5: ConstraintExpr[Any, Any, ConstrGet5], req6: ConstraintExpr[Any, Any, ConstrGet6],
-                req7: ConstraintExpr[Any, Any, ConstrGet7], req8: ConstraintExpr[Any, Any, ConstrGet8],
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
+                req7: ConstraintExpr[ConstrType7], req8: ConstraintExpr[ConstrType8],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
@@ -531,8 +531,8 @@ class GeneratorBlock(Block):
 
   # Generator solved-parameter-access interface
   #
-  ParamGetType = TypeVar('ParamGetType')
-  def get(self, param: ConstraintExpr[Any, Any, ParamGetType], default: Optional[ParamGetType] = None) -> ParamGetType:
+  ConstrType = TypeVar('ConstrType')
+  def get(self, param: ConstraintExpr[ConstrType], default: Optional[ConstrType] = None) -> ConstrType:
     if self._elaboration_state != BlockElaborationState.generate:
       raise BlockDefinitionError(self, "can't call get(... outside generate",
                                  "call get(...) inside generate only, and remember to call super().generate()")
@@ -559,7 +559,7 @@ class GeneratorBlock(Block):
       raise NotImplementedError(f"get({self._name_of(param)}) on unknown type, got {value}")
     return value  # type: ignore
 
-  def get_opt(self, param: ConstraintExpr[Any, Any, ParamGetType]) -> Optional[ParamGetType]:
+  def get_opt(self, param: ConstraintExpr[ConstrType]) -> Optional[ConstrType]:
     # TODO can this be unified with get() without a default? type inference seems to choke
     if self._has(param):
       return self.get(param)

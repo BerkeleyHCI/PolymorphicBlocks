@@ -42,7 +42,7 @@ class SampleElementBinding(Binding):
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
 ArrayType = TypeVar('ArrayType', bound=ConstraintExpr)
-class ArrayExpr(ConstraintExpr['ArrayExpr', 'ArrayExpr', Any], Generic[ArrayType]):
+class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
@@ -97,12 +97,10 @@ class ArrayExpr(ConstraintExpr['ArrayExpr', 'ArrayExpr', Any], Generic[ArrayType
     return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
 
 
-ArrayNumLikeSelfType = TypeVar('ArrayNumLikeSelfType', bound=NumLikeExpr)
-ArrayNumLikeCastableType = TypeVar('ArrayNumLikeCastableType')
-ArrayNumLikeGetType = TypeVar('ArrayNumLikeGetType')
-class ArrayNumLikeExpr(ArrayExpr[NumLikeExpr[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]],
-                       Generic[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]):
-  def __rdiv__(self, other: ArrayNumLikeCastableType) -> ArrayNumLikeExpr[ArrayNumLikeSelfType, ArrayNumLikeCastableType, ArrayNumLikeGetType]:
+ArrayNumLikeType = TypeVar('ArrayNumLikeType')
+class ArrayNumLikeExpr(ArrayExpr[NumLikeExpr[ArrayNumLikeType]],
+                       Generic[ArrayNumLikeType]):
+  def __rdiv__(self, other: Union[ArrayNumLikeType, NumLikeExpr[ArrayNumLikeType]]) -> ArrayNumLikeExpr[ArrayNumLikeType]:
     pass
 
 
