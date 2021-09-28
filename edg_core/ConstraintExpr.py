@@ -18,6 +18,7 @@ from .IdentityDict import IdentityDict
 if TYPE_CHECKING:
   from .Ports import BasePort
 
+
 ConstraintExprCastable = TypeVar('ConstraintExprCastable')
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
 GetType = TypeVar('GetType', covariant=True)
