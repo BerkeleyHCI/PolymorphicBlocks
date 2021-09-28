@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from functools import reduce
 from itertools import chain
-from numbers import Number
 from typing import *
 
 from . import edgir
@@ -254,6 +253,7 @@ class IntExpr(NumLikeExpr[int]):
     return pb
 
 
+FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float]
 class FloatExpr(NumLikeExpr[float]):
   @classmethod
@@ -278,6 +278,7 @@ class FloatExpr(NumLikeExpr[float]):
     return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.max)
 
 
+RangeLit = Tuple[FloatLit, FloatLit]
 RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Tuple[float, float]]):
   # Some range literals for defaults
@@ -435,12 +436,12 @@ class RangeConstructor:
   def __rmul__(self, other: RangeLike) -> RangeExpr: ...
 
   def __rmul__(self, other: Union[FloatLike, RangeLike]) -> RangeExpr:
-    if isinstance(other, Number):
+    if isinstance(other, (int, float)):
       values = [
         other * self.scale * (1 - self.tolerance),
         other * self.scale * (1 + self.tolerance)
       ]
-    elif isinstance(other, tuple) and isinstance(other[0], Number) and isinstance(other[1], Number):
+    elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
       assert other[0] <= other[1]
       if other[0] < 0 and other[1] < 0:
         values = [
