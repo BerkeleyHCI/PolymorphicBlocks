@@ -6,7 +6,8 @@ from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
 from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
-  ParamBinding, IntExpr, LengthBinding, ParamVariableBinding, NumLikeExpr
+  ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr
+from .Binding import LengthBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 

@@ -11,8 +11,8 @@ from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding, \
-  NameBinding, StringExpr
+from .Binding import AssignBinding, NameBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, StringExpr
 from .Ports import BasePort, Port, Bundle
 from .StructuredMetadata import MetaNamespaceOrder
 

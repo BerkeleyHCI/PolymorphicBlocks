@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from typing import *
 from abc import abstractmethod
 from itertools import chain
+from typing import *
 
 from . import edgir
-from .Core import Refable, HasMetadata, SubElementDict, non_library
-from .IdentityDict import IdentityDict
-from .ConstraintExpr import ConstraintExpr, RangeExpr, ParamBinding, BoolExpr, IsConnectedBinding, ParamVariableBinding, NameBinding, StringExpr
+from .Binding import ParamBinding, IsConnectedBinding, ParamVariableBinding, NameBinding
 from .Builder import builder
+from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
+from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .Exception import *
+from .IdentityDict import IdentityDict
 from .StructuredMetadata import MetaNamespaceOrder
+
 if TYPE_CHECKING:
-  from .Blocks import BaseBlock, Link
+  from .Blocks import Link
+  from .Blocks import BaseBlock
   from .PortBlocks import PortBridge, PortAdapter
 
 

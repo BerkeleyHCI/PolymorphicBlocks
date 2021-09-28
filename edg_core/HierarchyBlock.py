@@ -1,21 +1,20 @@
 from __future__ import annotations
 
+import collections
+from itertools import chain
 from numbers import Number
 from typing import *
-from itertools import chain
-import collections
 
 from . import edgir
-from .Exception import *
-from .Builder import builder
-from .Blocks import BaseBlock, Link, BlockElaborationState, ConnectedPorts
-from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr, ParamBinding, AssignBinding
+from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
+from .Binding import ParamBinding, AssignBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
+from .Exception import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .Ports import BasePort, Port, Bundle
 from .PortTag import PortTag, Input, Output, InOut
-
+from .Ports import BasePort, Port
 
 InitType = TypeVar('InitType', bound=Callable[..., None])
 def init_in_parent(fn: InitType) -> InitType:
