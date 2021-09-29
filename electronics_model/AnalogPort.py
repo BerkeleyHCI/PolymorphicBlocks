@@ -25,12 +25,11 @@ class AnalogLink(CircuitLink):
   def contents(self) -> None:
     super().contents()
 
-    # self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum)
     self.require(self.source.impedance <= self.sink_impedance * 0.1)  # about 10x to ensure signal integrity  # TODO make 100x?
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
     total_conductance = self.sinks.sum(lambda x: x.conductance)
     self.assign(self.sink_impedance, (1 / total_conductance))
-    
+
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.assign(self.current_limits, self.source.current_limits)
     self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
@@ -92,7 +91,6 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
     self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO compensate for internal current draw
 
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
-    self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
 class AnalogSink(AnalogBase):
