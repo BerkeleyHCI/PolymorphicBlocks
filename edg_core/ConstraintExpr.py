@@ -287,7 +287,7 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
 
 
 RangeLit = Tuple[FloatLit, FloatLit]
-RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike], FloatLit]
+RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike], FloatLike]
 class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
   # Some range literals for defaults
   POSITIVE = (0.0, float('inf'))
