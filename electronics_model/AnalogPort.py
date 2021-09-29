@@ -25,10 +25,12 @@ class AnalogLink(CircuitLink):
   def contents(self) -> None:
     super().contents()
 
-    self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum)
+    # self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum)
     self.require(self.source.impedance <= self.sink_impedance * 0.1)  # about 10x to ensure signal integrity  # TODO make 100x?
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-
+    total_conductance = self.sinks.sum(lambda x: x.conductance)
+    self.assign(self.sink_impedance, (1 / total_conductance))
+    
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.assign(self.current_limits, self.source.current_limits)
     self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
@@ -111,6 +113,10 @@ class AnalogSink(AnalogBase):
     self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw = self.Parameter(RangeExpr(current_draw))
     self.impedance = self.Parameter(RangeExpr(impedance))
+    if isinstance(impedance, RangeExpr) and impedance.binding is None:  # TODO less hacky
+      self.conductance = self.Parameter(RangeExpr())  # TODO this is actually an awful idea - should move into the link
+    else:
+      self.conductance = self.Parameter(RangeExpr(RangeExpr._to_expr_type(1) / impedance))
 
 
 class AnalogSource(AnalogBase):

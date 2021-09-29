@@ -42,7 +42,7 @@ class SampleElementBinding(Binding):
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
 ArrayType = TypeVar('ArrayType', bound=ConstraintExpr)
-class ArrayExpr(ConstraintExpr[None], Generic[ArrayType]):
+class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?

@@ -46,7 +46,7 @@ class ConstraintExpr(Refable, Generic[WrappedType]):
       self.initializer: Optional[SelfType] = initializer.initializer
     elif initializer is None:
       self.initializer = None
-    else:  # of type ConstraintExprCastable, bound
+    else:
       self.initializer = self._to_expr_type(initializer)
     self.parent = builder.get_curr_context()
 
@@ -300,7 +300,9 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
   EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
 
   def __init__(self, initializer: Optional[RangeLike] = None):
-    if initializer is not None:  # must cast non-empty initializer type, because range supports wider initializers
+    # must cast non-empty initializer type, because range supports wider initializers
+    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
+    if initializer is not None and not isinstance(initializer, RangeExpr):
       initializer = self._to_expr_type(initializer)
     super().__init__(initializer)
     self._lower = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.min)))
