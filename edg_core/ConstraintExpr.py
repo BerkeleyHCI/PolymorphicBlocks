@@ -173,8 +173,16 @@ class BoolExpr(ConstraintExpr[bool]):
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
-class NumLikeExpr(ConstraintExpr[WrappedType]):
+NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
+class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
+
+  @classmethod
+  @abstractmethod
+  def _to_expr_type(cls: Type[NumLikeSelfType],
+                    input: Union[NumLikeSelfType, WrappedType, NumLikeCastable]) -> NumLikeSelfType:
+    """Casts the input from an equivalent-type to the self-type."""
+    raise NotImplementedError
 
   @classmethod
   def _create_binary_op(cls, lhs: SelfType, rhs: SelfType, op: Union[BinaryNumOp, ReductionOp]) -> SelfType:
@@ -186,28 +194,28 @@ class NumLikeExpr(ConstraintExpr[WrappedType]):
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __add__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.add)
 
-  def __radd__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __radd__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.add)
 
-  def __sub__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __sub__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.sub)
 
-  def __rsub__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.sub)
 
-  def __mul__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __mul__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.mul)
 
-  def __rmul__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.mul)
 
-  def __truediv__(self: NumLikeSelfType, rhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.div)
 
-  def __rtruediv__(self: NumLikeSelfType, lhs: Union[NumLikeSelfType, WrappedType]) -> NumLikeSelfType:
+  def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.div)
 
   @classmethod
@@ -219,24 +227,24 @@ class NumLikeExpr(ConstraintExpr[WrappedType]):
     assert lhs._is_bound() and rhs._is_bound()
     return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __ne__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
+  def __ne__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ne)
 
-  def __gt__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
+  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.gt)
 
-  def __ge__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
+  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ge)
 
-  def __lt__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
+  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.lt)
 
-  def __le__(self: NumLikeSelfType, other: Union[NumLikeSelfType, WrappedType]) -> BoolExpr:  #type: ignore
+  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
     return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.le)
 
 
 IntLike = Union['IntExpr', int]
-class IntExpr(NumLikeExpr[int]):
+class IntExpr(NumLikeExpr[int, IntLike]):
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -255,7 +263,7 @@ class IntExpr(NumLikeExpr[int]):
 
 FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float]
-class FloatExpr(NumLikeExpr[float]):
+class FloatExpr(NumLikeExpr[float, FloatLike]):
   @classmethod
   def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -280,7 +288,7 @@ class FloatExpr(NumLikeExpr[float]):
 
 RangeLit = Tuple[FloatLit, FloatLit]
 RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike], FloatLit]
-class RangeExpr(NumLikeExpr[Tuple[float, float]]):
+class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
   # Some range literals for defaults
   POSITIVE = (0.0, float('inf'))
   NEGATIVE = (float('-inf'), 0.0)
@@ -477,8 +485,9 @@ class LiteralConstructor:
 
   @overload
   def __rmul__(self, other: FloatLike) -> FloatExpr: ...
+  # can't use RangeLike directly because it overlaps with FloatLike
   @overload
-  def __rmul__(self, other: RangeLike) -> RangeExpr: ...
+  def __rmul__(self, other: Union[RangeExpr, Tuple[FloatLike, FloatLike]]) -> RangeExpr: ...
 
   def __rmul__(self, other: Union[FloatLike, RangeLike]) -> Union[FloatExpr, RangeExpr]:
     if isinstance(other, (int, float)):
