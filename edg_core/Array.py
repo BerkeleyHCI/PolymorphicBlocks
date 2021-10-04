@@ -97,6 +97,11 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
     return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
 
 
+class ArrayRangeExpr(ArrayExpr[RangeExpr]):
+  def __rdiv__(self, other: RangeLike) -> ArrayRangeExpr:
+    pass
+
+
 @non_library
 class BaseVector(BaseContainerPort):
   def _get_elt_sample(self) -> BasePort:
@@ -183,6 +188,8 @@ class Vector(BaseVector, Generic[VectorType]):
 
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ArrayExpr[ExtractConstraintType]: ...
   @overload
