@@ -25,7 +25,7 @@ class AnalogLink(CircuitLink):
   def contents(self) -> None:
     super().contents()
 
-    self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum)
+    self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum())
     self.require(self.source.impedance <= self.sink_impedance * 0.1)  # about 10x to ensure signal integrity  # TODO make 100x?
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
 
