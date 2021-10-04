@@ -11,7 +11,7 @@ class AnalogLink(CircuitLink):
     super().__init__()
 
     self.source = self.Port(AnalogSource())
-    self.sinks = self.Port(Vector(AnalogSink()))  # TODO only one allowed for now b/c hard to calculate parallel impedances
+    self.sinks = self.Port(Vector(AnalogSink()))
 
     self.source_impedance = self.Parameter(RangeExpr(self.source.impedance))
     self.sink_impedance = self.Parameter(RangeExpr())
