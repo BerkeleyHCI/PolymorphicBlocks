@@ -358,8 +358,12 @@ def local_path_to_str(path: LocalPath) -> str:
 def _namespace(meta: Metadata) -> Iterable[str]:
   namespace_elts = [v.namespace_order
                     for k, v in meta.members.node.items() if v.HasField('namespace_order')]
-  assert len(namespace_elts) == 1
-  return namespace_elts[0].names
+  if len(namespace_elts) == 1:
+    return namespace_elts[0].names
+  elif not namespace_elts:
+    return []
+  else:
+    raise ValueError(f"multiple namespace_order entries {namespace_elts}")
 
 
 def ordered_blocks(block: HierarchyBlock) -> Iterable[Tuple[str, BlockLike]]:
