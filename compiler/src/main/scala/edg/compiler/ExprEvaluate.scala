@@ -68,29 +68,38 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
     case expr.BinaryExpr.Op.DIV => (lhs, rhs) match {
-      // TODO should floating division by 0 error out, NaN out, or go to inf?
-      // For this, there's explicit asserts to make it consistent with the erroring out in the int case
+      // Floating divide-by-zero takes Scala semantics: goes to positive or negative infinity.
+      // Int divide by zero is not supported.
       case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
+        // TODO should RHS crossing zero blow up to infinity instead?
         require((rhsMin <= 0 && rhsMax <= 0) || (rhsMin >= 0 && rhsMax >= 0),
-          s"division by range including 0: ${lhs} ${binary.op} ${rhs} from $binary")
+          s"division by range crossing 0: ${lhs} ${binary.op} ${rhs} from $binary")
         val all = Seq(lhsMin / rhsMin, lhsMin / rhsMax, lhsMax / rhsMin, lhsMax / rhsMax)
         RangeValue(all.min, all.max)
       case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
-        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
-        RangeValue(lhsMin / rhs, lhsMax / rhs)  // rhs = 0
+        RangeValue(lhsMin / rhs, lhsMax / rhs)
       case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+        // TODO should RHS crossing zero blow up to infinity instead?
         require((rhsMin <= 0 && rhsMax <= 0) || (rhsMin >= 0 && rhsMax >= 0),
           s"division by range including 0: ${lhs} ${binary.op} ${rhs} from $binary")
         RangeValue(lhs / rhsMin, lhs / rhsMax)
       case (FloatValue(lhs), FloatPromotable(rhs)) =>
-        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
         FloatValue(lhs / rhs)
       case (FloatPromotable(lhs), FloatValue(rhs)) =>
-        require(rhs != 0, s"division by 0: ${lhs} ${binary.op} ${rhs} from $binary")
         FloatValue(lhs / rhs)
       case (IntValue(lhs), IntValue(rhs)) =>
         // div 0 caught by integer semantics
         IntValue(lhs / rhs)
+      case (RangeValue(lhsMin, lhsMax), ArrayValue.ExtractRange(extracted)) => extracted match {
+        case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) =>
+          val resultElements = (valMins zip valMaxs) map { case (rhsMin, rhsMax) =>
+            val all = Seq(lhsMin / rhsMin, lhsMin / rhsMax, lhsMax / rhsMin, lhsMax / rhsMax)
+            RangeValue(all.min, all.max)  // TODO dedup w/ range / range case?
+          }
+          ArrayValue(resultElements)
+        case ArrayValue.ExtractRange.EmptyArray() => ArrayValue(Seq())
+        case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+      }
       case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
     }
 
@@ -223,7 +232,6 @@ object ExprEvaluate {
     case (expr.ReductionExpr.Op.SUM, ArrayValue.ExtractRange(extracted)) => extracted match {
       case ArrayValue.ExtractRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
       case _ => RangeEmpty  // TODO how should sum behave on empty ranges?
-
     }
 
     case (expr.ReductionExpr.Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
