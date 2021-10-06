@@ -1,7 +1,7 @@
 from typing import *
 
 from edg_core import *
-from .DigitalPorts import DigitalBidir
+from .DigitalPorts import DigitalBidir, DigitalSingleSource
 
 
 class UsbLink(Link):
@@ -52,22 +52,33 @@ class UsbCcLink(Link):
   def __init__(self) -> None:
     super().__init__()
     # TODO should we have UFP/DFP/DRD support?
+    # TODO note that CC is pulled up on source (DFP) side
     self.a = self.Port(UsbCcPort())
-    self.b = self.Port(UsbCcPort())
+    self.b = self.Port(UsbCcPort(), optional=True)
+    self.pull = self.Port(UsbCcPullPort(), optional=True)
 
   def contents(self) -> None:
     super().contents()
     # TODO perhaps enable crossover connections as optional layout optimization?
+    # TODO check both b and pull aren't simultaneously connected?
     # TODO write protocol-level signal constraints?
-
-    self.cc1 = self.connect(self.a.cc1, self.a.cc2)
-    self.cc2 = self.connect(self.b.cc1, self.b.cc2)
+    self.cc1 = self.connect(self.a.cc1, self.b.cc1, self.pull.cc1)
+    self.cc2 = self.connect(self.a.cc1, self.b.cc2, self.pull.cc2)
 
 
 class UsbCcPort(Bundle[UsbCcLink]):
+  def __init__(self, pullup_capable: BoolLike = BoolExpr()) -> None:
+    super().__init__()
+    self.link_type = UsbCcLink
+
+    self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
+    self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
+
+
+class UsbCcPullPort(Bundle[UsbCcLink]):
   def __init__(self) -> None:
     super().__init__()
     self.link_type = UsbCcLink
 
-    self.cc1 = self.Port(DigitalBidir())
-    self.cc2 = self.Port(DigitalBidir())
+    self.cc1 = self.Port(DigitalSingleSource.empty())
+    self.cc2 = self.Port(DigitalSingleSource.empty())

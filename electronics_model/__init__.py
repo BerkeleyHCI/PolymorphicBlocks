@@ -21,7 +21,7 @@ from .CanPort import CanControllerPort, CanTransceiverPort, CanDiffPort
 from .DebugPorts import SwdHostPort, SwdTargetPort
 from .SpeakerPort import SpeakerDriverPort, SpeakerPort
 from .CrystalPort import CrystalPort, CrystalDriver
-from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
+from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbCcPullPort
 
 from .NetlistGenerator import NetlistGenerator, Netlist, InvalidNetlistBlockException
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin

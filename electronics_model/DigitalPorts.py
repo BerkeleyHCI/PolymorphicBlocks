@@ -346,6 +346,14 @@ class DigitalBidirBridge(CircuitPortBridge):
 
 class DigitalSingleSource(DigitalBase):
   @staticmethod
+  def empty() -> DigitalSingleSource:
+    """Returns a new port with no parameters defined (instead of unmodeled defaults),
+     such as if the port is to be exported, including as part of a bundle"""
+    return DigitalSingleSource(voltage_out=RangeExpr(), output_thresholds=RangeExpr(),
+                               pullup_capable=BoolExpr(), pulldown_capable=BoolExpr(),
+                               low_signal_driver=BoolExpr(), high_signal_driver=BoolExpr())
+
+  @staticmethod
   def low_from_supply(neg: VoltageSink) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=neg.link().voltage,
