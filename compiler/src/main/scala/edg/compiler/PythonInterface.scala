@@ -125,10 +125,13 @@ class PythonInterfaceLibrary() extends Library {
   def withPythonInterface[T](withInterface: PythonInterface)(fn: => T): T = {
     require(py.isEmpty)
     py = Some(withInterface)
-    val result = fn
-    require(py.contains(withInterface))
-    py = None
-    result
+    try {
+      val result = fn
+      result
+    } finally {
+      require(py.contains(withInterface))
+      py = None
+    }
   }
 
   def clearThisCache(): Unit = {
