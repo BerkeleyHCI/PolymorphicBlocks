@@ -14,14 +14,14 @@ from .DebugHeaders import SwdCortexTargetHeader, SwdCortexTargetTc2050, SwdCorte
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ld1117_Device, Ldl1117, Ldl1117_Device, Ap2204k_Device, Ap2204k_Block, Ap2204k
-from .DcDcConverters import Tps561201, Tps561201_Device, Tps54202h, Tps54202h_Device
-from .DcDcConverters import Lmr33630, Lmr33630_Device
-from .DcDcConverters import Ap3012, Ap3012_Device  # TODO remove _Device blocks
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k
+from .DcDcConverters import Tps561201, Tps54202h
+from .DcDcConverters import Lmr33630
+from .DcDcConverters import Ap3012
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
-from .Microcontroller_Stm32f103 import Stm32f103_48_Device, Stm32f103_48
+from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Nucleo32 import Nucleo_F303k8
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
