@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class UsbSourceMeasureTest(Block):
+class UsbSourceMeasureTest(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -65,6 +65,19 @@ class UsbSourceMeasureTest(Block):
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['reg_5v'], Tps54202h),
+        (['reg_3v3'], Ld1117),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], ';'.join([
+
+        ]))
+      ],
+    )
 
 
 class UsbTestCase(unittest.TestCase):
