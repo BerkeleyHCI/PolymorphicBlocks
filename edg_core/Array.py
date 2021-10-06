@@ -5,7 +5,9 @@ from typing import *
 from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, ParamBinding, IntExpr, LengthBinding, ParamVariableBinding
+from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
+  ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
+from .Binding import LengthBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -40,7 +42,7 @@ class SampleElementBinding(Binding):
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
 ArrayType = TypeVar('ArrayType', bound=ConstraintExpr)
-class ArrayExpr(ConstraintExpr['ArrayExpr', 'ArrayExpr', Any], Generic[ArrayType]):
+class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?

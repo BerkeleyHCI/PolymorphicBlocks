@@ -1,0 +1,374 @@
+from __future__ import annotations
+
+from abc import abstractmethod
+from enum import Enum
+from itertools import chain
+from typing import *
+
+from . import edgir
+from .Core import Refable
+from .IdentityDict import IdentityDict
+
+if TYPE_CHECKING:
+  from .Ports import BasePort, Port
+  from .Array import Vector
+  from .Blocks import BaseBlock
+  from .ConstraintExpr import ConstraintExpr, FloatExpr, BoolExpr
+
+
+class ReductionOp(Enum):
+  min = 0
+  max = 1
+  sum = 2
+  equal_any = 3
+  all_equal = 4
+  all_unique = 5
+  intersection = 6
+  hull = 7
+  op_and = 8
+  op_or = 9
+
+
+class BinaryNumOp(Enum):
+  add = 0
+  sub = 1
+  mul = 2
+  div = 3
+
+
+class BinaryBoolOp(Enum):
+  eq = 0
+  ne = 1
+  lt = 2
+  le = 3
+  gt = 4
+  ge = 5
+  subset = 6
+  op_and = 7,
+  op_or = 8,
+  op_xor = 9,
+  implies = 10,
+
+
+class Binding:
+  """Base class for bindings that indicate what a ConstraintExpr means"""
+  def is_bound(self) -> bool:
+    return True
+
+  @abstractmethod
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr: ...
+
+  @abstractmethod
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]: ...
+
+
+ParamParentTypes = Union['Port', 'BaseBlock']  # creates a circular module dependency on Core
+class ParamBinding(Binding):
+  """Binding that indicates this is a parameter"""
+  def __repr__(self) -> str:
+    return f"Param({self.parent})"
+
+  def __init__(self, parent: ParamParentTypes):
+    super().__init__()
+    self.parent = parent
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
+    return []
+
+  def is_bound(self) -> bool:
+    # TODO clarify binding logic
+    from .Ports import Port
+    if isinstance(self.parent, Port):  # ports can be a model
+      return self.parent._is_bound()
+    else:
+      return True
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[expr])
+    return pb
+
+
+class ParamVariableBinding(Binding):
+  """Variable internal to a parameter, treated as a pseudo-parameter"""
+  def __repr__(self) -> str:
+    return f"ParamVar({self.binding})"
+
+  def __init__(self, binding: Binding):
+    super().__init__()
+    self.binding = binding
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
+    return []
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    return self.binding.expr_to_proto(expr, ref_map)
+
+
+class LiteralBinding(Binding):
+  """Base class for literal bindings"""
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return []
+
+
+class BoolLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: bool):
+    super().__init__()
+    self.value = value
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.boolean.val = self.value
+    return pb
+
+
+class IntLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: int):
+    self.value = value
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.integer.val = self.value
+    return pb
+
+
+class FloatLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: Union[float, int]):
+    self.value: float = float(value)
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.floating.val = self.value
+    return pb
+
+
+class RangeLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.lower, self.upper})"
+
+  def __init__(self, value: Tuple[Union[float, int], Union[float, int]]):
+    self.lower = value[0]
+    self.upper = value[1]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.range.minimum.floating.val = self.lower
+    pb.literal.range.maximum.floating.val = self.upper
+    return pb
+
+
+class StringLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.value})"
+
+  def __init__(self, value: str):
+    super().__init__()
+    self.value = value
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.literal.text.val = self.value
+    return pb
+
+
+class RangeBuilderBinding(Binding):
+  def __repr__(self) -> str:
+    return f"RangeBuilder({self.lower}, {self.upper})"
+
+  def __init__(self, lower: FloatExpr, upper: FloatExpr):
+    super().__init__()
+    self.lower = lower
+    self.upper = upper
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.lower._get_exprs(), self.lower._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.binary.op = edgir.BinaryExpr.RANGE
+    pb.binary.lhs.CopyFrom(self.lower._expr_to_proto(ref_map))
+    pb.binary.rhs.CopyFrom(self.upper._expr_to_proto(ref_map))
+    return pb
+
+
+class ReductionOpBinding(Binding):
+  def __repr__(self) -> str:
+    return f"ReductionOp({self.op}, ...)"
+
+  def __init__(self, src: ConstraintExpr, op: ReductionOp):
+    self.op_map = {
+      ReductionOp.min: edgir.ReductionExpr.MINIMUM,
+      ReductionOp.max: edgir.ReductionExpr.MAXIMUM,
+      ReductionOp.sum: edgir.ReductionExpr.SUM,
+      ReductionOp.equal_any: edgir.ReductionExpr.SET_EXTRACT,
+      ReductionOp.all_equal: edgir.ReductionExpr.ALL_EQ,
+      ReductionOp.all_unique: edgir.ReductionExpr.ALL_UNIQUE,
+      ReductionOp.intersection: edgir.ReductionExpr.INTERSECTION,
+      ReductionOp.hull: edgir.ReductionExpr.HULL,
+      ReductionOp.op_and: edgir.ReductionExpr.ALL_TRUE,
+      ReductionOp.op_or: edgir.ReductionExpr.ANY_TRUE,
+    }
+
+    super().__init__()
+    self.src = src
+    self.op = op
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.src._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.reduce.op = self.op_map[self.op]
+    pb.reduce.vals.CopyFrom(self.src._expr_to_proto(ref_map))
+    return pb
+
+
+class BinaryOpBinding(Binding):
+  def __repr__(self) -> str:
+    return f"BinaryOp({self.op}, ...)"
+
+  def __init__(self, lhs: ConstraintExpr, rhs: ConstraintExpr, op: Union[BinaryNumOp, BinaryBoolOp, ReductionOp]):
+    self.op_map = {
+      BinaryNumOp.add: edgir.BinaryExpr.ADD,
+      BinaryNumOp.sub: edgir.BinaryExpr.SUB,
+      BinaryNumOp.mul: edgir.BinaryExpr.MULT,
+      BinaryNumOp.div: edgir.BinaryExpr.DIV,
+      BinaryBoolOp.eq: edgir.BinaryExpr.EQ,
+      BinaryBoolOp.ne: edgir.BinaryExpr.NEQ,
+      BinaryBoolOp.lt: edgir.BinaryExpr.LT,
+      BinaryBoolOp.le: edgir.BinaryExpr.LTE,
+      BinaryBoolOp.gt: edgir.BinaryExpr.GT,
+      BinaryBoolOp.ge: edgir.BinaryExpr.GTE,
+      BinaryBoolOp.subset: edgir.BinaryExpr.SUBSET,
+      BinaryBoolOp.op_and: edgir.BinaryExpr.AND,
+      BinaryBoolOp.op_or: edgir.BinaryExpr.OR,
+      BinaryBoolOp.op_xor: edgir.BinaryExpr.XOR,
+      BinaryBoolOp.implies: edgir.BinaryExpr.IMPLIES,
+      ReductionOp.min: edgir.BinaryExpr.MIN,
+      ReductionOp.max: edgir.BinaryExpr.MAX,
+      ReductionOp.intersection: edgir.BinaryExpr.INTERSECTION,
+      ReductionOp.hull: edgir.BinaryExpr.HULL,
+    }
+
+    super().__init__()
+    self.lhs = lhs
+    self.rhs = rhs
+    self.op = op
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.lhs._get_exprs(), self.rhs._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.binary.op = self.op_map[self.op]
+    pb.binary.lhs.CopyFrom(self.lhs._expr_to_proto(ref_map))
+    pb.binary.rhs.CopyFrom(self.rhs._expr_to_proto(ref_map))
+    return pb
+
+
+class IfThenElseBinding(Binding):
+  def __repr__(self) -> str:
+    return f"IfThenElse(...)"
+
+  def __init__(self, cond: BoolExpr, then_val: ConstraintExpr, else_val: ConstraintExpr):
+    super().__init__()
+    self.cond = cond
+    self.then_val = then_val
+    self.else_val = else_val
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.cond._get_exprs(), self.then_val._get_exprs(), self.else_val._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ifThenElse.cond.CopyFrom(self.cond._expr_to_proto(ref_map))
+    pb.ifThenElse.tru.CopyFrom(self.then_val._expr_to_proto(ref_map))
+    pb.ifThenElse.fal.CopyFrom(self.else_val._expr_to_proto(ref_map))
+    return pb
+
+
+class IsConnectedBinding(Binding):
+  def __repr__(self) -> str:
+    return f"IsConnected"
+
+  def __init__(self, src: Port):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.src]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+    return pb
+
+
+class NameBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Name"
+
+  def __init__(self, src: Union[BaseBlock, BasePort]):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return []
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.NAME
+    return pb
+
+
+class LengthBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Length"
+
+  def __init__(self, src: Vector):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.src]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.LENGTH
+    return pb
+
+
+class AssignBinding(Binding):
+  # Convenience method to make an assign expr without the rest of this proto infrastructure
+  @staticmethod
+  def make_assign(target: ConstraintExpr, value: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.assign.dst.CopyFrom(ref_map[target])
+    pb.assign.src.CopyFrom(value._expr_to_proto(ref_map))
+    return pb
+
+  def __repr__(self) -> str:
+    return f"Assign({self.target}, ...)"
+
+  def __init__(self, target: ConstraintExpr, value: ConstraintExpr):
+    super().__init__()
+    self.target = target
+    self.value = value
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.value]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    return self.make_assign(self.target, self.value, ref_map)

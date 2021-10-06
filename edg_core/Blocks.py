@@ -11,8 +11,8 @@ from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, AssignBinding, \
-  NameBinding, StringExpr
+from .Binding import AssignBinding, NameBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, StringExpr
 from .Ports import BasePort, Port, Bundle
 from .StructuredMetadata import MetaNamespaceOrder
 
@@ -423,11 +423,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return constraint
 
-  ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
-  ConstrCastableType = TypeVar('ConstrCastableType')
-  ConstrGetType = TypeVar('ConstrGetType')
-  def assign(self, target: ConstraintExpr[ConstraintType, ConstrCastableType, ConstrGetType],
-             value: ConstrCastableType,
+  ConstrType = TypeVar('ConstrType')
+  def assign(self, target: ConstraintExpr[ConstrType],
+             value: Union[ConstraintExpr[ConstrType], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
@@ -463,6 +461,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
+  ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
   def Parameter(self, tpe: ConstraintType) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
