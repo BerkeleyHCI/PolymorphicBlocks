@@ -46,3 +46,28 @@ class UsbPassivePort(Bundle[UsbLink]):
 
     self.dp = self.Port(DigitalBidir())
     self.dm = self.Port(DigitalBidir())
+
+
+class UsbCcLink(Link):
+  def __init__(self) -> None:
+    super().__init__()
+    # TODO should we have UFP/DFP/DRD support?
+    self.a = self.Port(UsbCcPort())
+    self.b = self.Port(UsbCcPort())
+
+  def contents(self) -> None:
+    super().contents()
+    # TODO perhaps enable crossover connections as optional layout optimization?
+    # TODO write protocol-level signal constraints?
+
+    self.cc1 = self.connect(self.a.cc1, self.a.cc2)
+    self.cc2 = self.connect(self.b.cc1, self.b.cc2)
+
+
+class UsbCcPort(Bundle[UsbCcLink]):
+  def __init__(self) -> None:
+    super().__init__()
+    self.link_type = UsbCcLink
+
+    self.cc1 = self.Port(DigitalBidir())
+    self.cc2 = self.Port(DigitalBidir())
