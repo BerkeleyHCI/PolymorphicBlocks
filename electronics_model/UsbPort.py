@@ -54,31 +54,21 @@ class UsbCcLink(Link):
     # TODO should we have UFP/DFP/DRD support?
     # TODO note that CC is pulled up on source (DFP) side
     self.a = self.Port(UsbCcPort())
-    self.b = self.Port(UsbCcPort(), optional=True)
-    self.pull = self.Port(UsbCcPullPort(), optional=True)
+    self.b = self.Port(UsbCcPort())
 
   def contents(self) -> None:
     super().contents()
     # TODO perhaps enable crossover connections as optional layout optimization?
     # TODO check both b and pull aren't simultaneously connected?
     # TODO write protocol-level signal constraints?
-    self.cc1 = self.connect(self.a.cc1, self.b.cc1, self.pull.cc1)
-    self.cc2 = self.connect(self.a.cc1, self.b.cc2, self.pull.cc2)
+    self.cc1 = self.connect(self.a.cc1, self.b.cc1)
+    self.cc2 = self.connect(self.a.cc2, self.b.cc2)
 
 
 class UsbCcPort(Bundle[UsbCcLink]):
-  def __init__(self, pullup_capable: BoolLike = BoolExpr()) -> None:
+  def __init__(self, pullup_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.link_type = UsbCcLink
 
     self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
     self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
-
-
-class UsbCcPullPort(Bundle[UsbCcLink]):
-  def __init__(self) -> None:
-    super().__init__()
-    self.link_type = UsbCcLink
-
-    self.cc1 = self.Port(DigitalSingleSource.empty())
-    self.cc2 = self.Port(DigitalSingleSource.empty())

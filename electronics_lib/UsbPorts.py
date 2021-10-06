@@ -42,7 +42,7 @@ class UsbCReceptacle(UsbConnector, FootprintBlock):
   @init_in_parent
   def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS,
-               cc_pullup_capable: BoolLike = BoolExpr()) -> None:
+               cc_pullup_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
     self.gnd = self.Port(GroundSource())
@@ -140,7 +140,7 @@ class UsbCcPulldownResistor(Block):
   without needing a USB PD IC."""
   def __init__(self) -> None:
     super().__init__()
-    self.cc = self.Port(UsbCcPullPort(), [Input])
+    self.cc = self.Port(UsbCcPort(), [Input])
     self.gnd = self.Port(Ground(), [Common])
 
   def contents(self) -> None:
