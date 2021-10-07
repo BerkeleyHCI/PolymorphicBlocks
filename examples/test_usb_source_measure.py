@@ -8,7 +8,7 @@ class UsbSourceMeasureTest(BoardTop):
     super().contents()
 
     # USB PD port that supplies power to the load
-    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 22)*Volt, current_limits=(0, 5)*Amp))
+    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 21)*Volt, current_limits=(0, 5)*Amp))
 
     # Data-only USB port, for example to connect to a computer that can't source USB PD
     # so the PD port can be connected to a dedicated power brick.
@@ -39,18 +39,25 @@ class UsbSourceMeasureTest(BoardTop):
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
         ImplicitConnect(self.reg_3v3.gnd, [Common]),
     ) as imp:
+      # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
+      self.pd = imp.Block(Fusb302b())
+      self.connect(self.pd.vbus, self.pwr_usb.pwr)
+      self.connect(self.pwr_usb.cc, self.pd.cc)
+
       self.mcu = imp.Block(Lpc1549_48(frequency=12 * MHertz(tol=0.005)))
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetTc2050Nl()), self.mcu.swd)
       (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
 
+      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c_0, imp.Block(I2cPullup()), self.pd.i2c)
+      self.connect(self.mcu.new_io(DigitalBidir), self.pd.int)
+
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
 
-    # TODO add FUSB302B PD interface
     # TODO add DACs
     # TODO add analog feedback control chain
     # TODO add power transistors and sensors
