@@ -86,6 +86,10 @@ class DiscreteBuckConverter(BuckConverter):
   DUTYCYCLE_MAX_LIMIT = 0.9
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
+
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: RangeVal, output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
@@ -109,9 +113,15 @@ class DiscreteBuckConverter(BuckConverter):
 
     dc_max = out_voltage_max / in_voltage_min / self.WORST_EFFICIENCY_ESTIMATE
     dc_min = out_voltage_min / in_voltage_max
+    self.assign(self.dutycycle, (dc_min, dc_max))
+    # if these are violated, these generally mean that the converter will start tracking the input
+    # these can (maybe?) be waived if tracking (plus losses) is acceptable
+    self.require(self.dutycycle.upper() <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max outside limit {self.DUTYCYCLE_MAX_LIMIT}")
+    self.require(self.dutycycle.lower() >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min outside limit {self.DUTYCYCLE_MIN_LIMIT}")
 
-    assert dc_max <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max {dc_max} outside limit {self.DUTYCYCLE_MAX_LIMIT}"
-    assert dc_min >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min {dc_min} outside limit {self.DUTYCYCLE_MIN_LIMIT}"
+    # these are actual numbers to be used in calculations
+    effective_dc_min = max(self.DUTYCYCLE_MIN_LIMIT, dc_min)
+    effective_dc_max = min(self.DUTYCYCLE_MAX_LIMIT, dc_max)
 
     ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
     ripple_current_max = max(
@@ -127,7 +137,7 @@ class DiscreteBuckConverter(BuckConverter):
       inductance_max = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_min / freq_min / in_voltage_max
 
     out_capacitance_min = ripple_current_max / 8 / freq_min / spec_output_ripple  # TODO size based on transient response, add to voltage tolerance stackups
-    in_capacitance_min = output_current_max * dc_max * (1 - dc_min) / freq_min / spec_input_ripple
+    in_capacitance_min = output_current_max * effective_dc_max * (1 - effective_dc_min) / freq_min / spec_input_ripple
 
     sw_current_max = output_current_max + ripple_current_max / 2
 
@@ -184,6 +194,10 @@ class DiscreteBoostConverter(BoostConverter):
   DUTYCYCLE_MAX_LIMIT = 0.85  # by datasheet
   WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
 
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
+
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: RangeVal, output_voltage: RangeVal,
                           output_current_max: float, frequency: RangeVal,
@@ -202,15 +216,18 @@ class DiscreteBoostConverter(BoostConverter):
     out_voltage_min, out_voltage_max = output_voltage
     freq_min, freq_max = frequency
 
-    dc_max = 1 - in_voltage_max / out_voltage_min
-    dc_min = 1 - in_voltage_min * self.WORST_EFFICIENCY_ESTIMATE / out_voltage_max
+    dc_max = 1 - in_voltage_min * self.WORST_EFFICIENCY_ESTIMATE / out_voltage_max
+    dc_min = 1 - in_voltage_max / out_voltage_min
 
-    assert dc_max <= self.DUTYCYCLE_MAX_LIMIT, f"duty cycle {dc_max} over maximum {self.DUTYCYCLE_MAX_LIMIT}, " \
-                                               f"in converting {in_voltage_min}-{in_voltage_max} -> " \
-                                               f"in converting {out_voltage_min}-{out_voltage_max}"
-    assert dc_min >= self.DUTYCYCLE_MIN_LIMIT, f"duty cycle {dc_min} under minimum {self.DUTYCYCLE_MIN_LIMIT}, " \
-                                               f"in converting {in_voltage_min}-{in_voltage_max} -> " \
-                                               f"in converting {out_voltage_min}-{out_voltage_max}"
+    self.assign(self.dutycycle, (dc_min, dc_max))
+    # if these are violated, these generally mean that the converter will start tracking the input
+    # these can (maybe?) be waived if tracking (plus losses) is acceptable
+    self.require(self.dutycycle.upper() <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max outside limit {self.DUTYCYCLE_MAX_LIMIT}")
+    self.require(self.dutycycle.lower() >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min outside limit {self.DUTYCYCLE_MIN_LIMIT}")
+
+    # these are actual numbers to be used in calculations
+    effective_dc_min = max(self.DUTYCYCLE_MIN_LIMIT, dc_min)
+    effective_dc_max = min(self.DUTYCYCLE_MAX_LIMIT, dc_max)
 
     ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
     ripple_current_max = max(
@@ -221,10 +238,10 @@ class DiscreteBoostConverter(BoostConverter):
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     inductance_min = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_max / freq_min / out_voltage_min
     inductance_max = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_min / freq_min / out_voltage_min
-    out_capacitance_min = output_current_max * dc_max / freq_min / spec_output_ripple
-    in_capacitance_min = (output_current_max / dc_min) * (1 - dc_min) / freq_min / spec_input_ripple
+    out_capacitance_min = output_current_max * effective_dc_max / freq_min / spec_output_ripple
+    in_capacitance_min = (output_current_max / effective_dc_min) * (1 - effective_dc_min) / freq_min / spec_input_ripple
 
-    sw_current_max = ripple_current_max / 2 + output_current_max / (1 - dc_max)
+    sw_current_max = ripple_current_max / 2 + output_current_max / (1 - effective_dc_max)
 
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
