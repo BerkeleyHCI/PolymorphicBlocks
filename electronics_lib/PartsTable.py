@@ -13,7 +13,7 @@ class PartsTableColumn(Generic[PartsTableColumnType]):
     self.value_type = value_type
 
 
-class PartsTableRow
+class PartsTableRow:
   """A row in the parts table. Immutable."""
   def __init__(self):
     pass
@@ -28,7 +28,7 @@ class PartsTableRow
     pass
 
 
-class PartsTable
+class PartsTable:
   """A parts table, with data that can be loaded from a CSV, and providing functions for
   filtering and transformation.
   Immutable, all data is copied as needed (see functions for depth of copy).
