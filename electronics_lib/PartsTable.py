@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional
 
 PartsTableColumnType = TypeVar('PartsTableColumnType')
@@ -38,14 +39,16 @@ class PartsTable:
   https://www.districtdatalabs.com/simple-csv-data-wrangling-with-python
   """
   @staticmethod
-  def from_dict_rows(dict_rows: List[Dict[str, str]]):
+  def from_dict_rows(*dict_rowss: List[Dict[str, str]]):
     """Creates a parts table from dict rows, such as parsed by csv.DictReader.
     Checks to make sure all incoming rows are dense (have all cells)."""
-    if len(dict_rows) > 1:  # if nonempty, check for consistency
-      first_keys = dict_rows[0].keys()
-      for dict_row in dict_rows[1:]:
+    all_dict_rows = list(itertools.chain(*dict_rowss))
+
+    if len(all_dict_rows) > 1:  # if nonempty, check for consistency
+      first_keys = all_dict_rows[0].keys()
+      for dict_row in all_dict_rows[1:]:
         assert dict_row.keys() == first_keys, f"row {dict_row} has different keys than first row keys {first_keys}"
-    rows = [PartsTableRow(dict_row) for dict_row in dict_rows]
+    rows = [PartsTableRow(dict_row) for dict_row in all_dict_rows]
     return PartsTable(rows)
 
   def __init__(self, rows: List[PartsTableRow]):
