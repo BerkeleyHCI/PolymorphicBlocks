@@ -10,6 +10,8 @@ SourceFilter = Callable[[Dict[str, Any]], bool]
 DoubleFloatRoundErrorFactor = 1e-7  # approximate multiplier to account for double <-> float rounding issues
 
 
+# DEPRECATED. Use PartsTable instead, which has a more consistently-Python interface
+# instead of this pseudo-DSL that is somewhat limited.
 class ProductTable():  # internal helper type
   def __init__(self, header: List[str], rows: List[List[Any]]):
     # deal with some weird null character nonsense
