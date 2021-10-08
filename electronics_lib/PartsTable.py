@@ -61,12 +61,15 @@ class PartsTable:
                 if fn(row)]
     return PartsTable(new_rows)
 
-  def map_new_columns(self, fn: Callable[[PartsTableRow], Dict[PartsTableColumn[Any], Any]]) -> PartsTable:
+  def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn[Any], Any]]]) -> PartsTable:
     """Creates a new table (deep copy) with additional rows."""
     new_rows: List[PartsTableRow] = []
     first_keys: Optional[KeysView] = None
     for row in self.rows:
       new_columns = fn(row)
+      if new_columns is None:
+        continue
+
       if first_keys is None:
         first_keys = new_columns.keys()
         assert first_keys.isdisjoint(row.value.keys()), \
