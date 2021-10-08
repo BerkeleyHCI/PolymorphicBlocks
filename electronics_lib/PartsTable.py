@@ -82,6 +82,7 @@ class PartsTable:
       new_row_dict = {}
       new_row_dict.update(row.value)
       new_row_dict.update(new_columns)
+      new_rows.append(new_row_dict)
     return PartsTable(new_rows)
 
   def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int]], reverse: bool = False) -> PartsTable:

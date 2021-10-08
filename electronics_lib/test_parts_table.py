@@ -5,6 +5,9 @@ import os
 from .PartsTable import *
 
 
+int_column = PartsTableColumn(int)
+
+
 class PartsTableTest(unittest.TestCase):
   def setUp(self) -> None:
     path = os.path.join(os.path.dirname(__file__), 'resources', 'test_table.csv')
@@ -13,6 +16,7 @@ class PartsTableTest(unittest.TestCase):
       self.table = PartsTable.from_dict_rows([row for row in reader])
 
   def test_product_table(self) -> None:
+    # TODO don't test using internal variables
     self.assertEqual(len(self.table.rows), 3)
     self.assertEqual(self.table.rows[0].value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
     self.assertEqual(self.table.rows[1].value, {'header1': '2', 'header2': 'bar', 'header3': '8'})
@@ -25,6 +29,7 @@ class PartsTableTest(unittest.TestCase):
       rows = [row for row in reader]
       table = PartsTable.from_dict_rows(rows, rows)
 
+    # TODO don't test using internal variables
     self.assertEqual(len(table.rows), 6)
     self.assertEqual(table.rows[0].value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
     self.assertEqual(table.rows[1].value, {'header1': '2', 'header2': 'bar', 'header3': '8'})
@@ -33,15 +38,16 @@ class PartsTableTest(unittest.TestCase):
     self.assertEqual(table.rows[4].value, {'header1': '2', 'header2': 'bar', 'header3': '8'})
     self.assertEqual(table.rows[5].value, {'header1': '3', 'header2': 'ducks', 'header3': '7'})
 
-  # def test_derived_column(self) -> None:
-  #   table = self.table.derived_column('header1_num', ParseValue(Column('header1'), ''))
-  #   self.assertEqual(table.header, ['header1', 'header2', 'header3', 'header1_num'])
-  #   self.assertEqual(table.rows, [
-  #     ['1', 'foo', '9', 1],
-  #     ['2', 'bar', '8', 2],
-  #     ['3', 'ducks', '7', 3],
-  #   ])
-  #
+  def test_derived_column(self) -> None:
+    def parse_int(row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
+      return {
+        int_column: int(row['header1'])
+      }
+    table = self.table.map_new_columns(parse_int)
+    self.assertEqual(table.rows[0][int_column], 1)
+    self.assertEqual(table.rows[1][int_column], 2)
+    self.assertEqual(table.rows[2][int_column], 3)
+
   # def test_range_contains(self) -> None:
   #   table = self.table.derived_column('header1_range', RangeFromUpper(ParseValue(Column('header1'), ''))) \
   #       .filter(RangeContains(RangeFromUpper(Lit(1.5)), Column('header1_range')))
