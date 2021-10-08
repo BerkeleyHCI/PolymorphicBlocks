@@ -48,6 +48,15 @@ class PartsTableTest(unittest.TestCase):
     self.assertEqual(table.rows[1][int_column], 2)
     self.assertEqual(table.rows[2][int_column], 3)
 
+  def test_sort(self) -> None:
+    table = self.table.sort_by(lambda row: row['header3'])
+    self.assertEqual(table.rows[0].value, {'header1': '3', 'header2': 'ducks', 'header3': '7'})
+    self.assertEqual(table.rows[1].value, {'header1': '2', 'header2': 'bar', 'header3': '8'})
+    self.assertEqual(table.rows[2].value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
+
+  def test_first(self) -> None:
+    self.assertEqual(self.table.first().value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
+
   # def test_range_contains(self) -> None:
   #   table = self.table.derived_column('header1_range', RangeFromUpper(ParseValue(Column('header1'), ''))) \
   #       .filter(RangeContains(RangeFromUpper(Lit(1.5)), Column('header1_range')))
@@ -59,17 +68,6 @@ class PartsTableTest(unittest.TestCase):
   #   self.assertEqual(MapDict(Lit('foo'), {'foo': 'bar', 'bar': 'foo'})({}), 'bar')
   #   self.assertEqual(MapDict(Lit('bar'), {'foo': 'bar', 'bar': 'foo'})({}), 'foo')
   #   self.assertEqual(MapDict(Lit('lol'), {'foo': 'bar', 'bar': 'foo'})({}), None)
-  #
-  # def test_sort(self) -> None:
-  #   table = self.table.sort(Column('header3'))
-  #   self.assertEqual(table.rows, [
-  #     ['3', 'ducks', '7'],
-  #     ['2', 'bar', '8'],
-  #     ['1', 'foo', '9'],
-  #   ])
-  #
-  # def test_first(self) -> None:
-  #   self.assertEqual(self.table.first(), {'header1': '1', 'header2': 'foo', 'header3': '9'})
   #
   # def test_regex(self) -> None:
   #   self.assertEqual(FormatRegex(Lit('foo123'), "([\D~\s]+)(\d+)", "{0} {1}")({}), 'foo 123')

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional
+from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict
 
 PartsTableColumnType = TypeVar('PartsTableColumnType')
 class PartsTableColumn(Generic[PartsTableColumnType]):
@@ -39,7 +39,7 @@ class PartsTable:
   https://www.districtdatalabs.com/simple-csv-data-wrangling-with-python
   """
   @staticmethod
-  def from_dict_rows(*dict_rowss: List[Dict[str, str]]):
+  def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[OrderedDict[str, str]]]):
     """Creates a parts table from dict rows, such as parsed by csv.DictReader.
     Checks to make sure all incoming rows are dense (have all cells)."""
     all_dict_rows = list(itertools.chain(*dict_rowss))
@@ -82,7 +82,7 @@ class PartsTable:
       new_row_dict = {}
       new_row_dict.update(row.value)
       new_row_dict.update(new_columns)
-      new_rows.append(new_row_dict)
+      new_rows.append(PartsTableRow(new_row_dict))
     return PartsTable(new_rows)
 
   def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int]], reverse: bool = False) -> PartsTable:
