@@ -16,7 +16,7 @@ class PartsTableRow:
   """A row in the parts table. Immutable.
   Internal type, does not do any error checking (so data should be checked before being
   passed into this object)."""
-  def __init__(self, value: Dict[Union[str, PartsTableColumn], Any]):
+  def __init__(self, value: Dict[Any, Any]):  # TODO Dict not covariant so we can't check key types
     self.value = value
 
   @overload
@@ -60,7 +60,7 @@ class PartsTable:
 
   def map_new_columns(self, fn: Callable[[PartsTableRow], Dict[PartsTableColumn[Any], Any]]) -> PartsTable:
     """Creates a new table (deep copy) with additional rows."""
-    new_rows = []
+    new_rows: List[PartsTableRow] = []
     first_keys: Optional[KeysView] = None
     for row in self.rows:
       new_columns = fn(row)
