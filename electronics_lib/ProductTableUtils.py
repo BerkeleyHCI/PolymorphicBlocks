@@ -138,7 +138,7 @@ def Not(src: SourceFilter) -> SourceFilter:
   return inner
 
 
-def Range(lower_source: SourceMap, upper_source: SourceMap) -> SourceMap:
+def MakeRange(lower_source: SourceMap, upper_source: SourceMap) -> SourceMap:
   def inner(row: Dict[str, Any]) -> Optional[Tuple[float, float]]:
     lower_result = lower_source(row)
     upper_result = upper_source(row)

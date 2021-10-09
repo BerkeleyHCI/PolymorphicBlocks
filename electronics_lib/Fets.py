@@ -24,8 +24,8 @@ def generate_fet_table(TABLES: List[str]) -> ProductTable:
                     RangeFromUpper(ParseValue(Column('Current - Continuous Drain (Id) @ 25°C'), 'A')),
                     missing='discard') \
     .derived_column('Vgs',
-                    Range(ParseValue(Column('Drive Voltage (Max Rds On,  Min Rds On)'), 'V'),
-                          ParseValue(Column('Vgs (Max)'), 'V')),
+                    MakeRange(ParseValue(Column('Drive Voltage (Max Rds On,  Min Rds On)'), 'V'),
+                              ParseValue(Column('Vgs (Max)'), 'V')),
                     missing='discard') \
     .derived_column('Rds,max',
                     RangeFromUpper(ParseValue(Column('Rds On (Max) @ Id, Vgs'), 'Ohm'), lower=0),

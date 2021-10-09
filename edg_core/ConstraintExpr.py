@@ -13,6 +13,7 @@ from .Binding import ReductionOp, BinaryNumOp, BinaryBoolOp
 from .Builder import builder
 from .Core import Refable
 from .IdentityDict import IdentityDict
+from .Range import Range
 
 if TYPE_CHECKING:
   from .Ports import BasePort
@@ -287,7 +288,7 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
 
 
 RangeLit = Tuple[FloatLit, FloatLit]
-RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike], FloatLike]
+RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike], FloatLike]
 class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
   # Some range literals for defaults
   POSITIVE = (0.0, float('inf'))
@@ -325,6 +326,11 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
         FloatExpr._to_expr_type(input[0]),
         FloatExpr._to_expr_type(input[1])
         ))
+    elif isinstance(input, Range):
+      return RangeExpr()._bind(RangeBuilderBinding(
+        FloatExpr._to_expr_type(input.lower),
+        FloatExpr._to_expr_type(input.upper)
+      ))
     else:
       raise TypeError(f"op arg to RangeExpr must be FloatLike, got {input} of type {type(input)}")
 
@@ -345,7 +351,7 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
     return self._create_bool_op(self, RangeExpr._to_expr_type(item), BinaryBoolOp.subset)
 
   def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
-    if isinstance(item, (RangeExpr, tuple)):
+    if isinstance(item, (RangeExpr, tuple, Range)):
       return RangeExpr._to_expr_type(item).within(self)
     elif isinstance(item, (int, float, FloatExpr)):
       return self._create_bool_op(FloatExpr._to_expr_type(item), self, BinaryBoolOp.subset)
