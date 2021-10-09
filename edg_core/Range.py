@@ -33,11 +33,11 @@ class Range:
     self.lower = lower
     self.upper = upper
 
-  def contains(self, other: Union['Range', float]) -> bool:
+  def __contains__(self, item: Union['Range', float]) -> bool:
     """Return whether other range or float is contained (a subset of) this range."""
-    if isinstance(other, (float, int)):
-      return self.lower <= other <= self.upper
-    elif isinstance(other, Range):
-      return self.lower <= other.lower and other.upper <= self.upper
+    if isinstance(item, (float, int)):
+      return self.lower <= item <= self.upper
+    elif isinstance(item, Range):
+      return self.lower <= item.lower and item.upper <= self.upper
     else:
-      raise ValueError(f"unknown other {other}")
+      raise ValueError(f"unknown other {item}")
