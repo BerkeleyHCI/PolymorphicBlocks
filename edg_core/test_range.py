@@ -30,3 +30,16 @@ class RangeTestCase(unittest.TestCase):
     self.assertTrue(-1e12 in Range.from_upper(500))
     self.assertFalse(1000 in Range.from_upper(500))
     self.assertFalse(float('inf') in Range.from_upper(500))
+
+  def test_all(self) -> None:
+    self.assertTrue(Range.all() in Range.all())
+    self.assertTrue(0 in Range.all())
+    self.assertTrue(1e12 in Range.all())
+
+  def test_ops(self) -> None:
+    self.assertTrue(Range(1.1, 5) == Range(1.1, 5))
+    self.assertTrue(Range(1.1, 5) != Range(1.2, 5))
+    self.assertTrue(Range.all() == Range.all())
+    self.assertTrue(Range.all() != Range(1.2, 5))
+
+    self.assertTrue(Range(1.1, 5) * 2 == Range(2.2, 10))

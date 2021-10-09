@@ -2,6 +2,10 @@ from typing import Tuple, Union
 
 
 class Range:
+  """A range type that indicates a range of values and provides utility functions. Immutable.
+   Ends are treated as inclusive (closed).
+   """
+
   @staticmethod
   def from_tolerance(center: float, tolerance: Union[float, Tuple[float, float]]) -> 'Range':
     """Creates a Range given a center value and normalized tolerance percentage.
@@ -26,8 +30,11 @@ class Range:
     """Creates a Range from upper to negative infinity"""
     return Range(float('-inf'), upper)
 
-  """A range type that indicates a range of values and provides utility functions
-   Ends are treated as inclusive (closed)."""
+  @staticmethod
+  def all() -> 'Range':
+    """Creates a Range that is a superset of every range"""
+    return Range(float('-inf'), float('inf'))
+
   def __init__(self, lower: float, upper: float):
     assert lower <= upper, f"invalid range with lower {lower} > upper {upper}"
     self.lower = lower
@@ -41,3 +48,15 @@ class Range:
       return self.lower <= item.lower and item.upper <= self.upper
     else:
       raise ValueError(f"unknown other {item}")
+
+  def __mul__(self, other: float) -> 'Range':
+    assert isinstance(other, (float, int))
+    if other >= 0:
+      return Range(self.lower * other, self.upper * other)
+    else:
+      return Range(self.upper * other, self.lower * other)
+
+  def __eq__(self, other) -> bool:
+    if not isinstance(other, Range):
+      return False
+    return self.lower == other.lower and self.upper == other.upper

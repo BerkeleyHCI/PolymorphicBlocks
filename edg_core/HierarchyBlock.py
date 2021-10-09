@@ -10,6 +10,7 @@ from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
 from .Binding import ParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
+from .Range import Range
 from .Exception import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -21,7 +22,7 @@ def init_in_parent(fn: InitType) -> InitType:
   import inspect
   from .Builder import builder
 
-  param_types = (bool, float, int, tuple, str, ConstraintExpr)
+  param_types = (bool, float, int, tuple, str, Range, ConstraintExpr)
   float_like_types = (float, int, FloatExpr)
 
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
@@ -57,7 +58,7 @@ def init_in_parent(fn: InitType) -> InitType:
               param_model: ConstraintExpr = BoolExpr(arg_val)
             elif isinstance(arg_default, (float, int, FloatExpr)):
               param_model = FloatExpr(arg_val)
-            elif isinstance(arg_default, RangeExpr) or (isinstance(arg_default, tuple) and
+            elif isinstance(arg_default, (RangeExpr, Range)) or (isinstance(arg_default, tuple) and
                 isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
               param_model = RangeExpr(arg_val)
             elif isinstance(arg_default, (str, StringExpr)):
