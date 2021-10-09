@@ -89,3 +89,9 @@ class PartsTableUtilsTest(unittest.TestCase):
     self.assertEqual(parse_value('50.1.2 V', 'V'), None)
     self.assertEqual(parse_value('lol 20F', 'F'), None)
     self.assertEqual(parse_value('20F no', 'F'), None)
+
+  def test_parse_tolerance(self) -> None:
+    self.assertEqual(parse_tolerance('±100%'), (-1, 1))
+    self.assertEqual(parse_tolerance('±10%'), (-0.1, 0.1))
+    self.assertEqual(parse_tolerance('±10 %'), (-0.1, 0.1))
+    self.assertEqual(parse_tolerance('±42.1 ppm'), (-42.1e-6, 42.1e-6))

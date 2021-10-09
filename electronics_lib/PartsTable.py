@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict
+from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
+  Tuple
 import itertools
 import re
 
@@ -114,11 +115,11 @@ SI_PREFIX_DICT = {
 }
 si_prefixes = ''.join(SI_PREFIX_DICT.keys())
 
+NUMBER_REGEX = '\d+(?:\.\d+)?'
 
-VALUE_REGEX = re.compile(f'^(\d+(?:\.\d+)?)\s*([{si_prefixes}]?)(\w+)$')
-
-
+VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{si_prefixes}]?)(\w+)$')
 def parse_value(value: str, units: str) -> Optional[float]:
+  """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9"""
   matches = VALUE_REGEX.match(value)
   if matches is not None and matches.group(3) == units:
     return float(matches.group(1)) * SI_PREFIX_DICT[matches.group(2)]
@@ -126,5 +127,19 @@ def parse_value(value: str, units: str) -> Optional[float]:
     return None
 
 
-def parse_tolerance(value: str) -> Optional[float]:
-  pass
+TOLERANCE_REGEX = re.compile(f'^(±)\s*({NUMBER_REGEX})\s*(ppm|%)$')
+def parse_tolerance(value: str) -> Optional[Tuple[float, float]]:
+  """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
+  For example, ±10% would be returned as (-0.1, 0.1)"""
+  matches = TOLERANCE_REGEX.match(value)
+  if matches is not None and matches.group(1) == '±':  # only support the ± case right now
+    if matches.group(3) == '%':
+      scale = 1.0/100
+    elif matches.group(3) == 'ppm':
+      scale = 1e-6
+    else:
+      return None
+    parsed = float(matches.group(2))
+    return -parsed * scale, parsed * scale
+  else:
+    return None
