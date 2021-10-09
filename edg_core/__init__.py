@@ -11,6 +11,8 @@ from .PortBlocks import PortBridge, PortAdapter
 from .Array import Vector
 from .PortTag import PortTag, Input, Output, InOut
 
+from .Range import Range
+
 from .IdentityDict import IdentityDict
 from .MultiBiDict import MultiBiDict
 
