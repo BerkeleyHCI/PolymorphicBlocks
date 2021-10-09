@@ -5,10 +5,9 @@ import os
 from .PartsTable import *
 
 
-int_column = PartsTableColumn(int)
-
-
 class PartsTableTest(unittest.TestCase):
+  INT_COLUMN = PartsTableColumn(int)
+
   # TODO don't test using internal variables
   def setUp(self) -> None:
     path = os.path.join(os.path.dirname(__file__), 'resources', 'test_table.csv')
@@ -46,12 +45,12 @@ class PartsTableTest(unittest.TestCase):
   def test_derived_column(self) -> None:
     def parse_int(row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
       return {
-        int_column: int(row['header1'])
+        self.INT_COLUMN: int(row['header1'])
       }
     table = self.table.map_new_columns(parse_int)
-    self.assertEqual(table.rows[0][int_column], 1)
-    self.assertEqual(table.rows[1][int_column], 2)
-    self.assertEqual(table.rows[2][int_column], 3)
+    self.assertEqual(table.rows[0][self.INT_COLUMN], 1)
+    self.assertEqual(table.rows[1][self.INT_COLUMN], 2)
+    self.assertEqual(table.rows[2][self.INT_COLUMN], 3)
 
   def test_derived_column_filter(self) -> None:
     def parse_int(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -72,3 +71,21 @@ class PartsTableTest(unittest.TestCase):
 
   def test_first(self) -> None:
     self.assertEqual(self.table.first().value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
+
+
+class PartsTableUtilsTest(unittest.TestCase):
+  def test_parse_value(self) -> None:
+    self.assertEqual(parse_value('20 nF', 'F'), 20e-9)
+    self.assertEqual(parse_value('20 F', 'F'), 20)
+    self.assertEqual(parse_value('20F', 'F'), 20)
+    self.assertEqual(parse_value('50 kV', 'V'), 50e3)
+    self.assertEqual(parse_value('49.9 GΩ', 'Ω'), 49.9e9)
+    self.assertEqual(parse_value('49.9 GΩ', 'Ω'), 49.9e9)
+
+    self.assertEqual(parse_value('50 kA', 'V'), None)
+    self.assertEqual(parse_value('50 A', 'V'), None)
+    self.assertEqual(parse_value('50 k', 'V'), None)
+    self.assertEqual(parse_value('ducks', 'V'), None)
+    self.assertEqual(parse_value('50.1.2 V', 'V'), None)
+    self.assertEqual(parse_value('lol 20F', 'F'), None)
+    self.assertEqual(parse_value('20F no', 'F'), None)

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import itertools
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict
+import itertools
+import re
 
 PartsTableColumnType = TypeVar('PartsTableColumnType')
 class PartsTableColumn(Generic[PartsTableColumnType]):
@@ -97,3 +98,33 @@ class PartsTable:
     if not self.rows:
       raise IndexError(err)
     return self.rows[0]
+
+
+SI_PREFIX_DICT = {
+  '': 1,
+  'p': 1e-12,
+  'n': 1e-9,
+  'μ': 1e-6,
+  'µ': 1e-6,
+  'u': 1e-6,
+  'm': 1e-3,
+  'k': 1e3,
+  'M': 1e6,
+  'G': 1e9,
+}
+si_prefixes = ''.join(SI_PREFIX_DICT.keys())
+
+
+VALUE_REGEX = re.compile(f'^(\d+(?:\.\d+)?)\s*([{si_prefixes}]?)(\w+)$')
+
+
+def parse_value(value: str, units: str) -> Optional[float]:
+  matches = VALUE_REGEX.match(value)
+  if matches is not None and matches.group(3) == units:
+    return float(matches.group(1)) * SI_PREFIX_DICT[matches.group(2)]
+  else:
+    return None
+
+
+def parse_tolerance(value: str) -> Optional[float]:
+  pass
