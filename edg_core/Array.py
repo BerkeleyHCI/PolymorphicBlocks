@@ -7,7 +7,7 @@ from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
 from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
   ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
-from .Binding import LengthBinding
+from .Binding import LengthBinding, BinaryBoolOp, BinaryOpBinding, BinaryNumOp
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -97,6 +97,18 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
     return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
 
 
+class ArrayRangeExpr(ArrayExpr[RangeExpr]):
+  def _create_binary_op(self, lhs: ConstraintExpr, rhs: ConstraintExpr, op: BinaryNumOp) -> ArrayRangeExpr:
+    """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
+    Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
+    to ensure this makes sense. No type checking happens here."""
+    assert lhs._is_bound() and rhs._is_bound()
+    return self._new_bind(BinaryOpBinding(lhs, rhs, op))
+
+  def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
+    return self._create_binary_op(RangeExpr._to_expr_type(other), self, BinaryNumOp.div)
+
+
 @non_library
 class BaseVector(BaseContainerPort):
   def _get_elt_sample(self) -> BasePort:
@@ -184,13 +196,17 @@ class Vector(BaseVector, Generic[VectorType]):
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
   @overload
+  def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
+  @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ArrayExpr[ExtractConstraintType]: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
   def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
     param = selector(self.elt_sample)
-    if isinstance(param, ConstraintExpr):
+    if isinstance(param, RangeExpr):
+      return ArrayRangeExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
+    elif isinstance(param, ConstraintExpr):
       return ArrayExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
     elif isinstance(param, BasePort):
       return DerivedVector(self, param)

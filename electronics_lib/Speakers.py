@@ -16,9 +16,11 @@ class Lm4871_Device(DiscreteChip, FootprintBlock):
     self.inp = self.Port(Passive())  # TODO these aren't actually documented w/ specs =(
     self.inm = self.Port(Passive())
 
-    self.vo = self.Port(SpeakerDriverPort(
-      impedance=(0, 0)*Ohm  # TODO impedance not given
-    ))
+    speaker_port = AnalogSource(
+      impedance=RangeExpr.ZERO
+    )
+    self.vo1 = self.Port(speaker_port)
+    self.vo2 = self.Port(speaker_port)
 
     self.byp = self.Port(Passive())
 
@@ -30,10 +32,10 @@ class Lm4871_Device(DiscreteChip, FootprintBlock):
         '2': self.byp,  # bypass
         '3': self.inp,  # Vin+
         '4': self.inm,  # Vin-
-        '5': self.vo.a,  # spk1
+        '5': self.vo1,
         '6': self.pwr,
         '7': self.gnd,
-        '8': self.vo.b,  # spk2
+        '8': self.vo2,
       },
       mfr='Texas Instruments', part='LM4871MX',
       datasheet='https://www.ti.com/lit/ds/symlink/lm4871.pdf'
@@ -54,7 +56,7 @@ class Lm4871(IntegratedCircuit):
       # current_draw=(0, 0) * Amp,
       # impedance=,
     ), [Input])
-    self.spk = self.Export(self.ic.vo, [Output])
+    self.spk = self.Port(SpeakerDriverPort(), [Output])
 
 
   def contents(self):
@@ -86,7 +88,8 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.sig, self.sig_cap.neg.as_analog_sink())
     self.connect(self.sig_cap.pos, self.sig_res.a)
     self.connect(self.sig_res.b, self.fb_res.a, self.ic.inm)
-    self.connect(self.fb_res.b.as_analog_sink(), self.spk.a)
+    self.connect(self.spk.a, self.ic.vo1, self.fb_res.b.as_analog_sink())
+    self.connect(self.spk.b, self.ic.vo2)
 
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
@@ -95,7 +98,6 @@ class Speaker(DiscreteApplication, FootprintBlock):
   def __init__(self):
     super().__init__()
 
-    # TODO needs a speaker bundle - to work with chaining - also things like power?
     self.input = self.Port(SpeakerPort(
       impedance=8*Ohm
     ), [Input])

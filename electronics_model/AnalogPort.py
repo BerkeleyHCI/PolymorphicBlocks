@@ -11,7 +11,7 @@ class AnalogLink(CircuitLink):
     super().__init__()
 
     self.source = self.Port(AnalogSource())
-    self.sinks = self.Port(Vector(AnalogSink()))  # TODO only one allowed for now b/c hard to calculate parallel impedances
+    self.sinks = self.Port(Vector(AnalogSink()))
 
     self.source_impedance = self.Parameter(RangeExpr(self.source.impedance))
     self.sink_impedance = self.Parameter(RangeExpr())
@@ -25,10 +25,9 @@ class AnalogLink(CircuitLink):
   def contents(self) -> None:
     super().contents()
 
+    self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum())
     self.require(self.source.impedance <= self.sink_impedance * 0.1)  # about 10x to ensure signal integrity  # TODO make 100x?
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-    total_conductance = self.sinks.sum(lambda x: x.conductance)
-    self.assign(self.sink_impedance, (1 / total_conductance))
 
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.assign(self.current_limits, self.source.current_limits)
@@ -80,17 +79,18 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.inner_link = self.Port(AnalogSink(current_draw=RangeExpr(),
-                                           voltage_limits=RangeExpr.ALL))
+                                           voltage_limits=RangeExpr.ALL,
+                                           impedance=RangeExpr()))
 
   def contents(self) -> None:
     super().contents()
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
-    self.require(self.inner_link.link().sink_impedance.lower() > 1e9, "TODO: non-negligible impedances on AnalogSourceBridge")  # TODO calculate this the right way
     self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO compensate for internal current draw
 
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+    self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
 class AnalogSink(AnalogBase):
@@ -111,10 +111,6 @@ class AnalogSink(AnalogBase):
     self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw = self.Parameter(RangeExpr(current_draw))
     self.impedance = self.Parameter(RangeExpr(impedance))
-    if isinstance(impedance, RangeExpr) and impedance.binding is None:  # TODO less hacky
-      self.conductance = self.Parameter(RangeExpr())  # TODO this is actually an awful idea - should move into the link
-    else:
-      self.conductance = self.Parameter(RangeExpr(RangeExpr._to_expr_type(1) / impedance))
 
 
 class AnalogSource(AnalogBase):

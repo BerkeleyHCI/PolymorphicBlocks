@@ -1,7 +1,5 @@
-from typing import *
 import unittest
 
-from edg_core import *
 from .VoltagePorts import VoltageLink
 
 
