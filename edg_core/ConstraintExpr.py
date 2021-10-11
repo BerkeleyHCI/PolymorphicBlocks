@@ -320,9 +320,9 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
       return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
     elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
       assert len(input) == 2
-      return RangeExpr()._bind(RangeLiteralBinding((input[0], input[1])))
+      return RangeExpr()._bind(RangeLiteralBinding(Range(input[0], input[1])))
     elif isinstance(input, Range):
-      return RangeExpr()._bind(RangeLiteralBinding((input.lower, input.upper)))
+      return RangeExpr()._bind(RangeLiteralBinding(input))
     elif isinstance(input, tuple):
       assert len(input) == 2
       return RangeExpr()._bind(RangeBuilderBinding(

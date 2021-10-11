@@ -35,6 +35,9 @@ class Range:
     """Creates a Range that is a superset of every range"""
     return Range(float('-inf'), float('inf'))
 
+  def __repr__(self) -> str:
+    return f"Range({self.lower, self.upper})"
+
   def __init__(self, lower: float, upper: float):
     assert lower <= upper, f"invalid range with lower {lower} > upper {upper}"
     self.lower = lower
