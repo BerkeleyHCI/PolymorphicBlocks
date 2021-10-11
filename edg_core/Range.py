@@ -50,11 +50,13 @@ class Range:
       raise ValueError(f"unknown other {item}")
 
   def __mul__(self, other: float) -> 'Range':
-    assert isinstance(other, (float, int))
-    if other >= 0:
-      return Range(self.lower * other, self.upper * other)
+    if isinstance(other, (float, int)):
+      if other >= 0:
+        return Range(self.lower * other, self.upper * other)
+      else:
+        return Range(self.upper * other, self.lower * other)
     else:
-      return Range(self.upper * other, self.lower * other)
+      return NotImplemented
 
   def __eq__(self, other) -> bool:
     if not isinstance(other, Range):
