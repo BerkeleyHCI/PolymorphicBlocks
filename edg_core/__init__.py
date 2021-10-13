@@ -1,6 +1,5 @@
 from .ConstraintExpr import BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike, LiteralConstructor
-from .ConstraintExpr import RangeLit as RangeVal
 from .ConstraintExpr import Default
 from .Ports import Port, Bundle
 from .NotConnectablePort import NotConnectableBlock, NotConnectablePort

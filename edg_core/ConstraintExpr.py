@@ -291,7 +291,7 @@ RangeLit = Tuple[FloatLit, FloatLit]
 # A RangeLike type excluding the float-to-range implicit conversion
 RangeLikeNonFloat = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 RangeLike = Union[RangeLikeNonFloat, FloatLike]
-class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
+class RangeExpr(NumLikeExpr[Range, RangeLike]):
   # Some range literals for defaults
   POSITIVE: RangeLikeNonFloat = Range.from_lower(0.0)
   NEGATIVE: RangeLikeNonFloat = Range.from_upper(0.0)

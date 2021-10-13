@@ -22,17 +22,16 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
 
     self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
 
-  def generate_rc(self, cutoff_freq: RangeVal, impedance: RangeVal) -> None:
+  def generate_rc(self, cutoff_freq: Range, impedance: Range) -> None:
     super().generate()
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
-    f_min, f_max = cutoff_freq
-    r_min, r_max = impedance
-    c_min = 1 / (2 * pi * r_min * f_max)
-    c_max = 1 / (2 * pi * r_max * f_min)
+    c_min = 1 / (2 * pi * impedance.lower * cutoff_freq.upper)
+    c_max = 1 / (2 * pi * impedance.upper * cutoff_freq.lower)
     assert c_min <= c_max, "tighter cutoff frequency tolerance than resistor tolerance"
+    capacitance = Range(c_min, c_max)
 
-    self.c = self.Block(Capacitor(capacitance=(c_min, c_max)*Farad, voltage=self.voltage))
+    self.c = self.Block(Capacitor(capacitance=capacitance * Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
     self.connect(self.r.b, self.c.pos, self.output)  # TODO support negative voltages?
     self.connect(self.c.neg, self.gnd)
