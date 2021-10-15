@@ -75,8 +75,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     assert ratio.upper <= 1, f"can't generate ratios > 1, got ratio={ratio}"
 
     # Track the best candidate in case a divider couldn't be solved, and give an informative message
-    ratio_center = ratio.lower + ratio.upper / 2
-    best_candidate = (0.0, Range(0, 0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
+    best_candidate = (float('inf'), Range(0, 0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
 
     tol_min = 1 - tol
     tol_max = 1 + tol
@@ -101,7 +100,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
             r1r2_impedance = 1 / (1 / Range.from_tolerance(r1_center, tol) +
                                   1 / Range.from_tolerance(r2_center, tol))
             r1r2_impedance_shift = floor(log10(r1r2_impedance.lower))
-            while r1r2_impedance.lower <= impedance.upper:
+            while not (r1r2_impedance.lower > impedance.upper):
               decade = 10 ** (impedance_shift - r1r2_impedance_shift)
               r1r2_impedance = r1r2_impedance * decade
               if r1r2_impedance in impedance:
@@ -109,7 +108,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                        round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
               r1r2_impedance_shift += 1
 
-          if abs(r1r2_ratio.center() - ratio_center) < abs(best_candidate[0] - ratio_center):
+          if abs(r1r2_ratio.center() - ratio.center()) < abs(best_candidate[0] - ratio.center()):
             best_candidate = (r1r2_ratio.center(), r1r2_ratio, (r1_center, r2_center))
       return None
 
@@ -117,7 +116,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     upper_r1_range = decade_limits(r1_decade)
     lower_r1_range = decade_limits(1 / r1_decade)
 
-    while not (lower_r1_range.upper <= ratio.lower) and (upper_r1_range.lower >= ratio.lower) and \
+    while not ((lower_r1_range.upper < ratio.lower) and (upper_r1_range.lower > ratio.upper)) and \
         r1_decade <= R1_DECADE_LIMIT:
       if upper_r1_range.intersects(ratio):
         res = try_r1_decade(r1_decade)
