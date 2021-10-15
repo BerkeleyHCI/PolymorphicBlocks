@@ -123,7 +123,8 @@ class HdlInterface():  # type: ignore
         generator_obj, f"in generate {request.fn} for {request.element}",
         generate_fn_name=request.fn, generate_values=generator_values))
     except BaseException as e:
-      # TODO pipe full stack trace into proto
-      response.error = str(e)
+      import traceback
+      # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st
+      response.error = "".join(traceback.TracebackException.from_exception(e).format())
 
     return response
