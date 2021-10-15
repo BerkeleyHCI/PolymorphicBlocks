@@ -113,6 +113,12 @@ class Range:
     else:
       return NotImplemented
 
+  def __rsub__(self, other: float) -> 'Range':
+    if isinstance(other, (float, int)):
+      return Range(other - self.upper, other - self.lower)
+    else:
+      return NotImplemented
+
   def __mul__(self, other: Union['Range', float]) -> 'Range':
     if isinstance(other, Range):
       corners = [self.lower * other.lower,
@@ -161,3 +167,9 @@ class Range:
       return Range(other / self.upper, other / self.lower)
     else:
       return NotImplemented
+
+  def extend_upper_to(self, new_upper: float) -> 'Range':
+    if new_upper > self.upper:
+      return Range(self.lower, new_upper)
+    else:
+      return self
