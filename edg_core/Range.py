@@ -7,6 +7,42 @@ class Range:
    """
 
   @staticmethod
+  def cancel_multiply(input_side: 'Range', output_side: 'Range') -> 'Range':
+    """
+    Range multiplication is weird and 1/x * x does not cancel out, because it's tolerance-expanding.
+    Using the RC frequency example, w = 1/(2 pi R C), which solves for the output and tolerances of w
+    given R and C (with tolerances), if we want instead solve for C given R and target w,
+    we can't simply do C = 1/(2 pi R w) - which would be tolerance-expanding from R and w to C.
+
+    To understand why, it helps to break ranges into vectors:
+
+    [w_max  = 1/2pi * [1/R_min  * [1/C_min
+     w_min]            1/R_max]    1/C_max]
+
+    Note that to cancel the vectors (so they equal [1, 1], we need to invert the vector components
+    without flipping the order. For example, to move the C to the left side, we need to multiply
+    both sides by:
+
+    [C_min
+     C_max]
+
+    which itself is an invalid range, since the top element is lower than the bottom element.
+    Doing the same with w, this resolves into
+
+    [C_min  = 1/2pi * [1/R_min  * [1/w_max
+     C_max]            1/R_max]    1/w_min]
+
+    So that this function does is:
+    flip(input_side * flip(output_side))
+    and the above would be expressed as:
+    C = cancel_multiply(1/(2*pi*R), 1/w)
+
+    THIS MAY RETURN AN EMPTY RANGE - for example, if the input tolerance is larger than the
+    output tolerance (so no result would satisfy the original equiation).
+    """
+    pass
+
+  @staticmethod
   def from_tolerance(center: float, tolerance: Union[float, Tuple[float, float]]) -> 'Range':
     """Creates a Range given a center value and normalized tolerance percentage.
     If a single tolerance is given, it is treated as bidirectional (+/- value).
