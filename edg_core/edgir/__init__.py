@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING, List
+from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING
 
 from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
@@ -10,6 +10,8 @@ from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLi
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, ReductionExpr, MapExtractExpr
 from .lit_pb2 import ValueLit
+
+from edg_core.Range import Range
 
 if TYPE_CHECKING:
   from .ref_pb2 import ReservedValue
@@ -45,7 +47,7 @@ def resolve_portlike(port: PortLike) -> PortTypes:
     raise ValueError(f"bad portlike {port}")
 
 
-LitTypes = Union[bool, float, Tuple[float, float], str]
+LitTypes = Union[bool, float, Range, str]
 
 
 def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTypes]]:
@@ -76,7 +78,7 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
     return expr.integer.val
   elif expr.HasField('range') and \
        expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
-    return (expr.range.minimum.floating.val, expr.range.maximum.floating.val)
+    return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
     return expr.text.val
   else:
@@ -91,9 +93,9 @@ def lit_to_valuelit(value: LitTypes) -> ValueLit:
     pb.integer.val = value
   elif isinstance(value, float):
     pb.floating.val = value
-  elif isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
-    pb.range.minimum.floating.val = value[0]
-    pb.range.maximum.floating.val = value[1]
+  elif isinstance(value, Range):
+    pb.range.minimum.floating.val = value.lower
+    pb.range.maximum.floating.val = value.upper
   elif isinstance(value, str):
     pb.text.val = value
   else:
@@ -145,7 +147,7 @@ def string_to_lit(input: str, elt: ValInit) -> Optional[LitTypes]:
     if len(elts) != 2:
       return None
     try:
-      return (float(elts[0]), float(elts[1]))
+      return Range(float(elts[0]), float(elts[1]))
     except ValueError:
       return None
   elif elt.HasField('text'):
@@ -158,9 +160,8 @@ def lit_to_string(lit: LitTypes) -> str:
   import numbers
   if isinstance(lit, bool):
     return str(lit)
-  elif isinstance(lit, tuple) and len(lit) == 2 and \
-      isinstance(lit[0], numbers.Number) and isinstance(lit[1], numbers.Number):
-    return f"{lit[0]:3g}, {lit[1]:3g}"
+  elif isinstance(lit, Range):
+    return f"{lit.lower:3g}, {lit.upper:3g}"
   elif isinstance(lit, numbers.Number):
     return str(lit)
   elif isinstance(lit, str):

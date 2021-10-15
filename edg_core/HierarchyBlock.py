@@ -551,7 +551,7 @@ class GeneratorBlock(Block):
     if isinstance(param, FloatExpr):
       assert isinstance(value, Number), f"get({self._name_of(param)}) expected float, got {value}"
     elif isinstance(param, RangeExpr):
-      assert isinstance(value[0], Number) and isinstance(value[1], Number), f"get({self._name_of(param)}) expected range, got {value}"
+      assert isinstance(value, Range), f"get({self._name_of(param)}) expected range, got {value}"
     elif isinstance(param, BoolExpr):
       assert isinstance(value, bool), f"get({self._name_of(param)}) expected bool, got {value}"
     elif isinstance(param, StringExpr):
