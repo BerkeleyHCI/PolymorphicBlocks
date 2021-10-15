@@ -30,8 +30,8 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
     )
 
 class Tps61023(DiscreteBoostConverter, GeneratorBlock):
-
   VALLEY_SWITCH_CURRENT_LIMIT = 3.7
+  DUTYCYCLE_MIN_LIMIT = 0.0  # goes into PFM at light load
 
   def contents(self):
     super().contents()
