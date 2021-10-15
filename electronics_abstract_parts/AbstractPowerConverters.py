@@ -209,7 +209,7 @@ class DiscreteBoostConverter(BoostConverter):
 
     TODO support capacitor ESR calculation
     """
-    dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
+    dutycycle = 1 - input_voltage / output_voltage * Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
     dutycycle_limit = Range(self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)
     self.assign(self.dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
