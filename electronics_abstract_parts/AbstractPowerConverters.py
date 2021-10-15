@@ -87,9 +87,9 @@ class DiscreteBuckConverter(BuckConverter):
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
-                          input_voltage: RangeVal, output_voltage: RangeVal,
-                          output_current_max: float, frequency: RangeVal,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          input_voltage: Range, output_voltage: Range,
+                          output_current_max: float, frequency: Range,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
                           ) -> Passive:
     """
     Given the switch node, generates the passive (in and out filter caps, inductor) components,
@@ -185,9 +185,9 @@ class DiscreteBoostConverter(BoostConverter):
   WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
-                          input_voltage: RangeVal, output_voltage: RangeVal,
-                          output_current_max: float, frequency: RangeVal,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          input_voltage: Range, output_voltage: Range,
+                          output_current_max: float, frequency: Range,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
                           ) -> None:
     """
     - diode needs to be fast, consider forward voltage drop, forward current (> peak inductor current), reverse volts (> Vout)
