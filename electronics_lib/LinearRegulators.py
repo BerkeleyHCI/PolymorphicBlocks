@@ -44,24 +44,23 @@ class Ld1117(LinearRegulator, GeneratorBlock):
     self.generator(self.select_part, self.spec_output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
-  def select_part(self, spec_output_voltage: RangeVal):  # TODO can some block params be made available pre-generate?
+  def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     parts = [
       # output voltage, quiescent current
-      ((1.140, 1.260), 'LD1117S12TR'),
-      ((1.76, 1.84), 'LD1117S18TR'),
-      ((2.45, 2.44), 'LD1117S25TR'),
-      ((3.235, 3.365), 'LD1117S33TR'),
-      ((4.9, 5.1), 'LD1117S50TR'),
+      (Range(1.140, 1.260), 'LD1117S12TR'),
+      (Range(1.76, 1.84), 'LD1117S18TR'),
+      (Range(2.45, 2.44), 'LD1117S25TR'),
+      (Range(3.235, 3.365), 'LD1117S33TR'),
+      (Range(4.9, 5.1), 'LD1117S50TR'),
     ]
-    output_low, output_high = spec_output_voltage
-    suitable_parts = [((part_out_min, part_out_max), part_number)
-      for (part_out_min, part_out_max), part_number in parts
-      if output_low <= part_out_min <= part_out_max <= output_high
+    suitable_parts = [(part_out, part_number)
+      for part_out, part_number in parts
+      if part_out in spec_output_voltage
     ]
-    assert suitable_parts, f"no regulator with compatible output range {output_low} - {output_high}"
-    (part_out_min, part_out_max), part_number = suitable_parts[0]
+    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
+    part_out, part_number = suitable_parts[0]
 
-    self.ic = self.Block(Ld1117_Device(part=part_number, voltage_out=(part_out_min, part_out_max)*Volt))
+    self.ic = self.Block(Ld1117_Device(part=part_number, voltage_out=part_out*Volt))
     self.assign(self.dropout, self.ic.dropout)
     self.assign(self.quiescent_current, self.ic.quiescent_current)
 
@@ -115,7 +114,7 @@ class Ldl1117(LinearRegulator, GeneratorBlock):
     self.generator(self.select_part, self.spec_output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
-  def select_part(self, spec_output_voltage: RangeVal):  # TODO can some block params be made available pre-generate?
+  def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [
       # output voltage, quiescent current
@@ -127,13 +126,11 @@ class Ldl1117(LinearRegulator, GeneratorBlock):
       (3.3, 'LDL1117S33R'),
       (5.0, 'LDL1117S50R'),
     ]
-    output_low, output_high = spec_output_voltage
     suitable_parts = [(part_out_nominal, part_number)
                       for part_out_nominal, part_number in parts
-                      if output_low <= part_out_nominal * (1 - TOLERANCE) <=
-                      part_out_nominal * (1 + TOLERANCE) <= output_high
+                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in spec_output_voltage
                       ]
-    assert suitable_parts, f"no regulator with compatible output range {output_low} - {output_high}"
+    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
     part_out_nominal, part_number = suitable_parts[0]
 
     self.ic = self.Block(Ldl1117_Device(part=part_number, voltage_out=part_out_nominal*Volt(tol=TOLERANCE)))
@@ -212,7 +209,7 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
     self.generator(self.select_part, self.spec_output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd, self.en])
 
-  def select_part(self, spec_output_voltage: RangeVal):
+  def select_part(self, spec_output_voltage: Range):
     TOLERANCE = 0.02
     parts = [
       # output voltage, quiescent current
@@ -224,13 +221,11 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
       (1.8, 'AP2204K-1.8'),
       (1.5, 'AP2204K-1.5'),
     ]
-    output_low, output_high = spec_output_voltage
     suitable_parts = [(part_out_nominal, part_number)
                       for part_out_nominal, part_number in parts
-                      if output_low <= part_out_nominal * (1 - TOLERANCE) <=
-                      part_out_nominal * (1 + TOLERANCE) <= output_high
+                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in spec_output_voltage
                       ]
-    assert suitable_parts, f"no regulator with compatible output range {output_low} - {output_high}"
+    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
     part_out_nominal, part_number = suitable_parts[0]
 
     self.ic = self.Block(Ap2204k_Device(part=part_number, voltage_out=part_out_nominal*Volt(tol=TOLERANCE)))
