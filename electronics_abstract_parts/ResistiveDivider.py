@@ -14,26 +14,6 @@ from .Categories import *
 def round_sig(x: float, sig: int) -> float:
   return round(x, sig-int(floor(log10(abs(x))))-1)
 
-# TODO move to intervals helper lib
-# TODO maybe create Interval NamedTuple
-def iv_lessthan(r1: Tuple[float, float], r2: Tuple[float, float]) -> bool:
-  assert r1[0] <= r1[1] and r2[0] <= r2[1]
-  return r1[1] < r2[0]
-
-def iv_greaterthan(r1: Tuple[float, float], r2: Tuple[float, float]) -> bool:
-  assert r1[0] <= r1[1] and r2[0] <= r2[1]
-  return r1[0] > r2[1]
-
-def iv_intersects(r1: Tuple[float, float], r2: Tuple[float, float]) -> bool:
-  return not iv_lessthan(r1, r2) and not iv_greaterthan(r1, r2)
-
-def iv_contains(r1: Tuple[float, float], r2: Tuple[float, float]) -> bool:
-  assert r1[0] <= r1[1] and r2[0] <= r2[1]
-  return r1[0] <= r2[0] and r1[1] >= r2[1]
-
-def iv_mult(r: Tuple[float, float], m: float) -> Tuple[float, float]:
-  return r[0] * m, r[1] * m
-
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
@@ -60,16 +40,15 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.generator(self.generate_divider, self.ratio, self.impedance)
 
   @classmethod
-  def _ratio_tolerance(cls, r1_center: float, r2_center: float, tol: float) -> Tuple[float, float]:
+  def _ratio_tolerance(cls, r1_center: float, r2_center: float, tol: float) -> Range:
     tol_min = 1 - tol
     tol_max = 1 + tol
     ratio_min = r2_center * tol_min / (r2_center * tol_min + r1_center * tol_max)
     ratio_max = r2_center * tol_max / (r2_center * tol_max + r1_center * tol_min)
-    assert ratio_min < ratio_max
-    return ratio_min, ratio_max
+    return Range(ratio_min, ratio_max)
 
   @classmethod
-  def _select_resistor(cls, series: List[List[float]], ratio: Tuple[float, float], impedance: Tuple[float, float],
+  def _select_resistor(cls, series: List[List[float]], ratio: Range, impedance: Range,
                        tol: float) -> Tuple[float, float]:
     """Returns the nominal resistances of a 2-resistor divider that meets the ratio and parallel impedance requirements,
     considering individual resistor tolerances.
@@ -93,12 +72,11 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     """
     R1_DECADE_LIMIT = 1e6
 
-    assert ratio[0] <= 1, f"can't generate ratios > 1, got ratio={ratio}"
-    assert ratio[0] <= ratio[1], f"reversed ratios {ratio}"
+    assert ratio.upper <= 1, f"can't generate ratios > 1, got ratio={ratio}"
 
     # Track the best candidate in case a divider couldn't be solved, and give an informative message
-    ratio_center = ratio[0] + ratio[1] / 2
-    best_candidate = (0.0, (0.0, 0.0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
+    ratio_center = ratio.lower + ratio.upper / 2
+    best_candidate = (0.0, Range(0, 0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
 
     tol_min = 1 - tol
     tol_max = 1 + tol
@@ -107,47 +85,46 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     series_min = min(series_all) * tol_min
     series_max = max(series_all) * tol_max
 
-    impedance_shift = floor(log10(impedance[0]))
+    impedance_shift = floor(log10(impedance.lower))
 
-    def decade_limits(r1_decade: float) -> Tuple[float, float]:
+    def decade_limits(r1_decade: float) -> Range:
       """Returns the ratio limits of the specified decade, accounting for worst case tolerance"""
-      return series_min / (series_min + r1_decade*series_max), series_max / (series_max + r1_decade*series_min)
+      return Range(series_min / (series_min + r1_decade*series_max),
+                   series_max / (series_max + r1_decade*series_min))
 
     def try_r1_decade(r1_decade: float) -> Optional[Tuple[float, float]]:
       nonlocal best_candidate
       for subseries in accumulate(series):  # TODO this does some redundant work with lower series
         for r1_center, r2_center in product([elt * r1_decade for elt in subseries], subseries):
-          r1r2_ratio_range = cls._ratio_tolerance(r1_center, r2_center, tol)
-          if iv_contains(ratio, r1r2_ratio_range):
-            r1r2_impedance_range = (1 / (1 / (r1_center*tol_min) + 1 / (r2_center * tol_min)),
-                                    1 / (1 / (r1_center*tol_max) + 1 / (r2_center * tol_max)))
-
-            r1r2_impedance_shift = floor(log10(r1r2_impedance_range[0]))
-            while not iv_greaterthan(r1r2_impedance_range, impedance):
-              r1r2_impedance_range = iv_mult(r1r2_impedance_range, 10 ** (impedance_shift - r1r2_impedance_shift))
-              r1r2 = iv_mult((r1_center, r2_center), 10 ** (impedance_shift - r1r2_impedance_shift))
-              if iv_contains(impedance, r1r2_impedance_range):
-                r1r2 = iv_mult((r1_center, r2_center), 10 ** (impedance_shift - r1r2_impedance_shift))
-                return round_sig(r1r2[0], 3), round_sig(r1r2[1], 3)  # TODO don't hardcode sigfigs
+          r1r2_ratio = cls._ratio_tolerance(r1_center, r2_center, tol)
+          if r1r2_ratio in ratio:
+            r1r2_impedance = 1 / (1 / Range.from_tolerance(r1_center, tol) +
+                                  1 / Range.from_tolerance(r2_center, tol))
+            r1r2_impedance_shift = floor(log10(r1r2_impedance.lower))
+            while r1r2_impedance.lower <= impedance.upper:
+              decade = 10 ** (impedance_shift - r1r2_impedance_shift)
+              r1r2_impedance = r1r2_impedance * decade
+              if r1r2_impedance in impedance:
+                return round_sig(r1_center * decade, 3), \
+                       round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
               r1r2_impedance_shift += 1
 
-          r1r2_ratio_center = r1r2_ratio_range[0] + r1r2_ratio_range[1] / 2
-          if abs(r1r2_ratio_center - ratio_center) < abs(best_candidate[0] - ratio_center):
-            best_candidate = (r1r2_ratio_center, r1r2_ratio_range, (r1_center, r2_center))
+          if abs(r1r2_ratio.center() - ratio_center) < abs(best_candidate[0] - ratio_center):
+            best_candidate = (r1r2_ratio.center(), r1r2_ratio, (r1_center, r2_center))
       return None
 
     r1_decade = 1  # zig-zag: 1,  10, 0.1,  100, 0.01,  ... (raise, invert, repeat)
     upper_r1_range = decade_limits(r1_decade)
     lower_r1_range = decade_limits(1 / r1_decade)
 
-    while not (iv_lessthan(lower_r1_range, ratio) and iv_greaterthan(upper_r1_range, ratio)) and \
+    while not (lower_r1_range.upper <= ratio.lower) and (upper_r1_range.lower >= ratio.lower) and \
         r1_decade <= R1_DECADE_LIMIT:
-      if iv_intersects(upper_r1_range, ratio):
+      if upper_r1_range.intersects(ratio):
         res = try_r1_decade(r1_decade)
         if res is not None:
           return res
 
-      if upper_r1_range != lower_r1_range and iv_intersects(lower_r1_range, ratio):
+      if upper_r1_range != lower_r1_range and lower_r1_range.intersects(ratio):
         res = try_r1_decade(1 / r1_decade)
         if res is not None:
           return res
@@ -160,7 +137,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                      f"within {tol*100}% resistors. "
                      f"Best candidate: r1,r2={best_candidate[2]}, ratio range {best_candidate[1]}")
 
-  def generate_divider(self, ratio: RangeVal, impedance: RangeVal) -> None:
+  def generate_divider(self, ratio: Range, impedance: Range) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     TODO: if no combinations found, try a 3-combination, with a series or parallel connection on one side.
     """
@@ -169,10 +146,10 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
       self.E24_SERIES, ratio, impedance, TOLERANCE)
 
     self.top_res = self.Block(Resistor(
-      resistance=(top_resistance * (1 - TOLERANCE), top_resistance * (1 + TOLERANCE))
+      resistance=Range.from_tolerance(top_resistance, TOLERANCE)
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=(bottom_resistance * (1 - TOLERANCE), bottom_resistance * (1 + TOLERANCE))
+      resistance=Range.from_tolerance(bottom_resistance, TOLERANCE)
     ))
 
     self.connect(self.top_res.a, self.top)

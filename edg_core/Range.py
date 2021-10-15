@@ -90,6 +90,9 @@ class Range:
       return False
     return self.lower == other.lower and self.upper == other.upper
 
+  def center(self) -> float:
+    return self.lower + self.upper / 2
+
   def __contains__(self, item: Union['Range', float]) -> bool:
     """Return whether other range or float is contained (a subset of) this range."""
     if isinstance(item, (float, int)):
@@ -98,6 +101,17 @@ class Range:
       return self.lower <= item.lower and item.upper <= self.upper
     else:
       raise ValueError(f"unknown other {item}")
+
+  def intersects(self, other: 'Range') -> bool:
+    return (self.upper >= other.lower) and (self.lower <= other.upper)
+
+  def __add__(self, other: Union['Range', float]) -> 'Range':
+    if isinstance(other, Range):
+      return Range(self.lower + other.lower, self.upper + other.upper)
+    elif isinstance(other, (float, int)):
+      return Range(self.lower + other, self.upper + other)
+    else:
+      return NotImplemented
 
   def __mul__(self, other: Union['Range', float]) -> 'Range':
     if isinstance(other, Range):
