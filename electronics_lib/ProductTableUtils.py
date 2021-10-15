@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import *
 
+from edg_core import Range
 
 SourceMap = Callable[[Dict[str, Any]], Optional[Any]]
 SourceFilter = Callable[[Dict[str, Any]], bool]
@@ -78,6 +79,9 @@ SI_PREFIX_DICT = {
 
 
 def Lit(value: Any) -> SourceMap:
+  if isinstance(value, Range):  # TODO hack-patch convert ranges to tuple format
+    # pending deprecation and removal of this old ProductTableUtils API
+    value = (value.lower, value.upper)
   def inner(row: Dict[str, Any]) -> Optional[Any]:
     return value
   return inner

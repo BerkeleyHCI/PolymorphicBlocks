@@ -123,6 +123,15 @@ class Range:
     else:
       return NotImplemented
 
+  def __truediv__(self, other: float) -> 'Range':
+    if isinstance(other, (float, int)):
+      if other >= 0:
+        return Range(self.lower / other, self.upper / other)
+      else:
+        return Range(self.upper / other, self.lower / other)
+    else:
+      return NotImplemented
+
   def __rtruediv__(self, other: float) -> 'Range':
     assert (self.lower >= 0 and self.upper >= 0) or (self.lower <= 0 and self.upper <= 0), \
       "TODO invert with range crossing zero not supported"
