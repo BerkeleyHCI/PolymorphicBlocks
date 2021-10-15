@@ -1,6 +1,7 @@
 import unittest
 
-from .ResistiveDivider import ResistiveDivider, Range
+from edg_core import Range
+from .ResistiveDivider import ResistiveDivider
 
 
 class ResistorDividerTest(unittest.TestCase):
@@ -8,34 +9,34 @@ class ResistorDividerTest(unittest.TestCase):
     self.assertEqual(ResistiveDivider._select_resistor(
       ResistiveDivider.E24_SERIES,
       Range(0, 1), Range(0.1, 1), 0.01),
-      Range(1, 1))
+      (1, 1))
 
     self.assertEqual(ResistiveDivider._select_resistor(  # test a tighter range
       ResistiveDivider.E24_SERIES,
       Range(0.48, 0.52), Range(0.1, 1), 0.01),
-      Range(1, 1))
+      (1, 1))
 
     self.assertEqual(ResistiveDivider._select_resistor(
       ResistiveDivider.E24_SERIES,
       Range(0.106, 0.111), Range(0.1, 1), 0.01),  # test E12
-      Range(8.2, 1))
+      (8.2, 1))
 
     self.assertEqual(ResistiveDivider._select_resistor(
       ResistiveDivider.E24_SERIES,
       Range(0.208, 0.215), Range(1, 10), 0.01),  # test E12
-      Range(8.2, 2.2))
+      (8.2, 2.2))
 
     self.assertEqual(ResistiveDivider._select_resistor(
       ResistiveDivider.E24_SERIES,
       Range(0.7241, 0.7321), Range(1, 10), 0.01),  # test E12 across decades
-      Range(5.6, 15))
+      (5.6, 15))
 
     self.assertEqual(ResistiveDivider._select_resistor(  # test impedance decade shift
       ResistiveDivider.E24_SERIES,
       Range(0, 1), Range(10, 100), 0.01),
-      Range(100, 100))
+      (100, 100))
 
     self.assertEqual(ResistiveDivider._select_resistor(  # test everything
       ResistiveDivider.E24_SERIES,
       Range(0.106, 0.111), Range(11, 99), 0.01),  # test E12
-      Range(820, 100))
+      (820, 100))

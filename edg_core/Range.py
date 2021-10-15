@@ -82,8 +82,8 @@ class Range:
 
   def __init__(self, lower: float, upper: float):
     assert lower <= upper, f"invalid range with lower {lower} > upper {upper}"
-    self.lower = lower
-    self.upper = upper
+    self.lower = float(lower)
+    self.upper = float(upper)
 
   def __eq__(self, other) -> bool:
     if not isinstance(other, Range):
