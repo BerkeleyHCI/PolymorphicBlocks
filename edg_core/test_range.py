@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from . import Range
@@ -43,3 +44,13 @@ class RangeTestCase(unittest.TestCase):
     self.assertTrue(Range.all() != Range(1.2, 5))
 
     self.assertTrue(Range(1.1, 5) * 2 == Range(2.2, 10))
+
+  def test_frequency(self) -> None:
+    """Tests (back-)calculating C from target w and R - so tolerancing flows from R and C to w
+    instead of w and R to C."""
+    R = Range(90, 110)
+    C = Range.from_tolerance(1e-6, 0.05)
+    w = 1 / (2 * math.pi * R * C)
+    solved = Range.cancel_multiply(1/(2*math.pi * R), 1/w)
+    self.assertTrue(math.isclose(C.lower, solved.lower))
+    self.assertTrue(math.isclose(C.upper, solved.upper))

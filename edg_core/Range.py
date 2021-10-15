@@ -40,7 +40,13 @@ class Range:
     THIS MAY RETURN AN EMPTY RANGE - for example, if the input tolerance is larger than the
     output tolerance (so no result would satisfy the original equiation).
     """
-    pass
+    assert isinstance(input_side, Range) and isinstance(output_side, Range)
+    assert input_side.lower >= 0 and input_side.upper >= 0, "TODO support negative values"
+    assert output_side.lower >= 0 and output_side.upper >= 0, "TODO support negative values"
+    lower = input_side.upper * output_side.lower
+    upper = input_side.lower * output_side.upper
+    assert lower <= upper, "TODO dedicated empty range construct"
+    return Range(lower, upper)
 
   @staticmethod
   def from_tolerance(center: float, tolerance: Union[float, Tuple[float, float]]) -> 'Range':
@@ -79,6 +85,11 @@ class Range:
     self.lower = lower
     self.upper = upper
 
+  def __eq__(self, other) -> bool:
+    if not isinstance(other, Range):
+      return False
+    return self.lower == other.lower and self.upper == other.upper
+
   def __contains__(self, item: Union['Range', float]) -> bool:
     """Return whether other range or float is contained (a subset of) this range."""
     if isinstance(item, (float, int)):
@@ -88,8 +99,14 @@ class Range:
     else:
       raise ValueError(f"unknown other {item}")
 
-  def __mul__(self, other: float) -> 'Range':
-    if isinstance(other, (float, int)):
+  def __mul__(self, other: Union['Range', float]) -> 'Range':
+    if isinstance(other, Range):
+      corners = [self.lower * other.lower,
+                 self.lower * other.upper,
+                 self.upper * other.lower,
+                 self.upper * other.upper]
+      return Range(min(corners), max(corners))
+    elif isinstance(other, (float, int)):
       if other >= 0:
         return Range(self.lower * other, self.upper * other)
       else:
@@ -97,7 +114,19 @@ class Range:
     else:
       return NotImplemented
 
-  def __eq__(self, other) -> bool:
-    if not isinstance(other, Range):
-      return False
-    return self.lower == other.lower and self.upper == other.upper
+  def __rmul__(self, other: float) -> 'Range':
+    if isinstance(other, (float, int)):
+      if other >= 0:
+        return Range(other * self.lower, other * self.upper)
+      else:
+        return Range(other * self.upper, other * self.lower)
+    else:
+      return NotImplemented
+
+  def __rtruediv__(self, other: float) -> 'Range':
+    assert (self.lower >= 0 and self.upper >= 0) or (self.lower <= 0 and self.upper <= 0), \
+      "TODO invert with range crossing zero not supported"
+    if isinstance(other, (float, int)):
+      return Range(other / self.upper, other / self.lower)
+    else:
+      return NotImplemented
