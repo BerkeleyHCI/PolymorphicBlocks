@@ -137,8 +137,16 @@ class Range:
     else:
       return NotImplemented
 
-  def __truediv__(self, other: float) -> 'Range':
-    if isinstance(other, (float, int)):
+  def __truediv__(self, other: Union['Range', float]) -> 'Range':
+    if isinstance(other, Range):
+      assert (self.lower >= 0 and self.upper >= 0) or (self.lower <= 0 and self.upper <= 0), \
+        "TODO invert with range crossing zero not supported"
+      corners = [self.lower / other.lower,
+                 self.lower / other.upper,
+                 self.upper / other.lower,
+                 self.upper / other.upper]
+      return Range(min(corners), max(corners))
+    elif isinstance(other, (float, int)):
       if other >= 0:
         return Range(self.lower / other, self.upper / other)
       else:
