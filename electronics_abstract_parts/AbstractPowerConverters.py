@@ -123,9 +123,6 @@ class DiscreteBuckConverter(BuckConverter):
     # This range must be constructed manually to not double-count the tolerance stackup of the voltages
     inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (ripple_current.upper * frequency.lower * input_voltage.upper))
-    # if ripple_current.lower == 0:
-    #   inductance_max = float('inf')
-    # else:
     inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (ripple_current.upper * frequency.lower / input_voltage.upper))
     inductance = Range(inductance_min, inductance_max)
