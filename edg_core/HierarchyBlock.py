@@ -22,7 +22,7 @@ def init_in_parent(fn: InitType) -> InitType:
   import inspect
   from .Builder import builder
 
-  param_types = (bool, float, int, tuple, str, Range, ConstraintExpr)
+  param_types = (bool, float, int, Range, tuple, str, ConstraintExpr)
   float_like_types = (float, int, FloatExpr)
 
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
@@ -58,7 +58,7 @@ def init_in_parent(fn: InitType) -> InitType:
               param_model: ConstraintExpr = BoolExpr(arg_val)
             elif isinstance(arg_default, (float, int, FloatExpr)):
               param_model = FloatExpr(arg_val)
-            elif isinstance(arg_default, (RangeExpr, Range)) or (isinstance(arg_default, tuple) and
+            elif isinstance(arg_default, (Range, RangeExpr)) or (isinstance(arg_default, tuple) and
                 isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
               param_model = RangeExpr(arg_val)
             elif isinstance(arg_default, (str, StringExpr)):

@@ -9,17 +9,20 @@ class Range:
   @staticmethod
   def cancel_multiply(input_side: 'Range', output_side: 'Range') -> 'Range':
     """
+    This satisfies the property, for Range x:
+    cancel_multiply(x, 1/x) = Range(1, 1)
+
     Range multiplication is weird and 1/x * x does not cancel out, because it's tolerance-expanding.
     Using the RC frequency example, w = 1/(2 pi R C), which solves for the output and tolerances of w
     given R and C (with tolerances), if we want instead solve for C given R and target w,
     we can't simply do C = 1/(2 pi R w) - which would be tolerance-expanding from R and w to C.
 
-    To understand why, it helps to break ranges into vectors:
+    To understand why, it helps to break ranges into tuples:
 
     [w_max  = 1/2pi * [1/R_min  * [1/C_min
      w_min]            1/R_max]    1/C_max]
 
-    Note that to cancel the vectors (so they equal [1, 1], we need to invert the vector components
+    Note that to cancel the tuples (so they equal [1, 1], we need to invert the components
     without flipping the order. For example, to move the C to the left side, we need to multiply
     both sides by:
 

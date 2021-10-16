@@ -45,6 +45,10 @@ class RangeTestCase(unittest.TestCase):
 
     self.assertTrue(Range(1.1, 5) * 2 == Range(2.2, 10))
 
+  def test_cancel_property(self) -> None:
+    range1 = Range(10, 20)
+    self.assertEqual(Range.cancel_multiply(range1, 1/range1), Range(1, 1))
+
   def test_frequency(self) -> None:
     """Tests (back-)calculating C from target w and R - so tolerancing flows from R and C to w
     instead of w and R to C."""
