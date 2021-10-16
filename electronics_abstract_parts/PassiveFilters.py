@@ -28,7 +28,7 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
     # cutoff frequency is 1/(2 pi R C)
     capacitance = Range.cancel_multiply(1 / (2 * pi * impedance), 1 / cutoff_freq)
 
-    self.c = self.Block(Capacitor(capacitance=capacitance * Farad, voltage=self.voltage))
+    self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
     self.connect(self.r.b, self.c.pos, self.output)  # TODO support negative voltages?
     self.connect(self.c.neg, self.gnd)

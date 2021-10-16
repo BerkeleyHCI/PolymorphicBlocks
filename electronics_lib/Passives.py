@@ -42,8 +42,7 @@ def choose_preferred_number(range: Range, tolerance: float, series: List[float],
     for power in powers:
       pow10_mult = math.pow(10, power)
       value_mult = round_sig(value * pow10_mult, sig)  # this prevents floating point weirdness, eg 819.999
-      value_tol = value_mult * tolerance
-      if value_mult - value_tol >= range.lower and value_mult + value_tol <= range.upper:
+      if Range.from_tolerance(value_mult, tolerance) in range:
         return value_mult
 
   return None
@@ -74,7 +73,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     value = choose_preferred_number(resistance, self.TOLERANCE, self.E24_SERIES_ZIGZAG, 2)
 
     if value is None:  # failed to find a preferred resistor, choose the center within tolerance
-      center = (resistance.lower + resistance.upper) / 2
+      center = resistance.center()
       min_tolerance = center * self.TOLERANCE
       if (center - resistance.lower) < min_tolerance or (resistance.upper - center < min_tolerance):
         # TODO should there be a better way of communicating generator failures?
@@ -416,10 +415,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     if num_caps > 1:
       assert num_caps * self.SINGLE_CAP_MAX < nominal_capacitance.upper, "can't generate parallel caps within max capacitance limit"
 
-      self.assign(self.selected_nominal_capacitance, (
-        num_caps * nominal_capacitance.lower,
-        num_caps * nominal_capacitance.upper,
-      ))
+      self.assign(self.selected_nominal_capacitance, num_caps * nominal_capacitance)
 
       if footprint_spec == "":
         split_package = self.MAX_CAP_PACKAGE

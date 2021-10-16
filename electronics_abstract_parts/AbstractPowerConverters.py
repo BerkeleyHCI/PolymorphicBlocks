@@ -124,14 +124,14 @@ class DiscreteBuckConverter(BuckConverter):
     inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (ripple_current.upper * frequency.lower * input_voltage.upper))
     inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (ripple_current.upper * frequency.lower / input_voltage.upper))
+                      (ripple_current.lower * frequency.lower * input_voltage.upper))
     inductance = Range(inductance_min, inductance_max)
 
     # TODO size based on transient response, add to voltage tolerance stackups
     output_capacitance = Range.from_lower(ripple_current.upper / (8 * frequency.lower * spec_output_ripple))
     # TODO pick a single worst-case DC
     input_capacitance = Range.from_lower(output_current_max * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
-                                         (frequency.lower / spec_input_ripple))
+                                         (frequency.lower * spec_input_ripple))
 
     sw_current_max = output_current_max + ripple_current.upper / 2
 
