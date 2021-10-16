@@ -58,3 +58,16 @@ class RangeTestCase(unittest.TestCase):
     solved = Range.cancel_multiply(1/(2*math.pi * R), 1/w)
     self.assertTrue(math.isclose(C.lower, solved.lower))
     self.assertTrue(math.isclose(C.upper, solved.upper))
+
+  def test_bound(self) -> None:
+    """Tests (back-)calculating C from target w and R - so tolerancing flows from R and C to w
+    instead of w and R to C."""
+    self.assertEqual(Range(0, 1).bound_to(Range(0.5, 1.5)),
+                     Range(0.5, 1))
+    self.assertEqual(Range(0, 1).bound_to(Range(-0.5, 0.5)),
+                     Range(0, 0.5))
+
+    self.assertEqual(Range(0, 1).bound_to(Range(10, 20)),
+                     Range(10, 10))
+    self.assertEqual(Range(0, 1).bound_to(Range(-20, -10)),
+                     Range(-10, -10))

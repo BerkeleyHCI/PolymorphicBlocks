@@ -103,7 +103,7 @@ class Range:
     elif isinstance(item, Range):
       return self.lower <= item.lower and item.upper <= self.upper
     else:
-      raise ValueError(f"unknown other {item}")
+      return NotImplemented
 
   def intersects(self, other: 'Range') -> bool:
     return (self.upper >= other.lower) and (self.lower <= other.upper)
@@ -148,8 +148,7 @@ class Range:
 
   def __truediv__(self, other: Union['Range', float]) -> 'Range':
     if isinstance(other, Range):
-      assert (self.lower >= 0 and self.upper >= 0) or (self.lower <= 0 and self.upper <= 0), \
-        "TODO invert with range crossing zero not supported"
+      assert other.lower >= 0 or other.upper <= 0, "TODO invert with range crossing zero not supported"
       corners = [self.lower / other.lower,
                  self.lower / other.upper,
                  self.upper / other.lower,
@@ -164,8 +163,7 @@ class Range:
       return NotImplemented
 
   def __rtruediv__(self, other: float) -> 'Range':
-    assert (self.lower >= 0 and self.upper >= 0) or (self.lower <= 0 and self.upper <= 0), \
-      "TODO invert with range crossing zero not supported"
+    assert self.lower >= 0 or self.upper <= 0, "TODO invert with range crossing zero not supported"
     if isinstance(other, (float, int)):
       return Range(other / self.upper, other / self.lower)
     else:
@@ -176,3 +174,23 @@ class Range:
       return Range(self.lower, new_upper)
     else:
       return self
+
+  def bound_to(self, bounds: 'Range') -> 'Range':
+    """Adjusts this range to be within the input bounds.
+    If the ranges intersect, returns the intersection.
+    If the ranges do not intersect, returns the point at the closer edge of the bounds."""
+    if self.lower < bounds.lower:
+      new_lower = bounds.lower
+    elif self.lower > bounds.upper:
+      new_lower = bounds.upper
+    else:
+      new_lower = self.lower
+
+    if self.upper < bounds.lower:
+      new_upper = bounds.lower
+    elif self.upper > bounds.upper:
+      new_upper = bounds.upper
+    else:
+      new_upper = self.upper
+
+    return Range(new_lower, new_upper)

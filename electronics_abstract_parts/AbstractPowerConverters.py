@@ -113,8 +113,7 @@ class DiscreteBuckConverter(BuckConverter):
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
     self.require(self.dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
     # these are actual numbers to be used in calculations
-    effective_dutycycle = Range(max(dutycycle_limit.lower, dutycycle.lower),
-                                min(dutycycle_limit.upper, dutycycle.upper))
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
     ripple_current = (output_current_max * ripple_factor).extend_upper_to(
       rated_max_current_amps * ripple_factor.lower  # see LMR33630 datasheet, use rating if current draw much lower
@@ -216,8 +215,7 @@ class DiscreteBoostConverter(BoostConverter):
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
     self.require(self.dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
     # these are actual numbers to be used in calculations
-    effective_dutycycle = Range(max(dutycycle_limit.lower, dutycycle.lower),
-                                min(dutycycle_limit.upper, dutycycle.upper))
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
     ripple_current = (output_current_max * ripple_factor).extend_upper_to(
       rated_max_current_amps * ripple_factor.lower  # see LMR33630 datasheet, use rating if current draw much lower
