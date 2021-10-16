@@ -94,7 +94,7 @@ class Range:
     return self.lower == other.lower and self.upper == other.upper
 
   def center(self) -> float:
-    return self.lower + self.upper / 2
+    return (self.lower + self.upper) / 2
 
   def __contains__(self, item: Union['Range', float]) -> bool:
     """Return whether other range or float is contained (a subset of) this range."""

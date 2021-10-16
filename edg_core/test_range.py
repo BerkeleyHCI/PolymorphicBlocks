@@ -43,7 +43,9 @@ class RangeTestCase(unittest.TestCase):
     self.assertTrue(Range.all() == Range.all())
     self.assertTrue(Range.all() != Range(1.2, 5))
 
-    self.assertTrue(Range(1.1, 5) * 2 == Range(2.2, 10))
+    self.assertEqual(Range(1.1, 5) * 2, Range(2.2, 10))
+
+    self.assertEqual(Range(1, 5).center(), 3)
 
   def test_intersect(self) -> None:
     self.assertTrue(Range(-1, 2).intersects(Range(2, 3)))
