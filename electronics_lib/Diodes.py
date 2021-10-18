@@ -68,8 +68,8 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
                    self.reverse_recovery_time)
     # TODO: also support optional part and footprint name
 
-  def select_part(self, reverse_voltage: RangeVal, current: RangeVal, voltage_drop: RangeVal,
-                  reverse_recovery_time: RangeVal) -> None:
+  def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
+                  reverse_recovery_time: Range) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
     parts = self.product_table.filter(RangeContains(Column('Vr,max'), Lit(reverse_voltage))) \
       .filter(RangeContains(Column('I,max'), Lit(current))) \
@@ -177,7 +177,7 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
     self.selected_zener_voltage = self.Parameter(RangeExpr())
     self.selected_forward_voltage_drop = self.Parameter(RangeExpr())
 
-  def select_part(self, zener_voltage: RangeVal, forward_voltage_drop: RangeVal) -> None:
+  def select_part(self, zener_voltage: Range, forward_voltage_drop: Range) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
     parts = self.product_table.filter(RangeContains(Column('Vz'), Lit(zener_voltage))) \
       .filter(RangeContains(Lit(forward_voltage_drop), Column('Vf,max'))) \

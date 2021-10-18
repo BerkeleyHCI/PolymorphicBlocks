@@ -85,5 +85,5 @@ class BlockProtoTestCase(unittest.TestCase):
 
   def test_param_init(self) -> None:
     self.assertEqual(
-      edgir.AssignLit(['range_init'], (-4.2, -1.3)),
+      edgir.AssignLit(['range_init'], Range(-4.2, -1.3)),
       self.pb.constraints["(init)range_init"])

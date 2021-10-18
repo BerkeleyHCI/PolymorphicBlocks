@@ -113,7 +113,7 @@ class NetlistCollect(TransformUtil.Transform):
 
       # Uncomment one to set refdes type
       # TODO this should be a user flag
-      # self.names[path] = TransformUtil.Path.empty().append_block(vals['refdes_prefix'] + str(refdes_id))
+      # self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
       self.names[path] = self.short_paths[path]
 
       for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
