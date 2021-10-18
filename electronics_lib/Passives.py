@@ -30,10 +30,10 @@ def zigzag_range(start: int, end: int) -> Sequence[int]:
 def round_sig(x: float, sig: int) -> float:
   return round(x, sig-int(math.floor(math.log10(abs(x))))-1)
 
-def choose_preferred_number(range: Tuple[float, float], tolerance: float, series: List[float], sig: int) ->\
+def choose_preferred_number(range: Range, tolerance: float, series: List[float], sig: int) ->\
     Optional[float]:
-  lower_pow10 = math.floor(math.log10(range[0]))
-  upper_pow10 = math.ceil(math.log10(range[1]))
+  lower_pow10 = math.floor(math.log10(range.lower))
+  upper_pow10 = math.ceil(math.log10(range.upper))
 
   powers = zigzag_range(lower_pow10, upper_pow10)  # prefer the center power first, then zigzag away from it
   # TODO given the tolerance we can actually bound this further
@@ -42,8 +42,7 @@ def choose_preferred_number(range: Tuple[float, float], tolerance: float, series
     for power in powers:
       pow10_mult = math.pow(10, power)
       value_mult = round_sig(value * pow10_mult, sig)  # this prevents floating point weirdness, eg 819.999
-      value_tol = value_mult * tolerance
-      if value_mult - value_tol >= range[0] and value_mult + value_tol <= range[1]:
+      if Range.from_tolerance(value_mult, tolerance) in range:
         return value_mult
 
   return None
@@ -70,22 +69,22 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
   exact value at 1%.
   If below 1% tolerance is needed, fails. TODO: non-preferentially pick tolerances down to 0.1%, though pricey!
   Picks the minimum (down to 0603, up to 2512) SMD size for the power requirement. TODO: consider PTH types"""
-  def select_resistor(self, resistance: RangeVal, power: RangeVal, footprint_spec: str) -> None:
+  def select_resistor(self, resistance: Range, power: Range, footprint_spec: str) -> None:
     value = choose_preferred_number(resistance, self.TOLERANCE, self.E24_SERIES_ZIGZAG, 2)
 
     if value is None:  # failed to find a preferred resistor, choose the center within tolerance
-      center = (resistance[0] + resistance[1]) / 2
+      center = resistance.center()
       min_tolerance = center * self.TOLERANCE
-      if (center - resistance[0]) < min_tolerance or (resistance[1] - center < min_tolerance):
+      if (center - resistance.lower) < min_tolerance or (resistance.upper - center < min_tolerance):
         # TODO should there be a better way of communicating generator failures?
         raise ValueError(f"Cannot generate 1% resistor within {resistance}")
       value = center
 
     # TODO we only need the first really so this is a bit inefficient
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
-                         if package_power >= power[1] and (not footprint_spec or package == footprint_spec)]
+                         if package_power >= power.upper and (not footprint_spec or package == footprint_spec)]
     if not suitable_packages:
-      raise ValueError(f"Cannot find suitable package for resistor needing {power[1]} W power")
+      raise ValueError(f"Cannot find suitable package for resistor needing {power.upper} W power")
 
     self.assign(self.resistance, value * Ohm(tol=self.TOLERANCE))
     self.assign(self.selected_power_rating, suitable_packages[0][0])
@@ -203,11 +202,11 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
   }
 
-  def select_capacitor(self, capacitance: RangeVal, voltage: RangeVal,
-                       single_nominal_capacitance: RangeVal,
+  def select_capacitor(self, capacitance: Range, voltage: Range,
+                       single_nominal_capacitance: Range,
                        part_spec: str, footprint_spec: str) -> None:
     def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
-      if voltage[1] < 3.6:  # x-intercept at 3.6v
+      if voltage.upper < 3.6:  # x-intercept at 3.6v
         return row['capacitance']
       if (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
         return row['capacitance']
@@ -215,11 +214,11 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
         return (0, 0)  # can't derate, generate obviously bogus and ignored value
       voltco = self.DERATE_VOLTCO[row['footprint']]
       return (
-        row['capacitance'][0] * (1 - voltco * (voltage[1] - 3.6)),
-        row['capacitance'][1] * (1 - voltco * (voltage[0] - 3.6))
+        row['capacitance'][0] * (1 - voltco * (voltage.upper - 3.6)),
+        row['capacitance'][1] * (1 - voltco * (voltage.lower - 3.6))
       )
 
-    single_cap_max = single_nominal_capacitance[1]
+    single_cap_max = single_nominal_capacitance.upper
 
     parts = self.product_table \
       .filter(Implication(  # enforce minimum package size by capacitance
@@ -263,14 +262,14 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
         value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
         datasheet=part['Datasheets']
       )
-    elif capacitance[1] >= single_cap_max:
+    elif capacitance.upper >= single_cap_max:
       parts = parts.sort(Column('Unit Price (USD)')) \
         .sort(Column('footprint')) \
         .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
       part = parts.first(err=f"no parallel capacitors in ({capacitance}) F")
 
-      num_caps = math.ceil(capacitance[0] / part['derated_capacitance'][0])
-      assert num_caps * part['derated_capacitance'][1] < capacitance[1], "can't generate parallel caps within max capacitance limit"
+      num_caps = math.ceil(capacitance.lower / part['derated_capacitance'][0])
+      assert num_caps * part['derated_capacitance'][1] < capacitance.upper, "can't generate parallel caps within max capacitance limit"
 
       self.assign(self.selected_capacitance, (
         num_caps * part['capacitance'][0],
@@ -383,7 +382,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     ),
   ]
 
-  def select_capacitor_no_prod_table(self, capacitance: RangeVal, voltage: RangeVal,
+  def select_capacitor_no_prod_table(self, capacitance: Range, voltage: Range,
                                      footprint_spec: str, derating_coeff: float) -> None:
     """
     Selects a generic capacitor without using product tables
@@ -396,7 +395,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
 
-    def select_package(nominal_capacitance: float, voltage: RangeVal) -> Optional[str]:
+    def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
 
       if footprint_spec == "":
         package_options = self.PACKAGE_SPECS
@@ -406,20 +405,17 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       for package in package_options:
         if package.max >= nominal_capacitance:
             for package_max_voltage, package_max_capacitance in package.vc_pairs.items():
-              if package_max_voltage >= voltage[1] and package_max_capacitance >= nominal_capacitance:
+              if package_max_voltage >= voltage.upper and package_max_capacitance >= nominal_capacitance:
                 return package.name
       return None
 
-    nominal_capacitance = (capacitance[0] / derating_coeff, capacitance[1] / derating_coeff)
+    nominal_capacitance = capacitance / derating_coeff
 
-    num_caps = math.ceil(nominal_capacitance[0] / self.SINGLE_CAP_MAX)
+    num_caps = math.ceil(nominal_capacitance.lower / self.SINGLE_CAP_MAX)
     if num_caps > 1:
-      assert num_caps * self.SINGLE_CAP_MAX < nominal_capacitance[1], "can't generate parallel caps within max capacitance limit"
+      assert num_caps * self.SINGLE_CAP_MAX < nominal_capacitance.upper, "can't generate parallel caps within max capacitance limit"
 
-      self.assign(self.selected_nominal_capacitance, (
-        num_caps * nominal_capacitance[0],
-        num_caps * nominal_capacitance[1],
-      ))
+      self.assign(self.selected_nominal_capacitance, num_caps * nominal_capacitance)
 
       if footprint_spec == "":
         split_package = self.MAX_CAP_PACKAGE
@@ -461,14 +457,14 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
     self.footprint_spec = self.Parameter(StringExpr(footprint_spec))
     self.generator(self.select_capacitor, self.capacitance, self.footprint_spec)
 
-  def select_capacitor(self, capacitance: RangeVal, footprint_spec: str) -> None:
+  def select_capacitor(self, capacitance: Range, footprint_spec: str) -> None:
     self.footprint(
       'C', footprint_spec,
       {
         '1': self.pos,
         '2': self.neg,
       },
-      value=f'{UnitUtils.num_to_prefix(capacitance[0], 3)}F'
+      value=f'{UnitUtils.num_to_prefix(capacitance.lower, 3)}F'
     )
 
 def generate_inductor_table(TABLES: List[str]) -> ProductTable:
@@ -535,7 +531,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
     self.selected_current_rating = self.Parameter(RangeExpr())
     self.selected_frequency_rating = self.Parameter(RangeExpr())
 
-  def select_inductor(self, inductance: RangeVal, current: RangeVal, frequency: RangeVal,
+  def select_inductor(self, inductance: Range, current: Range, frequency: Range,
                part_spec: str, footprint_spec: str) -> None:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
     parts = self.product_table.filter(RangeContains(Lit(inductance), Column('inductance'))) \

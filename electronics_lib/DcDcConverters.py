@@ -30,8 +30,8 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
     )
 
 class Tps61023(DiscreteBoostConverter, GeneratorBlock):
-
   VALLEY_SWITCH_CURRENT_LIMIT = 3.7
+  DUTYCYCLE_MIN_LIMIT = 0.0  # goes into PFM at light load
 
   def contents(self):
     super().contents()
@@ -57,9 +57,9 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
                    targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
 
-  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
-                         output_current: RangeVal, frequency: RangeVal,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+  def generate_converter(self, input_voltage: Range, output_voltage: Range,
+                         output_current: Range, frequency: Range,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range) -> None:
     self.ic = self.Block(Tps61023_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -73,7 +73,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
 
     self._generate_converter(self.ic.sw, self.VALLEY_SWITCH_CURRENT_LIMIT,
                              input_voltage=input_voltage, output_voltage=output_voltage,
-                             output_current_max=output_current[1], frequency=frequency,
+                             output_current_max=output_current.upper, frequency=frequency,
                              spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                              ripple_factor=ripple_factor)
 
@@ -138,9 +138,9 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
-  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
-                         output_current: RangeVal, frequency: RangeVal,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+  def generate_converter(self, input_voltage: Range, output_voltage: Range,
+                         output_current: Range, frequency: Range,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range) -> None:
     self.ic = self.Block(Tps561201_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -162,7 +162,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 1.2,
                                             input_voltage=input_voltage, output_voltage=output_voltage,
-                                            output_current_max=output_current[1], frequency=frequency,
+                                            output_current_max=output_current.upper, frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
 
@@ -238,9 +238,9 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
-  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
-                         output_current: RangeVal, frequency: RangeVal,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+  def generate_converter(self, input_voltage: Range, output_voltage: Range,
+                         output_current: Range, frequency: Range,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range) -> None:
     self.ic = self.Block(Tps54202h_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -268,7 +268,7 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     # TODO dedup across all converters
     inductor_out = self._generate_converter(self.ic.sw, 2,
                                             input_voltage=input_voltage, output_voltage=output_voltage,
-                                            output_current_max=output_current[1], frequency=frequency,
+                                            output_current_max=output_current.upper, frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
 
@@ -357,9 +357,9 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
-  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
-                         output_current: RangeVal, frequency: RangeVal,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+  def generate_converter(self, input_voltage: Range, output_voltage: Range,
+                         output_current: Range, frequency: Range,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range) -> None:
     self.ic = self.Block(Lmr33630_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -390,7 +390,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
 
     inductor_out = self._generate_converter(self.ic.sw, 3.0,
                                             input_voltage=input_voltage, output_voltage=output_voltage,
-                                            output_current_max=output_current[1], frequency=frequency,
+                                            output_current_max=output_current.upper, frequency=frequency,
                                             spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                                             ripple_factor=ripple_factor)
     self.connect(self.pwr_out, inductor_out.as_voltage_source(
@@ -458,9 +458,9 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
                    targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
 
 
-  def generate_converter(self, input_voltage: RangeVal, output_voltage: RangeVal,
-                         output_current: RangeVal, frequency: RangeVal,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal) -> None:
+  def generate_converter(self, input_voltage: Range, output_voltage: Range,
+                         output_current: Range, frequency: Range,
+                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range) -> None:
     self.ic = self.Block(Ap3012_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -487,6 +487,6 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
 
     self._generate_converter(self.ic.sw, 0.5,
                              input_voltage=input_voltage, output_voltage=output_voltage,
-                             output_current_max=output_current[1], frequency=frequency,
+                             output_current_max=output_current.upper, frequency=frequency,
                              spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
                              ripple_factor=ripple_factor)

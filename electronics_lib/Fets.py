@@ -24,8 +24,8 @@ def generate_fet_table(TABLES: List[str]) -> ProductTable:
                     RangeFromUpper(ParseValue(Column('Current - Continuous Drain (Id) @ 25°C'), 'A')),
                     missing='discard') \
     .derived_column('Vgs',
-                    Range(ParseValue(Column('Drive Voltage (Max Rds On,  Min Rds On)'), 'V'),
-                          ParseValue(Column('Vgs (Max)'), 'V')),
+                    MakeRange(ParseValue(Column('Drive Voltage (Max Rds On,  Min Rds On)'), 'V'),
+                              ParseValue(Column('Vgs (Max)'), 'V')),
                     missing='discard') \
     .derived_column('Rds,max',
                     RangeFromUpper(ParseValue(Column('Rds On (Max) @ Id, Vgs'), 'Ohm'), lower=0),
@@ -63,8 +63,8 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
                    self.drain_voltage, self.drain_current,
                    self.gate_voltage, self.rds_on, self.gate_charge, self.power)
 
-  def select_part(self, drain_voltage: RangeVal, drain_current: RangeVal,
-                  gate_voltage: RangeVal, rds_on: RangeVal, gate_charge: RangeVal, power: RangeVal) -> None:
+  def select_part(self, drain_voltage: Range, drain_current: Range,
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
     parts = self.product_table.filter(RangeContains(Column('Vds,max'), Lit(drain_voltage))) \
       .filter(RangeContains(Column('Ids,max'), Lit(drain_current))) \
       .filter(RangeContains(Column('Vgs'), Lit(gate_voltage))) \
@@ -152,13 +152,13 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):  # TODO dedup w/ 
                    self.drain_voltage, self.drain_current,
                    self.gate_voltage, self.rds_on, self.gate_charge, self.power)
 
-  def select_part(self, frequency: RangeVal, drive_current: RangeVal,
-                  drain_voltage: RangeVal, drain_current: RangeVal,
-                  gate_voltage: RangeVal, rds_on: RangeVal, gate_charge: RangeVal, power: RangeVal) -> None:
-    i_max = drain_current[1]
-    v_max = drain_voltage[1]
-    gate_drive_rise, gate_drive_fall = drive_current[1], -drive_current[0]
-    f_max = frequency[1]
+  def select_part(self, frequency: Range, drive_current: Range,
+                  drain_voltage: Range, drain_current: Range,
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
+    i_max = drain_current.upper
+    v_max = drain_voltage.upper
+    gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower
+    f_max = frequency.upper
     assert gate_drive_rise > 0 and gate_drive_fall > 0, \
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
 

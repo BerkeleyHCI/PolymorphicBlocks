@@ -10,6 +10,7 @@ from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
 from .Binding import ParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
+from .Range import Range
 from .Exception import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -21,7 +22,7 @@ def init_in_parent(fn: InitType) -> InitType:
   import inspect
   from .Builder import builder
 
-  param_types = (bool, float, int, tuple, str, ConstraintExpr)
+  param_types = (bool, float, int, Range, tuple, str, ConstraintExpr)
   float_like_types = (float, int, FloatExpr)
 
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
@@ -57,7 +58,7 @@ def init_in_parent(fn: InitType) -> InitType:
               param_model: ConstraintExpr = BoolExpr(arg_val)
             elif isinstance(arg_default, (float, int, FloatExpr)):
               param_model = FloatExpr(arg_val)
-            elif isinstance(arg_default, RangeExpr) or (isinstance(arg_default, tuple) and
+            elif isinstance(arg_default, (Range, RangeExpr)) or (isinstance(arg_default, tuple) and
                 isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
               param_model = RangeExpr(arg_val)
             elif isinstance(arg_default, (str, StringExpr)):
@@ -550,7 +551,7 @@ class GeneratorBlock(Block):
     if isinstance(param, FloatExpr):
       assert isinstance(value, Number), f"get({self._name_of(param)}) expected float, got {value}"
     elif isinstance(param, RangeExpr):
-      assert isinstance(value[0], Number) and isinstance(value[1], Number), f"get({self._name_of(param)}) expected range, got {value}"
+      assert isinstance(value, Range), f"get({self._name_of(param)}) expected range, got {value}"
     elif isinstance(param, BoolExpr):
       assert isinstance(value, bool), f"get({self._name_of(param)}) expected bool, got {value}"
     elif isinstance(param, StringExpr):

@@ -13,6 +13,7 @@ from .Binding import ReductionOp, BinaryNumOp, BinaryBoolOp
 from .Builder import builder
 from .Core import Refable
 from .IdentityDict import IdentityDict
+from .Range import Range
 
 if TYPE_CHECKING:
   from .Ports import BasePort
@@ -287,17 +288,18 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
 
 
 RangeLit = Tuple[FloatLit, FloatLit]
-RangeLike = Union['RangeExpr', Tuple[FloatLike, FloatLike], FloatLike]
-class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
+# A RangeLike type excluding the float-to-range implicit conversion
+RangeLikeNonFloat = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
+RangeLike = Union[RangeLikeNonFloat, FloatLike]
+class RangeExpr(NumLikeExpr[Range, RangeLike]):
   # Some range literals for defaults
-  POSITIVE = (0.0, float('inf'))
-  NEGATIVE = (float('-inf'), 0.0)
-  ALL = (float('-inf'), float('inf'))
-  INF = (float('inf'), float('inf'))
-  ZERO = (0.0, 0.0)
-  EMPTY_ZERO = (0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
-  EMPTY_DIT = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
-  EMPTY_ALL = (float('-inf'), float('inf'))  # PLACEHOLDER, for a proper "empty" range type in future
+  POSITIVE: RangeLikeNonFloat = Range.from_lower(0.0)
+  NEGATIVE: RangeLikeNonFloat = Range.from_upper(0.0)
+  ALL: RangeLikeNonFloat = Range.all()
+  INF: RangeLikeNonFloat = Range(float('inf'), float('inf'))
+  ZERO: RangeLikeNonFloat = (0.0, 0.0)
+  EMPTY_ZERO: RangeLikeNonFloat = (0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
+  EMPTY_DIT: RangeLikeNonFloat = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
 
   def __init__(self, initializer: Optional[RangeLike] = None):
     # must cast non-empty initializer type, because range supports wider initializers
@@ -318,7 +320,9 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
       return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
     elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
       assert len(input) == 2
-      return RangeExpr()._bind(RangeLiteralBinding((input[0], input[1])))
+      return RangeExpr()._bind(RangeLiteralBinding(Range(input[0], input[1])))
+    elif isinstance(input, Range):
+      return RangeExpr()._bind(RangeLiteralBinding(input))
     elif isinstance(input, tuple):
       assert len(input) == 2
       return RangeExpr()._bind(RangeBuilderBinding(
@@ -345,7 +349,7 @@ class RangeExpr(NumLikeExpr[Tuple[float, float], RangeLike]):
     return self._create_bool_op(self, RangeExpr._to_expr_type(item), BinaryBoolOp.subset)
 
   def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
-    if isinstance(item, (RangeExpr, tuple)):
+    if isinstance(item, (RangeExpr, tuple, Range)):
       return RangeExpr._to_expr_type(item).within(self)
     elif isinstance(item, (int, float, FloatExpr)):
       return self._create_bool_op(FloatExpr._to_expr_type(item), self, BinaryBoolOp.subset)
@@ -489,13 +493,15 @@ class LiteralConstructor:
   def __rmul__(self, other: FloatLike) -> FloatExpr: ...
   # can't use RangeLike directly because it overlaps with FloatLike
   @overload
-  def __rmul__(self, other: Union[RangeExpr, Tuple[FloatLike, FloatLike]]) -> RangeExpr: ...
+  def __rmul__(self, other: RangeLikeNonFloat) -> RangeExpr: ...
 
   def __rmul__(self, other: Union[FloatLike, RangeLike]) -> Union[FloatExpr, RangeExpr]:
     if isinstance(other, (int, float)):
       return FloatExpr._to_expr_type(other * self.scale)
+    elif isinstance(other, Range):
+      return RangeExpr._to_expr_type(other * self.scale)
     elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
-      return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
+      return RangeExpr._to_expr_type(Range(other[0], other[1]) * self.scale)
     else:
       raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
 

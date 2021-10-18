@@ -26,7 +26,7 @@ class TestParameterConstProp(Block):
     self.assign(self.float_const, 2.0)
     self.assign(self.float_param, self.float_const)
 
-    self.assign(self.range_const, (1.0, 42.0))
+    self.assign(self.range_const, Range(1.0, 42.0))
     self.assign(self.range_param, self.range_const)
 
     self.block = self.Block(TestConstPropInternal())
@@ -43,8 +43,8 @@ class ConstPropTestCase(unittest.TestCase):
     self.assertEqual(self.compiled.get_value(['block', 'float_param']), 2.0)
 
   def test_range_prop(self) -> None:
-    self.assertEqual(self.compiled.get_value(['range_const']), (1.0, 42.0))
-    self.assertEqual(self.compiled.get_value(['block', 'range_param']), (1.0, 42.0))
+    self.assertEqual(self.compiled.get_value(['range_const']), Range(1.0, 42.0))
+    self.assertEqual(self.compiled.get_value(['block', 'range_param']), Range(1.0, 42.0))
 
 
 class TestPortConstPropLink(Link):

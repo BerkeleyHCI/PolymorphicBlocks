@@ -150,7 +150,7 @@ class TestGeneratorConnect(unittest.TestCase):
 
     self.assertEqual(compiled.get_value(['generator', 'connected']), True)
     self.assertEqual(compiled.get_value(['link', 'source_float']), 2.0)
-    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (0.5, 2.5))
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), Range(0.5, 2.5))
 
   def test_generator_not_connected(self):
     compiled = ScalaCompiler.compile(TestGeneratorNotConnectedTop)
@@ -161,7 +161,7 @@ class TestGeneratorConnect(unittest.TestCase):
     compiled = ScalaCompiler.compile(TestGeneratorInnerConnectTop)
 
     self.assertEqual(compiled.get_value(['link', 'source_float']), 4.5)
-    self.assertEqual(compiled.get_value(['link', 'sinks_range']), (1.5, 3.5))
+    self.assertEqual(compiled.get_value(['link', 'sinks_range']), Range(1.5, 3.5))
 
 
 class TestGeneratorException(BaseException):
