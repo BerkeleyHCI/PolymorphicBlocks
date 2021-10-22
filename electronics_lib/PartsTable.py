@@ -4,6 +4,7 @@ from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict
   Tuple
 import itertools
 import re
+import csv
 
 
 PartsTableColumnType = TypeVar('PartsTableColumnType')
@@ -41,8 +42,18 @@ class PartsTable:
   Optimization TODO: could probably significantly (~2x) improve performance using not-dicts
   https://www.districtdatalabs.com/simple-csv-data-wrangling-with-python
   """
+  @classmethod
+  def from_csv_files(cls, csv_names: List[str], encoding='utf-8') -> 'PartsTable':
+    dict_rows = []
+    for filename in csv_names:
+      with open(filename, newline='', encoding=encoding) as csvfile:
+        reader = csv.DictReader(csvfile)
+        dict_rows.extend([row for row in reader])
+    return cls.from_dict_rows(dict_rows)
+
+
   @staticmethod
-  def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[OrderedDict[str, str]]]):
+  def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[OrderedDict[str, str]]]) -> 'PartsTable':
     """Creates a parts table from dict rows, such as parsed by csv.DictReader.
     Checks to make sure all incoming rows are dense (have all cells)."""
     all_dict_rows = list(itertools.chain(*dict_rowss))
@@ -91,7 +102,8 @@ class PartsTable:
       new_rows.append(PartsTableRow(new_row_dict))
     return PartsTable(new_rows)
 
-  def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int]], reverse: bool = False) -> PartsTable:
+  # TODO this should support Comparable, but that's not a builtin protocol :(
+  def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int, str]], reverse: bool = False) -> PartsTable:
     """Creates a new table view (shallow copy) with rows sorted in some order."""
     new_rows = sorted(self.rows, key=fn, reverse=reverse)
     return PartsTable(new_rows)
