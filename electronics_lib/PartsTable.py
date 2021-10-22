@@ -5,6 +5,7 @@ from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict
 import itertools
 import re
 
+
 PartsTableColumnType = TypeVar('PartsTableColumnType')
 class PartsTableColumn(Generic[PartsTableColumnType]):
   """A column header for a parts table, that allows indexing by an object
