@@ -12,6 +12,8 @@ from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
 from .Categories import SpecificApplicationSubcircuit
 from .Categories import Label, Mechanical
 
+from .ESeriesUtil import ESeriesUtil
+
 from .AbstractDevices import Battery
 from .AbstractPassives import Resistor, UnpolarizedCapacitor, Capacitor, Inductor
 from .AbstractPassives import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor, DecouplingCapacitor
