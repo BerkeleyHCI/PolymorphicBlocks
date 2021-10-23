@@ -7,10 +7,51 @@ from .ProductTableUtils import *
 from .PartsTable import *
 
 
-class DigikeyInductorTable:
-  @staticmethod
-  def generate_table(csvs: List[str]) -> PartsTable:
-    table = PartsTable.from_csv_files(csvs)
+class InductorTable:
+  INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
+  FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
+  CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
+  DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
+
+  PACKAGE_FOOTPRINT_MAP = {  # from Digikey Package / Case to KiCad footprint
+    '0603 (1608 Metric)': 'Inductor_SMD:L_0603_1608Metric',
+    '0805 (2012 Metric)': 'Inductor_SMD:L_0805_2012Metric',
+  }
+  SERIES_FOOTPRINT_MAP = {  # from part series to KiCad footprint
+    'SRR1015': 'Inductor_SMD:L_Bourns-SRR1005',
+    'SRR1210': 'Inductor_SMD:L_Bourns_SRR1210A',
+    'SRR1210A': 'Inductor_SMD:L_Bourns_SRR1210A',
+    'SRR1260': 'Inductor_SMD:L_Bourns_SRR1260',
+    'SRR1260A': 'Inductor_SMD:L_Bourns_SRR1260',
+    # Kicad does not have stock 1008 footprint
+  }
+  MPN_FOOTPRINT_REGEX_MAP = {  # from manufacturer part number to KiCad footprint w/ substitution
+    re.compile(r'NR(\d\d).*'), 'Inductor_SMD:L_Taiyo-Yuden_NR-{0}xx'
+  }
+
+  @classmethod
+  def generate_table(cls, csvs: List[str]) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_rows = {}
+      try:
+        new_rows[cls.INDUCTANCE] = Range.from_tolerance(
+          PartsTableUtil.parse_value(row['Inductance'], 'H'),
+          PartsTableUtil.parse_tolerance(row['Tolerance'])
+        )
+        current = PartsTableUtil.parse_value(row['Current Rating (Amps)'], 'A')
+        new_rows[cls.CURRENT_RATING] = Range(-current, current)
+        new_rows[cls.FREQUENCY_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Frequency - Self Resonant'], 'Hz')
+        )
+        new_rows[cls.DC_RESISTANCE] = Range.exact(
+          PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm')
+        )
+        return new_rows
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    table = PartsTable.from_csv_files(csvs).map_new_columns(parse_row)
     return table
 
 

@@ -72,8 +72,18 @@ class Range:
 
   @staticmethod
   def from_upper(upper: float) -> 'Range':
-    """Creates a Range from upper to negative infinity"""
+    """Creates a Range from negative infinity to upper"""
     return Range(float('-inf'), upper)
+
+  @staticmethod
+  def zero_to_upper(upper: float) -> 'Range':
+    """Creates a Range from zero to upper"""
+    return Range(0, upper)
+
+  @staticmethod
+  def exact(value: float) -> 'Range':
+    """Creates a Range that is exactly this value (no tolerance)"""
+    return Range(value, value)
 
   @staticmethod
   def all() -> 'Range':

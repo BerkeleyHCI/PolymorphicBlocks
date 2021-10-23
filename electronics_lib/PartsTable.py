@@ -115,6 +115,9 @@ class PartsTable:
 
 
 class PartsTableUtil:
+  class ParseError(Exception):
+    pass
+
   SI_PREFIX_DICT = {
     '': 1,
     'p': 1e-12,
@@ -133,18 +136,18 @@ class PartsTableUtil:
 
   VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(\w+)$')
   @classmethod
-  def parse_value(cls, value: str, units: str) -> Optional[float]:
+  def parse_value(cls, value: str, units: str) -> float:
     """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9"""
     matches = cls.VALUE_REGEX.match(value)
     if matches is not None and matches.group(3) == units:
       return float(matches.group(1)) * cls.SI_PREFIX_DICT[matches.group(2)]
     else:
-      return None
+      raise cls.ParseError(f"Cannot parse units {units} from {value}")
 
 
   TOLERANCE_REGEX = re.compile(f'^(±)\s*({NUMBER_REGEX})\s*(ppm|%)$')
   @classmethod
-  def parse_tolerance(cls, value: str) -> Optional[Tuple[float, float]]:
+  def parse_tolerance(cls, value: str) -> Tuple[float, float]:
     """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
     For example, ±10% would be returned as (-0.1, 0.1)"""
     matches = cls.TOLERANCE_REGEX.match(value)
@@ -154,8 +157,8 @@ class PartsTableUtil:
       elif matches.group(3) == 'ppm':
         scale = 1e-6
       else:
-        return None
+        raise cls.ParseError(f"Cannot determine tolerance scale from {value}")
       parsed = float(matches.group(2))
       return -parsed * scale, parsed * scale
     else:
-      return None
+      raise cls.ParseError(f"Cannot determine tolerance type from {value}")

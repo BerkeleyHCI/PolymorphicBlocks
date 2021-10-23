@@ -82,13 +82,20 @@ class PartsTableUtilsTest(unittest.TestCase):
     self.assertEqual(PartsTableUtil.parse_value('49.9 GΩ', 'Ω'), 49.9e9)
     self.assertEqual(PartsTableUtil.parse_value('49.9 GΩ', 'Ω'), 49.9e9)
 
-    self.assertEqual(PartsTableUtil.parse_value('50 kA', 'V'), None)
-    self.assertEqual(PartsTableUtil.parse_value('50 A', 'V'), None)
-    self.assertEqual(PartsTableUtil.parse_value('50 k', 'V'), None)
-    self.assertEqual(PartsTableUtil.parse_value('ducks', 'V'), None)
-    self.assertEqual(PartsTableUtil.parse_value('50.1.2 V', 'V'), None)
-    self.assertEqual(PartsTableUtil.parse_value('lol 20F', 'F'), None)
-    self.assertEqual(PartsTableUtil.parse_value('20F no', 'F'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('50 kA', 'V'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('50 A', 'V'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('50 k', 'V'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('ducks', 'V'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('50.1.2 V', 'V'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('lol 20F', 'F'), None)
+    with self.assertRaises(PartsTableUtil.ParseError):
+      self.assertEqual(PartsTableUtil.parse_value('20F no', 'F'), None)
 
   def test_parse_tolerance(self) -> None:
     self.assertEqual(PartsTableUtil.parse_tolerance('±100%'), (-1, 1))
