@@ -7,9 +7,11 @@ from .ProductTableUtils import *
 from .PartsTable import *
 
 
-def generate_new_inductor_table(csvs: List[str]) -> PartsTable:
-  table = PartsTable.from_csv_files(csvs)
-  return table
+class DigikeyInductorTable:
+  @staticmethod
+  def generate_table(csvs: List[str]) -> PartsTable:
+    table = PartsTable.from_csv_files(csvs)
+    return table
 
 
 def generate_inductor_table(TABLES: List[str]) -> ProductTable:
