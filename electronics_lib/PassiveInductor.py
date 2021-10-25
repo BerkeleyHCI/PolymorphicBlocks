@@ -32,13 +32,14 @@ class InductorTable:
   @classmethod
   def generate_table(cls, csvs: List[str]) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows = {}
+      new_rows: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
         footprint = (cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'], None) or
                      cls.SERIES_FOOTPRINT_MAP.get(row['Series'], None) or
                      cls.MPN_NR_FOOTPRINT_REGEX.apply(row['Manufacturer Part Number']))
-        assert footprint is not None
+        if footprint is None:
+          raise KeyError
         new_rows[cls.FOOTPRINT] = footprint
 
         new_rows[cls.INDUCTANCE] = Range.from_tolerance(
@@ -103,12 +104,12 @@ def generate_inductor_table(TABLES: List[str]) -> ProductTable:
 
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
-  product_table = InductorTable.generate_table([
+  product_table = InductorTable.generate_table(PartsTableUtil.with_source_dir([
     'Digikey_Inductors_TdkMlz.csv',
     'Digikey_Inductors_MurataDfe.csv',
     'Digikey_Inductors_TaiyoYudenNr.csv',
     'Digikey_Inductors_Shielded_BournsSRR_1005_1210_1260.csv',
-  ])
+  ], 'resources'))
 
   @init_in_parent
   def __init__(self, **kwargs):
@@ -138,7 +139,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
       lambda row: row[InductorTable.FOOTPRINT]
     ).sort_by(
       lambda row: row['Unit Price (USD)']
-    ).first("no inductors in {inductance} H, {current} A, {frequency} Hz")
+    ).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
     self.assign(self.selected_inductance, part[InductorTable.INDUCTANCE])
     self.assign(self.selected_current_rating, part[InductorTable.CURRENT_RATING])

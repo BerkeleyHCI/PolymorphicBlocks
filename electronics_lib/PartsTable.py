@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  Tuple
+  Tuple, cast
 import itertools
 import re
 import csv
@@ -162,6 +162,20 @@ class PartsTableUtil:
       return -parsed * scale, parsed * scale
     else:
       raise cls.ParseError(f"Cannot determine tolerance type from {value}")
+
+  @staticmethod
+  def with_source_dir(filenames: List[str], subdir: Optional[str] = None) -> List[str]:
+    """Given a list of filenames, prepends the absolute path to the calling source file, with an optional subdir.
+    """
+    from types import FrameType
+    import inspect
+    import os
+
+    calling_filename = cast(FrameType, cast(FrameType, inspect.currentframe()).f_back).f_code.co_filename
+    prefix_dir = os.path.dirname(calling_filename)
+    if subdir is not None:
+      prefix_dir = os.path.join(prefix_dir, subdir)
+    return [os.path.join(prefix_dir, filename) for filename in filenames]
 
 
 class RegexRemapper:
