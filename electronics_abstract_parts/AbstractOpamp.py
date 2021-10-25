@@ -19,6 +19,7 @@ class Opamp(Block):
 
 
 class OpampFollower(AnalogFilter):
+  """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
   def __init__(self):
     super().__init__()
 
@@ -33,7 +34,14 @@ class OpampFollower(AnalogFilter):
 
 
 class Amplifier(AnalogFilter):
-  """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal."""
+  """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal.
+
+  From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Non-inverting_amplifier:
+  Vout = Vin (1 + Rf/Rin)
+
+  The input and output impedances given are a bit more complex, so this simplifies it to
+  the opamp's specified pin impedances - TODO: is this correct(ish)?
+  """
   def __init__(self):
     super().__init__()
 
@@ -50,8 +58,22 @@ class Amplifier(AnalogFilter):
 
 class DifferentialAmplifier(AnalogFilter):
   """Opamp differential amplifier, outputs the difference between the input nodes, scaled by some factor,
-  and offset from some reference node."""
-  def __init__(self):
+  and offset from some reference node.
+  This implementation uses the same resistance for the two input resistors (R1, R2),
+  and the same resistance for the feedback and reference resistors (Rf, Rg).
+  From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Differential_amplifier_(difference_amplifier):
+  Vout = Rf/R1 * (Vp - Vn)
+
+  Impedance equations from https://e2e.ti.com/blogs_/archives/b/precisionhub/posts/overlooking-the-obvious-the-input-impedance-of-a-difference-amplifier
+    (ignoring the opamp input impedances, which we assume are >> the resistors)
+  Rin,p = R1 / (1 - (Rg / (R2+Rg)) * (Vin,n / Vin,p))
+  Rin,n = R2 + Rg
+  Rout = opamp output impedance - TODO: is this correct?
+
+  ratio specifies Rf/R1, the amplification ratio.
+
+  """
+  def __init__(self, ratio: Range):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -67,9 +89,13 @@ class DifferentialAmplifier(AnalogFilter):
     # TODO ADD PARAMETERS, IMPLEMENT ME
 
 
-class Integrator(AnalogFilter):
-  """Opamp integrator, outputs the integral of the input signal, relative to some reference signal.
-  Will clip to the input voltage rails."""
+class IntegratorInverting(AnalogFilter):
+  """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
+  Will clip to the input voltage rails.
+
+  From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
+  Vout = - 1/RC * int(Vin) (integrating over time)
+  """
   def __init__(self):
     super().__init__()
 
