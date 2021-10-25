@@ -2,8 +2,6 @@ from edg_core import *
 
 import math
 
-Range = LiteralConstructor(1)
-
 Farad = LiteralConstructor(1, 'F')
 uFarad = LiteralConstructor(1e-6, 'F')
 nFarad = LiteralConstructor(1e-9, 'F')

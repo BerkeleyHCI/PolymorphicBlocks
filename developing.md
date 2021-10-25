@@ -1,5 +1,22 @@
 # Developer Documentation
 
+## Overview
+
+This project consists of two (and a half) major parts:
+- The frontend (user-facing) HDL, written in Python, living in `edg_core/`.
+  - This also includes the electronics model and libraries build atop the core, in `electronics_model/`, `electronics_abstract_parts/`, and `electronics_lib/`.
+- The compiler, written in Scala, living in `compiler/`.
+- And the intermediate representation (defining the core blocks, ports, links, and expressions model in a language-independent form), written in protobuf, living in `edgir/`.
+
+## Compiling the Compiler
+
+**This section is mandatory if building from source, we currently do not include pre-compiled compiler binaries.**
+
+1. [Download and install sbt](https://www.scala-sbt.org/download.html), a build tool or Scala.
+2. In the repository root directory, run `sbt assembly` to compile the compiler JAR file.
+   - The unit tests are written to look for the JAR file where sbt places outputs from assembly.
+
+
 ## Quick Reference Commands
 
 ### Static checking
@@ -21,6 +38,8 @@ Note: since mypy currently doesn't infer return types (see mypy issue 4409), som
 If that doesn't get resolved, we might go through and manually annotate all return types. 
 
 ### Unit testing
+**IMPORTANT**: this requires the [compiler JAR file to be compiled](#compiling-the-compiler).
+
 ```
 python -m unittest discover
 ```
@@ -30,7 +49,7 @@ Or, to run tests for a specific package (eg, `edg_core` in this command):
 python -m unittest discover -s edg_core -t .
 ```
 
-PROTIP: run both by combining the commands with `&&`
+**PROTIP**: run both by combining the commands with `&&`
 
 
 ## Setup

@@ -8,6 +8,7 @@ from typing import *
 from . import edgir
 from .Core import Refable
 from .IdentityDict import IdentityDict
+from .Range import Range
 
 if TYPE_CHECKING:
   from .Ports import BasePort, Port
@@ -153,16 +154,15 @@ class FloatLiteralBinding(LiteralBinding):
 
 class RangeLiteralBinding(LiteralBinding):
   def __repr__(self) -> str:
-    return f"Lit({self.lower, self.upper})"
+    return f"Lit({self.value})"
 
-  def __init__(self, value: Tuple[Union[float, int], Union[float, int]]):
-    self.lower = value[0]
-    self.upper = value[1]
+  def __init__(self, value: Range):
+    self.value = value
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
-    pb.literal.range.minimum.floating.val = self.lower
-    pb.literal.range.maximum.floating.val = self.upper
+    pb.literal.range.minimum.floating.val = self.value.lower
+    pb.literal.range.maximum.floating.val = self.value.upper
     return pb
 
 

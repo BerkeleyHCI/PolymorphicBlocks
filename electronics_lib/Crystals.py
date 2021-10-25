@@ -76,7 +76,7 @@ class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to 
     # Output values
     self.selected_frequency = self.Parameter(RangeExpr())
 
-  def select_part(self, frequency: RangeVal):
+  def select_part(self, frequency: Range):
     # TODO this should be part of the crystal block, but that needs a post-generate elaborate
     parts = self.product_table.filter(RangeContains(Lit(frequency), Column('frequency'))) \
       .sort(Column('Unit Price (USD)'))  # TODO actually make this into float

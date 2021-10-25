@@ -91,9 +91,9 @@ class DiscreteBuckConverter(BuckConverter):
     self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
-                          input_voltage: RangeVal, output_voltage: RangeVal,
-                          output_current_max: float, frequency: RangeVal,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          input_voltage: Range, output_voltage: Range,
+                          output_current_max: float, frequency: Range,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
                           ) -> Passive:
     """
     Given the switch node, generates the passive (in and out filter caps, inductor) components,
@@ -106,55 +106,49 @@ class DiscreteBuckConverter(BuckConverter):
     TODO support capacitor ESR calculation
     TODO unify rated max current with something else, perhaps a block param?
     """
-
-    in_voltage_min, in_voltage_max = input_voltage
-    out_voltage_min, out_voltage_max = output_voltage
-    freq_min, freq_max = frequency
-
-    dc_max = out_voltage_max / in_voltage_min / self.WORST_EFFICIENCY_ESTIMATE
-    dc_min = out_voltage_min / in_voltage_max
-    self.assign(self.dutycycle, (dc_min, dc_max))
+    dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
+    dutycycle_limit = Range(self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)
+    self.assign(self.dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    self.require(self.dutycycle.upper() <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max outside limit {self.DUTYCYCLE_MAX_LIMIT}")
-    self.require(self.dutycycle.lower() >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min outside limit {self.DUTYCYCLE_MIN_LIMIT}")
-
+    self.require(self.dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
     # these are actual numbers to be used in calculations
-    effective_dc_min = max(self.DUTYCYCLE_MIN_LIMIT, dc_min)
-    effective_dc_max = min(self.DUTYCYCLE_MAX_LIMIT, dc_max)
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
-    ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
-    ripple_current_max = max(
-      output_current_max * ripple_factor[1],  # peak-peak
-      rated_max_current_amps * ripple_factor[0]  # see LMR33630 datasheet, use rating if current draw much lower
+    ripple_current = (output_current_max * ripple_factor).extend_upper_to(
+      rated_max_current_amps * ripple_factor.lower  # see LMR33630 datasheet, use rating if current draw much lower
     )
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
-    inductance_min = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_max / freq_min / in_voltage_max
-    if ripple_current_min == 0:
-      inductance_max = float('inf')
-    else:
-      inductance_max = out_voltage_min * (in_voltage_max - out_voltage_min) / ripple_current_min / freq_min / in_voltage_max
+    # This range must be constructed manually to not double-count the tolerance stackup of the voltages
+    inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (ripple_current.upper * frequency.lower * input_voltage.upper))
+    inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (ripple_current.lower * frequency.lower * input_voltage.upper))
+    inductance = Range(inductance_min, inductance_max)
 
-    out_capacitance_min = ripple_current_max / 8 / freq_min / spec_output_ripple  # TODO size based on transient response, add to voltage tolerance stackups
-    in_capacitance_min = output_current_max * effective_dc_max * (1 - effective_dc_min) / freq_min / spec_input_ripple
+    # TODO size based on transient response, add to voltage tolerance stackups
+    output_capacitance = Range.from_lower(ripple_current.upper / (8 * frequency.lower * spec_output_ripple))
+    # TODO pick a single worst-case DC
+    input_capacitance = Range.from_lower(output_current_max * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
+                                         (frequency.lower * spec_input_ripple))
 
-    sw_current_max = output_current_max + ripple_current_max / 2
+    sw_current_max = output_current_max + ripple_current.upper / 2
 
     self.inductor = self.Block(Inductor(
-      inductance=(inductance_min, inductance_max)*Henry,
+      inductance=inductance*Henry,
       current=(0, sw_current_max)*Amp,
-      frequency=(freq_min, freq_max)*Hertz
+      frequency=frequency*Hertz
     ))
 
     # TODO: DC derating
     # Note, implicit connect is not great here because of the different power in / power out rails
     # But maybe something can be done with ground?
     self.in_cap = self.Block(DecouplingCapacitor(
-      capacitance=(in_capacitance_min, float('inf'))*Farad,
+      capacitance=input_capacitance*Farad,
     ))
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=(out_capacitance_min, float('inf'))*Farad,
+      capacitance=output_capacitance*Farad,
     ))
     self._pwr_in_net = self.connect(self.pwr_in, self.in_cap.pwr)
     self._pwr_out_net = self.connect(self.pwr_out, self.out_cap.pwr)
@@ -199,9 +193,9 @@ class DiscreteBoostConverter(BoostConverter):
     self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
-                          input_voltage: RangeVal, output_voltage: RangeVal,
-                          output_current_max: float, frequency: RangeVal,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: RangeVal
+                          input_voltage: Range, output_voltage: Range,
+                          output_current_max: float, frequency: Range,
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
                           ) -> None:
     """
     - diode needs to be fast, consider forward voltage drop, forward current (> peak inductor current), reverse volts (> Vout)
@@ -211,52 +205,47 @@ class DiscreteBoostConverter(BoostConverter):
 
     TODO support capacitor ESR calculation
     """
-
-    in_voltage_min, in_voltage_max = input_voltage
-    out_voltage_min, out_voltage_max = output_voltage
-    freq_min, freq_max = frequency
-
-    dc_max = 1 - in_voltage_min * self.WORST_EFFICIENCY_ESTIMATE / out_voltage_max
-    dc_min = 1 - in_voltage_max / out_voltage_min
-
-    self.assign(self.dutycycle, (dc_min, dc_max))
+    dutycycle = 1 - input_voltage / output_voltage * Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
+    dutycycle_limit = Range(self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)
+    self.assign(self.dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    self.require(self.dutycycle.upper() <= self.DUTYCYCLE_MAX_LIMIT, f"dutycycle max outside limit {self.DUTYCYCLE_MAX_LIMIT}")
-    self.require(self.dutycycle.lower() >= self.DUTYCYCLE_MIN_LIMIT, f"dutycycle min outside limit {self.DUTYCYCLE_MIN_LIMIT}")
-
+    self.require(self.dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
     # these are actual numbers to be used in calculations
-    effective_dc_min = max(self.DUTYCYCLE_MIN_LIMIT, dc_min)
-    effective_dc_max = min(self.DUTYCYCLE_MAX_LIMIT, dc_max)
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
-    ripple_current_min = output_current_max * ripple_factor[0]  # peak-peak
-    ripple_current_max = max(
-      output_current_max * ripple_factor[1],  # peak-peak
-      rated_max_current_amps * ripple_factor[0]  # see LMR33630 datasheet, use rating if current draw much lower
+    ripple_current = (output_current_max * ripple_factor).extend_upper_to(
+      rated_max_current_amps * ripple_factor.lower  # see LMR33630 datasheet, use rating if current draw much lower
     )
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
-    inductance_min = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_max / freq_min / out_voltage_min
-    inductance_max = in_voltage_min * (out_voltage_max - in_voltage_min) / ripple_current_min / freq_min / out_voltage_min
-    out_capacitance_min = output_current_max * effective_dc_max / freq_min / spec_output_ripple
-    in_capacitance_min = (output_current_max / effective_dc_min) * (1 - effective_dc_min) / freq_min / spec_input_ripple
+    # This range must be constructed manually to not double-count the tolerance stackup of the voltages
+    inductance_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                      (ripple_current.upper * frequency.lower * output_voltage.lower))
+    inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                      (ripple_current.lower * frequency.lower * output_voltage.lower))
+    inductance = Range(inductance_min, inductance_max)
+    output_capacitance = Range.from_lower(output_current_max * effective_dutycycle.upper /
+                                          (frequency.lower * spec_output_ripple))
+    input_capacitance = Range.from_lower((output_current_max / effective_dutycycle.lower) * (1 - effective_dutycycle.lower) /
+                                         (frequency.lower * spec_input_ripple))
 
-    sw_current_max = ripple_current_max / 2 + output_current_max / (1 - effective_dc_max)
+    sw_current_max = ripple_current.upper / 2 + output_current_max / (1 - effective_dutycycle.upper)
 
     self.inductor = self.Block(Inductor(
-      inductance=(inductance_min, inductance_max)*Henry,
+      inductance=inductance*Henry,
       current=(0, sw_current_max)*Amp,
-      frequency=(freq_min, freq_max)*Hertz
+      frequency=frequency*Hertz
     ))
 
     # TODO: DC derating
     # Note, implicit connect is not great here because of the different power in / power out rails
     # But maybe something can be done with ground?
     self.in_cap = self.Block(DecouplingCapacitor(
-      capacitance=(in_capacitance_min, float('inf'))*Farad,
+      capacitance=input_capacitance*Farad,
     ))
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=(out_capacitance_min, float('inf'))*Farad,
+      capacitance=output_capacitance*Farad,
     ))
     self.connect(self.pwr_in, self.in_cap.pwr, self.inductor.a.as_voltage_sink())
     self.connect(self.pwr_out, self.out_cap.pwr)

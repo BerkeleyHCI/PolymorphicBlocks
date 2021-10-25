@@ -55,12 +55,15 @@ class AnalogMixedTest(Block):
 class CapacitorTestCase(unittest.TestCase):
   def test_analog_two_infinite(self) -> None:
     compiled = ScalaCompiler.compile(AnalogTwoInfiniteTest)
-    self.assertEqual(compiled.get_value(['link', 'sink_impedance']), (float('inf'), float('inf')))
+    self.assertEqual(compiled.get_value(['link', 'sink_impedance']),
+                     Range(float('inf'), float('inf')))
 
   def test_analog_two_one_ohm(self) -> None:
     compiled = ScalaCompiler.compile(AnalogTwoOneOhmTest)
-    self.assertEqual(compiled.get_value(['link', 'sink_impedance']), (0.5, 0.5))
+    self.assertEqual(compiled.get_value(['link', 'sink_impedance']),
+                     Range(0.5, 0.5))
 
   def test_analog_mixed(self) -> None:
     compiled = ScalaCompiler.compile(AnalogMixedTest)
-    self.assertEqual(compiled.get_value(['link', 'sink_impedance']), (1.0, 1.0))
+    self.assertEqual(compiled.get_value(['link', 'sink_impedance']),
+                     Range(1.0, 1.0))
