@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABCMeta, abstractmethod
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
   Tuple, cast
 import itertools
@@ -137,8 +138,15 @@ class PartsTableUtil:
   NUMBER_REGEX = '\d+(?:\.\d+)?'
 
   VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(.+)$')
+  DefaultType = TypeVar('DefaultType')
   @classmethod
-  def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], float] = ParseError) -> float:
+  @overload
+  def parse_value(cls, value: str, units: str) -> float: ...
+  @classmethod
+  @overload
+  def parse_value(cls, value: str, units: str, default: DefaultType) -> Union[DefaultType, float]: ...
+  @classmethod
+  def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], DefaultType] = ParseError) -> Union[DefaultType, float]:
     """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
     If the input is not a value:
       if default is not specified, raises a ParseError.
@@ -147,10 +155,10 @@ class PartsTableUtil:
     if matches is not None and matches.group(3) == units:
       return float(matches.group(1)) * cls.SI_PREFIX_DICT[matches.group(2)]
     else:
-      if default is cls.ParseError:
+      if default == cls.ParseError:
         raise cls.ParseError(f"Cannot parse units {units} from {value}")
       else:
-        return default
+        return default  #type:ignore
 
 
   TOLERANCE_REGEX = re.compile(f'^(±)\s*({NUMBER_REGEX})\s*(ppm|%)$')
@@ -185,24 +193,40 @@ class PartsTableUtil:
       prefix_dir = os.path.join(prefix_dir, subdir)
     return [os.path.join(prefix_dir, filename) for filename in filenames]
 
+  class RegexRemapper:
+    """
+    A utility class for transforming strings by applying a regex to the input string,
+    then applying the captured groups to an output string.
 
-class RegexRemapper:
-  """
-  A utility class for transforming strings by applying a regex to the input string,
-  then applying the captured groups to an output string.
+    If the regex does not match, returns None.
+    Crashes if the regex matches, but a capture group in the remap string is unavailable.
 
-  If the regex does not match, returns None.
-  Crashes if the regex matches, but a capture group in the remap string is unavailable.
+    For example, RegexRemapper(r'^duck(\\d\\d)$', 'quack{0}').apply('duck02') returns 'quack02'.
+    """
+    def __init__(self, regex: str, remap: str):
+      self.regex = re.compile(regex)
+      self.remap = remap
 
-  For example, RegexRemapper(r'^duck(\\d\\d)$', 'quack{0}').apply('duck02') returns 'quack02'.
-  """
-  def __init__(self, regex: str, remap: str):
-    self.regex = re.compile(regex)
-    self.remap = remap
+    def apply(self, input: str) -> Optional[str]:
+      match = self.regex.match(input)
+      if match is not None:
+        return self.remap.format(*match.groups())
+      else:
+        return None
 
-  def apply(self, input: str) -> Optional[str]:
-    match = self.regex.match(input)
-    if match is not None:
-      return self.remap.format(*match.groups())
-    else:
-      return None
+
+class LazyTable(metaclass=ABCMeta):
+  """A wrapper around PartTable that doesn't generate the table until the first time it's requested.
+  The generated table is then stored for future use."""
+
+  _table: PartsTable
+
+  @classmethod
+  def table(cls) -> PartsTable:
+    if not hasattr(cls, '_table'):
+      cls._table = cls._generate_table()
+    return cls._table
+
+  @classmethod
+  @abstractmethod
+  def _generate_table(cls) -> PartsTable: ...

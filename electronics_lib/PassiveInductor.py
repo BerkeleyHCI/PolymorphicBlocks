@@ -1,13 +1,9 @@
-import csv
-import os
-from functools import reduce
-
 from electronics_abstract_parts import *
 from .ProductTableUtils import *
 from .PartsTable import *
 
 
-class InductorTable:
+class InductorTable(LazyTable):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
@@ -28,13 +24,8 @@ class InductorTable:
     # Kicad does not have stock 1008 footprint
   }
   # from manufacturer part number to KiCad footprint w/ substitution
-  MPN_NR_FOOTPRINT_REGEX = RegexRemapper(r'^NR(\d\d).*$', 'Inductor_SMD:L_Taiyo-Yuden_NR-{0}xx')
-
-  @classmethod
-  def table(cls) -> PartsTable:
-    if not hasattr(cls, '_table'):
-      cls._table = cls._generate_table()
-    return cls._table
+  MPN_NR_FOOTPRINT_REGEX = PartsTableUtil.RegexRemapper(
+    r'^NR(\d\d).*$', 'Inductor_SMD:L_Taiyo-Yuden_NR-{0}xx')
 
   @classmethod
   def _generate_table(cls) -> PartsTable:
@@ -58,8 +49,8 @@ class InductorTable:
         new_rows[cls.FREQUENCY_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Frequency - Self Resonant'], 'Hz')
         )
-        new_rows[cls.DC_RESISTANCE] = Range.exact(
-          PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm', None) or
+        new_rows[cls.DC_RESISTANCE] = Range.exact(  # TODO debug type below - it doesn't like the default type
+          PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm', None) or  #type:ignore
           PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm Max')
         )
 
