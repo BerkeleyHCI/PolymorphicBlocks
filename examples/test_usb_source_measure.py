@@ -3,6 +3,68 @@ import unittest
 from edg import *
 
 
+class EmitterFollower(Block):
+  """Emitter follower amplifier circuit.
+  TODO - split emitter follower with  separate control inputs?
+  """
+  def __init__(self):
+    super().__init__()
+    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+
+class SourceMeasureControl(Block):
+  """Analog feedback circuit for the source-measure unit
+  """
+  def __init__(self):
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+    self.center_reference = self.Port(VoltageSink())
+
+    self.control_voltage = self.Port(AnalogSink())
+    self.control_current_source = self.Port(AnalogSink())
+    self.control_current_sink = self.Port(AnalogSink())
+    self.measured_voltage = self.Port(AnalogSource())
+    self.measured_current = self.Port(AnalogSource())
+    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+
+class AnalogMerge(Block):
+  """Directly connects the input AnalogSinks and provides an AnalogSource port. Just copper on the board.
+  TODO: in the future, this should use block-side port arrays
+  """
+  def __init__(self):
+    super().__init__()
+
+    self.in1 = self.Port(AnalogSink())
+    self.in2 = self.Port(AnalogSink())
+    self.in3 = self.Port(AnalogSink())
+    self.out = self.Port(AnalogSource(), [Output])
+    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+
+class ErrorAmplifier(Block):
+  """Error amplifier circuit. Really not quite sure quite how this works, looks like an opamp follower after a
+  resistive divider. Configurable diode and resistors.
+
+  TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
+  """
+  @init_in_parent
+  def __init__(self, resistance: RangeLike, diode: StringLike = ""):
+    super().__init__()
+
+    self.amp = self.Block(Opamp())
+
+    self.pwr = self.Export(self.amp.pwr, [Power])
+    self.gnd = self.Export(self.amp.gnd, [Common])
+
+    self.target = self.Port(AnalogSink())
+    self.actual = self.Port(AnalogSink())
+    self.output = self.Port(AnalogSource())
+    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+
 class UsbSourceMeasureTest(BoardTop):
   def contents(self) -> None:
     super().contents()
