@@ -51,7 +51,6 @@ class PartsTable:
         dict_rows.extend([row for row in reader])
     return cls.from_dict_rows(dict_rows)
 
-
   @staticmethod
   def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[OrderedDict[str, str]]]) -> 'PartsTable':
     """Creates a parts table from dict rows, such as parsed by csv.DictReader.
@@ -64,6 +63,9 @@ class PartsTable:
         assert dict_row.keys() == first_keys, f"row {dict_row} has different keys than first row keys {first_keys}"
     rows = [PartsTableRow(dict_row) for dict_row in all_dict_rows]
     return PartsTable(rows)
+
+  def __len__(self) -> int:
+    return len(self.rows)
 
   def __init__(self, rows: List[PartsTableRow]):
     """Internal function, just creates a new PartsTable wrapping the rows, without any checking."""
@@ -134,15 +136,21 @@ class PartsTableUtil:
 
   NUMBER_REGEX = '\d+(?:\.\d+)?'
 
-  VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(\w+)$')
+  VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(.+)$')
   @classmethod
-  def parse_value(cls, value: str, units: str) -> float:
-    """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9"""
+  def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], float] = ParseError) -> float:
+    """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
+    If the input is not a value:
+      if default is not specified, raises a ParseError.
+      if default is specified, returns the default."""
     matches = cls.VALUE_REGEX.match(value)
     if matches is not None and matches.group(3) == units:
       return float(matches.group(1)) * cls.SI_PREFIX_DICT[matches.group(2)]
     else:
-      raise cls.ParseError(f"Cannot parse units {units} from {value}")
+      if default is cls.ParseError:
+        raise cls.ParseError(f"Cannot parse units {units} from {value}")
+      else:
+        return default
 
 
   TOLERANCE_REGEX = re.compile(f'^(±)\s*({NUMBER_REGEX})\s*(ppm|%)$')

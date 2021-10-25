@@ -204,3 +204,17 @@ class Range:
       new_upper = self.upper
 
     return Range(new_lower, new_upper)
+
+  def fuzzy_in(self, container: 'Range') -> bool:
+    DOUBLE_FLOAT_ROUND_FACTOR = 1e-7  # approximate multiplier to account for double <-> float rounding issues
+    """Contains operation that allows fuzziness due to floating point imprecision."""
+    if container.lower >= 0:
+      lower = container.lower * (1 - DOUBLE_FLOAT_ROUND_FACTOR)
+    else:
+      lower = container.lower * (1 + DOUBLE_FLOAT_ROUND_FACTOR)
+
+    if self.upper >= 0:
+      upper = container.upper * (1 + DOUBLE_FLOAT_ROUND_FACTOR)
+    else:
+      upper = container.upper * (1 - DOUBLE_FLOAT_ROUND_FACTOR)
+    return self in Range(lower, upper)
