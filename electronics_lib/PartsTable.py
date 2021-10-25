@@ -162,3 +162,25 @@ class PartsTableUtil:
       return -parsed * scale, parsed * scale
     else:
       raise cls.ParseError(f"Cannot determine tolerance type from {value}")
+
+
+class RegexRemapper:
+  """
+  A utility class for transforming strings by applying a regex to the input string,
+  then applying the captured groups to an output string.
+
+  If the regex does not match, returns None.
+  Crashes if the regex matches, but a capture group in the remap string is unavailable.
+
+  For example, RegexRemapper(r'^duck(\\d\\d)$', 'quack{0}').apply('duck02') returns 'quack02'.
+  """
+  def __init__(self, regex: str, remap: str):
+    self.regex = re.compile(regex)
+    self.remap = remap
+
+  def apply(self, input: str) -> Optional[str]:
+    match = self.regex.match(input)
+    if match is not None:
+      return self.remap.format(*match.groups())
+    else:
+      return None

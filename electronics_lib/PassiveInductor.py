@@ -26,15 +26,21 @@ class InductorTable:
     'SRR1260A': 'Inductor_SMD:L_Bourns_SRR1260',
     # Kicad does not have stock 1008 footprint
   }
-  MPN_FOOTPRINT_REGEX_MAP = {  # from manufacturer part number to KiCad footprint w/ substitution
-    re.compile(r'NR(\d\d).*'), 'Inductor_SMD:L_Taiyo-Yuden_NR-{0}xx'
-  }
+  # from manufacturer part number to KiCad footprint w/ substitution
+  MPN_NR_FOOTPRINT_REGEX = RegexRemapper(r'^NR(\d\d).*$', 'Inductor_SMD:L_Taiyo-Yuden_NR-{0}xx')
 
   @classmethod
   def generate_table(cls, csvs: List[str]) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_rows = {}
       try:
+        # handle the footprint first since this is the most likely to filter
+        footprint = (cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'], None) or
+                     cls.SERIES_FOOTPRINT_MAP.get(row['Series'], None) or
+                     cls.MPN_NR_FOOTPRINT_REGEX.apply(row['Manufacturer Part Number']))
+        assert footprint is not None
+        new_rows[cls.FOOTPRINT] = footprint
+
         new_rows[cls.INDUCTANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Inductance'], 'H'),
           PartsTableUtil.parse_tolerance(row['Tolerance'])
@@ -97,7 +103,7 @@ def generate_inductor_table(TABLES: List[str]) -> ProductTable:
 
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
-  product_table = generate_inductor_table([
+  product_table = InductorTable.generate_table([
     'Digikey_Inductors_TdkMlz.csv',
     'Digikey_Inductors_MurataDfe.csv',
     'Digikey_Inductors_TaiyoYudenNr.csv',
@@ -120,25 +126,26 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
     self.selected_frequency_rating = self.Parameter(RangeExpr())
 
   def select_inductor(self, inductance: Range, current: Range, frequency: Range,
-               part_spec: str, footprint_spec: str) -> None:
-    # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
-    parts = self.product_table.filter(RangeContains(Lit(inductance), Column('inductance'))) \
-        .filter(RangeContains(Lit((-float('inf'), 1)), Column('dc_resistance'))) \
-        .filter(RangeContains(Column('frequency'), Lit(frequency))) \
-        .filter(RangeContains(Column('current'), Lit(current))) \
-        .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
-        .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
-        .sort(Column('footprint'))  \
-        .sort(Column('Unit Price (USD)'))
+                      part_spec: str, footprint_spec: str) -> None:
+    compatible_parts = self.product_table.filter(lambda row: (
+        (not part_spec or part_spec == row['Manufacturer Part Number']) and
+        (not footprint_spec or footprint_spec == row[InductorTable.FOOTPRINT]) and
+        row[InductorTable.INDUCTANCE] in inductance and
+        row[InductorTable.DC_RESISTANCE] in Range.zero_to_upper(1.0) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
+        frequency in row[InductorTable.FREQUENCY_RATING]
+    ))
+    part = compatible_parts.sort_by(
+      lambda row: row[InductorTable.FOOTPRINT]
+    ).sort_by(
+      lambda row: row['Unit Price (USD)']
+    ).first("no inductors in {inductance} H, {current} A, {frequency} Hz")
 
-    part = parts.first(err=f"no inductors in {inductance} H, {current} A, {frequency} Hz")
-
-    self.assign(self.selected_inductance, part['inductance'])
-    self.assign(self.selected_current_rating, part['current'])
-    self.assign(self.selected_frequency_rating, part['frequency'])
+    self.assign(self.selected_inductance, part[InductorTable.INDUCTANCE])
+    self.assign(self.selected_current_rating, part[InductorTable.CURRENT_RATING])
+    self.assign(self.selected_frequency_rating, part[InductorTable.FREQUENCY_RATING])
 
     self.footprint(
-      'L', part['footprint'],
+      'L', part[InductorTable.FOOTPRINT],
       {
         '1': self.a,
         '2': self.b,
