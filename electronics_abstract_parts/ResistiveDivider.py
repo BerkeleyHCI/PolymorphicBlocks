@@ -38,19 +38,16 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
       Range(impedance_min, impedance_max)
     )
 
-  @classmethod
-  def _is_acceptable(cls, proposed: DividerValues, target: DividerValues) -> bool:
+  def _is_acceptable(self, proposed: DividerValues, target: DividerValues) -> bool:
     """Given a proposed output value (from E-series values under test) and the target,
     returns whether it is acceptable."""
     return proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance)
 
-  @classmethod
-  def _get_initial_decade(cls, target: DividerValues) -> Tuple[int, int]:
+  def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
     decade = floor(log10(target.parallel_impedance.lower))
     return decade, decade
 
-  @classmethod
-  def _get_next_decade(cls, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:
+  def _get_next_decade(self, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:
     ratio_range = Range(
       min([output.ratio.lower for output in decade_outputs]),
       max([output.ratio.upper for output in decade_outputs])

@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Sequence, Optional, TypeVar, Tuple, List
+from typing import Sequence, Optional, TypeVar, Tuple, List, Generic
 from electronics_model import *
 from itertools import chain
 import math
@@ -60,7 +60,7 @@ class ESeriesUtil:
 
 
 RatioOutputType = TypeVar('RatioOutputType')
-class ESeriesRatioUtil(metaclass=ABCMeta):
+class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   """Base class for an algorithm that searches pairs of E-series numbers
   to get some desired output (eg, ratio and impedance for a resistive divider).
   The output calculations can be overridden by a subclass.
@@ -82,8 +82,7 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
-  @classmethod
-  def _is_acceptable(cls, proposed: RatioOutputType, target: RatioOutputType) -> bool:
+  def _is_acceptable(self, proposed: RatioOutputType, target: RatioOutputType) -> bool:
     """Given a proposed output value (from E-series values under test) and the target,
     returns whether it is acceptable."""
     raise NotImplementedError()
@@ -93,7 +92,6 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
     pass
 
   @abstractmethod
-  @classmethod
   def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
     """Given the target output, return the initial decades (for R1, R2), as log10 to try.
     For example, a decade of 0 means try 1.0, 2.2, 4.7;
@@ -102,7 +100,6 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
-  @classmethod
   def _get_next_decade(self, decade_outputs: List[RatioOutputType], target: RatioOutputType) -> Tuple[int, int]:
     """If the target was not found scanning the entire decade, return the direction to adjust the decades for R1, R2.
     Adjustment should be 0, 1, or -1.
