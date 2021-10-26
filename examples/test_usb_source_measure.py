@@ -3,9 +3,14 @@ import unittest
 from edg import *
 
 
-class EmitterFollower(Block):
-  """Emitter follower amplifier circuit.
-  TODO - split emitter follower with  separate control inputs?
+class GatedEmitterFollower(Block):
+  """Emitter follower, where each transistor can have its input gated independently,
+  and a transistor with a disabled input will turn off.
+
+  For the SMU, this allows a turn-on scheme where the error integrated is railed to off one side,
+  and only the off side transistor turns on, then the proper output can be programmed.
+  After the output stabilizes, both transistors can be enabled (if desired), to run under the
+  analog feedback circuit.
   """
   def __init__(self):
     super().__init__()
