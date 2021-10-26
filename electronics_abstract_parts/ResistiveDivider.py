@@ -6,7 +6,43 @@ from typing import *
 
 from .AbstractPassives import Resistor
 from .Categories import *
-from .ESeriesUtil import ESeriesUtil
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, RatioOutputType
+
+
+class DividerValues(NamedTuple):
+  ratio: Range
+  parallel_impedance: Range
+
+
+class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
+  def __init__(self, tolerance: float):
+    self.tolerance = tolerance
+
+  def _calculate_output(self, r1: float, r2: float) -> DividerValues:
+    r1_range = Range.from_tolerance(r1, self.tolerance)
+    r2_range = Range.from_tolerance(r2, self.tolerance)
+    ratio_min = r2_range.lower / (r2_range.lower + r1_range.upper)
+    ratio_max = r2_range.upper / (r2_range.upper + r1_range.lower)
+    impedance_min = 1 / (1 / r1_range.lower + 1 / r2_range.lower)
+    impedance_max = 1 / (1 / r1_range.upper + 1 / r2_range.upper)
+    return DividerValues(
+      Range(ratio_min, ratio_max),
+      Range(impedance_min, impedance_max)
+    )
+
+  @classmethod
+  def _is_acceptable(cls, proposed: DividerValues, target: DividerValues) -> bool:
+    """Given a proposed output value (from E-series values under test) and the target,
+    returns whether it is acceptable."""
+    return proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance)
+
+  @classmethod
+  def _get_initial_decade(cls, target: DividerValues) -> Tuple[int, int]:
+    pass
+
+  @classmethod
+  def _get_next_decade(cls, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:
+    pass
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):

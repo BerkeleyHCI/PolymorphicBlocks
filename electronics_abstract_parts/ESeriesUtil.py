@@ -73,11 +73,19 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
 
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
+
+  Tolerances should be handled by the implementing class, stored as a instance variable.
   """
   @abstractmethod
-  @classmethod
-  def _calculate_output(cls, r1: float, r2: float) -> RatioOutputType:
+  def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
     """Given two E-series values, calculate the output parameters."""
+    raise NotImplementedError()
+
+  @abstractmethod
+  @classmethod
+  def _is_acceptable(cls, proposed: RatioOutputType, target: RatioOutputType) -> bool:
+    """Given a proposed output value (from E-series values under test) and the target,
+    returns whether it is acceptable."""
     raise NotImplementedError()
 
   def find(self, target: RatioOutputType) -> Tuple[float, float]:
@@ -85,6 +93,7 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
     pass
 
   @abstractmethod
+  @classmethod
   def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
     """Given the target output, return the initial decades (for R1, R2), as log10 to try.
     For example, a decade of 0 means try 1.0, 2.2, 4.7;
@@ -93,6 +102,7 @@ class ESeriesRatioUtil(metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
+  @classmethod
   def _get_next_decade(self, decade_outputs: List[RatioOutputType], target: RatioOutputType) -> Tuple[int, int]:
     """If the target was not found scanning the entire decade, return the direction to adjust the decades for R1, R2.
     Adjustment should be 0, 1, or -1.
