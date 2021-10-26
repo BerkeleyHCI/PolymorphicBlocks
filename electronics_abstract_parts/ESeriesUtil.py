@@ -71,10 +71,10 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   eg a satisfying E3 pair is preferred and returned, even if there is a closer E6 pair.
   This has no concept of a distance metric.
 
+  Tolerances should be handled by the implementing class, stored as a instance variable.
+
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
-
-  Tolerances should be handled by the implementing class, stored as a instance variable.
   """
   @abstractmethod
   def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
@@ -89,7 +89,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
   def find(self, target: RatioOutputType) -> Tuple[float, float]:
     """Find a pair of R1, R2 that satisfies the target."""
-    pass
+    r1_decade, r2_decade = self._get_initial_decade(target)
+
+
 
   @abstractmethod
   def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
