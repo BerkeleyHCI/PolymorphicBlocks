@@ -1,4 +1,5 @@
-from typing import Sequence, Optional
+from abc import ABCMeta, abstractmethod
+from typing import Sequence, Optional, TypeVar, Tuple, List
 from electronics_model import *
 from itertools import chain
 import math
@@ -56,3 +57,48 @@ class ESeriesUtil:
 
   # Zigzag (lower E-series first) of the E12 series
   E24_SERIES_ZIGZAG = list(chain(*E24_SERIES))
+
+
+RatioOutputType = TypeVar('RatioOutputType')
+class ESeriesRatioUtil(metaclass=ABCMeta):
+  """Base class for an algorithm that searches pairs of E-series numbers
+  to get some desired output (eg, ratio and impedance for a resistive divider).
+  The output calculations can be overridden by a subclass.
+  Calculation of the initial decade (for both values) and which way to shift decades
+  after scanning an entire decade is also included.
+
+  Within a decade, this prefers combinations of smaller E-series before moving on,
+  eg a satisfying E3 pair is preferred and returned, even if there is a closer E6 pair.
+  This has no concept of a distance metric.
+
+  The code below is defined in terms of resistors, but this can be used with anything
+  that uses the E-series.
+  """
+  @abstractmethod
+  @classmethod
+  def _calculate_output(cls, r1: float, r2: float) -> RatioOutputType:
+    """Given two E-series values, calculate the output parameters."""
+    raise NotImplementedError()
+
+  def find(self, target: RatioOutputType) -> Tuple[float, float]:
+    """Find a pair of R1, R2 that satisfies the target."""
+    pass
+
+  @abstractmethod
+  def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
+    """Given the target output, return the initial decades (for R1, R2), as log10 to try.
+    For example, a decade of 0 means try 1.0, 2.2, 4.7;
+    while a decade of -1 means try 10, 22, 47.
+    """
+    raise NotImplementedError()
+
+  @abstractmethod
+  def _get_next_decade(self, decade_outputs: List[RatioOutputType], target: RatioOutputType) -> Tuple[int, int]:
+    """If the target was not found scanning the entire decade, return the direction to adjust the decades for R1, R2.
+    Adjustment should be 0, 1, or -1.
+    The algorithm will try all combinations of increments, and if nothing is found again, calls this again.
+    Returning (0, 0) means that nothing else can be done and no adjustments can satisfy -
+    and will error out with no solution.
+    The algorithm will also check for backtracking, which will also error out with no solution
+    """
+    raise NotImplementedError
