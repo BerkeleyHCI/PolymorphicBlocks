@@ -15,6 +15,14 @@ class DividerValues(NamedTuple):
 
 
 class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
+  """Resistive divider calculator using the ESeriesRatioUtil infrastructure.
+
+  R1 is the high-side resistor, and R2 is the low-side resistor, such that
+  Vout = Vin * R2 / (R1 + R2)
+
+  TODO - not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
+  (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
+  """
   def __init__(self, tolerance: float):
     self.tolerance = tolerance
 
@@ -38,11 +46,33 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
 
   @classmethod
   def _get_initial_decade(cls, target: DividerValues) -> Tuple[int, int]:
-    pass
+    decade = floor(log10(target.parallel_impedance.lower))
+    return decade, decade
 
   @classmethod
   def _get_next_decade(cls, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:
-    pass
+    ratio_range = Range(
+      min([output.ratio.lower for output in decade_outputs]),
+      max([output.ratio.upper for output in decade_outputs])
+    )
+    parallel_impedance_range = Range(
+      min([output.parallel_impedance.lower for output in decade_outputs]),
+      max([output.parallel_impedance.upper for output in decade_outputs])
+    )
+    if target.ratio.fuzzy_in(ratio_range):  # ratio contained, only impedance needs shifting
+      if target.parallel_impedance.lower < parallel_impedance_range.lower:
+        return -1, -1
+      elif target.parallel_impedance.upper > parallel_impedance_range.upper:
+        return 1, 1
+      else:
+        return 0, 0  # both ranges contained, nothing to do!
+    else:  # ratio also needs shifting
+      if target.ratio.lower < ratio_range.lower:  # current range too high, decrease R2 and increase R1
+        return 1, -1
+      elif target.ratio.upper > ratio_range.upper:
+        return -1, 1
+      else:
+        return 0, 0  # this really shouldn't happen
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
