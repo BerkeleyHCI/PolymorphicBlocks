@@ -105,7 +105,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.impedance = self.Parameter(RangeExpr(impedance))
 
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.1))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
     self.selected_ratio = self.Parameter(RangeExpr())
     self.selected_impedance = self.Parameter(RangeExpr())
