@@ -70,7 +70,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
   Within a decade, this prefers combinations of smaller E-series before moving on,
   eg a satisfying E3 pair is preferred and returned, even if there is a closer E6 pair.
-  This has no concept of a distance metric.
+  This has no concept of a distance metric when the spec is satisfied.
 
   Tolerances should be handled by the implementing class, stored as a instance variable.
 
@@ -87,10 +87,21 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
-  def _is_acceptable(self, proposed: RatioOutputType, target: RatioOutputType) -> bool:
+  def _get_distance(self, proposed: RatioOutputType, target: RatioOutputType) -> List[float]:
     """Given a proposed output value (from E-series values under test) and the target,
-    returns whether it is acceptable."""
+    returns the distance from the acceptable as a list of floats.
+    If the entire list is zero or less, the proposed is considered satisfying the spec.
+    Otherwise, distance is sorted by list comparison: for the first element where values differ,
+    return the one containing the smallest of the two.
+
+    This somewhat complicated scheme is used to produce a helpful error message."""
     raise NotImplementedError()
+
+  def _no_result_error(self, best_values: Tuple[float, float], best: RatioOutputType,
+                       target: RatioOutputType) -> Exception:
+    """Given the best tested result and a target, generate an exception to throw.
+    This should not throw the exception, only generate it."""
+    raise Exception("No satisfying result for ratio")
 
   def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
     """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
@@ -102,7 +113,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), self.round_digits)
                  for elt in self.series]
     out = []
-    assert len(r1_series) == len(r2_series), "algorithm depends on same series"
+    assert len(r1_series) == len(r2_series), "algorithm depends on same series length"
     for index_max in range(len(r1_series)):
       for index_other in range(index_max):
         out.append((r1_series[index_max], r2_series[index_other]))
@@ -116,22 +127,32 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     searched_decades = set()  # keep track of what has been tried to avoid infinite loops
     r1r2_decade = self._get_initial_decade(target)
     r1r2_target = r1r2_decade
+    best = None
+
     while True:
       searched_decades.add(r1r2_decade)
 
       product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
       outputs = [(elt, self._calculate_output(elt[0], elt[1])) for elt in product]
-      matches = [(elt, output) for (elt, output) in outputs if self._is_acceptable(output, target)]
-      if matches:
-        return matches[0][0]
+
+      for output in outputs:
+        output_dist = self._get_distance(output[1], target)
+        if best is None or output_dist < best[1]:
+          best = (output, output_dist)
+          if all([elt <= 0 for elt in output_dist]):
+            break
+
+      assert best is not None
+      if all([elt <= 0 for elt in best[1]]):
+        return best[0][0]
       else:
         if r1r2_target == r1r2_decade:  # calculate new target if needed
           adjust = self._get_next_decade([output for (elt, output) in outputs], target)
           if adjust == (0, 0):
-            raise ValueError("No value found TODO better error message")
+            raise self._no_result_error(best[0][0], best[0][1], target)
           r1r2_target = (r1r2_decade[0] + adjust[0], r1r2_decade[1] + adjust[1])
           if r1r2_target in searched_decades:
-            raise ValueError("Re-searching through a previously searched decade")
+            raise self._no_result_error(best[0][0], best[0][1], target)
 
         if r1r2_decade[0] < r1r2_target[0]:  # prefer adjusting R1 first
           r1r2_decade = (r1r2_decade[0] + 1, r1r2_decade[1])
@@ -142,7 +163,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
         elif r1r2_decade[1] > r1r2_target[1]:
           r1r2_decade = (r1r2_decade[0], r1r2_decade[1] - 1)
         else:
-          raise ValueError("decade equals target")
+          raise self._no_result_error(best[0][0], best[0][1], target)
 
   @abstractmethod
   def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:

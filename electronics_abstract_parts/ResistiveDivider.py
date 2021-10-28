@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from itertools import chain, accumulate, product
 from math import log10, floor, ceil
-from typing import *
+from typing import List, Tuple, NamedTuple, Optional
 
-from .AbstractPassives import Resistor
-from .Categories import *
+from edg_core import *
+from electronics_model import Common, Passive
+from . import AnalogFilter, DiscreteApplication, Resistor, Filter
+
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
 
 
@@ -23,6 +25,9 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   TODO - not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
   (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
   """
+  class NoMatchException(Exception):
+    pass
+
   def __init__(self, series: List[float], tolerance: float):
     super().__init__(series)  # TODO custom range series
     self.tolerance = tolerance
@@ -39,10 +44,21 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
       Range(impedance_min, impedance_max)
     )
 
-  def _is_acceptable(self, proposed: DividerValues, target: DividerValues) -> bool:
-    """Given a proposed output value (from E-series values under test) and the target,
-    returns whether it is acceptable."""
-    return proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance)
+  def _get_distance(self, proposed: DividerValues, target: DividerValues) -> List[float]:
+    if proposed.ratio.fuzzy_in(target.ratio):
+      ratio_dist = 0.0
+    else:
+      ratio_dist = abs(proposed.ratio.center() - target.ratio.center())
+    if proposed.parallel_impedance.fuzzy_in(target.parallel_impedance):
+      impedance_dist = 0.0
+    else:
+      impedance_dist = abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
+
+    return [ratio_dist, impedance_dist]
+
+  def _no_result_error(self, best_values: Tuple[float, float], best: DividerValues,
+                       target: DividerValues) -> Exception:
+    raise ResistiveDividerCalculator.NoMatchException("lol")
 
   def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
     decade = ceil(log10(target.parallel_impedance.upper))

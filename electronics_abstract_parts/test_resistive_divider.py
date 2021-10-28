@@ -1,7 +1,7 @@
 import unittest
 
 from edg_core import Range
-from .ResistiveDivider import ResistiveDivider, ResistiveDividerCalculator, DividerValues
+from .ResistiveDivider import ResistiveDividerCalculator, DividerValues
 from .ESeriesUtil import ESeriesUtil
 
 
@@ -40,17 +40,17 @@ class ResistorDividerTest(unittest.TestCase):
   def test_impossible(self) -> None:
     e1_calculator = ResistiveDividerCalculator([1.0], 0.01)
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.10, 0.4), Range(0.1, 10))),  # not possible with E1 series
         None)
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.5, 0.5), Range(0.1, 10))),  # tolerance too tight
         None)
 
-    with self.assertRaises(ValueError):
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.1, 1), Range(1, 4))),  # can't meet the impedances
         None)

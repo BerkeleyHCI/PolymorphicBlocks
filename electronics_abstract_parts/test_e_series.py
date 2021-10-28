@@ -47,8 +47,8 @@ class RatioTestCase(unittest.TestCase):
     def _calculate_output(self, r1: float, r2: float) -> None:
       return None
 
-    def _is_acceptable(self, proposed: None, target: None) -> bool:
-      return False
+    def _get_distance(self, proposed: None, target: None) -> List[float]:
+      return []
 
     def _get_initial_decade(self, target: None) -> Tuple[int, int]:
       return (0, 0)
