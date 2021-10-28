@@ -1,7 +1,9 @@
 import unittest
+from typing import List, Tuple
 
 from edg_core import Range
-from .ESeriesUtil import ESeriesUtil
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
+
 
 class PreferredNumberTestCase(unittest.TestCase):
   def test_zigzag_range(self) -> None:
@@ -38,3 +40,26 @@ class PreferredNumberTestCase(unittest.TestCase):
                      1200)
     self.assertEqual(ESeriesUtil.choose_preferred_number(Range(680, 1001), 0.01, ESeriesUtil.E24_SERIES_ZIGZAG, 2),
                      820)
+
+
+class RatioTestCase(unittest.TestCase):
+  class DummyESeriesRatioUtil(ESeriesRatioUtil[None]):
+    def _calculate_output(self, r1: float, r2: float) -> None:
+      return None
+
+    def _is_acceptable(self, proposed: None, target: None) -> bool:
+      return False
+
+    def _get_initial_decade(self, target: None) -> Tuple[int, int]:
+      return (0, 0)
+
+    def _get_next_decade(self, decade_outputs: List[None], target: None) -> Tuple[int, int]:
+      return (0, 0)
+
+  def test_ratio_product(self):
+    calculator = RatioTestCase.DummyESeriesRatioUtil([1, 2, 3, 4])
+    self.assertEqual(calculator._generate_e_series_product(0, 0),
+                     [(1, 1),
+                      (2, 1), (1, 2), (2, 2),
+                      (3, 1), (1, 3), (3, 2), (2, 3), (3, 3),
+                      (4, 1), (1, 4), (4, 2), (2, 4), (4, 3), (3, 4), (4, 4)])

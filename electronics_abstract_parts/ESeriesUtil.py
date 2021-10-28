@@ -94,15 +94,20 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
   def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
     """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
-    TODO - zigzag ordering"""
+    The output is ordered such that pairs containing numbers earlier in the series comes first,
+    so in effect lower E-series combinations are preferred, assuming the series is ordered in a
+    zig-zag fashion."""
     r1_series = [ESeriesUtil.round_sig(elt * (10 ** r1_decade), self.round_digits)
                  for elt in self.series]
     r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), self.round_digits)
                  for elt in self.series]
     out = []
-    for r1_elt in r1_series:
-      for r2_elt in r2_series:
-        out.append((r1_elt, r2_elt))
+    assert len(r1_series) == len(r2_series), "algorithm depends on same series"
+    for index_max in range(len(r1_series)):
+      for index_other in range(index_max):
+        out.append((r1_series[index_max], r2_series[index_other]))
+        out.append((r1_series[index_other], r2_series[index_max]))
+      out.append((r1_series[index_max], r2_series[index_max]))
 
     return out
 
@@ -125,6 +130,8 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
           if adjust == (0, 0):
             raise ValueError("No value found TODO better error message")
           r1r2_target = (r1r2_decade[0] + adjust[0], r1r2_decade[1] + adjust[1])
+          if r1r2_target in searched_decades:
+            raise ValueError("Re-searching through a previously searched decade")
 
         if r1r2_decade[0] < r1r2_target[0]:  # prefer adjusting R1 first
           r1r2_decade = (r1r2_decade[0] + 1, r1r2_decade[1])

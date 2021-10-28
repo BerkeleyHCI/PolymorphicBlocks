@@ -36,3 +36,21 @@ class ResistorDividerTest(unittest.TestCase):
     self.assertEqual(
       calculator.find(DividerValues(Range(0.106, 0.111), Range(11, 99))),  # test everything
       (820, 100))
+
+  def test_impossible(self) -> None:
+    e1_calculator = ResistiveDividerCalculator([1.0], 0.01)
+
+    with self.assertRaises(ValueError):
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.10, 0.4), Range(0.1, 10))),  # not possible with E1 series
+        None)
+
+    with self.assertRaises(ValueError):
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.5, 0.5), Range(0.1, 10))),  # tolerance too tight
+        None)
+
+    with self.assertRaises(ValueError):
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.1, 1), Range(1, 4))),  # can't meet the impedances
+        None)
