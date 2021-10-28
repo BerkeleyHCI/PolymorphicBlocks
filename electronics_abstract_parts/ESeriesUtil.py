@@ -77,8 +77,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
   """
-  def __init__(self, series: List[float]):
+  def __init__(self, series: List[float], round_digits: int = 5):
     self.series = series
+    self.round_digits = round_digits
 
   @abstractmethod
   def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
@@ -94,8 +95,10 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
     """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
     TODO - zigzag ordering"""
-    r1_series = [elt * (10 ** r1_decade) for elt in self.series]
-    r2_series = [elt * (10 ** r2_decade) for elt in self.series]
+    r1_series = [ESeriesUtil.round_sig(elt * (10 ** r1_decade), self.round_digits)
+                 for elt in self.series]
+    r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), self.round_digits)
+                 for elt in self.series]
     out = []
     for r1_elt in r1_series:
       for r2_elt in r2_series:
@@ -108,12 +111,10 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     searched_decades = set()  # keep track of what has been tried to avoid infinite loops
     r1r2_decade = self._get_initial_decade(target)
     r1r2_target = r1r2_decade
-    print()
     while True:
       searched_decades.add(r1r2_decade)
 
       product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
-      print(f"search decade {r1r2_decade} <= {product}")
       outputs = [(elt, self._calculate_output(elt[0], elt[1])) for elt in product]
       matches = [(elt, output) for (elt, output) in outputs if self._is_acceptable(output, target)]
       if matches:
