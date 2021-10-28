@@ -90,7 +90,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   def _get_distance(self, proposed: RatioOutputType, target: RatioOutputType) -> List[float]:
     """Given a proposed output value (from E-series values under test) and the target,
     returns the distance from the acceptable as a list of floats.
-    If the entire list is zero or less, the proposed is considered satisfying the spec.
+    If the list is empty, that means the proposed is considered satisfying.
     Otherwise, distance is sorted by list comparison: for the first element where values differ,
     return the one containing the smallest of the two.
 
@@ -101,7 +101,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
                        target: RatioOutputType) -> Exception:
     """Given the best tested result and a target, generate an exception to throw.
     This should not throw the exception, only generate it."""
-    raise Exception("No satisfying result for ratio")
+    return Exception("No satisfying result for ratio")
 
   def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
     """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
@@ -143,7 +143,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
             break
 
       assert best is not None
-      if all([elt <= 0 for elt in best[1]]):
+      if not best[1]:
         return best[0][0]
       else:
         if r1r2_target == r1r2_decade:  # calculate new target if needed

@@ -45,20 +45,17 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
     )
 
   def _get_distance(self, proposed: DividerValues, target: DividerValues) -> List[float]:
-    if proposed.ratio.fuzzy_in(target.ratio):
-      ratio_dist = 0.0
+    if proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance):
+      return []
     else:
-      ratio_dist = abs(proposed.ratio.center() - target.ratio.center())
-    if proposed.parallel_impedance.fuzzy_in(target.parallel_impedance):
-      impedance_dist = 0.0
-    else:
-      impedance_dist = abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
-
-    return [ratio_dist, impedance_dist]
+      return [
+        abs(proposed.ratio.center() - target.ratio.center()),
+        abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
+      ]
 
   def _no_result_error(self, best_values: Tuple[float, float], best: DividerValues,
                        target: DividerValues) -> Exception:
-    raise ResistiveDividerCalculator.NoMatchException("lol")
+    return ResistiveDividerCalculator.NoMatchException("lol")
 
   def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
     decade = ceil(log10(target.parallel_impedance.upper))

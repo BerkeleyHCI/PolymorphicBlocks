@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from .Exception import *
+from .Exceptions import *
 from .test_common import TestPortSource, TestBlockSource, TestBlockSink, TestBlockImplicitSink
 
 

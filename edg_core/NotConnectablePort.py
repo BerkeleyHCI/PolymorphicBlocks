@@ -2,7 +2,7 @@ from typing import cast, Generic
 from .Ports import Port
 from .HierarchyBlock import Block
 from .Builder import builder
-from .Exception import *
+from .Exceptions import *
 
 
 NotConnectablePortType = TypeVar('NotConnectablePortType', bound=Port, covariant=True)

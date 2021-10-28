@@ -11,7 +11,7 @@ from .Binding import ParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
 from .Range import Range
-from .Exception import *
+from .Exceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut
