@@ -40,10 +40,11 @@ class ResistorDividerTest(unittest.TestCase):
   def test_impossible(self) -> None:
     e1_calculator = ResistiveDividerCalculator([1.0], 0.01)
 
-    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException) as error:
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.10, 0.4), Range(0.1, 10))),  # not possible with E1 series
         None)
+    self.assertIn('best: (100.0, 10.0)', error.exception.args[0])
 
     with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
       self.assertEqual(

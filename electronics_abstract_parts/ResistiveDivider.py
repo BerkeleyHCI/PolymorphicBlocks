@@ -55,7 +55,10 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
 
   def _no_result_error(self, best_values: Tuple[float, float], best: DividerValues,
                        target: DividerValues) -> Exception:
-    return ResistiveDividerCalculator.NoMatchException("lol")
+    return ResistiveDividerCalculator.NoMatchException(
+      f"No resistive divider found for target ratio={target.ratio}, impedance={target.parallel_impedance}, "
+      f"best: {best_values} with ratio={best.ratio}, impednace={best.parallel_impedance}"
+    )
 
   def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
     decade = ceil(log10(target.parallel_impedance.upper))

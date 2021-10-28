@@ -94,6 +94,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     Otherwise, distance is sorted by list comparison: for the first element where values differ,
     return the one containing the smallest of the two.
 
+    Note that a non-satisfying zero distance is possible, where the value centers match
+    but not the tolerance.
+
     This somewhat complicated scheme is used to produce a helpful error message."""
     raise NotImplementedError()
 
