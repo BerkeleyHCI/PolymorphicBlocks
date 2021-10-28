@@ -7,7 +7,7 @@ from .ESeriesUtil import ESeriesUtil
 
 class ResistorDividerTest(unittest.TestCase):
   def test_resistor_divider(self) -> None:
-    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES_ZIGZAG, 0.01)
+    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES[24], 0.01)
 
     self.assertEqual(
       calculator.find(DividerValues(Range(0, 1), Range(0.1, 1))),

@@ -22,6 +22,13 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   R1 is the high-side resistor, and R2 is the low-side resistor, such that
   Vout = Vin * R2 / (R1 + R2)
 
+  Example of decade adjustment:
+  R1 : R2   maxR2/minR1  minR2/maxR1
+  1  : 10   82/83        10/18.2      /\ ratio towards 1
+  1  : 1    8.2/9.2      1/9.2
+  10 : 1    8.2/18.2     1/83
+  100: 1    8.2/108.2    1/821        \/ ratio towards 0
+
   TODO - not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
   (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
   """
@@ -94,13 +101,13 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
 
   @init_in_parent
   def __init__(self, ratio: RangeLike = RangeExpr(), impedance: RangeLike = RangeExpr()) -> None:
-    # Misc ideas
-    # TODO Perhaps pick one end of ratio to be -inf / inf, to specify "pick as close as possible",
-    # but what are the practicality constraints (E12 series?)
     super().__init__()
 
-    self.ratio = self.Parameter(RangeExpr(ratio))  # TODO: maybe should be a target output voltage instead?
+    self.ratio = self.Parameter(RangeExpr(ratio))
     self.impedance = self.Parameter(RangeExpr(impedance))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.1))  # can be overridden by refinements
 
     self.selected_ratio = self.Parameter(RangeExpr())
     self.selected_impedance = self.Parameter(RangeExpr())
@@ -110,118 +117,19 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.center = self.Port(Passive())
     self.bottom = self.Port(Passive())
 
-    self.generator(self.generate_divider, self.ratio, self.impedance)
+    self.generator(self.generate_divider, self.ratio, self.impedance, self.series, self.tolerance)
 
-  @classmethod
-  def _ratio_tolerance(cls, r1_center: float, r2_center: float, tol: float) -> Range:
-    tol_min = 1 - tol
-    tol_max = 1 + tol
-    ratio_min = r2_center * tol_min / (r2_center * tol_min + r1_center * tol_max)
-    ratio_max = r2_center * tol_max / (r2_center * tol_max + r1_center * tol_min)
-    return Range(ratio_min, ratio_max)
-
-  @classmethod
-  def _select_resistor(cls, series: List[List[float]], ratio: Range, impedance: Range,
-                       tol: float) -> Tuple[float, float]:
-    """Returns the nominal resistances of a 2-resistor divider that meets the ratio and parallel impedance requirements,
-    considering individual resistor tolerances.
-    This algorithm prefers resistors close in decade as possible.
-    - TODO series should take tolerances, this allows this to stack with parallel / series resistors by encoding all
-      combinations in the series list
-
-    Algorithm overview, for R1 high-side and R2 low-side:
-    Select the decade for R1 by adjusting as necessary so the ratio is contained. For example:
-      R1 : R2   maxR2/minR1  minR2/maxR1
-      1  : 10   82/83        10/18.2      /\ ratio towards 1  (as implemented, we use R1=0.1)
-      1  : 1    8.2/9.2      1/9.2
-      10 : 1    8.2/18.2     1/83
-      100: 1    8.2/108.2    1/821        \/ ratio towards 0
-    - Note, common multiples of 10 are canceled out
-    - Note, there is overlap between each decade, so we zigzag through decades of R1 until out of range on both sides
-    For each candidate, adjust the common decade between R1 and R2 to meet the parallel impedance spec.
-    - TODO: this should be an arbitrary evaluation function, eg also support series impedance
-    - We bump the impedance to the lowest decade in the tolerated impedance (log10 floor), and see if there is a match
-    - If not, keep bumping decades until the impedance is out of range
-    """
-    R1_DECADE_LIMIT = 1e6
-
-    assert ratio.upper <= 1, f"can't generate ratios > 1, got ratio={ratio}"
-
-    # Track the best candidate in case a divider couldn't be solved, and give an informative message
-    best_candidate = (float('inf'), Range(0, 0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
-
-    tol_min = 1 - tol
-    tol_max = 1 + tol
-
-    series_all = list(chain(*series))
-    series_min = min(series_all) * tol_min
-    series_max = max(series_all) * tol_max
-
-    impedance_shift = floor(log10(impedance.lower))
-
-    def decade_limits(r1_decade: float) -> Range:
-      """Returns the ratio limits of the specified decade, accounting for worst case tolerance"""
-      return Range(series_min / (series_min + r1_decade*series_max),
-                   series_max / (series_max + r1_decade*series_min))
-
-    def try_r1_decade(r1_decade: float) -> Optional[Tuple[float, float]]:
-      nonlocal best_candidate
-      for subseries in accumulate(series):  # TODO this does some redundant work with lower series
-        for r1_center, r2_center in product([elt * r1_decade for elt in subseries], subseries):
-          r1r2_ratio = cls._ratio_tolerance(r1_center, r2_center, tol)
-          if r1r2_ratio in ratio:
-            r1r2_impedance = 1 / (1 / Range.from_tolerance(r1_center, tol) +
-                                  1 / Range.from_tolerance(r2_center, tol))
-            r1r2_impedance_shift = floor(log10(r1r2_impedance.lower))
-            while not (r1r2_impedance.lower > impedance.upper):
-              decade = 10 ** (impedance_shift - r1r2_impedance_shift)
-              r1r2_impedance = r1r2_impedance * decade
-              if r1r2_impedance in impedance:
-                return ESeriesUtil.round_sig(r1_center * decade, 3), \
-                       ESeriesUtil.round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
-              r1r2_impedance_shift += 1
-
-          if abs(r1r2_ratio.center() - ratio.center()) < abs(best_candidate[0] - ratio.center()):
-            best_candidate = (r1r2_ratio.center(), r1r2_ratio, (r1_center, r2_center))
-      return None
-
-    r1_decade = 1  # zig-zag: 1,  10, 0.1,  100, 0.01,  ... (raise, invert, repeat)
-    upper_r1_range = decade_limits(r1_decade)
-    lower_r1_range = decade_limits(1 / r1_decade)
-
-    while not ((lower_r1_range.upper < ratio.lower) and (upper_r1_range.lower > ratio.upper)) and \
-        r1_decade <= R1_DECADE_LIMIT:
-      if upper_r1_range.intersects(ratio):
-        res = try_r1_decade(r1_decade)
-        if res is not None:
-          return res
-
-      if upper_r1_range != lower_r1_range and lower_r1_range.intersects(ratio):
-        res = try_r1_decade(1 / r1_decade)
-        if res is not None:
-          return res
-
-      r1_decade *= 10
-      upper_r1_range = decade_limits(r1_decade)
-      lower_r1_range = decade_limits(1/ r1_decade)
-
-    raise ValueError(f"Unable to find resistive divider with ratio in {ratio} and impedance in {impedance} "
-                     f"within {tol*100}% resistors. "
-                     f"Best candidate: r1,r2={best_candidate[2]}, ratio range {best_candidate[1]}")
-
-  def generate_divider(self, ratio: Range, impedance: Range) -> None:
+  def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
-    TODO: if no combinations found, try a 3-combination, with a series or parallel connection on one side.
     """
-    TOLERANCE = 0.01  # epsilon
-    top_resistance, bottom_resistance = self._select_resistor(
-      ESeriesUtil.E24_SERIES, ratio, impedance, TOLERANCE)
+    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES[series], tolerance)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
 
     self.top_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, TOLERANCE)
+      resistance=Range.from_tolerance(top_resistance, tolerance)
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, TOLERANCE)
+      resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
 
     self.connect(self.top_res.a, self.top)
