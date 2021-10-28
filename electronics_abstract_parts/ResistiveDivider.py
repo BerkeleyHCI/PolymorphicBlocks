@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from itertools import chain, accumulate, product
-from math import log10, floor, ceil
-from typing import List, Tuple, NamedTuple, Optional
+from math import log10, ceil
+from typing import List, Tuple, NamedTuple
 
 from edg_core import *
 from electronics_model import Common, Passive
 from . import AnalogFilter, DiscreteApplication, Resistor, Filter
-
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
 
 
@@ -64,7 +62,7 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
                        target: DividerValues) -> Exception:
     return ResistiveDividerCalculator.NoMatchException(
       f"No resistive divider found for target ratio={target.ratio}, impedance={target.parallel_impedance}, "
-      f"best: {best_values} with ratio={best.ratio}, impednace={best.parallel_impedance}"
+      f"best: {best_values} with ratio={best.ratio}, impedance={best.parallel_impedance}"
     )
 
   def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
