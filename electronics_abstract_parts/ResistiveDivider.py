@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from itertools import chain, accumulate, product
-from math import log10, floor
+from math import log10, floor, ceil
 from typing import *
 
 from .AbstractPassives import Resistor
 from .Categories import *
-from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, RatioOutputType
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
 
 
 class DividerValues(NamedTuple):
@@ -23,7 +23,8 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   TODO - not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
   (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
   """
-  def __init__(self, tolerance: float):
+  def __init__(self, series: List[float], tolerance: float):
+    super().__init__(series)  # TODO custom range series
     self.tolerance = tolerance
 
   def _calculate_output(self, r1: float, r2: float) -> DividerValues:
@@ -44,7 +45,7 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
     return proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance)
 
   def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
-    decade = floor(log10(target.parallel_impedance.lower))
+    decade = ceil(log10(target.parallel_impedance.upper))
     return decade, decade
 
   def _get_next_decade(self, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:

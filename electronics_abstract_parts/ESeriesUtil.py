@@ -1,5 +1,6 @@
+import itertools
 from abc import ABCMeta, abstractmethod
-from typing import Sequence, Optional, TypeVar, Tuple, List, Generic
+from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, cast
 from electronics_model import *
 from itertools import chain
 import math
@@ -76,6 +77,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
   """
+  def __init__(self, series: List[float]):
+    self.series = series
+
   @abstractmethod
   def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
     """Given two E-series values, calculate the output parameters."""
@@ -87,11 +91,50 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     returns whether it is acceptable."""
     raise NotImplementedError()
 
+  def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
+    """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
+    TODO - zigzag ordering"""
+    r1_series = [elt * (10 ** r1_decade) for elt in self.series]
+    r2_series = [elt * (10 ** r2_decade) for elt in self.series]
+    out = []
+    for r1_elt in r1_series:
+      for r2_elt in r2_series:
+        out.append((r1_elt, r2_elt))
+
+    return out
+
   def find(self, target: RatioOutputType) -> Tuple[float, float]:
     """Find a pair of R1, R2 that satisfies the target."""
-    r1_decade, r2_decade = self._get_initial_decade(target)
+    searched_decades = set()  # keep track of what has been tried to avoid infinite loops
+    r1r2_decade = self._get_initial_decade(target)
+    r1r2_target = r1r2_decade
+    print()
+    while True:
+      searched_decades.add(r1r2_decade)
 
+      product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
+      print(f"search decade {r1r2_decade} <= {product}")
+      outputs = [(elt, self._calculate_output(elt[0], elt[1])) for elt in product]
+      matches = [(elt, output) for (elt, output) in outputs if self._is_acceptable(output, target)]
+      if matches:
+        return matches[0][0]
+      else:
+        if r1r2_target == r1r2_decade:  # calculate new target if needed
+          adjust = self._get_next_decade([output for (elt, output) in outputs], target)
+          if adjust == (0, 0):
+            raise ValueError("No value found TODO better error message")
+          r1r2_target = (r1r2_decade[0] + adjust[0], r1r2_decade[1] + adjust[1])
 
+        if r1r2_decade[0] < r1r2_target[0]:  # prefer adjusting R1 first
+          r1r2_decade = (r1r2_decade[0] + 1, r1r2_decade[1])
+        elif r1r2_decade[0] > r1r2_target[0]:
+          r1r2_decade = (r1r2_decade[0] - 1, r1r2_decade[1])
+        elif r1r2_decade[1] < r1r2_target[1]:  # then adjust R2
+          r1r2_decade = (r1r2_decade[0], r1r2_decade[1] + 1)
+        elif r1r2_decade[1] > r1r2_target[1]:
+          r1r2_decade = (r1r2_decade[0], r1r2_decade[1] - 1)
+        else:
+          raise ValueError("decade equals target")
 
   @abstractmethod
   def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
