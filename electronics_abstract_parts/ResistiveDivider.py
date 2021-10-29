@@ -20,6 +20,9 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   R1 is the high-side resistor, and R2 is the low-side resistor, such that
   Vout = Vin * R2 / (R1 + R2)
 
+  alternatively, avoiding duplication of terms:
+  ratio = 1 / (R1 / R2 + 1)
+
   Example of decade adjustment:
   R1 : R2   maxR2/minR1  minR2/maxR1
   1  : 10   82/83        10/18.2      /\ ratio towards 1
@@ -65,33 +68,59 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
       f"best: {best_values} with ratio={best.ratio}, impedance={best.parallel_impedance}"
     )
 
-  def _get_initial_decade(self, target: DividerValues) -> Tuple[int, int]:
+  def _get_initial_decades(self, target: DividerValues) -> List[Tuple[int, int]]:
+    # TODO: adjust initial ratio to intersect?
+    # This really is only a problem for very small ratios:
+    # below 1/10 it will waste time scanning the (0, 0) decade
+    # and only below it will fail as it scans the (0, 0) decade and can't find a single step
+    # to make it intersect
     decade = ceil(log10(target.parallel_impedance.upper))
-    return decade, decade
+    return [(decade, decade)]
 
-  def _get_next_decade(self, decade_outputs: List[DividerValues], target: DividerValues) -> Tuple[int, int]:
-    ratio_range = Range(
-      min([output.ratio.lower for output in decade_outputs]),
-      max([output.ratio.upper for output in decade_outputs])
-    )
-    parallel_impedance_range = Range(
-      min([output.parallel_impedance.lower for output in decade_outputs]),
-      max([output.parallel_impedance.upper for output in decade_outputs])
-    )
-    if target.ratio.fuzzy_in(ratio_range):  # ratio contained, only impedance needs shifting
-      if target.parallel_impedance.lower < parallel_impedance_range.lower:
-        return -1, -1
-      elif target.parallel_impedance.upper > parallel_impedance_range.upper:
-        return 1, 1
-      else:
-        return 0, 0  # both ranges contained, nothing to do!
-    else:  # ratio also needs shifting
-      if target.ratio.lower < ratio_range.lower:  # current range too high, decrease R2 and increase R1
-        return 1, -1
-      elif target.ratio.upper > ratio_range.upper:
-        return -1, 1
-      else:
-        return 0, 0  # this really shouldn't happen
+  def _get_next_decades(self, decade: Tuple[int, int], best: DividerValues, target: DividerValues) -> \
+      List[Tuple[int, int]]:
+    def range_of_decade(range_decade: int) -> Range:
+      """Given a decade, return the range of possible values - for example, decade 0
+      would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
+      return Range(10 ** range_decade, 10 ** (range_decade + 1))
+    def impedance_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
+      """Given R1, R2 decade as a tuple, returns the possible impedance range."""
+      return 1 / (1 / range_of_decade(r1r2_decade[0]) + 1 / range_of_decade(r1r2_decade[1]))
+    def ratio_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
+      """Given R1, R2 decade as a tuple, returns the possible ratio range."""
+      return 1 / (range_of_decade(r1r2_decade[0]) / range_of_decade(r1r2_decade[1]) + 1)
+
+    new_decades = []
+
+    # test adjustments that shift both decades in the same direction (changes impedance)
+    down_decade = (decade[0] - 1, decade[1] - 1)
+    up_decade = (decade[0] + 1, decade[1] + 1)
+    if target.ratio.intersects(ratio_of_decade(down_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(down_decade)):
+      new_decades.append(down_decade)
+    if target.ratio.intersects(ratio_of_decade(up_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(up_decade)):
+      new_decades.append(up_decade)
+
+    # test adjustments that shift decades independently (changes ratio)
+    up_r1_decade = (decade[0] - 1, decade[1])
+    up_r2_decade = (decade[0], decade[1] + 1)
+    down_r1_decade = (decade[0] + 1, decade[1])
+    down_r2_decade = (decade[0], decade[1] - 1)
+    if target.ratio.intersects(ratio_of_decade(up_r1_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(up_r1_decade)):
+      new_decades.append(up_r1_decade)
+    if target.ratio.intersects(ratio_of_decade(up_r2_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(up_r2_decade)):
+      new_decades.append(up_r2_decade)
+    if target.ratio.intersects(ratio_of_decade(down_r1_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(down_r1_decade)):
+      new_decades.append(down_r1_decade)
+    if target.ratio.intersects(ratio_of_decade(down_r2_decade)) and \
+        target.parallel_impedance.intersects(impedance_of_decade(down_r2_decade)):
+      new_decades.append(down_r2_decade)
+
+    return new_decades
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):

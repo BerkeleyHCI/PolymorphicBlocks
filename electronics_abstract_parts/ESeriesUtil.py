@@ -1,8 +1,8 @@
 import itertools
 from abc import ABCMeta, abstractmethod
+from collections import deque
 from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, cast
 from electronics_model import *
-from itertools import chain
 import math
 
 
@@ -132,49 +132,46 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
   def find(self, target: RatioOutputType) -> Tuple[float, float]:
     """Find a pair of R1, R2 that satisfies the target."""
-    searched_decades = set()  # keep track of what has been tried to avoid infinite loops
-    r1r2_decade = self._get_initial_decade(target)
-    r1r2_target = r1r2_decade
+    initial = self._get_initial_decades(target)
+    search_queue = deque(initial)
+    searched_decades = set(initial)  # tracks everything that has been on the search queue
     best = None
 
-    while True:
-      searched_decades.add(r1r2_decade)
-
+    while search_queue:
+      r1r2_decade = search_queue.popleft()
       product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
-      outputs = [(elt, self._calculate_output(elt[0], elt[1])) for elt in product]
 
-      for output in outputs:
-        output_dist = self._get_distance(output[1], target)
-        if best is None or output_dist < best[1]:
-          best = (output, output_dist)
-          if all([elt <= 0 for elt in output_dist]):
-            break
+      decade_best = None
 
+      for (r1, r2) in product:
+        output = self._calculate_output(r1, r2)
+        output_dist = self._get_distance(output, target)
+        if decade_best is None or output_dist < decade_best[2]:
+          decade_best = ((r1, r2), output, output_dist)
+
+          if best is None or output_dist < best[2]:
+            best = ((r1, r2), output, output_dist)
+            if not output_dist:
+              break
+
+      assert decade_best is not None
       assert best is not None
-      if not best[1]:
-        return best[0][0]
+      if not best[2]:  # distance vector empty = satisfying
+        return best[0]
       else:
-        if r1r2_target == r1r2_decade:  # calculate new target if needed
-          adjust = self._get_next_decade([output for (elt, output) in outputs], target)
-          if adjust == (0, 0):
-            raise self._no_result_error(best[0][0], best[0][1], target)
-          r1r2_target = (r1r2_decade[0] + adjust[0], r1r2_decade[1] + adjust[1])
-          if r1r2_target in searched_decades:
-            raise self._no_result_error(best[0][0], best[0][1], target)
+        next_decades = self._get_next_decades(r1r2_decade, decade_best[1], target)
+        for next_decade in next_decades:
+          if next_decade not in searched_decades:
+            searched_decades.add(next_decade)
+            search_queue.append(next_decade)
 
-        if r1r2_decade[0] < r1r2_target[0]:  # prefer adjusting R1 first
-          r1r2_decade = (r1r2_decade[0] + 1, r1r2_decade[1])
-        elif r1r2_decade[0] > r1r2_target[0]:
-          r1r2_decade = (r1r2_decade[0] - 1, r1r2_decade[1])
-        elif r1r2_decade[1] < r1r2_target[1]:  # then adjust R2
-          r1r2_decade = (r1r2_decade[0], r1r2_decade[1] + 1)
-        elif r1r2_decade[1] > r1r2_target[1]:
-          r1r2_decade = (r1r2_decade[0], r1r2_decade[1] - 1)
-        else:
-          raise self._no_result_error(best[0][0], best[0][1], target)
+    # if it gets here, the search queue has been exhausted without a result
+    assert best is not None
+    raise self._no_result_error(best[0], best[1], target)
+
 
   @abstractmethod
-  def _get_initial_decade(self, target: RatioOutputType) -> Tuple[int, int]:
+  def _get_initial_decades(self, target: RatioOutputType) -> List[Tuple[int, int]]:
     """Given the target output, return the initial decades (for R1, R2), as log10 to try.
     For example, a decade of 0 means try 1.0, 2.2, 4.7;
     while a decade of -1 means try 10, 22, 47.
@@ -182,12 +179,12 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
-  def _get_next_decade(self, decade_outputs: List[RatioOutputType], target: RatioOutputType) -> Tuple[int, int]:
-    """If the target was not found scanning the entire decade, return the direction to adjust the decades for R1, R2.
-    Adjustment should be 0, 1, or -1.
-    The algorithm will try all combinations of increments, and if nothing is found again, calls this again.
-    Returning (0, 0) means that nothing else can be done and no adjustments can satisfy -
-    and will error out with no solution.
-    The algorithm will also check for backtracking, which will also error out with no solution
+  def _get_next_decades(self, decade: Tuple[int, int], best: RatioOutputType, target: RatioOutputType) -> \
+      List[Tuple[int, int]]:
+    """If the target was not found scanning the entire decade, this is called to determine next decades to search.
+    This is passed in the current decade, the best output value in the current decade, and the target.
+
+    Returns a list of decades to search, in order. Internally the search algorithm deduplicates decades.
+    This is called for every decade, and results are appended to the end of the search queue after deduplication.
     """
     raise NotImplementedError

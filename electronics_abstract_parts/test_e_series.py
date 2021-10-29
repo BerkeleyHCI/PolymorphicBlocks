@@ -50,11 +50,12 @@ class RatioTestCase(unittest.TestCase):
     def _get_distance(self, proposed: None, target: None) -> List[float]:
       return []
 
-    def _get_initial_decade(self, target: None) -> Tuple[int, int]:
-      return (0, 0)
+    def _get_initial_decades(self, target: None) -> List[Tuple[int, int]]:
+      return [(0, 0)]
 
-    def _get_next_decade(self, decade_outputs: List[None], target: None) -> Tuple[int, int]:
-      return (0, 0)
+    def _get_next_decades(self, decade: Tuple[int, int], best: None, target: None) -> \
+        List[Tuple[int, int]]:
+      return []
 
   def test_ratio_product(self):
     calculator = RatioTestCase.DummyESeriesRatioUtil([1, 2, 3, 4])
