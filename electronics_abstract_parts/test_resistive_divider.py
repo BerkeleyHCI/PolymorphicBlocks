@@ -52,6 +52,8 @@ class ResistorDividerTest(unittest.TestCase):
         None)
 
     with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+      # this uses ratio = 0.1 - 0.9 for efficiency, otherwise the system searches keeps (fruitlessly)
+      # searching through more extreme ratios until it hits decade limits
       self.assertEqual(
-        e1_calculator.find(DividerValues(Range(0.1, 1), Range(1, 4))),  # can't meet the impedances
+        e1_calculator.find(DividerValues(Range(0.1, 0.9), Range(1, 4))),  # can't meet the impedances
         None)

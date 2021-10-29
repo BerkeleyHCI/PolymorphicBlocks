@@ -161,7 +161,7 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
       else:
         next_decades = self._get_next_decades(r1r2_decade, decade_best[1], target)
         for next_decade in next_decades:
-          if next_decade not in searched_decades:
+          if next_decade not in searched_decades and -15 < next_decade[0] < 15 and -15 < next_decade[1] < 15:
             searched_decades.add(next_decade)
             search_queue.append(next_decade)
 
