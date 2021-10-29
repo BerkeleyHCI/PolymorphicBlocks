@@ -43,17 +43,13 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   def _calculate_output(self, r1: float, r2: float) -> DividerValues:
     r1_range = Range.from_tolerance(r1, self.tolerance)
     r2_range = Range.from_tolerance(r2, self.tolerance)
-    ratio_min = r2_range.lower / (r2_range.lower + r1_range.upper)
-    ratio_max = r2_range.upper / (r2_range.upper + r1_range.lower)
-    impedance_min = 1 / (1 / r1_range.lower + 1 / r2_range.lower)
-    impedance_max = 1 / (1 / r1_range.upper + 1 / r2_range.upper)
     return DividerValues(
-      Range(ratio_min, ratio_max),
-      Range(impedance_min, impedance_max)
+      1 / (r1_range / r2_range + 1),
+      1 / (1 / r1_range + 1 / r2_range)
     )
 
   def _get_distance(self, proposed: DividerValues, target: DividerValues) -> List[float]:
-    if proposed.ratio.fuzzy_in(target.ratio) and proposed.parallel_impedance.fuzzy_in(target.parallel_impedance):
+    if proposed.ratio in target.ratio and proposed.parallel_impedance in target.parallel_impedance:
       return []
     else:
       return [
@@ -168,7 +164,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.assign(self.selected_series_impedance,
                 self.top_res.resistance + self.bottom_res.resistance)
     self.assign(self.selected_ratio,
-                self.bottom_res.resistance / (self.top_res.resistance + self.bottom_res.resistance))
+                1 / (self.top_res.resistance / self.bottom_res.resistance + 1))
 
 
 @abstract_block
