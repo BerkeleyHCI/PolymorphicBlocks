@@ -73,8 +73,6 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.current_rating = self.Parameter(RangeExpr())
-    self.frequency_rating = self.Parameter(RangeExpr())
     self.part_spec = self.Parameter(StringExpr(""))
     self.footprint_spec = self.Parameter(StringExpr(""))
     self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
