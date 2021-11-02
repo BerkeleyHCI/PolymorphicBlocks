@@ -1,45 +1,71 @@
-import csv
-from functools import reduce
-import os
-
 from electronics_abstract_parts import *
 from .ProductTableUtils import *
+from .PartsTable import *
 
 
-def generate_crystal_table(TABLES: List[str]) -> ProductTable:
-  tables = []
-  for filename in TABLES:
-    path = os.path.join(os.path.dirname(__file__), 'resources', filename)
-    with open(path, newline='', encoding='utf-8') as csvfile:
-      reader = csv.reader(csvfile)
-      tables.append(ProductTable(next(reader), [row for row in reader]))
-  table = reduce(lambda x, y: x+y, tables)
+class CrystalTable(LazyTable):
+  FREQUENCY = PartsTableColumn(Range)
+  CAPACITANCE = PartsTableColumn(float)
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
+  COST = PartsTableColumn(float)
 
-  return table \
-    .derived_column('frequency',
-                    RangeFromTolerance(ParseValue(Column('Frequency'), 'Hz'), Column('Frequency Tolerance')),
-                    missing='discard') \
-    .derived_column('capacitance',
-                    ParseValue(Column('Load Capacitance'), 'F'),
-                    missing='discard') \
-    .filter(ContainsString(Column('Operating Mode'), 'Fundamental')) \
-    .filter(ContainsString(Column('Size / Dimension'), '0.126" L x 0.098" W (3.20mm x 2.50mm)')) \
-    .derived_column('footprint',
-                    MapDict(Column('Package / Case'), {
-                      '4-SMD, No Lead': 'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm',  # TODO needs to be both Package/Case and Size/Dimension
-                    }), missing='discard')
+  SIZE_PACKAGE_FOOTPRINT_MAP = {
+    ('0.126" L x 0.098" W (3.20mm x 2.50mm)', '4-SMD, No Lead'):
+      'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm',
+  }
+
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_rows: Dict[PartsTableColumn, Any] = {}
+      try:
+        # handle the footprint first since this is the most likely to filter
+        new_rows[cls.FOOTPRINT] = cls.SIZE_PACKAGE_FOOTPRINT_MAP[
+          (row['Size / Dimension'], row['Package / Case'])
+        ]
+
+        if row['Operating Mode'] != 'Fundamental':
+          return None
+
+        new_rows[cls.FREQUENCY] = Range.from_tolerance(
+          PartsTableUtil.parse_value(row['Frequency'], 'Hz'),
+          PartsTableUtil.parse_tolerance(row['Frequency Tolerance'])
+        )
+        new_rows[cls.CAPACITANCE] = PartsTableUtil.parse_value(row['Load Capacitance'], 'F')
+
+        new_rows[cls.COST] = float(row['Unit Price (USD)'])
+
+        return new_rows
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_Crystals_3.2x2.5_1.csv',
+      'Digikey_Crystals_3.2x2.5_2.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row)
 
 
-class SmdCrystal(Crystal, FootprintBlock):
+class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self._in_mfr = self.Parameter(StringExpr())
-    self._in_part = self.Parameter(StringExpr())
-    self._in_value = self.Parameter(StringExpr())
-    self._in_datasheet = self.Parameter(StringExpr())
 
-  def contents(self):
-    super().contents()
+    self.selected_capacitance = self.Parameter(FloatExpr())
+
+    self.generator(self.select_part, self.frequency,
+                   targets=[self.crystal])
+
+  def select_part(self, frequency: Range):
+    compatible_parts = CrystalTable.table().filter(lambda row: (
+      row[CrystalTable.FREQUENCY] in frequency
+    ))
+    part = compatible_parts.sort_by(
+      lambda row: row[CrystalTable.COST]
+    ).first(f"no crystal matching f={frequency}")
+
+    self.assign(self.selected_capacitance, part[CrystalTable.CAPACITANCE])
+    self.assign(self.crystal.frequency, part[CrystalTable.FREQUENCY])
+
     self.footprint(
       'X', 'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm',
       {
@@ -48,16 +74,23 @@ class SmdCrystal(Crystal, FootprintBlock):
         '3': self.crystal.b,
         '4': self.gnd,
       },
-      mfr=self._in_mfr, part=self._in_part, value=self._in_value, datasheet=self._in_datasheet
+      mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
+      value=f"{part['Frequency']}, {part['Load Capacitance']}",
+      datasheet=part['Datasheets']
     )
 
 
-class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to disambiguate from part?
-  product_table = generate_crystal_table([
-    'Digikey_Crystals_3.2x2.5_1.csv',
-    'Digikey_Crystals_3.2x2.5_2.csv',
-  ])
+class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?
   PARASITIC_CAPACITANCE = 5e-12
+
+  # Tolerance selected using table 32 in https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf, which gives suggested
+  # load cap values 18pF, 39pF, 57pF. Assume any capacitance in the center could round either way - 22pF goes to 18pF
+  # or 39pF, which gives a 28% tolerance.
+  # Calculation: for tolerance y and series multiplicative factor a, we need (1+y) = a(1-y)
+  # which solves to y=(a-1)/(a+1)
+  # Then stack an additive 10% tolerance for the capacitor tolerance, for a total 0.38 tolerance.
+  # TODO this should be formalized better.
+  CAPACITOR_TOLERANCE = 0.38
 
   @init_in_parent
   def __init__(self, frequency: RangeLike = RangeExpr()) -> None:
@@ -65,51 +98,18 @@ class OscillatorCrystal(DiscreteApplication, GeneratorBlock):  # TODO rename to 
     Should include load capacitors."""
     super().__init__()
 
-    self.frequency = self.Parameter(RangeExpr(frequency))
-
-    self.crystal = self.Port(CrystalPort(), [InOut])
-    self.gnd = self.Port(Ground(), [Common])
-
-    self.generator(self.select_part, self.frequency,
-                   targets=[self.crystal, self.gnd])
-
-    # Output values
-    self.selected_frequency = self.Parameter(RangeExpr())
-
-  def select_part(self, frequency: Range):
-    # TODO this should be part of the crystal block, but that needs a post-generate elaborate
-    parts = self.product_table.filter(RangeContains(Lit(frequency), Column('frequency'))) \
-      .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no crystal matching f={frequency}")
-
-    self.package = self.Block(SmdCrystal(frequency=self.selected_frequency))
-
-    self.assign(self.package._in_mfr, part['Manufacturer'])
-    self.assign(self.package._in_part, part['Manufacturer Part Number'])
-    self.assign(self.selected_frequency, part['frequency'])
-    self.assign(self.package._in_value, f"{part['Frequency']}, {part['Load Capacitance']}")
-    self.assign(self.package._in_datasheet, part['Datasheets'])
-
-    self.connect(self.crystal, self.package.crystal)
-    self.connect(self.gnd, self.package.gnd)
-
-    crystal_capacitance = part['capacitance']
-    load_capacitance = (crystal_capacitance - self.PARASITIC_CAPACITANCE) * 2
-
-    # Tolerance selected using table 32 in https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf, which gives suggested
-    # load cap values 18pF, 39pF, 57pF. Assume any capacitance in the center could round either way - 22pF goes to 18pF
-    # or 39pF, which gives a 28% tolerance.
-    # Calculation: for tolerance y and series multiplicative factor a, we need (1+y) = a(1-y)
-    # which solves to y=(a-1)/(a+1)
-    # Then stack an additive 10% tolerance for the capacitor tolerance.
-    # TODO this should be formalized better.
+    self.package = self.Block(SmdCrystal(frequency=frequency))
+    self.crystal = self.Export(self.package.crystal, [InOut])
+    self.gnd = self.Export(self.package.gnd, [Common])
 
     cap_model = Capacitor(
-      capacitance=load_capacitance*Farad(tol=0.38),  # arbitrary tolerance given load capacitors from https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf
+      capacitance=(
+          (self.package.selected_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 - self.CAPACITOR_TOLERANCE),
+          (self.package.selected_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 + self.CAPACITOR_TOLERANCE)),
       voltage=self.crystal.link().drive_voltage
     )
     self.cap_a = self.Block(cap_model)
     self.cap_b = self.Block(cap_model)
     self.connect(self.cap_a.pos, self.crystal.a)
     self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.cap_a.neg.as_voltage_sink(), self.cap_b.neg.as_voltage_sink(), self.gnd)
+    self.connect(self.gnd, self.cap_a.neg.as_ground(), self.cap_b.neg.as_ground())
