@@ -9,7 +9,7 @@ from .Binding import ParamBinding, IsConnectedBinding, ParamVariableBinding, Nam
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
-from .Exception import *
+from .Exceptions import *
 from .IdentityDict import IdentityDict
 from .StructuredMetadata import MetaNamespaceOrder
 

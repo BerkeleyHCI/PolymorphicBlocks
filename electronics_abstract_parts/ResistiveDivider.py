@@ -1,12 +1,121 @@
 from __future__ import annotations
 
-from itertools import chain, accumulate, product
-from math import log10, floor
-from typing import *
+from math import log10, ceil
+from typing import List, Tuple, NamedTuple
 
-from .AbstractPassives import Resistor
-from .Categories import *
-from .ESeriesUtil import ESeriesUtil
+from edg_core import *
+from electronics_model import Common, Passive
+from . import AnalogFilter, DiscreteApplication, Resistor, Filter
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
+
+
+class DividerValues(NamedTuple):
+  ratio: Range
+  parallel_impedance: Range
+
+
+class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
+  """Resistive divider calculator using the ESeriesRatioUtil infrastructure.
+
+  R1 is the high-side resistor, and R2 is the low-side resistor, such that
+  Vout = Vin * R2 / (R1 + R2)
+
+  Example of decade adjustment:
+  R1 : R2   maxR2/minR1  minR2/maxR1  (theoretical)
+  1  : 10   100/101      10/20        /\ ratio towards 1
+  1  : 1    10/11        1/11
+  10 : 1    10/20        1/101
+  100: 1    10/110       1/1001       \/ ratio towards 0
+
+  TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
+  (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
+  """
+  class NoMatchException(Exception):
+    pass
+
+  def __init__(self, series: List[float], tolerance: float):
+    super().__init__(series)  # TODO custom range series
+    self.tolerance = tolerance
+
+  def _calculate_output(self, r1: float, r2: float) -> DividerValues:
+    """This uses a slight rewriting of terms to avoid duplication of terms and not double-count tolerances:
+    ratio = R2 / (R1 + R2) => divide  through by R2 / R2
+    ratio = 1 / (R1 / R2 + 1)
+    """
+    r1_range = Range.from_tolerance(r1, self.tolerance)
+    r2_range = Range.from_tolerance(r2, self.tolerance)
+    return DividerValues(
+      1 / (r1_range / r2_range + 1),
+      1 / (1 / r1_range + 1 / r2_range)
+    )
+
+  def _get_distance(self, proposed: DividerValues, target: DividerValues) -> List[float]:
+    if proposed.ratio in target.ratio and proposed.parallel_impedance in target.parallel_impedance:
+      return []
+    else:
+      return [
+        abs(proposed.ratio.center() - target.ratio.center()),
+        abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
+      ]
+
+  def _no_result_error(self, best_values: Tuple[float, float], best: DividerValues,
+                       target: DividerValues) -> Exception:
+    return ResistiveDividerCalculator.NoMatchException(
+      f"No resistive divider found for target ratio={target.ratio}, impedance={target.parallel_impedance}, "
+      f"best: {best_values} with ratio={best.ratio}, impedance={best.parallel_impedance}"
+    )
+
+  def _get_initial_decades(self, target: DividerValues) -> List[Tuple[int, int]]:
+    # TODO: adjust initial ratio to intersect?
+    # This really is only a problem for very large or small ratios:
+    # below 1/10 it will waste time scanning the (0, 0) decade
+    # and only below it will fail as it scans the (0, 0) decade and can't find a single step
+    # to make it intersect
+    decade = ceil(log10(target.parallel_impedance.upper))
+    return [(decade, decade)]
+
+  def _get_next_decades(self, decade: Tuple[int, int], target: DividerValues) -> \
+      List[Tuple[int, int]]:
+    def decade_intersects(test_decade: Tuple[int, int]) -> bool:
+      def range_of_decade(range_decade: int) -> Range:
+        """Given a decade, return the range of possible values - for example, decade 0
+        would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
+        return Range(10 ** range_decade, 10 ** (range_decade + 1))
+      def impedance_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
+        """Given R1, R2 decade as a tuple, returns the possible impedance range."""
+        return 1 / (1 / range_of_decade(r1r2_decade[0]) + 1 / range_of_decade(r1r2_decade[1]))
+      def ratio_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
+        """Given R1, R2 decade as a tuple, returns the possible ratio range."""
+        return 1 / (range_of_decade(r1r2_decade[0]) / range_of_decade(r1r2_decade[1]) + 1)
+
+      return (target.ratio.intersects(ratio_of_decade(test_decade)) and
+          target.parallel_impedance.intersects(impedance_of_decade(test_decade)))
+
+    new_decades = []
+
+    # test adjustments that shift both decades in the same direction (changes impedance)
+    down_decade = (decade[0] - 1, decade[1] - 1)
+    if decade_intersects(down_decade):
+      new_decades.append(down_decade)
+    up_decade = (decade[0] + 1, decade[1] + 1)
+    if decade_intersects(up_decade):
+      new_decades.append(up_decade)
+
+    # test adjustments that shift decades independently (changes ratio)
+    up_r1_decade = (decade[0] - 1, decade[1])
+    if decade_intersects(up_r1_decade):
+      new_decades.append(up_r1_decade)
+    up_r2_decade = (decade[0], decade[1] + 1)
+    if decade_intersects(up_r2_decade):
+      new_decades.append(up_r2_decade)
+    down_r1_decade = (decade[0] + 1, decade[1])
+    if decade_intersects(down_r1_decade):
+      new_decades.append(down_r1_decade)
+    down_r2_decade = (decade[0], decade[1] - 1)
+    if decade_intersects(down_r2_decade):
+      new_decades.append(down_r2_decade)
+
+    return new_decades
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
@@ -14,13 +123,13 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
 
   @init_in_parent
   def __init__(self, ratio: RangeLike = RangeExpr(), impedance: RangeLike = RangeExpr()) -> None:
-    # Misc ideas
-    # TODO Perhaps pick one end of ratio to be -inf / inf, to specify "pick as close as possible",
-    # but what are the practicality constraints (E12 series?)
     super().__init__()
 
-    self.ratio = self.Parameter(RangeExpr(ratio))  # TODO: maybe should be a target output voltage instead?
+    self.ratio = self.Parameter(RangeExpr(ratio))
     self.impedance = self.Parameter(RangeExpr(impedance))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
     self.selected_ratio = self.Parameter(RangeExpr())
     self.selected_impedance = self.Parameter(RangeExpr())
@@ -30,118 +139,19 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.center = self.Port(Passive())
     self.bottom = self.Port(Passive())
 
-    self.generator(self.generate_divider, self.ratio, self.impedance)
+    self.generator(self.generate_divider, self.ratio, self.impedance, self.series, self.tolerance)
 
-  @classmethod
-  def _ratio_tolerance(cls, r1_center: float, r2_center: float, tol: float) -> Range:
-    tol_min = 1 - tol
-    tol_max = 1 + tol
-    ratio_min = r2_center * tol_min / (r2_center * tol_min + r1_center * tol_max)
-    ratio_max = r2_center * tol_max / (r2_center * tol_max + r1_center * tol_min)
-    return Range(ratio_min, ratio_max)
-
-  @classmethod
-  def _select_resistor(cls, series: List[List[float]], ratio: Range, impedance: Range,
-                       tol: float) -> Tuple[float, float]:
-    """Returns the nominal resistances of a 2-resistor divider that meets the ratio and parallel impedance requirements,
-    considering individual resistor tolerances.
-    This algorithm prefers resistors close in decade as possible.
-    - TODO series should take tolerances, this allows this to stack with parallel / series resistors by encoding all
-      combinations in the series list
-
-    Algorithm overview, for R1 high-side and R2 low-side:
-    Select the decade for R1 by adjusting as necessary so the ratio is contained. For example:
-      R1 : R2   maxR2/minR1  minR2/maxR1
-      1  : 10   82/83        10/18.2      /\ ratio towards 1  (as implemented, we use R1=0.1)
-      1  : 1    8.2/9.2      1/9.2
-      10 : 1    8.2/18.2     1/83
-      100: 1    8.2/108.2    1/821        \/ ratio towards 0
-    - Note, common multiples of 10 are canceled out
-    - Note, there is overlap between each decade, so we zigzag through decades of R1 until out of range on both sides
-    For each candidate, adjust the common decade between R1 and R2 to meet the parallel impedance spec.
-    - TODO: this should be an arbitrary evaluation function, eg also support series impedance
-    - We bump the impedance to the lowest decade in the tolerated impedance (log10 floor), and see if there is a match
-    - If not, keep bumping decades until the impedance is out of range
-    """
-    R1_DECADE_LIMIT = 1e6
-
-    assert ratio.upper <= 1, f"can't generate ratios > 1, got ratio={ratio}"
-
-    # Track the best candidate in case a divider couldn't be solved, and give an informative message
-    best_candidate = (float('inf'), Range(0, 0), (0.0, 0.0))  # ratio center, ratio range w/ tolerance, resistor selection
-
-    tol_min = 1 - tol
-    tol_max = 1 + tol
-
-    series_all = list(chain(*series))
-    series_min = min(series_all) * tol_min
-    series_max = max(series_all) * tol_max
-
-    impedance_shift = floor(log10(impedance.lower))
-
-    def decade_limits(r1_decade: float) -> Range:
-      """Returns the ratio limits of the specified decade, accounting for worst case tolerance"""
-      return Range(series_min / (series_min + r1_decade*series_max),
-                   series_max / (series_max + r1_decade*series_min))
-
-    def try_r1_decade(r1_decade: float) -> Optional[Tuple[float, float]]:
-      nonlocal best_candidate
-      for subseries in accumulate(series):  # TODO this does some redundant work with lower series
-        for r1_center, r2_center in product([elt * r1_decade for elt in subseries], subseries):
-          r1r2_ratio = cls._ratio_tolerance(r1_center, r2_center, tol)
-          if r1r2_ratio in ratio:
-            r1r2_impedance = 1 / (1 / Range.from_tolerance(r1_center, tol) +
-                                  1 / Range.from_tolerance(r2_center, tol))
-            r1r2_impedance_shift = floor(log10(r1r2_impedance.lower))
-            while not (r1r2_impedance.lower > impedance.upper):
-              decade = 10 ** (impedance_shift - r1r2_impedance_shift)
-              r1r2_impedance = r1r2_impedance * decade
-              if r1r2_impedance in impedance:
-                return ESeriesUtil.round_sig(r1_center * decade, 3), \
-                       ESeriesUtil.round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
-              r1r2_impedance_shift += 1
-
-          if abs(r1r2_ratio.center() - ratio.center()) < abs(best_candidate[0] - ratio.center()):
-            best_candidate = (r1r2_ratio.center(), r1r2_ratio, (r1_center, r2_center))
-      return None
-
-    r1_decade = 1  # zig-zag: 1,  10, 0.1,  100, 0.01,  ... (raise, invert, repeat)
-    upper_r1_range = decade_limits(r1_decade)
-    lower_r1_range = decade_limits(1 / r1_decade)
-
-    while not ((lower_r1_range.upper < ratio.lower) and (upper_r1_range.lower > ratio.upper)) and \
-        r1_decade <= R1_DECADE_LIMIT:
-      if upper_r1_range.intersects(ratio):
-        res = try_r1_decade(r1_decade)
-        if res is not None:
-          return res
-
-      if upper_r1_range != lower_r1_range and lower_r1_range.intersects(ratio):
-        res = try_r1_decade(1 / r1_decade)
-        if res is not None:
-          return res
-
-      r1_decade *= 10
-      upper_r1_range = decade_limits(r1_decade)
-      lower_r1_range = decade_limits(1/ r1_decade)
-
-    raise ValueError(f"Unable to find resistive divider with ratio in {ratio} and impedance in {impedance} "
-                     f"within {tol*100}% resistors. "
-                     f"Best candidate: r1,r2={best_candidate[2]}, ratio range {best_candidate[1]}")
-
-  def generate_divider(self, ratio: Range, impedance: Range) -> None:
+  def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
-    TODO: if no combinations found, try a 3-combination, with a series or parallel connection on one side.
     """
-    TOLERANCE = 0.01  # epsilon
-    top_resistance, bottom_resistance = self._select_resistor(
-      ESeriesUtil.E24_SERIES, ratio, impedance, TOLERANCE)
+    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES[series], tolerance)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
 
     self.top_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, TOLERANCE)
+      resistance=Range.from_tolerance(top_resistance, tolerance)
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, TOLERANCE)
+      resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
 
     self.connect(self.top_res.a, self.top)
@@ -153,7 +163,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.assign(self.selected_series_impedance,
                 self.top_res.resistance + self.bottom_res.resistance)
     self.assign(self.selected_ratio,
-                self.bottom_res.resistance / (self.top_res.resistance + self.bottom_res.resistance))
+                1 / (self.top_res.resistance / self.bottom_res.resistance + 1))
 
 
 @abstract_block

@@ -24,7 +24,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
   If below 1% tolerance is needed, fails. TODO: non-preferentially pick tolerances down to 0.1%, though pricey!
   Picks the minimum (down to 0603, up to 2512) SMD size for the power requirement. TODO: consider PTH types"""
   def select_resistor(self, resistance: Range, power: Range, footprint_spec: str) -> None:
-    value = ESeriesUtil.choose_preferred_number(resistance, self.TOLERANCE, ESeriesUtil.E24_SERIES_ZIGZAG, 2)
+    value = ESeriesUtil.choose_preferred_number(resistance, self.TOLERANCE, ESeriesUtil.E24_SERIES[24], 2)
 
     if value is None:  # failed to find a preferred resistor, choose the center within tolerance
       center = resistance.center()

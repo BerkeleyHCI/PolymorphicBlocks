@@ -1,43 +1,59 @@
 import unittest
 
 from edg_core import Range
-from .ResistiveDivider import ResistiveDivider
+from .ResistiveDivider import ResistiveDividerCalculator, DividerValues
 from .ESeriesUtil import ESeriesUtil
 
 
 class ResistorDividerTest(unittest.TestCase):
   def test_resistor_divider(self) -> None:
-    self.assertEqual(ResistiveDivider._select_resistor(
-      ESeriesUtil.E24_SERIES,
-      Range(0, 1), Range(0.1, 1), 0.01),
+    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES[24], 0.01)
+
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0, 1), Range(0.1, 1))),
       (1, 1))
 
-    self.assertEqual(ResistiveDivider._select_resistor(  # test a tighter range
-      ESeriesUtil.E24_SERIES,
-      Range(0.48, 0.52), Range(0.1, 1), 0.01),
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0.48, 0.52), Range(0.1, 1))),  # test a tighter range
       (1, 1))
 
-    self.assertEqual(ResistiveDivider._select_resistor(
-      ESeriesUtil.E24_SERIES,
-      Range(0.106, 0.111), Range(0.1, 1), 0.01),  # test E12
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0.106, 0.111), Range(0.1, 1))),  # test E12
       (8.2, 1))
 
-    self.assertEqual(ResistiveDivider._select_resistor(
-      ESeriesUtil.E24_SERIES,
-      Range(0.208, 0.215), Range(1, 10), 0.01),  # test E12
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0.208, 0.215), Range(1, 10))),  # test E12
       (8.2, 2.2))
 
-    self.assertEqual(ResistiveDivider._select_resistor(
-      ESeriesUtil.E24_SERIES,
-      Range(0.7241, 0.7321), Range(1, 10), 0.01),  # test E12 across decades
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0.7241, 0.7321), Range(1, 10))),  # test E12
       (5.6, 15))
 
-    self.assertEqual(ResistiveDivider._select_resistor(  # test impedance decade shift
-      ESeriesUtil.E24_SERIES,
-      Range(0, 1), Range(10, 100), 0.01),
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0, 1), Range(10, 100))),  # test impedance decade shift
       (100, 100))
 
-    self.assertEqual(ResistiveDivider._select_resistor(  # test everything
-      ESeriesUtil.E24_SERIES,
-      Range(0.106, 0.111), Range(11, 99), 0.01),  # test E12
+    self.assertEqual(
+      calculator.find(DividerValues(Range(0.106, 0.111), Range(11, 99))),  # test everything
       (820, 100))
+
+  def test_impossible(self) -> None:
+    e1_calculator = ResistiveDividerCalculator([1.0], 0.01)
+
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException) as error:
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.10, 0.4), Range(0.1, 10))),  # not possible with E1 series
+        None)
+    self.assertIn('best: (100.0, 10.0)', error.exception.args[0])
+
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.5, 0.5), Range(0.1, 10))),  # tolerance too tight
+        None)
+
+    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+      # this uses ratio = 0.1 - 0.9 for efficiency, otherwise the system searches keeps (fruitlessly)
+      # searching through more extreme ratios until it hits decade limits
+      self.assertEqual(
+        e1_calculator.find(DividerValues(Range(0.1, 0.9), Range(1, 4))),  # can't meet the impedances
+        None)
