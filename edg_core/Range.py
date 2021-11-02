@@ -72,8 +72,18 @@ class Range:
 
   @staticmethod
   def from_upper(upper: float) -> 'Range':
-    """Creates a Range from upper to negative infinity"""
+    """Creates a Range from negative infinity to upper"""
     return Range(float('-inf'), upper)
+
+  @staticmethod
+  def zero_to_upper(upper: float) -> 'Range':
+    """Creates a Range from zero to upper"""
+    return Range(0, upper)
+
+  @staticmethod
+  def exact(value: float) -> 'Range':
+    """Creates a Range that is exactly this value (no tolerance)"""
+    return Range(value, value)
 
   @staticmethod
   def all() -> 'Range':
@@ -194,3 +204,17 @@ class Range:
       new_upper = self.upper
 
     return Range(new_lower, new_upper)
+
+  def fuzzy_in(self, container: 'Range') -> bool:
+    DOUBLE_FLOAT_ROUND_FACTOR = 1e-7  # approximate multiplier to account for double <-> float rounding issues
+    """Contains operation that allows fuzziness due to floating point imprecision."""
+    if container.lower >= 0:
+      lower = container.lower * (1 - DOUBLE_FLOAT_ROUND_FACTOR)
+    else:
+      lower = container.lower * (1 + DOUBLE_FLOAT_ROUND_FACTOR)
+
+    if self.upper >= 0:
+      upper = container.upper * (1 + DOUBLE_FLOAT_ROUND_FACTOR)
+    else:
+      upper = container.upper * (1 - DOUBLE_FLOAT_ROUND_FACTOR)
+    return self in Range(lower, upper)

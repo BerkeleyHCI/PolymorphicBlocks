@@ -1,23 +1,16 @@
 from __future__ import annotations
-from typing import *
 
 from itertools import chain, accumulate, product
 from math import log10, floor
+from typing import *
 
-from electronics_model import *
 from .AbstractPassives import Resistor
 from .Categories import *
-
-
-# TODO DEDUP w/ Passives.py
-# from https://stackoverflow.com/questions/3410976/how-to-round-a-number-to-significant-figures-in-python
-def round_sig(x: float, sig: int) -> float:
-  return round(x, sig-int(floor(log10(abs(x))))-1)
+from .ESeriesUtil import ESeriesUtil
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
-  E24_SERIES = Resistor.E24_SERIES
 
   @init_in_parent
   def __init__(self, ratio: RangeLike = RangeExpr(), impedance: RangeLike = RangeExpr()) -> None:
@@ -104,8 +97,8 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
               decade = 10 ** (impedance_shift - r1r2_impedance_shift)
               r1r2_impedance = r1r2_impedance * decade
               if r1r2_impedance in impedance:
-                return round_sig(r1_center * decade, 3), \
-                       round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
+                return ESeriesUtil.round_sig(r1_center * decade, 3), \
+                       ESeriesUtil.round_sig(r2_center * decade, 3)  # TODO don't hardcode sigfigs
               r1r2_impedance_shift += 1
 
           if abs(r1r2_ratio.center() - ratio.center()) < abs(best_candidate[0] - ratio.center()):
@@ -142,7 +135,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     """
     TOLERANCE = 0.01  # epsilon
     top_resistance, bottom_resistance = self._select_resistor(
-      self.E24_SERIES, ratio, impedance, TOLERANCE)
+      ESeriesUtil.E24_SERIES, ratio, impedance, TOLERANCE)
 
     self.top_res = self.Block(Resistor(
       resistance=Range.from_tolerance(top_resistance, TOLERANCE)
