@@ -53,8 +53,7 @@ class RatioTestCase(unittest.TestCase):
     def _get_initial_decades(self, target: None) -> List[Tuple[int, int]]:
       return [(0, 0)]
 
-    def _get_next_decades(self, decade: Tuple[int, int], best: None, target: None) -> \
-        List[Tuple[int, int]]:
+    def _get_next_decades(self, decade: Tuple[int, int], target: None) -> List[Tuple[int, int]]:
       return []
 
   def test_ratio_product(self):

@@ -71,16 +71,19 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   to get some desired output (eg, ratio and impedance for a resistive divider).
   The output calculations can be overridden by a subclass.
   Calculation of the initial decade (for both values) and which way to shift decades
-  after scanning an entire decade is also included.
+  after scanning an entire decade can also be overridden
 
   Within a decade, this prefers combinations of smaller E-series before moving on,
   eg a satisfying E3 pair is preferred and returned, even if there is a closer E6 pair.
   This has no concept of a distance metric when the spec is satisfied.
 
-  Tolerances should be handled by the implementing class, stored as a instance variable.
+  Component tolerances should be handled by the implementing class,
+  such as stored as an instance variable.
 
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
+
+  Series should be the zero decade, in the range of [1, 10)
   """
   def __init__(self, series: List[float], round_digits: int = 5):
     self.series = series
@@ -141,25 +144,20 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
       r1r2_decade = search_queue.popleft()
       product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
 
-      decade_best = None
-
       for (r1, r2) in product:
         output = self._calculate_output(r1, r2)
         output_dist = self._get_distance(output, target)
-        if decade_best is None or output_dist < decade_best[2]:
-          decade_best = ((r1, r2), output, output_dist)
 
-          if best is None or output_dist < best[2]:
-            best = ((r1, r2), output, output_dist)
-            if not output_dist:
-              break
+        if best is None or output_dist < best[2]:
+          best = ((r1, r2), output, output_dist)
+          if not output_dist:
+            break
 
-      assert decade_best is not None
       assert best is not None
       if not best[2]:  # distance vector empty = satisfying
         return best[0]
       else:
-        next_decades = self._get_next_decades(r1r2_decade, decade_best[1], target)
+        next_decades = self._get_next_decades(r1r2_decade, target)
         for next_decade in next_decades:
           if next_decade not in searched_decades and -15 < next_decade[0] < 15 and -15 < next_decade[1] < 15:
             searched_decades.add(next_decade)
@@ -179,10 +177,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     raise NotImplementedError()
 
   @abstractmethod
-  def _get_next_decades(self, decade: Tuple[int, int], best: RatioOutputType, target: RatioOutputType) -> \
-      List[Tuple[int, int]]:
+  def _get_next_decades(self, decade: Tuple[int, int], target: RatioOutputType) -> List[Tuple[int, int]]:
     """If the target was not found scanning the entire decade, this is called to determine next decades to search.
-    This is passed in the current decade, the best output value in the current decade, and the target.
+    This is passed in the current decade and the target.
 
     Returns a list of decades to search, in order. Internally the search algorithm deduplicates decades.
     This is called for every decade, and results are appended to the end of the search queue after deduplication.
