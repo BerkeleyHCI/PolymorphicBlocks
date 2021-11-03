@@ -209,11 +209,11 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
 
       rise_time = row[self.TABLE.GATE_CHARGE] / gate_drive_rise
       fall_time = row[self.TABLE.GATE_CHARGE] / gate_drive_fall
-      new_rows[self.SWITCHING_POWER] (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
+      new_rows[self.SWITCHING_POWER] = (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
 
-      new_rows[self.TOTAL_POWER] = new_rows[self.STATIC_POWER] + new_rows[self.SWITHCING_POWER]
+      new_rows[self.TOTAL_POWER] = new_rows[self.STATIC_POWER] + new_rows[self.SWITCHING_POWER]
 
-      if new_rows[self.TOTAL_POWER].fuzzy_in(new_rows[self.TABLE.POWER_RATING]):
+      if new_rows[self.TOTAL_POWER].fuzzy_in(row[self.TABLE.POWER_RATING]):
         return new_rows
       else:
         return None
