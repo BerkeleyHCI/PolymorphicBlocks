@@ -4,6 +4,93 @@ import os
 
 from electronics_abstract_parts import *
 from .ProductTableUtils import *
+from .DigikeyTable import *
+
+
+class BaseFetTable(DigikeyTable):
+  PACKAGE_FOOTPRINT_MAP = {
+    'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
+    'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+    'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
+    'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
+  }
+
+  @classmethod
+  def footprint_pinmap(cls, footprint: str, gate: CircuitPort, drain: CircuitPort, source: CircuitPort):
+    return {
+      'Package_TO_SOT_SMD:SOT-23': {
+        '1': gate,
+        '2': source,
+        '3': drain,
+      },
+      'Package_TO_SOT_SMD:SOT-223-3_TabPin2': {
+        '1': gate,
+        '2': drain,
+        '3': source,
+      },
+      'Package_TO_SOT_SMD:TO-252-2': {
+        '1': gate,
+        '2': drain,
+        '3': source,
+      },
+      'Package_TO_SOT_SMD:TO-263-2': {
+        '1': gate,
+        '2': drain,
+        '3': source,
+      },
+    }[footprint]
+
+
+class FetTable(BaseFetTable):
+  VDS_RATING = PartsTableColumn(Range)
+  IDS_RATING = PartsTableColumn(Range)
+  VGS_RATING = PartsTableColumn(Range)
+  RDS_ON = PartsTableColumn(Range)
+  POWER_RATING = PartsTableColumn(Range)
+  GATE_CHARGE = PartsTableColumn(Range)
+
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
+
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_rows: Dict[PartsTableColumn, Any] = {}
+      try:
+        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+
+        new_rows[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Voltage - DC Reverse (Vr) (Max)'], 'V')
+        )
+        new_rows[cls.CURRENT_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Current - Average Rectified (Io)'], 'A')
+        )
+        new_rows[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(
+            PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
+            'V')
+        )
+        if row['Reverse Recovery Time (trr)'] and row['Reverse Recovery Time (trr)'] != '-':
+          reverse_recovery = Range.zero_to_upper(
+            PartsTableUtil.parse_value(row['Reverse Recovery Time (trr)'], 's')
+          )
+        elif row['Speed'] == 'Fast Recovery =< 500ns, > 200mA (Io)':
+          reverse_recovery = Range.zero_to_upper(500e-9)
+        else:
+          reverse_recovery = Range.zero_to_upper(float('inf'))
+        new_rows[cls.REVERSE_RECOVERY] = reverse_recovery
+
+        new_rows.update(cls._parse_digikey_common(row))
+
+        return new_rows
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_Diodes_DO214.csv',
+      'Digikey_Diodes_DPak_DDPak.csv',
+      'Digikey_Diodes_SOD123_SOD323.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row)
 
 
 def generate_fet_table(TABLES: List[str]) -> ProductTable:
