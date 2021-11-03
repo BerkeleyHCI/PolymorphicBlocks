@@ -42,7 +42,9 @@ class CrystalTable(DigikeyTable):
       'Digikey_Crystals_3.2x2.5_1.csv',
       'Digikey_Crystals_3.2x2.5_2.csv',
     ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(parse_row)
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
@@ -55,12 +57,9 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
                    targets=[self.crystal])
 
   def select_part(self, frequency: Range):
-    compatible_parts = CrystalTable.table().filter(lambda row: (
+    part = CrystalTable.table().filter(lambda row: (
       row[CrystalTable.FREQUENCY] in frequency
-    ))
-    part = compatible_parts.sort_by(
-      lambda row: row[CrystalTable.COST]
-    ).first(f"no crystal matching f={frequency} Hz")
+    )).first(f"no crystal matching f={frequency} Hz")
 
     self.assign(self.selected_capacitance, part[CrystalTable.CAPACITANCE])
     self.assign(self.crystal.frequency, part[CrystalTable.FREQUENCY])

@@ -8,6 +8,8 @@ from .DigikeyTable import *
 
 
 class BaseFetTable(DigikeyTable):
+  _TABLES: List[str]
+
   VDS_RATING = PartsTableColumn(Range)
   IDS_RATING = PartsTableColumn(Range)
   VGS_RATING = PartsTableColumn(Range)
@@ -51,63 +53,64 @@ class BaseFetTable(DigikeyTable):
     }[footprint]
 
   @classmethod
-  def parse_row(cls, row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-    new_rows: Dict[PartsTableColumn, Any] = {}
-    try:
-      new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_rows: Dict[PartsTableColumn, Any] = {}
+      try:
+        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
 
-      new_rows[cls.VDS_RATING] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
-      )
-      new_rows[cls.IDS_RATING] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Current - Continuous Drain (Id) @ 25°C'].split('(')[0].strip(), 'A')
-      )
+        new_rows[cls.VDS_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
+        )
+        new_rows[cls.IDS_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Current - Continuous Drain (Id) @ 25°C'].split('(')[0].strip(), 'A')
+        )
 
-      if row['Vgs (Max)'].startswith('±'):
-        vgs_max = PartsTableUtil.parse_value(row['Vgs (Max)'][1:], 'V')
-        new_rows[cls.VGS_RATING] = Range(-vgs_max, vgs_max)
-      else:
+        if row['Vgs (Max)'].startswith('±'):
+          vgs_max = PartsTableUtil.parse_value(row['Vgs (Max)'][1:], 'V')
+          new_rows[cls.VGS_RATING] = Range(-vgs_max, vgs_max)
+        else:
+          return None
+
+        vgs_drive = PartsTableUtil.parse_value(row['Drive Voltage (Max Rds On,  Min Rds On)'].split(',')[0], 'V')
+        if vgs_drive >= 0:
+          new_rows[cls.VGS_DRIVE] = Range(vgs_drive, vgs_max)
+        else:
+          new_rows[cls.VGS_DRIVE] = Range(-vgs_max, vgs_drive)
+
+        new_rows[cls.RDS_ON] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Rds On (Max) @ Id, Vgs']), 'Ohm')
+        )
+        new_rows[cls.GATE_CHARGE] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Gate Charge (Qg) (Max) @ Vgs']), 'C')
+        )
+        new_rows[cls.POWER_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Power Dissipation (Max)'].split('(')[0].strip(), 'W')
+        )
+
+        new_rows.update(cls._parse_digikey_common(row))
+
+        return new_rows
+      except (KeyError, PartsTableUtil.ParseError):
         return None
 
-      vgs_drive = PartsTableUtil.parse_value(row['Drive Voltage (Max Rds On,  Min Rds On)'].split(',')[0], 'V')
-      if vgs_drive >= 0:
-        new_rows[cls.VGS_DRIVE] = Range(vgs_drive, vgs_max)
-      else:
-        new_rows[cls.VGS_DRIVE] = Range(-vgs_max, vgs_drive)
-
-      new_rows[cls.RDS_ON] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Rds On (Max) @ Id, Vgs']), 'Ohm')
-      )
-      new_rows[cls.GATE_CHARGE] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Gate Charge (Qg) (Max) @ Vgs']), 'C')
-      )
-      new_rows[cls.POWER_RATING] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Power Dissipation (Max)'].split('(')[0].strip(), 'W')
-      )
-
-      new_rows.update(cls._parse_digikey_common(row))
-
-      return new_rows
-    except (KeyError, PartsTableUtil.ParseError):
-      return None
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir(cls._TABLES, 'resources'),
+                                          encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class NFetTable(BaseFetTable):
-  @classmethod
-  def _generate_table(cls) -> PartsTable:
-    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-      'Digikey_NFETs.csv',
-    ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(cls.parse_row)
+  _TABLES = [
+    'Digikey_NFETs.csv',
+  ]
 
 
 class PFetTable(BaseFetTable):
-  @classmethod
-  def _generate_table(cls) -> PartsTable:
-    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-      'Digikey_PFETs.csv',
-    ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(cls.parse_row)
+  _TABLES = [
+    'Digikey_PFETs.csv',
+  ]
 
 
 def generate_fet_table(TABLES: List[str]) -> ProductTable:
@@ -169,17 +172,14 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
 
   def select_part(self, drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
-    compatible_parts = self.TABLE.table().filter(lambda row: (
+    part = self.TABLE.table().filter(lambda row: (
         drain_voltage.fuzzy_in(row[self.TABLE.VDS_RATING]) and
         drain_current.fuzzy_in(row[self.TABLE.IDS_RATING]) and
         gate_voltage.fuzzy_in(row[self.TABLE.VGS_DRIVE]) and
         row[self.TABLE.RDS_ON].fuzzy_in(rds_on) and
         row[self.TABLE.GATE_CHARGE].fuzzy_in(gate_charge) and
         power.fuzzy_in(row[self.TABLE.POWER_RATING])
-    ))
-    part = compatible_parts.sort_by(
-      lambda row: row[self.TABLE.COST]
-    ).first(f"{len(self.TABLE.table())}  no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    )).first(f"{len(self.TABLE.table())}  no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
     self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])

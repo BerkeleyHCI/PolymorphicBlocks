@@ -65,7 +65,11 @@ class InductorTable(DigikeyTable):
       'Digikey_Inductors_TaiyoYudenNr.csv',
       'Digikey_Inductors_Shielded_BournsSRR_1005_1210_1260.csv',
     ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(parse_row)
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.FOOTPRINT]
+    ).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
@@ -84,18 +88,13 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
 
   def select_inductor(self, inductance: Range, current: Range, frequency: Range,
                       part_spec: str, footprint_spec: str) -> None:
-    compatible_parts = InductorTable.table().filter(lambda row: (
+    part = InductorTable.table().filter(lambda row: (
         (not part_spec or part_spec == row[InductorTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[InductorTable.FOOTPRINT]) and
         row[InductorTable.INDUCTANCE].fuzzy_in(inductance) and
         row[InductorTable.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
         frequency.fuzzy_in(row[InductorTable.FREQUENCY_RATING])
-    ))
-    part = compatible_parts.sort_by(
-      lambda row: row[InductorTable.FOOTPRINT]
-    ).sort_by(
-      lambda row: row[InductorTable.COST]
-    ).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
+    )).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
     self.assign(self.selected_inductance, part[InductorTable.INDUCTANCE])
     self.assign(self.selected_current_rating, part[InductorTable.CURRENT_RATING])

@@ -99,7 +99,9 @@ class DiodeTable(BaseDiodeTable):
       'Digikey_Diodes_DPak_DDPak.csv',
       'Digikey_Diodes_SOD123_SOD323.csv',
     ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(parse_row)
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
@@ -118,15 +120,12 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
   def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
                   reverse_recovery_time: Range) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
-    compatible_parts = DiodeTable.table().filter(lambda row: (
+    part = DiodeTable.table().filter(lambda row: (
         reverse_voltage.fuzzy_in(row[DiodeTable.VOLTAGE_RATING]) and
         current.fuzzy_in(row[DiodeTable.CURRENT_RATING]) and
         row[DiodeTable.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
         row[DiodeTable.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
-    ))
-    part = compatible_parts.sort_by(
-      lambda row: row[DiodeTable.COST]
-    ).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
+    )).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
 
     self.assign(self.selected_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
     self.assign(self.selected_current_rating, part[DiodeTable.CURRENT_RATING])
@@ -179,7 +178,9 @@ class ZenerTable(BaseDiodeTable):
       'Digikey_ZenerDiodes_DO214.csv',
       'Digikey_ZenerDiodes_SOD123_SOD323.csv',
     ], 'resources'), encoding='utf-8-sig')
-    return raw_table.map_new_columns(parse_row)
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
@@ -193,13 +194,10 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
     # TODO: also support optional part and footprint name
 
   def select_part(self, zener_voltage: Range, forward_voltage_drop: Range) -> None:
-    compatible_parts = ZenerTable.table().filter(lambda row: (
+    part = ZenerTable.table().filter(lambda row: (
         row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage) and
         row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
-    ))
-    part = compatible_parts.sort_by(
-      lambda row: row[ZenerTable.COST]
-    ).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")
+    )).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")
 
     self.assign(self.selected_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
     self.assign(self.selected_forward_voltage_drop, part[ZenerTable.FORWARD_VOLTAGE])
