@@ -1,15 +1,14 @@
 from electronics_abstract_parts import *
 from .ProductTableUtils import *
-from .PartsTable import *
+from .DigikeyTable import *
 
 
-class InductorTable(LazyTable):
+class InductorTable(DigikeyTable):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
   DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
   FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
-  COST = PartsTableColumn(float)
 
   PACKAGE_FOOTPRINT_MAP = {  # from Digikey Package / Case to KiCad footprint
     '0603 (1608 Metric)': 'Inductor_SMD:L_0603_1608Metric',
@@ -54,7 +53,7 @@ class InductorTable(LazyTable):
           PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm Max')
         )
 
-        new_rows[cls.COST] = float(row['Unit Price (USD)'])
+        new_rows.update(cls._parse_digikey_common(row))
 
         return new_rows
       except (KeyError, PartsTableUtil.ParseError):
@@ -86,7 +85,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   def select_inductor(self, inductance: Range, current: Range, frequency: Range,
                       part_spec: str, footprint_spec: str) -> None:
     compatible_parts = InductorTable.table().filter(lambda row: (
-        (not part_spec or part_spec == row['Manufacturer Part Number']) and
+        (not part_spec or part_spec == row[InductorTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[InductorTable.FOOTPRINT]) and
         row[InductorTable.INDUCTANCE].fuzzy_in(inductance) and
         row[InductorTable.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
@@ -108,7 +107,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
         '1': self.a,
         '2': self.b,
       },
-      mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
+      mfr=part[InductorTable.MANUFACTURER], part=part[InductorTable.PART_NUMBER],
       value=f"{part['Inductance']}, {part['Current Rating (Amps)']}",
-      datasheet=part['Datasheets']
+      datasheet=part[InductorTable.DATASHEETS]
     )

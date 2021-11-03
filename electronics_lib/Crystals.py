@@ -1,13 +1,12 @@
 from electronics_abstract_parts import *
 from .ProductTableUtils import *
-from .PartsTable import *
+from .DigikeyTable import *
 
 
-class CrystalTable(LazyTable):
+class CrystalTable(DigikeyTable):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
   FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
-  COST = PartsTableColumn(float)
 
   SIZE_PACKAGE_FOOTPRINT_MAP = {
     ('0.126" L x 0.098" W (3.20mm x 2.50mm)', '4-SMD, No Lead'):
@@ -33,7 +32,7 @@ class CrystalTable(LazyTable):
         )
         new_rows[cls.CAPACITANCE] = PartsTableUtil.parse_value(row['Load Capacitance'], 'F')
 
-        new_rows[cls.COST] = float(row['Unit Price (USD)'])
+        new_rows.update(cls._parse_digikey_common(row))
 
         return new_rows
       except (KeyError, PartsTableUtil.ParseError):
@@ -74,9 +73,9 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
         '3': self.crystal.b,
         '4': self.gnd,
       },
-      mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
+      mfr=part[CrystalTable.MANUFACTURER], part=part[CrystalTable.PART_NUMBER],
       value=f"{part['Frequency']}, {part['Load Capacitance']}",
-      datasheet=part['Datasheets']
+      datasheet=part[CrystalTable.DATASHEETS]
     )
 
 
