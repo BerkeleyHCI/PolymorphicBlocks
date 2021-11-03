@@ -21,6 +21,40 @@ class BaseDiodeTable(DigikeyTable):
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
   }
 
+  @classmethod
+  def footprint_pinmap(cls, footprint: str, anode: CircuitPort, cathode: CircuitPort):
+    return {
+      'Diode_SMD:D_SMA': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SMB': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SMC': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SOD-123': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SOD-323': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Package_TO_SOT_SMD:TO-252-2': {
+        '1': anode,
+        '2': cathode,
+        '3': anode,
+      },
+      'Package_TO_SOT_SMD:TO-263-2': {
+        '1': anode,  # TODO sometimes NC
+        '2': cathode,
+        '3': anode,
+      },
+    }[footprint]
 
 class DiodeTable(BaseDiodeTable):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable voltages, positive
@@ -95,49 +129,17 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
     ))
     part = compatible_parts.sort_by(
       lambda row: row[DiodeTable.COST]
-    ).first(f"{len(DiodeTable.table())}  no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
+    ).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
 
     self.assign(self.selected_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
     self.assign(self.selected_current_rating, part[DiodeTable.CURRENT_RATING])
     self.assign(self.selected_voltage_drop, part[DiodeTable.FORWARD_VOLTAGE])
     self.assign(self.selected_reverse_recovery_time, part[DiodeTable.REVERSE_RECOVERY])
 
-    footprint_pinning = {
-      'Diode_SMD:D_SMA': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMB': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMC': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-123': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-323': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Package_TO_SOT_SMD:TO-252-2': {
-        '1': self.anode,
-        '2': self.cathode,
-        '3': self.anode,
-      },
-      'Package_TO_SOT_SMD:TO-263-2': {
-        '1': self.anode,  # TODO sometimes NC
-        '2': self.cathode,
-        '3': self.anode,
-      },
-    }
-
     self.footprint(
       'D', part[DiodeTable.FOOTPRINT],
-      footprint_pinning[part[DiodeTable.FOOTPRINT]],
+      DiodeTable.footprint_pinmap(part[DiodeTable.FOOTPRINT],
+                                  self.anode, self.cathode),
       mfr=part[DiodeTable.MANUFACTURER], part=part[DiodeTable.PART_NUMBER],
       value=f"Vr={part['Voltage - DC Reverse (Vr) (Max)']}, I={part['Current - Average Rectified (Io)']}",
       datasheet=part[DiodeTable.DATASHEETS]
