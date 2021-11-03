@@ -60,7 +60,7 @@ class BaseFetTable(DigikeyTable):
         PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
       )
       new_rows[cls.IDS_RATING] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Current - Continuous Drain (Id) @ 25°C'], 'A')
+        PartsTableUtil.parse_value(row['Current - Continuous Drain (Id) @ 25°C'].split('(')[0].strip(), 'A')
       )
 
       if row['Vgs (Max)'].startswith('±'):
@@ -79,10 +79,10 @@ class BaseFetTable(DigikeyTable):
         PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Rds On (Max) @ Id, Vgs']), 'Ohm')
       )
       new_rows[cls.GATE_CHARGE] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Gate Charge (Qg) (Max) @ Vgs'], 'C')
+        PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Gate Charge (Qg) (Max) @ Vgs']), 'C')
       )
       new_rows[cls.POWER_RATING] = Range.zero_to_upper(
-        PartsTableUtil.parse_value(row['Power Dissipation (Max)'], 'W')
+        PartsTableUtil.parse_value(row['Power Dissipation (Max)'].split('(')[0].strip(), 'W')
       )
 
       new_rows.update(cls._parse_digikey_common(row))
@@ -179,7 +179,7 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
     ))
     part = compatible_parts.sort_by(
       lambda row: row[self.TABLE.COST]
-    ).first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    ).first(f"{len(self.TABLE.table())}  no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
     self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])
