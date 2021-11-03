@@ -180,6 +180,18 @@ class PartsTableUtil:
       raise cls.ParseError(f"Cannot determine tolerance type from {value}")
 
   @staticmethod
+  def strip_parameter(value: str) -> str:
+    """Given a value string that possibly contains a parameter (eg, 2V @ 1A),
+    strips the @ and everything after.
+    If the string does not contain @, it is passed through as-is.
+    """
+    if '@' in value:
+      return value[:value.find('@')].rstrip()
+    else:
+      return value
+
+
+  @staticmethod
   def with_source_dir(filenames: List[str], subdir: Optional[str] = None) -> List[str]:
     """Given a list of filenames, prepends the absolute path to the calling source file, with an optional subdir.
     """

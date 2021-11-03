@@ -95,7 +95,7 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
       lambda row: row[InductorTable.FOOTPRINT]
     ).sort_by(
       lambda row: row[InductorTable.COST]
-    ).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz  {[row.value['Manufacturer Part Number'] for row in InductorTable.table().rows]}")
+    ).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
     self.assign(self.selected_inductance, part[InductorTable.INDUCTANCE])
     self.assign(self.selected_current_rating, part[InductorTable.CURRENT_RATING])

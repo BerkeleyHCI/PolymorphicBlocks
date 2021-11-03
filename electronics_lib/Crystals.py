@@ -60,7 +60,7 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
     ))
     part = compatible_parts.sort_by(
       lambda row: row[CrystalTable.COST]
-    ).first(f"no crystal matching f={frequency}")
+    ).first(f"no crystal matching f={frequency} Hz")
 
     self.assign(self.selected_capacitance, part[CrystalTable.CAPACITANCE])
     self.assign(self.crystal.frequency, part[CrystalTable.FREQUENCY])
