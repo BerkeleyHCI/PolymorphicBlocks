@@ -69,6 +69,11 @@ class PartsTableTest(unittest.TestCase):
     self.assertEqual(table.rows[1].value, {'header1': '2', 'header2': 'bar', 'header3': '8'})
     self.assertEqual(table.rows[2].value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
 
+  def test_map(self) -> None:
+    output = self.table.map(lambda row: float(row['header1']))
+    self.assertEqual(output, [1, 2, 3])
+    self.assertEqual(sum(output), 6)
+
   def test_first(self) -> None:
     self.assertEqual(self.table.first().value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
 

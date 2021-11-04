@@ -67,6 +67,8 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     'Capacitor_SMD:C_0805_2012Metric': 0.08,
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
   }
+  DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
+  DERATE_MIN_CAPACITANCE = 1.0e-6
   DERATED_CAPACITANCE = PartsTableColumn(Range)
 
   @init_in_parent
@@ -75,8 +77,8 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     self.footprint_spec = self.Parameter(StringExpr(""))
 
-    # Default to be overridden on a per-device basis
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+    # Default that can be overridden
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, 22)*uFarad))  # maximum capacitance in a single part
 
     self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
                    self.part_spec, self.footprint_spec)
@@ -97,24 +99,44 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     ))
 
     def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if voltage.upper < 3.6:  # x-intercept at 3.6v
+      if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[MlccTable.CAPACITANCE]
-      elif (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
+      elif row[MlccTable.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
         derated = row[MlccTable.CAPACITANCE]
-      elif row['footprint'] not in self.DERATE_VOLTCO:
+      elif row[MlccTable.FOOTPRINT] not in self.DERATE_VOLTCO:  # should be rare, small capacitors should hit the above
         return None
-      else:
-        voltco = self.DERATE_VOLTCO[row['footprint']]
+      else:  # actually derate
+        voltco = self.DERATE_VOLTCO[row[MlccTable.FOOTPRINT]]
         factor = 1 - voltco * (voltage.upper - 3.6)
         derated = row[MlccTable.CAPACITANCE] * Range(factor, 1)
 
       return {self.DERATED_CAPACITANCE: derated}
 
-    part = prefiltered_parts.map_new_columns(
+    parts = prefiltered_parts.map_new_columns(
       derate_row
     ).filter(lambda row: (
       row[self.DERATED_CAPACITANCE] in capacitance
-    )).first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    ))
+
+      #.first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+
+
+    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table
+
+
+    # Otherwise, generate multiple capacitors
+
+
+    if len(parts) > 0:
+      # Always prefer a single capacitor, if available
+      pass
+    else:
+      # See if generating multiple capacitors helps
+      pass
+
+
+
+
 
 
     single_cap_max = single_nominal_capacitance.upper

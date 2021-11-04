@@ -105,9 +105,19 @@ class PartsTable:
       new_rows.append(PartsTableRow(new_row_dict))
     return PartsTable(new_rows)
 
-  # TODO this should support Comparable, but that's not a builtin protocol :(
+  MapType = TypeVar('MapType')
+  def map(self, fn: Callable[[PartsTableRow], MapType]) -> List[MapType]:
+    """Applies a transformation function to every row and returns the results as a list."""
+    output = []
+    for row in self.rows:
+      output.append(fn(row))
+    return output
+
   def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int, str]], reverse: bool = False) -> PartsTable:
-    """Creates a new table view (shallow copy) with rows sorted in some order."""
+    """Creates a new table view (shallow copy) with rows sorted in some order.
+
+    TODO this should support Comparable, but that's not a builtin protocol :(
+    """
     new_rows = sorted(self.rows, key=fn, reverse=reverse)
     return PartsTable(new_rows)
 
