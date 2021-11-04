@@ -27,22 +27,22 @@ class MlccTable(DigikeyTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
 
-        new_rows[cls.CAPACITANCE] = Range.from_tolerance(
+        new_cols[cls.CAPACITANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Capacitance'], 'F'),
           PartsTableUtil.parse_tolerance(row['Tolerance'])
         )
-        new_rows[cls.NOMINAL_CAPACITANCE] = PartsTableUtil.parse_value(row['Capacitance'], 'F')
-        new_rows[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+        new_cols[cls.NOMINAL_CAPACITANCE] = PartsTableUtil.parse_value(row['Capacitance'], 'F')
+        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
         )
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
@@ -70,6 +70,11 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
   DERATE_MIN_CAPACITANCE = 1.0e-6
   DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+  PARALLEL_COUNT = PartsTableColumn(int)
+  PARALLEL_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_COST = PartsTableColumn(float)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -112,19 +117,43 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
       return {self.DERATED_CAPACITANCE: derated}
 
-    parts = prefiltered_parts.map_new_columns(
+    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
+    # An empty parts table handles the case where it's below the minimum or does not match within a series.
+    derated_parts = prefiltered_parts.map_new_columns(
       derate_row
-    ).filter(lambda row: (
-      row[self.DERATED_CAPACITANCE] in capacitance
-    ))
+    )
+    derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
-      #.first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    if capacitance.lower >= derated_max_min_capacitance:
+      part = derated_parts.filter(lambda row: (
+          row[self.DERATED_CAPACITANCE] in capacitance
+      )).first(f"no single capacitor in {capacitance} F, {voltage} V")
+
+      self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
+      self.assign(self.selected_capacitance, part[MlccTable.CAPACITANCE])
+      self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
+
+      self.footprint(
+        'C', part[MlccTable.FOOTPRINT],
+        {
+          '1': self.pos,
+          '2': self.neg,
+        },
+        mfr=part[MlccTable.MANUFACTURER], part=part[MlccTable.PART_NUMBER],
+        value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
+        datasheet=part[MlccTable.DATASHEETS]
+      )
+    else:  # Otherwise, generate multiple capacitors
+      # Additionally annotate the table by total cost and count, sort by lower count then total cost
+      def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+        new_cols = {}
+      parallel_parts = derated_parts.map_new_columns(
+        parallel_row
+      ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
 
-    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table
 
 
-    # Otherwise, generate multiple capacitors
 
 
     if len(parts) > 0:
@@ -141,48 +170,10 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     single_cap_max = single_nominal_capacitance.upper
 
-    parts = self.product_table \
-      .filter(Implication(  # enforce minimum package size by capacitance
-      RangeContains(
-        Lit((1.1e-6, float('inf'))),
-        RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
-      StringContains(Column('Package / Case'), [
-        '0805 (2012 Metric)', '1206 (3216 Metric)',
-      ]))) \
-      .filter(Implication(
-      RangeContains(
-        Lit((11.0e-6, float('inf'))),
-        RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
-      StringContains(Column('Package / Case'), [
-        '1206 (3216 Metric)',
-      ]))) \
-      .filter(RangeContains(Column('voltage'), Lit(voltage))) \
-      .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
-      .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
-      .filter(RangeContains(RangeFromUpper(Lit(single_cap_max)), Column('capacitance'))) \
-      .derived_column('derated_capacitance', derated_capacitance)
-
-    capacitance_filtered_parts = parts.filter(RangeContains(Lit(capacitance), Column('derated_capacitance'))) \
-      .sort(Column('Unit Price (USD)')) \
-      .sort(Column('footprint'))  # this kind of gets at smaller first
-
     if len(capacitance_filtered_parts) > 0:  # available in single capacitor
       part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
 
-      self.assign(self.selected_voltage_rating, part['voltage'])
-      self.assign(self.selected_capacitance, part['capacitance'])
-      self.assign(self.selected_derated_capacitance, part['derated_capacitance'])
 
-      self.footprint(
-        'C', part['footprint'],
-        {
-          '1': self.pos,
-          '2': self.neg,
-        },
-        mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
-        value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
-        datasheet=part['Datasheets']
-      )
     elif capacitance.upper >= single_cap_max:
       parts = parts.sort(Column('Unit Price (USD)')) \
         .sort(Column('footprint')) \

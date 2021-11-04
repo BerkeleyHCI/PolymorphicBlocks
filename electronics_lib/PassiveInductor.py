@@ -29,7 +29,7 @@ class InductorTable(DigikeyTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
         footprint = (cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'], None) or
@@ -37,25 +37,25 @@ class InductorTable(DigikeyTable):
                      cls.MPN_NR_FOOTPRINT_REGEX.apply(row['Manufacturer Part Number']))
         if footprint is None:
           raise KeyError
-        new_rows[cls.FOOTPRINT] = footprint
+        new_cols[cls.FOOTPRINT] = footprint
 
-        new_rows[cls.INDUCTANCE] = Range.from_tolerance(
+        new_cols[cls.INDUCTANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Inductance'], 'H'),
           PartsTableUtil.parse_tolerance(row['Tolerance'])
         )
         current = PartsTableUtil.parse_value(row['Current Rating (Amps)'], 'A')
-        new_rows[cls.CURRENT_RATING] = Range(-current, current)
-        new_rows[cls.FREQUENCY_RATING] = Range.zero_to_upper(
+        new_cols[cls.CURRENT_RATING] = Range(-current, current)
+        new_cols[cls.FREQUENCY_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Frequency - Self Resonant'], 'Hz')
         )
-        new_rows[cls.DC_RESISTANCE] = Range.exact(  # TODO debug type below - it doesn't like the default type
+        new_cols[cls.DC_RESISTANCE] = Range.exact(  # TODO debug type below - it doesn't like the default type
           PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm', None) or  #type:ignore
           PartsTableUtil.parse_value(row['DC Resistance (DCR)'], 'Ohm Max')
         )
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 

@@ -63,17 +63,17 @@ class DiodeTable(BaseDiodeTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
 
-        new_rows[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - DC Reverse (Vr) (Max)'], 'V')
         )
-        new_rows[cls.CURRENT_RATING] = Range.zero_to_upper(
+        new_cols[cls.CURRENT_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Current - Average Rectified (Io)'], 'A')
         )
-        new_rows[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
+        new_cols[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
           PartsTableUtil.parse_value(
             PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
             'V')
@@ -86,11 +86,11 @@ class DiodeTable(BaseDiodeTable):
           reverse_recovery = Range.zero_to_upper(500e-9)
         else:
           reverse_recovery = Range.zero_to_upper(float('inf'))
-        new_rows[cls.REVERSE_RECOVERY] = reverse_recovery
+        new_cols[cls.REVERSE_RECOVERY] = reverse_recovery
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
@@ -151,26 +151,26 @@ class ZenerTable(BaseDiodeTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
 
-        new_rows[cls.ZENER_VOLTAGE] = Range.from_tolerance(
+        new_cols[cls.ZENER_VOLTAGE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Voltage - Zener (Nom) (Vz)'], 'V'),
           PartsTableUtil.parse_tolerance(row['Tolerance']),
         )
-        new_rows[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
+        new_cols[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
           PartsTableUtil.parse_value(
             PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
             'V')
         )
-        new_rows[cls.POWER_RATING] = Range.zero_to_upper(
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Power - Max'], 'W')
         )
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 

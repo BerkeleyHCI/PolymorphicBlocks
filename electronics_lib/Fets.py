@@ -51,42 +51,42 @@ class BaseFetTable(DigikeyTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
 
-        new_rows[cls.VDS_RATING] = Range.zero_to_upper(
+        new_cols[cls.VDS_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
         )
-        new_rows[cls.IDS_RATING] = Range.zero_to_upper(
+        new_cols[cls.IDS_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Current - Continuous Drain (Id) @ 25°C'].split('(')[0].strip(), 'A')
         )
 
         if row['Vgs (Max)'].startswith('±'):
           vgs_max = PartsTableUtil.parse_value(row['Vgs (Max)'][1:], 'V')
-          new_rows[cls.VGS_RATING] = Range(-vgs_max, vgs_max)
+          new_cols[cls.VGS_RATING] = Range(-vgs_max, vgs_max)
         else:
           return None
 
         vgs_drive = PartsTableUtil.parse_value(row['Drive Voltage (Max Rds On,  Min Rds On)'].split(',')[0], 'V')
         if vgs_drive >= 0:
-          new_rows[cls.VGS_DRIVE] = Range(vgs_drive, vgs_max)
+          new_cols[cls.VGS_DRIVE] = Range(vgs_drive, vgs_max)
         else:
-          new_rows[cls.VGS_DRIVE] = Range(-vgs_max, vgs_drive)
+          new_cols[cls.VGS_DRIVE] = Range(-vgs_max, vgs_drive)
 
-        new_rows[cls.RDS_ON] = Range.zero_to_upper(
+        new_cols[cls.RDS_ON] = Range.zero_to_upper(
           PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Rds On (Max) @ Id, Vgs']), 'Ohm')
         )
-        new_rows[cls.GATE_CHARGE] = Range.zero_to_upper(
+        new_cols[cls.GATE_CHARGE] = Range.zero_to_upper(
           PartsTableUtil.parse_value(PartsTableUtil.strip_parameter(row['Gate Charge (Qg) (Max) @ Vgs']), 'C')
         )
-        new_rows[cls.POWER_RATING] = Range.zero_to_upper(
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Power Dissipation (Max)'].split('(')[0].strip(), 'W')
         )
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
@@ -204,17 +204,17 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
     assert gate_drive_rise > 0 and gate_drive_fall > 0, \
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
-      new_rows[self.STATIC_POWER] = drain_current * drain_current * row[self.TABLE.RDS_ON]
+      new_cols: Dict[PartsTableColumn, Any] = {}
+      new_cols[self.STATIC_POWER] = drain_current * drain_current * row[self.TABLE.RDS_ON]
 
       rise_time = row[self.TABLE.GATE_CHARGE] / gate_drive_rise
       fall_time = row[self.TABLE.GATE_CHARGE] / gate_drive_fall
-      new_rows[self.SWITCHING_POWER] = (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
+      new_cols[self.SWITCHING_POWER] = (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
 
-      new_rows[self.TOTAL_POWER] = new_rows[self.STATIC_POWER] + new_rows[self.SWITCHING_POWER]
+      new_cols[self.TOTAL_POWER] = new_cols[self.STATIC_POWER] + new_cols[self.SWITCHING_POWER]
 
-      if new_rows[self.TOTAL_POWER].fuzzy_in(row[self.TABLE.POWER_RATING]):
-        return new_rows
+      if new_cols[self.TOTAL_POWER].fuzzy_in(row[self.TABLE.POWER_RATING]):
+        return new_cols
       else:
         return None
 

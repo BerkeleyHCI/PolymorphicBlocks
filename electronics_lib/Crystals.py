@@ -16,25 +16,25 @@ class CrystalTable(DigikeyTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      new_rows: Dict[PartsTableColumn, Any] = {}
+      new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
-        new_rows[cls.FOOTPRINT] = cls.SIZE_PACKAGE_FOOTPRINT_MAP[
+        new_cols[cls.FOOTPRINT] = cls.SIZE_PACKAGE_FOOTPRINT_MAP[
           (row['Size / Dimension'], row['Package / Case'])
         ]
 
         if row['Operating Mode'] != 'Fundamental':
           return None
 
-        new_rows[cls.FREQUENCY] = Range.from_tolerance(
+        new_cols[cls.FREQUENCY] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Frequency'], 'Hz'),
           PartsTableUtil.parse_tolerance(row['Frequency Tolerance'])
         )
-        new_rows[cls.CAPACITANCE] = PartsTableUtil.parse_value(row['Load Capacitance'], 'F')
+        new_cols[cls.CAPACITANCE] = PartsTableUtil.parse_value(row['Load Capacitance'], 'F')
 
-        new_rows.update(cls._parse_digikey_common(row))
+        new_cols.update(cls._parse_digikey_common(row))
 
-        return new_rows
+        return new_cols
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
