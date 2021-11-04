@@ -132,7 +132,7 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
         row[self.TABLE.RDS_ON].fuzzy_in(rds_on) and
         row[self.TABLE.GATE_CHARGE].fuzzy_in(gate_charge) and
         power.fuzzy_in(row[self.TABLE.POWER_RATING])
-    )).first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    )).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
     self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])
@@ -220,7 +220,7 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
 
     part = prefiltered_parts.map_new_columns(
       process_row
-    ).first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    ).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
     self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])
