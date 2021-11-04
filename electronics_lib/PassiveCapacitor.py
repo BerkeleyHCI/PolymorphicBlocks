@@ -1,13 +1,7 @@
-import csv
-from functools import reduce
 import math
-import os
 
 from electronics_abstract_parts import *
 from electronics_abstract_parts.Categories import DummyDevice
-from .ProductTableUtils import *
-
-from electronics_abstract_parts import *
 from .ProductTableUtils import *
 from .DigikeyTable import *
 
@@ -29,7 +23,7 @@ class MlccTable(DigikeyTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
 
         new_cols[cls.CAPACITANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Capacitance'], 'F'),
@@ -99,6 +93,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltered_parts = MlccTable.table().filter(lambda row: (
+        (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
         voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
         Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
     ))
@@ -146,7 +141,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     else:  # Otherwise, generate multiple capacitors
       # Additionally annotate the table by total cost and count, sort by lower count then total cost
       def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-        new_cols = {}
+        new_cols: Dict[PartsTableColumn, Any] = {}
         count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
         derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
         if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec
@@ -156,6 +151,8 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
         new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
         new_cols[self.PARALLEL_CAPACITANCE] = row[MlccTable.CAPACITANCE] * count
         new_cols[self.PARALLEL_COST] = row[MlccTable.COST] * count
+
+        return new_cols
 
       part = derated_parts.map_new_columns(
         parallel_row
@@ -167,18 +164,16 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
       self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
       self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
 
-      cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
-                                      voltage=self.voltage,
-                                      part_spec=part['Manufacturer Part Number'])
-      self.c = ElementDict[SmtCeramicCapacitor]()
+      cap_model = DummyCapacitor(capacitance=part[MlccTable.NOMINAL_CAPACITANCE],
+                                 voltage=self.voltage,
+                                 footprint=part[MlccTable.FOOTPRINT],
+                                 manufacturer=part[MlccTable.MANUFACTURER], part_number=part[MlccTable.PART_NUMBER],
+                                 value=f"{part['Capacitance']}, {part['Voltage - Rated']}")
+      self.c = ElementDict[DummyCapacitor]()
       for i in range(part[self.PARALLEL_COUNT]):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
-
-      # TODO CircuitBlocks probably shouldn't have hierarchy?
-      self.assign(self.mfr, part['Manufacturer'])
-      self.assign(self.part, part['Manufacturer Part Number'])
 
 
 class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
@@ -310,8 +305,8 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       else:
         split_package = footprint_spec
 
-      cap_model = DummyCapacitor(capacitance=(self.SINGLE_CAP_MAX, self.SINGLE_CAP_MAX),
-                                 voltage=self.voltage, footprint_spec=split_package)
+      cap_model = DummyCapacitor(capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
+                                 footprint=split_package)
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
@@ -334,24 +329,24 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       )
 
 
-class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
+class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
   """
-  Capacitor that does not derate, used for splitting a generic capacitor into multiple when desired capacitance is too high
+  Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
+  Used as the leaf block for generating parallel capacitors.
   """
 
   @init_in_parent
-  def __init__(self, footprint_spec: StringLike = "", *args, **kwargs):
+  def __init__(self, footprint: StringLike = "",
+               manufacturer: StringLike = "", part_number: StringLike = "", value: StringLike = "",
+               *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.footprint_spec = self.Parameter(StringExpr(footprint_spec))
-    self.generator(self.select_capacitor, self.capacitance, self.footprint_spec)
-
-  def select_capacitor(self, capacitance: Range, footprint_spec: str) -> None:
     self.footprint(
-      'C', footprint_spec,
+      'C', footprint,
       {
         '1': self.pos,
         '2': self.neg,
       },
-      value=f'{UnitUtils.num_to_prefix(capacitance.lower, 3)}F'
+      mfr=manufacturer, part=part_number,
+      value=value
     )
