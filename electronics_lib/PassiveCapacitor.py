@@ -147,56 +147,31 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
       # Additionally annotate the table by total cost and count, sort by lower count then total cost
       def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
         new_cols = {}
-      parallel_parts = derated_parts.map_new_columns(
+        count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
+        derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
+        if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec
+          return None
+
+        new_cols[self.PARALLEL_COUNT] = count
+        new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
+        new_cols[self.PARALLEL_CAPACITANCE] = row[MlccTable.CAPACITANCE] * count
+        new_cols[self.PARALLEL_COST] = row[MlccTable.COST] * count
+
+      part = derated_parts.map_new_columns(
         parallel_row
+      ).sort_by(lambda row:
+        (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
       ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
-
-
-
-
-
-    if len(parts) > 0:
-      # Always prefer a single capacitor, if available
-      pass
-    else:
-      # See if generating multiple capacitors helps
-      pass
-
-
-
-
-
-
-    single_cap_max = single_nominal_capacitance.upper
-
-    if len(capacitance_filtered_parts) > 0:  # available in single capacitor
-      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
-
-
-    elif capacitance.upper >= single_cap_max:
-      parts = parts.sort(Column('Unit Price (USD)')) \
-        .sort(Column('footprint')) \
-        .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
-      part = parts.first(err=f"no parallel capacitors in ({capacitance}) F")
-
-      num_caps = math.ceil(capacitance.lower / part['derated_capacitance'][0])
-      assert num_caps * part['derated_capacitance'][1] < capacitance.upper, "can't generate parallel caps within max capacitance limit"
-
-      self.assign(self.selected_capacitance, (
-        num_caps * part['capacitance'][0],
-        num_caps * part['capacitance'][1],
-      ))
-      self.assign(self.selected_derated_capacitance, (
-        num_caps * part['derated_capacitance'][0],
-        num_caps * part['derated_capacitance'][1],
-      ))
+      self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
+      self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
+      self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
 
       cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
                                       voltage=self.voltage,
                                       part_spec=part['Manufacturer Part Number'])
       self.c = ElementDict[SmtCeramicCapacitor]()
-      for i in range(num_caps):
+      for i in range(part[self.PARALLEL_COUNT]):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
@@ -204,8 +179,6 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
       # TODO CircuitBlocks probably shouldn't have hierarchy?
       self.assign(self.mfr, part['Manufacturer'])
       self.assign(self.part, part['Manufacturer Part Number'])
-    else:
-      raise ValueError(f"no single capacitors in ({capacitance}) F")
 
 
 class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
