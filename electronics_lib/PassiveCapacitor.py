@@ -36,7 +36,6 @@ class MlccTable(DigikeyTable):
           PartsTableUtil.parse_tolerance(row['Tolerance'])
         )
         new_rows[cls.NOMINAL_CAPACITANCE] = PartsTableUtil.parse_value(row['Capacitance'], 'F')
-
         new_rows[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
         )
@@ -62,34 +61,14 @@ class MlccTable(DigikeyTable):
     )
 
 
-def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
-  tables = []
-  for filename in TABLES:
-    path = os.path.join(os.path.dirname(__file__), 'resources', filename)
-    with open(path, newline='', encoding='utf-8') as csvfile:
-      reader = csv.reader(csvfile)
-      tables.append(ProductTable(next(reader), [row for row in reader]))
-  table = reduce(lambda x, y: x+y, tables)
-
-  # TODO maybe do voltage derating
-  # TODO also consider minimum symmetric voltage
-  return table.derived_column('capacitance',
-                              RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Column('Tolerance')),
-                              missing='discard') \
-    .derived_column('nominal_capacitance',
-                    ParseValue(Column('Capacitance'), 'F'),
-                    missing='discard') \
-    .derived_column('voltage',
-                    RangeFromUpper(ParseValue(Column('Voltage - Rated'), 'V'))) \
-    .derived_column('footprint',
-                    MapDict(Column('Package / Case'), {
-                      '0603 (1608 Metric)': 'Capacitor_SMD:C_0603_1608Metric',
-                      '0805 (2012 Metric)': 'Capacitor_SMD:C_0805_2012Metric',
-                      '1206 (3216 Metric)': 'Capacitor_SMD:C_1206_3216Metric',
-                    }), missing='discard')
-
-
 class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
+  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
+    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
+    'Capacitor_SMD:C_0805_2012Metric': 0.08,
+    'Capacitor_SMD:C_1206_3216Metric': 0.04,
+  }
+  DERATED_CAPACITANCE = PartsTableColumn(Range)
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -107,38 +86,36 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  product_table = generate_mlcc_table([
-    'Digikey_MLCC_SamsungCl_1pF_E12.csv',
-    'Digikey_MLCC_SamsungCl_1nF_E6.csv',
-    'Digikey_MLCC_SamsungCl_1uF_E3.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
-    'Digikey_MLCC_YageoCc_1uF_E3.csv',
-  ])
-
-  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
-    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
-    'Capacitor_SMD:C_0805_2012Metric': 0.08,
-    'Capacitor_SMD:C_1206_3216Metric': 0.04,
-  }
-
   def select_capacitor(self, capacitance: Range, voltage: Range,
                        single_nominal_capacitance: Range,
                        part_spec: str, footprint_spec: str) -> None:
-    def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
+    # Pre-filter out by the static parameters
+    # Note that we can't filter out capacitance before derating
+    prefiltered_parts = MlccTable.table().filter(lambda row: (
+        voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
+        Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
+    ))
+
+    def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if voltage.upper < 3.6:  # x-intercept at 3.6v
-        return row['capacitance']
-      if (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
-        return row['capacitance']
-      if row['footprint'] not in self.DERATE_VOLTCO:
-        return (0, 0)  # can't derate, generate obviously bogus and ignored value
-      voltco = self.DERATE_VOLTCO[row['footprint']]
-      return (
-        row['capacitance'][0] * (1 - voltco * (voltage.upper - 3.6)),
-        row['capacitance'][1] * (1 - voltco * (voltage.lower - 3.6))
-      )
+        derated = row[MlccTable.CAPACITANCE]
+      elif (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
+        derated = row[MlccTable.CAPACITANCE]
+      elif row['footprint'] not in self.DERATE_VOLTCO:
+        return None
+      else:
+        voltco = self.DERATE_VOLTCO[row['footprint']]
+        factor = 1 - voltco * (voltage.upper - 3.6)
+        derated = row[MlccTable.CAPACITANCE] * Range(factor, 1)
+
+      return {self.DERATED_CAPACITANCE: derated}
+
+    part = prefiltered_parts.map_new_columns(
+      derate_row
+    ).filter(lambda row: (
+      row[self.DERATED_CAPACITANCE] in capacitance
+    )).first(f"no FETs diodes in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+
 
     single_cap_max = single_nominal_capacitance.upper
 
