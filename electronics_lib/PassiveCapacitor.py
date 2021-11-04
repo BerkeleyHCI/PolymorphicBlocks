@@ -23,13 +23,26 @@ class MlccTable(DigikeyTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        nominal_capacitance = PartsTableUtil.parse_value(row['Capacitance'], 'F')
 
+        # enforce minimum packages, note the cutoffs are exclusive
+        if nominal_capacitance > 10e-6 and footprint not in [
+          'Capacitor_SMD:C_1206_3216Metric',
+        ]:
+          return None
+        elif nominal_capacitance > 1e-6 and footprint not in [
+          'Capacitor_SMD:C_0805_2012Metric',
+          'Capacitor_SMD:C_1206_3216Metric',
+        ]:
+          return None
+
+        new_cols[cls.FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = Range.from_tolerance(
-          PartsTableUtil.parse_value(row['Capacitance'], 'F'),
+          nominal_capacitance,
           PartsTableUtil.parse_tolerance(row['Tolerance'])
         )
-        new_cols[cls.NOMINAL_CAPACITANCE] = PartsTableUtil.parse_value(row['Capacitance'], 'F')
+        new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
         )
@@ -51,7 +64,7 @@ class MlccTable(DigikeyTable):
       'Digikey_MLCC_YageoCc_1uF_E3.csv',
     ], 'resources'), encoding='utf-8-sig')
     return raw_table.map_new_columns(parse_row).sort_by(
-      lambda row: row[cls.COST]
+      lambda row: [row[cls.FOOTPRINT], row[cls.COST]]  # prefer smaller first
     )
 
 
@@ -306,7 +319,8 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         split_package = footprint_spec
 
       cap_model = DummyCapacitor(capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
-                                 footprint=split_package)
+                                 footprint=split_package,
+                                 value=f'{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F')
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
