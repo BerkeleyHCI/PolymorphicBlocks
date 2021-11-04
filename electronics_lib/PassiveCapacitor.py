@@ -87,6 +87,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
+    self.part_spec = self.Parameter(StringExpr(""))
     self.footprint_spec = self.Parameter(StringExpr(""))
 
     # Default that can be overridden
@@ -106,6 +107,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltered_parts = MlccTable.table().filter(lambda row: (
+        (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
         voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
         Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)

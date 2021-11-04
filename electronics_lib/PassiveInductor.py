@@ -66,7 +66,7 @@ class InductorTable(DigikeyTable):
       'Digikey_Inductors_Shielded_BournsSRR_1005_1210_1260.csv',
     ], 'resources'), encoding='utf-8-sig')
     return raw_table.map_new_columns(parse_row).sort_by(
-      lambda row: [cls.COST, row[cls.FOOTPRINT]]
+      lambda row: [row[cls.COST], row[cls.FOOTPRINT]]
     )
 
 

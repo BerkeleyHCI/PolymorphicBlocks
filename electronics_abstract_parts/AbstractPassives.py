@@ -130,8 +130,6 @@ class UnpolarizedCapacitor(PassiveComponent):
     self.capacitance = self.Parameter(RangeExpr(capacitance))
     self.voltage = self.Parameter(RangeExpr(voltage))  # defined as operating voltage range
 
-    self.part_spec = self.Parameter(StringExpr(part_spec))  # TODO this shouldn't be here, but is a hotfix in absence of refinement-defaults
-
 
 @abstract_block
 class Capacitor(UnpolarizedCapacitor):
