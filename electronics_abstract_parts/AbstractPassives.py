@@ -147,7 +147,6 @@ class DecouplingCapacitor(DiscreteApplication):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
   # TODO no default capacitance
-  # TODO: can this be of type Capacitor instead? Need to think about port refinement semantics
   @init_in_parent
   def __init__(self, capacitance: RangeLike = RangeExpr()) -> None:
     super().__init__()
