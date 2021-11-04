@@ -7,6 +7,60 @@ from electronics_abstract_parts import *
 from electronics_abstract_parts.Categories import DummyDevice
 from .ProductTableUtils import *
 
+from electronics_abstract_parts import *
+from .ProductTableUtils import *
+from .DigikeyTable import *
+
+
+class MlccTable(DigikeyTable):
+  CAPACITANCE = PartsTableColumn(Range)
+  NOMINAL_CAPACITANCE = PartsTableColumn(float)
+  VOLTAGE_RATING = PartsTableColumn(Range)
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
+
+  PACKAGE_FOOTPRINT_MAP = {
+    '0603 (1608 Metric)': 'Capacitor_SMD:C_0603_1608Metric',
+    '0805 (2012 Metric)': 'Capacitor_SMD:C_0805_2012Metric',
+    '1206 (3216 Metric)': 'Capacitor_SMD:C_1206_3216Metric',
+  }
+
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_rows: Dict[PartsTableColumn, Any] = {}
+      try:
+        new_rows[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+
+        new_rows[cls.CAPACITANCE] = Range.from_tolerance(
+          PartsTableUtil.parse_value(row['Capacitance'], 'F'),
+          PartsTableUtil.parse_tolerance(row['Tolerance'])
+        )
+        new_rows[cls.NOMINAL_CAPACITANCE] = PartsTableUtil.parse_value(row['Capacitance'], 'F')
+
+        new_rows[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
+        )
+
+        new_rows.update(cls._parse_digikey_common(row))
+
+        return new_rows
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_MLCC_SamsungCl_1pF_E12.csv',
+      'Digikey_MLCC_SamsungCl_1nF_E6.csv',
+      'Digikey_MLCC_SamsungCl_1uF_E3.csv',
+      'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
+      'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
+      'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
+      'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
+      'Digikey_MLCC_YageoCc_1uF_E3.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
+
 
 def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
   tables = []
