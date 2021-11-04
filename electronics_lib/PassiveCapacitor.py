@@ -119,7 +119,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     )
     derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
-    if capacitance.lower >= derated_max_min_capacitance:
+    if capacitance.lower <= derated_max_min_capacitance:
       part = derated_parts.filter(lambda row: (
           row[self.DERATED_CAPACITANCE] in capacitance
       )).first(f"no single capacitor in {capacitance} F, {voltage} V")
