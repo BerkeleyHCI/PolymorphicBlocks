@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  Tuple, cast
+  Tuple, cast, Protocol
 import itertools
 import re
 import csv
+
+
+# from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy
+class Comparable(Protocol):
+  def __eq__(self, other: Any) -> bool: ...
+  def __lt__(self, other: Any) -> bool: ...
 
 
 PartsTableColumnType = TypeVar('PartsTableColumnType')
@@ -113,7 +119,8 @@ class PartsTable:
       output.append(fn(row))
     return output
 
-  def sort_by(self, fn: Callable[[PartsTableRow], Union[float, int, str]], reverse: bool = False) -> PartsTable:
+  ComparableType = TypeVar('ComparableType', bound=Comparable)
+  def sort_by(self, fn: Callable[[PartsTableRow], ComparableType], reverse: bool = False) -> PartsTable:
     """Creates a new table view (shallow copy) with rows sorted in some order.
 
     TODO this should support Comparable, but that's not a builtin protocol :(
