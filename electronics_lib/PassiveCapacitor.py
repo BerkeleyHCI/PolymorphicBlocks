@@ -1,8 +1,8 @@
+from typing import NamedTuple
 import math
 
 from electronics_abstract_parts import *
 from electronics_abstract_parts.Categories import DummyDevice
-from .ProductTableUtils import *
 from .DigikeyTable import *
 
 

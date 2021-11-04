@@ -1,5 +1,4 @@
 from electronics_abstract_parts import *
-from .ProductTableUtils import *
 from .DigikeyTable import *
 
 
