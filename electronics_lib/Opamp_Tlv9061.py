@@ -1,60 +1,61 @@
 from electronics_abstract_parts import *
 
 
-class Mcp6001_Device(DiscreteChip, FootprintBlock):
+class Tlv9061_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
-      voltage_limits=(1.8, 6.0)*Volt, current_draw=(50, 170)*uAmp
+      voltage_limits=(1.8, 5.5)*Volt, current_draw=(538, 800)*uAmp  # quiescent current
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
     analog_in_model = AnalogSink(
-      voltage_limits=(-0.3, self.vcc.link().voltage.lower() + 0.3),
-      impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
+      voltage_limits=(-0.1, self.vcc.link().voltage.lower() + 0.1),
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(AnalogSource(
-      (0.25, self.vcc.link().voltage.lower() - 0.25),
-      current_limits=(-6, 6)*mAmp,  # for Vdd=1.8, 23mA for Vdd=5.5
-      impedance=300*Ohm(tol=0)  # no tolerance bounds given on datasheet
+      (0.020, self.vcc.link().voltage.lower() - 0.02),  # assuming a 10k load
+      current_limits=(-50, 50)*mAmp,  # for Vs=5V
+      impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))
 
   def contents(self):
     super().contents()
     self.footprint(
-      'U', 'Package_TO_SOT_SMD:SOT-23-5',
+      'U', 'Package_TO_SOT_SMD:SOT-23-6',
       {
         '1': self.vout,
         '2': self.vss,
         '3': self.vinp,
         '4': self.vinn,
-        '5': self.vcc,
+        '5': self.vcc,  # SHDN, active low (pull high to enable)
+        '6': self.vcc,
       },
-      mfr='Microchip Technology', part='MCP6001T-I/OT',
-      datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/21733j.pdf'
+      mfr='Texas Instruments', part='TLV9061SQDBVRQ1',
+      datasheet='https://www.ti.com/lit/ds/symlink/tlv9062-q1.pdf'
     )
 
 
-class Mcp6001(Opamp):
-  """MCP6001 op-amp in SOT-23-5
+class Tlv9061(Opamp):
+  """RRIO op-amp in SOT-23-6.
   """
   def contents(self):
     super().contents()
 
-    self.ic = self.Block(Mcp6001_Device())
+    self.ic = self.Block(Tlv9061_Device())
     self.connect(self.inn, self.ic.vinn)
     self.connect(self.inp, self.ic.vinp)
     self.connect(self.out, self.ic.vout)
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.vss)
 
+    # Datasheet section 11: place 0.1uF bypass capacitors close to the power-supply pins
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.vdd_cap0 = imp.Block(DecouplingCapacitor(
+      self.vdd_cap = imp.Block(DecouplingCapacitor(
         capacitance=0.1*uFarad(tol=0.2),
       ))
