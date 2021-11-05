@@ -9,8 +9,6 @@ For a slightly deeper technical overview, including summaries of example project
 
 **This is alpha software, and is a continuing work-in-progress. Backwards compatibility is (currently) not guaranteed.** See [Project Status](#project-status) for more details.
 
-**This is undergoing some heavy refactoring, things are likely broken**
-
 ### Example
 From [the getting started tutorial](getting-started.md), this code defines a board with a USB Type-C connector powering (through a buck converter for 3.3V step-down) a microcontroller which drives a LED and reads a switch.
 
@@ -66,11 +64,11 @@ See [the getting started tutorial](getting-started.md), once you have a working 
 ### Setup
 
 #### Python and Packages
-You will need a Python 3.7+ installation with the protobuf and py4j packages.
+You will need a Python 3.7+ installation with the protobuf package.
 
 The packages can be installed using `pip`:
 ```python
-pip install protobuf py4j grpcio
+pip install protobuf
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 

@@ -6,7 +6,7 @@ from abc import abstractmethod
 from itertools import chain
 
 from . import edgir
-from .Exception import *
+from .Exceptions import *
 from .Array import BaseVector, DerivedVector, Vector
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict

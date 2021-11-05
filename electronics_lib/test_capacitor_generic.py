@@ -1,11 +1,6 @@
 import unittest
 
-from electronics_abstract_parts import *
-import electronics_abstract_parts
-import electronics_model
-from . import *
-from . import Passives
-from .Passives import SmtCeramicCapacitorGeneric
+from .PassiveCapacitor import SmtCeramicCapacitorGeneric
 from .test_passive_common import *
 
 

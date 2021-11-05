@@ -3,7 +3,7 @@ import unittest
 
 from . import *
 from .test_common import TestBlockSource, TestBlockSink, TestPortSink, ImplicitSink, TestBlockImplicitSink
-from .Exception import EdgContextError
+from .Exceptions import EdgContextError
 
 
 class ImplicitConnectBlock(Block):
