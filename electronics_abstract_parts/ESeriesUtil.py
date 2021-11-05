@@ -28,13 +28,14 @@ class ESeriesUtil:
 
   @staticmethod
   def round_sig(x: float, sig: int) -> float:
+    # this prevents floating point weirdness, eg 819.999
     return round(x, sig-int(math.floor(math.log10(abs(x))))-1)
 
   @classmethod
-  def choose_preferred_number(cls, range: Range, tolerance: float, series: Sequence[float], sig: int) -> \
+  def choose_preferred_number(cls, within: Range, series: Sequence[float], tolerance: float) -> \
       Optional[float]:
-    lower_pow10 = math.floor(math.log10(range.lower))
-    upper_pow10 = math.ceil(math.log10(range.upper))
+    lower_pow10 = math.floor(math.log10(within.lower))
+    upper_pow10 = math.ceil(math.log10(within.upper))
 
     powers = cls.zigzag_range(lower_pow10, upper_pow10)  # prefer the center power first, then zigzag away from it
     # TODO given the tolerance we can actually bound this further
@@ -42,11 +43,13 @@ class ESeriesUtil:
     for value in series:
       for power in powers:
         pow10_mult = math.pow(10, power)
-        value_mult = cls.round_sig(value * pow10_mult, sig)  # this prevents floating point weirdness, eg 819.999
-        if Range.from_tolerance(value_mult, tolerance) in range:
+        value_mult = cls.round_sig(value * pow10_mult, cls.ROUND_DIGITS)
+        if Range.from_tolerance(value_mult, tolerance) in within:
           return value_mult
 
     return None
+
+  ROUND_DIGITS = 5
 
   E24_DIFF = {  # series as difference from prior series
     1: [1.0],
@@ -85,9 +88,8 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
   Series should be the zero decade, in the range of [1, 10)
   """
-  def __init__(self, series: List[float], round_digits: int = 5):
+  def __init__(self, series: List[float]):
     self.series = series
-    self.round_digits = round_digits
 
   @abstractmethod
   def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
@@ -119,9 +121,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     The output is ordered such that pairs containing numbers earlier in the series comes first,
     so in effect lower E-series combinations are preferred, assuming the series is ordered in a
     zig-zag fashion."""
-    r1_series = [ESeriesUtil.round_sig(elt * (10 ** r1_decade), self.round_digits)
+    r1_series = [ESeriesUtil.round_sig(elt * (10 ** r1_decade), ESeriesUtil.ROUND_DIGITS)
                  for elt in self.series]
-    r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), self.round_digits)
+    r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), ESeriesUtil.ROUND_DIGITS)
                  for elt in self.series]
     out = []
     assert len(r1_series) == len(r2_series), "algorithm depends on same series length"
