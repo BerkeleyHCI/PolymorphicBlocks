@@ -33,7 +33,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
-      selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.E24_SERIES[series], tolerance)
+      selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.SERIES[series], tolerance)
       if selected_series is None:
         raise ValueError(f"no resistor within {resistance} in series {series} and tolerance {tolerance}")
       selected_center = selected_series
