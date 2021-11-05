@@ -33,9 +33,10 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
-      selected_center = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.E24_SERIES[series], tolerance)
-      if selected_center is None:
+      selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.E24_SERIES[series], tolerance)
+      if selected_series is None:
         raise ValueError(f"no resistor within {resistance} in series {series} and tolerance {tolerance}")
+      selected_center = selected_series
 
     selected_range = Range.from_tolerance(selected_center, tolerance)
     if not selected_range.fuzzy_in(resistance):
