@@ -56,14 +56,16 @@ class DigitalAnalogIsolatedSwitch(Block):
     self.connect(self.res.a, self.ic.ledk)
     self.connect(self.res.b.as_ground(), self.gnd)
 
-    self.pull_merge = MergedAnalogSource.merge(self, self.apull, self.ain)
-    self.connect(self.pull_merge.source, self.ic.feta.as_analog_sink(
+    self.connect(self.ain, self.ic.feta.as_analog_sink(
       voltage_limits=self.apull.link().voltage_limits + self.ic.load_voltage_limit,
       current_draw=self.aout.link().current_drawn,
       impedance=self.aout.link().sink_impedance
     ))
-    self.connect(self.aout, self.ic.feta.as_analog_source(
-      voltage_out=self.ain.link().voltage.hull(self.apull.link().voltage),
-      current_limits=self.ic.load_current_limit,
-      impedance=self.ain.link().source_impedance + self.ic.load_resistance
+    self.pull_merge = MergedAnalogSource.merge(
+      self, self.apull,
+      self.ic.feta.as_analog_source(
+        voltage_out=self.ain.link().voltage,
+        current_limits=self.ic.load_current_limit,
+        impedance=self.ain.link().source_impedance + self.ic.load_resistance
     ))
+    self.connect(self.pull_merge.source, self.aout)
