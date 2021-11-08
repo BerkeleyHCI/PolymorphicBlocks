@@ -1,4 +1,5 @@
 from electronics_model import *
+from .DummyDevices import MergedAnalogSource
 from .AbstractPassives import Resistor
 
 
@@ -49,13 +50,14 @@ class DigitalAnalogIsolatedSwitch(Block):
       resistance=(self.signal.link().voltage.upper() / self.ic.led_current_recommendation.upper(),
                   self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())
     ))
-    self.connect(self.signal, self.package.a.as_digital_sink(
+    self.connect(self.signal, self.ic.leda.as_digital_sink(
       current_draw=self.signal.link().voltage / self.res.resistance
     ))
-    self.connect(self.res.a, self.package.k)
+    self.connect(self.res.a, self.ic.ledk)
     self.connect(self.res.b.as_ground(), self.gnd)
 
-    self.connect(self.ain, self.ic.feta.as_analog_sink(
+    self.pull_merge = MergedAnalogSource.merge(self, self.apull, self.ain)
+    self.connect(self.pull_merge.source, self.ic.feta.as_analog_sink(
       voltage_limits=self.apull.link().voltage_limits + self.ic.load_voltage_limit,
       current_draw=self.aout.link().current_drawn,
       impedance=self.aout.link().sink_impedance

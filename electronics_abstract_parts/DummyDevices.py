@@ -1,3 +1,5 @@
+from typing import Union
+
 from electronics_model import *
 from .AbstractPassives import *
 from .Categories import *
@@ -67,6 +69,21 @@ class MergedVoltageSource(DummyDevice, NetBlock):
 
 
 class MergedAnalogSource(DummyDevice, NetBlock):
+  @classmethod
+  def merge(cls, parent: Block, sink1: Union[AnalogSink, AnalogSource],
+            sink2: Union[AnalogSink, AnalogSource]) -> 'MergedAnalogSource':
+    """Creates and return a merge block with the two sinks connected.
+    The result should be assigned to a name in the parent, and the output source port
+    can be accessed by the source member.
+
+    The Union in the type signature accounts for bridges.
+    Connect type errors will be handled by the connect function.
+    """
+    block = parent.Block(MergedAnalogSource())
+    parent.connect(block.sink1, sink1)
+    parent.connect(block.sink2, sink2)
+    return block
+
   def __init__(self) -> None:
     super().__init__()
 
