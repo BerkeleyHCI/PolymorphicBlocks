@@ -40,6 +40,7 @@ class DigitalAnalogIsolatedSwitch(Block):
     self.signal = self.Port(DigitalSink())
     self.gnd = self.Port(Ground(), [Common])
 
+    self.apull = self.Port(AnalogSink())
     self.ain = self.Port(AnalogSink())
     self.aout = self.Port(AnalogSource())
 
@@ -55,14 +56,12 @@ class DigitalAnalogIsolatedSwitch(Block):
     self.connect(self.res.b.as_ground(), self.gnd)
 
     self.connect(self.ain, self.ic.feta.as_analog_sink(
-      voltage_limits=RangeExpr(),  # TODO implement me
+      voltage_limits=self.apull.link().voltage_limits + self.ic.load_voltage_limit,
       current_draw=self.aout.link().current_drawn,
       impedance=self.aout.link().sink_impedance
     ))
     self.connect(self.aout, self.ic.feta.as_analog_source(
-      # TODO: the source can float, which makes this sort of bidirectional,
-      # and needs to define the floating voltage
-      voltage_out=self.ain.link().voltage,
+      voltage_out=self.ain.link().voltage.hull(self.apull.link().voltage),
       current_limits=self.ic.load_current_limit,
       impedance=self.ain.link().source_impedance + self.ic.load_resistance
     ))

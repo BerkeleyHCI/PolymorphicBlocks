@@ -62,9 +62,34 @@ class MergedVoltageSource(DummyDevice, NetBlock):
     self.sink2 = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
                                        current_draw=self.source.link().current_drawn))
 
-    self.assign(self.source.voltage_out, (
-      self.sink1.link().voltage.lower().min(self.sink2.link().voltage.lower()),
-      self.sink1.link().voltage.upper().max(self.sink2.link().voltage.upper())))
+    self.assign(self.source.voltage_out,
+                self.sink1.link().voltage.hull(self.sink2.link().voltage))
+
+
+class MergedAnalogSource(DummyDevice, NetBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.source = self.Port(AnalogSource(
+      voltage_out=RangeExpr(),
+      current_limits=RangeExpr.ALL,
+      impedance=RangeExpr()
+    ))
+    self.sink1 = self.Port(AnalogSink(
+      voltage_limits=RangeExpr.ALL,
+      current_draw=self.source.link().current_drawn,
+      impedance=self.source.link().sink_impedance
+    ))
+    self.sink2 = self.Port(AnalogSink(
+      voltage_limits=RangeExpr.ALL,
+      current_draw=self.source.link().current_drawn,
+      impedance=self.source.link().sink_impedance
+    ))
+
+    self.assign(self.source.voltage_out,
+                self.sink1.link().voltage.hull(self.sink2.link().voltage))
+    self.assign(self.source.impedance,
+                1 / (1 / self.sink1.link().source_impedance + 1 / self.sink2.link().source_impedance))
 
 
 class DummyAnalogSink(DummyDevice):
