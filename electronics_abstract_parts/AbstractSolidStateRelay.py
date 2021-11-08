@@ -1,8 +1,9 @@
 from electronics_model import *
+from .AbstractPassives import Resistor
 
 
 @abstract_block
-class SolidStateRelay_Device(Block):
+class SolidStateRelay(Block):
   """Base class for solid state relays.
   LED pins are passive (like the abstract LED) and the enclosing class should provide
   the circuitry to make it a DigitalSink port.
@@ -21,6 +22,7 @@ class SolidStateRelay_Device(Block):
     self.led_forward_voltage = self.Parameter(RangeExpr())
     self.led_current_limit = self.Parameter(RangeExpr())
     self.led_current_recommendation = self.Parameter(RangeExpr())
+    self.load_voltage_limit = self.Parameter(RangeExpr())
     self.load_current_limit = self.Parameter(RangeExpr())
     self.load_resistance = self.Parameter(RangeExpr())
 
@@ -32,4 +34,26 @@ class DigitalAnalogIsolatedSwitch(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    # TODO implement me
+    self.signal = self.Port(DigitalSink(), [InOut])
+    self.gnd = self.Port(Ground(), [Common])
+
+    self.ain = self.Port(AnalogSink())
+    self.aout = self.Port(AnalogSource())
+
+    self.ic = self.Block(SolidStateRelay())
+    self.res = self.Block(Resistor(
+      resistance=(self.signal.link().voltage.upper() / self.ic.led_current_recommendation.upper(),
+                  self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())))
+
+    self.connect(self.signal, self.package.a.as_digital_sink(
+      current_draw=self.signal.link().voltage / self.res.resistance
+    ))
+    self.connect(self.res.a, self.package.k)
+    self.connect(self.res.b.as_ground(), self.gnd)
+
+    self.connect(self.ain, self.ic.feta.as_analog_sink(
+
+    ))
+    self.connect(self.aout, self.ic.feta.as_analog_source(
+
+    ))
