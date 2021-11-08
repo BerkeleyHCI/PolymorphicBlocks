@@ -43,8 +43,8 @@ class DigitalAnalogIsolatedSwitch(Block):
     self.ic = self.Block(SolidStateRelay())
     self.res = self.Block(Resistor(
       resistance=(self.signal.link().voltage.upper() / self.ic.led_current_recommendation.upper(),
-                  self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())))
-
+                  self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())
+    ))
     self.connect(self.signal, self.package.a.as_digital_sink(
       current_draw=self.signal.link().voltage / self.res.resistance
     ))
@@ -55,5 +55,6 @@ class DigitalAnalogIsolatedSwitch(Block):
 
     ))
     self.connect(self.aout, self.ic.feta.as_analog_source(
-
+      # TODO: the source can float, which makes this sort of bidirectional,
+      # and needs to define the floating voltage
     ))
