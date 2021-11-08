@@ -30,11 +30,14 @@ class SolidStateRelay(Block):
 class DigitalAnalogIsolatedSwitch(Block):
   """Digitally controlled solid state relay that switches an analog signal.
   Includes a ballasting resistor.
+
+  The ports are not tagged with Input/Output/InOut, because of potential for confusion between
+  the digital side and teh analog side
   """
   def __init__(self) -> None:
     super().__init__()
 
-    self.signal = self.Port(DigitalSink(), [InOut])
+    self.signal = self.Port(DigitalSink())
     self.gnd = self.Port(Ground(), [Common])
 
     self.ain = self.Port(AnalogSink())
@@ -52,9 +55,14 @@ class DigitalAnalogIsolatedSwitch(Block):
     self.connect(self.res.b.as_ground(), self.gnd)
 
     self.connect(self.ain, self.ic.feta.as_analog_sink(
-
+      voltage_limits=RangeExpr(),  # TODO implement me
+      current_draw=self.aout.link().current_drawn,
+      impedance=self.aout.link().sink_impedance
     ))
     self.connect(self.aout, self.ic.feta.as_analog_source(
       # TODO: the source can float, which makes this sort of bidirectional,
       # and needs to define the floating voltage
+      voltage_out=self.ain.link().voltage,
+      current_limits=self.ic.load_current_limit,
+      impedance=self.ain.link().source_impedance + self.ic.load_resistance
     ))
