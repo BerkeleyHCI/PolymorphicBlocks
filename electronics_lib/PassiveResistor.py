@@ -1,46 +1,53 @@
+from typing import List, Tuple
 from electronics_abstract_parts import *
-from .ProductTableUtils import *
 
 
 @abstract_block
 class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
-  TOLERANCE: float
+  """Default generator that automatically picks resistors from the E-series specified.
+  Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
+  at the specified tolerance.
+  Then, picks the minimum (down to 0603, up to 2512) SMD size for the power requirement.
+
+  A series of 0 means exact, but tolerance is still checked.
+  """
+
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
+
     self.footprint_spec = self.Parameter(StringExpr(""))
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+
     self.generator(self.select_resistor, self.spec_resistance, self.power,
-                   self.footprint_spec)
+                   self.footprint_spec, self.series, self.tolerance)
 
     # Output values
     self.selected_power_rating = self.Parameter(RangeExpr())
 
-  """Default generator that automatically picks resistors.
-  For value, preferentially picks the lowest-step E-series (E1 before E3 before E6 ...) value meeting the needs,
-  at +/- 1% tolerance. If an E24 resistor at 1% cannot be found, tries to midpoint of the resistance range to pick an
-  exact value at 1%.
-  If below 1% tolerance is needed, fails. TODO: non-preferentially pick tolerances down to 0.1%, though pricey!
-  Picks the minimum (down to 0603, up to 2512) SMD size for the power requirement. TODO: consider PTH types"""
-  def select_resistor(self, resistance: Range, power: Range, footprint_spec: str) -> None:
-    value = ESeriesUtil.choose_preferred_number(resistance, self.TOLERANCE, ESeriesUtil.E24_SERIES[24], 2)
+  def select_resistor(self, resistance: Range, power: Range, footprint_spec: str,
+                      series: int, tolerance: float) -> None:
+    if series == 0:  # exact, not matched to E-series
+      selected_center = resistance.center()
+    else:
+      selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.SERIES[series], tolerance)
+      if selected_series is None:
+        raise ValueError(f"no resistor within {resistance} in series {series} and tolerance {tolerance}")
+      selected_center = selected_series
 
-    if value is None:  # failed to find a preferred resistor, choose the center within tolerance
-      center = resistance.center()
-      min_tolerance = center * self.TOLERANCE
-      if (center - resistance.lower) < min_tolerance or (resistance.upper - center < min_tolerance):
-        # TODO should there be a better way of communicating generator failures?
-        raise ValueError(f"Cannot generate 1% resistor within {resistance}")
-      value = center
+    selected_range = Range.from_tolerance(selected_center, tolerance)
+    if not selected_range.fuzzy_in(resistance):
+      raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
-    # TODO we only need the first really so this is a bit inefficient
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
                          if package_power >= power.upper and (not footprint_spec or package == footprint_spec)]
     if not suitable_packages:
-      raise ValueError(f"Cannot find suitable package for resistor needing {power.upper} W power")
+      raise ValueError(f"no resistor package for {power.upper} W power")
 
-    self.assign(self.resistance, value * Ohm(tol=self.TOLERANCE))
+    self.assign(self.resistance, selected_range)
     self.assign(self.selected_power_rating, suitable_packages[0][0])
 
     self.footprint(
@@ -49,13 +56,11 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
         '1': self.a,
         '2': self.b,
       },
-      # TODO mfr and part number
-      value=f'{UnitUtils.num_to_prefix(value, 3)}, {self.TOLERANCE * 100:0.3g}%, {suitable_packages[0][0]}W',
+      value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
 
 
 class ChipResistor(ESeriesResistor):
-  TOLERANCE = 0.01
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     # (1.0/32, '01005'),  # KiCad doesn't seem to have a default footprint this small
@@ -71,7 +76,6 @@ class ChipResistor(ESeriesResistor):
 
 
 class AxialResistor(ESeriesResistor):
-  TOLERANCE = 0.01
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     (1.0/8, 'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal'),
@@ -83,7 +87,6 @@ class AxialResistor(ESeriesResistor):
 
 
 class AxialVerticalResistor(ESeriesResistor):
-  TOLERANCE = 0.01
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     (1.0/8, 'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical'),
