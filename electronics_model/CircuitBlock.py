@@ -66,7 +66,7 @@ class FootprintBlock(Block):
       return super()._metadata_to_proto(src, path, ref_map)
 
   # TODO: allow value to be taken from parameters, ideally w/ string concat from params
-  def footprint(self, refdes: str, footprint: str, pinning: Mapping[str, CircuitPort],
+  def footprint(self, refdes: str, footprint: StringLike, pinning: Mapping[str, CircuitPort],
                 mfr: Optional[StringLike] = None, part: Optional[StringLike] = None, value: Optional[StringLike] = None,
                 datasheet: Optional[StringLike] = None) -> None:
     """Creates a footprint in this circuit block.

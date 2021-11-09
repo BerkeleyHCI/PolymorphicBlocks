@@ -144,7 +144,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
-    calculator = ResistiveDividerCalculator(ESeriesUtil.E24_SERIES[series], tolerance)
+    calculator = ResistiveDividerCalculator(ESeriesUtil.SERIES[series], tolerance)
     top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
 
     self.top_res = self.Block(Resistor(
