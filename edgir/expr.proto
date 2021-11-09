@@ -33,22 +33,150 @@ import "common.proto";
 import "lit.proto";
 import "type.proto";
 
+message UnaryExpr {
+ enum Op {
+   UNDEFINED = 0;
+
+   /** Negate :: Numeric a =>       a -> a
+              :: Numeric a => Range a -> Range a
+    */
+   NEGATE = 1;
+
+   /** Not :: Bool -> Bool */
+   NOT = 2;
+
+   /** Invert ::       Float -> Float
+              :: Range Float -> Range Float
+    */
+   INVERT = 3;
+
+   /** Min :: Range a -> a */
+   MIN = 4;
+
+   /** Max :: Range a -> a */
+   MAX = 5;
+
+   /** Center :: Range a -> a */
+   CENTER = 6;
+
+   /** Width :: Range a -> a */
+   WIDTH = 7;
+ }
+ Op op = 1;
+ ValueExpr val = 2;
+}
+
+message ReductionExpr {
+  enum Op{
+    UNDEFINED = 0;
+
+    /** Sum :: (Numeric a) => Set a -> a
+            :: (Numeric a) => Set (Range a) -> Range a
+
+        Sum({}) = 0 */
+    SUM = 1;
+
+    /** All :: Set Bool -> Bool
+
+      All inputs are true
+      All({}) = True */
+    ALL_TRUE = 2;
+
+    /** Any :: Set Bool -> Bool
+
+      Any of the inputs are true
+      Any({}) = False */
+    ANY_TRUE = 3;
+
+    /** AllEq :: (Equality a) => Set a -> Bool
+
+      AllEq({}) = True */
+    ALL_EQ = 4;
+
+    /** AllUnique :: (Equality a) => Set a -> Bool
+
+      AllUnique(EmptySet) = True */
+    ALL_UNIQUE = 5;
+
+    /** Size :: Set a -> Integer */
+    // SIZE = 6;
+
+    /** Maximum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. */
+    MAXIMUM = 10;
+
+    /** Minimum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. */
+    MINIMUM = 11;
+
+    /** SetExtract :: Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. In addition this assumes all values in the set are equal. */
+    SET_EXTRACT = 12;
+
+    /** Intersection :: Set (Range a) -> Range a
+
+        May produce an empty range.
+        Intersection({}) = [-inf, +inf] */
+    INTERSECTION = 13;
+
+    /** Hull :: Set (Range a) -> Range a
+        Returns the convex hull (union with all the inner missing bits filled in)
+        Hull({}) = EmptyRange */
+    HULL = 14;
+
+    /** Negate :: Numeric a => Set a         -> Set a
+               :: Numeric a => Set (Range a) -> Set (Range a)
+
+     Pointwise negate */
+    NEGATE = 20;
+
+    /** Invert :: Set Float         -> Set Float
+               :: Set (Range Float) -> Set (Range Float)
+
+     Pointwise Invert */
+    INVERT = 21;
+  }
+  Op op = 1;
+  ValueExpr vals = 4;
+}
+
 message BinaryExpr {
   enum Op {
     UNDEFINED = 0;
 
-    /** Add :: Numeric a => (lhs : a,  rhs : a) -> a */
+    /** Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+    */
     ADD = 10;
 
-    /** Sub :: Numeric a => (lhs : a,  rhs : a) -> a */
-    SUB = 11;
+    /** Sub :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
+    // SUB = 11; // Use ADD and NEGATE instead
 
-    /** Mult :: Numeric a => (lhs : a,  rhs : a) -> a */
+    /** Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+             :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+             :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+             :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
     MULT = 12;
 
-    /** Div :: Numeric a => (lhs :: a, rhs :: a) -> a */
-    DIV = 13;
-
+    /** Div :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
+    // DIV = 13; // Use MULT and INVERT instead
 
     /** And :: (lhs :: Bool, rhs :: Bool) -> Bool */
     AND = 20;
@@ -62,19 +190,14 @@ message BinaryExpr {
     /** Implies :: (lhs :: Bool, rhs :: Bool) -> Bool */
     IMPLIES = 23;
 
-    /** Iff :: (lhs :: Bool, rhs :: Bool) -> Bool
-
-      If and Only If := (\ a b -> Not (Xor a b))
-    */
-//    IFF = 24;
-
+    /** Iff :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    // IFF = 24; // Use EQ instead
 
     /** Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool */
     EQ = 30;
 
     /** Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool */
     NEQ = 31;
-
 
     /** GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool */
     GT = 40;
@@ -94,45 +217,35 @@ message BinaryExpr {
     /** Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a */
     MIN = 46;
 
-    /** union :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Set a
+    /** Union :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Set a
 
       Note how, no matter the type of setlike thing we use as
-      input, the output is alwys an unordered set.
-    */
-//    UNION = 50;
+      input, the output is alwys an unordered set. */
+    // UNION = 50;
 
-    /** intersection :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Set a
-
-      Note how, no matter the type of setlike thing we use as
-      input, the output is always an unordered set.
-
-      Alternate Type
-      intersection :: (lhs :: Range a, rhs :: Range a) -> Range a
-
-      May produce an empty range */
+    /** Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a */
     INTERSECTION = 51;
 
-    /** hull :: (Range a) => (lhs :: a, rhs :: a) -> Set a
-      Given two input ranges, returns the convex hull (union with all the inner missing bits filled in)
-    */
+    /** Hull :: (lhs :: Range a, rhs :: Range a) -> Range a
+      Given two input ranges, returns the convex hull (union with
+      all the inner missing bits filled in) */
     HULL = 54;
 
-    /** intersects :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool */
-//    INTERSECTS = 52;
+    /** Intersects :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool */
+    // INTERSECTS = 52;
 
-   /** subset :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool
-       subset :: (Set_Like s, Equality a) => (lhs :: a, rhs :: s a) -> Bool
-       subset :: (lhs :: Range a, rhs :: Range a) -> Bool
-       subset :: (lhs :: a, rhs :: Range a) -> Bool
+    /** Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool
+               :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool
 
-       Whether lhs is a subset of (or, in the single element case, contained in) rhs */
-    SUBSET = 53;
+        Whether the lhs range or point is entirely within (contained by) the rhs.
+        Used to be named SUBSET changed to a name that doesn't also imply a set op. */
+    WITHIN = 53;
 
     /** Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a */
     RANGE = 1;
 
     /** PlusOrMinus :: (Comparable a) => (midpoint :: a, variance :: a) -> Range a */
-//    PLUS_OR_MINUS = 2;
+    // PLUS_OR_MINUS = 2;
   }
 
   Op op = 1;
@@ -140,80 +253,27 @@ message BinaryExpr {
   ValueExpr rhs = 3;
 }
 
-//message UnaryExpr {
-//  enum Op {
-//    UNDEFINED = 0;
-//
-//    /** Negate :: Numeric a => (val :: a) -> a */
-//    NEGATE = 1;
-//
-//    /** Not :: (val :: Bool) -> Bool */
-//    NOT = 2;
-//
-//  }
-//  Op op = 1;
-//  ValueExpr val = 2;
-//}
-
-message ReductionExpr {
-  enum Op{
+message BroadcastExpr {
+  enum Op {
     UNDEFINED = 0;
 
-    /** Sum :: (SetLike s, Numeric a) => (vals :: s a) -> a */
-    SUM = 1;
+    /** Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+            :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+            :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+            :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+     */
+    ADD = 10;
 
-    /** All :: (Set_like s) => (vars :: s Bool) -> Bool
-
-      All inputs are true
-      All(EmptySet) = True */
-
-    ALL_TRUE = 2;
-
-    /** Any :: (Set_like s) => (vars :: s Bool) -> Bool
-
-      Any of the inputs are true
-      Any(EmptySet) = False */
-    ANY_TRUE = 3;
-
-    /** AllEq :: (Set_like s, Equality a) => (vals :: s a) -> Bool
-
-      AllEq(EmptySet) = True */
-    ALL_EQ = 4;
-
-    /** AllUnique :: (Set_like s, Equality a) => (vals :: s a) -> Bool
-
-      AllUnique(EmptySet) = True */
-    ALL_UNIQUE = 5;
-
-    /** Size :: SetLike s => (val :: s a) -> Integer */
-//    SIZE = 6;
-
-
-    /** Maximum :: (Set_like s, Equality a) => (base :: a, vals :: s a) -> Bool
-
-        This op requires that the non-emptyness of the relevant set is assured
-        before being valid. */
-    MAXIMUM = 10;
-
-    /** Minimum :: (Set_like s, Equality a) => (base :: a, vals :: s a) -> Bool
-
-        This op requires that the non-emptyness of the relevant set is assured
-        before being valid. */
-    MINIMUM = 11;
-
-    /** SetExtract :: s a -> a */
-    SET_EXTRACT = 12;
-
-    /** Intersection :: (Set_like s) => s Range -> Range
-        May produce an empty range */
-    INTERSECTION = 13;
-
-    /** Hull :: (Set_like s) => s Range -> Range
-        Returns the convex hull (union with all the inner missing bits filled in) */
-    HULL = 14;
+    /** Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+             :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+             :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+             :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+     */
+    MULT = 12;
   }
   Op op = 1;
-  ValueExpr vals = 4;
+  ValueExpr lhset = 2;
+  ValueExpr rhs = 3;
 }
 
 /** Arrays have an expression form, allowing you to define them with a set of
@@ -306,21 +366,22 @@ message AssignExpr {
 
 message ValueExpr {
   oneof expr {
-    edg.lit.ValueLit literal    = 1;
-    BinaryExpr      binary     = 2;
-//    UnaryExpr       unary      = 3;
-    ReductionExpr   reduce     = 4;
-    // SetExpr         set        = 5;
-    // ArrayExpr       array      = 6;
-    StructExpr      struct     = 7;
-    RangeExpr       range      = 8;
-//    WithinExpr      within     = 9;
-    IfThenElseExpr  ifThenElse = 10;
-    ExtractExpr     extract    = 12;
-    //SetExtractExpr  set_extrat = 13;
-    MapExtractExpr  map_extract = 14;
-    ConnectedExpr   connected = 15;
-    ExportedExpr   exported = 16;
+    edg.lit.ValueLit literal     = 1;
+    BinaryExpr       binary      = 2;
+    BroadcastExpr    broadcast   = 18;
+    UnaryExpr        unary       = 3;
+    ReductionExpr    reduce      = 4;
+    // SetExpr          set         = 5;
+    // ArrayExpr        array       = 6;
+    StructExpr       struct      = 7;
+    RangeExpr        range       = 8;
+    // WithinExpr       within      = 9;
+    IfThenElseExpr   ifThenElse  = 10;
+    ExtractExpr      extract     = 12;
+    // SetExtractExpr   set_extract = 13;
+    MapExtractExpr   map_extract = 14;
+    ConnectedExpr    connected   = 15;
+    ExportedExpr     exported    = 16;
 
     AssignExpr assign    = 17;
 
