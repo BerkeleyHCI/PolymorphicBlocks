@@ -1,49 +1,97 @@
-import csv
-from functools import reduce
+from typing import NamedTuple
 import math
-import os
 
 from electronics_abstract_parts import *
 from electronics_abstract_parts.Categories import DummyDevice
-from .ProductTableUtils import *
+from .DigikeyTable import *
 
 
-def generate_mlcc_table(TABLES: List[str]) -> ProductTable:
-  tables = []
-  for filename in TABLES:
-    path = os.path.join(os.path.dirname(__file__), 'resources', filename)
-    with open(path, newline='', encoding='utf-8') as csvfile:
-      reader = csv.reader(csvfile)
-      tables.append(ProductTable(next(reader), [row for row in reader]))
-  table = reduce(lambda x, y: x+y, tables)
+class MlccTable(DigikeyTable):
+  CAPACITANCE = PartsTableColumn(Range)
+  NOMINAL_CAPACITANCE = PartsTableColumn(float)
+  VOLTAGE_RATING = PartsTableColumn(Range)
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
 
-  # TODO maybe do voltage derating
-  # TODO also consider minimum symmetric voltage
-  return table.derived_column('capacitance',
-                              RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Column('Tolerance')),
-                              missing='discard') \
-    .derived_column('nominal_capacitance',
-                    ParseValue(Column('Capacitance'), 'F'),
-                    missing='discard') \
-    .derived_column('voltage',
-                    RangeFromUpper(ParseValue(Column('Voltage - Rated'), 'V'))) \
-    .derived_column('footprint',
-                    MapDict(Column('Package / Case'), {
-                      '0603 (1608 Metric)': 'Capacitor_SMD:C_0603_1608Metric',
-                      '0805 (2012 Metric)': 'Capacitor_SMD:C_0805_2012Metric',
-                      '1206 (3216 Metric)': 'Capacitor_SMD:C_1206_3216Metric',
-                    }), missing='discard')
+  PACKAGE_FOOTPRINT_MAP = {
+    '0603 (1608 Metric)': 'Capacitor_SMD:C_0603_1608Metric',
+    '0805 (2012 Metric)': 'Capacitor_SMD:C_0805_2012Metric',
+    '1206 (3216 Metric)': 'Capacitor_SMD:C_1206_3216Metric',
+  }
+
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_cols: Dict[PartsTableColumn, Any] = {}
+      try:
+        footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        nominal_capacitance = PartsTableUtil.parse_value(row['Capacitance'], 'F')
+
+        # enforce minimum packages, note the cutoffs are exclusive
+        if nominal_capacitance > 10e-6 and footprint not in [
+          'Capacitor_SMD:C_1206_3216Metric',
+        ]:
+          return None
+        elif nominal_capacitance > 1e-6 and footprint not in [
+          'Capacitor_SMD:C_0805_2012Metric',
+          'Capacitor_SMD:C_1206_3216Metric',
+        ]:
+          return None
+
+        new_cols[cls.FOOTPRINT] = footprint
+        new_cols[cls.CAPACITANCE] = Range.from_tolerance(
+          nominal_capacitance,
+          PartsTableUtil.parse_tolerance(row['Tolerance'])
+        )
+        new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
+        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
+        )
+
+        new_cols.update(cls._parse_digikey_common(row))
+
+        return new_cols
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_MLCC_SamsungCl_1pF_E12.csv',
+      'Digikey_MLCC_SamsungCl_1nF_E6.csv',
+      'Digikey_MLCC_SamsungCl_1uF_E3.csv',
+      'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
+      'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
+      'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
+      'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
+      'Digikey_MLCC_YageoCc_1uF_E3.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: [row[cls.FOOTPRINT], row[cls.COST]]  # prefer smaller first
+    )
 
 
 class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
+  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
+    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
+    'Capacitor_SMD:C_0805_2012Metric': 0.08,
+    'Capacitor_SMD:C_1206_3216Metric': 0.04,
+  }
+  DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
+  DERATE_MIN_CAPACITANCE = 1.0e-6
+  DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+  PARALLEL_COUNT = PartsTableColumn(int)
+  PARALLEL_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_COST = PartsTableColumn(float)
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
+    self.part_spec = self.Parameter(StringExpr(""))
     self.footprint_spec = self.Parameter(StringExpr(""))
 
-    # Default to be overridden on a per-device basis
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, (22e-6)*1.25)))  # maximum capacitance in a single part
+    # Default that can be overridden
+    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, 22)*uFarad))  # maximum capacitance in a single part
 
     self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
                    self.part_spec, self.footprint_spec)
@@ -53,115 +101,94 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  product_table = generate_mlcc_table([
-    'Digikey_MLCC_SamsungCl_1pF_E12.csv',
-    'Digikey_MLCC_SamsungCl_1nF_E6.csv',
-    'Digikey_MLCC_SamsungCl_1uF_E3.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_1.csv',
-    'Digikey_MLCC_YageoCc_1pF_E12_2.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_1.csv',
-    'Digikey_MLCC_YageoCc_1nF_E6_2.csv',
-    'Digikey_MLCC_YageoCc_1uF_E3.csv',
-  ])
-
-  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
-    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
-    'Capacitor_SMD:C_0805_2012Metric': 0.08,
-    'Capacitor_SMD:C_1206_3216Metric': 0.04,
-  }
-
   def select_capacitor(self, capacitance: Range, voltage: Range,
                        single_nominal_capacitance: Range,
                        part_spec: str, footprint_spec: str) -> None:
-    def derated_capacitance(row: Dict[str, Any]) -> Tuple[float, float]:
-      if voltage.upper < 3.6:  # x-intercept at 3.6v
-        return row['capacitance']
-      if (row['capacitance'][0] + row['capacitance'][1]) / 2 <= 1e-6:  # don't derate below 1uF
-        return row['capacitance']
-      if row['footprint'] not in self.DERATE_VOLTCO:
-        return (0, 0)  # can't derate, generate obviously bogus and ignored value
-      voltco = self.DERATE_VOLTCO[row['footprint']]
-      return (
-        row['capacitance'][0] * (1 - voltco * (voltage.upper - 3.6)),
-        row['capacitance'][1] * (1 - voltco * (voltage.lower - 3.6))
-      )
+    # Pre-filter out by the static parameters
+    # Note that we can't filter out capacitance before derating
+    prefiltered_parts = MlccTable.table().filter(lambda row: (
+        (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
+        voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
+        Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
+    ))
 
-    single_cap_max = single_nominal_capacitance.upper
+    def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
+        derated = row[MlccTable.CAPACITANCE]
+      elif row[MlccTable.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
+        derated = row[MlccTable.CAPACITANCE]
+      elif row[MlccTable.FOOTPRINT] not in self.DERATE_VOLTCO:  # should be rare, small capacitors should hit the above
+        return None
+      else:  # actually derate
+        voltco = self.DERATE_VOLTCO[row[MlccTable.FOOTPRINT]]
+        factor = 1 - voltco * (voltage.upper - 3.6)
+        derated = row[MlccTable.CAPACITANCE] * Range(factor, 1)
 
-    parts = self.product_table \
-      .filter(Implication(  # enforce minimum package size by capacitance
-      RangeContains(
-        Lit((1.1e-6, float('inf'))),
-        RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
-      StringContains(Column('Package / Case'), [
-        '0805 (2012 Metric)', '1206 (3216 Metric)',
-      ]))) \
-      .filter(Implication(
-      RangeContains(
-        Lit((11.0e-6, float('inf'))),
-        RangeFromTolerance(ParseValue(Column('Capacitance'), 'F'), Lit('±0%'))),
-      StringContains(Column('Package / Case'), [
-        '1206 (3216 Metric)',
-      ]))) \
-      .filter(RangeContains(Column('voltage'), Lit(voltage))) \
-      .filter(ContainsString(Column('Manufacturer Part Number'), part_spec or None)) \
-      .filter(ContainsString(Column('footprint'), footprint_spec or None)) \
-      .filter(RangeContains(RangeFromUpper(Lit(single_cap_max)), Column('capacitance'))) \
-      .derived_column('derated_capacitance', derated_capacitance)
+      return {self.DERATED_CAPACITANCE: derated}
 
-    capacitance_filtered_parts = parts.filter(RangeContains(Lit(capacitance), Column('derated_capacitance'))) \
-      .sort(Column('Unit Price (USD)')) \
-      .sort(Column('footprint'))  # this kind of gets at smaller first
+    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
+    # An empty parts table handles the case where it's below the minimum or does not match within a series.
+    derated_parts = prefiltered_parts.map_new_columns(
+      derate_row
+    )
+    derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
-    if len(capacitance_filtered_parts) > 0:  # available in single capacitor
-      part = capacitance_filtered_parts.first(err=f"no single capacitors in ({capacitance}) F")
+    if capacitance.lower <= derated_max_min_capacitance:
+      part = derated_parts.filter(lambda row: (
+          row[self.DERATED_CAPACITANCE] in capacitance
+      )).first(f"no single capacitor in {capacitance} F, {voltage} V")
 
-      self.assign(self.selected_voltage_rating, part['voltage'])
-      self.assign(self.selected_capacitance, part['capacitance'])
-      self.assign(self.selected_derated_capacitance, part['derated_capacitance'])
+      self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
+      self.assign(self.selected_capacitance, part[MlccTable.CAPACITANCE])
+      self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
 
       self.footprint(
-        'C', part['footprint'],
+        'C', part[MlccTable.FOOTPRINT],
         {
           '1': self.pos,
           '2': self.neg,
         },
-        mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
+        mfr=part[MlccTable.MANUFACTURER], part=part[MlccTable.PART_NUMBER],
         value=f"{part['Capacitance']}, {part['Voltage - Rated']}",
-        datasheet=part['Datasheets']
+        datasheet=part[MlccTable.DATASHEETS]
       )
-    elif capacitance.upper >= single_cap_max:
-      parts = parts.sort(Column('Unit Price (USD)')) \
-        .sort(Column('footprint')) \
-        .sort(Column('nominal_capacitance'), reverse=True)  # pick the largest capacitor available
-      part = parts.first(err=f"no parallel capacitors in ({capacitance}) F")
+    else:  # Otherwise, generate multiple capacitors
+      # Additionally annotate the table by total cost and count, sort by lower count then total cost
+      def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+        new_cols: Dict[PartsTableColumn, Any] = {}
+        count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
+        derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
+        if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec
+          return None
 
-      num_caps = math.ceil(capacitance.lower / part['derated_capacitance'][0])
-      assert num_caps * part['derated_capacitance'][1] < capacitance.upper, "can't generate parallel caps within max capacitance limit"
+        new_cols[self.PARALLEL_COUNT] = count
+        new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
+        new_cols[self.PARALLEL_CAPACITANCE] = row[MlccTable.CAPACITANCE] * count
+        new_cols[self.PARALLEL_COST] = row[MlccTable.COST] * count
 
-      self.assign(self.selected_capacitance, (
-        num_caps * part['capacitance'][0],
-        num_caps * part['capacitance'][1],
-      ))
-      self.assign(self.selected_derated_capacitance, (
-        num_caps * part['derated_capacitance'][0],
-        num_caps * part['derated_capacitance'][1],
-      ))
+        return new_cols
 
-      cap_model = SmtCeramicCapacitor(capacitance=part['derated_capacitance'],
-                                      voltage=self.voltage,
-                                      part_spec=part['Manufacturer Part Number'])
-      self.c = ElementDict[SmtCeramicCapacitor]()
-      for i in range(num_caps):
+      part = derated_parts.map_new_columns(
+        parallel_row
+      ).sort_by(lambda row:
+        (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
+      ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
+
+      self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
+      self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
+      self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
+
+      cap_model = DummyCapacitor(capacitance=part[MlccTable.NOMINAL_CAPACITANCE],
+                                 voltage=self.voltage,
+                                 footprint=part[MlccTable.FOOTPRINT],
+                                 manufacturer=part[MlccTable.MANUFACTURER], part_number=part[MlccTable.PART_NUMBER],
+                                 value=f"{part['Capacitance']}, {part['Voltage - Rated']}")
+      self.c = ElementDict[DummyCapacitor]()
+      for i in range(part[self.PARALLEL_COUNT]):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
-
-      # TODO CircuitBlocks probably shouldn't have hierarchy?
-      self.assign(self.mfr, part['Manufacturer'])
-      self.assign(self.part, part['Manufacturer Part Number'])
-    else:
-      raise ValueError(f"no single capacitors in ({capacitance}) F")
 
 
 class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
@@ -293,8 +320,9 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       else:
         split_package = footprint_spec
 
-      cap_model = DummyCapacitor(capacitance=(self.SINGLE_CAP_MAX, self.SINGLE_CAP_MAX),
-                                 voltage=self.voltage, footprint_spec=split_package)
+      cap_model = DummyCapacitor(capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
+                                 footprint=split_package,
+                                 value=f'{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F')
       self.c = ElementDict[DummyCapacitor]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
@@ -317,24 +345,24 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
       )
 
 
-class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock, GeneratorBlock):
+class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
   """
-  Capacitor that does not derate, used for splitting a generic capacitor into multiple when desired capacitance is too high
+  Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
+  Used as the leaf block for generating parallel capacitors.
   """
 
   @init_in_parent
-  def __init__(self, footprint_spec: StringLike = "", *args, **kwargs):
+  def __init__(self, footprint: StringLike = "",
+               manufacturer: StringLike = "", part_number: StringLike = "", value: StringLike = "",
+               *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.footprint_spec = self.Parameter(StringExpr(footprint_spec))
-    self.generator(self.select_capacitor, self.capacitance, self.footprint_spec)
-
-  def select_capacitor(self, capacitance: Range, footprint_spec: str) -> None:
     self.footprint(
-      'C', footprint_spec,
+      'C', footprint,
       {
         '1': self.pos,
         '2': self.neg,
       },
-      value=f'{UnitUtils.num_to_prefix(capacitance.lower, 3)}F'
+      mfr=manufacturer, part=part_number,
+      value=value
     )

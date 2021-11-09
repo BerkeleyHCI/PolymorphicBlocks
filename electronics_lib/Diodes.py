@@ -1,66 +1,114 @@
-import csv
-from functools import reduce
-import os
-
 from electronics_abstract_parts import *
-from .ProductTableUtils import *
+from .DigikeyTable import *
 
 
-def generate_diode_table(TABLES: List[str]) -> ProductTable:
-  tables = []
-  for filename in TABLES:
-    path = os.path.join(os.path.dirname(__file__), 'resources', filename)
-    with open(path, newline='', encoding='utf-8') as csvfile:
-      reader = csv.reader(csvfile)
-      tables.append(ProductTable(next(reader), [row for row in reader]))
-  table = reduce(lambda x, y: x+y, tables)
+class BaseDiodeTable(DigikeyTable):
+  PACKAGE_FOOTPRINT_MAP = {
+    'DO-214AC, SMA': 'Diode_SMD:D_SMA',
+    'DO-214AA, SMB': 'Diode_SMD:D_SMB',
+    'DO-214AB, SMC': 'Diode_SMD:D_SMC',
+    'SOD-123': 'Diode_SMD:D_SOD-123',
+    'SOD-123F': 'Diode_SMD:D_SOD-123',
+    'SOD-123FL': 'Diode_SMD:D_SOD-123',
+    'SC-76, SOD-323': 'Diode_SMD:D_SOD-323',
+    'SC-90, SOD-323F': 'Diode_SMD:D_SOD-323',  # TODO should the FL use the more compact FL pattern?
+    'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
+    'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
+  }
 
-  return table \
-    .derived_column('Vr,max',
-                    RangeFromUpper(ParseValue(Column('Voltage - DC Reverse (Vr) (Max)'), 'V'), lower=0),
-                    missing='discard') \
-    .derived_column('I,max',
-                    RangeFromUpper(ParseValue(Column('Current - Average Rectified (Io)'), 'A'), lower=0),
-                    missing='discard') \
-    .derived_column('Vf,max',
-                    RangeFromUpper(ParseValue(Column('Voltage - Forward (Vf) (Max) @ If'), 'V'), lower=0),
-                    missing='discard') \
-    .derived_column('trr',
-                    ChooseFirst(
-                      RangeFromUpper(ParseValue(Column('Reverse Recovery Time (trr)'), 's'), lower=0),
-                      MapDict(Column('Speed'), {
-                        'Fast Recovery =< 500ns, > 200mA (Io)': (0, 500e-9)
-                      }),
-                      Lit((0, float('inf')))
-                    ),
-                    missing='discard') \
-    .derived_column('footprint',
-                    MapDict(Column('Package / Case'), {
-                      'DO-214AC, SMA': 'Diode_SMD:D_SMA',
-                      'DO-214AA, SMB': 'Diode_SMD:D_SMB',
-                      'DO-214AB, SMC': 'Diode_SMD:D_SMC',
-                      'SOD-123': 'Diode_SMD:D_SOD-123',
-                      'SOD-123F': 'Diode_SMD:D_SOD-123',
-                      'SOD-123FL': 'Diode_SMD:D_SOD-123',
-                      'SC-76, SOD-323': 'Diode_SMD:D_SOD-323',
-                      'SC-90, SOD-323F': 'Diode_SMD:D_SOD-323',  # TODO should the FL use the more compact FL pattern?
-                      'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
-                      'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
-                    }), missing='discard')
+  @classmethod
+  def footprint_pinmap(cls, footprint: str, anode: CircuitPort, cathode: CircuitPort):
+    return {
+      'Diode_SMD:D_SMA': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SMB': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SMC': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SOD-123': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Diode_SMD:D_SOD-323': {
+        '1': cathode,
+        '2': anode,
+      },
+      'Package_TO_SOT_SMD:TO-252-2': {
+        '1': anode,
+        '2': cathode,
+        '3': anode,
+      },
+      'Package_TO_SOT_SMD:TO-263-2': {
+        '1': anode,  # TODO sometimes NC
+        '2': cathode,
+        '3': anode,
+      },
+    }[footprint]
+
+
+class DiodeTable(BaseDiodeTable):
+  VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable voltages, positive
+  CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
+  FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
+  REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
+
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_cols: Dict[PartsTableColumn, Any] = {}
+      try:
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+
+        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Voltage - DC Reverse (Vr) (Max)'], 'V')
+        )
+        new_cols[cls.CURRENT_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Current - Average Rectified (Io)'], 'A')
+        )
+        new_cols[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(
+            PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
+            'V')
+        )
+        if row['Reverse Recovery Time (trr)'] and row['Reverse Recovery Time (trr)'] != '-':
+          reverse_recovery = Range.zero_to_upper(
+            PartsTableUtil.parse_value(row['Reverse Recovery Time (trr)'], 's')
+          )
+        elif row['Speed'] == 'Fast Recovery =< 500ns, > 200mA (Io)':
+          reverse_recovery = Range.zero_to_upper(500e-9)
+        else:
+          reverse_recovery = Range.zero_to_upper(float('inf'))
+        new_cols[cls.REVERSE_RECOVERY] = reverse_recovery
+
+        new_cols.update(cls._parse_digikey_common(row))
+
+        return new_cols
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_Diodes_DO214.csv',
+      'Digikey_Diodes_DPak_DDPak.csv',
+      'Digikey_Diodes_SOD123_SOD323.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
-  product_table = generate_diode_table([
-    'Digikey_Diodes_DO214.csv',
-    'Digikey_Diodes_DPak_DDPak.csv',
-    'Digikey_Diodes_SOD123_SOD323.csv',
-  ])
-
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.reverse_voltage_rating = self.Parameter(RangeExpr())
-    self.current_rating = self.Parameter(RangeExpr())
+    self.selected_voltage_rating = self.Parameter(RangeExpr())
+    self.selected_current_rating = self.Parameter(RangeExpr())
     self.selected_voltage_drop = self.Parameter(RangeExpr())
     self.selected_reverse_recovery_time = self.Parameter(RangeExpr())
 
@@ -71,150 +119,93 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
   def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
                   reverse_recovery_time: Range) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
-    parts = self.product_table.filter(RangeContains(Column('Vr,max'), Lit(reverse_voltage))) \
-      .filter(RangeContains(Column('I,max'), Lit(current))) \
-      .filter(RangeContains(Lit(voltage_drop), Column('Vf,max'))) \
-      .filter(RangeContains(Lit(reverse_recovery_time), Column('trr'))) \
-      .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no diodes matching Vr,max={reverse_voltage}, I={current}, "
-                           f"Vf={voltage_drop}, trr={reverse_recovery_time}")
+    part = DiodeTable.table().filter(lambda row: (
+        reverse_voltage.fuzzy_in(row[DiodeTable.VOLTAGE_RATING]) and
+        current.fuzzy_in(row[DiodeTable.CURRENT_RATING]) and
+        row[DiodeTable.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
+        row[DiodeTable.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
+    )).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
 
-    self.assign(self.reverse_voltage_rating, part['Vr,max'])
-    self.assign(self.current_rating, part['I,max'])
-    self.assign(self.selected_voltage_drop, part['Vf,max'])
-    self.assign(self.selected_reverse_recovery_time, part['trr'])
-
-    footprint_pinning = {
-      'Diode_SMD:D_SMA': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMB': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMC': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-123': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-323': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Package_TO_SOT_SMD:TO-252-2': {
-        '1': self.anode,
-        '2': self.cathode,
-        '3': self.anode,
-      },
-      'Package_TO_SOT_SMD:TO-263-2': {
-        '1': self.anode,  # TODO sometimes NC
-        '2': self.cathode,
-        '3': self.anode,
-      },
-    }
+    self.assign(self.selected_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
+    self.assign(self.selected_current_rating, part[DiodeTable.CURRENT_RATING])
+    self.assign(self.selected_voltage_drop, part[DiodeTable.FORWARD_VOLTAGE])
+    self.assign(self.selected_reverse_recovery_time, part[DiodeTable.REVERSE_RECOVERY])
 
     self.footprint(
-      'D', part['footprint'],
-      footprint_pinning[part['footprint']],
-      mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
-      value=f"Vr={self.get(self.reverse_voltage)} V, I={self.get(self.current)} A, Vd={self.get(self.voltage_drop)} V",
-      datasheet=part['Datasheets']
+      'D', part[DiodeTable.FOOTPRINT],
+      DiodeTable.footprint_pinmap(part[DiodeTable.FOOTPRINT],
+                                  self.anode, self.cathode),
+      mfr=part[DiodeTable.MANUFACTURER], part=part[DiodeTable.PART_NUMBER],
+      value=f"Vr={part['Voltage - DC Reverse (Vr) (Max)']}, I={part['Current - Average Rectified (Io)']}",
+      datasheet=part[DiodeTable.DATASHEETS]
     )
 
 
-def generate_zener_diode_table(TABLES: List[str]) -> ProductTable:
-  tables = []
-  for filename in TABLES:
-    path = os.path.join(os.path.dirname(__file__), 'resources', filename)
-    with open(path, newline='', encoding='utf-8') as csvfile:
-      reader = csv.reader(csvfile)
-      tables.append(ProductTable(next(reader), [row for row in reader]))
-  table = reduce(lambda x, y: x+y, tables)
+class ZenerTable(BaseDiodeTable):
+  ZENER_VOLTAGE = PartsTableColumn(Range)  # actual zener voltage, positive
+  FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
+  POWER_RATING = PartsTableColumn(Range)  # tolerable power
+  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
 
-  return table \
-    .derived_column('Vz',
-                    RangeFromTolerance(ParseValue(Column('Voltage - Zener (Nom) (Vz)'), 'V'), Column('Tolerance')),
-                    missing='discard') \
-    .derived_column('Vf,max',
-                    RangeFromUpper(ParseValue(Column('Voltage - Forward (Vf) (Max) @ If'), 'V'), lower=0),
-                    missing='discard') \
-    .derived_column('P,max',
-                    RangeFromUpper(ParseValue(Column('Power - Max'), 'W'), lower=0),
-                    missing='discard') \
-    .derived_column('footprint',
-                    MapDict(Column('Package / Case'), {
-                      'DO-214AC, SMA': 'Diode_SMD:D_SMA',
-                      'DO-214AA, SMB': 'Diode_SMD:D_SMB',
-                      'DO-214AB, SMC': 'Diode_SMD:D_SMC',
-                      'SOD-123': 'Diode_SMD:D_SOD-123',
-                      'SOD-123F': 'Diode_SMD:D_SOD-123',
-                      'SOD-123FL': 'Diode_SMD:D_SOD-123',
-                      'SC-76, SOD-323': 'Diode_SMD:D_SOD-323',
-                      'SC-90, SOD-323F': 'Diode_SMD:D_SOD-323',  # TODO should the FL use the more compact FL pattern?
-                      'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
-                      'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
-                    }), missing='discard')
+  @classmethod
+  def _generate_table(cls) -> PartsTable:
+    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      new_cols: Dict[PartsTableColumn, Any] = {}
+      try:
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+
+        new_cols[cls.ZENER_VOLTAGE] = Range.from_tolerance(
+          PartsTableUtil.parse_value(row['Voltage - Zener (Nom) (Vz)'], 'V'),
+          PartsTableUtil.parse_tolerance(row['Tolerance']),
+        )
+        new_cols[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(
+            PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
+            'V')
+        )
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(row['Power - Max'], 'W')
+        )
+
+        new_cols.update(cls._parse_digikey_common(row))
+
+        return new_cols
+      except (KeyError, PartsTableUtil.ParseError):
+        return None
+
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_ZenerDiodes_DO214.csv',
+      'Digikey_ZenerDiodes_SOD123_SOD323.csv',
+    ], 'resources'), encoding='utf-8-sig')
+    return raw_table.map_new_columns(parse_row).sort_by(
+      lambda row: row[cls.COST]
+    )
 
 
 class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
-  product_table = generate_zener_diode_table([
-    'Digikey_ZenerDiodes_DO214.csv',
-    'Digikey_ZenerDiodes_SOD123_SOD323.csv',
-  ])
-
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.power_rating = self.Parameter(RangeExpr())
+    self.selected_zener_voltage = self.Parameter(RangeExpr())
+    self.selected_forward_voltage_drop = self.Parameter(RangeExpr())
 
     self.generator(self.select_part, self.zener_voltage, self.forward_voltage_drop)
     # TODO: also support optional part and footprint name
 
-    self.selected_zener_voltage = self.Parameter(RangeExpr())
-    self.selected_forward_voltage_drop = self.Parameter(RangeExpr())
-
   def select_part(self, zener_voltage: Range, forward_voltage_drop: Range) -> None:
-    # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
-    parts = self.product_table.filter(RangeContains(Column('Vz'), Lit(zener_voltage))) \
-      .filter(RangeContains(Lit(forward_voltage_drop), Column('Vf,max'))) \
-      .sort(Column('Unit Price (USD)'))  # TODO actually make this into float
-    part = parts.first(err=f"no zener diodes matching Vz={zener_voltage}")
+    part = ZenerTable.table().filter(lambda row: (
+        row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage) and
+        row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
+    )).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")
 
-    self.assign(self.selected_zener_voltage, part['Vz'])
-    self.assign(self.selected_forward_voltage_drop, part['Vf,max'])
-    self.assign(self.power_rating, part['P,max'])
-
-    footprint_pinning = {
-      'Diode_SMD:D_SMA': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMB': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SMC': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-123': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      'Diode_SMD:D_SOD-323': {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-    }
+    self.assign(self.selected_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
+    self.assign(self.selected_forward_voltage_drop, part[ZenerTable.FORWARD_VOLTAGE])
 
     self.footprint(
-      'D', part['footprint'],
-      footprint_pinning[part['footprint']],
-      mfr=part['Manufacturer'], part=part['Manufacturer Part Number'],
-      value=f"Vz={self.get(self.zener_voltage)} V",
-      datasheet=part['Datasheets']
+      'D', part[ZenerTable.FOOTPRINT],
+      ZenerTable.footprint_pinmap(part[ZenerTable.FOOTPRINT],
+                                  self.anode, self.cathode),
+      mfr=part[ZenerTable.MANUFACTURER], part=part[ZenerTable.PART_NUMBER],
+      value=f"Vz={part['Voltage - Zener (Nom) (Vz)']}, I={part['Voltage - Forward (Vf) (Max) @ If']}",
+      datasheet=part[ZenerTable.DATASHEETS]
     )

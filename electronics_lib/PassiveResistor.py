@@ -1,5 +1,5 @@
+from typing import List, Tuple
 from electronics_abstract_parts import *
-from .ProductTableUtils import *
 
 
 @abstract_block

@@ -293,13 +293,13 @@ RangeLikeNonFloat = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 RangeLike = Union[RangeLikeNonFloat, FloatLike]
 class RangeExpr(NumLikeExpr[Range, RangeLike]):
   # Some range literals for defaults
-  POSITIVE: RangeLikeNonFloat = Range.from_lower(0.0)
-  NEGATIVE: RangeLikeNonFloat = Range.from_upper(0.0)
-  ALL: RangeLikeNonFloat = Range.all()
-  INF: RangeLikeNonFloat = Range(float('inf'), float('inf'))
-  ZERO: RangeLikeNonFloat = (0.0, 0.0)
-  EMPTY_ZERO: RangeLikeNonFloat = (0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
-  EMPTY_DIT: RangeLikeNonFloat = (1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
+  POSITIVE: Range = Range.from_lower(0.0)
+  NEGATIVE: Range = Range.from_upper(0.0)
+  ALL: Range = Range.all()
+  INF: Range = Range(float('inf'), float('inf'))
+  ZERO: Range = Range(0.0, 0.0)
+  EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
+  EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
 
   def __init__(self, initializer: Optional[RangeLike] = None):
     # must cast non-empty initializer type, because range supports wider initializers
@@ -490,12 +490,12 @@ class LiteralConstructor:
       return RangeConstructor(tol, self.scale, self.units)
 
   @overload
-  def __rmul__(self, other: FloatLike) -> FloatExpr: ...
+  def __rmul__(self, other: float) -> FloatExpr: ...
   # can't use RangeLike directly because it overlaps with FloatLike
   @overload
-  def __rmul__(self, other: RangeLikeNonFloat) -> RangeExpr: ...
+  def __rmul__(self, other: Union[Range, Tuple[float, float]]) -> RangeExpr: ...
 
-  def __rmul__(self, other: Union[FloatLike, RangeLike]) -> Union[FloatExpr, RangeExpr]:
+  def __rmul__(self, other: Union[float, Range, Tuple[float, float]]) -> Union[FloatExpr, RangeExpr]:
     if isinstance(other, (int, float)):
       return FloatExpr._to_expr_type(other * self.scale)
     elif isinstance(other, Range):
