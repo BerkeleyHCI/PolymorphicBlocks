@@ -66,7 +66,7 @@ message UnaryExpr {
  ValueExpr val = 2;
 }
 
-message ReductionExpr {
+message UnarySetExpr {
   enum Op{
     UNDEFINED = 0;
 
@@ -253,7 +253,7 @@ message BinaryExpr {
   ValueExpr rhs = 3;
 }
 
-message BroadcastExpr {
+message BinarySetExpr {
   enum Op {
     UNDEFINED = 0;
 
@@ -368,9 +368,9 @@ message ValueExpr {
   oneof expr {
     edg.lit.ValueLit literal     = 1;
     BinaryExpr       binary      = 2;
-    BroadcastExpr    broadcast   = 18;
+    BinarySetExpr    binary_set  = 18;
     UnaryExpr        unary       = 3;
-    ReductionExpr    reduce      = 4;
+    UnarySetExpr     unary_set   = 4;
     // SetExpr          set         = 5;
     // ArrayExpr        array       = 6;
     StructExpr       struct      = 7;
