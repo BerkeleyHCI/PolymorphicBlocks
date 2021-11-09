@@ -329,7 +329,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
     else:
-      value = ESeriesUtil.choose_preferred_number(nominal_capacitance, 0, ESeriesUtil.E24_SERIES[24], 2)
+      value = ESeriesUtil.choose_preferred_number(nominal_capacitance, ESeriesUtil.SERIES[24], 0)
       assert value is not None, "cannot generate a preferred number"
       valid_footprint_spec = select_package(value, voltage)
       assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"

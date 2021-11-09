@@ -192,7 +192,7 @@ class NewBlinkyLightsense(SimpleBoardTop):
         self.led[i] = imp.Block(IndicatorLed())
         self.connect(self.mcu.digital[i], self.led[i].signal)
 
-      self.als = imp.Block(Ref_Bh1620fvc(20000, (2.8, 3.0)*Volt))
+      self.als = imp.Block(Ref_Bh1620fvc(20000, (2.7, 3.0)*Volt))
       self.amp = imp.Block(OpampFollower())  # "optional", output impedance is "only" 2x larger than MCU's input
       self.connect(self.als.vout, self.amp.input)
       self.connect(self.amp.output, self.mcu.adc[0])

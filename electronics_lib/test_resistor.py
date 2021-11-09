@@ -1,11 +1,7 @@
-from typing import *
 import unittest
 
-from electronics_abstract_parts import *
-import electronics_model
-import electronics_abstract_parts
 from .test_passive_common import *
-from . import *
+from .PassiveResistor import ChipResistor
 
 
 class ResistorTestTop(Block):
@@ -45,21 +41,23 @@ class ResistorTestCase(unittest.TestCase):
   def test_basic_resistor(self) -> None:
     compiled = ScalaCompiler.compile(ResistorTestTop)
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.1W')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.1 W')
 
   def test_power_resistor(self) -> None:
     compiled = ScalaCompiler.compile(PowerResistorTestTop)
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25W')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25 W')
 
   def test_non_e12_resistor(self) -> None:
-    compiled = ScalaCompiler.compile(NonE12ResistorTestTop)
+    compiled = ScalaCompiler.compile(NonE12ResistorTestTop, Refinements(
+      instance_values=[(['dut', 'series'], 0)]
+    ))
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '8.06k, 1%, 0.1W')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '8.06k, 1%, 0.1 W')
 
   def test_footprint(self) -> None:
     compiled = ScalaCompiler.compile(ResistorTestTop, Refinements(
       instance_values=[(['dut', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric')]
     ))
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25W')
+    self.assertEqual(compiled.get_value(['dut', 'value']), '1k, 1%, 0.25 W')
