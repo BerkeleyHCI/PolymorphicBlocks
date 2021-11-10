@@ -13,19 +13,19 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
 
     self.vref = self.Port(AnalogSink(
       voltage_limits=(0.25*Volt, self.vdd.link().voltage.lower()),
-      current_draw=(0.001, 150)*uAmp,
+      current_draw=(0, 0),  # leakage current not modeled
       impedance=(33, 5000000)*kOhm  # derived from test condition Vref=5 / current draw
     ))
     self.inp = self.Port(AnalogSink(
       voltage_limits=(0, self.vref.link().voltage.lower()),
-      current_draw=(-1, 1)*uAmp,
+      current_draw=(0, 0),  # leakage current not modeled
       impedance=(5, 5000)*MOhm  # derived from assumption Vin=5 / 0.001 - 1uA leakage current
     ))
 
     dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.6, 0.6)*Volt,
-      current_draw=(-10, 10)*uAmp,
+      current_draw=(0, 0),  # leakage current not modeled
       input_threshold_factor=(0.3, 0.7),
       output_threshold_factor=(0, 1)
     )

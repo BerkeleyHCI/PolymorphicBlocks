@@ -16,7 +16,7 @@ class Fusb302b_Device(DiscreteChip, FootprintBlock):
 
     self.cc = self.Port(UsbCcPort())  # TODO pass in port models?
     i2c_model = DigitalBidir(  # interestingly, IO maximum voltages are not specified
-      current_draw=(-10, 10)*uAmp,  # Table 13
+      current_draw=(0, 0),  # leakage current (Table 13) not modeled
       voltage_out=(0, 0.35)*Volt,  # low-level output voltage
       current_limits=(-20, 0)*mAmp,  # low-level output current limits
       input_thresholds=(0.51, 1.32)*Volt,

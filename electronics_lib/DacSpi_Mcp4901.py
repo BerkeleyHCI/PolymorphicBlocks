@@ -13,6 +13,7 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
 
     self.vref = self.Port(AnalogSink(
       voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
+      current_draw=(0, 0),  # leakage current not modeled
       impedance=165*kOhm(tol=0.01)  # tolerances not specified
     ))
     self.vout = self.Port(AnalogSource(
@@ -24,7 +25,7 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
     dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-      current_draw=(-1, 1)*uAmp,
+      current_draw=(0, 0),  # leakage current not modeled
       current_limits=(-25, 25)*mAmp,
       input_threshold_factor=(0.2, 0.7),
       output_threshold_factor=(0, 1)
