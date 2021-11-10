@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Mcp3201_Device(DiscreteChip, FootprintBlock):
+class Mcp4921_Device(DiscreteChip, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.vdd = self.Port(VoltageSink(
@@ -28,12 +28,10 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
       current_draw=(-10, 10)*uAmp,
       input_threshold_factor=(0.3, 0.7),
     )
-    # Datasheet section 6.2, minimum clock speed
-    self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(10, 1600)*kHertz))
+    self.spi = self.Port(SpiSlave(dio_model))
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:
-    # Note, B-grade chip has lower INL (+/-1 LSB) compared to C-grade (+/-2 LSB)
     self.footprint(
       'U', 'Package_SO:SO-8_3.9x4.9mm_P1.27mm',
       {
@@ -46,22 +44,19 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
         '7': self.spi.sck,
         '8': self.vdd
       },
-      mfr='Microchip Technology', part='MCP3201T-BI/SN',
-      datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/21290F.pdf'
+      mfr='Microchip Technology', part='MCP4921-E/SN',
+      datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/22248a.pdf'
     )
 
 
-class Mcp3201(Block):
-  """MCP3201 12-bit 111kSPS ADC configured in single-ended mode, since the IN- pin can't do much anyways.
-
-  Some drop-in electrically compatible chips:
-  - ADS7822 (12 bit, 200kSPS)
-  - MCP3551 (22 bit, low sample rate, delta-sigma)
-    - SLIGHTLY DIFFERENT PINNING! SCK and CS swapped!
+class Mcp4921(Block):
+  """MCP4921 12-bit 4.5uS DAC.
+  Other chips in series:
+  MCP4901 (8 bits), MCP4911 (10 bits), and others with 2 channels or internal Vref
   """
   def __init__(self) -> None:
     super().__init__()
-    self.ic = self.Block(Mcp3201_Device())
+    self.ic = self.Block(Mcp4921_Device())
     self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.vss, [Common])
 
@@ -70,15 +65,16 @@ class Mcp3201(Block):
 
     self.spi = self.Export(self.ic.spi)
     self.cs = self.Export(self.ic.cs)
+    self.ldac = self.Export(self.ic.ldac)
 
   def contents(self) -> None:
     super().contents()
 
-    # Datasheet Section 6.4: 1uF cap recommended
+    # Datasheet section 6.2, example uses two bypass capacitors
+    self.vdd_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.vdd_cap = imp.Block(DecouplingCapacitor(
-        capacitance=1*uFarad(tol=0.2),
-      ))
+      self.vdd_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vdd_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
