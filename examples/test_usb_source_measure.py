@@ -56,7 +56,7 @@ class ErrorAmplifier(Block):
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   @init_in_parent
-  def __init__(self, resistance: RangeLike, diode: StringLike = ""):
+  def __init__(self, resistance: RangeLike = RangeExpr(), diode: StringLike = ""):
     super().__init__()
 
     self.amp = self.Block(Opamp())

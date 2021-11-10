@@ -73,7 +73,7 @@ class DifferentialAmplifier(AnalogFilter):
   ratio specifies Rf/R1, the amplification ratio.
 
   """
-  def __init__(self, ratio: Range):
+  def __init__(self, ratio: Range = RangeExpr):
     super().__init__()
 
     self.amp = self.Block(Opamp())
