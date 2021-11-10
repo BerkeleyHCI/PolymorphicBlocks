@@ -149,7 +149,9 @@ class UsbSourceMeasureTest(BoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
 
-        ]))
+        ])),
+        # allow the regulator to go into tracking mode
+        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
       ],
     )
 
