@@ -121,7 +121,7 @@ class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TOD
       self_port.not_connected()
 
     self.footprint(
-      'U', 'calisco:Nucleo32',
+      'U', 'edg:Nucleo32',
       all_pins,
       mfr='STMicroelectronics', part='NUCLEO-F303K8',
       datasheet='https://www.st.com/resource/en/user_manual/dm00231744.pdf',
