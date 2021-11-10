@@ -49,7 +49,7 @@ class Ld1117(LinearRegulator, GeneratorBlock):
       # output voltage, quiescent current
       (Range(1.140, 1.260), 'LD1117S12TR'),
       (Range(1.76, 1.84), 'LD1117S18TR'),
-      (Range(2.45, 2.44), 'LD1117S25TR'),
+      (Range(2.45, 2.55), 'LD1117S25TR'),
       (Range(3.235, 3.365), 'LD1117S33TR'),
       (Range(4.9, 5.1), 'LD1117S50TR'),
     ]
