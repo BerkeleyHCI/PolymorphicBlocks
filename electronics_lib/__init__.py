@@ -30,6 +30,9 @@ from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
 from .Fusb302b import Fusb302b
 
+from .AdcSpi_Mcp3201 import Mcp3201
+from .DacSpi_Mcp4901 import Mcp4921
+
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
 from .Lcd_Qt096t_if09 import Qt096t_if09

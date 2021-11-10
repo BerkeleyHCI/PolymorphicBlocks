@@ -12,7 +12,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
     self.vss = self.Port(Ground())
 
     self.vref = self.Port(AnalogSink(
-      voltage_limits=(0.25*Volt, self.vdd.link().voltage.upper()),
+      voltage_limits=(0.25*Volt, self.vdd.link().voltage.lower()),
       current_draw=(0.001, 150)*uAmp,
       impedance=(5000000, 33)*kOhm  # derived from test condition Vref=5 / current draw
     ))
@@ -44,7 +44,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
         '5': self.cs,
         '6': self.spi.miso,
         '7': self.spi.sck,
-        '8': self.vdd
+        '8': self.vdd,
       },
       mfr='Microchip Technology', part='MCP3201T-BI/SN',
       datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/21290F.pdf'

@@ -8,41 +8,42 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
     super().__init__()
     self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.7, 5.5)*Volt,
-      current_draw=(0.5, 400)*uAmp))  # from standby to operating
+      current_draw=(3.3, 350)*uAmp))  # from software shutdown to operating
     self.vss = self.Port(Ground())
 
     self.vref = self.Port(AnalogSink(
-      voltage_limits=(0.25*Volt, self.vdd.link().voltage.upper()),
-      current_draw=(0.001, 150)*uAmp,
-      impedance=(5000000, 33)*kOhm  # derived from test condition Vref=5 / current draw
+      voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
+      impedance=165*kOhm(tol=0.01)  # tolerances not specified
     ))
-    self.inp = self.Port(AnalogSink(
-      voltage_limits=(0, self.vref.link().voltage.lower()),
-      current_draw=(-1, 1)*uAmp,
-      impedance=(5, 5000)*MOhm  # derived from assumption Vin=5 / 0.001 - 1uA leakage current
+    self.vout = self.Port(AnalogSource(
+      voltage_out=(0.01, self.vref.link().voltage.lower() - 0.04),
+      current_limits=(15, 24)*mAmp,  # short circuit current
+      impedance=(171, 273)*Ohm  # derived from assumed Vout=2Vref=4.096, Isc=24mA or 15mA
     ))
 
     dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
-      voltage_limit_tolerance=(-0.6, 0.6)*Volt,
-      current_draw=(-10, 10)*uAmp,
-      input_threshold_factor=(0.3, 0.7),
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      current_draw=(-1, 1)*uAmp,
+      current_limits=(-25, 25)*mAmp,
+      input_threshold_factor=(0.2, 0.7),
     )
-    self.spi = self.Port(SpiSlave(dio_model))
+    self.ldac = self.Port(dio_model)
+    self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(0, 20)*MHertz))
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:SO-8_3.9x4.9mm_P1.27mm',
       {
-        '1': self.vref,
-        '2': self.inp,
-        '3': self.vss,  # IN-, but because it's so limited this is configured for single-ended mode
-        '4': self.vss,
-        '5': self.cs,
-        '6': self.spi.miso,
-        '7': self.spi.sck,
-        '8': self.vdd
+        '1': self.vdd,
+        '2': self.cs,
+        '3': self.spi.sck,
+        '4': self.spi.mosi,
+        '5': self.ldac,
+        '6': self.vref,
+        '7': self.vss,
+        '8': self.vout,
       },
       mfr='Microchip Technology', part='MCP4921-E/SN',
       datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/22248a.pdf'
@@ -61,7 +62,7 @@ class Mcp4921(Block):
     self.gnd = self.Export(self.ic.vss, [Common])
 
     self.ref = self.Export(self.ic.vref)
-    self.vin = self.Export(self.ic.inp)
+    self.out = self.Export(self.ic.vout)
 
     self.spi = self.Export(self.ic.spi)
     self.cs = self.Export(self.ic.cs)
