@@ -93,14 +93,25 @@ class UsbSourceMeasureTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3), _ = self.chain(
+      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.pwr_usb.pwr,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        # TODO next revision: 3.0 volt high precision LDO?
+        imp.Block(VoltageIndicatorLed())
+      )
+      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+      (self.reg_analog, self.led_analog), _ = self.chain(
+        self.reg_5v.pwr_out,
+        imp.Block(LinearRegulator(output_voltage=2.5*Volt(tol=0.05))),
+        imp.Block(VoltageIndicatorLed())
       )
 
-      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr_usb.pwr, [Power]),
+        ImplicitConnect(self.gnd_merge.source, [Common]),
+    ) as imp:
+      self.control = imp.Block(SourceMeasureControl())
 
     with self.implicit_connect(
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
@@ -125,7 +136,25 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
 
-    # TODO add DACs
+      self.dac_v = imp.Block(Mcp4921())
+      self.dac_ip = imp.Block(Mcp4921())
+      self.dac_in = imp.Block(Mcp4921())
+
+      self.adc_v = imp.Block(Mcp3201())
+      self.adc_i = imp.Block(Mcp3201())
+
+      self.connect(self.mcu.new_io(SpiMaster),
+                   self.dac_v.spi, self.dac_ip.spi, self.dac_in.spi,
+                   self.adc_v.spi, self.adc_i.spi)
+      self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
+      self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
+      self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)
+      self.connect(self.mcu.new_io(DigitalBidir), self.dac_in.cs)
+      self.connect(self.mcu.new_io(DigitalBidir), self.adc_v.cs)
+      self.connect(self.mcu.new_io(DigitalBidir), self.adc_i.cs)
+      self.connect(self.mcu.new_io(DigitalBidir),
+                   self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
+
     # TODO add analog feedback control chain
     # TODO add power transistors and sensors
     # TODO add UI elements: output enable tactile switch + LCD + 4 directional buttons
@@ -145,6 +174,7 @@ class UsbSourceMeasureTest(BoardTop):
       instance_refinements=[
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ld1117),
+        (['reg_analog'], Ld1117),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
