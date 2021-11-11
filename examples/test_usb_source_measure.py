@@ -95,7 +95,7 @@ class UsbSourceMeasureTest(BoardTop):
     ) as imp:
       (self.reg_5v, self.reg_3v3), _ = self.chain(
         self.pwr_usb.pwr,
-        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.1))),
+        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         # TODO next revision: 3.0 volt high precision LDO?
       )

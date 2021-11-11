@@ -7,7 +7,9 @@ from .VoltagePorts import CircuitPort, VoltageSink, VoltageSource
 from .Units import Volt
 
 
-class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
+class DigitalLink(CircuitLink):
+  # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
+
   def __init__(self) -> None:
     super().__init__()
 
