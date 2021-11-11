@@ -11,10 +11,9 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
       current_draw=(0.5, 400)*uAmp))  # from standby to operating
     self.vss = self.Port(Ground())
 
-    self.vref = self.Port(AnalogSink(
+    self.vref = self.Port(VoltageSink(
       voltage_limits=(0.25*Volt, self.vdd.link().voltage.lower()),
-      current_draw=(0, 0),  # leakage current not modeled
-      impedance=(33, 5000000)*kOhm  # derived from test condition Vref=5 / current draw
+      current_draw=(0.001, 150)*uAmp
     ))
     self.inp = self.Port(AnalogSink(
       voltage_limits=(0, self.vref.link().voltage.lower()),

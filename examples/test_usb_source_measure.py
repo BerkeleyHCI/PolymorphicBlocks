@@ -106,6 +106,7 @@ class UsbSourceMeasureTest(BoardTop):
         imp.Block(LinearRegulator(output_voltage=2.5*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
+      self.vref = self.connect(self.reg_analog.pwr_out)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
@@ -148,6 +149,10 @@ class UsbSourceMeasureTest(BoardTop):
                                      shared_spi)
       (self.adc_i, ), _ = self.chain(self.control.measured_current, imp.Block(Mcp3201()),
                                      shared_spi)
+
+      self.connect(self.reg_analog.pwr_out,
+                   self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
+                   self.adc_v.ref, self.adc_i.ref)
 
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)

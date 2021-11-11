@@ -11,10 +11,9 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
       current_draw=(3.3, 350)*uAmp))  # from software shutdown to operating
     self.vss = self.Port(Ground())
 
-    self.vref = self.Port(AnalogSink(
+    self.vref = self.Port(VoltageSink(
       voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
-      current_draw=(0, 0),  # leakage current not modeled
-      impedance=165*kOhm(tol=0.01)  # tolerances not specified
+      current_draw=(0, 0)  # input current not specified
     ))
     self.vout = self.Port(AnalogSource(
       voltage_out=(0.01, self.vref.link().voltage.lower() - 0.04),
