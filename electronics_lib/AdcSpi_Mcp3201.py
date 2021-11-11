@@ -67,9 +67,9 @@ class Mcp3201(Block):
     self.gnd = self.Export(self.ic.vss, [Common])
 
     self.ref = self.Export(self.ic.vref)
-    self.vin = self.Export(self.ic.inp)
+    self.vin = self.Export(self.ic.inp, [Input])
 
-    self.spi = self.Export(self.ic.spi)
+    self.spi = self.Export(self.ic.spi, [Output])
     self.cs = self.Export(self.ic.cs)
 
   def contents(self) -> None:

@@ -136,16 +136,19 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
       self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
 
-      self.dac_v = imp.Block(Mcp4921())
-      self.dac_ip = imp.Block(Mcp4921())
-      self.dac_in = imp.Block(Mcp4921())
+      shared_spi = self.mcu.new_io(SpiMaster)
+      (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
+                                     self.control.control_voltage)
+      (self.dac_ip, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
+                                      self.control.control_current_source)
+      (self.dac_in, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
+                                      self.control.control_current_sink)
 
-      self.adc_v = imp.Block(Mcp3201())
-      self.adc_i = imp.Block(Mcp3201())
+      (self.adc_v, ), _ = self.chain(self.control.measured_voltage, imp.Block(Mcp3201()),
+                                     shared_spi)
+      (self.adc_i, ), _ = self.chain(self.control.measured_current, imp.Block(Mcp3201()),
+                                     shared_spi)
 
-      self.connect(self.mcu.new_io(SpiMaster),
-                   self.dac_v.spi, self.dac_ip.spi, self.dac_in.spi,
-                   self.adc_v.spi, self.adc_i.spi)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)

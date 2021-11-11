@@ -64,9 +64,9 @@ class Mcp4921(Block):
     self.gnd = self.Export(self.ic.vss, [Common])
 
     self.ref = self.Export(self.ic.vref)
-    self.out = self.Export(self.ic.vout)
+    self.out = self.Export(self.ic.vout, [Output])
 
-    self.spi = self.Export(self.ic.spi)
+    self.spi = self.Export(self.ic.spi, [Input])
     self.cs = self.Export(self.ic.cs)
     self.ldac = self.Export(self.ic.ldac)
 
