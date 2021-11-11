@@ -150,7 +150,6 @@ class UsbSourceMeasureTest(BoardTop):
                                      shared_spi)
 
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
-      self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.dac_in.cs)
       self.connect(self.mcu.new_io(DigitalBidir), self.adc_v.cs)

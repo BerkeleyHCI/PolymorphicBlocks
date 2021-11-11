@@ -18,7 +18,7 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
     ))
     self.vout = self.Port(AnalogSource(
       voltage_out=(0.01, self.vref.link().voltage.lower() - 0.04),
-      current_limits=(15, 24)*mAmp,  # short circuit current
+      current_limits=(-15, 15)*mAmp,  # short circuit current, typ
       impedance=(171, 273)*Ohm  # derived from assumed Vout=2Vref=4.096, Isc=24mA or 15mA
     ))
 
