@@ -112,7 +112,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.pwr_usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(Lpc1549_48(frequency=12 * MHertz(tol=0.005)))
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetTc2050Nl()), self.mcu.swd)
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()), self.mcu.swd)
       (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
@@ -152,6 +152,9 @@ class UsbSourceMeasureTest(BoardTop):
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
+      ],
+      class_refinements=[
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
       ],
     )
 

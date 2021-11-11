@@ -12,7 +12,8 @@ from .Crystals import OscillatorCrystal, SmdCrystal
 from .Speakers import Speaker, Lm4871
 from .Opamp_Mcp6001 import Mcp6001
 
-from .DebugHeaders import SwdCortexTargetHeader, SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
+from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader,\
+  SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
