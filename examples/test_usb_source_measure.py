@@ -25,27 +25,13 @@ class SourceMeasureControl(Block):
 
     self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.center_reference = self.Port(VoltageSink())
+    self.ref_center = self.Port(AnalogSink())
 
     self.control_voltage = self.Port(AnalogSink())
     self.control_current_source = self.Port(AnalogSink())
     self.control_current_sink = self.Port(AnalogSink())
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
-    # TODO ADD PARAMETERS, IMPLEMENT ME
-
-
-class AnalogMerge(Block):
-  """Directly connects the input AnalogSinks and provides an AnalogSource port. Just copper on the board.
-  TODO: in the future, this should use block-side port arrays
-  """
-  def __init__(self):
-    super().__init__()
-
-    self.in1 = self.Port(AnalogSink())
-    self.in2 = self.Port(AnalogSink())
-    self.in3 = self.Port(AnalogSink())
-    self.out = self.Port(AnalogSource(), [Output])
     # TODO ADD PARAMETERS, IMPLEMENT ME
 
 
@@ -108,11 +94,17 @@ class UsbSourceMeasureTest(BoardTop):
       )
       self.vref = self.connect(self.reg_analog.pwr_out)
 
+      (self.ref_div, ), _ = self.chain(
+        self.reg_analog.pwr_out,
+        imp.Block(VoltageDivider(output_voltage=1.25*Volt(tol=0.05), impedance=(10, 100)*kOhm))
+      )
+
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl())
+      self.connect(self.control.ref_center, self.ref_div.output)
 
     with self.implicit_connect(
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
