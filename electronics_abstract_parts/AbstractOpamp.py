@@ -135,16 +135,19 @@ class Amplifier(AnalogFilter, GeneratorBlock):
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
+  @init_in_parent
   def __init__(self, amplification: RangeLike = RangeExpr(), impedance: RangeLike = (10, 100)*kOhm):
     super().__init__()
 
     self.amp = self.Block(Opamp())
 
     self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.gnd = self.Port(Ground(), [Common])
+    # self.gnd = self.Export(self.amp.gnd, [Common])  # TODO staged generators
 
     self.input = self.Export(self.amp.inp, [Input])
-    self.output = self.Export(self.amp.out, [Output])
+    # self.output = self.Export(self.amp.out, [Output])
+    self.output = self.Port(AnalogSource(), [Output])
 
     self.amplification = self.Parameter(RangeExpr(amplification))
     self.impedance = self.Parameter(RangeExpr(impedance))
@@ -152,7 +155,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance)
+    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance,
+                   targets=[self.gnd])
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ResistorCalculator(ESeriesUtil.SERIES[series], tolerance)
@@ -164,6 +168,15 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.r2 = self.Block(Resistor(
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
+    self.connect(self.amp.out, self.output, self.r1.a.as_analog_sink(
+
+    ))
+    self.connect(self.r1.b.as_analog_source(
+
+    ), self.r2.a.as_analog_sink(
+
+    ), self.amp.inn)
+    self.connect(self.r2.b.as_ground(), self.gnd, self.amp.gnd)
 
 
 class DifferentialAmplifier(AnalogFilter):
