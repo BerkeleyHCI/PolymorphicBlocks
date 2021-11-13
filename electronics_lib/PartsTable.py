@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  Tuple, cast, Protocol
+  Tuple, cast
 import itertools
 import re
 import csv
+
+import sys
+if sys.version_info[1] < 8:
+  from typing_extensions import Protocol
+else:
+  from typing import Protocol
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy

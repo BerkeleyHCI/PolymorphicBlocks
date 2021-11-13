@@ -1,9 +1,10 @@
 from math import ceil, log10
 from typing import NamedTuple, List, Tuple
 
+from electronics_abstract_parts import Resistor
 from electronics_model import *
 from .Categories import *
-from .ESeriesUtil import ESeriesRatioUtil
+from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil
 
 
 @abstract_block
@@ -125,7 +126,7 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
     return new_decades
 
 
-class Amplifier(AnalogFilter):
+class Amplifier(AnalogFilter, GeneratorBlock):
   """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal.
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Non-inverting_amplifier:
@@ -134,7 +135,7 @@ class Amplifier(AnalogFilter):
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
-  def __init__(self):
+  def __init__(self, amplification: RangeLike = RangeExpr(), impedance: RangeLike = (10, 100)*kOhm):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -145,7 +146,24 @@ class Amplifier(AnalogFilter):
     self.input = self.Export(self.amp.inp, [Input])
     self.output = self.Export(self.amp.out, [Output])
 
-    # TODO ADD PARAMETERS, IMPLEMENT ME
+    self.amplification = self.Parameter(RangeExpr(amplification))
+    self.impedance = self.Parameter(RangeExpr(impedance))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+
+    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance)
+
+  def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
+    calculator = ResistorCalculator(ESeriesUtil.SERIES[series], tolerance)
+    top_resistance, bottom_resistance = calculator.find(AmplifierValues(amplification, impedance))
+
+    self.r1 = self.Block(Resistor(
+      resistance=Range.from_tolerance(top_resistance, tolerance)
+    ))
+    self.r2 = self.Block(Resistor(
+      resistance=Range.from_tolerance(bottom_resistance, tolerance)
+    ))
 
 
 class DifferentialAmplifier(AnalogFilter):
