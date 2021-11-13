@@ -126,7 +126,9 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
       (decade[0], decade[1] - 1),
     ]
 
-    new_decades = []
+    new_decades = [decade for decade in test_decades
+                   if
+                   ]
 
     # test adjustments that shift both decades in the same direction (changes impedance)
     down_decade = (decade[0] - 1, decade[1] - 1)
