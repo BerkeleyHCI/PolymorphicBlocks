@@ -115,6 +115,17 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
       return (target.ratio.intersects(ratio_of_decade(test_decade)) and
               target.parallel_impedance.intersects(impedance_of_decade(test_decade)))
 
+    test_decades = [
+      # adjustments shifting both decades in the same direction (changes impedance)
+      (decade[0] - 1, decade[1] - 1),
+      (decade[0] + 1, decade[1] + 1),
+      # adjustments shifting decades independently (changes ratio)
+      (decade[0] - 1, decade[1]),
+      (decade[0], decade[1] + 1),
+      (decade[0] + 1, decade[1]),
+      (decade[0], decade[1] - 1),
+    ]
+
     new_decades = []
 
     # test adjustments that shift both decades in the same direction (changes impedance)
