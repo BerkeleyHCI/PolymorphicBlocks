@@ -42,6 +42,31 @@ class AmplifierValues(NamedTuple):
   amplification: Range  # amplification factor from in to out
   parallel_impedance: Range  # parallel impedance into the opamp negative pin
 
+  @staticmethod
+  def from_resistors(rhigh: Range, rlow: Range) -> 'AmplifierValues':
+    """Calculates range of outputs given range of resistors.
+    rlow is the low-side resistor (Vin- to GND) and rhigh is the high-side resistor (Vin- to Vout)."""
+    return AmplifierValues(
+      (rhigh / rlow) + 1,
+      1 / (1 / rhigh + 1 / rlow)
+    )
+
+  def distance_to(self, spec: 'AmplifierValues') -> List[float]:
+    """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
+    if self.amplification in spec.amplification and self.parallel_impedance in spec.parallel_impedance:
+      return []
+    else:
+      return [
+        abs(self.amplification.center() - spec.amplification.center()),
+        abs(self.parallel_impedance.center() - spec.parallel_impedance.center())
+      ]
+
+  def intersects(self, spec: 'AmplifierValues') -> bool:
+    """Return whether this intersects with some spec - whether some subset of the resistors
+    can potentially satisfy some spec"""
+    return self.amplification.intersects(spec.amplification) and \
+           self.parallel_impedance.intersects(
+             spec.parallel_impedance)
 
 class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
   class NoMatchException(Exception):
@@ -54,21 +79,10 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
   def _calculate_output(self, r1: float, r2: float) -> AmplifierValues:
     """This uses resistive divider conventions: R1 is output-side and R2 is ground-side
     """
-    r1_range = Range.from_tolerance(r1, self.tolerance)
-    r2_range = Range.from_tolerance(r2, self.tolerance)
-    return AmplifierValues(
-      (r1_range / r2_range) + 1,
-      1 / (1 / r1_range + 1 / r2_range)
-    )
+    return AmplifierValues(Range.from_tolerance(r1, self.tolerance), Range.from_tolerance(r2, self.tolerance))
 
   def _get_distance(self, proposed: AmplifierValues, target: AmplifierValues) -> List[float]:
-    if proposed.ratio in target.ratio and proposed.parallel_impedance in target.parallel_impedance:
-      return []
-    else:
-      return [
-        abs(proposed.ratio.center() - target.ratio.center()),
-        abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
-      ]
+    return proposed.distance_to(target)
 
   def _no_result_error(self, best_values: Tuple[float, float], best: AmplifierValues,
                        target: AmplifierValues) -> Exception:
@@ -84,11 +98,13 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
 
   def _get_next_decades(self, decade: Tuple[int, int], target: AmplifierValues) -> \
       List[Tuple[int, int]]:
+    def range_of_decade(range_decade: int) -> Range:
+      """Given a decade, return the range of possible values - for example, decade 0
+      would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
+      return Range(10 ** range_decade, 10 ** (range_decade + 1))
+
     def decade_intersects(test_decade: Tuple[int, int]) -> bool:
-      def range_of_decade(range_decade: int) -> Range:
-        """Given a decade, return the range of possible values - for example, decade 0
-        would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
-        return Range(10 ** range_decade, 10 ** (range_decade + 1))
+
       def impedance_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
         """Given R1, R2 decade as a tuple, returns the possible impedance range."""
         return 1 / (1 / range_of_decade(r1r2_decade[0]) + 1 / range_of_decade(r1r2_decade[1]))
