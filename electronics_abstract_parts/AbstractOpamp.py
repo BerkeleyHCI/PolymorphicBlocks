@@ -79,7 +79,9 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
   def _calculate_output(self, r1: float, r2: float) -> AmplifierValues:
     """This uses resistive divider conventions: R1 is output-side and R2 is ground-side
     """
-    return AmplifierValues(Range.from_tolerance(r1, self.tolerance), Range.from_tolerance(r2, self.tolerance))
+    return AmplifierValues.from_resistors(
+      Range.from_tolerance(r1, self.tolerance),
+      Range.from_tolerance(r2, self.tolerance))
 
   def _get_distance(self, proposed: AmplifierValues, target: AmplifierValues) -> List[float]:
     return proposed.distance_to(target)
@@ -103,18 +105,6 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
       would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
       return Range(10 ** range_decade, 10 ** (range_decade + 1))
 
-    def decade_intersects(test_decade: Tuple[int, int]) -> bool:
-
-      def impedance_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
-        """Given R1, R2 decade as a tuple, returns the possible impedance range."""
-        return 1 / (1 / range_of_decade(r1r2_decade[0]) + 1 / range_of_decade(r1r2_decade[1]))
-      def ratio_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
-        """Given R1, R2 decade as a tuple, returns the possible ratio range."""
-        return 1 / (range_of_decade(r1r2_decade[0]) / range_of_decade(r1r2_decade[1]) + 1)
-
-      return (target.ratio.intersects(ratio_of_decade(test_decade)) and
-              target.parallel_impedance.intersects(impedance_of_decade(test_decade)))
-
     test_decades = [
       # adjustments shifting both decades in the same direction (changes impedance)
       (decade[0] - 1, decade[1] - 1),
@@ -127,30 +117,10 @@ class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
     ]
 
     new_decades = [decade for decade in test_decades
-                   if
+                   if AmplifierValues.from_resistors(
+                       range_of_decade(decade[0]), range_of_decade(decade[1])
+                   ).intersects(target)
                    ]
-
-    # test adjustments that shift both decades in the same direction (changes impedance)
-    down_decade = (decade[0] - 1, decade[1] - 1)
-    if decade_intersects(down_decade):
-      new_decades.append(down_decade)
-    up_decade = (decade[0] + 1, decade[1] + 1)
-    if decade_intersects(up_decade):
-      new_decades.append(up_decade)
-
-    # test adjustments that shift decades independently (changes ratio)
-    up_r1_decade = (decade[0] - 1, decade[1])
-    if decade_intersects(up_r1_decade):
-      new_decades.append(up_r1_decade)
-    up_r2_decade = (decade[0], decade[1] + 1)
-    if decade_intersects(up_r2_decade):
-      new_decades.append(up_r2_decade)
-    down_r1_decade = (decade[0] + 1, decade[1])
-    if decade_intersects(down_r1_decade):
-      new_decades.append(down_r1_decade)
-    down_r2_decade = (decade[0], decade[1] - 1)
-    if decade_intersects(down_r2_decade):
-      new_decades.append(down_r2_decade)
 
     return new_decades
 
