@@ -219,3 +219,34 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     This is called for every decade, and results are appended to the end of the search queue after deduplication.
     """
     raise NotImplementedError
+
+
+# TODO needs better name
+ESeriesUtilValueType = TypeVar('ESeriesUtilValueType', bound='ESeriesUtilOutputValue')
+class ESeriesUtilOutputValue(Generic[ESeriesUtilValueType], metaclass=ABCMeta):
+  """Abstract base class for the calculated output value for a resistor ... thing.
+  Yes, not too descriptive, but example applications are:
+  - resistive divider: ratio and impedance
+  - non-inverting amplifier: amplification factor and impedance
+  - really anything that takes two E-series values and where there isn't
+  a nice closed-form solution so we test-and-check across decades
+  """
+
+  @staticmethod
+  def from_resistors(r1: Range, r2: Range) -> ESeriesUtilValueType:
+    """Calculates the range of outputs possible given input range of resistors."""
+    ...
+
+  def distance_to(self, spec: ESeriesUtilValueType) -> List[float]:
+    """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
+    ...
+
+  def intersects(self, spec: ESeriesUtilValueType) -> bool:
+    """Return whether this intersects with some spec - whether some subset of the resistors
+    can potentially satisfy some spec"""
+    ...
+
+
+# TODO needs better name
+class ESeriesValueSearch(ESeriesRatioUtil, Generic[ESeriesUtilValueType]):
+  pass
