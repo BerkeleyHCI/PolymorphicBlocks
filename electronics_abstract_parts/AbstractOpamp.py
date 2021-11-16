@@ -86,8 +86,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.amp = self.Block(Opamp())
 
     self.pwr = self.Export(self.amp.pwr, [Power])
+    # self.gnd = self.Export(self.amp.gnd, [Common])  # TODO generators should be able to append to nets
     self.gnd = self.Port(Ground(), [Common])
-    # self.gnd = self.Export(self.amp.gnd, [Common])  # TODO staged generators
 
     self.input = self.Export(self.amp.inp, [Input])
     # self.output = self.Export(self.amp.out, [Output])
@@ -113,14 +113,14 @@ class Amplifier(AnalogFilter, GeneratorBlock):
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
     self.connect(self.amp.out, self.output, self.r1.a.as_analog_sink(
-
+      impedance=self.r1.resistance + self.r2.resistance
     ))
     self.connect(self.r1.b.as_analog_source(
-
+      impedance=1/(1/self.r1.resistance + 1/self.r2.resistance)
     ), self.r2.a.as_analog_sink(
-
+      # treated as an ideal sink for now
     ), self.amp.inn)
-    self.connect(self.r2.b.as_ground(), self.gnd, self.amp.gnd)
+    self.connect(self.gnd, self.amp.gnd, self.r2.b.as_ground())
 
 
 class DifferentialAmplifier(AnalogFilter):

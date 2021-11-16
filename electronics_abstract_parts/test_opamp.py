@@ -29,7 +29,9 @@ class TestOpamp(Opamp):
 
 
 class TestResistor(Resistor):
-  pass
+  def contents(self):
+    super().contents()
+    self.assign(self.resistance, self.spec_resistance)
 
 
 class AmplifierTestTop(Block):
