@@ -1,7 +1,7 @@
 import itertools
 from abc import ABCMeta, abstractmethod
 from collections import deque
-from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, cast
+from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, cast, Type
 from electronics_model import *
 import math
 
@@ -100,11 +100,39 @@ class ESeriesUtil:
   }
 
 
-RatioOutputType = TypeVar('RatioOutputType')
-class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
+ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue')
+class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
+  """Abstract base class for the calculated output value for a resistor ... thing.
+  Yes, not too descriptive, but example applications are:
+  - resistive divider: ratio and impedance
+  - non-inverting amplifier: amplification factor and impedance
+  - really anything that takes two E-series values and where there isn't
+  a nice closed-form solution so we test-and-check across decades
+  """
+
+  @staticmethod
+  def from_resistors(r1: Range, r2: Range) -> ESeriesRatioValueType:
+    """Calculates the range of outputs possible given input range of resistors."""
+    ...
+
+  def initial_test_decades(self) -> Tuple[int, int]:
+    """Returns the initial decades to test that can satisfy this spec."""
+    ...
+
+  def distance_to(self, spec: ESeriesRatioValueType) -> List[float]:
+    """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
+    ...
+
+  def intersects(self, spec: ESeriesRatioValueType) -> bool:
+    """Return whether this intersects with some spec - whether some subset of the resistors
+    can potentially satisfy some spec"""
+    ...
+
+
+class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
   """Base class for an algorithm that searches pairs of E-series numbers
   to get some desired output (eg, ratio and impedance for a resistive divider).
-  The output calculations can be overridden by a subclass.
+  The output calculations are determined by the value_type class.
   Calculation of the initial decade (for both values) and which way to shift decades
   after scanning an entire decade can also be overridden
 
@@ -112,38 +140,18 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
   eg a satisfying E3 pair is preferred and returned, even if there is a closer E6 pair.
   This has no concept of a distance metric when the spec is satisfied.
 
-  Component tolerances should be handled by the implementing class,
-  such as stored as an instance variable.
-
   The code below is defined in terms of resistors, but this can be used with anything
   that uses the E-series.
 
   Series should be the zero decade, in the range of [1, 10)
   """
-  def __init__(self, series: List[float]):
+  def __init__(self, series: List[float], tolerance: float, value_type: Type[ESeriesRatioValueType]):
     self.series = series
+    self.tolerance = tolerance
+    self.value_type = value_type
 
-  @abstractmethod
-  def _calculate_output(self, r1: float, r2: float) -> RatioOutputType:
-    """Given two E-series values, calculate the output parameters."""
-    raise NotImplementedError()
-
-  @abstractmethod
-  def _get_distance(self, proposed: RatioOutputType, target: RatioOutputType) -> List[float]:
-    """Given a proposed output value (from E-series values under test) and the target,
-    returns the distance from the acceptable as a list of floats.
-    If the list is empty, that means the proposed is considered satisfying.
-    Otherwise, distance is sorted by list comparison: for the first element where values differ,
-    return the one containing the smallest of the two.
-
-    Note that a non-satisfying zero distance is possible, where the value centers match
-    but not the tolerance.
-
-    This somewhat complicated scheme is used to produce a helpful error message."""
-    raise NotImplementedError()
-
-  def _no_result_error(self, best_values: Tuple[float, float], best: RatioOutputType,
-                       target: RatioOutputType) -> Exception:
+  def _no_result_error(self, best_values: Tuple[float, float], best: ESeriesRatioValueType,
+                       target: ESeriesRatioValueType) -> Exception:
     """Given the best tested result and a target, generate an exception to throw.
     This should not throw the exception, only generate it."""
     return Exception("No satisfying result for ratio")
@@ -167,11 +175,11 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
 
     return out
 
-  def find(self, target: RatioOutputType) -> Tuple[float, float]:
+  def find(self, target: ESeriesRatioValueType) -> Tuple[float, float]:
     """Find a pair of R1, R2 that satisfies the target."""
-    initial = self._get_initial_decades(target)
-    search_queue = deque(initial)
-    searched_decades = set(initial)  # tracks everything that has been on the search queue
+    initial = target.initial_test_decades()
+    search_queue = deque([initial])
+    searched_decades = set([initial])  # tracks everything that has been on the search queue
     best = None
 
     while search_queue:
@@ -179,8 +187,9 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
       product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
 
       for (r1, r2) in product:
-        output = self._calculate_output(r1, r2)
-        output_dist = self._get_distance(output, target)
+        output = self.value_type.from_resistors(Range.from_tolerance(r1, self.tolerance),
+                                                Range.from_tolerance(r2, self.tolerance))
+        output_dist = output.distance_to(target)
 
         if best is None or output_dist < best[2]:
           best = ((r1, r2), output, output_dist)
@@ -201,52 +210,34 @@ class ESeriesRatioUtil(Generic[RatioOutputType], metaclass=ABCMeta):
     assert best is not None
     raise self._no_result_error(best[0], best[1], target)
 
-
-  @abstractmethod
-  def _get_initial_decades(self, target: RatioOutputType) -> List[Tuple[int, int]]:
-    """Given the target output, return the initial decades (for R1, R2), as log10 to try.
-    For example, a decade of 0 means try 1.0, 2.2, 4.7;
-    while a decade of -1 means try 10, 22, 47.
-    """
-    raise NotImplementedError()
-
-  @abstractmethod
-  def _get_next_decades(self, decade: Tuple[int, int], target: RatioOutputType) -> List[Tuple[int, int]]:
+  def _get_next_decades(self, decade: Tuple[int, int], target: ESeriesRatioValueType) -> List[Tuple[int, int]]:
     """If the target was not found scanning the entire decade, this is called to determine next decades to search.
     This is passed in the current decade and the target.
 
     Returns a list of decades to search, in order. Internally the search algorithm deduplicates decades.
     This is called for every decade, and results are appended to the end of the search queue after deduplication.
+
+    The default algorithm returns all adjacent combinations of decades where the output
+    intersects the target.
     """
-    raise NotImplementedError
+    def range_of_decade(range_decade: int) -> Range:
+      """Given a decade, return the range of possible values - for example, decade 0
+      would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
+      return Range(10 ** range_decade, 10 ** (range_decade + 1))
 
+    test_decades = [
+      # adjustments shifting both decades in the same direction
+      (decade[0] - 1, decade[1] - 1),
+      (decade[0] + 1, decade[1] + 1),
+      # adjustments shifting decades independently
+      (decade[0] - 1, decade[1]),
+      (decade[0], decade[1] + 1),
+      (decade[0] + 1, decade[1]),
+      (decade[0], decade[1] - 1),
+    ]
 
-# TODO needs better name
-ESeriesUtilValueType = TypeVar('ESeriesUtilValueType', bound='ESeriesUtilOutputValue')
-class ESeriesUtilOutputValue(Generic[ESeriesUtilValueType], metaclass=ABCMeta):
-  """Abstract base class for the calculated output value for a resistor ... thing.
-  Yes, not too descriptive, but example applications are:
-  - resistive divider: ratio and impedance
-  - non-inverting amplifier: amplification factor and impedance
-  - really anything that takes two E-series values and where there isn't
-  a nice closed-form solution so we test-and-check across decades
-  """
-
-  @staticmethod
-  def from_resistors(r1: Range, r2: Range) -> ESeriesUtilValueType:
-    """Calculates the range of outputs possible given input range of resistors."""
-    ...
-
-  def distance_to(self, spec: ESeriesUtilValueType) -> List[float]:
-    """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
-    ...
-
-  def intersects(self, spec: ESeriesUtilValueType) -> bool:
-    """Return whether this intersects with some spec - whether some subset of the resistors
-    can potentially satisfy some spec"""
-    ...
-
-
-# TODO needs better name
-class ESeriesValueSearch(ESeriesRatioUtil, Generic[ESeriesUtilValueType]):
-  pass
+    new_decades = [decade for decade in test_decades
+                   if self.value_type
+                     .from_resistors(range_of_decade(decade[0]),
+                                     range_of_decade(decade[1])).intersects(target)]
+    return new_decades

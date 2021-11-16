@@ -4,7 +4,7 @@ from typing import NamedTuple, List, Tuple
 from electronics_abstract_parts import Resistor
 from electronics_model import *
 from .Categories import *
-from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil
+from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
 @abstract_block
@@ -39,21 +39,24 @@ class OpampFollower(AnalogFilter):
     self.connect(self.amp.out, self.amp.inn)
 
 
-class AmplifierValues(NamedTuple):
-  amplification: Range  # amplification factor from in to out
-  parallel_impedance: Range  # parallel impedance into the opamp negative pin
+class AmplifierValues(ESeriesRatioValue):
+  def __init__(self, amplification: Range, parallel_impedance: Range):
+    self.amplification = amplification  # amplification factor from in to out
+    self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
   @staticmethod
   def from_resistors(rhigh: Range, rlow: Range) -> 'AmplifierValues':
-    """Calculates range of outputs given range of resistors.
-    rlow is the low-side resistor (Vin- to GND) and rhigh is the high-side resistor (Vin- to Vout)."""
+    """rlow is the low-side resistor (Vin- to GND) and rhigh is the high-side resistor (Vin- to Vout)."""
     return AmplifierValues(
       (rhigh / rlow) + 1,
       1 / (1 / rhigh + 1 / rlow)
     )
 
+  def initial_test_decades(self) -> Tuple[int, int]:
+    decade = ceil(log10(self.parallel_impedance.upper))
+    return decade, decade
+
   def distance_to(self, spec: 'AmplifierValues') -> List[float]:
-    """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
     if self.amplification in spec.amplification and self.parallel_impedance in spec.parallel_impedance:
       return []
     else:
@@ -63,67 +66,9 @@ class AmplifierValues(NamedTuple):
       ]
 
   def intersects(self, spec: 'AmplifierValues') -> bool:
-    """Return whether this intersects with some spec - whether some subset of the resistors
-    can potentially satisfy some spec"""
     return self.amplification.intersects(spec.amplification) and \
            self.parallel_impedance.intersects(
              spec.parallel_impedance)
-
-class ResistorCalculator(ESeriesRatioUtil[AmplifierValues]):
-  class NoMatchException(Exception):
-    pass
-
-  def __init__(self, series: List[float], tolerance: float):
-    super().__init__(series)  # TODO custom range series
-    self.tolerance = tolerance
-
-  def _calculate_output(self, r1: float, r2: float) -> AmplifierValues:
-    """This uses resistive divider conventions: R1 is output-side and R2 is ground-side
-    """
-    return AmplifierValues.from_resistors(
-      Range.from_tolerance(r1, self.tolerance),
-      Range.from_tolerance(r2, self.tolerance))
-
-  def _get_distance(self, proposed: AmplifierValues, target: AmplifierValues) -> List[float]:
-    return proposed.distance_to(target)
-
-  def _no_result_error(self, best_values: Tuple[float, float], best: AmplifierValues,
-                       target: AmplifierValues) -> Exception:
-    return ResistorCalculator.NoMatchException(
-      f"No resistive divider found for target amplification={target.amplification}, impedance={target.parallel_impedance}, "
-      f"best: {best_values} with amplification={best.amplification}, impedance={best.parallel_impedance}"
-    )
-
-  def _get_initial_decades(self, target: AmplifierValues) -> List[Tuple[int, int]]:
-    # TODO: adjust initial ratio to intersect? - see issues with ResistiveDividerCalculator
-    decade = ceil(log10(target.parallel_impedance.upper))
-    return [(decade, decade)]
-
-  def _get_next_decades(self, decade: Tuple[int, int], target: AmplifierValues) -> \
-      List[Tuple[int, int]]:
-    def range_of_decade(range_decade: int) -> Range:
-      """Given a decade, return the range of possible values - for example, decade 0
-      would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
-      return Range(10 ** range_decade, 10 ** (range_decade + 1))
-
-    test_decades = [
-      # adjustments shifting both decades in the same direction (changes impedance)
-      (decade[0] - 1, decade[1] - 1),
-      (decade[0] + 1, decade[1] + 1),
-      # adjustments shifting decades independently (changes ratio)
-      (decade[0] - 1, decade[1]),
-      (decade[0], decade[1] + 1),
-      (decade[0] + 1, decade[1]),
-      (decade[0], decade[1] - 1),
-    ]
-
-    new_decades = [decade for decade in test_decades
-                   if AmplifierValues.from_resistors(
-                       range_of_decade(decade[0]), range_of_decade(decade[1])
-                   ).intersects(target)
-                   ]
-
-    return new_decades
 
 
 class Amplifier(AnalogFilter, GeneratorBlock):
@@ -159,7 +104,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
                    targets=[self.gnd])
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
-    calculator = ResistorCalculator(ESeriesUtil.SERIES[series], tolerance)
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
     top_resistance, bottom_resistance = calculator.find(AmplifierValues(amplification, impedance))
 
     self.r1 = self.Block(Resistor(
