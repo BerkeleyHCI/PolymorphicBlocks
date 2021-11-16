@@ -52,7 +52,7 @@ class AmplifierValues(ESeriesRatioValue):
     )
 
   def initial_test_decades(self) -> Tuple[int, int]:
-    decade = ceil(log10(self.parallel_impedance.upper))
+    decade = ceil(log10(self.parallel_impedance.center()))
     return decade, decade
 
   def distance_to(self, spec: 'AmplifierValues') -> List[float]:
