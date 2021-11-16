@@ -1,20 +1,15 @@
 from __future__ import annotations
 
 from math import log10, ceil
-from typing import List, Tuple, NamedTuple
+from typing import List, Tuple
 
 from edg_core import *
 from electronics_model import Common, Passive
 from . import AnalogFilter, DiscreteApplication, Resistor, Filter
-from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
 
-class DividerValues(NamedTuple):
-  ratio: Range
-  parallel_impedance: Range
-
-
-class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
+class DividerValues(ESeriesRatioValue['DividerValues']):
   """Resistive divider calculator using the ESeriesRatioUtil infrastructure.
 
   R1 is the high-side resistor, and R2 is the low-side resistor, such that
@@ -26,96 +21,39 @@ class ResistiveDividerCalculator(ESeriesRatioUtil[DividerValues]):
   1  : 1    10/11        1/11
   10 : 1    10/20        1/101
   100: 1    10/110       1/1001       \/ ratio towards 0
-
-  TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
-  (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
   """
-  class NoMatchException(Exception):
-    pass
+  def __init__(self, ratio: Range, parallel_impedance: Range):
+    self.ratio = ratio  # amplification factor from in to out
+    self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
-  def __init__(self, series: List[float], tolerance: float):
-    super().__init__(series)  # TODO custom range series
-    self.tolerance = tolerance
-
-  def _calculate_output(self, r1: float, r2: float) -> DividerValues:
+  @staticmethod
+  def from_resistors(r1_range: Range, r2_range: Range) -> 'DividerValues':
     """This uses a slight rewriting of terms to avoid duplication of terms and not double-count tolerances:
     ratio = R2 / (R1 + R2) => divide  through by R2 / R2
     ratio = 1 / (R1 / R2 + 1)
     """
-    r1_range = Range.from_tolerance(r1, self.tolerance)
-    r2_range = Range.from_tolerance(r2, self.tolerance)
     return DividerValues(
       1 / (r1_range / r2_range + 1),
       1 / (1 / r1_range + 1 / r2_range)
     )
 
-  def _get_distance(self, proposed: DividerValues, target: DividerValues) -> List[float]:
-    if proposed.ratio in target.ratio and proposed.parallel_impedance in target.parallel_impedance:
+  def initial_test_decades(self) -> Tuple[int, int]:
+    decade = ceil(log10(self.parallel_impedance.upper))
+    return decade, decade
+
+  def distance_to(self, spec: 'DividerValues') -> List[float]:
+    if self.ratio in spec.ratio and self.parallel_impedance in spec.parallel_impedance:
       return []
     else:
       return [
-        abs(proposed.ratio.center() - target.ratio.center()),
-        abs(proposed.parallel_impedance.center() - target.parallel_impedance.center())
+        abs(self.ratio.center() - spec.ratio.center()),
+        abs(self.parallel_impedance.center() - spec.parallel_impedance.center())
       ]
 
-  def _no_result_error(self, best_values: Tuple[float, float], best: DividerValues,
-                       target: DividerValues) -> Exception:
-    return ResistiveDividerCalculator.NoMatchException(
-      f"No resistive divider found for target ratio={target.ratio}, impedance={target.parallel_impedance}, "
-      f"best: {best_values} with ratio={best.ratio}, impedance={best.parallel_impedance}"
-    )
-
-  def _get_initial_decades(self, target: DividerValues) -> List[Tuple[int, int]]:
-    # TODO: adjust initial ratio to intersect?
-    # This really is only a problem for very large or small ratios:
-    # below 1/10 it will waste time scanning the (0, 0) decade
-    # and only below it will fail as it scans the (0, 0) decade and can't find a single step
-    # to make it intersect
-    decade = ceil(log10(target.parallel_impedance.upper))
-    return [(decade, decade)]
-
-  def _get_next_decades(self, decade: Tuple[int, int], target: DividerValues) -> \
-      List[Tuple[int, int]]:
-    def decade_intersects(test_decade: Tuple[int, int]) -> bool:
-      def range_of_decade(range_decade: int) -> Range:
-        """Given a decade, return the range of possible values - for example, decade 0
-        would mean 1.0, 2.2, 4.7 and would return a range of (1, 10)."""
-        return Range(10 ** range_decade, 10 ** (range_decade + 1))
-      def impedance_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
-        """Given R1, R2 decade as a tuple, returns the possible impedance range."""
-        return 1 / (1 / range_of_decade(r1r2_decade[0]) + 1 / range_of_decade(r1r2_decade[1]))
-      def ratio_of_decade(r1r2_decade: Tuple[int, int]) -> Range:
-        """Given R1, R2 decade as a tuple, returns the possible ratio range."""
-        return 1 / (range_of_decade(r1r2_decade[0]) / range_of_decade(r1r2_decade[1]) + 1)
-
-      return (target.ratio.intersects(ratio_of_decade(test_decade)) and
-          target.parallel_impedance.intersects(impedance_of_decade(test_decade)))
-
-    new_decades = []
-
-    # test adjustments that shift both decades in the same direction (changes impedance)
-    down_decade = (decade[0] - 1, decade[1] - 1)
-    if decade_intersects(down_decade):
-      new_decades.append(down_decade)
-    up_decade = (decade[0] + 1, decade[1] + 1)
-    if decade_intersects(up_decade):
-      new_decades.append(up_decade)
-
-    # test adjustments that shift decades independently (changes ratio)
-    up_r1_decade = (decade[0] - 1, decade[1])
-    if decade_intersects(up_r1_decade):
-      new_decades.append(up_r1_decade)
-    up_r2_decade = (decade[0], decade[1] + 1)
-    if decade_intersects(up_r2_decade):
-      new_decades.append(up_r2_decade)
-    down_r1_decade = (decade[0] + 1, decade[1])
-    if decade_intersects(down_r1_decade):
-      new_decades.append(down_r1_decade)
-    down_r2_decade = (decade[0], decade[1] - 1)
-    if decade_intersects(down_r2_decade):
-      new_decades.append(down_r2_decade)
-
-    return new_decades
+  def intersects(self, spec: 'DividerValues') -> bool:
+    return self.ratio.intersects(spec.ratio) and \
+           self.parallel_impedance.intersects(
+             spec.parallel_impedance)
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):
@@ -144,7 +82,10 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
-    calculator = ResistiveDividerCalculator(ESeriesUtil.SERIES[series], tolerance)
+
+    # TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
+    # (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
     top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
 
     self.top_res = self.Block(Resistor(

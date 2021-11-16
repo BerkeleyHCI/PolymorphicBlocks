@@ -1,8 +1,7 @@
 from math import ceil, log10
-from typing import NamedTuple, List, Tuple
+from typing import List, Tuple
 
 from electronics_abstract_parts import Resistor
-from electronics_model import *
 from .Categories import *
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
@@ -45,11 +44,11 @@ class AmplifierValues(ESeriesRatioValue):
     self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
   @staticmethod
-  def from_resistors(rhigh: Range, rlow: Range) -> 'AmplifierValues':
-    """rlow is the low-side resistor (Vin- to GND) and rhigh is the high-side resistor (Vin- to Vout)."""
+  def from_resistors(r1_range: Range, r2_range: Range) -> 'AmplifierValues':
+    """r2 is the low-side resistor (Vin- to GND) and r1 is the high-side resistor (Vin- to Vout)."""
     return AmplifierValues(
-      (rhigh / rlow) + 1,
-      1 / (1 / rhigh + 1 / rlow)
+      (r1_range / r2_range) + 1,
+      1 / (1 / r1_range + 1 / r2_range)
     )
 
   def initial_test_decades(self) -> Tuple[int, int]:

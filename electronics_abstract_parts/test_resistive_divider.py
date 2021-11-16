@@ -1,13 +1,13 @@
 import unittest
 
 from edg_core import Range
-from .ResistiveDivider import ResistiveDividerCalculator, DividerValues
-from .ESeriesUtil import ESeriesUtil
+from .ResistiveDivider import DividerValues
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
 
 
 class ResistorDividerTest(unittest.TestCase):
   def test_resistor_divider(self) -> None:
-    calculator = ResistiveDividerCalculator(ESeriesUtil.SERIES[24], 0.01)
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[24], 0.01, DividerValues)
 
     self.assertEqual(
       calculator.find(DividerValues(Range(0, 1), Range(0.1, 1))),
@@ -38,20 +38,20 @@ class ResistorDividerTest(unittest.TestCase):
       (820, 100))
 
   def test_impossible(self) -> None:
-    e1_calculator = ResistiveDividerCalculator([1.0], 0.01)
+    e1_calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[1], 0.01, DividerValues)
 
-    with self.assertRaises(ResistiveDividerCalculator.NoMatchException) as error:
+    with self.assertRaises(ESeriesRatioUtil.NoMatchException) as error:
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.10, 0.4), Range(0.1, 10))),  # not possible with E1 series
         None)
-    self.assertIn('best: (100.0, 10.0)', error.exception.args[0])
+    self.assertIn('with values (100.0, 10.0)', error.exception.args[0])
 
-    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+    with self.assertRaises(ESeriesRatioUtil.NoMatchException):
       self.assertEqual(
         e1_calculator.find(DividerValues(Range(0.5, 0.5), Range(0.1, 10))),  # tolerance too tight
         None)
 
-    with self.assertRaises(ResistiveDividerCalculator.NoMatchException):
+    with self.assertRaises(ESeriesRatioUtil.NoMatchException):
       # this uses ratio = 0.1 - 0.9 for efficiency, otherwise the system searches keeps (fruitlessly)
       # searching through more extreme ratios until it hits decade limits
       self.assertEqual(

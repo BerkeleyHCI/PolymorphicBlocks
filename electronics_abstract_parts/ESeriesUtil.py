@@ -1,9 +1,10 @@
 import itertools
-from abc import ABCMeta, abstractmethod
-from collections import deque
-from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, cast, Type
-from electronics_model import *
 import math
+from abc import ABCMeta
+from collections import deque
+from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type
+
+from electronics_model import *
 
 
 class ESeriesUtil:
@@ -109,7 +110,6 @@ class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
   - really anything that takes two E-series values and where there isn't
   a nice closed-form solution so we test-and-check across decades
   """
-
   @staticmethod
   def from_resistors(r1: Range, r2: Range) -> ESeriesRatioValueType:
     """Calculates the range of outputs possible given input range of resistors."""
@@ -145,6 +145,9 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
 
   Series should be the zero decade, in the range of [1, 10)
   """
+  class NoMatchException(Exception):
+    pass
+
   def __init__(self, series: List[float], tolerance: float, value_type: Type[ESeriesRatioValueType]):
     self.series = series
     self.tolerance = tolerance
@@ -154,17 +157,19 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
                        target: ESeriesRatioValueType) -> Exception:
     """Given the best tested result and a target, generate an exception to throw.
     This should not throw the exception, only generate it."""
-    return Exception("No satisfying result for ratio")
+    return self.NoMatchException(f"No ratio found for target {target}, "
+                                 f"best: {best}, with values {best_values}")
 
-  def _generate_e_series_product(self, r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
+  @staticmethod
+  def _generate_e_series_product(series: List[float], r1_decade: int, r2_decade: int) -> List[Tuple[float, float]]:
     """Returns the ordered / sorted cartesian product of all possible pairs of values for the requested decade.
     The output is ordered such that pairs containing numbers earlier in the series comes first,
     so in effect lower E-series combinations are preferred, assuming the series is ordered in a
     zig-zag fashion."""
     r1_series = [ESeriesUtil.round_sig(elt * (10 ** r1_decade), ESeriesUtil.ROUND_DIGITS)
-                 for elt in self.series]
+                 for elt in series]
     r2_series = [ESeriesUtil.round_sig(elt * (10 ** r2_decade), ESeriesUtil.ROUND_DIGITS)
-                 for elt in self.series]
+                 for elt in series]
     out = []
     assert len(r1_series) == len(r2_series), "algorithm depends on same series length"
     for index_max in range(len(r1_series)):
@@ -179,12 +184,13 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
     """Find a pair of R1, R2 that satisfies the target."""
     initial = target.initial_test_decades()
     search_queue = deque([initial])
-    searched_decades = set([initial])  # tracks everything that has been on the search queue
+    searched_decades = {initial}  # tracks everything that has been on the search queue
     best = None
 
     while search_queue:
       r1r2_decade = search_queue.popleft()
-      product = self._generate_e_series_product(r1r2_decade[0], r1r2_decade[1])
+      product = self._generate_e_series_product(self.series,
+                                                r1r2_decade[0], r1r2_decade[1])
 
       for (r1, r2) in product:
         output = self.value_type.from_resistors(Range.from_tolerance(r1, self.tolerance),
