@@ -28,9 +28,6 @@ class JLcResistorTable(JLcTable):
         try:
           # handle the footprint first since this is the most likely to filter
           footprint = (cls.PACKAGE_FOOTPRINT_MAP.row['Package'])
-
-          if footprint is None:
-            raise KeyError
           new_cols[cls.FOOTPRINT] = footprint
 
           extracted_values = parse(row['Description'], RESISTOR_MATCHES)
