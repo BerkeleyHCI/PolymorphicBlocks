@@ -52,8 +52,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
 
   def intersects(self, spec: 'DividerValues') -> bool:
     return self.ratio.intersects(spec.ratio) and \
-           self.parallel_impedance.intersects(
-             spec.parallel_impedance)
+           self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
 class ResistiveDivider(DiscreteApplication, GeneratorBlock):

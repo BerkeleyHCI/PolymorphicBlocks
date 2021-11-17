@@ -66,8 +66,7 @@ class AmplifierValues(ESeriesRatioValue):
 
   def intersects(self, spec: 'AmplifierValues') -> bool:
     return self.amplification.intersects(spec.amplification) and \
-           self.parallel_impedance.intersects(
-             spec.parallel_impedance)
+           self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
 class Amplifier(AnalogFilter, GeneratorBlock):
@@ -116,6 +115,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
       impedance=self.r1.resistance + self.r2.resistance
     ))
     self.connect(self.r1.b.as_analog_source(
+      voltage_out=self.amp.out.voltage_out,
       impedance=1/(1/self.r1.resistance + 1/self.r2.resistance)
     ), self.r2.a.as_analog_sink(
       # treated as an ideal sink for now
@@ -123,7 +123,38 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.connect(self.gnd, self.amp.gnd, self.r2.b.as_ground())
 
 
-class DifferentialAmplifier(AnalogFilter):
+class DifferentialValues(ESeriesRatioValue):
+  def __init__(self, ratio: Range, input_impedance: Range):
+    self.ratio = ratio  # ratio from difference between inputs to output
+    self.input_impedance = input_impedance  # resistance of the input resistor
+
+  @staticmethod
+  def from_resistors(r1_range: Range, r2_range: Range) -> 'AmplifierValues':
+    """r1 is the input side resistance and r2 is the feedback or ground resistor."""
+    return AmplifierValues(
+      (r2_range / r1_range),
+      r1_range
+    )
+
+  def initial_test_decades(self) -> Tuple[int, int]:
+    decade = ceil(log10(self.input_impedance.center()))
+    return decade, decade
+
+  def distance_to(self, spec: 'DifferentialValues') -> List[float]:
+    if self.ratio in spec.ratio and self.input_impedance in spec.input_impedance:
+      return []
+    else:
+      return [
+        abs(self.ratio.center() - spec.ratio.center()),
+        abs(self.input_impedance.center() - spec.input_impedance.center())
+      ]
+
+  def intersects(self, spec: 'DifferentialValues') -> bool:
+    return self.ratio.intersects(spec.ratio) and \
+           self.input_impedance.intersects(spec.input_impedance)
+
+
+class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
   """Opamp differential amplifier, outputs the difference between the input nodes, scaled by some factor,
   and offset from some reference node.
   This implementation uses the same resistance for the two input resistors (R1, R2),
@@ -133,14 +164,13 @@ class DifferentialAmplifier(AnalogFilter):
 
   Impedance equations from https://e2e.ti.com/blogs_/archives/b/precisionhub/posts/overlooking-the-obvious-the-input-impedance-of-a-difference-amplifier
     (ignoring the opamp input impedances, which we assume are >> the resistors)
-  Rin,p = R1 / (1 - (Rg / (R2+Rg)) * (Vin,n / Vin,p))
-  Rin,n = R2 + Rg
+  Rin,n = R1 / (1 - (Rg / (R2+Rg)) * (Vin,n / Vin,p))
+  Rin,p = R2 + Rg
   Rout = opamp output impedance - TODO: is this correct?
 
   ratio specifies Rf/R1, the amplification ratio.
-
   """
-  def __init__(self, ratio: RangeExpr = RangeExpr()):
+  def __init__(self, ratio: RangeLike = RangeExpr(), input_impedance: RangeLike = RangeExpr()):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -153,7 +183,60 @@ class DifferentialAmplifier(AnalogFilter):
     self.output_reference = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
+    self.ratio = self.Parameter(RangeExpr(ratio))
+    self.input_impedance = self.Parameter(RangeExpr(input_impedance))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+
     # TODO ADD PARAMETERS, IMPLEMENT ME
+    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance,
+                   targets=[self.gnd])
+
+  def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
+    r1_resistance, rf_resistance = calculator.find(DifferentialValues(ratio, input_impedance))
+
+    self.r1 = self.Block(Resistor(
+      resistance=Range.from_tolerance(r1_resistance, tolerance)
+    ))
+    self.r2 = self.Block(Resistor(
+      resistance=Range.from_tolerance(r1_resistance, tolerance)
+    ))
+    self.rf = self.Block(Resistor(
+      resistance=Range.from_tolerance(rf_resistance, tolerance)
+    ))
+    self.rg = self.Block(Resistor(
+      resistance=Range.from_tolerance(rf_resistance, tolerance)
+    ))
+
+    self.connect(self.input_negative, self.r1.a.as_analog_sink(
+      # TODO very simplified and probably very wrong
+      impedance=self.r1.resistance + self.rf.resistance
+    ))
+    self.connect(self.input_positive, self.r2.a.as_analog_sink(
+      impedance=self.r2.resistance + self.rg.resistance
+    ))
+
+    self.connect(self.amp.out, self.output, self.rf.a.as_analog_sink(
+      # TODO very simplified and probably very wrong
+      impedance=self.r1.resistance + self.rf.resistance
+    ))
+    self.connect(self.r1.b.as_analog_source(
+      voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
+      impedance=1 / (1 / self.r1.resistance + 1 / self.rf.resistance)  # combined R1 and Rf resistance
+    ), self.rf.b.as_analog_sink(
+      # treated as an ideal sink for now
+    ), self.amp.inn)
+    self.connect(self.r2.b.as_analog_source(
+      voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
+      impedance=1 / (1 / self.r2.resistance + 1 / self.rg.resistance)  # combined R2 and Rg resistance
+    ), self.rg.b.as_analog_sink(
+      # treated as an ideal sink for now
+    ), self.amp.inp)
+    self.connect(self.rg.a.as_analog_sink(
+      impedance=self.r2.resistance + self.rg.resistance
+    ), self.output_reference)
 
 
 class IntegratorInverting(AnalogFilter):
