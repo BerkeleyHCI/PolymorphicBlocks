@@ -1,12 +1,12 @@
 import unittest
-from .JLC_Resistor import JLCPCB_Resistor, JLCPCB_ResistorTable
+from .JLcResistor import JLcResistor, JLcResistorTable
 from .test_passive_common import *
 
 
-class JLC_ResistorTestTop(Block):
+class JLcResistorTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.dut = self.Block(JLCPCB_Resistor(
+    self.dut = self.Block(JLcResistor(
       resistance=750 * Ohm(tol=0.10),
       power=(0, 0.25) * Watt
     ))
@@ -14,9 +14,9 @@ class JLC_ResistorTestTop(Block):
     (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
 
 
-class JLC_ResistorTestCase(unittest.TestCase):
+class JLcResistorTestCase(unittest.TestCase):
   def test_resistor(self) -> None:
-    compiled = ScalaCompiler.compile(JLC_ResistorTestTop)
+    compiled = ScalaCompiler.compile(JLcResistorTestTop)
 
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'part']), '1206W4F7500T5E')

@@ -3,7 +3,7 @@ from .parse import parse
 from electronics_abstract_parts import *
 from .JLcTable import *
 
-class JLCPCB_ResistorTable(JLcTable):
+class JLcResistorTable(JLcTable):
   RESISTANCE = PartsTableColumn(Range)  
   POWER_RATING = PartsTableColumn(Range)
   FOOTPRINT = PartsTableColumn(str)
@@ -27,8 +27,7 @@ class JLCPCB_ResistorTable(JLcTable):
         new_cols: Dict[PartsTableColumn, Any] = {}
         try:
           # handle the footprint first since this is the most likely to filter
-          footprint = (cls.PACKAGE_FOOTPRINT_MAP.get(row['Package'], None))
-                       #or cls.SERIES_FOOTPRINT_MAP.get(row['Series'], None) or  TODO add later
+          footprint = (cls.PACKAGE_FOOTPRINT_MAP.row['Package'])
 
           if footprint is None:
             raise KeyError
@@ -58,7 +57,7 @@ class JLCPCB_ResistorTable(JLcTable):
     )
     
  
-class JLCPCB_Resistor(Resistor, FootprintBlock, GeneratorBlock):
+class JLcResistor(Resistor, FootprintBlock, GeneratorBlock):
    @init_in_parent
    def __init__(self, **kwargs):
      super().__init__(**kwargs)
@@ -73,23 +72,23 @@ class JLCPCB_Resistor(Resistor, FootprintBlock, GeneratorBlock):
 
    def select_resistor(self, resistance: Range, power_dissipation: Range,
                        part_spec: str, footprint_spec: str) -> None:
-     part = JLCPCB_ResistorTable.table().filter(lambda row: (
-         (not part_spec or part_spec == row[JLCPCB_ResistorTable.PART_NUMBER]) and
-         (not footprint_spec or footprint_spec == row[JLCPCB_ResistorTable.FOOTPRINT]) and
-         row[JLCPCB_ResistorTable.RESISTANCE].fuzzy_in(resistance) and
-         power_dissipation.fuzzy_in(row[JLCPCB_ResistorTable.POWER_RATING])
-     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W, {[row.value['MFR.Part'] for row in JLCPCB_ResistorTable.table().rows]}")
+     part = JLcResistorTable.table().filter(lambda row: (
+         (not part_spec or part_spec == row[JLcResistorTable.PART_NUMBER]) and
+         (not footprint_spec or footprint_spec == row[JLcResistorTable.FOOTPRINT]) and
+         row[JLcResistorTable.RESISTANCE].fuzzy_in(resistance) and
+         power_dissipation.fuzzy_in(row[JLcResistorTable.POWER_RATING])
+     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W, {[row.value['MFR.Part'] for row in JLcResistorTable.table().rows]}")
 
-     self.assign(self.selected_resistance, part[JLCPCB_ResistorTable.RESISTANCE])
-     self.assign(self.selected_power, part[JLCPCB_ResistorTable.POWER_RATING])
+     self.assign(self.selected_resistance, part[JLcResistorTable.RESISTANCE])
+     self.assign(self.selected_power, part[JLcResistorTable.POWER_RATING])
 
      self.footprint(
-       'R', part[JLCPCB_ResistorTable.FOOTPRINT],
+       'R', part[JLcResistorTable.FOOTPRINT],
        {
          '1': self.a,
          '2': self.b,
        },
-       mfr=part[JLCPCB_ResistorTable.MANUFACTURER], part=part[JLCPCB_ResistorTable.PART_NUMBER],
+       mfr=part[JLcResistorTable.MANUFACTURER], part=part[JLcResistorTable.PART_NUMBER],
        value=f"{part['Description']}",
-       datasheet=part[JLCPCB_ResistorTable.DATASHEETS]
+       datasheet=part[JLcResistorTable.DATASHEETS]
      )
