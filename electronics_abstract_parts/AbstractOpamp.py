@@ -1,7 +1,7 @@
 from math import ceil, log10
 from typing import List, Tuple
 
-from electronics_abstract_parts import Resistor
+from electronics_abstract_parts import Resistor, Capacitor
 from .Categories import *
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
@@ -189,9 +189,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    # TODO ADD PARAMETERS, IMPLEMENT ME
-    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance,
-                   targets=[self.gnd])
+    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance)
 
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
@@ -239,14 +237,49 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     ), self.output_reference)
 
 
-class IntegratorInverting(AnalogFilter):
+class IntegratorValues(ESeriesRatioValue):
+  def __init__(self, factor: Range, capacitance: Range):
+    self.factor = factor  # output scale factor, 1/RC in units of 1/s
+    self.capacitance = capacitance  # value of the capacitor
+
+  @staticmethod
+  def from_resistors(r1_range: Range, r2_range: Range) -> 'IntegratorValues':
+    """r1 is the input resistor and r2 is the capacitor."""
+    return IntegratorValues(
+      1 / (r1_range * r2_range),
+      r2_range
+    )
+
+  def initial_test_decades(self) -> Tuple[int, int]:
+    """C is given per the spec, so we need factor = 1 / (R * C) => R = 1 / (factor * C)"""
+    capacitance_decade = ceil(log10(self.capacitance.center()))
+    allowed_resistances = Range.cancel_multiply(1 / self.capacitance, 1 / self.factor)
+    resistance_decade = ceil(log10(allowed_resistances.center()))
+
+    return resistance_decade, capacitance_decade
+
+  def distance_to(self, spec: 'IntegratorValues') -> List[float]:
+    if self.factor in spec.factor and self.capacitance in spec.capacitance:
+      return []
+    else:
+      return [
+        abs(self.factor.center() - spec.factor.center()),
+        abs(self.capacitance.center() - spec.capacitance.center())
+      ]
+
+  def intersects(self, spec: 'IntegratorValues') -> bool:
+    return self.factor.intersects(spec.factor) and \
+           self.capacitance.intersects(spec.capacitance)
+
+
+class IntegratorInverting(AnalogFilter, GeneratorBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
   Vout = - 1/RC * int(Vin) (integrating over time)
   """
-  def __init__(self):
+  def __init__(self, factor: RangeLike = RangeExpr(), capacitance: RangeLike = RangeExpr()):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -258,4 +291,31 @@ class IntegratorInverting(AnalogFilter):
     self.output = self.Port(AnalogSource())
     self.reference = self.Port(AnalogSink())  # negative reference for the input and output signals
 
-    # TODO ADD PARAMETERS, IMPLEMENT ME
+    self.factor = self.Parameter(RangeExpr(factor))
+    self.capacitance = self.Parameter(RangeExpr(capacitance))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+
+    self.generator(self.generate_components, self.factor, self.capacitance, self.series, self.tolerance)
+
+  def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
+    sel_resistance, sel_capacitance = calculator.find(IntegratorValues(factor, capacitance))
+
+    self.r = self.Block(Resistor(
+      resistance=Range.from_tolerance(sel_resistance, tolerance)
+    ))
+    self.c = self.Block(Capacitor(
+      capacitance=Range.from_tolerance(sel_capacitance, tolerance)
+    ))
+
+    self.connect(self.input, self.r.a.as_analog_sink(
+      # TODO very simplified and probably very wrong
+      impedance=self.r.resistance
+    ))
+    self.connect(self.amp.out, self.output, self.c.pos.as_analog_sink())  # TODO impedance of the feedback circuit?
+    self.connect(self.r.b.as_analog_source(
+      impedance=self.r.resistance
+    ), self.c.neg.as_analog_sink(), self.amp.inn)
+    self.connect(self.reference, self.amp.inp)
