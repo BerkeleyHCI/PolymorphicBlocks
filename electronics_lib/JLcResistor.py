@@ -27,7 +27,7 @@ class JLcResistorTable(JLcTable):
         new_cols: Dict[PartsTableColumn, Any] = {}
         try:
           # handle the footprint first since this is the most likely to filter
-          footprint = (cls.PACKAGE_FOOTPRINT_MAP.row['Package'])
+          footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
           new_cols[cls.FOOTPRINT] = footprint
 
           extracted_values = parse(row['Description'], RESISTOR_MATCHES)
