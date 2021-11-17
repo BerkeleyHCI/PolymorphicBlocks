@@ -17,27 +17,18 @@ class GatedEmitterFollower(Block):
     # TODO ADD PARAMETERS, IMPLEMENT ME
 
 
-class SourceMeasureControl(Block):
-  """Analog feedback circuit for the source-measure unit
-  """
-  def __init__(self):
-    super().__init__()
-
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
-    self.ref_center = self.Port(AnalogSink())
-
-    self.control_voltage = self.Port(AnalogSink())
-    self.control_current_source = self.Port(AnalogSink())
-    self.control_current_sink = self.Port(AnalogSink())
-    self.measured_voltage = self.Port(AnalogSource())
-    self.measured_current = self.Port(AnalogSource())
-    # TODO ADD PARAMETERS, IMPLEMENT ME
-
-
 class ErrorAmplifier(Block):
-  """Error amplifier circuit. Really not quite sure quite how this works, looks like an opamp follower after a
-  resistive divider. Configurable diode and resistors.
+  """Not really a general error amplifier circuit, but a subcircuit that performs that function in
+  the context of this SMU analog feedback block.
+
+  Consists of a resistive divider between the target and inverted sense signal, followed by
+  an opamp follower circuit that is limited by either a resistor, or diode (for source-/sink-only operation).
+
+  The target and sense signal should share a common reference ('zero') voltage, that is also the
+  reference fed into the following integrator stage.
+  When the measured signal is the same as the target, the sense input is equal-but-opposite from the
+  target signal (referenced to the common reference), so the divider output is at common.
+  Any deviation upsets this balance, which produces an error signal on the output.
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
@@ -53,6 +44,24 @@ class ErrorAmplifier(Block):
     self.target = self.Port(AnalogSink())
     self.actual = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
+    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+
+class SourceMeasureControl(Block):
+  """Analog feedback circuit for the source-measure unit
+  """
+  def __init__(self):
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+    self.ref_center = self.Port(AnalogSink())
+
+    self.control_voltage = self.Port(AnalogSink())
+    self.control_current_source = self.Port(AnalogSink())
+    self.control_current_sink = self.Port(AnalogSink())
+    self.measured_voltage = self.Port(AnalogSource())
+    self.measured_current = self.Port(AnalogSource())
     # TODO ADD PARAMETERS, IMPLEMENT ME
 
 
