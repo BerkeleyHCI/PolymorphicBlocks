@@ -68,7 +68,20 @@ class MlccTable(DigikeyTable):
     )
 
 
-class SmtCeramicCapacitor(TableDeratingCapacitor, FootprintBlock, GeneratorBlock):
+class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
+  DERATE_VOLTCO = {  # in terms of %capacitance / V over 3.6
+    #  'Capacitor_SMD:C_0603_1608Metric'  # not supported, should not generate below 1uF
+    'Capacitor_SMD:C_0805_2012Metric': 0.08,
+    'Capacitor_SMD:C_1206_3216Metric': 0.04,
+  }
+  DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
+  DERATE_MIN_CAPACITANCE = 1.0e-6
+  DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+  PARALLEL_COUNT = PartsTableColumn(int)
+  PARALLEL_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
+  PARALLEL_COST = PartsTableColumn(float)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -94,22 +107,36 @@ class SmtCeramicCapacitor(TableDeratingCapacitor, FootprintBlock, GeneratorBlock
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltered_parts = MlccTable.table().filter(lambda row: (
-        (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
-        (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
-        voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
-        Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
+            (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
+            (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
+            voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
+            Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
     ))
+
+    def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
+        derated = row[MlccTable.CAPACITANCE]
+      elif row[MlccTable.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
+        derated = row[MlccTable.CAPACITANCE]
+      elif row[MlccTable.FOOTPRINT] not in self.DERATE_VOLTCO:  # should be rare, small capacitors should hit the above
+        return None
+      else:  # actually derate
+        voltco = self.DERATE_VOLTCO[row[MlccTable.FOOTPRINT]]
+        factor = 1 - voltco * (voltage.upper - 3.6)
+        derated = row[MlccTable.CAPACITANCE] * Range(factor, 1)
+
+      return {self.DERATED_CAPACITANCE: derated}
 
     # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
     # An empty parts table handles the case where it's below the minimum or does not match within a series.
     derated_parts = prefiltered_parts.map_new_columns(
-      super().derate_row
+      derate_row
     )
     derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
     if capacitance.lower <= derated_max_min_capacitance:
       part = derated_parts.filter(lambda row: (
-          row[self.DERATED_CAPACITANCE] in capacitance
+              row[self.DERATED_CAPACITANCE] in capacitance
       )).first(f"no single capacitor in {capacitance} F, {voltage} V")
 
       self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
@@ -128,12 +155,25 @@ class SmtCeramicCapacitor(TableDeratingCapacitor, FootprintBlock, GeneratorBlock
       )
     else:  # Otherwise, generate multiple capacitors
       # Additionally annotate the table by total cost and count, sort by lower count then total cost
+      def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+        new_cols: Dict[PartsTableColumn, Any] = {}
+        count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
+        derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
+        if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec
+          return None
+
+        new_cols[self.PARALLEL_COUNT] = count
+        new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
+        new_cols[self.PARALLEL_CAPACITANCE] = row[MlccTable.CAPACITANCE] * count
+        new_cols[self.PARALLEL_COST] = row[MlccTable.COST] * count
+
+        return new_cols
 
       part = derated_parts.map_new_columns(
-        super().parallel_row
+        parallel_row
       ).sort_by(lambda row:
-        (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
-      ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
+                (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
+                ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
       self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
       self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])

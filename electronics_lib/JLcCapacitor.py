@@ -1,7 +1,4 @@
-from typing import Optional
-from electronics_abstract_parts import *
 from .JLcTable import *
-from .TableDeratingCapacitor import TableDeratingCapacitor
 from .PassiveCapacitor import *
 
 class JLcCapacitorTable(JLcTable):
@@ -47,6 +44,7 @@ class JLcCapacitorTable(JLcTable):
           ]:
             return None
 
+          #Used in defining the footprint
           new_cols['Capacitance'] = extracted_values['nominal_capacitance']
           new_cols['Voltage - Rated'] = extracted_values['voltage']
 
@@ -73,80 +71,8 @@ class JLcCapacitorTable(JLcTable):
       lambda row: [row[cls.FOOTPRINT], row[cls.COST]]
     )
 
+
 class JLcCapacitor(TableDeratingCapacitor, FootprintBlock, GeneratorBlock):
+  _TABLE = JLcCapacitorTable
 
-    @init_in_parent
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        self.part_spec = self.Parameter(StringExpr(""))
-        self.footprint_spec = self.Parameter(StringExpr(""))
-
-        # Default that can be overridden
-        self.single_nominal_capacitance = self.Parameter(RangeExpr((0, 22)*uFarad))  # maximum capacitance in a single part
-
-        self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
-                       self.part_spec, self.footprint_spec)
-
-        # Output values
-        self.selected_capacitance = self.Parameter(RangeExpr())
-        self.selected_derated_capacitance = self.Parameter(RangeExpr())
-        self.selected_voltage_rating = self.Parameter(RangeExpr())
-
-    def select_capacitor(self, capacitance: Range, voltage: Range,
-                         single_nominal_capacitance: Range,
-                         part_spec: str, footprint_spec: str) -> None:
-        # Pre-filter out by the static parameters
-        # Note that we can't filter out capacitance before derating
-        prefiltered_parts = JLcCapacitorTable.table().filter(lambda row: (
-            (not part_spec or part_spec == row[JLcCapacitorTable.PART_NUMBER]) and
-            (not footprint_spec or footprint_spec == row[JLcCapacitorTable.FOOTPRINT]) and
-            voltage.fuzzy_in(row[JLcCapacitorTable.VOLTAGE_RATING]) and
-            Range.exact(row[JLcCapacitorTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
-        ))
-
-        derated_parts = prefiltered_parts.map_new_columns(
-            super().derate_row(JLcCapacitorTable)
-        )
-        derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
-
-        if capacitance.lower <= derated_max_min_capacitance:
-            part = derated_parts.filter(lambda row: (
-                    row[self.DERATED_CAPACITANCE] in capacitance
-            )).first(f"no single capacitor in {capacitance} F, {voltage} V")
-
-            self.assign(self.selected_voltage_rating, part[JLcCapacitorTable.VOLTAGE_RATING])
-            self.assign(self.selected_capacitance, part[JLcCapacitorTable.CAPACITANCE])
-            self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
-
-            self.footprint(
-                'C', part[MlccTable.FOOTPRINT],
-                {
-                    '1': self.pos,
-                    '2': self.neg,
-                },
-                mfr=part[JLcCapacitorTable.MANUFACTURER], part=part[JLcCapacitorTable.PART_NUMBER],
-                value=f"{part[JLcCapacitorTable.DESCRIPTION]}",
-                datasheet=part[JLcCapacitorTable.DATASHEETS]
-            )
-        else:
-            part = derated_parts.map_new_columns(
-                super().parallel_row(JLcCapacitorTable)
-            ).sort_by(lambda row:
-                (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
-            ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
-
-            self.assign(self.selected_voltage_rating, part[JLcCapacitorTable.VOLTAGE_RATING])
-            self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
-            self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
-
-            cap_model = DummyCapacitor(capacitance=part[JLcCapacitorTable.NOMINAL_CAPACITANCE],
-                                       voltage=self.voltage,
-                                       footprint=part[JLcCapacitorTable.FOOTPRINT],
-                                       manufacturer=part[JLcCapacitorTable.MANUFACTURER], part_number=part[JLcCapacitorTable.PART_NUMBER],
-                                       value=f"{part['Capacitance']}, {part['Voltage - Rated']}")
-            self.c = ElementDict[DummyCapacitor]()
-            for i in range(part[self.PARALLEL_COUNT]):
-                self.c[i] = self.Block(cap_model)
-                self.connect(self.c[i].pos, self.pos)
-                self.connect(self.c[i].neg, self.neg)
