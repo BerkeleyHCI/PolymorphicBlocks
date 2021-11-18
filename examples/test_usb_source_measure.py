@@ -1,7 +1,7 @@
 import unittest
 
-from ESeriesUtil import ESeriesRatioUtil
-from ResistiveDivider import DividerValues
+from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
+from electronics_abstract_parts.ResistiveDivider import DividerValues
 from edg import *
 
 
@@ -19,7 +19,7 @@ class GatedEmitterFollower(Block):
     # TODO ADD PARAMETERS, IMPLEMENT ME
 
 
-class ErrorAmplifier(Block):
+class ErrorAmplifier(GeneratorBlock):
   """Not really a general error amplifier circuit, but a subcircuit that performs that function in
   the context of this SMU analog feedback block.
 
@@ -36,7 +36,7 @@ class ErrorAmplifier(Block):
   """
   @init_in_parent
   def __init__(self, output_resistance: RangeLike = RangeExpr(), input_resistance: RangeLike = RangeExpr(),
-               diode: StringLike = ""):
+               diode_spec: StringLike = ""):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -49,16 +49,16 @@ class ErrorAmplifier(Block):
 
     self.output_resistance = self.Parameter(RangeExpr(output_resistance))
     self.input_resistance = self.Parameter(RangeExpr(input_resistance))
-    self.diode = self.Parameter(StringExpr(diode))
+    self.diode_spec = self.Parameter(StringExpr(diode_spec))
 
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.generate, self.output_resistance, self.input_resistance, self.diode,
+    self.generator(self.generate_amp, self.output_resistance, self.input_resistance, self.diode_spec,
                    self.series, self.tolerance)
 
-  def generate(self, output_resistance: Range, input_resistance: Range, diode: str,
-               series: int, tolerance: float) -> None:
+  def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
+                   series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
     top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
                                                                       4 * input_resistance))
@@ -82,23 +82,31 @@ class ErrorAmplifier(Block):
       impedance=1 / (1 / self.rtop.resistance + 1 / self.rbot.resistance)
     ), self.rtop.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
 
-    if not diode:
+    self.rout = self.Block(Resistor(
+      resistance=output_resistance
+    ))
+    if not diode_spec:
       resistor_output_port = self.amp.out
     else:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out
       ))
-      if diode == 'source':
-        self.connect(self.amp.out, self.diode.a)
-        resistor_output_port = self.diode.b
-      elif diode == 'sink':
-        self.connect(self.amp.out, self.diode.b)
-        resistor_output_port = self.diode.a
+      if diode_spec == 'source':
+        self.connect(self.amp.out, self.diode.anode.as_analog_sink(
+          impedance=self.rout.resistance + self.output.link().sink_impedance
+        ))
+        resistor_output_port = self.diode.cathode.as_analog_source(
+          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+        )
+      elif diode_spec == 'sink':
+        self.connect(self.amp.out, self.diode.cathode.as_analog_sink(
+          impedance=self.rout.resistance + self.output.link().sink_impedance
+        ))
+        resistor_output_port = self.diode.anode.as_analog_source(
+          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+        )
       else:
-        raise ValueError(f"invalid diode spec '{diode}', expected '', 'source', or 'sink'")
-    self.rout = self.Block(Resistor(
-      resistance=output_resistance
-    ))
+        raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     self.connect(resistor_output_port, self.rout.a)
     self.connect(self.output, self.rout.b.as_analog_source(
       impedance=self.rout.resistance
@@ -146,11 +154,10 @@ class UsbSourceMeasureTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
+      (self.reg_5v, self.reg_3v3), _ = self.chain(
         self.pwr_usb.pwr,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
@@ -177,6 +184,10 @@ class UsbSourceMeasureTest(BoardTop):
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
         ImplicitConnect(self.reg_3v3.gnd, [Common]),
     ) as imp:
+      # TODO check zener voltage is reasonable
+      self.led_3v3 = imp.Block(VoltageIndicatorLed())
+      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.5, 3.8)*Volt))
+
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
       self.connect(self.pd.vbus, self.pwr_usb.pwr)
