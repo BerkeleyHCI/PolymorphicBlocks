@@ -181,6 +181,8 @@ class SourceMeasureControl(Block):
                                                input_resistance=(10, 100)*kOhm,
                                                diode_spec='sink'))
       self.control_current_sink = self.Export(self.err_sink.target)
+      self.err_curr_merge = MergedAnalogSource.merge(self, self.err_source.output, self.err_sink.output)
+      self.err_merge = MergedAnalogSource.merge(self, self.err_volt.output, self.err_curr_merge.source)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr, [Power]),
@@ -194,7 +196,6 @@ class SourceMeasureControl(Block):
       self.connect(self.amp.output, self.driver.control)
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
-
 
 
 class UsbSourceMeasureTest(BoardTop):
@@ -299,8 +300,9 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.new_io(DigitalBidir),
                    self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
 
-    # TODO add analog feedback control chain
-    # TODO add power transistors and sensors
+      self.connect(self.mcu.new_io(DigitalBidir), self.control.high_en)
+      self.connect(self.mcu.new_io(DigitalBidir), self.control.low_en)
+
     # TODO add UI elements: output enable tactile switch + LCD + 4 directional buttons
 
     # TODO next revision: Blackberry trackball UI?
