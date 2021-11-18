@@ -305,6 +305,11 @@ class UsbSourceMeasureTest(BoardTop):
 
     # TODO add UI elements: output enable tactile switch + LCD + 4 directional buttons
 
+    self.outn = self.Block(BananaSafetyJack())
+    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
+    self.outp = self.Block(BananaSafetyJack())
+    self.connect(self.outp.port.as_voltage_sink(), self.control.out)
+
     # TODO next revision: Blackberry trackball UI?
 
     # TODO next revision: add high precision ADCs
@@ -334,6 +339,7 @@ class UsbSourceMeasureTest(BoardTop):
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
+        (BananaSafetyJack, Ct3151),
       ],
     )
 

@@ -33,7 +33,7 @@ class DigitalAnalogIsolatedSwitch(Block):
   Includes a ballasting resistor.
 
   The ports are not tagged with Input/Output/InOut, because of potential for confusion between
-  the digital side and teh analog side
+  the digital side and the analog side
   """
   def __init__(self) -> None:
     super().__init__()

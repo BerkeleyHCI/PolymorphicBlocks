@@ -32,6 +32,7 @@ from .Microcontroller_Nucleo32 import Nucleo_F303k8
 from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
 from .Fusb302b import Fusb302b
+from .Connector_Banana import Ct3151
 
 from .AdcSpi_Mcp3201 import Mcp3201
 from .DacSpi_Mcp4901 import Mcp4921
