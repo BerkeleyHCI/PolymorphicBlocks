@@ -24,6 +24,12 @@ class JLcTable(LazyTable):
       cls.COST: float(max(float_array)),
     }
 
+  #Used for extracting out component values
+  #from the "Description" column of JLCPCB_SMT_Parts_Library.csv
+  #Ex: Description => 1MΩ ±1% ±100ppm/℃ 0.25W 1206 Chip Resistor - Surface Mount ROHS
+  #resistance:  1MΩ
+  #resistance tolerance:  ±1%
+  #power dissipation:  0.25W
   @staticmethod
   def parse(discription, regex_dictionary):
     extraction_table = {}
