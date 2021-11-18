@@ -186,7 +186,7 @@ class UsbSourceMeasureTest(BoardTop):
     ) as imp:
       # TODO check zener voltage is reasonable
       self.led_3v3 = imp.Block(VoltageIndicatorLed())
-      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.5, 3.8)*Volt))
+      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.4, 3.8)*Volt))
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())

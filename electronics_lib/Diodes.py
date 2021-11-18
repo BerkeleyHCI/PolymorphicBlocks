@@ -152,7 +152,7 @@ class ZenerTable(BaseDiodeTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
 
         new_cols[cls.ZENER_VOLTAGE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Voltage - Zener (Nom) (Vz)'], 'V'),
