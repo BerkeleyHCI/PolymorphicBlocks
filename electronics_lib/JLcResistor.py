@@ -1,7 +1,7 @@
 from typing import Optional
-from .parse import parse
 from electronics_abstract_parts import *
 from .JLcTable import *
+from .JLcFootprint import JLcFootprint
 
 class JLcResistorTable(JLcTable):
   RESISTANCE = PartsTableColumn(Range)  
@@ -17,9 +17,9 @@ class JLcResistorTable(JLcTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     RESISTOR_MATCHES = {
-      'resistance': "\s?(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])\s",
-      'tolerance': "\s?([\u00B1]\d+(?:\.\d*)?%)\s",
-      'power': "\s?(\d+(?:\.\d*)?[GMkmunp]?W)\s",
+      'resistance': "(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])",
+      'tolerance': "([\u00B1]\d+(?:\.\d*)?%)",
+      'power': "(\d+(?:\.\d*)?[GMkmunp]?W)",
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -29,10 +29,9 @@ class JLcResistorTable(JLcTable):
           # handle the footprint first since this is the most likely to filter
           footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
           new_cols[cls.FOOTPRINT] = footprint
+          new_cols.update(cls._parse_jlcpcb_common(row))
 
-          extracted_values = parse(row['Description'], RESISTOR_MATCHES)
-          if (bool(extracted_values) == False):
-            return None
+          extracted_values = JLcTable.parse(row[JLcTable.DESCRIPTION], RESISTOR_MATCHES)
 
           new_cols[cls.RESISTANCE] = Range.from_tolerance(
             PartsTableUtil.parse_value(extracted_values['resistance'], 'Ω'),
@@ -40,7 +39,6 @@ class JLcResistorTable(JLcTable):
           )
 
           new_cols[cls.POWER_RATING] = Range.zero_to_upper(PartsTableUtil.parse_value(extracted_values['power'], 'W'))
-          new_cols.update(cls._parse_jlcpcb_common(row))
 
           return new_cols
         except (KeyError, PartsTableUtil.ParseError):
@@ -54,7 +52,7 @@ class JLcResistorTable(JLcTable):
     )
     
  
-class JLcResistor(Resistor, FootprintBlock, GeneratorBlock):
+class JLcResistor(Resistor, JLcFootprint, FootprintBlock, GeneratorBlock):
    @init_in_parent
    def __init__(self, **kwargs):
      super().__init__(**kwargs)
@@ -74,10 +72,11 @@ class JLcResistor(Resistor, FootprintBlock, GeneratorBlock):
          (not footprint_spec or footprint_spec == row[JLcResistorTable.FOOTPRINT]) and
          row[JLcResistorTable.RESISTANCE].fuzzy_in(resistance) and
          power_dissipation.fuzzy_in(row[JLcResistorTable.POWER_RATING])
-     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W, {[row.value['MFR.Part'] for row in JLcResistorTable.table().rows]}")
+     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
      self.assign(self.selected_resistance, part[JLcResistorTable.RESISTANCE])
      self.assign(self.selected_power, part[JLcResistorTable.POWER_RATING])
+     self.assign(self.lcsc_part, part[JLcTable.DISTRIBUTER_PART_NUMBER])
 
      self.footprint(
        'R', part[JLcResistorTable.FOOTPRINT],
@@ -86,6 +85,6 @@ class JLcResistor(Resistor, FootprintBlock, GeneratorBlock):
          '2': self.b,
        },
        mfr=part[JLcResistorTable.MANUFACTURER], part=part[JLcResistorTable.PART_NUMBER],
-       value=f"{part['Description']}",
+       value=f"{part[JLcTable.DESCRIPTION]}",
        datasheet=part[JLcResistorTable.DATASHEETS]
      )
