@@ -63,7 +63,8 @@ class ErrorAmplifier(GeneratorBlock):
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
     self.generator(self.generate_amp, self.output_resistance, self.input_resistance, self.diode_spec,
-                   self.series, self.tolerance)
+                   self.series, self.tolerance,
+                   targets=[self.target, self.actual, self.output])
 
   def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
                    series: int, tolerance: float) -> None:
@@ -134,9 +135,6 @@ class SourceMeasureControl(Block):
 
     self.out = self.Port(VoltageSource())
 
-    self.control_voltage = self.Port(AnalogSink())
-    self.control_current_source = self.Port(AnalogSink())
-    self.control_current_sink = self.Port(AnalogSink())
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
 
@@ -146,15 +144,15 @@ class SourceMeasureControl(Block):
     ) as imp:
       self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
                                                input_resistance=(10, 100)*kOhm))
-      self.connect(self.control_voltage, self.err_volt.target)
+      self.control_voltage = self.Export(self.err_volt.target)
       self.err_source = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
                                                  input_resistance=(10, 100)*kOhm,
                                                  diode_spec='source'))
-      self.connect(self.control_current_source, self.err_source.target)
+      self.control_current_source = self.Export(self.err_source.target)
       self.err_sink = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
                                                input_resistance=(10, 100)*kOhm,
                                                diode_spec='sink'))
-      self.connect(self.control_current_sink, self.err_sink.target)
+      self.control_current_sink = self.Export(self.err_sink.target)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr, [Power]),
