@@ -72,7 +72,7 @@ class VoltageIndicatorLed(Light):
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.signal = self.Port(VoltageSink(), [InOut])  # TODO should this be Power instead?
+    self.signal = self.Port(VoltageSink(), [Power, InOut])
     self.gnd = self.Port(Ground(), [Common])
 
     self.require(self.signal.current_draw.within(current_draw))
