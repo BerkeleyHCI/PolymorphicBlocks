@@ -21,10 +21,38 @@ class GatedEmitterFollower(Block):
     self.gnd = self.Port(Ground(), [Common])
     self.out = self.Port(VoltageSource())
 
-    self.high = self.Port(AnalogSink())
+    self.control = self.Port(AnalogSink())
     self.high_en = self.Port(DigitalSink())
-    self.low = self.Port(AnalogSink())
     self.low_en = self.Port(DigitalSink())
+
+    self.high_fet = self.Block(NFet())
+    self.low_fet = self.Block(PFet())
+
+    self.connect(self.pwr, self.high_fet.drain.as_voltage_sink())
+    self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
+    output_driver = self.high_fet.source.as_voltage_source()
+    self.connect(output_driver, self.low_fet.source.as_voltage_sink(),
+                 self.out)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.high_gate = imp.Block(DigitalAnalogIsolatedSwitch())
+      self.connect(self.high_en, self.high_gate.signal)
+      self.low_gate = imp.Block(DigitalAnalogIsolatedSwitch())
+      self.connect(self.low_en, self.low_gate.signal)
+
+      self.connect(self.control, self.high_gate.ain, self.low_gate.ain)
+
+      self.high_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
+      self.low_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
+
+      self.connect(self.high_gate.aout, self.high_res.a.as_analog_sink())
+      self.connect(self.low_gate.aout, self.low_res.a.as_analog_sink())
+      self.connect(self.high_res.b.as_analog_source(), self.high_gate.apull)
+      self.connect(self.low_res.b.as_analog_source(), self.low_gate.apull)
+      self.connect(output_driver.as_analog_source(),
+                   self.high_fet.gate.as_analog_sink(), self.low_fet.gate.as_analog_sink())
 
 
 class ErrorAmplifier(GeneratorBlock):
@@ -129,7 +157,7 @@ class SourceMeasureControl(Block):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
-    self.pwr_logic = self.Port(VoltageSink(), [Power])
+    self.pwr_logic = self.Port(VoltageSink())
     self.gnd = self.Port(Ground(), [Common])
     self.ref_center = self.Port(AnalogSink())
 
@@ -163,7 +191,7 @@ class SourceMeasureControl(Block):
 
       self.driver = imp.Block(GatedEmitterFollower())
       self.connect(self.out, self.driver.out)  # TODO insert current sense
-      self.connect(self.amp.output, self.driver.high, self.driver.low)
+      self.connect(self.amp.output, self.driver.control)
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
 
@@ -216,6 +244,7 @@ class UsbSourceMeasureTest(BoardTop):
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl())
+      self.connect(self.control.pwr_logic, self.reg_3v3.pwr_out)
       self.connect(self.control.ref_center, self.ref_div.output)
 
     with self.implicit_connect(
@@ -302,6 +331,7 @@ class UsbSourceMeasureTest(BoardTop):
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
+        (SolidStateRelay, G3VM_61GR2),
       ],
     )
 
