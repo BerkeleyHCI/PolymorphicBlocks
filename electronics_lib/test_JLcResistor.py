@@ -16,7 +16,6 @@ class JLcResistorTestTop(Block):
 
 class JLcResistorTestCase(unittest.TestCase):
   def test_resistor(self) -> None:
-    #test = JLcResistorTestTop
     compiled = ScalaCompiler.compile(JLcResistorTestTop)
 
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
