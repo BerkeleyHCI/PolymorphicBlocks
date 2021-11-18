@@ -29,7 +29,6 @@ class OpampFollower(AnalogFilter):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
@@ -83,7 +82,6 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-
     self.pwr = self.Export(self.amp.pwr, [Power])
     # self.gnd = self.Export(self.amp.gnd, [Common])  # TODO generators should be able to append to nets
     self.gnd = self.Port(Ground(), [Common])
@@ -98,8 +96,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance,
-                   targets=[self.gnd])
+    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance)
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
@@ -174,7 +171,6 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
@@ -283,7 +279,6 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 

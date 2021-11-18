@@ -1,5 +1,7 @@
 import unittest
 
+from ESeriesUtil import ESeriesRatioUtil
+from ResistiveDivider import DividerValues
 from edg import *
 
 
@@ -33,18 +35,74 @@ class ErrorAmplifier(Block):
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr(), diode: StringLike = ""):
+  def __init__(self, output_resistance: RangeLike = RangeExpr(), input_resistance: RangeLike = RangeExpr(),
+               diode: StringLike = ""):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
     self.target = self.Port(AnalogSink())
     self.actual = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
-    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+    self.output_resistance = self.Parameter(RangeExpr(output_resistance))
+    self.input_resistance = self.Parameter(RangeExpr(input_resistance))
+    self.diode = self.Parameter(StringExpr(diode))
+
+    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+
+    self.generator(self.generate, self.output_resistance, self.input_resistance, self.diode,
+                   self.series, self.tolerance)
+
+  def generate(self, output_resistance: Range, input_resistance: Range, diode: str,
+               series: int, tolerance: float) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
+                                                                      4 * input_resistance))
+    # the 4x factor is a way to specify the series resistance of the divider assuming both resistors are equal,
+    # since the DividerValues util only takes the parallel resistance
+
+    self.rtop = self.Block(Resistor(
+      resistance=Range.from_tolerance(top_resistance, tolerance)
+    ))
+    self.rbot = self.Block(Resistor(
+      resistance=Range.from_tolerance(bottom_resistance, tolerance)
+    ))
+    self.connect(self.target, self.rtop.a.as_analog_sink(
+      impedance=self.rtop.resistance + self.rbot.resistance
+    ))
+    self.connect(self.actual, self.rbot.a.as_analog_sink(
+      impedance=self.rtop.resistance + self.rbot.resistance
+    ))
+    self.connect(self.amp.inp, self.rtop.b.as_analog_source(
+      voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
+      impedance=1 / (1 / self.rtop.resistance + 1 / self.rbot.resistance)
+    ), self.rtop.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
+
+    if not diode:
+      resistor_output_port = self.amp.out
+    else:
+      self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
+        reverse_voltage=self.amp.out.voltage_out
+      ))
+      if diode == 'source':
+        self.connect(self.amp.out, self.diode.a)
+        resistor_output_port = self.diode.b
+      elif diode == 'sink':
+        self.connect(self.amp.out, self.diode.b)
+        resistor_output_port = self.diode.a
+      else:
+        raise ValueError(f"invalid diode spec '{diode}', expected '', 'source', or 'sink'")
+    self.rout = self.Block(Resistor(
+      resistance=output_resistance
+    ))
+    self.connect(resistor_output_port, self.rout.a)
+    self.connect(self.output, self.rout.b.as_analog_source(
+      impedance=self.rout.resistance
+    ), self.amp.inn)
 
 
 class SourceMeasureControl(Block):
