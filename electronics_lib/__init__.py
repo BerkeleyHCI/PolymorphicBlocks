@@ -11,6 +11,8 @@ from .Switches import SmtSwitch, SmtSwitchRa
 from .Crystals import OscillatorCrystal, SmdCrystal
 from .Speakers import Speaker, Lm4871
 from .Opamp_Mcp6001 import Mcp6001
+from .Opamp_Tlv9061 import Tlv9061
+from .Opamp_Opa197 import Opa197
 
 from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader,\
   SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl

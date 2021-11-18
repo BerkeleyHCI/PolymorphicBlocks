@@ -16,7 +16,15 @@ class GatedEmitterFollower(Block):
   """
   def __init__(self):
     super().__init__()
-    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+    self.out = self.Port(VoltageSource())
+
+    self.high = self.Port(AnalogSink())
+    self.high_en = self.Port(DigitalSink())
+    self.low = self.Port(AnalogSink())
+    self.low_en = self.Port(DigitalSink())
 
 
 class ErrorAmplifier(GeneratorBlock):
@@ -80,7 +88,7 @@ class ErrorAmplifier(GeneratorBlock):
     self.connect(self.amp.inp, self.rtop.b.as_analog_source(
       voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
       impedance=1 / (1 / self.rtop.resistance + 1 / self.rbot.resistance)
-    ), self.rtop.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
+    ), self.rbot.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
 
     self.rout = self.Block(Resistor(
       resistance=output_resistance
@@ -107,7 +115,7 @@ class ErrorAmplifier(GeneratorBlock):
         )
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
-    self.connect(resistor_output_port, self.rout.a)
+    self.connect(resistor_output_port, self.rout.a.as_analog_sink())
     self.connect(self.output, self.rout.b.as_analog_source(
       impedance=self.rout.resistance
     ), self.amp.inn)
@@ -120,15 +128,47 @@ class SourceMeasureControl(Block):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
+    self.pwr_logic = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.ref_center = self.Port(AnalogSink())
+
+    self.out = self.Port(VoltageSource())
 
     self.control_voltage = self.Port(AnalogSink())
     self.control_current_source = self.Port(AnalogSink())
     self.control_current_sink = self.Port(AnalogSink())
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
-    # TODO ADD PARAMETERS, IMPLEMENT ME
+
+    with self.implicit_connect(
+            ImplicitConnect(self.pwr_logic, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
+                                               input_resistance=(10, 100)*kOhm))
+      self.connect(self.control_voltage, self.err_volt.target)
+      self.err_source = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
+                                                 input_resistance=(10, 100)*kOhm,
+                                                 diode_spec='source'))
+      self.connect(self.control_current_source, self.err_source.target)
+      self.err_sink = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
+                                               input_resistance=(10, 100)*kOhm,
+                                               diode_spec='sink'))
+      self.connect(self.control_current_sink, self.err_sink.target)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.pwr, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.amp = imp.Block(Amplifier(amplification=Range.from_tolerance(20, 0.05),
+                                     impedance=(1, 10)*kOhm))
+
+      self.driver = imp.Block(GatedEmitterFollower())
+      self.connect(self.out, self.driver.out)  # TODO insert current sense
+      self.connect(self.amp.output, self.driver.high, self.driver.low)
+      self.high_en = self.Export(self.driver.high_en)
+      self.low_en = self.Export(self.driver.low_en)
+
 
 
 class UsbSourceMeasureTest(BoardTop):
@@ -252,6 +292,7 @@ class UsbSourceMeasureTest(BoardTop):
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ld1117),
         (['reg_analog'], Ld1117),
+        (['control', 'amp', 'amp'], Opa197),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -262,6 +303,7 @@ class UsbSourceMeasureTest(BoardTop):
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (Opamp, Tlv9061),  # higher precision opamps
       ],
     )
 
