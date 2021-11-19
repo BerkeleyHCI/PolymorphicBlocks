@@ -20,6 +20,7 @@ class BaseFetTable(DigikeyTable):
     'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
     'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
+    'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
   }
 
   @classmethod
@@ -44,6 +45,13 @@ class BaseFetTable(DigikeyTable):
         '1': gate,
         '2': drain,
         '3': source,
+      },
+      'Package_SO:PowerPAK_SO-8_Single': {
+        '1': source,
+        '2': source,
+        '3': source,
+        '4': gate,
+        '5': drain,
       },
     }[footprint]
 

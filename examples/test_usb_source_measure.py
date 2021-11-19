@@ -184,18 +184,24 @@ class SourceMeasureControl(Block):
       self.err_curr_merge = MergedAnalogSource.merge(self, self.err_source.output, self.err_sink.output)
       self.err_merge = MergedAnalogSource.merge(self, self.err_volt.output, self.err_curr_merge.source)
 
+      self.int = imp.Block(IntegratorInverting(
+        factor=Range.from_tolerance(1/(4.7e-6), 0.05),
+        capacitance=1*nFarad(tol=0.2)))
+      self.connect(self.err_merge.source, self.int.input)
+
     with self.implicit_connect(
             ImplicitConnect(self.pwr, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.amp = imp.Block(Amplifier(amplification=Range.from_tolerance(20, 0.05),
                                      impedance=(1, 10)*kOhm))
+      self.connect(self.int.output, self.amp.input)
 
       self.driver = imp.Block(GatedEmitterFollower())
-      self.connect(self.out, self.driver.out)  # TODO insert current sense
       self.connect(self.amp.output, self.driver.control)
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
+      self.connect(self.out, self.driver.out)  # TODO insert current sense
 
 
 class UsbSourceMeasureTest(BoardTop):
@@ -321,6 +327,8 @@ class UsbSourceMeasureTest(BoardTop):
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
+    # BJT options (>30v, 5A, maximum hFE to minimize drive current, SMD):
+    #
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Tps54202h),
@@ -334,6 +342,9 @@ class UsbSourceMeasureTest(BoardTop):
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
+        # TODO support custom part numbers in filters
+        (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),
+        (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
