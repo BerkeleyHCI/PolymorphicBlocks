@@ -55,10 +55,12 @@ class UsbCReceptacle(UsbConnector, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      'J', 'calisco:USB_C_Receptacle_BSC_A40-00119',
+      'J', 'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11',
       {
-        'A1B12': self.gnd,
-        'A4B9': self.pwr,
+        'A1': self.gnd,
+        'B12': self.gnd,
+        'A4': self.pwr,
+        'B9': self.pwr,
 
         'A5': self.cc.cc1,
         'A6': self.usb.dp,
@@ -70,10 +72,12 @@ class UsbCReceptacle(UsbConnector, FootprintBlock):
         'B6': self.usb.dp,
         'B5': self.cc.cc2,
 
-        'B4A9': self.pwr,
-        'B1A12': self.gnd,
+        'B4': self.pwr,
+        'A9': self.pwr,
+        'B1': self.gnd,
+        'A12': self.gnd,
 
-        'S': self.shield,
+        'S1': self.shield,
       },
       mfr='Sparkfun', part='COM-15111',
       datasheet='https://cdn.sparkfun.com/assets/8/6/b/4/5/A40-00119-A52-12.pdf'

@@ -103,7 +103,7 @@ class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
     super().contents()
 
     self.footprint(
-      'J', 'calisco:PinHeader_2x05_P1.27mm_Horizontal_Shrouded',  # TODO: maybe add PTH variant?
+      'J', 'edg:PinHeader_2x05_P1.27mm_Horizontal_Shrouded',
       {
         '1': self.pwr,
         '2': self.swd.swdio,

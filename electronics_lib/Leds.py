@@ -93,12 +93,12 @@ class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      'D', 'calisco:LED_RGB_0606',
-      {  # ABGR configuration
-        '1': self.a,
-        '2': self.k_blue,
-        '3': self.k_green,
-        '4': self.k_red,
+      'D', 'LED_SMD:LED_LiteOn_LTST-C19HE1WT',
+      {  # ABGR configuration - also pins 1/2 and 3/4 are swapped on this pattern
+        '2': self.a,
+        '1': self.k_blue,
+        '4': self.k_green,
+        '3': self.k_red,
       },
       mfr='Everlight Electronics Co Ltd', part='EAST1616RGBB2'
     )
