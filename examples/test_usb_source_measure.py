@@ -343,10 +343,10 @@ class UsbSourceMeasureTest(BoardTop):
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
         # TODO support custom part numbers in filters
-        (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),
-        # NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),
-        # PNP BJT option: PHPT60410PYX
+        (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),  # NPN BJT option: PHPT60410NYX
+        (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),  # PNP BJT option: PHPT60410PYX
+        # TODO debug impedance for integrator
+        (['control', 'int', 'input', 'impedance'], RangeExpr.INF),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
