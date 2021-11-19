@@ -64,7 +64,7 @@ class DiodeTable(BaseDiodeTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
 
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - DC Reverse (Vr) (Max)'], 'V')

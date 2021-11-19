@@ -37,13 +37,13 @@ class GatedEmitterFollower(Block):
                                     drain_current=self.current,
                                     gate_voltage=self.control.link().voltage,
                                     rds_on=self.rds_on,
-                                    gate_charge=RangeExpr.INF,  # don't care, it's analog not switching
+                                    gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
                                     power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(PFet(drain_voltage=self.pwr.link().voltage,
                                    drain_current=self.current,
                                    gate_voltage=self.control.link().voltage,
                                    rds_on=self.rds_on,
-                                   gate_charge=RangeExpr.INF,  # don't care, it's analog not switching
+                                   gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
                                    power=self.pwr.link().voltage * self.current))
 
     self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
@@ -271,7 +271,8 @@ class UsbSourceMeasureTest(BoardTop):
     super().contents()
 
     # USB PD port that supplies power to the load
-    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 21)*Volt, current_limits=(0, 5)*Amp))
+    # TODO the transistor is only rated at Vgs=+/-20V
+    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
 
     # Data-only USB port, for example to connect to a computer that can't source USB PD
     # so the PD port can be connected to a dedicated power brick.
@@ -317,7 +318,7 @@ class UsbSourceMeasureTest(BoardTop):
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
         current=(0, 3)*Amp,
-        rds_on=(0, 0.1)*Ohm
+        rds_on=(0, 0.2)*Ohm
       ))
       self.connect(self.control.pwr_logic, self.reg_3v3.pwr_out)
       self.connect(self.control.ref_center, self.ref_buf.output)
@@ -408,9 +409,12 @@ class UsbSourceMeasureTest(BoardTop):
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
-        # TODO support custom part numbers in filters
-        (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),  # NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),  # PNP BJT option: PHPT60410PYX
+        # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
+        # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         # TODO debug impedance for integrator
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),
       ],

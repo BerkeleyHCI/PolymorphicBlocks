@@ -17,7 +17,7 @@ class Opa197_Device(DiscreteChip, FootprintBlock):
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(AnalogSource(
-      (0.125, self.vcc.link().voltage.lower() - 0.125),  # assuming a 10k load
+      (0.125, self.vcc.link().voltage.upper() - 0.125),  # assuming a 10k load
       current_limits=(-65, 65)*mAmp,  # for +/-18V supply
       impedance=375*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))
