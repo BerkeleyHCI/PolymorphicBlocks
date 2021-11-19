@@ -191,7 +191,7 @@ class SourceMeasureControl(Block):
       self.int = imp.Block(IntegratorInverting(
         factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
         capacitance=1*nFarad(tol=0.15)))
-      self.connect(self.err_merge.source, self.int.input)
+      self.int_link = self.connect(self.err_merge.source, self.int.input)  # to support impedance check waive
       self.connect(self.ref_center, self.int.reference)
 
     with self.implicit_connect(
@@ -258,10 +258,11 @@ class UsbSourceMeasureTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3), _ = self.chain(
+      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.pwr_usb.pwr,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(VoltageIndicatorLed())
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
@@ -272,10 +273,12 @@ class UsbSourceMeasureTest(BoardTop):
       )
       self.vref = self.connect(self.reg_analog.pwr_out)
 
-      (self.ref_div, ), _ = self.chain(
+      (self.ref_div, self.ref_buf), _ = self.chain(
         self.reg_analog.pwr_out,
-        imp.Block(VoltageDivider(output_voltage=1.25*Volt(tol=0.05), impedance=(10, 100)*kOhm))
+        imp.Block(VoltageDivider(output_voltage=1.25*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        imp.Block(OpampFollower())
       )
+      self.connect(self.ref_buf.pwr, self.reg_analog.pwr_out)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
@@ -283,14 +286,13 @@ class UsbSourceMeasureTest(BoardTop):
     ) as imp:
       self.control = imp.Block(SourceMeasureControl())
       self.connect(self.control.pwr_logic, self.reg_3v3.pwr_out)
-      self.connect(self.control.ref_center, self.ref_div.output)
+      self.connect(self.control.ref_center, self.ref_buf.output)
 
     with self.implicit_connect(
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
         ImplicitConnect(self.reg_3v3.gnd, [Common]),
     ) as imp:
       # TODO check zener voltage is reasonable
-      self.led_3v3 = imp.Block(VoltageIndicatorLed())
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.4, 3.8)*Volt))
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
@@ -377,7 +379,7 @@ class UsbSourceMeasureTest(BoardTop):
         (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),  # NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),  # PNP BJT option: PHPT60410PYX
         # TODO debug impedance for integrator
-        (['control', 'int', 'input', 'impedance'], RangeExpr.INF),
+        (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

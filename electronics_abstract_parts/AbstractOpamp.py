@@ -188,7 +188,8 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance)
+    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance,
+                   targets=[self.input_positive, self.input_negative, self.output_reference])
 
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
