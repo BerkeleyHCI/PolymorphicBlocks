@@ -41,6 +41,7 @@ class AmplifierTestTop(Block):
       amplification=Range.from_tolerance(2, 0.05)
     ))
     (self.dummyin, ), _ = self.chain(self.dut.input, self.Block(AnalogSourceDummy()))
+    (self.dummyref, ), _ = self.chain(self.dut.reference, self.Block(AnalogSourceDummy()))
     (self.dummyout, ), _ = self.chain(self.dut.output, self.Block(AnalogSinkDummy()))
     (self.dummypwr, ), _ = self.chain(self.dut.pwr, self.Block(VoltageDummy()))
     (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(VoltageDummy()))

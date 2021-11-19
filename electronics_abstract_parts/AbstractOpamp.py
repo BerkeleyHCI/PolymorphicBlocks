@@ -94,7 +94,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance)
+    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance,
+                   targets=[self.reference])
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
