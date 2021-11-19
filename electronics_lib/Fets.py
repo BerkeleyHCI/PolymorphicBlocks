@@ -119,13 +119,6 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_drain_current_rating = self.Parameter(RangeExpr())
-    self.selected_gate_drive = self.Parameter(RangeExpr())
-    self.selected_power_rating = self.Parameter(RangeExpr())
-    self.selected_rds_on = self.Parameter(RangeExpr())
-    self.selected_gate_charge = self.Parameter(RangeExpr())
-
     self.generator(self.select_part,
                    self.drain_voltage, self.drain_current,
                    self.gate_voltage, self.rds_on, self.gate_charge, self.power)
@@ -177,12 +170,6 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_drain_current_rating = self.Parameter(RangeExpr())
-    self.selected_gate_drive = self.Parameter(RangeExpr())
-    self.selected_power_rating = self.Parameter(RangeExpr())
-    self.selected_rds_on = self.Parameter(RangeExpr())
-    self.selected_gate_charge = self.Parameter(RangeExpr())
 
     self.selected_static_power = self.Parameter(RangeExpr())
     self.selected_switching_power = self.Parameter(RangeExpr())

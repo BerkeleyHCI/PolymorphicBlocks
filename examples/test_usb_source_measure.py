@@ -15,7 +15,8 @@ class GatedEmitterFollower(Block):
   After the output stabilizes, both transistors can be enabled (if desired), to run under the
   analog feedback circuit.
   """
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -26,18 +27,39 @@ class GatedEmitterFollower(Block):
     self.high_en = self.Port(DigitalSink())
     self.low_en = self.Port(DigitalSink())
 
+    self.current = self.Parameter(RangeExpr(current))
+    self.rds_on = self.Parameter(RangeExpr(rds_on))
+
   def contents(self) -> None:
     super().contents()
 
-    self.high_fet = self.Block(NFet())
-    self.low_fet = self.Block(PFet())
+    self.high_fet = self.Block(NFet(drain_voltage=self.pwr.link().voltage,
+                                    drain_current=self.current,
+                                    gate_voltage=self.control.link().voltage,
+                                    rds_on=self.rds_on,
+                                    gate_charge=RangeExpr.INF,  # don't care, it's analog not switching
+                                    power=self.pwr.link().voltage * self.current))
+    self.low_fet = self.Block(PFet(drain_voltage=self.pwr.link().voltage,
+                                   drain_current=self.current,
+                                   gate_voltage=self.control.link().voltage,
+                                   rds_on=self.rds_on,
+                                   gate_charge=RangeExpr.INF,  # don't care, it's analog not switching
+                                   power=self.pwr.link().voltage * self.current))
 
-    self.connect(self.pwr, self.high_fet.drain.as_voltage_sink())
+    self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
+      current_draw=self.current,
+      voltage_limits=self.high_fet.selected_drain_voltage_rating.intersect(
+        self.low_fet.selected_drain_voltage_rating)
+    ))
     self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
-    output_driver = self.high_fet.source.as_voltage_source()
+    output_driver = self.high_fet.source.as_voltage_source(
+      voltage_out=self.pwr.link().voltage,
+      current_limits=self.current
+    )
     self.connect(output_driver, self.low_fet.source.as_voltage_sink(),
                  self.out)
 
+    # TODO all the analog parameter modeling
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
@@ -130,7 +152,10 @@ class ErrorAmplifier(GeneratorBlock):
       resistor_output_port = self.amp.out
     else:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
-        reverse_voltage=self.amp.out.voltage_out
+        reverse_voltage=self.amp.out.voltage_out,
+        current=RangeExpr.ZERO,  # an approximation, current rating not significant here
+        voltage_drop=(0, 0.5)*Volt,  # arbitrary low threshold
+        reverse_recovery_time=(0, 500)*nSecond  # arbitrary for "fast recovery"
       ))
       if diode_spec == 'source':
         self.connect(self.amp.out, self.diode.anode.as_analog_sink(
@@ -157,7 +182,8 @@ class ErrorAmplifier(GeneratorBlock):
 class SourceMeasureControl(Block):
   """Analog feedback circuit for the source-measure unit
   """
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -169,6 +195,9 @@ class SourceMeasureControl(Block):
 
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
+
+    self.current = self.Parameter(RangeExpr(current))
+    self.rds_on = self.Parameter(RangeExpr(rds_on))
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr_logic, [Power]),
@@ -203,14 +232,16 @@ class SourceMeasureControl(Block):
       self.connect(self.int.output, self.amp.input)
       self.connect(self.ref_center, self.amp.reference)
 
-      self.driver = imp.Block(GatedEmitterFollower())
+      self.driver = imp.Block(GatedEmitterFollower(
+        current=self.current, rds_on=self.rds_on
+      ))
       self.connect(self.amp.output, self.driver.control)
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
 
       (self.isen, ), _ = self.chain(
         self.driver.out,
-        imp.Block(CurrentSenseResistor(resistance=0.1*Ohm(tol=0.01), current_limits=(0, 3)*Amp)),
+        imp.Block(CurrentSenseResistor(resistance=0.1*Ohm(tol=0.01), current_limits=self.current)),
         self.out)
       self.imeas = imp.Block(DifferentialAmplifier(
         ratio=Range.from_tolerance(1, 0.05),
@@ -284,7 +315,10 @@ class UsbSourceMeasureTest(BoardTop):
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
-      self.control = imp.Block(SourceMeasureControl())
+      self.control = imp.Block(SourceMeasureControl(
+        current=(0, 3)*Amp,
+        rds_on=(0, 0.1)*Ohm
+      ))
       self.connect(self.control.pwr_logic, self.reg_3v3.pwr_out)
       self.connect(self.control.ref_center, self.ref_buf.output)
 
@@ -292,8 +326,7 @@ class UsbSourceMeasureTest(BoardTop):
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
         ImplicitConnect(self.reg_3v3.gnd, [Common]),
     ) as imp:
-      # TODO check zener voltage is reasonable
-      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.4, 3.8)*Volt))
+      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
