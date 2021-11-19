@@ -127,16 +127,17 @@ class DifferentialValues(ESeriesRatioValue):
     self.input_impedance = input_impedance  # resistance of the input resistor
 
   @staticmethod
-  def from_resistors(r1_range: Range, r2_range: Range) -> 'AmplifierValues':
+  def from_resistors(r1_range: Range, r2_range: Range) -> 'DifferentialValues':
     """r1 is the input side resistance and r2 is the feedback or ground resistor."""
-    return AmplifierValues(
+    return DifferentialValues(
       (r2_range / r1_range),
       r1_range
     )
 
   def initial_test_decades(self) -> Tuple[int, int]:
-    decade = ceil(log10(self.input_impedance.center()))
-    return decade, decade
+    r1_decade = ceil(log10(self.input_impedance.center()))
+    r2_decade = ceil(log10((self.input_impedance * self.ratio).center()))
+    return r1_decade, r2_decade
 
   def distance_to(self, spec: 'DifferentialValues') -> List[float]:
     if self.ratio in spec.ratio and self.input_impedance in spec.input_impedance:
