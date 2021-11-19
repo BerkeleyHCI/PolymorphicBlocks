@@ -10,8 +10,6 @@ from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 class Opamp(Block):
   """Base class for opamps. Parameters need to be more restricted in subclasses.
   """
-
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
@@ -83,12 +81,12 @@ class Amplifier(AnalogFilter, GeneratorBlock):
 
     self.amp = self.Block(Opamp())
     self.pwr = self.Export(self.amp.pwr, [Power])
-    # self.gnd = self.Export(self.amp.gnd, [Common])  # TODO generators should be able to append to nets
-    self.gnd = self.Port(Ground(), [Common])
+    self.gnd = self.Export(self.amp.gnd, [Common])
 
     self.input = self.Export(self.amp.inp, [Input])
     # self.output = self.Export(self.amp.out, [Output])
     self.output = self.Port(AnalogSource(), [Output])
+    self.reference = self.Port(AnalogSink())
 
     self.amplification = self.Parameter(RangeExpr(amplification))
     self.impedance = self.Parameter(RangeExpr(impedance))
@@ -117,7 +115,9 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     ), self.r2.a.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inn)
-    self.connect(self.gnd, self.amp.gnd, self.r2.b.as_ground())
+    self.connect(self.reference, self.r2.b.as_analog_sink(
+      impedance=self.r1.resistance + self.r2.resistance
+    ))
 
 
 class DifferentialValues(ESeriesRatioValue):
@@ -167,6 +167,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
 
   ratio specifies Rf/R1, the amplification ratio.
   """
+  @init_in_parent
   def __init__(self, ratio: RangeLike = RangeExpr(), input_impedance: RangeLike = RangeExpr()):
     super().__init__()
 
@@ -275,6 +276,7 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
   Vout = - 1/RC * int(Vin) (integrating over time)
   """
+  @init_in_parent
   def __init__(self, factor: RangeLike = RangeExpr(), capacitance: RangeLike = RangeExpr()):
     super().__init__()
 
@@ -289,10 +291,13 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     self.factor = self.Parameter(RangeExpr(factor))
     self.capacitance = self.Parameter(RangeExpr(capacitance))
 
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
+    # Series is lower and tolerance is higher because there's a cap involved
+    # TODO separate tolerances and series by decade, and for the cap
+    self.series = self.Parameter(IntExpr(6))  # can be overridden by refinements
+    self.tolerance = self.Parameter(FloatExpr(0.05))  # can be overridden by refinements
 
-    self.generator(self.generate_components, self.factor, self.capacitance, self.series, self.tolerance)
+    self.generator(self.generate_components, self.factor, self.capacitance, self.series, self.tolerance,
+                   targets=[self.input])
 
   def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
@@ -302,7 +307,8 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
       resistance=Range.from_tolerance(sel_resistance, tolerance)
     ))
     self.c = self.Block(Capacitor(
-      capacitance=Range.from_tolerance(sel_capacitance, tolerance)
+      capacitance=Range.from_tolerance(sel_capacitance, tolerance),
+      voltage=self.output.link().voltage
     ))
 
     self.connect(self.input, self.r.a.as_analog_sink(

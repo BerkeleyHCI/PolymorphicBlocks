@@ -185,9 +185,10 @@ class SourceMeasureControl(Block):
       self.err_merge = MergedAnalogSource.merge(self, self.err_volt.output, self.err_curr_merge.source)
 
       self.int = imp.Block(IntegratorInverting(
-        factor=Range.from_tolerance(1/(4.7e-6), 0.05),
-        capacitance=1*nFarad(tol=0.2)))
+        factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
+        capacitance=1*nFarad(tol=0.15)))
       self.connect(self.err_merge.source, self.int.input)
+      self.connect(self.ref_center, self.int.reference)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr, [Power]),
@@ -196,6 +197,7 @@ class SourceMeasureControl(Block):
       self.amp = imp.Block(Amplifier(amplification=Range.from_tolerance(20, 0.05),
                                      impedance=(1, 10)*kOhm))
       self.connect(self.int.output, self.amp.input)
+      self.connect(self.ref_center, self.amp.reference)
 
       self.driver = imp.Block(GatedEmitterFollower())
       self.connect(self.amp.output, self.driver.control)
@@ -327,8 +329,6 @@ class UsbSourceMeasureTest(BoardTop):
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
-    # BJT options (>30v, 5A, maximum hFE to minimize drive current, SMD):
-    #
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Tps54202h),
@@ -344,7 +344,9 @@ class UsbSourceMeasureTest(BoardTop):
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
         # TODO support custom part numbers in filters
         (['control', 'driver', 'high_fet', 'part'], 'SQJ148EP-T1_GE3'),
+        # NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'low_fet', 'part'], 'SQJ431EP-T1_GE3'),
+        # PNP BJT option: PHPT60410PYX
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
