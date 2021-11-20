@@ -70,7 +70,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
     self.selected_power = self.Parameter(RangeExpr())
 
   def select_resistor(self, resistance: Range, power_dissipation: Range,
-                        part_spec: str, footprint_spec: str) -> None:
+                      part_spec: str, footprint_spec: str) -> None:
     part = JlcResistorTable.table().filter(lambda row: (
             (not part_spec or part_spec == row[JlcResistorTable.PART_NUMBER]) and
             (not footprint_spec or footprint_spec == row[JlcResistorTable.FOOTPRINT]) and
@@ -83,12 +83,12 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
     self.assign(self.lcsc_part, part[JlcResistorTable.LCSCPART])
 
     self.footprint(
-        'R', part[JlcResistorTable.FOOTPRINT],
-        {
-            '1': self.a,
-            '2': self.b,
-        },
-        mfr=part[JlcResistorTable.MANUFACTURER], part=part[JlcResistorTable.PART_NUMBER],
-        value=f"{part[JlcTable.DESCRIPTION]}",
-        datasheet=part[JlcResistorTable.DATASHEETS]
+      'R', part[JlcResistorTable.FOOTPRINT],
+      {
+        '1': self.a,
+        '2': self.b,
+      },
+      mfr=part[JlcResistorTable.MANUFACTURER], part=part[JlcResistorTable.PART_NUMBER],
+      value=f"{part[JlcTable.DESCRIPTION]}",
+      datasheet=part[JlcResistorTable.DATASHEETS]
     )

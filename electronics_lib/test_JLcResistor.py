@@ -6,8 +6,8 @@ class JlcResistorTestTop(Block):
   def __init__(self):
     super().__init__()
     self.dut = self.Block(JlcResistor(
-        resistance=750 * Ohm(tol=0.10),
-        power=(0, 0.25) * Watt
+      resistance=750 * Ohm(tol=0.10),
+      power=(0, 0.25) * Watt
     ))
     (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
     (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))

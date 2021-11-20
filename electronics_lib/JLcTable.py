@@ -19,8 +19,8 @@ class JlcTable(LazyTable):
     float_array = [float(x) for x in price_list]
 
     return {
-        #chooses the highest price, which is for the lowest quantity
-        cls.COST: float(max(float_array)),
+      #chooses the highest price, which is for the lowest quantity
+      cls.COST: float(max(float_array)),
     }
 
   """Extracts out component values from the "Description" column of JlCPCB_SMT_Parts_Library.csv"""
@@ -32,12 +32,12 @@ class JlcTable(LazyTable):
   @staticmethod
   def parse(discription, regex_dictionary):
     extraction_table = {}
-    
+
     for key in regex_dictionary:
-        matches = re.findall(regex_dictionary[key], discription)
-        if matches:  # discard if not matched
-            assert len(matches) == 1  # excess matches fail noisily
-            assert key not in extraction_table  # duplicate matches fail noisily
-            extraction_table[key] = matches[0]
+      matches = re.findall(regex_dictionary[key], discription)
+      if matches:  # discard if not matched
+        assert len(matches) == 1  # excess matches fail noisily
+        assert key not in extraction_table  # duplicate matches fail noisily
+        extraction_table[key] = matches[0]
 
     return extraction_table
