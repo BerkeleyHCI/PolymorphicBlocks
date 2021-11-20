@@ -399,14 +399,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) =>
         (connected.getBlockPort, connected.getLinkPort) match {
-          case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) => {
+          case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
             linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
-          }
           case _ =>
         }
       case _ =>
-    }
-    }
+    }}
 
     // For fully resolved arrays, allocate port numbers and set array elements
     linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
@@ -434,7 +432,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO ensure constraint processing order?
     // All ports that need to be allocated, with the list of connected ports,
     // as (port array path -> list(constraint name, block port))
-
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
         processBlocklikeConstraint(path, constrName, constr, expr)
