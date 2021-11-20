@@ -48,10 +48,10 @@ class BufferDeserializerTestCase(unittest.TestCase):
     bytes = buffer.getbuffer()
     pb2pos = 1 + len(pb1.SerializeToString())
     pb2len = len(pb2.SerializeToString())
-    bytes[0: 1] = len(pb1.SerializeToString())
+    bytes[0] = len(pb1.SerializeToString())
     bytes[1:pb2pos] = pb1.SerializeToString()
-    bytes[pb2pos: pb2pos + 1] = pb2len & 0x7f | 0x80
-    bytes[pb2pos + 1: pb2pos + 2] = pb2len >> 7 & 0x7f
+    bytes[pb2pos] = pb2len & 0x7f | 0x80
+    bytes[pb2pos + 1] = pb2len >> 7 & 0x7f
     bytes[pb2pos + 2:] = pb2.SerializeToString()
 
     deserializer = BufferDeserializer(edgir.ValueLit, buffer)
