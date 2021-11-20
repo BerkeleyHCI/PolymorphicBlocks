@@ -18,7 +18,7 @@ jobs:
       with:
         paths: '["**.scala"]'
 
-  mypy:
+  sbt:
     needs: pre_job
 #    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -30,5 +30,7 @@ jobs:
         distribution: temurin
         java-version: 8
 
+    - name: cd
+      run: cd compiler
     - name: sbt test
       run: sbt -v +test
