@@ -1,0 +1,42 @@
+# Based on https://sagarsonwane230797.medium.com/automate-build-checks-and-slack-notification-with-github-actions-3b7eb702dae6
+# and using https://github.com/marketplace/actions/python-code-quality-and-lint for Python
+# and optimizing with https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
+
+name: Python Status Checks
+
+on:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+
+jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+    - id: skip_check
+      uses: fkirc/skip-duplicate-actions@master
+      with:
+        paths: '["**.py"]'
+
+  mypy:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Type Check (mypy)
+      uses: ricardochaves/python-lint@v1.4.0
+      with:
+        python-root-list: "."
+        use-pylint: false
+        use-pycodestyle: false
+        use-flake8: false
+        use-black: false
+        use-mypy: true
+        use-isort: false
+        extra-pylint-options: ""
+        extra-pycodestyle-options: ""
+        extra-flake8-options: ""
+        extra-black-options: ""
+        extra-mypy-options: "--check-untyped-defs"
+        extra-isort-options: ""
