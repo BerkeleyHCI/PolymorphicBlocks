@@ -30,7 +30,5 @@ jobs:
         distribution: temurin
         java-version: 8
 
-    - name: cd
-      run: cd compiler
     - name: sbt test
-      run: sbt -v +test
+      run: cd compiler && sbt -v +test

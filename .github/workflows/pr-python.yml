@@ -45,7 +45,7 @@ jobs:
       run: python -m unittest discover -s electronics_model -t .
     - name: unittest (electronics_abstract_parts)
       run: python -m unittest discover -s electronics_abstract_parts -t .
-    - name: skip tests depending on unavailable libs
+    - name: skip tests depending on unavailable data
       run: rm electronics_lib/test_capacitor.py electronics_lib/test_inductor.py
     - name: unittest (electronics_lib)
       run: python -m unittest discover -s electronics_lib -t .
