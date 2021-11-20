@@ -2,7 +2,7 @@
 # mypy: https://doedotdev.medium.com/mypy-for-github-action-7da1ebee99e7
 # optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
 
-name: PR build and tests
+name: Python PR build and tests
 
 on:
   pull_request:
@@ -46,7 +46,7 @@ jobs:
     - name: unittest (electronics_abstract_parts)
       run: python -m unittest discover -s electronics_abstract_parts -t .
     - name: skip tests depending on unavailable libs
-      run: rm electronics_lib/test_capacitor electronics_lib/test_inductor
+      run: rm electronics_lib/test_capacitor.py electronics_lib/test_inductor.py
     - name: unittest (electronics_lib)
       run: python -m unittest discover -s electronics_lib -t .
     # examples also not tested because of dependency on Digikey data files
