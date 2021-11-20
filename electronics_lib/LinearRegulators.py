@@ -260,3 +260,75 @@ class Ap2204k(LinearRegulator):
     self.connect(bridge.inner_link.as_digital_source(), self.ic.en)
     self.connect(self.pwr_out, self.ic.pwr_out)
     self.connect(self.gnd, self.ic.gnd)
+
+
+class Xc6209_Device(DiscreteChip, FootprintBlock):
+  # TODO REVISE ME
+  @init_in_parent
+  def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):
+    super().__init__()
+    self.part_in = self.Parameter(StringExpr(part))
+
+    self.quiescent_current = self.Parameter(RangeExpr((0, 500) * uAmp))  # typ is 250uA
+    self.dropout = self.Parameter(RangeExpr((0, 0.6) * Volt))  # worst-case, typ is 0.35
+
+    # Part datasheet, Table 9
+    self.vin = self.Port(VoltageSink(
+      voltage_limits=(2.6, 18) * Volt,
+      current_draw=RangeExpr()
+    ))
+    self.vout = self.Port(VoltageSource(
+      voltage_out=voltage_out,
+      current_limits=(0, 1.5) * Amp  # most conservative estimate, typ up to 2A
+    ))
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
+    self.gnd = self.Port(Ground())
+
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+      {
+        '1': self.gnd,
+        '2': self.vout,
+        '3': self.vin,
+      },
+      mfr='STMicroelectronics', part=self.part_in,
+      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf',
+    )
+
+
+class Xc6209(LinearRegulator, GeneratorBlock):
+  """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)"""
+  # TODO REVISE ME
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
+    self.generator(self.select_part, self.spec_output_voltage,
+                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+
+  def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
+    TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
+    parts = [
+      # output voltage, quiescent current
+      (1.5, 'XC6209F152MR-G'),
+      (3.3, 'XC6209F332MR-G'),
+      (5.0, 'XC6209F502MR-G'),
+    ]
+    suitable_parts = [(part_out_nominal, part_number)
+                      for part_out_nominal, part_number in parts
+                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in spec_output_voltage
+                      ]
+    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
+    part_out_nominal, part_number = suitable_parts[0]
+
+    self.ic = self.Block(Ldl1117_Device(part=part_number, voltage_out=part_out_nominal*Volt(tol=TOLERANCE)))
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
+
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
+
+    # wire things together
+    self.connect(self.ic.vin, self.in_cap.pwr, self.pwr_in)
+    self.connect(self.ic.vout, self.out_cap.pwr, self.pwr_out)
+    self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)
