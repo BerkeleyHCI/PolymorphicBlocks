@@ -27,18 +27,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Type Check (mypy)
-      uses: ricardochaves/python-lint@v1.4.0
+      uses: jpetrucciani/mypy-check@master
       with:
-        python-root-list: "edg_core electronics_model electronics_abstract_parts electronics_lib edg examples"
-        use-pylint: false
-        use-pycodestyle: false
-        use-flake8: false
-        use-black: false
-        use-mypy: true
-        use-isort: false
-        extra-pylint-options: ""
-        extra-pycodestyle-options: ""
-        extra-flake8-options: ""
-        extra-black-options: ""
-        extra-mypy-options: "--check-untyped-defs"
-        extra-isort-options: ""
+        path: 'edg_core electronics_model electronics_abstract_parts electronics_lib edg examples'
+        mypy_flags: '--check-untyped-defs'
