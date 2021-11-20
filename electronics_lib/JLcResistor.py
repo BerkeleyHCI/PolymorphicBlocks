@@ -7,7 +7,6 @@ class JlcResistorTable(JlcTable):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   FOOTPRINT = PartsTableColumn(str)
-  LCSCPART = PartsTableColumn(str)
 
   PACKAGE_FOOTPRINT_MAP = {
     '0603': 'Resistor_SMD:R_0603_1608Metric',
@@ -31,9 +30,7 @@ class JlcResistorTable(JlcTable):
       try:
         # handle the footprint first since this is the most likely to filter
         new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
-        new_cols.update(cls._parse_Jlcpcb_common(row))
-
-        new_cols[cls.LCSCPART] = row['LCSC Part']
+        new_cols.update(cls._parse_jlcpcb_common(row))
 
         extracted_values = JlcTable.parse(row[JlcTable.DESCRIPTION], RESISTOR_MATCHES)
 
@@ -49,10 +46,10 @@ class JlcResistorTable(JlcTable):
         return None
 
     raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-    'JlCPCB_SMT_Parts_Library.csv'
+      'JlCPCB_SMT_Parts_Library.csv'
     ], 'resources'), encoding='gb2312')
     return raw_table.map_new_columns(parse_row).sort_by(
-    lambda row: [row[cls.COST], row[cls.FOOTPRINT]]
+      lambda row: [row[cls.COST], row[cls.FOOTPRINT]]
     )
 
 
@@ -80,7 +77,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
 
     self.assign(self.selected_resistance, part[JlcResistorTable.RESISTANCE])
     self.assign(self.selected_power, part[JlcResistorTable.POWER_RATING])
-    self.assign(self.lcsc_part, part[JlcResistorTable.LCSCPART])
+    self.assign(self.lcsc_part, part[JlcTable.DISTRIBUTER_PART_NUMBER])
 
     self.footprint(
       'R', part[JlcResistorTable.FOOTPRINT],
