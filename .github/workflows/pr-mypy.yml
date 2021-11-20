@@ -27,7 +27,7 @@ jobs:
     - name: Type Check (mypy)
       uses: ricardochaves/python-lint@v1.4.0
       with:
-        python-root-list: "."
+        python-root-list: "edg_core electronics_model electronics_abstract_parts electronics_lib edg examples"
         use-pylint: false
         use-pycodestyle: false
         use-flake8: false
