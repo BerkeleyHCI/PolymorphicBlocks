@@ -1,6 +1,6 @@
 # Based on https://sagarsonwane230797.medium.com/automate-build-checks-and-slack-notification-with-github-actions-3b7eb702dae6
-# and using https://github.com/marketplace/actions/python-code-quality-and-lint for Python
-# and optimizing with https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
+# mypy: https://doedotdev.medium.com/mypy-for-github-action-7da1ebee99e7
+# optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
 
 name: Python Status Checks
 
@@ -24,10 +24,21 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Type Check (mypy)
-      uses: jpetrucciani/mypy-check@master
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
       with:
-        path: 'edg_core electronics_model electronics_abstract_parts electronics_lib edg examples'
-        mypy_flags: '--install-types --check-untyped-defs'
+        python-version: 3.10
+    - name: Install Dependencies
+      run: |
+        pip install mypy
+    - name: mypy
+      run: |
+        mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
+
+#    - name: Checkout
+#      uses: actions/checkout@v1
+#    - name: Type Check (mypy)
+#      uses: jpetrucciani/mypy-check@master
+#      with:
+#        path: 'edg_core electronics_model electronics_abstract_parts electronics_lib edg examples'
+#        mypy_flags: '--install-types --check-untyped-defs'
