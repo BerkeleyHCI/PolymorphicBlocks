@@ -28,12 +28,17 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.10'
+
     - name: install mypy
       run: |
         pip install mypy types-protobuf
     - name: mypy
       run: |
         mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
+
+    - name: install dependencies
+      run: |
+        pip install protobuf
     - name: unittest (edg_core)
       run: python -m unittest discover -s edg_core -t .
     - name: unittest (electronics_model)
