@@ -3,7 +3,7 @@ from .PartsTable import *
 
 class JlcTable(LazyTable):
   """Shared base class for JlCPCB product tables that contains common row definitions."""
-  DISTRIBUTER_PART_NUMBER = PartsTableColumn(str)
+  JLC_PART_NUMBER = PartsTableColumn(str)
   MANUFACTURER = 'Manufacturer'
   PART_NUMBER = 'MFR.Part'
   DATASHEETS = 'Datasheet'
@@ -21,7 +21,7 @@ class JlcTable(LazyTable):
     return {
       #chooses the highest price, which is for the lowest quantity
       cls.COST: float(max(float_array)),
-      cls.DISTRIBUTER_PART_NUMBER: row['LCSC Part']
+      cls.JLC_PART_NUMBER: row['LCSC Part']
     }
 
   """Extracts out component values from the "Description" column of JlCPCB_SMT_Parts_Library.csv

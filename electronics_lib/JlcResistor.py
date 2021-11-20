@@ -77,7 +77,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
 
     self.assign(self.selected_resistance, part[JlcResistorTable.RESISTANCE])
     self.assign(self.selected_power, part[JlcResistorTable.POWER_RATING])
-    self.assign(self.lcsc_part, part[JlcTable.DISTRIBUTER_PART_NUMBER])
+    self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
 
     self.footprint(
       'R', part[JlcResistorTable.FOOTPRINT],
@@ -86,6 +86,6 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
         '2': self.b,
       },
       mfr=part[JlcResistorTable.MANUFACTURER], part=part[JlcResistorTable.PART_NUMBER],
-      value=f"{part[JlcTable.DESCRIPTION]}",
+      value=part[JlcTable.DESCRIPTION],
       datasheet=part[JlcResistorTable.DATASHEETS]
     )
