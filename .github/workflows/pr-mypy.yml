@@ -18,6 +18,8 @@ jobs:
       uses: fkirc/skip-duplicate-actions@master
       with:
         paths: '["**.py"]'
+    - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+      uses: actions/checkout@v1
 
   mypy:
     needs: pre_job
