@@ -48,16 +48,10 @@ class BufferDeserializerTestCase(unittest.TestCase):
     bytes = buffer.getbuffer()
     pb2pos = 1 + len(pb1.SerializeToString())
     pb2len = len(pb2.SerializeToString())
-    # TODO: seems like a mypy / type signature versioning issue, where one accepts
-    # setitem(int, int)
-    # and the other accepts
-    # setitem(int, bytes)
-    # so this makes all of the use the common one
-    # setitem(slice, bytes)
-    bytes[0:1] = len(pb1.SerializeToString()).to_bytes(1, 'big')
+    bytes[0: 1] = len(pb1.SerializeToString())
     bytes[1:pb2pos] = pb1.SerializeToString()
-    bytes[pb2pos:pb2pos+1] = (pb2len & 0x7f | 0x80).to_bytes(1, 'big')
-    bytes[pb2pos + 1:pb2pos + 2] = (pb2len >> 7 & 0x7f).to_bytes(1, 'big')
+    bytes[pb2pos: pb2pos + 1] = pb2len & 0x7f | 0x80
+    bytes[pb2pos + 1: pb2pos + 2] = pb2len >> 7 & 0x7f
     bytes[pb2pos + 2:] = pb2.SerializeToString()
 
     deserializer = BufferDeserializer(edgir.ValueLit, buffer)
