@@ -30,4 +30,4 @@ jobs:
       uses: jpetrucciani/mypy-check@master
       with:
         path: 'edg_core electronics_model electronics_abstract_parts electronics_lib edg examples'
-        mypy_flags: '--check-untyped-defs'
+        mypy_flags: '--install-types --check-untyped-defs'
