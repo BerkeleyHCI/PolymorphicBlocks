@@ -2,7 +2,7 @@
 # mypy: https://doedotdev.medium.com/mypy-for-github-action-7da1ebee99e7
 # optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
 
-name: Python Status Checks
+name: PR build and tests
 
 on:
   pull_request:
@@ -28,17 +28,20 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.10'
-    - name: Install Dependencies
+    - name: install mypy
       run: |
         pip install mypy types-protobuf
     - name: mypy
       run: |
         mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
-
-#    - name: Checkout
-#      uses: actions/checkout@v1
-#    - name: Type Check (mypy)
-#      uses: jpetrucciani/mypy-check@master
-#      with:
-#        path: 'edg_core electronics_model electronics_abstract_parts electronics_lib edg examples'
-#        mypy_flags: '--install-types --check-untyped-defs'
+    - name: unittest (edg_core)
+      run: python -m unittest discover -s edg_core -t .
+    - name: unittest (electronics_model)
+      run: python -m unittest discover -s electronics_model -t .
+    - name: unittest (electronics_abstract_parts)
+      run: python -m unittest discover -s electronics_abstract_parts -t .
+    - name: skip tests depending on unavailable libs
+      run: rm electronics_lib/test_capacitor electronics_lib/test_inductor
+    - name: unittest (electronics_lib)
+      run: python -m unittest discover -s electronics_lib -t .
+    # examples also not tested because of dependency on Digikey data files
