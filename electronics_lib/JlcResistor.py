@@ -17,9 +17,9 @@ class JlcResistorTable(JlcTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     RESISTOR_MATCHES = {
-      'resistance': "(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])",
-      'tolerance': "([\u00B1]\d+(?:\.\d*)?%)",
-      'power': "(\d+(?:\.\d*)?[GMkmunp]?W)",
+      'resistance': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])($|\s)",
+      'tolerance': "(^|\s)([\u00B1]\d+(?:\.\d*)?%)($|\s)",
+      'power': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?W)($|\s)",
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -35,11 +35,11 @@ class JlcResistorTable(JlcTable):
         extracted_values = JlcTable.parse(row[JlcTable.DESCRIPTION], RESISTOR_MATCHES)
 
         new_cols[cls.RESISTANCE] = Range.from_tolerance(
-            PartsTableUtil.parse_value(extracted_values['resistance'], 'Ω'),
-            PartsTableUtil.parse_tolerance(extracted_values['tolerance'])
+            PartsTableUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
+            PartsTableUtil.parse_tolerance(extracted_values['tolerance'][1])
         )
 
-        new_cols[cls.POWER_RATING] = Range.zero_to_upper(PartsTableUtil.parse_value(extracted_values['power'], 'W'))
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(PartsTableUtil.parse_value(extracted_values['power'][1], 'W'))
 
         return new_cols
       except (KeyError, PartsTableUtil.ParseError):

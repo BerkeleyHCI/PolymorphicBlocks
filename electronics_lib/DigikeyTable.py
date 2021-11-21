@@ -8,6 +8,7 @@ class DigikeyTable(LazyTable):
   MANUFACTURER = 'Manufacturer'
   PART_NUMBER = 'Manufacturer Part Number'
   DATASHEETS = 'Datasheets'
+  DESCRIPTION = 'Description'
 
   _RAW_COST_COLUMN = 'Unit Price (USD)'
   COST = PartsTableColumn(float)

@@ -343,26 +343,3 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         },
         value=f'{UnitUtils.num_to_prefix(value, 3)}F'
       )
-
-
-class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
-  """
-  Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
-  Used as the leaf block for generating parallel capacitors.
-  """
-
-  @init_in_parent
-  def __init__(self, footprint: StringLike = "",
-               manufacturer: StringLike = "", part_number: StringLike = "", value: StringLike = "",
-               *args, **kwargs):
-    super().__init__(*args, **kwargs)
-
-    self.footprint(
-      'C', footprint,
-      {
-        '1': self.pos,
-        '2': self.neg,
-      },
-      mfr=manufacturer, part=part_number,
-      value=value
-    )

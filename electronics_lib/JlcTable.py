@@ -1,7 +1,8 @@
 import re
 from .PartsTable import *
+from .TableDeratingCapacitor import *
 
-class JlcTable(LazyTable):
+class JlcTable(CapacitorTable):
   """Shared base class for JlCPCB product tables that contains common row definitions."""
   JLC_PART_NUMBER = PartsTableColumn(str)
   MANUFACTURER = 'Manufacturer'
