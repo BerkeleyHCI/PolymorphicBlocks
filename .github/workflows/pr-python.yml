@@ -1,0 +1,71 @@
+# Based on https://sagarsonwane230797.medium.com/automate-build-checks-and-slack-notification-with-github-actions-3b7eb702dae6
+# mypy: https://doedotdev.medium.com/mypy-for-github-action-7da1ebee99e7
+# optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
+
+name: Python PR build and tests
+
+on:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+    - id: skip_check
+      uses: fkirc/skip-duplicate-actions@master
+      with:
+        paths: '[
+          "compiler/**",
+          "edg_core/**",
+          "electronics_model/**",
+          "electronics_abstract_parts/**",
+          "electronics_lib/**",
+          "edg/**",
+          "examples/**.py"
+        ]'
+
+  mypy:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.10'
+
+    - name: install mypy
+      run: |
+        pip install mypy types-protobuf
+    - name: mypy
+      run: |
+        mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
+
+  unittest:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.10'
+
+    - name: install dependencies
+      run: |
+        pip install protobuf
+    - name: unittest (edg_core)
+      run: python -m unittest discover -s edg_core -t .
+    - name: unittest (electronics_model)
+      run: python -m unittest discover -s electronics_model -t .
+    - name: unittest (electronics_abstract_parts)
+      run: python -m unittest discover -s electronics_abstract_parts -t .
+    - name: skip tests depending on unavailable data
+      run: rm electronics_lib/test_capacitor.py electronics_lib/test_inductor.py
+    - name: unittest (electronics_lib)
+      run: python -m unittest discover -s electronics_lib -t .
+    # examples also not tested because of dependency on Digikey data files
