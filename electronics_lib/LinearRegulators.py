@@ -262,57 +262,105 @@ class Ap2204k(LinearRegulator):
     self.connect(self.gnd, self.ic.gnd)
 
 
-class Xc6209_Device(DiscreteChip, FootprintBlock):
-  # TODO REVISE ME
+class Xc6209_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
+  # Also pin-compatible with MCP1802 and NJM2882F.
+  # NJM2882F has a noise bypass pin.
   @init_in_parent
-  def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):
+  def __init__(self, spec_output_voltage: RangeLike = RangeExpr()):
     super().__init__()
-    self.part_in = self.Parameter(StringExpr(part))
+    self.spec_output_voltage = self.Parameter(RangeExpr(spec_output_voltage))
 
-    self.quiescent_current = self.Parameter(RangeExpr((0, 500) * uAmp))  # typ is 250uA
-    self.dropout = self.Parameter(RangeExpr((0, 0.6) * Volt))  # worst-case, typ is 0.35
+    self.quiescent_current = self.Parameter(RangeExpr((0.01, 50) * uAmp))  # typ is 250uA
+    self.dropout = self.Parameter(RangeExpr())
 
-    # Part datasheet, Table 9
     self.vin = self.Port(VoltageSink(
-      voltage_limits=(2.6, 18) * Volt,
+      voltage_limits=(2, 10) * Volt,
       current_draw=RangeExpr()
     ))
-    self.vout = self.Port(VoltageSource(
-      voltage_out=voltage_out,
-      current_limits=(0, 1.5) * Amp  # most conservative estimate, typ up to 2A
-    ))
+    self.vout = self.Port(VoltageSource())  # defined by generate
     self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.gnd = self.Port(Ground())
 
-  def contents(self):
-    super().contents()
-    self.footprint(
-      'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
-      {
-        '1': self.gnd,
-        '2': self.vout,
-        '3': self.vin,
-      },
-      mfr='STMicroelectronics', part=self.part_in,
-      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf',
-    )
-
-
-class Xc6209(LinearRegulator, GeneratorBlock):
-  """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)"""
-  # TODO REVISE ME
-  def __init__(self, **kwargs) -> None:
-    super().__init__(**kwargs)
     self.generator(self.select_part, self.spec_output_voltage,
-                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+                   targets=[self.vout])
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [
-      # output voltage, quiescent current
-      (1.5, 'XC6209F152MR-G'),
-      (3.3, 'XC6209F332MR-G'),
-      (5.0, 'XC6209F502MR-G'),
+      # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current
+      (1.5, 'XC6209F152MR-G', (0.50, 0.60)),
+      (3.3, 'XC6209F332MR-G', (0.06, 0.25)),
+      (5.0, 'XC6209F502MR-G', (0.05, 0.21)),
+    ]
+    suitable_parts = [(part_out_nominal, part_number, part_dropout)
+                      for part_out_nominal, part_number, part_dropout in parts
+                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in spec_output_voltage
+                      ]
+    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
+    part_out_nominal, part_number, part_dropout = suitable_parts[0]
+
+    self.assign(self.dropout, part_dropout * Volt)
+    self.assign(self.vout.voltage_out, part_out_nominal * Volt(tol=0.02))
+    self.assign(self.vout.current_limits, (0, 300) * mAmp)
+
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-5',
+      {
+        '1': self.vin,
+        '2': self.gnd,
+        '3': self.vin,  # EN
+        # pin 4 is NC
+        '5': self.vout,
+      },
+      mfr='Torex Semiconductor Ltd', part=part_number,
+      datasheet='https://www.torexsemi.com/file/en/products/discontinued/-2016/53-XC6209_12.pdf',
+    )
+
+
+class Xc6209(LinearRegulator):
+  """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
+  Low-ESR ceramic cap compatible"""
+  def contents(self):
+    self.ic = self.Block(Xc6209_Device(spec_output_voltage=self.spec_output_voltage))
+    self.assign(self.dropout, self.ic.dropout)
+    self.assign(self.quiescent_current, self.ic.quiescent_current)
+
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+
+    self.connect(self.ic.vin, self.in_cap.pwr, self.pwr_in)
+    self.connect(self.ic.vout, self.out_cap.pwr, self.pwr_out)
+    self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)
+
+
+class Ap2210_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
+  @init_in_parent
+  def __init__(self, spec_output_voltage: RangeLike = RangeExpr()):
+    super().__init__()
+    self.spec_output_voltage = self.Parameter(RangeExpr(spec_output_voltage))
+
+    self.quiescent_current = self.Parameter(RangeExpr((0.01, 15000) * uAmp))  # GND pin current
+    self.dropout = self.Parameter(RangeExpr((15, 500) * mVolt))
+
+    self.vin = self.Port(VoltageSink(
+      voltage_limits=(2.5, 13.2) * Volt,
+      current_draw=RangeExpr()
+    ))
+    self.vout = self.Port(VoltageSource())  # defined by generate
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
+    self.gnd = self.Port(Ground())
+
+    self.generator(self.select_part, self.spec_output_voltage,
+                   targets=[self.vout])
+
+  def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
+    TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
+    parts = [
+      # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current
+      (2.5, 'AP2210K-2.5'),
+      (3.0, 'AP2210K-3.0'),
+      (3.3, 'AP2210K-3.3'),
+      (5.0, 'AP2210K-5.0'),
     ]
     suitable_parts = [(part_out_nominal, part_number)
                       for part_out_nominal, part_number in parts
@@ -321,12 +369,33 @@ class Xc6209(LinearRegulator, GeneratorBlock):
     assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
     part_out_nominal, part_number = suitable_parts[0]
 
-    self.ic = self.Block(Ldl1117_Device(part=part_number, voltage_out=part_out_nominal*Volt(tol=TOLERANCE)))
+    self.assign(self.vout.voltage_out, part_out_nominal * Volt(tol=0.02))
+    self.assign(self.vout.current_limits, (0, 300) * mAmp)
+
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-5',
+      {
+        '1': self.vin,
+        '2': self.gnd,
+        '3': self.vin,  # EN
+        # pin 4 is BYP, optional
+        '5': self.vout,
+      },
+      mfr='Torex Semiconductor Ltd', part=part_number,
+      datasheet='https://www.torexsemi.com/file/en/products/discontinued/-2016/53-XC6209_12.pdf',
+    )
+
+
+class Ap2210(LinearRegulator):
+  """AP2210 RF ULDO in SOT-23-5 with high PSRR"""
+  def contents(self):
+    self.ic = self.Block(Ap2210_Device(spec_output_voltage=self.spec_output_voltage))
     self.assign(self.dropout, self.ic.dropout)
     self.assign(self.quiescent_current, self.ic.quiescent_current)
+    self.assign(self.pwr_out.current_limits, RangeExpr.ALL)  # checked within the chip
 
-    self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
-    self.out_cap = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))
 
     # wire things together
     self.connect(self.ic.vin, self.in_cap.pwr, self.pwr_in)

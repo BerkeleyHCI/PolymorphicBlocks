@@ -300,17 +300,18 @@ class UsbSourceMeasureTest(BoardTop):
 
       (self.reg_analog, self.led_analog), _ = self.chain(
         self.reg_5v.pwr_out,
-        imp.Block(LinearRegulator(output_voltage=2.5*Volt(tol=0.05))),
+        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
-      self.vref = self.connect(self.reg_analog.pwr_out)
+      self.vanalog = self.connect(self.reg_analog.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
         self.reg_analog.pwr_out,
-        imp.Block(VoltageDivider(output_voltage=1.25*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower())
       )
-      self.connect(self.ref_buf.pwr, self.reg_analog.pwr_out)
+      self.connect(self.reg_analog.pwr_out, self.ref_buf.pwr)
+      self.vcenter = self.connect(self.ref_buf.output)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
@@ -397,8 +398,8 @@ class UsbSourceMeasureTest(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Ld1117),
-        (['reg_analog'], Ld1117),
+        (['reg_3v3'], Xc6209),
+        (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),

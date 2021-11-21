@@ -19,7 +19,7 @@ from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210
 from .DcDcConverters import Tps561201, Tps54202h
 from .DcDcConverters import Lmr33630
 from .DcDcConverters import Ap3012
