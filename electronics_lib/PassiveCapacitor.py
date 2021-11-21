@@ -1,6 +1,5 @@
 from typing import NamedTuple
 import math
-
 from electronics_abstract_parts import *
 from electronics_abstract_parts.Categories import DummyDevice
 from .DigikeyTable import *
@@ -107,10 +106,10 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltered_parts = MlccTable.table().filter(lambda row: (
-            (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
-            (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
-            voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
-            Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
+        (not part_spec or part_spec == row[MlccTable.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[MlccTable.FOOTPRINT]) and
+        voltage.fuzzy_in(row[MlccTable.VOLTAGE_RATING]) and
+        Range.exact(row[MlccTable.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
     ))
 
     def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -136,7 +135,7 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     if capacitance.lower <= derated_max_min_capacitance:
       part = derated_parts.filter(lambda row: (
-              row[self.DERATED_CAPACITANCE] in capacitance
+          row[self.DERATED_CAPACITANCE] in capacitance
       )).first(f"no single capacitor in {capacitance} F, {voltage} V")
 
       self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
@@ -172,8 +171,8 @@ class SmtCeramicCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
       part = derated_parts.map_new_columns(
         parallel_row
       ).sort_by(lambda row:
-                (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
-                ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
+        (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
+      ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
       self.assign(self.selected_voltage_rating, part[MlccTable.VOLTAGE_RATING])
       self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
