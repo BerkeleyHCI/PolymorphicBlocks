@@ -90,7 +90,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     return derated_parts
 
 
-  def parallel_parts(self, derated_parts: PartsTable, capacitance: Range, voltage: Range):
+  def parallel_parts(self, derated_parts: PartsTable, capacitance: Range, voltage: Range) -> PartsTable:
 
     def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
@@ -112,6 +112,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
               (row[self.PARALLEL_COUNT], row[self.PARALLEL_COST])
               ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
+    return part
 
 class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
   """

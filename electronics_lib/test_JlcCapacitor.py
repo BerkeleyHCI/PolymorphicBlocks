@@ -55,13 +55,35 @@ class CapacitorTestCase(unittest.TestCase):
 
   def test_multi_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(JlcBigCapacitorTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'part']), 'CL10A226MQ8NRNC')
-    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'part']), 'CL10A226MQ8NRNC')
-    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'part']), 'CL10A226MQ8NRNC')
-    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS ')
-    self.assertEqual(compiled.get_value(['dut', 'c[3]', 'footprint_name']), None)
+    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[0]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+    self.assertEqual(compiled.get_value(['dut', 'c[3]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[3]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[3]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+    self.assertEqual(compiled.get_value(['dut', 'c[4]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[4]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[4]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+    self.assertEqual(compiled.get_value(['dut', 'c[5]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'c[5]', 'part']), 'CL21A106KAYNNNE')
+    self.assertEqual(compiled.get_value(['dut', 'c[5]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
+
+    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'part']), 'CL21A106KAYNNNE')
+    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'part']), 'CL21A106KAYNNNE')
+    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS ')
+    self.assertEqual(compiled.get_value(['dut', 'c[6]', 'footprint_name']), None)
