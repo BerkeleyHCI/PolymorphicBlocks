@@ -10,6 +10,7 @@ on:
 jobs:
   pre_job:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
     steps:
