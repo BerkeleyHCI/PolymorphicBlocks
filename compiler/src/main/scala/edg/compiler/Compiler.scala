@@ -394,6 +394,37 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     elaborateContainedPorts(path, block)
     processParams(path, block)
 
+    // Find allocate ports and lower them before processing all constraints
+    val linkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[(String, Seq[String])]]()
+    block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr.ValueExpr.Expr.Connected(connected) =>
+        (connected.getBlockPort, connected.getLinkPort) match {
+          case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
+            linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
+          case _ =>
+        }
+      case _ =>
+    }}
+
+    // For fully resolved arrays, allocate port numbers and set array elements
+    linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
+      val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
+        block.mapConstraint(constrName) { constr =>
+          val steps = constr.getConnected.getLinkPort.getRef.steps
+          require(steps.last == Ref.AllocateStep)
+          val indexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(index.toString))
+          constr.update(
+            _.connected.linkPort.ref.steps := steps.slice(0, steps.length - 1) :+ indexStep
+          )
+        }
+        index.toString
+      }.toSeq
+      debug(s"Array defined: ${path ++ linkPortArray} = $linkPortArrayElts")
+      constProp.setArrayElts(path ++ linkPortArray, linkPortArrayElts)
+      constProp.setValue(path.asIndirect ++ linkPortArray + IndirectStep.Length,
+        IntValue(linkPortArrayElts.length))
+    }
+
     // Process constraints:
     // - for connected constraints, add into the connectivity map
     // - for assignment constraints, add into const prop
@@ -401,7 +432,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO ensure constraint processing order?
     // All ports that need to be allocated, with the list of connected ports,
     // as (port array path -> list(constraint name, block port))
-    val linkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[(String, Seq[String])]]()
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
         processBlocklikeConstraint(path, constrName, constr, expr)
@@ -417,7 +447,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             directConnectedPorts += (path ++ blockPort)
             directConnectedPorts += (path ++ linkPort)
           case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
-            linkPortAllocates.getOrElseUpdate(linkPortArray, mutable.ListBuffer()) += ((constrName, blockPort))
+            throw new Exception("This constraint should have been lowered")
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
             throw new NotImplementedError(s"TODO: block port array <-> link port array: ${constr.expr}")
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.Ref(linkPort)) =>
@@ -445,34 +475,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
     }}
-
-    // For fully resolved arrays, allocate port numbers and set array elements
-    linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
-      val linkPortArrayElts = blockConstrPorts.zipWithIndex.map { case ((constrName, blockPort), index) =>
-        elaboratePending.addNode(
-          ElaborateRecord.Connect(path ++ linkPortArray + index.toString, path ++ blockPort),
-          Seq(ElaborateRecord.Block(path + blockPort.head),
-            ElaborateRecord.Link(path + linkPortArray.head),
-            ElaborateRecord.ConnectedLink(path ++ linkPortArray + index.toString))
-        )
-        directConnectedPorts += (path ++ blockPort)
-        directConnectedPorts += (path ++ linkPortArray + index.toString)
-
-        block.mapConstraint(constrName) { constr =>
-          val steps = constr.getConnected.getLinkPort.getRef.steps
-          require(steps.last == Ref.AllocateStep)
-          val indexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(index.toString))
-          constr.update(
-            _.connected.linkPort.ref.steps := steps.slice(0, steps.length - 1) :+ indexStep
-          )
-        }
-        index.toString
-      }.toSeq
-      debug(s"Array defined: ${path ++ linkPortArray} = $linkPortArrayElts")
-      constProp.setArrayElts(path ++ linkPortArray, linkPortArrayElts)
-      constProp.setValue(path.asIndirect ++ linkPortArray + IndirectStep.Length,
-        IntValue(linkPortArrayElts.length))
-    }
 
     // Queue up generators as needed
     for ((generatorFnName, generator) <- block.getGenerators) {
