@@ -2,7 +2,7 @@ from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
 from .PartsTable import *
 import math
-from abc import ABCMeta
+#from abc import ABCMeta
 
 class CapacitorTable(LazyTable):
   CAPACITANCE: PartsTableColumn[Range]
@@ -90,7 +90,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     return derated_parts
 
 
-  def parallel_parts(self, derated_parts: PartsTable, capacitance: Range, voltage: Range) -> PartsTable:
+  def parallel_parts(self, derated_parts: PartsTable, capacitance: Range, voltage: Range) -> PartsTableRow:
 
     def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}

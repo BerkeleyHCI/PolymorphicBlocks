@@ -25,7 +25,7 @@ class JlcCapacitorTable(JlcTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if (row['Library Type'] != 'Basic' or row['First Category'] != 'Capacitors'):
         return None
-      #print(row[JlcTable.DESCRIPTION])
+
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
@@ -34,7 +34,6 @@ class JlcCapacitorTable(JlcTable):
 
         extracted_values = JlcTable.parse(row[JlcTable.DESCRIPTION], CAPACITOR_MATCHES)
 
-        #print(extracted_values)
         nominal_capacitance = PartsTableUtil.parse_value(extracted_values['nominal_capacitance'][1], 'F')
 
         # enforce minimum packages, note the cutoffs are exclusive
@@ -103,8 +102,6 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
       self.assign(self.selected_capacitance, part[self._TABLE.CAPACITANCE])
       self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
       self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
-      #TODO add a DISTRIBUTER PART NUMBER
-      #Ex: JLC_PART_NUMBER
 
       self.footprint(
         'C', part[self._TABLE.FOOTPRINT],
@@ -138,8 +135,6 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
       self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
       self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
       self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
-      #TODO add a DISTRIBUTER PART NUMBER
-      #Ex: JLC_PART_NUMBER
 
       cap_model = DummyCapacitor(capacitance=part[self._TABLE.NOMINAL_CAPACITANCE],
                                  voltage=self.voltage,
@@ -151,4 +146,3 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
         self.connect(self.c[i].neg, self.neg)
-

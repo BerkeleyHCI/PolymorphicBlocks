@@ -26,12 +26,6 @@ class JlcBigCapacitorTestTop(Block):
 
 class CapacitorTestCase(unittest.TestCase):
   def test_capacitor(self) -> None:
-    #test = JlcCapacitorTable()
-    #print("Test begins")
-    #print("size: ", len(test.table().rows))
-    #for row in test.table().rows:
-    #  print("row: ", row.value )
-
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop)
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
     self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
@@ -58,32 +52,19 @@ class CapacitorTestCase(unittest.TestCase):
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
     self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[1]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
     self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[2]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
     self.assertEqual(compiled.get_value(['dut', 'c[3]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[3]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[3]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
     self.assertEqual(compiled.get_value(['dut', 'c[4]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[4]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[4]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
     self.assertEqual(compiled.get_value(['dut', 'c[5]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[5]', 'part']), 'CL21A106KAYNNNE')
     self.assertEqual(compiled.get_value(['dut', 'c[5]', 'value']), 'X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-
-
-    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
-    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'part']), 'CL21A106KAYNNNE')
-    #self.assertEqual(compiled.get_value(['dut', 'c[1]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
-    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'part']), 'CL21A106KAYNNNE')
-    #self.assertEqual(compiled.get_value(['dut', 'c[2]', 'value']), 'X5R 6.3V ±20% 22uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS ')
     self.assertEqual(compiled.get_value(['dut', 'c[6]', 'footprint_name']), None)
