@@ -46,7 +46,7 @@ class JlcResistorTable(JlcTable):
         return None
 
     raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-      'JlCPCB_SMT_Parts_Library.csv'
+      'JLCPCB_SMT_Parts_Library.csv'
     ], 'resources'), encoding='gb2312')
     return raw_table.map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.COST], row[cls.FOOTPRINT]]
