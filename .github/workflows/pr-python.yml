@@ -6,11 +6,12 @@ name: Python PR build and tests
 
 on:
   pull_request:
-    types: [assigned, opened, synchronize, reopened]
+    types: [assigned, opened, synchronize, reopened, ready_for_review]
 
 jobs:
   pre_job:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
     steps:
