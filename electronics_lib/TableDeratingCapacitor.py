@@ -58,7 +58,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
                        part_spec: str, footprint_spec: str) -> None: pass
 
   def filter_capacitor(self, voltage: Range, single_nominal_capacitance: Range,
-                         part_spec: str, footprint_spec: str,) -> PartsTable:
+                       part_spec: str, footprint_spec: str) -> PartsTable:
     filtered_rows = self._TABLE.table().filter(lambda row: (
             (not part_spec or part_spec == row[self._TABLE.PART_NUMBER]) and
             (not footprint_spec or footprint_spec == row[self._TABLE.FOOTPRINT]) and
@@ -66,7 +66,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
             Range.exact(row[self._TABLE.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)))
     return filtered_rows
 
-  def derate_parts(self, voltage: Range, prefiltered_parts: PartsTable) -> PartsTable:
+  def add_derated_capacitance(self, voltage: Range, parts: PartsTable) -> PartsTable:
     def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[self._TABLE.CAPACITANCE]
@@ -81,16 +81,12 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
       return {self.DERATED_CAPACITANCE: derated}
 
-    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
-    # An empty parts table handles the case where it's below the minimum or does not match within a series.
-    derated_parts = prefiltered_parts.map_new_columns(
-      derate_row
-    )
-
-    return derated_parts
+    return parts.map_new_columns(
+              derate_row
+            )
 
 
-  def parallel_parts(self, derated_parts: PartsTable, capacitance: Range, voltage: Range) -> PartsTableRow:
+  def add_parallel_capacitance(self, derated_parts: PartsTable, capacitance: Range, voltage: Range) -> PartsTableRow:
 
     def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
@@ -114,6 +110,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     return part
 
+#TODO Maybe worth creating JlcDummyCapacitor as a child due to lcsc_part attribute
 class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
   """
   Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.

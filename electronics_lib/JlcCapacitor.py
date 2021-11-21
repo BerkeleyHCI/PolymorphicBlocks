@@ -30,7 +30,6 @@ class JlcCapacitorTable(JlcTable):
       try:
         # handle the footprint first since this is the most likely to filter
         footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
-        new_cols[cls.FOOTPRINT] = footprint
 
         extracted_values = JlcTable.parse(row[JlcTable.DESCRIPTION], CAPACITOR_MATCHES)
 
@@ -46,8 +45,6 @@ class JlcCapacitorTable(JlcTable):
           'Capacitor_SMD:C_1206_3216Metric',
         ]:
           return None
-
-        #Used in defining the footprint
 
         new_cols[cls.FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = Range.from_tolerance(
@@ -87,9 +84,9 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
     # Note that we can't filter out capacitance before derating
     prefiltered_parts = self.filter_capacitor(voltage, single_nominal_capacitance, part_spec, footprint_spec)
 
+    derated_parts = self.add_derated_capacitance(voltage, prefiltered_parts)
     # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
     # An empty parts table handles the case where it's below the minimum or does not match within a series.
-    derated_parts = self.derate_parts(voltage, prefiltered_parts)
 
     derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
@@ -115,21 +112,7 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
       )
     else:  # Otherwise, generate multiple capacitors
       # Additionally annotate the table by total cost and count, sort by lower count then total cost
-      def parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-        new_cols: Dict[PartsTableColumn, Any] = {}
-        count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
-        derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
-        if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec
-          return None
-
-        new_cols[self.PARALLEL_COUNT] = count
-        new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
-        new_cols[self.PARALLEL_CAPACITANCE] = row[self._TABLE.CAPACITANCE] * count
-        new_cols[self.PARALLEL_COST] = row[self._TABLE.COST] * count
-
-        return new_cols
-
-      part = self.parallel_parts(derated_parts, capacitance, voltage)
+      part = self.add_parallel_capacitance(derated_parts, capacitance, voltage)
 
       self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
       self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
