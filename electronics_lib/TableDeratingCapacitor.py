@@ -2,6 +2,7 @@ from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
 from .PartsTable import *
 import math
+from abc import ABCMeta
 
 class CapacitorTable(LazyTable):
   CAPACITANCE: PartsTableColumn[Range]
@@ -50,6 +51,11 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_capacitance = self.Parameter(RangeExpr())
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
+
+  @abstractmethod
+  def select_capacitor(self, capacitance: Range, voltage: Range,
+                       single_nominal_capacitance: Range,
+                       part_spec: str, footprint_spec: str) -> None: pass
 
   def filter_capacitor(self, voltage: Range, single_nominal_capacitance: Range,
                          part_spec: str, footprint_spec: str,) -> PartsTable:
