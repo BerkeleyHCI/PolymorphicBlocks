@@ -17,14 +17,15 @@ jobs:
     - id: skip_check
       uses: fkirc/skip-duplicate-actions@master
       with:
-        paths:
-        - "compiler/**"
-        - "edg_core/**"
-        - "electronics_model/**"
-        - "electronics_abstract_parts/**"
-        - "electronics_lib/**"
-        - "edg/**"
-        - "examples/**.py"
+        paths: '
+          "compiler/**",
+          "edg_core/**",
+          "electronics_model/**",
+          "electronics_abstract_parts/**",
+          "electronics_lib/**",
+          "edg/**",
+          "examples/**.py"
+        '
 
   mypy:
     needs: pre_job
