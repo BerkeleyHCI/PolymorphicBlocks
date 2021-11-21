@@ -21,7 +21,7 @@ jobs:
 
   mypy:
     needs: pre_job
-#    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -35,6 +35,16 @@ jobs:
     - name: mypy
       run: |
         mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
+
+  unittest:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.10'
 
     - name: install dependencies
       run: |
