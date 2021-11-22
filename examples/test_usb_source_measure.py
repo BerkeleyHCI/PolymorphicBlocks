@@ -342,14 +342,26 @@ class UsbSourceMeasureTest(BoardTop):
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
 
       (self.i2c_pull, ), _ = self.chain(self.mcu.i2c_0, imp.Block(I2cPullup()), self.pd.i2c)
-      self.connect(self.mcu.new_io(DigitalBidir), self.pd.int)
+      self.pd_int_net = self.connect(self.mcu.new_io(DigitalBidir), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
-      self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
-      self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
+      self.rgb_r_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
+      self.rgb_g_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
+      self.rgb_b_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
+
+      (self.sw1, ), self.sw1_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw2, ), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw3, ), self.sw3_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
       shared_spi = self.mcu.new_io(SpiMaster)
+
+      self.lcd = imp.Block(Qt096t_if09())
+      self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
+      self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
+      self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
+      self.lcd_spi_net = self.connect(shared_spi, self.lcd.spi)  # MISO unused
+      self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
+
       (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
                                      self.control.control_voltage)
       (self.dac_ip, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
@@ -366,16 +378,16 @@ class UsbSourceMeasureTest(BoardTop):
                    self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
                    self.adc_v.ref, self.adc_i.ref)
 
-      self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
-      self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)
-      self.connect(self.mcu.new_io(DigitalBidir), self.dac_in.cs)
-      self.connect(self.mcu.new_io(DigitalBidir), self.adc_v.cs)
-      self.connect(self.mcu.new_io(DigitalBidir), self.adc_i.cs)
-      self.connect(self.mcu.new_io(DigitalBidir),
+      self.dac_v_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
+      self.dac_ip_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)
+      self.dac_in_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_in.cs)
+      self.adc_v_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc_v.cs)
+      self.adc_i_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc_i.cs)
+      self.dac_ldac_net = self.connect(self.mcu.new_io(DigitalBidir),
                    self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
 
-      self.connect(self.mcu.new_io(DigitalBidir), self.control.high_en)
-      self.connect(self.mcu.new_io(DigitalBidir), self.control.low_en)
+      self.high_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.high_en)
+      self.low_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.low_en)
 
     # TODO add UI elements: output enable tactile switch + LCD + 4 directional buttons
 
