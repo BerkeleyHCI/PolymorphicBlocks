@@ -1,0 +1,415 @@
+ccopy_reg
+_reconstructor
+p0
+(csave_restore_layout.save_restore_layout
+LayoutData
+p1
+c__builtin__
+tuple
+p2
+(V(kicad_pcb (version 20171130) (host pcbnew "(5.1.2)-1")\u000a\u000a  (general\u000a    (thickness 1.6)\u000a    (drawings 2)\u000a    (tracks 247)\u000a    (zones 0)\u000a    (modules 16)\u000a    (nets 31)\u000a  )\u000a\u000a  (page A4)\u000a  (layers\u000a    (0 F.Cu signal)\u000a    (1 In1.Cu power)\u000a    (2 In2.Cu power)\u000a    (31 B.Cu signal)\u000a    (32 B.Adhes user)\u000a    (33 F.Adhes user)\u000a    (34 B.Paste user)\u000a    (35 F.Paste user)\u000a    (36 B.SilkS user)\u000a    (37 F.SilkS user)\u000a    (38 B.Mask user)\u000a    (39 F.Mask user)\u000a    (40 Dwgs.User user)\u000a    (41 Cmts.User user)\u000a    (42 Eco1.User user)\u000a    (43 Eco2.User user)\u000a    (44 Edge.Cuts user)\u000a    (45 Margin user)\u000a    (46 B.CrtYd user hide)\u000a    (47 F.CrtYd user hide)\u000a    (48 B.Fab user hide)\u000a    (49 F.Fab user hide)\u000a  )\u000a\u000a  (setup\u000a    (last_trace_width 0.16)\u000a    (user_trace_width 0.16)\u000a    (user_trace_width 0.25)\u000a    (user_trace_width 0.5)\u000a    (user_trace_width 1)\u000a    (user_trace_width 4)\u000a    (user_trace_width 8)\u000a    (trace_clearance 0.16)\u000a    (zone_clearance 0.254)\u000a    (zone_45_only no)\u000a    (trace_min 0.16)\u000a    (via_size 0.8)\u000a    (via_drill 0.4)\u000a    (via_min_size 0.4)\u000a    (via_min_drill 0.3)\u000a    (user_via 0.7 0.3)\u000a    (user_via 1.2 0.8)\u000a    (uvia_size 0.3)\u000a    (uvia_drill 0.1)\u000a    (uvias_allowed no)\u000a    (uvia_min_size 0.2)\u000a    (uvia_min_drill 0.1)\u000a    (edge_width 0.05)\u000a    (segment_width 0.2)\u000a    (pcb_text_width 0.3)\u000a    (pcb_text_size 1.5 1.5)\u000a    (mod_edge_width 0.12)\u000a    (mod_text_size 1 1)\u000a    (mod_text_width 0.15)\u000a    (pad_size 2.9 2.9)\u000a    (pad_drill 2.5)\u000a    (pad_to_mask_clearance 0.051)\u000a    (solder_mask_min_width 0.25)\u000a    (pad_to_paste_clearance -0.05)\u000a    (aux_axis_origin 138 48)\u000a    (grid_origin 164 56)\u000a    (visible_elements 7FFFFFFF)\u000a    (pcbplotparams\u000a      (layerselection 0x010f0_ffffffff)\u000a      (usegerberextensions false)\u000a      (usegerberattributes false)\u000a      (usegerberadvancedattributes false)\u000a      (creategerberjobfile false)\u000a      (excludeedgelayer true)\u000a      (linewidth 0.100000)\u000a      (plotframeref false)\u000a      (viasonmask false)\u000a      (mode 1)\u000a      (useauxorigin false)\u000a      (hpglpennumber 1)\u000a      (hpglpenspeed 20)\u000a      (hpglpendiameter 15.000000)\u000a      (psnegative false)\u000a      (psa4output false)\u000a      (plotreference true)\u000a      (plotvalue true)\u000a      (plotinvisibletext false)\u000a      (padsonsilk false)\u000a      (subtractmaskfromsilk false)\u000a      (outputformat 1)\u000a      (mirror false)\u000a      (drillshape 0)\u000a      (scaleselection 1)\u000a      (outputdirectory "gerbers"))\u000a  )\u000a\u000a  (net 0 "")\u000a  (net 1 gnd)\u000a  (net 2 v3v3)\u000a  (net 3 rgb_usb.package.green_k)\u000a  (net 4 rgb_usb.package.red_k)\u000a  (net 5 rgb_can_grn_net)\u000a  (net 6 rgb_can_blue_net)\u000a  (net 7 swd.swd.swdio)\u000a  (net 8 usb.port.cc.cc1)\u000a  (net 9 adc_i.cs)\u000a  (net 10 dac_ip.spi.miso)\u000a  (net 11 adc_i.spi.sck)\u000a  (net 12 mcu.digital[7])\u000a  (net 13 control.high_en)\u000a  (net 14 control.low_en)\u000a  (net 15 mcu.xtal.xtal_in)\u000a  (net 16 crystal.crystal.b)\u000a  (net 17 dac_ip.ldac)\u000a  (net 18 dac_in.spi.mosi)\u000a  (net 19 mcu.digital[6])\u000a  (net 20 mcu.digital[5])\u000a  (net 21 mcu.digital[4])\u000a  (net 22 rgb.red)\u000a  (net 23 mcu.swd.swo)\u000a  (net 24 mcu.digital[3])\u000a  (net 25 rgb.green)\u000a  (net 26 mcu.swd.swclk)\u000a  (net 27 swd.swd.reset)\u000a  (net 28 data_usb.usb.dp)\u000a  (net 29 usb_esd.usb.dm)\u000a  (net 30 mcu.digital[0])\u000a\u000a  (net_class Default "This is the default net class."\u000a    (clearance 0.16)\u000a    (trace_width 0.16)\u000a    (via_dia 0.8)\u000a    (via_drill 0.4)\u000a    (uvia_dia 0.3)\u000a    (uvia_drill 0.1)\u000a    (add_net adc_i.cs)\u000a    (add_net adc_i.spi.sck)\u000a    (add_net control.high_en)\u000a    (add_net control.low_en)\u000a    (add_net crystal.crystal.b)\u000a    (add_net dac_in.spi.mosi)\u000a    (add_net dac_ip.ldac)\u000a    (add_net dac_ip.spi.miso)\u000a    (add_net data_usb.usb.dp)\u000a    (add_net gnd)\u000a    (add_net mcu.digital[0])\u000a    (add_net mcu.digital[3])\u000a    (add_net mcu.digital[4])\u000a    (add_net mcu.digital[5])\u000a    (add_net mcu.digital[6])\u000a    (add_net mcu.digital[7])\u000a    (add_net mcu.swd.swclk)\u000a    (add_net mcu.swd.swo)\u000a    (add_net mcu.xtal.xtal_in)\u000a    (add_net pd.cc.cc2)\u000a    (add_net pd.ic.vconn)\u000a    (add_net pwr_usb.cc.cc1)\u000a    (add_net ref_buf.input)\u000a    (add_net "reg_5v.(adapter)boot_cap.pos.src")\u000a    (add_net reg_5v._pwr_out_net)\u000a    (add_net reg_5v._switch_net)\u000a    (add_net reg_5v.en_res.b)\u000a    (add_net reg_5v.fb.output)\u000a    (add_net rgb.green)\u000a    (add_net rgb.red)\u000a    (add_net rgb_can_blue_net)\u000a    (add_net rgb_can_grn_net)\u000a    (add_net rgb_usb.package.green_k)\u000a    (add_net rgb_usb.package.red_k)\u000a    (add_net swd.swd.reset)\u000a    (add_net swd.swd.swdio)\u000a    (add_net usb.port.cc.cc1)\u000a    (add_net usb_esd.usb.dm)\u000a    (add_net v3v3)\u000a  )\u000a\u000a  (module Package_QFP:LQFP-48_7x7mm_P0.5mm (layer F.Cu) (tedit 5C18330E) (tstamp 5E17D6F0)\u000a    (at 164 56 135)\u000a    (descr "LQFP, 48 Pin (https://www.analog.com/media/en/technical-documentation/data-sheets/ltc2358-16.pdf), generated with kicad-footprint-generator ipc_gullwing_generator.py")\u000a    (tags "LQFP QFP")\u000a    (path /mcu/ic)\u000a    (attr smd)\u000a    (fp_text reference mcu.ic (at 0 -5.85 135) (layer F.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)))\u000a    )\u000a    (fp_text value "LPC1549JBD48 (NXP)" (at 0 5.85 135) (layer F.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)))\u000a    )\u000a    (fp_line (start 3.16 3.61) (end 3.61 3.61) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start 3.61 3.61) (end 3.61 3.16) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -3.16 3.61) (end -3.61 3.61) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -3.61 3.61) (end -3.61 3.16) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start 3.16 -3.61) (end 3.61 -3.61) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start 3.61 -3.61) (end 3.61 -3.16) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -3.16 -3.61) (end -3.61 -3.61) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -3.61 -3.61) (end -3.61 -3.16) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -3.61 -3.16) (end -4.9 -3.16) (layer F.SilkS) (width 0.12))\u000a    (fp_line (start -2.5 -3.5) (end 3.5 -3.5) (layer F.Fab) (width 0.1))\u000a    (fp_line (start 3.5 -3.5) (end 3.5 3.5) (layer F.Fab) (width 0.1))\u000a    (fp_line (start 3.5 3.5) (end -3.5 3.5) (layer F.Fab) (width 0.1))\u000a    (fp_line (start -3.5 3.5) (end -3.5 -2.5) (layer F.Fab) (width 0.1))\u000a    (fp_line (start -3.5 -2.5) (end -2.5 -3.5) (layer F.Fab) (width 0.1))\u000a    (fp_line (start 0 -5.15) (end -3.15 -5.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.15 -5.15) (end -3.15 -3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.15 -3.75) (end -3.75 -3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.75 -3.75) (end -3.75 -3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.75 -3.15) (end -5.15 -3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -5.15 -3.15) (end -5.15 0) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 0 -5.15) (end 3.15 -5.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.15 -5.15) (end 3.15 -3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.15 -3.75) (end 3.75 -3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.75 -3.75) (end 3.75 -3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.75 -3.15) (end 5.15 -3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 5.15 -3.15) (end 5.15 0) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 0 5.15) (end -3.15 5.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.15 5.15) (end -3.15 3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.15 3.75) (end -3.75 3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.75 3.75) (end -3.75 3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -3.75 3.15) (end -5.15 3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start -5.15 3.15) (end -5.15 0) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 0 5.15) (end 3.15 5.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.15 5.15) (end 3.15 3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.15 3.75) (end 3.75 3.75) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.75 3.75) (end 3.75 3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 3.75 3.15) (end 5.15 3.15) (layer F.CrtYd) (width 0.05))\u000a    (fp_line (start 5.15 3.15) (end 5.15 0) (layer F.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0 135) (layer F.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)))\u000a    )\u000a    (pad 1 smd roundrect (at -4.1625 -2.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 18 dac_in.spi.mosi))\u000a    (pad 2 smd roundrect (at -4.1625 -2.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 22 rgb.red))\u000a    (pad 3 smd roundrect (at -4.1625 -1.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 12 mcu.digital[7]))\u000a    (pad 4 smd roundrect (at -4.1625 -1.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 5 smd roundrect (at -4.1625 -0.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 6 smd roundrect (at -4.1625 -0.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 21 mcu.digital[4]))\u000a    (pad 7 smd roundrect (at -4.1625 0.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 8 smd roundrect (at -4.1625 0.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 17 dac_ip.ldac))\u000a    (pad 9 smd roundrect (at -4.1625 1.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 23 mcu.swd.swo))\u000a    (pad 10 smd roundrect (at -4.1625 1.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 11 smd roundrect (at -4.1625 2.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 12 smd roundrect (at -4.1625 2.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 13 smd roundrect (at -2.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 11 adc_i.spi.sck))\u000a    (pad 14 smd roundrect (at -2.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 15 smd roundrect (at -1.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 24 mcu.digital[3]))\u000a    (pad 16 smd roundrect (at -1.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 17 smd roundrect (at -0.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 18 smd roundrect (at -0.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 25 rgb.green))\u000a    (pad 19 smd roundrect (at 0.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 20 smd roundrect (at 0.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 21 smd roundrect (at 1.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 22 smd roundrect (at 1.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 23 smd roundrect (at 2.25 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 9 adc_i.cs))\u000a    (pad 24 smd roundrect (at 2.75 4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 25 smd roundrect (at 4.1625 2.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 16 crystal.crystal.b))\u000a    (pad 26 smd roundrect (at 4.1625 2.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 15 mcu.xtal.xtal_in))\u000a    (pad 27 smd roundrect (at 4.1625 1.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 28 smd roundrect (at 4.1625 1.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 20 mcu.digital[5]))\u000a    (pad 29 smd roundrect (at 4.1625 0.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 26 mcu.swd.swclk))\u000a    (pad 30 smd roundrect (at 4.1625 0.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 31 smd roundrect (at 4.1625 -0.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 32 smd roundrect (at 4.1625 -0.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 33 smd roundrect (at 4.1625 -1.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 7 swd.swd.swdio))\u000a    (pad 34 smd roundrect (at 4.1625 -1.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 27 swd.swd.reset))\u000a    (pad 35 smd roundrect (at 4.1625 -2.25 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 28 data_usb.usb.dp))\u000a    (pad 36 smd roundrect (at 4.1625 -2.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 29 usb_esd.usb.dm))\u000a    (pad 37 smd roundrect (at 2.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 38 smd roundrect (at 2.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (pad 39 smd roundrect (at 1.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 40 smd roundrect (at 1.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 41 smd roundrect (at 0.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 42 smd roundrect (at 0.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 43 smd roundrect (at -0.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 19 mcu.digital[6]))\u000a    (pad 44 smd roundrect (at -0.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 14 control.low_en))\u000a    (pad 45 smd roundrect (at -1.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 10 dac_ip.spi.miso))\u000a    (pad 46 smd roundrect (at -1.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 30 mcu.digital[0]))\u000a    (pad 47 smd roundrect (at -2.25 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)\u000a      (net 13 control.high_en))\u000a    (pad 48 smd roundrect (at -2.75 -4.1625 135) (size 0.3 1.475) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))\u000a    (model ${KISYS3DMOD}/Package_QFP.3dshapes/LQFP-48_7x7mm_P0.5mm.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A8ADF)\u000a    (at 166 53)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[0])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[0] (at 0 1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A895F)\u000a    (at 164 51)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[1])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[1] (at 0 1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B103KB8NNNC (Samsung Electro-Mechanics) - 10000pF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E17D723)\u000a    (at 160 55)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[2])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[2] (at 0 -1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A8AAF)\u000a    (at 160 57)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[3])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[3] (at 0 1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B103KB8NNNC (Samsung Electro-Mechanics) - 10000pF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A8A7F)\u000a    (at 164 61)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[4])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[4] (at 0 -1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A8A4F)\u000a    (at 162 59)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwr_cap[5])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwr_cap[5] (at 0 -1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B103KB8NNNC (Samsung Electro-Mechanics) - 10000pF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A8A1F)\u000a    (at 168 55)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwra_cap[0])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwra_cap[0] (at 0 -1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0805_2012Metric (layer B.Cu) (tedit 5B36C52B) (tstamp 5E1A89EF)\u000a    (at 164 55 180)\u000a    (descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/pwra_cap[1])\u000a    (attr smd)\u000a    (fp_text reference mcu.pwra_cap[1] (at 0 1 180) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL21A106KPFNNNE (Samsung Electro-Mechanics) - 10µF, 10V" (at 0 -1.65 180) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -1 -0.6) (end -1 0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -1 0.6) (end 1 0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 1 0.6) (end 1 -0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 1 -0.6) (end -1 -0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.258578 0.71) (end 0.258578 0.71) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.258578 -0.71) (end 0.258578 -0.71) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.68 -0.95) (end -1.68 0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.68 0.95) (end 1.68 0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.68 0.95) (end 1.68 -0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.68 -0.95) (end -1.68 -0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0 180) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.9375 0 180) (size 0.975 1.4) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.9375 0 180) (size 0.975 1.4) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0805_2012Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Resistor_SMD:R_0603_1608Metric (layer B.Cu) (tedit 5B301BBD) (tstamp 5E17D789)\u000a    (at 154 62 90)\u000a    (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags resistor)\u000a    (path /mcu/reset_pull)\u000a    (attr smd)\u000a    (fp_text reference mcu.reset_pull (at 2 0 90) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "10k, 1%, 0.1 W" (at 0 -1.43 90) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0 90) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 27 swd.swd.reset))\u000a    (pad 1 smd roundrect (at -0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Resistor_SMD:R_0603_1608Metric (layer B.Cu) (tedit 5B301BBD) (tstamp 5E17D79A)\u000a    (at 156 62 90)\u000a    (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags resistor)\u000a    (path /mcu/swclk_pull)\u000a    (attr smd)\u000a    (fp_text reference mcu.swclk_pull (at 2 0 90) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "10k, 1%, 0.1 W" (at 0 -1.43 90) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0 90) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 2 smd roundrect (at 0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 26 mcu.swd.swclk))\u000a    (model ${KISYS3DMOD}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Resistor_SMD:R_0603_1608Metric (layer B.Cu) (tedit 5B301BBD) (tstamp 5E17D7AB)\u000a    (at 158 62 90)\u000a    (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags resistor)\u000a    (path /mcu/swdio_pull)\u000a    (attr smd)\u000a    (fp_text reference mcu.swdio_pull (at 2 0 -90) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "10k, 1%, 0.1 W" (at 0 -1.43 -90) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0 -90) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0 90) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 7 swd.swd.swdio))\u000a    (model ${KISYS3DMOD}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E38659F)\u000a    (at 162 53 180)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/vbat_cap)\u000a    (attr smd)\u000a    (fp_text reference mcu.vbat_cap (at 0 -1 180) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0 180) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.7875 0 180) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E1A898F)\u000a    (at 168 57)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/vref_cap[0])\u000a    (attr smd)\u000a    (fp_text reference mcu.vref_cap[0] (at 0 1 -180) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0603_1608Metric (layer B.Cu) (tedit 5B301BBE) (tstamp 5E17D7DE)\u000a    (at 166 59)\u000a    (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/vref_cap[1])\u000a    (attr smd)\u000a    (fp_text reference mcu.vref_cap[1] (at 0 -1) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL10B104KB8NNNC (Samsung Electro-Mechanics) - 0.1µF, 50V" (at 0 -1.43) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.48 -0.73) (end -1.48 0.73) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.162779 -0.51) (end 0.162779 -0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.162779 0.51) (end 0.162779 0.51) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 0.8 -0.4) (end -0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (module Capacitor_SMD:C_0805_2012Metric (layer B.Cu) (tedit 5B36C52B) (tstamp 5E1AADB8)\u000a    (at 164 57 180)\u000a    (descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")\u000a    (tags capacitor)\u000a    (path /mcu/vref_cap[2])\u000a    (attr smd)\u000a    (fp_text reference mcu.vref_cap[2] (at 0 -1 180) (layer B.SilkS)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text value "CL21A106KPFNNNE (Samsung Electro-Mechanics) - 10µF, 10V" (at 0 -1.65 180) (layer B.Fab)\u000a      (effects (font (size 0.75 0.5) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_text user %R (at 0 0 180) (layer B.Fab)\u000a      (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))\u000a    )\u000a    (fp_line (start 1.68 -0.95) (end -1.68 -0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start 1.68 0.95) (end 1.68 -0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.68 0.95) (end 1.68 0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -1.68 -0.95) (end -1.68 0.95) (layer B.CrtYd) (width 0.05))\u000a    (fp_line (start -0.258578 -0.71) (end 0.258578 -0.71) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start -0.258578 0.71) (end 0.258578 0.71) (layer B.SilkS) (width 0.12))\u000a    (fp_line (start 1 -0.6) (end -1 -0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start 1 0.6) (end 1 -0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -1 0.6) (end 1 0.6) (layer B.Fab) (width 0.1))\u000a    (fp_line (start -1 -0.6) (end -1 0.6) (layer B.Fab) (width 0.1))\u000a    (pad 2 smd roundrect (at 0.9375 0 180) (size 0.975 1.4) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 1 gnd))\u000a    (pad 1 smd roundrect (at -0.9375 0 180) (size 0.975 1.4) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)\u000a      (net 2 v3v3))\u000a    (model ${KISYS3DMOD}/Capacitor_SMD.3dshapes/C_0805_2012Metric.wrl\u000a      (at (xyz 0 0 0))\u000a      (scale (xyz 1 1 1))\u000a      (rotate (xyz 0 0 0))\u000a    )\u000a  )\u000a\u000a  (dimension 58.5 (width 0.15) (layer Dwgs.User)\u000a    (gr_text "58.500 mm" (at 174.75 42.7) (layer Dwgs.User)\u000a      (effects (font (size 1 1) (thickness 0.15)))\u000a    )\u000a    (feature1 (pts (xy 204 48) (xy 204 43.413579)))\u000a    (feature2 (pts (xy 145.5 48) (xy 145.5 43.413579)))\u000a    (crossbar (pts (xy 145.5 44) (xy 204 44)))\u000a    (arrow1a (pts (xy 204 44) (xy 202.873496 44.586421)))\u000a    (arrow1b (pts (xy 204 44) (xy 202.873496 43.413579)))\u000a    (arrow2a (pts (xy 145.5 44) (xy 146.626504 44.586421)))\u000a    (arrow2b (pts (xy 145.5 44) (xy 146.626504 43.413579)))\u000a  )\u000a  (dimension 15 (width 0.15) (layer Dwgs.User) (tstamp 5E3BE23C)\u000a    (gr_text "15.000 mm" (at 141.7 56 90) (layer Dwgs.User) (tstamp 5E3BE23C)\u000a      (effects (font (size 1 1) (thickness 0.15)))\u000a    )\u000a    (feature1 (pts (xy 145 48.5) (xy 142.413579 48.5)))\u000a    (feature2 (pts (xy 145 63.5) (xy 142.413579 63.5)))\u000a    (crossbar (pts (xy 143 63.5) (xy 143 48.5)))\u000a    (arrow1a (pts (xy 143 48.5) (xy 143.586421 49.626504)))\u000a    (arrow1b (pts (xy 143 48.5) (xy 142.413579 49.626504)))\u000a    (arrow2a (pts (xy 143 63.5) (xy 143.586421 62.373496)))\u000a    (arrow2b (pts (xy 143 63.5) (xy 142.413579 62.373496)))\u000a  )\u000a\u000a  (segment (start 166.616117 51.616117) (end 168.163555 51.616117) (width 0.16) (layer F.Cu) (net 0))\u000a  (segment (start 166.059449 52.172785) (end 166.616117 51.616117) (width 0.16) (layer F.Cu) (net 0) (status 10))\u000a  (segment (start 166.262563 51.262563) (end 168.262563 51.262563) (width 0.16) (layer F.Cu) (net 0))\u000a  (segment (start 165.705895 51.819231) (end 166.262563 51.262563) (width 0.16) (layer F.Cu) (net 0) (status 10))\u000a  (via (at 160.5 61) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 0))\u000a  (segment (start 161 61.5) (end 160.5 61) (width 0.16) (layer F.Cu) (net 0))\u000a  (segment (start 163.001212 60.887876) (end 162.389088 61.5) (width 0.16) (layer F.Cu) (net 0) (status 10))\u000a  (segment (start 162.389088 61.5) (end 161 61.5) (width 0.16) (layer F.Cu) (net 0))\u000a  (segment (start 160.5 61) (end 161.5 60) (width 0.16) (layer In2.Cu) (net 0))\u000a  (segment (start 168.7875 57.7125) (end 168.7875 57) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 168.7875 55) (end 168.7875 54.2875) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (via (at 166 54) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1))\u000a  (segment (start 168.7875 54.2875) (end 168.5 54) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 168.5 54) (end 166 54) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 166.114946 54.114946) (end 166 54) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 166.945714 54.114946) (end 166.114946 54.114946) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 167.473662 53.586998) (end 166.945714 54.114946) (width 0.25) (layer F.Cu) (net 1) (status 10))\u000a  (segment (start 163.0625 55) (end 163.0625 54) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 163.0625 54) (end 166 54) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 163.0625 57) (end 163.0625 56) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 162 55) (end 163.0625 55) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 160.7875 55) (end 162 55) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 162 57) (end 163.0625 57) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 160.7875 57) (end 162 57) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 161.2125 53) (end 161.2125 53.7125) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 163.0625 56) (end 163.0625 55) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (via (at 162 57) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1))\u000a  (segment (start 161.232234 57) (end 160.172785 58.059449) (width 0.25) (layer F.Cu) (net 1) (status 20))\u000a  (segment (start 162 57) (end 161.232234 57) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 161.93934 57) (end 160.526338 58.413002) (width 0.25) (layer F.Cu) (net 1) (status 20))\u000a  (segment (start 162 57) (end 161.93934 57) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 163.0625 57.9375) (end 162.7875 58.2125) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 162.7875 58.2125) (end 162.7875 59) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 163.0625 57) (end 163.0625 57.9375) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 163.0625 56) (end 166 56) (width 0.25) (layer B.Cu) (net 1))\u000a  (via (at 166 56) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1))\u000a  (segment (start 167.18198 56) (end 168.534322 57.352342) (width 0.25) (layer F.Cu) (net 1) (status 20))\u000a  (segment (start 166 56) (end 167.18198 56) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 165.75 53.75) (end 166 54) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 165.75 53.097432) (end 165.75 53.75) (width 0.25) (layer F.Cu) (net 1))\u000a  (segment (start 166.413002 52.526338) (end 166.321094 52.526338) (width 0.25) (layer F.Cu) (net 1) (status 30))\u000a  (segment (start 166.321094 52.526338) (end 165.75 53.097432) (width 0.25) (layer F.Cu) (net 1) (status 10))\u000a  (segment (start 166.7875 53) (end 166.7875 54) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 166.7875 52.2875) (end 166.7875 53) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 168.7875 57) (end 168.7875 55) (width 0.25) (layer B.Cu) (net 1) (status 30))\u000a  (segment (start 166 56) (end 168.7875 56) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 166.7875 59) (end 166.7875 58.2125) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 167 58) (end 168.5 58) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 166.7875 58.2125) (end 167 58) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 168.5 58) (end 168.7875 57.7125) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 164.7875 60.2875) (end 164.7875 61) (width 0.25) (layer B.Cu) (net 1) (status 20))\u000a  (segment (start 162.7875 59) (end 163.5 59) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 163.5 59) (end 164.7875 60.2875) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 164.7875 51) (end 164.7875 51.7875) (width 0.25) (layer B.Cu) (net 1) (status 10))\u000a  (segment (start 164.7875 51.7875) (end 165 52) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 165 52) (end 166.5 52) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 166.5 52) (end 166.7875 52.2875) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 163.0625 54) (end 161.5 54) (width 0.25) (layer B.Cu) (net 1))\u000a  (segment (start 161.2125 53.7125) (end 161.5 54) (width 0.25) (layer B.Cu) (net 1))\u000a  (via (at 155.365 58.54) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1) (status 30))\u000a  (via (at 155.365 56) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1) (status 30))\u000a  (segment (start 156 62.7875) (end 155.2875 62.7875) (width 0.16) (layer B.Cu) (net 1) (status 10))\u000a  (via (at 155 61.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 1))\u000a  (segment (start 155.2875 62.7875) (end 155 62.5) (width 0.16) (layer B.Cu) (net 1))\u000a  (segment (start 155 62.5) (end 155 61.5) (width 0.16) (layer B.Cu) (net 1))\u000a  (segment (start 159.2125 57) (end 159.2125 56) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 159.2125 55) (end 159.2125 56) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (via (at 162 58) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (via (at 166 55) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (segment (start 166 55) (end 167.2125 55) (width 0.25) (layer B.Cu) (net 2) (status 20))\u000a  (segment (start 164.9375 55) (end 166 55) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 164.9375 57) (end 166 57) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 167.2125 57) (end 166 57) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (via (at 166 57) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (segment (start 165.2125 59) (end 165.2125 58.2875) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 166 57.5) (end 166 57) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 165.2125 58.2875) (end 166 57.5) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 168.180769 57.705895) (end 167.474874 57) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (segment (start 167.474874 57) (end 167 57) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 167 57) (end 166 57) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 166.767766 55) (end 166 55) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 167.827215 53.940551) (end 166.767766 55) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (via (at 164 53) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (segment (start 165.2125 53) (end 164 53) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 162.7875 53) (end 164 53) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 163.474874 53) (end 164 53) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 162.294105 51.819231) (end 163.237437 52.762563) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (segment (start 163.237437 52.762563) (end 163.474874 53) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 161.5 58) (end 162 58) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 161.2125 59) (end 161.2125 58.2875) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 161.2125 58.2875) (end 161.5 58) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 161.646446 58) (end 162 58) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 160.879891 58.766555) (end 161.646446 58) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (via (at 162 56) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (segment (start 159.2125 56) (end 162 56) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 161.525126 56) (end 162 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 159.819231 57.705895) (end 161.525126 56) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (segment (start 162.974874 53.5) (end 163.474874 53) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 161.233445 52.879891) (end 161.853554 53.5) (width 0.25) (layer F.Cu) (net 2) (status 10))\u000a  (segment (start 161.853554 53.5) (end 162.974874 53.5) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 167.93198 55.25) (end 168.534322 54.647658) (width 0.25) (layer F.Cu) (net 2) (status 20))\u000a  (segment (start 167 55.25) (end 167.93198 55.25) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 166 55) (end 166.75 55) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 166.75 55) (end 167 55.25) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 166 57) (end 165.25 56.25) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 165.25 56.25) (end 165.25 55.75) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 165.25 55.75) (end 166 55) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 164 56) (end 165.25 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 162 56) (end 163 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 163 56) (end 164 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 164 53) (end 164 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 161.2125 59) (end 161.2125 59.7125) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 163.2125 61) (end 163.2125 60.2125) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 163 60) (end 161.5 60) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 163.2125 60.2125) (end 163 60) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 161.2125 59.7125) (end 161.5 60) (width 0.25) (layer B.Cu) (net 2))\u000a  (via (at 155.365 53.46) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2) (status 30))\u000a  (segment (start 164 52.5) (end 164 53) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 163.2125 51) (end 163.2125 51.7125) (width 0.25) (layer B.Cu) (net 2) (status 10))\u000a  (segment (start 163.2125 51.7125) (end 164 52.5) (width 0.25) (layer B.Cu) (net 2))\u000a  (segment (start 162.75 56) (end 163 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 162 58) (end 162.75 57.25) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 162.75 57.25) (end 162.75 56) (width 0.25) (layer F.Cu) (net 2))\u000a  (segment (start 158 62.7875) (end 157.2875 62.7875) (width 0.16) (layer B.Cu) (net 2) (status 10))\u000a  (via (at 157 61.59) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 2))\u000a  (segment (start 157.2875 62.7875) (end 157 62.5) (width 0.16) (layer B.Cu) (net 2))\u000a  (segment (start 157 62.5) (end 157 61.59) (width 0.16) (layer B.Cu) (net 2))\u000a  (via (at 167 62.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 3))\u000a  (segment (start 167.2875 62.7875) (end 167 62.5) (width 0.16) (layer B.Cu) (net 3))\u000a  (segment (start 166.730009 62.769991) (end 167 62.5) (width 0.16) (layer In2.Cu) (net 3))\u000a  (via (at 169 62.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 4))\u000a  (segment (start 169.2875 62.7875) (end 169 62.5) (width 0.16) (layer B.Cu) (net 4))\u000a  (segment (start 165 61) (end 163.550019 62.449981) (width 0.16) (layer In2.Cu) (net 4))\u000a  (segment (start 169 62.5) (end 167.5 61) (width 0.16) (layer In2.Cu) (net 4))\u000a  (segment (start 167.5 61) (end 165 61) (width 0.16) (layer In2.Cu) (net 4))\u000a  (segment (start 166.616117 60.383883) (end 167.366117 60.383883) (width 0.16) (layer F.Cu) (net 5))\u000a  (segment (start 167.366117 60.383883) (end 167.53997 60.21003) (width 0.16) (layer F.Cu) (net 5))\u000a  (segment (start 167.923563 59.570009) (end 168.178108 59.57001) (width 0.16) (layer F.Cu) (net 6))\u000a  (segment (start 158 61.2125) (end 158 60.25) (width 0.16) (layer B.Cu) (net 7) (status 10))\u000a  (via (at 158 60.25) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 7))\u000a  (via (at 156.635 53.46) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 7) (status 30))\u000a  (segment (start 156.635 53.46) (end 156.1725 53.9225) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 156.1725 53.9225) (end 156 54.095) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 154.5 55.595) (end 156.1725 53.9225) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 154.5 56.5) (end 154.5 55.595) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 155 57) (end 154.5 56.5) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 156 57) (end 155 57) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 158 60.25) (end 158 59) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 158 59) (end 156 57) (width 0.16) (layer In2.Cu) (net 7))\u000a  (segment (start 159.482234 53.25) (end 160.172785 53.940551) (width 0.16) (layer F.Cu) (net 7) (status 20))\u000a  (segment (start 157.175 54) (end 157.797438 54) (width 0.16) (layer F.Cu) (net 7))\u000a  (segment (start 156.635 53.46) (end 157.175 54) (width 0.16) (layer F.Cu) (net 7) (status 10))\u000a  (segment (start 154 54.152002) (end 154 54) (width 0.16) (layer F.Cu) (net 8))\u000a  (via (at 154 54) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 8))\u000a  (segment (start 153.402002 54.75) (end 154 54.152002) (width 0.16) (layer F.Cu) (net 8))\u000a  (segment (start 165.90901 50.90901) (end 168.361572 50.90901) (width 0.16) (layer F.Cu) (net 9))\u000a  (segment (start 165.352342 51.465678) (end 165.90901 50.90901) (width 0.16) (layer F.Cu) (net 9) (status 10))\u000a  (segment (start 168.344544 55.544544) (end 168.887876 55.001212) (width 0.16) (layer F.Cu) (net 11) (status 20))\u000a  (segment (start 168.344544 55.844544) (end 168.344544 55.544544) (width 0.16) (layer F.Cu) (net 11))\u000a  (segment (start 168.5 56) (end 168.344544 55.844544) (width 0.16) (layer F.Cu) (net 11))\u000a  (segment (start 165.705895 60.180769) (end 166.275126 60.75) (width 0.16) (layer F.Cu) (net 12) (status 10))\u000a  (segment (start 157.675 52.05) (end 157.675 51.175) (width 0.16) (layer B.Cu) (net 15) (status 10))\u000a  (segment (start 156.5375 50.7875) (end 156.75 51) (width 0.16) (layer B.Cu) (net 15))\u000a  (segment (start 157.5 51) (end 156.75 51) (width 0.16) (layer B.Cu) (net 15))\u000a  (segment (start 162.647658 51.465678) (end 161.93198 50.75) (width 0.16) (layer F.Cu) (net 15) (status 10))\u000a  (segment (start 157.675 51.175) (end 157.5 51) (width 0.16) (layer B.Cu) (net 15))\u000a  (segment (start 155.5 50.7875) (end 156.5375 50.7875) (width 0.16) (layer B.Cu) (net 15) (status 10))\u000a  (segment (start 161.93198 50.75) (end 160.25 50.75) (width 0.16) (layer F.Cu) (net 15))\u000a  (segment (start 161.5 50.7875) (end 161.5 50.25) (width 0.16) (layer B.Cu) (net 16) (status 10))\u000a  (segment (start 167.473662 58.413002) (end 168.31066 59.25) (width 0.16) (layer F.Cu) (net 17) (status 10))\u000a  (segment (start 166.7875 61.2125) (end 166 62) (width 0.16) (layer B.Cu) (net 18))\u000a  (segment (start 168 61.2125) (end 166.7875 61.2125) (width 0.16) (layer B.Cu) (net 18))\u000a  (via (at 166 62) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 18))\u000a  (segment (start 165.625 61.625) (end 166 62) (width 0.16) (layer F.Cu) (net 18))\u000a  (segment (start 164.998788 60.887876) (end 165.625 61.514088) (width 0.16) (layer F.Cu) (net 18) (status 10))\u000a  (segment (start 165.625 61.514088) (end 165.625 61.625) (width 0.16) (layer F.Cu) (net 18))\u000a  (segment (start 158.5 51) (end 155 51) (width 0.16) (layer F.Cu) (net 20))\u000a  (segment (start 161.940551 52.172785) (end 161.30776 51.539994) (width 0.16) (layer F.Cu) (net 20) (status 10))\u000a  (segment (start 166.766555 59.120109) (end 167.536466 59.89002) (width 0.16) (layer F.Cu) (net 21) (status 10))\u000a  (via (at 169 61.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 22))\u000a  (segment (start 169.2875 61.2125) (end 169 61.5) (width 0.16) (layer B.Cu) (net 22))\u000a  (segment (start 166.31802 61.5) (end 169 61.5) (width 0.16) (layer F.Cu) (net 22))\u000a  (segment (start 165.352342 60.534322) (end 166.31802 61.5) (width 0.16) (layer F.Cu) (net 22) (status 10))\u000a  (via (at 156.635 56) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 23) (status 30))\u000a  (via (at 169.5 58.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 23))\u000a  (segment (start 169.25 58.75) (end 169.5 58.5) (width 0.16) (layer F.Cu) (net 23))\u000a  (segment (start 167.827215 58.059449) (end 168.517766 58.75) (width 0.16) (layer F.Cu) (net 23) (status 10))\u000a  (segment (start 168.517766 58.75) (end 169.25 58.75) (width 0.16) (layer F.Cu) (net 23))\u000a  (segment (start 166.5 58.5) (end 163 55) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 169.5 58.5) (end 166.5 58.5) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 163 55) (end 158.5 55) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 158.5 55) (end 158.25 54.75) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 157.725001 54.909999) (end 156.635 56) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 158.25 54.75) (end 157.885 54.75) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 157.885 54.75) (end 157.725001 54.909999) (width 0.16) (layer In2.Cu) (net 23))\u000a  (segment (start 168.180769 54.294105) (end 168.737437 53.737437) (width 0.16) (layer F.Cu) (net 24) (status 10))\u000a  (segment (start 168.737437 53.737437) (end 169.37975 53.737437) (width 0.16) (layer F.Cu) (net 24))\u000a  (segment (start 167.676777 52.676777) (end 168.771653 52.676777) (width 0.16) (layer F.Cu) (net 25))\u000a  (segment (start 167.120109 53.233445) (end 167.676777 52.676777) (width 0.16) (layer F.Cu) (net 25) (status 10))\u000a  (via (at 156.635 54.73) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 26) (status 30))\u000a  (segment (start 156 61.2125) (end 156 60.25) (width 0.16) (layer B.Cu) (net 26) (status 10))\u000a  (via (at 156 60.25) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 26))\u000a  (segment (start 156 55.365) (end 156.635 54.73) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 156.75 61) (end 158.5 61) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 156 60.25) (end 156.75 61) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 158.5 61) (end 159 60.5) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 159 60.5) (end 159 59.5) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 159 59.5) (end 156 56.5) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 156 56.5) (end 156 55.365) (width 0.16) (layer In2.Cu) (net 26))\u000a  (via (at 157.731525 53.231525) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 26))\u000a  (segment (start 161.586998 52.526338) (end 160.920663 51.860003) (width 0.16) (layer F.Cu) (net 26) (status 10))\u000a  (segment (start 157.731525 53.633475) (end 157.731525 53.231525) (width 0.16) (layer In2.Cu) (net 26))\u000a  (segment (start 156.635 54.73) (end 157.731525 53.633475) (width 0.16) (layer In2.Cu) (net 26))\u000a  (via (at 156.635 58.54) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 27) (status 30))\u000a  (segment (start 154 61.2125) (end 154 60.25) (width 0.16) (layer B.Cu) (net 27) (status 10))\u000a  (segment (start 156.044999 57.949999) (end 156.635 58.54) (width 0.16) (layer B.Cu) (net 27))\u000a  (segment (start 155.081799 57.949999) (end 156.044999 57.949999) (width 0.16) (layer B.Cu) (net 27))\u000a  (segment (start 154 60.25) (end 154 59.031798) (width 0.16) (layer B.Cu) (net 27))\u000a  (segment (start 154 59.031798) (end 155.081799 57.949999) (width 0.16) (layer B.Cu) (net 27))\u000a  (segment (start 158.679989 53.570011) (end 159.095137 53.570011) (width 0.16) (layer F.Cu) (net 27))\u000a  (segment (start 159.095137 53.570011) (end 159.819231 54.294105) (width 0.16) (layer F.Cu) (net 27) (status 20))\u000a  (segment (start 157.409999 54.840001) (end 158.679989 53.570011) (width 0.16) (layer F.Cu) (net 27))\u000a  (segment (start 153.560001 55.907999) (end 153.402002 55.75) (width 0.16) (layer F.Cu) (net 28))\u000a  (segment (start 153.560001 56.439999) (end 153.560001 55.907999) (width 0.16) (layer F.Cu) (net 28))\u000a  (segment (start 153.560001 56.592001) (end 153.560001 56.439999) (width 0.16) (layer F.Cu) (net 28))\u000a  (via (at 158 56.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 28))\u000a  (segment (start 155.4 56.6) (end 157.9 56.6) (width 0.16) (layer B.Cu) (net 28))\u000a  (segment (start 157.9 56.6) (end 158 56.5) (width 0.16) (layer B.Cu) (net 28))\u000a  (segment (start 155.05 56.95) (end 155.4 56.6) (width 0.16) (layer B.Cu) (net 28))\u000a  (segment (start 154 56.95) (end 155.05 56.95) (width 0.16) (layer B.Cu) (net 28) (status 10))\u000a  (segment (start 153.95 57) (end 154 56.95) (width 0.16) (layer B.Cu) (net 28) (status 30))\u000a  (segment (start 160.070011 55.974829) (end 160.070011 55.251991) (width 0.16) (layer F.Cu) (net 28))\u000a  (segment (start 160.070011 55.251991) (end 159.465678 54.647658) (width 0.16) (layer F.Cu) (net 28) (status 20))\u000a  (segment (start 158.337712 56.162288) (end 159.882552 56.162288) (width 0.16) (layer F.Cu) (net 28))\u000a  (segment (start 158 56.5) (end 158.337712 56.162288) (width 0.16) (layer F.Cu) (net 28))\u000a  (segment (start 159.882552 56.162288) (end 160.070011 55.974829) (width 0.16) (layer F.Cu) (net 28))\u000a  (via (at 158 55.5) (size 0.7) (drill 0.3) (layers F.Cu B.Cu) (net 29))\u000a  (segment (start 153.95 55) (end 154 55.05) (width 0.16) (layer B.Cu) (net 29) (status 30))\u000a  (segment (start 155.05 55.05) (end 155.4 55.4) (width 0.16) (layer B.Cu) (net 29))\u000a  (segment (start 154 55.05) (end 155.05 55.05) (width 0.16) (layer B.Cu) (net 29) (status 10))\u000a  (segment (start 157.9 55.4) (end 158 55.5) (width 0.16) (layer B.Cu) (net 29))\u000a  (segment (start 155.4 55.4) (end 157.9 55.4) (width 0.16) (layer B.Cu) (net 29))\u000a  (segment (start 159.75 55.639088) (end 159.112124 55.001212) (width 0.16) (layer F.Cu) (net 29) (status 20))\u000a  (segment (start 158 55.5) (end 158.342277 55.842277) (width 0.16) (layer F.Cu) (net 29))\u000a  (segment (start 159.75 55.75) (end 159.657723 55.842277) (width 0.16) (layer F.Cu) (net 29))\u000a  (segment (start 158.342277 55.842277) (end 159.657723 55.842277) (width 0.16) (layer F.Cu) (net 29))\u000a  (segment (start 159.75 55.75) (end 159.75 55.639088) (width 0.16) (layer F.Cu) (net 29))\u000a\u000a)\u000a
+p3
+S'73e6c36a982b7944ba02e403e2e6989b'
+p4
+(dp5
+Vcontrol
+p6
+(lp7
+Vcontrol
+p8
+aVexamples_test_usb_source_measure_SourceMeasureControl_238F1712.sch
+p9
+asVout_cap
+p10
+(lp11
+Vout_cap
+p12
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p13
+asVvbat_cap
+p14
+(lp15
+Vvbat_cap
+p16
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p17
+asVint
+p18
+(lp19
+Vint
+p20
+aVelectronics_abstract_parts_AbstractOpamp_IntegratorInverting_446D1847.sch
+p21
+asVvref_cap[0]
+p22
+(lp23
+Vvref_cap[0]
+p24
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p25
+asVimeas
+p26
+(lp27
+Vimeas
+p28
+aVelectronics_abstract_parts_AbstractOpamp_DifferentialAmplifier_DFF91E84.sch
+p29
+asVerr_volt
+p30
+(lp31
+Verr_volt
+p32
+aVexamples_test_usb_source_measure_ErrorAmplifier_2A101F0A.sch
+p33
+asVin_cap
+p34
+(lp35
+Vin_cap
+p36
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p37
+asVswdio_pull
+p38
+(lp39
+Vswdio_pull
+p40
+aVelectronics_abstract_parts_AbstractPassives_PullupResistor_29D60409.sch
+p41
+asVpwr_cap[1]
+p42
+(lp43
+Vpwr_cap[1]
+p44
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p45
+asVvref_cap[1]
+p46
+(lp47
+Vvref_cap[1]
+p48
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p49
+asVvdd_cap
+p50
+(lp51
+Vvdd_cap
+p52
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p53
+asVled_analog
+p54
+(lp55
+Vled_analog
+p56
+aVelectronics_lib_Leds_VoltageIndicatorLed_CD0F0927.sch
+p57
+asVled_3v3
+p58
+(lp59
+Vled_3v3
+p60
+aVelectronics_lib_Leds_VoltageIndicatorLed_CD0F0927.sch
+p61
+asVpwr_cap[2]
+p62
+(lp63
+Vpwr_cap[2]
+p64
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p65
+asVerr_sink
+p66
+(lp67
+Verr_sink
+p68
+aVexamples_test_usb_source_measure_ErrorAmplifier_C85F2361.sch
+p69
+asVsda_res
+p70
+(lp71
+Vsda_res
+p72
+aVelectronics_abstract_parts_AbstractPassives_PullupResistor_29D60409.sch
+p73
+asVrgb
+p74
+(lp75
+Vrgb
+p76
+aVelectronics_lib_Leds_IndicatorSinkRgbLed_364F1670.sch
+p77
+asVpwr_cap[4]
+p78
+(lp79
+Vpwr_cap[4]
+p80
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p81
+asVisen
+p82
+(lp83
+Visen
+p84
+aVelectronics_abstract_parts_AbstractPassives_CurrentSenseResistor_84572627.sch
+p85
+asVfb
+p86
+(lp87
+Vfb
+p88
+aVelectronics_abstract_parts_ResistiveDivider_FeedbackVoltageDivider_63C71E1A.sch
+p89
+asVi2c_pull
+p90
+(lp91
+Vi2c_pull
+p92
+aVelectronics_abstract_parts_I2cPullup_I2cPullup_9C373D57.sch
+p93
+asVvref_cap[2]
+p94
+(lp95
+Vvref_cap[2]
+p96
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p97
+asVpd
+p98
+(lp99
+Vpd
+p100
+aVelectronics_lib_Fusb302b_Fusb302b_EBFB458A.sch
+p101
+asVlow_gate
+p102
+(lp103
+Vlow_gate
+p104
+aVelectronics_abstract_parts_AbstractSolidStateRelay_DigitalAnalogIsolatedSwitch_AC1F0DA5.sch
+p105
+asVvdd_cap[0]
+p106
+(lp107
+Vvdd_cap[0]
+p108
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p109
+asVpwra_cap[0]
+p110
+(lp111
+Vpwra_cap[0]
+p112
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p113
+asVdac_v
+p114
+(lp115
+Vdac_v
+p116
+aVelectronics_lib_DacSpi_Mcp4901_Mcp4921_EBFB458A.sch
+p117
+asVadc_v
+p118
+(lp119
+Vadc_v
+p120
+aVelectronics_lib_AdcSpi_Mcp3201_Mcp3201_75C023A2.sch
+p121
+asVdac_ip
+p122
+(lp123
+Vdac_ip
+p124
+aVelectronics_lib_DacSpi_Mcp4901_Mcp4921_EBFB458A.sch
+p125
+asVhf_in_cap
+p126
+(lp127
+Vhf_in_cap
+p128
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p129
+asVswclk_pull
+p130
+(lp131
+Vswclk_pull
+p132
+aVelectronics_abstract_parts_AbstractPassives_PulldownResistor_29D60409.sch
+p133
+asVdriver
+p134
+(lp135
+Vdriver
+p136
+aVexamples_test_usb_source_measure_GatedEmitterFollower_7E1C63AB.sch
+p137
+asVerr_source
+p138
+(lp139
+Verr_source
+p140
+aVexamples_test_usb_source_measure_ErrorAmplifier_C85F2361.sch
+p141
+asVprot_3v3
+p142
+(lp143
+Vprot_3v3
+p144
+aVelectronics_abstract_parts_AbstractDiodes_ProtectionZenerDiode_376F04C4.sch
+p145
+asVpwr_cap[0]
+p146
+(lp147
+Vpwr_cap[0]
+p148
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p149
+asVhigh_gate
+p150
+(lp151
+Vhigh_gate
+p152
+aVelectronics_abstract_parts_AbstractSolidStateRelay_DigitalAnalogIsolatedSwitch_AC1F0DA5.sch
+p153
+asVdac_in
+p154
+(lp155
+Vdac_in
+p156
+aVelectronics_lib_DacSpi_Mcp4901_Mcp4921_EBFB458A.sch
+p157
+asVamp
+p158
+(lp159
+Vamp
+p160
+aVelectronics_lib_Opamp_Tlv9061_Tlv9061_75C023A2.sch
+p161
+asVmcu
+p162
+(lp163
+Vmcu
+p164
+aVelectronics_lib_Microcontroller_Lpc1549_Lpc1549_48_CCA0F799.sch
+p165
+asVadc_i
+p166
+(lp167
+Vadc_i
+p168
+aVelectronics_lib_AdcSpi_Mcp3201_Mcp3201_75C023A2.sch
+p169
+asVvmeas
+p170
+(lp171
+Vvmeas
+p172
+aVelectronics_abstract_parts_AbstractOpamp_DifferentialAmplifier_DFF91E84.sch
+p173
+asVscl_res
+p174
+(lp175
+Vscl_res
+p176
+aVelectronics_abstract_parts_AbstractPassives_PullupResistor_29D60409.sch
+p177
+asVreset_pull
+p178
+(lp179
+Vreset_pull
+p180
+aVelectronics_abstract_parts_AbstractPassives_PullupResistor_29D60409.sch
+p181
+asVpwr_cap[5]
+p182
+(lp183
+Vpwr_cap[5]
+p184
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p185
+asVvdd_cap[1]
+p186
+(lp187
+Vvdd_cap[1]
+p188
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p189
+asVreg_analog
+p190
+(lp191
+Vreg_analog
+p192
+aVelectronics_lib_LinearRegulators_Ap2210_2E1A436C.sch
+p193
+asVpwr_cap[3]
+p194
+(lp195
+Vpwr_cap[3]
+p196
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p197
+asVreg_3v3
+p198
+(lp199
+Vreg_3v3
+p200
+aVelectronics_lib_LinearRegulators_Xc6209_2E1A436C.sch
+p201
+asVcrystal
+p202
+(lp203
+Vcrystal
+p204
+aVelectronics_lib_Crystals_OscillatorCrystal_C5840E18.sch
+p205
+asVres
+p206
+(lp207
+Vres
+p208
+aVelectronics_abstract_parts_AbstractPassives_SeriesPowerResistor_29D60409.sch
+p209
+asVpwra_cap[1]
+p210
+(lp211
+Vpwra_cap[1]
+p212
+aVelectronics_abstract_parts_AbstractPassives_DecouplingCapacitor_289603F3.sch
+p213
+asVdiv
+p214
+(lp215
+Vdiv
+p216
+aVelectronics_abstract_parts_ResistiveDivider_ResistiveDivider_413B0C4B.sch
+p217
+asVref_div
+p218
+(lp219
+Vref_div
+p220
+aVelectronics_abstract_parts_ResistiveDivider_VoltageDivider_63C71E1A.sch
+p221
+asVreg_5v
+p222
+(lp223
+Vreg_5v
+p224
+aVelectronics_lib_DcDcConverters_Tps54202h_05C793C0.sch
+p225
+asVref_buf
+p226
+(lp227
+Vref_buf
+p228
+aVelectronics_abstract_parts_AbstractOpamp_OpampFollower_957712CE.sch
+p229
+as(lp230
+(lp231
+g164
+a(lp232
+g165
+atp233
+tp234
+Rp235
+.
