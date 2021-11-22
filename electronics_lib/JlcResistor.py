@@ -1,5 +1,3 @@
-from typing import Optional
-from electronics_abstract_parts import *
 from .JlcTable import *
 from .JlcFootprint import JlcFootprint
 

@@ -2,7 +2,7 @@ from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
 from .PartsTable import *
 import math
-#from abc import ABCMeta
+from .JlcFootprint import JlcFootprint
 
 class CapacitorTable(LazyTable):
   CAPACITANCE: PartsTableColumn[Range]
@@ -52,10 +52,54 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_derated_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-  @abstractmethod
   def select_capacitor(self, capacitance: Range, voltage: Range,
                        single_nominal_capacitance: Range,
-                       part_spec: str, footprint_spec: str) -> None: pass
+                       part_spec: str, footprint_spec: str) -> None:
+    # Pre-filter out by the static parameters
+    # Note that we can't filter out capacitance before derating
+    prefiltered_parts = self.filter_capacitor(voltage, single_nominal_capacitance, part_spec, footprint_spec)
+
+    derated_parts = self.add_derated_capacitance(voltage, prefiltered_parts)
+    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
+    # An empty parts table handles the case where it's below the minimum or does not match within a series.
+
+    derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
+
+    if capacitance.lower <= derated_max_min_capacitance:
+      part = derated_parts.filter(lambda row: (
+          row[self.DERATED_CAPACITANCE] in capacitance
+      )).first(f"no single capacitor in {capacitance} F, {voltage} V")
+      self.generate_single_capacitor(part, capacitance, voltage)
+    else: # Otherwise, generate multiple capacitors
+      # Additionally annotate the table by total cost and count, sort by lower count then total cost
+      part = self.add_parallel_capacitance(derated_parts, capacitance, voltage)
+      self.generate_parallel_capacitor(part, capacitance, voltage)
+
+
+  def generate_single_capacitor(self, part: PartsTableRow,
+                              capacitance: Range, voltage: Range) -> None:
+    self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
+    self.assign(self.selected_capacitance, part[self._TABLE.CAPACITANCE])
+    self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
+
+    self.footprint(
+      'C', part[self._TABLE.FOOTPRINT],
+      {
+        '1': self.pos,
+        '2': self.neg,
+      },
+      mfr=part[self._TABLE.MANUFACTURER], part=part[self._TABLE.PART_NUMBER],
+      value=part[self._TABLE.DESCRIPTION],
+      datasheet=part[self._TABLE.DATASHEETS]
+    )
+
+
+  def generate_parallel_capacitor(self, part: PartsTableRow,
+                                  capacitance: Range, voltage: Range) -> None:
+    self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
+    self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
+    self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
+
 
   def filter_capacitor(self, voltage: Range, single_nominal_capacitance: Range,
                        part_spec: str, footprint_spec: str) -> PartsTable:
@@ -65,6 +109,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
             voltage.fuzzy_in(row[self._TABLE.VOLTAGE_RATING]) and
             Range.exact(row[self._TABLE.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)))
     return filtered_rows
+
 
   def add_derated_capacitance(self, voltage: Range, parts: PartsTable) -> PartsTable:
     def derate_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -110,7 +155,7 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
     return part
 
-#TODO Maybe worth creating JlcDummyCapacitor as a child due to lcsc_part attribute
+
 class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
   """
   Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
@@ -132,3 +177,14 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
       mfr=manufacturer, part=part_number,
       value=value
     )
+
+class JlcDummyCapacitor(DummyCapacitor, JlcFootprint):
+  """
+  Dummy capacitor that has lcsc_part as an additional parameter
+  """
+  @init_in_parent
+  def __init__(self, lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
+               part_number: StringLike = "", value: StringLike = "", *args, **kwargs):
+    super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
+
+    self.assign(self.lcsc_part, lcsc_part)

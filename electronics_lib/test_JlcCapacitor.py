@@ -33,23 +33,27 @@ class CapacitorTestCase(unittest.TestCase):
     self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
     self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C57112')
 
+
   def test_capacitor_part(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(
-        instance_values=[(['dut', 'part_spec'], '0603B103K500NT')]
+        instance_values=[(['dut', 'part_spec'], 'CL21B103KBANNNC')]
     ))
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
-    self.assertEqual(compiled.get_value(['dut', 'value']), 'X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'part']), 'CL21B103KBANNNC')
+    self.assertEqual(compiled.get_value(['dut', 'value']), 'X7R ±10% 50V 10nF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
 
   def test_capacitor_footprint(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(
-        instance_values=[(['dut', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric')]
+        instance_values=[(['dut', 'footprint_spec'], 'Capacitor_SMD:C_0805_2012Metric')]
     ))
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
-    self.assertEqual(compiled.get_value(['dut', 'value']), 'X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'part']), 'CL21B103KBANNNC')
+    self.assertEqual(compiled.get_value(['dut', 'value']), 'X7R ±10% 50V 10nF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
+
 
   def test_multi_capacitor(self) -> None:
+    """The example returns 6 capacitors due to accounting for ±10% tolerance """
     compiled = ScalaCompiler.compile(JlcBigCapacitorTestTop)
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'footprint_name']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'c[0]', 'part']), 'CL21A106KAYNNNE')

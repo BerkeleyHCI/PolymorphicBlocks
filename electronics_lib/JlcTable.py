@@ -1,5 +1,3 @@
-import re
-from .PartsTable import *
 from .TableDeratingCapacitor import *
 
 class JlcTable(CapacitorTable):

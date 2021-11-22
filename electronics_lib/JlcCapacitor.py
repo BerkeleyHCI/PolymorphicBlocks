@@ -1,4 +1,3 @@
-from .JlcTable import *
 from .PassiveCapacitor import *
 from .JlcFootprint import JlcFootprint
 
@@ -77,55 +76,23 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  def select_capacitor(self, capacitance: Range, voltage: Range,
-                       single_nominal_capacitance: Range,
-                       part_spec: str, footprint_spec: str) -> None:
-    # Pre-filter out by the static parameters
-    # Note that we can't filter out capacitance before derating
-    prefiltered_parts = self.filter_capacitor(voltage, single_nominal_capacitance, part_spec, footprint_spec)
+  def generate_single_capacitor(self, row: PartsTableRow,
+                                capacitance: Range, voltage: Range) -> None:
+    super().generate_single_capacitor(row, capacitance, voltage)
+    self.assign(self.lcsc_part, row[JlcTable.JLC_PART_NUMBER])
 
-    derated_parts = self.add_derated_capacitance(voltage, prefiltered_parts)
-    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
-    # An empty parts table handles the case where it's below the minimum or does not match within a series.
 
-    derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
-
-    if capacitance.lower <= derated_max_min_capacitance:
-      part = derated_parts.filter(lambda row: (
-          row[self.DERATED_CAPACITANCE] in capacitance
-      )).first(f"no single capacitor in {capacitance} F, {voltage} V")
-
-      self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
-      self.assign(self.selected_capacitance, part[self._TABLE.CAPACITANCE])
-      self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
-      self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
-
-      self.footprint(
-        'C', part[self._TABLE.FOOTPRINT],
-        {
-          '1': self.pos,
-          '2': self.neg,
-        },
-        mfr=part[self._TABLE.MANUFACTURER], part=part[self._TABLE.PART_NUMBER],
-        value=part[self._TABLE.DESCRIPTION],
-        datasheet=part[self._TABLE.DATASHEETS]
-      )
-    else:  # Otherwise, generate multiple capacitors
-      # Additionally annotate the table by total cost and count, sort by lower count then total cost
-      part = self.add_parallel_capacitance(derated_parts, capacitance, voltage)
-
-      self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
-      self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
-      self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
-      self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
-
-      cap_model = DummyCapacitor(capacitance=part[self._TABLE.NOMINAL_CAPACITANCE],
-                                 voltage=self.voltage,
-                                 footprint=part[self._TABLE.FOOTPRINT],
-                                 manufacturer=part[self._TABLE.MANUFACTURER], part_number=part[self._TABLE.PART_NUMBER],
-                                 value=part[self._TABLE.DESCRIPTION])
-      self.c = ElementDict[DummyCapacitor]()
-      for i in range(part[self.PARALLEL_COUNT]):
-        self.c[i] = self.Block(cap_model)
-        self.connect(self.c[i].pos, self.pos)
-        self.connect(self.c[i].neg, self.neg)
+  def generate_parallel_capacitor(self, row: PartsTableRow,
+                                  capacitance: Range, voltage: Range) -> None:
+    super().generate_parallel_capacitor(row, capacitance, voltage)
+    cap_model = JlcDummyCapacitor(capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
+                                  voltage=self.voltage,
+                                  lcsc_part=row[JlcTable.JLC_PART_NUMBER],
+                                  footprint=row[self._TABLE.FOOTPRINT],
+                                  manufacturer=row[self._TABLE.MANUFACTURER], part_number=row[self._TABLE.PART_NUMBER],
+                                  value=row[self._TABLE.DESCRIPTION])
+    self.c = ElementDict[JlcDummyCapacitor]()
+    for i in range(row[self.PARALLEL_COUNT]):
+      self.c[i] = self.Block(cap_model)
+      self.connect(self.c[i].pos, self.pos)
+      self.connect(self.c[i].neg, self.neg)

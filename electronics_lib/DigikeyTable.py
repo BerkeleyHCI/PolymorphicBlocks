@@ -1,5 +1,4 @@
-from .PartsTable import *
-
+from .TableDeratingCapacitor import *
 
 class DigikeyTable(LazyTable):
   """Shared base class for Digikey product tables that contains common row definitions.
