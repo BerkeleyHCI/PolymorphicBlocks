@@ -73,12 +73,12 @@ class GatedEmitterFollower(Block):
       self.high_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
       self.low_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
 
-      self.connect(self.high_gate.aout, self.high_res.a.as_analog_sink())
-      self.connect(self.low_gate.aout, self.low_res.a.as_analog_sink())
+      self.connect(self.high_fet.source, self.high_res.a)
+      self.connect(self.low_fet.source, self.low_res.a)
       self.connect(self.high_res.b.as_analog_source(), self.high_gate.apull)
       self.connect(self.low_res.b.as_analog_source(), self.low_gate.apull)
-      self.connect(output_driver.as_analog_source(),
-                   self.high_fet.gate.as_analog_sink(), self.low_fet.gate.as_analog_sink())
+      self.connect(self.high_gate.aout, self.high_fet.gate.as_analog_sink())
+      self.connect(self.low_gate.aout, self.low_fet.gate.as_analog_sink())
 
 
 class ErrorAmplifier(GeneratorBlock):
