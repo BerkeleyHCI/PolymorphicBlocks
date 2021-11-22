@@ -73,6 +73,7 @@ class SmtCeramicCapacitor(TableDeratingCapacitor):
 
   def generate_parallel_capacitor(self, row: PartsTableRow,
                                   capacitance: Range, voltage: Range) -> None:
+    super().generate_parallel_capacitor(row, capacitance, voltage)
     cap_model = DummyCapacitor(capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
                                   voltage=self.voltage,
                                   footprint=row[self._TABLE.FOOTPRINT],

@@ -60,9 +60,9 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
     prefiltered_parts = self.filter_capacitor(voltage, single_nominal_capacitance, part_spec, footprint_spec)
 
     derated_parts = self.add_derated_capacitance(voltage, prefiltered_parts)
+
     # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
     # An empty parts table handles the case where it's below the minimum or does not match within a series.
-
     derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
 
     if capacitance.lower <= derated_max_min_capacitance:
