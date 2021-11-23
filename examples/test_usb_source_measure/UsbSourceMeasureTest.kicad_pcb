@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 10)
+    (drawings 11)
     (tracks 1489)
     (zones 0)
     (modules 127)
@@ -288,10 +288,10 @@
     (tags "LQFP QFP")
     (path /mcu/ic)
     (attr smd)
-    (fp_text reference mcu.ic (at 0 -5.85 135) (layer F.SilkS)
+    (fp_text reference mcu.ic (at 0 -5.85 135) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "LPC1549JBD48 (NXP)" (at 0 5.85 135) (layer F.Fab)
+    (fp_text value "LPC1549JBD48 (NXP)" (at 0 5.85 135) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 3.16 3.61) (end 3.61 3.61) (layer F.SilkS) (width 0.12))
@@ -332,7 +332,7 @@
     (fp_line (start 3.75 3.75) (end 3.75 3.15) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.75 3.15) (end 5.15 3.15) (layer F.CrtYd) (width 0.05))
     (fp_line (start 5.15 3.15) (end 5.15 0) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 135) (layer F.Fab)
+    (fp_text user %R (at 0 0 135) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -4.1625 -2.75 135) (size 1.475 0.3) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -439,10 +439,10 @@
     (tags capacitor)
     (path /crystal/cap_a)
     (attr smd)
-    (fp_text reference crystal.cap_a (at -2 0 180) (layer B.SilkS)
+    (fp_text reference crystal.cap_a (at -2 0 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10C100JB8NNNC (Samsung Electro-Mechanics) - C0G ±5% 10pF 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CL10C100JB8NNNC (Samsung Electro-Mechanics) - C0G ±5% 10pF 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -455,7 +455,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -475,10 +475,10 @@
     (tags capacitor)
     (path /crystal/cap_b)
     (attr smd)
-    (fp_text reference crystal.cap_b (at -2 0 180) (layer B.SilkS)
+    (fp_text reference crystal.cap_b (at -2 0 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10C100JB8NNNC (Samsung Electro-Mechanics) - C0G ±5% 10pF 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CL10C100JB8NNNC (Samsung Electro-Mechanics) - C0G ±5% 10pF 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -491,7 +491,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -511,10 +511,10 @@
     (tags "SMD SMT crystal oscillator")
     (path /crystal/package)
     (attr smd)
-    (fp_text reference crystal.package (at 2.5 0 180) (layer B.SilkS)
+    (fp_text reference crystal.package (at 2.5 0 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "ABM8G-106-12.000MHZ-T (Abracon LLC) - 12MHz, 10pF" (at 0 -2.45 90) (layer B.Fab)
+    (fp_text value "ABM8G-106-12.000MHZ-T (Abracon LLC) - 12MHz, 10pF" (at 0 -2.45 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1.5 1.25) (end 1.5 1.25) (layer B.Fab) (width 0.1))
@@ -536,7 +536,7 @@
     (fp_circle (center 0 0) (end 0.208333 0) (layer B.Adhes) (width 0.083333))
     (fp_circle (center 0 0) (end 0.133333 0) (layer B.Adhes) (width 0.083333))
     (fp_circle (center 0 0) (end 0.058333 0) (layer B.Adhes) (width 0.116667))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd rect (at -1.05 -0.825 90) (size 1.3 1.1) (layers B.Cu B.Paste B.Mask)
@@ -560,10 +560,10 @@
     (tags "SO SO")
     (path /control/vmeas/amp/ic)
     (attr smd)
-    (fp_text reference control.vmeas.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.vmeas.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
@@ -579,7 +579,7 @@
     (fp_line (start 0 -2.56) (end 1.95 -2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end -1.95 2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 8 smd roundrect (at 2.575 -1.905 180) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))
@@ -608,10 +608,10 @@
     (tags "SO SO")
     (path /control/amp/amp/ic)
     (attr smd)
-    (fp_text reference control.amp.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.amp.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
@@ -627,7 +627,7 @@
     (fp_line (start 0 -2.56) (end 1.95 -2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end -1.95 2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 8 smd roundrect (at 2.575 -1.905) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))
@@ -656,10 +656,10 @@
     (tags SOT-23)
     (path /usb_esd)
     (attr smd)
-    (fp_text reference usb_esd (at 0 2.5 180) (layer B.SilkS)
+    (fp_text reference usb_esd (at 0 2.5 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "TPD2E009 (Texas Instruments)" (at 0 -2.5 180) (layer B.Fab)
+    (fp_text value "TPD2E009 (Texas Instruments)" (at 0 -2.5 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.7 0.95) (end -0.7 -1.5) (layer B.Fab) (width 0.1))
@@ -675,7 +675,7 @@
     (fp_line (start -1.7 -1.75) (end -1.7 1.75) (layer B.CrtYd) (width 0.05))
     (fp_line (start 0.76 1.58) (end -1.4 1.58) (layer B.SilkS) (width 0.12))
     (fp_line (start 0.76 -1.58) (end -0.7 -1.58) (layer B.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd rect (at -1 0.95 180) (size 0.9 0.8) (layers B.Cu B.Paste B.Mask)
@@ -697,10 +697,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[2])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[2] (at 0 -1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[2] (at 0 -1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -713,7 +713,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -733,10 +733,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[1])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[1] (at 0 1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[1] (at 0 1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -749,7 +749,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -769,10 +769,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[3])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[3] (at 0 1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[3] (at 0 1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -785,7 +785,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -805,10 +805,10 @@
     (tags "SO SO")
     (path /adc_i/ic)
     (attr smd)
-    (fp_text reference adc_i.ic (at 0 -3.4) (layer F.SilkS)
+    (fp_text reference adc_i.ic (at 0 -3.4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "MCP3201T-BI/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab)
+    (fp_text value "MCP3201T-BI/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
@@ -824,7 +824,7 @@
     (fp_line (start -3.7 2.7) (end 3.7 2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 2.7) (end 3.7 -2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.575 -1.905 180) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -856,10 +856,10 @@
     (tags capacitor)
     (path /adc_i/vdd_cap)
     (attr smd)
-    (fp_text reference adc_i.vdd_cap (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference adc_i.vdd_cap (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -872,7 +872,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 90) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -892,10 +892,10 @@
     (tags "SO SO")
     (path /adc_v/ic)
     (attr smd)
-    (fp_text reference adc_v.ic (at 0 -3.4) (layer F.SilkS)
+    (fp_text reference adc_v.ic (at 0 -3.4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "MCP3201T-BI/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab)
+    (fp_text value "MCP3201T-BI/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
@@ -911,7 +911,7 @@
     (fp_line (start -3.7 2.7) (end 3.7 2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 2.7) (end 3.7 -2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.575 -1.905 180) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -943,10 +943,10 @@
     (tags capacitor)
     (path /adc_v/vdd_cap)
     (attr smd)
-    (fp_text reference adc_v.vdd_cap (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference adc_v.vdd_cap (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -959,7 +959,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 90) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -979,10 +979,10 @@
     (tags capacitor)
     (path /control/amp/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.amp.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.amp.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -995,7 +995,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1015,10 +1015,10 @@
     (tags resistor)
     (path /control/amp/r1)
     (attr smd)
-    (fp_text reference control.amp.r1 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.amp.r1 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF3902T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 39kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF3902T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 39kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1031,7 +1031,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1051,10 +1051,10 @@
     (tags resistor)
     (path /control/amp/r2)
     (attr smd)
-    (fp_text reference control.amp.r2 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.amp.r2 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF2001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 2kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF2001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 2kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1067,7 +1067,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1087,10 +1087,10 @@
     (tags "PowerPAK SO-8 Single")
     (path /control/driver/high_fet)
     (attr smd)
-    (fp_text reference control.driver.high_fet (at 0 -3.5) (layer F.SilkS)
+    (fp_text reference control.driver.high_fet (at 0 -3.5) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "SIR172ADP-T1-GE3 (Vishay Siliconix) - Vds=30 V, Ids=24A (Tc)" (at 0 3.5) (layer F.Fab)
+    (fp_text value "SIR172ADP-T1-GE3 (Vishay Siliconix) - Vds=30 V, Ids=24A (Tc)" (at 0 3.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -1.945 -2.45) (end -2.945 -1.45) (layer F.Fab) (width 0.1))
@@ -1104,7 +1104,7 @@
     (fp_line (start 2.945 -2.45) (end 2.945 2.45) (layer F.Fab) (width 0.1))
     (fp_line (start 2.945 2.45) (end -2.945 2.45) (layer F.Fab) (width 0.1))
     (fp_line (start -2.945 2.45) (end -2.945 -1.45) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 5 smd rect (at 0.69 0 180) (size 3.81 3.91) (layers F.Cu F.Paste F.Mask)
@@ -1138,10 +1138,10 @@
     (tags "SO SOIC 2.54")
     (path /control/driver/high_gate/ic)
     (attr smd)
-    (fp_text reference control.driver.high_gate.ic (at 0 -3.5) (layer F.SilkS)
+    (fp_text reference control.driver.high_gate.ic (at 0 -3.5) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "G3VM-61GR2 (Omron Electronics)" (at 0 3.5) (layer F.Fab)
+    (fp_text value "G3VM-61GR2 (Omron Electronics)" (at 0 3.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 2.35 0.62) (end 2.35 -0.62) (layer F.SilkS) (width 0.12))
@@ -1162,7 +1162,7 @@
     (fp_line (start -2.35 2.3) (end 2.35 2.3) (layer F.SilkS) (width 0.12))
     (fp_line (start 2.35 2.3) (end 2.35 1.95) (layer F.SilkS) (width 0.12))
     (fp_line (start -1.2 -2.15) (end 2.2 -2.15) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 3 smd rect (at 3 1.27 270) (size 0.8 1.2) (layers F.Cu F.Paste F.Mask)
@@ -1186,10 +1186,10 @@
     (tags resistor)
     (path /control/driver/high_gate/res)
     (attr smd)
-    (fp_text reference control.driver.high_gate.res (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.driver.high_gate.res (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1600T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 160Ω 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1600T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 160Ω 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1202,7 +1202,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1222,10 +1222,10 @@
     (tags resistor)
     (path /control/driver/high_res)
     (attr smd)
-    (fp_text reference control.driver.high_res (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.driver.high_res (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1238,7 +1238,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1258,10 +1258,10 @@
     (tags "PowerPAK SO-8 Single")
     (path /control/driver/low_fet)
     (attr smd)
-    (fp_text reference control.driver.low_fet (at 0 -3.5) (layer F.SilkS)
+    (fp_text reference control.driver.low_fet (at 0 -3.5) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "SQJ433EP-T1_GE3 (Vishay Siliconix) - Vds=30 V, Ids=75A (Tc)" (at 0 3.5) (layer F.Fab)
+    (fp_text value "SQJ433EP-T1_GE3 (Vishay Siliconix) - Vds=30 V, Ids=75A (Tc)" (at 0 3.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -2.945 2.45) (end -2.945 -1.45) (layer F.Fab) (width 0.1))
@@ -1275,7 +1275,7 @@
     (fp_line (start -3.4 -2.57) (end 2.945 -2.57) (layer F.SilkS) (width 0.12))
     (fp_line (start -2.945 2.57) (end 2.945 2.57) (layer F.SilkS) (width 0.12))
     (fp_line (start -1.945 -2.45) (end -2.945 -1.45) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -2.67 -1.905) (size 1.27 0.61) (layers F.Cu F.Paste F.Mask)
@@ -1309,10 +1309,10 @@
     (tags "SO SOIC 2.54")
     (path /control/driver/low_gate/ic)
     (attr smd)
-    (fp_text reference control.driver.low_gate.ic (at 0 -3.5) (layer F.SilkS)
+    (fp_text reference control.driver.low_gate.ic (at 0 -3.5) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "G3VM-61GR2 (Omron Electronics)" (at 0 3.5) (layer F.Fab)
+    (fp_text value "G3VM-61GR2 (Omron Electronics)" (at 0 3.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -1.2 -2.15) (end 2.2 -2.15) (layer F.Fab) (width 0.1))
@@ -1333,7 +1333,7 @@
     (fp_line (start -2.2 -1.15) (end -1.2 -2.15) (layer F.Fab) (width 0.1))
     (fp_line (start -2.35 0.62) (end -2.35 -0.62) (layer F.SilkS) (width 0.12))
     (fp_line (start 2.35 0.62) (end 2.35 -0.62) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 4 smd rect (at 3 -1.27 270) (size 0.8 1.2) (layers F.Cu F.Paste F.Mask)
@@ -1357,10 +1357,10 @@
     (tags resistor)
     (path /control/driver/low_gate/res)
     (attr smd)
-    (fp_text reference control.driver.low_gate.res (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.driver.low_gate.res (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1600T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 160Ω 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1600T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 160Ω 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1373,7 +1373,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1393,10 +1393,10 @@
     (tags resistor)
     (path /control/driver/low_res)
     (attr smd)
-    (fp_text reference control.driver.low_res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.driver.low_res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1409,7 +1409,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1429,10 +1429,10 @@
     (tags SOT-23-6)
     (path /control/err_sink/amp/ic)
     (attr smd)
-    (fp_text reference control.err_sink.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.err_sink.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
@@ -1446,7 +1446,7 @@
     (fp_line (start 1.9 -1.8) (end -1.9 -1.8) (layer F.CrtYd) (width 0.05))
     (fp_line (start 0.9 -1.61) (end -1.55 -1.61) (layer F.SilkS) (width 0.12))
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 5 smd rect (at 1.1 0) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -1474,10 +1474,10 @@
     (tags capacitor)
     (path /control/err_sink/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.err_sink.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_sink.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -1490,7 +1490,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1510,10 +1510,10 @@
     (tags SOD-123)
     (path /control/err_sink/diode)
     (attr smd)
-    (fp_text reference control.err_sink.diode (at 0 2 90) (layer B.SilkS)
+    (fp_text reference control.err_sink.diode (at 0 2 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "DSS14UTR (SMC Diode Solutions) - Vr=40V, I=1A" (at 0 -2.1 90) (layer B.Fab)
+    (fp_text value "DSS14UTR (SMC Diode Solutions) - Vr=40V, I=1A" (at 0 -2.1 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -2.25 1) (end -2.25 -1) (layer B.SilkS) (width 0.12))
@@ -1534,7 +1534,7 @@
     (fp_line (start -2.35 1.15) (end -2.35 -1.15) (layer B.CrtYd) (width 0.05))
     (fp_line (start -2.25 -1) (end 1.65 -1) (layer B.SilkS) (width 0.12))
     (fp_line (start -2.25 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
-    (fp_text user %R (at 0 2 90) (layer B.Fab)
+    (fp_text user %R (at 0 2 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd rect (at -1.65 0 270) (size 0.9 1.2) (layers B.Cu B.Paste B.Mask)
@@ -1554,10 +1554,10 @@
     (tags resistor)
     (path /control/err_sink/rbot)
     (attr smd)
-    (fp_text reference control.err_sink.rbot (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_sink.rbot (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1570,7 +1570,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1590,10 +1590,10 @@
     (tags resistor)
     (path /control/err_sink/rout)
     (attr smd)
-    (fp_text reference control.err_sink.rout (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_sink.rout (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1606,7 +1606,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1626,10 +1626,10 @@
     (tags resistor)
     (path /control/err_sink/rtop)
     (attr smd)
-    (fp_text reference control.err_sink.rtop (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_sink.rtop (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1642,7 +1642,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1662,10 +1662,10 @@
     (tags SOT-23-6)
     (path /control/err_source/amp/ic)
     (attr smd)
-    (fp_text reference control.err_source.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.err_source.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
@@ -1679,7 +1679,7 @@
     (fp_line (start -0.9 -0.9) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 1.55) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -1.1 -0.95) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -1707,10 +1707,10 @@
     (tags capacitor)
     (path /control/err_source/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.err_source.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_source.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1723,7 +1723,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1743,10 +1743,10 @@
     (tags SOD-123)
     (path /control/err_source/diode)
     (attr smd)
-    (fp_text reference control.err_source.diode (at 0 2 90) (layer B.SilkS)
+    (fp_text reference control.err_source.diode (at 0 2 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "DSS14UTR (SMC Diode Solutions) - Vr=40V, I=1A" (at 0 -2.1 90) (layer B.Fab)
+    (fp_text value "DSS14UTR (SMC Diode Solutions) - Vr=40V, I=1A" (at 0 -2.1 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -2.25 1) (end 1.65 1) (layer B.SilkS) (width 0.12))
@@ -1767,7 +1767,7 @@
     (fp_line (start 0.25 -0.4) (end -0.35 0) (layer B.Fab) (width 0.1))
     (fp_line (start 0.25 0) (end 0.75 0) (layer B.Fab) (width 0.1))
     (fp_line (start -2.25 1) (end -2.25 -1) (layer B.SilkS) (width 0.12))
-    (fp_text user %R (at 0 2 90) (layer B.Fab)
+    (fp_text user %R (at 0 2 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd rect (at 1.65 0 90) (size 0.9 1.2) (layers B.Cu B.Paste B.Mask)
@@ -1787,10 +1787,10 @@
     (tags resistor)
     (path /control/err_source/rbot)
     (attr smd)
-    (fp_text reference control.err_source.rbot (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.err_source.rbot (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1803,7 +1803,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1823,10 +1823,10 @@
     (tags resistor)
     (path /control/err_source/rout)
     (attr smd)
-    (fp_text reference control.err_source.rout (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.err_source.rout (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1839,7 +1839,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1859,10 +1859,10 @@
     (tags resistor)
     (path /control/err_source/rtop)
     (attr smd)
-    (fp_text reference control.err_source.rtop (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference control.err_source.rtop (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -1875,7 +1875,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1895,10 +1895,10 @@
     (tags SOT-23-6)
     (path /control/err_volt/amp/ic)
     (attr smd)
-    (fp_text reference control.err_volt.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.err_volt.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
@@ -1912,7 +1912,7 @@
     (fp_line (start -0.9 -0.9) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 1.55) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -1.1 -0.95) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -1940,10 +1940,10 @@
     (tags capacitor)
     (path /control/err_volt/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.err_volt.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_volt.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -1956,7 +1956,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -1976,10 +1976,10 @@
     (tags resistor)
     (path /control/err_volt/rbot)
     (attr smd)
-    (fp_text reference control.err_volt.rbot (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_volt.rbot (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -1992,7 +1992,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2012,10 +2012,10 @@
     (tags resistor)
     (path /control/err_volt/rout)
     (attr smd)
-    (fp_text reference control.err_volt.rout (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_volt.rout (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2028,7 +2028,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2048,10 +2048,10 @@
     (tags resistor)
     (path /control/err_volt/rtop)
     (attr smd)
-    (fp_text reference control.err_volt.rtop (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.err_volt.rtop (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2064,7 +2064,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2084,10 +2084,10 @@
     (tags "SO SO")
     (path /control/imeas/amp/ic)
     (attr smd)
-    (fp_text reference control.imeas.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.imeas.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "OPA197IDR (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
@@ -2103,7 +2103,7 @@
     (fp_line (start -3.7 2.7) (end 3.7 2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 2.7) (end 3.7 -2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.575 -1.905 180) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25))
@@ -2132,10 +2132,10 @@
     (tags capacitor)
     (path /control/imeas/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.imeas.amp.vdd_cap (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.imeas.amp.vdd_cap (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2148,7 +2148,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2168,10 +2168,10 @@
     (tags resistor)
     (path /control/imeas/r1)
     (attr smd)
-    (fp_text reference control.imeas.r1 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.imeas.r1 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2184,7 +2184,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2204,10 +2204,10 @@
     (tags resistor)
     (path /control/imeas/r2)
     (attr smd)
-    (fp_text reference control.imeas.r2 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.imeas.r2 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -2220,7 +2220,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2240,10 +2240,10 @@
     (tags resistor)
     (path /control/imeas/rf)
     (attr smd)
-    (fp_text reference control.imeas.rf (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.imeas.rf (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2256,7 +2256,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2276,10 +2276,10 @@
     (tags resistor)
     (path /control/imeas/rg)
     (attr smd)
-    (fp_text reference control.imeas.rg (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.imeas.rg (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -2292,7 +2292,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2312,10 +2312,10 @@
     (tags SOT-23-6)
     (path /control/int/amp/ic)
     (attr smd)
-    (fp_text reference control.int.amp.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference control.int.amp.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
@@ -2329,7 +2329,7 @@
     (fp_line (start -0.9 -0.9) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 1.55) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -1.1 -0.95 180) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -2357,10 +2357,10 @@
     (tags capacitor)
     (path /control/int/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.int.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.int.amp.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -2373,7 +2373,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 90) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2393,10 +2393,10 @@
     (tags resistor)
     (path /control/int/r)
     (attr smd)
-    (fp_text reference control.int.r (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference control.int.r (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -2409,7 +2409,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2429,10 +2429,10 @@
     (tags resistor)
     (path /control/isen/res)
     (attr smd)
-    (fp_text reference control.isen.res (at 0 -2.62) (layer F.SilkS)
+    (fp_text reference control.isen.res (at 0 -2.62) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "100m, 1%, 1.0 W" (at 0 2.62) (layer F.Fab)
+    (fp_text value "100m, 1%, 1.0 W" (at 0 2.62) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -3.15 1.6) (end -3.15 -1.6) (layer F.Fab) (width 0.1))
@@ -2445,7 +2445,7 @@
     (fp_line (start -3.82 -1.92) (end 3.82 -1.92) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.82 -1.92) (end 3.82 1.92) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.82 1.92) (end -3.82 1.92) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.9625 0) (size 1.225 3.35) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.204082)
@@ -2465,10 +2465,10 @@
     (tags capacitor)
     (path /control/vmeas/amp/vdd_cap)
     (attr smd)
-    (fp_text reference control.vmeas.amp.vdd_cap (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.vmeas.amp.vdd_cap (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -2481,7 +2481,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2501,10 +2501,10 @@
     (tags resistor)
     (path /control/vmeas/r1)
     (attr smd)
-    (fp_text reference control.vmeas.r1 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.vmeas.r1 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF2203T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 220kΩ 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF2203T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 220kΩ 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -2517,7 +2517,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2537,10 +2537,10 @@
     (tags resistor)
     (path /control/vmeas/r2)
     (attr smd)
-    (fp_text reference control.vmeas.r2 (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.vmeas.r2 (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF2203T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 220kΩ 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF2203T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 0.1W 220kΩ 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2553,7 +2553,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2573,10 +2573,10 @@
     (tags resistor)
     (path /control/vmeas/rf)
     (attr smd)
-    (fp_text reference control.vmeas.rf (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.vmeas.rf (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2589,7 +2589,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2609,10 +2609,10 @@
     (tags resistor)
     (path /control/vmeas/rg)
     (attr smd)
-    (fp_text reference control.vmeas.rg (at 0 1.43) (layer B.SilkS)
+    (fp_text reference control.vmeas.rg (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2625,7 +2625,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2645,10 +2645,10 @@
     (tags "SO SO")
     (path /dac_in/ic)
     (attr smd)
-    (fp_text reference dac_in.ic (at 0 -3.4) (layer F.SilkS)
+    (fp_text reference dac_in.ic (at 0 -3.4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab)
+    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
@@ -2664,7 +2664,7 @@
     (fp_line (start 0 -2.56) (end 1.95 -2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end -1.95 2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 8 smd roundrect (at 2.575 -1.905) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -2696,10 +2696,10 @@
     (tags capacitor)
     (path /dac_in/vdd_cap[0])
     (attr smd)
-    (fp_text reference dac_in.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference dac_in.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2712,7 +2712,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2732,10 +2732,10 @@
     (tags capacitor)
     (path /dac_in/vdd_cap[1])
     (attr smd)
-    (fp_text reference dac_in.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS)
+    (fp_text reference dac_in.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
@@ -2748,7 +2748,7 @@
     (fp_line (start -1.7 0.98) (end 1.7 0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 0.98) (end 1.7 -0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.95 0 270) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2768,10 +2768,10 @@
     (tags "SO SO")
     (path /dac_ip/ic)
     (attr smd)
-    (fp_text reference dac_ip.ic (at 0 -3.4) (layer F.SilkS)
+    (fp_text reference dac_ip.ic (at 0 -3.4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab)
+    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
@@ -2787,7 +2787,7 @@
     (fp_line (start -3.7 2.7) (end 3.7 2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 2.7) (end 3.7 -2.7) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.575 -1.905) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -2819,10 +2819,10 @@
     (tags capacitor)
     (path /dac_ip/vdd_cap[0])
     (attr smd)
-    (fp_text reference dac_ip.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference dac_ip.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -2835,7 +2835,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2855,10 +2855,10 @@
     (tags capacitor)
     (path /dac_ip/vdd_cap[1])
     (attr smd)
-    (fp_text reference dac_ip.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS)
+    (fp_text reference dac_ip.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
@@ -2871,7 +2871,7 @@
     (fp_line (start 1 0.625) (end 1 -0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 0.625) (end 1 0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.95 0 270) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2891,10 +2891,10 @@
     (tags "SO SO")
     (path /dac_v/ic)
     (attr smd)
-    (fp_text reference dac_v.ic (at 0 -3.4) (layer F.SilkS)
+    (fp_text reference dac_v.ic (at 0 -3.4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab)
+    (fp_text value "MCP4921-E/SN (Microchip Technology)" (at 0 3.4) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 3.7 -2.7) (end -3.7 -2.7) (layer F.CrtYd) (width 0.05))
@@ -2910,7 +2910,7 @@
     (fp_line (start 0 -2.56) (end 1.95 -2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end -1.95 2.56) (layer F.SilkS) (width 0.12))
     (fp_line (start 0 2.56) (end 1.95 2.56) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 8 smd roundrect (at 2.575 -1.905) (size 1.75 0.6) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -2942,10 +2942,10 @@
     (tags capacitor)
     (path /dac_v/vdd_cap[0])
     (attr smd)
-    (fp_text reference dac_v.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference dac_v.vdd_cap[0] (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -2958,7 +2958,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -2978,10 +2978,10 @@
     (tags capacitor)
     (path /dac_v/vdd_cap[1])
     (attr smd)
-    (fp_text reference dac_v.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS)
+    (fp_text reference dac_v.vdd_cap[1] (at 0 1.68 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
@@ -2994,7 +2994,7 @@
     (fp_line (start 1 0.625) (end 1 -0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 0.625) (end 1 0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.95 0 270) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3014,10 +3014,10 @@
     (tags "USB C Type-C Receptacle SMD")
     (path /data_usb)
     (attr smd)
-    (fp_text reference data_usb (at 0 -5.715 90) (layer F.SilkS)
+    (fp_text reference data_usb (at 0 -5.715 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "COM-15111 (Sparkfun)" (at 0 4.935 90) (layer F.Fab)
+    (fp_text value "COM-15111 (Sparkfun)" (at 0 4.935 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -4.58 -1.85) (end -4.58 0.07) (layer F.SilkS) (width 0.12))
@@ -3033,7 +3033,7 @@
     (fp_line (start -4.47 3.675) (end 4.47 3.675) (layer F.Fab) (width 0.1))
     (fp_line (start 4.47 3.675) (end 4.47 -3.675) (layer F.Fab) (width 0.1))
     (fp_line (start -4.47 -3.675) (end 4.47 -3.675) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad S1 thru_hole oval (at -4.32 -3.105 270) (size 1 2.1) (drill oval 0.6 1.7) (layers *.Cu *.Mask)
@@ -3135,10 +3135,10 @@
     (tags resistor)
     (path /i2c_pull/scl_res)
     (attr smd)
-    (fp_text reference i2c_pull.scl_res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference i2c_pull.scl_res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3151,7 +3151,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3171,10 +3171,10 @@
     (tags resistor)
     (path /i2c_pull/sda_res)
     (attr smd)
-    (fp_text reference i2c_pull.sda_res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference i2c_pull.sda_res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 4.7kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3187,7 +3187,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3207,7 +3207,7 @@
     (fp_text reference id (at 0 2) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value IdDots4 (at 0 -2) (layer F.Fab)
+    (fp_text value IdDots4 (at 0 -2) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_circle (center -2.25 0) (end -2 0) (layer F.Cu) (width 0.5))
@@ -3288,10 +3288,10 @@
     (tags LED)
     (path /led_3v3/package)
     (attr smd)
-    (fp_text reference led_3v3.package (at 0 -1.43 90) (layer F.SilkS)
+    (fp_text reference led_3v3.package (at 0 -1.43 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value LED (at 0 1.43 90) (layer F.Fab)
+    (fp_text value LED (at 0 1.43 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0.8 -0.4) (end -0.5 -0.4) (layer F.Fab) (width 0.1))
@@ -3306,7 +3306,7 @@
     (fp_line (start -1.48 -0.73) (end 1.48 -0.73) (layer F.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end 1.48 0.73) (layer F.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end -1.48 0.73) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -0.7875 0 90) (size 0.875 0.95) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -3326,10 +3326,10 @@
     (tags resistor)
     (path /led_3v3/res)
     (attr smd)
-    (fp_text reference led_3v3.res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference led_3v3.res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -3342,7 +3342,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3362,10 +3362,10 @@
     (tags LED)
     (path /led_analog/package)
     (attr smd)
-    (fp_text reference led_analog.package (at 0 -1.43 90) (layer F.SilkS)
+    (fp_text reference led_analog.package (at 0 -1.43 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value LED (at 0 1.43 90) (layer F.Fab)
+    (fp_text value LED (at 0 1.43 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 1.48 0.73) (end -1.48 0.73) (layer F.CrtYd) (width 0.05))
@@ -3380,7 +3380,7 @@
     (fp_line (start -0.8 -0.1) (end -0.8 0.4) (layer F.Fab) (width 0.1))
     (fp_line (start -0.5 -0.4) (end -0.8 -0.1) (layer F.Fab) (width 0.1))
     (fp_line (start 0.8 -0.4) (end -0.5 -0.4) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 2 smd roundrect (at 0.7875 0 90) (size 0.875 0.95) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -3400,10 +3400,10 @@
     (tags resistor)
     (path /led_analog/res)
     (attr smd)
-    (fp_text reference led_analog.res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference led_analog.res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -3416,7 +3416,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3436,10 +3436,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[0])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[0] (at 0 1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[0] (at 0 1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -3452,7 +3452,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3472,10 +3472,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[4])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[4] (at 0 -1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[4] (at 0 -1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3488,7 +3488,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3508,10 +3508,10 @@
     (tags capacitor)
     (path /mcu/pwr_cap[5])
     (attr smd)
-    (fp_text reference mcu.pwr_cap[5] (at 0 -1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwr_cap[5] (at 0 -1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech)) - X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -3524,7 +3524,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3544,10 +3544,10 @@
     (tags capacitor)
     (path /mcu/pwra_cap[0])
     (attr smd)
-    (fp_text reference mcu.pwra_cap[0] (at 0 -1 180) (layer B.SilkS)
+    (fp_text reference mcu.pwra_cap[0] (at 0 -1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -3560,7 +3560,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3580,10 +3580,10 @@
     (tags capacitor)
     (path /mcu/pwra_cap[1])
     (attr smd)
-    (fp_text reference mcu.pwra_cap[1] (at 0 1) (layer B.SilkS)
+    (fp_text reference mcu.pwra_cap[1] (at 0 1) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.65) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.65) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
@@ -3596,7 +3596,7 @@
     (fp_line (start -1.7 0.98) (end 1.7 0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 0.98) (end 1.7 -0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.95 0 180) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3616,10 +3616,10 @@
     (tags resistor)
     (path /mcu/reset_pull)
     (attr smd)
-    (fp_text reference mcu.reset_pull (at 2 0 90) (layer B.SilkS)
+    (fp_text reference mcu.reset_pull (at 2 0 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -3632,7 +3632,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3652,10 +3652,10 @@
     (tags resistor)
     (path /mcu/swclk_pull)
     (attr smd)
-    (fp_text reference mcu.swclk_pull (at 2 0 90) (layer B.SilkS)
+    (fp_text reference mcu.swclk_pull (at 2 0 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1502T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 15kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1502T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 15kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3668,7 +3668,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3688,10 +3688,10 @@
     (tags resistor)
     (path /mcu/swdio_pull)
     (attr smd)
-    (fp_text reference mcu.swdio_pull (at 2 0 270) (layer B.SilkS)
+    (fp_text reference mcu.swdio_pull (at 2 0 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1502T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 15kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1502T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 15kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -3704,7 +3704,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3724,10 +3724,10 @@
     (tags capacitor)
     (path /mcu/vbat_cap)
     (attr smd)
-    (fp_text reference mcu.vbat_cap (at 0 -1) (layer B.SilkS)
+    (fp_text reference mcu.vbat_cap (at 0 -1) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3740,7 +3740,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 180) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3760,10 +3760,10 @@
     (tags capacitor)
     (path /mcu/vref_cap[0])
     (attr smd)
-    (fp_text reference mcu.vref_cap[0] (at 0 1) (layer B.SilkS)
+    (fp_text reference mcu.vref_cap[0] (at 0 1) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3776,7 +3776,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3796,10 +3796,10 @@
     (tags capacitor)
     (path /mcu/vref_cap[1])
     (attr smd)
-    (fp_text reference mcu.vref_cap[1] (at 0 -1 180) (layer B.SilkS)
+    (fp_text reference mcu.vref_cap[1] (at 0 -1 180) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -3812,7 +3812,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 180) (layer B.Fab)
+    (fp_text user %R (at 0 0 180) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3832,10 +3832,10 @@
     (tags capacitor)
     (path /mcu/vref_cap[2])
     (attr smd)
-    (fp_text reference mcu.vref_cap[2] (at 0 -1) (layer B.SilkS)
+    (fp_text reference mcu.vref_cap[2] (at 0 -1) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.65) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.65) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
@@ -3848,7 +3848,7 @@
     (fp_line (start -1.7 0.98) (end 1.7 0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 0.98) (end 1.7 -0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.95 0 180) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -3867,10 +3867,10 @@
     (descr "Right-angle standard banana jack, http://www.caltestelectronics.com/images/attachments/P315100rH_drawing.pdf")
     (tags "banana jack horizontal")
     (path /outn)
-    (fp_text reference outn (at 2.54 -5.46) (layer F.SilkS)
+    (fp_text reference outn (at 2.54 -5.46) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "CT3151-* (CalTest)" (at 2.54 10.54) (layer F.Fab)
+    (fp_text value "CT3151-* (CalTest)" (at 2.54 10.54) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 6.88 -4.71) (end -22.4 -4.71) (layer F.CrtYd) (width 0.05))
@@ -3905,7 +3905,7 @@
     (fp_line (start -0.68 7.29) (end -9.79 9.29) (layer F.Fab) (width 0.1))
     (fp_line (start -0.68 5.8) (end -0.68 7.29) (layer F.Fab) (width 0.1))
     (fp_line (start 5.8 5.8) (end -0.68 5.8) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 2.54 2.54) (layer F.Fab)
+    (fp_text user %R (at 2.54 2.54) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 thru_hole circle (at 5.08 5.08 180) (size 2.6 2.6) (drill 1.6) (layers *.Cu *.Mask)
@@ -3928,10 +3928,10 @@
     (descr "Right-angle standard banana jack, http://www.caltestelectronics.com/images/attachments/P315100rH_drawing.pdf")
     (tags "banana jack horizontal")
     (path /outp)
-    (fp_text reference outp (at 2.54 -5.46) (layer F.SilkS)
+    (fp_text reference outp (at 2.54 -5.46) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "CT3151-* (CalTest)" (at 2.54 10.54) (layer F.Fab)
+    (fp_text value "CT3151-* (CalTest)" (at 2.54 10.54) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 5.8 5.8) (end -0.68 5.8) (layer F.Fab) (width 0.1))
@@ -3966,7 +3966,7 @@
     (fp_line (start -22.4 9.79) (end 6.88 9.79) (layer F.CrtYd) (width 0.05))
     (fp_line (start 6.88 9.79) (end 6.88 -4.71) (layer F.CrtYd) (width 0.05))
     (fp_line (start 6.88 -4.71) (end -22.4 -4.71) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 2.54 2.54) (layer F.Fab)
+    (fp_text user %R (at 2.54 2.54) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 thru_hole circle (at 0 0 180) (size 2.6 2.6) (drill 1.6) (layers *.Cu *.Mask)
@@ -3990,10 +3990,10 @@
     (tags "WQFN NoLead")
     (path /pd/ic)
     (attr smd)
-    (fp_text reference pd.ic (at 0 -2.55 90) (layer F.SilkS)
+    (fp_text reference pd.ic (at 0 -2.55 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "FUSB302B11MPX (ON Semiconductor)" (at 0 2.55 90) (layer F.Fab)
+    (fp_text value "FUSB302B11MPX (ON Semiconductor)" (at 0 2.55 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 1.135 -1.36) (end 1.36 -1.36) (layer F.SilkS) (width 0.12))
@@ -4012,7 +4012,7 @@
     (fp_line (start -1.85 1.85) (end 1.85 1.85) (layer F.CrtYd) (width 0.05))
     (fp_line (start 1.85 1.85) (end 1.85 -1.85) (layer F.CrtYd) (width 0.05))
     (fp_line (start 1.85 -1.85) (end -1.85 -1.85) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -1.2625 -0.5 90) (size 0.675 0.25) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -4062,10 +4062,10 @@
     (tags capacitor)
     (path /pd/vdd_cap[0])
     (attr smd)
-    (fp_text reference pd.vdd_cap[0] (at 0 1.43) (layer B.SilkS)
+    (fp_text reference pd.vdd_cap[0] (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4078,7 +4078,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 180) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4098,10 +4098,10 @@
     (tags capacitor)
     (path /pd/vdd_cap[1])
     (attr smd)
-    (fp_text reference pd.vdd_cap[1] (at 0 1.68) (layer B.SilkS)
+    (fp_text reference pd.vdd_cap[1] (at 0 1.68) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
@@ -4114,7 +4114,7 @@
     (fp_line (start -1.7 0.98) (end 1.7 0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 0.98) (end 1.7 -0.98) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.95 0 180) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4134,10 +4134,10 @@
     (tags SOD-323)
     (path /prot_3v3)
     (attr smd)
-    (fp_text reference prot_3v3 (at 0 1.85 90) (layer B.SilkS)
+    (fp_text reference prot_3v3 (at 0 1.85 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "DDZ3V6ASF-7 (Diodes Incorporated) - Vz=3.57V, I=900mV @ 10mA" (at 0.1 -1.9 90) (layer B.Fab)
+    (fp_text value "DDZ3V6ASF-7 (Diodes Incorporated) - Vz=3.57V, I=900mV @ 10mA" (at 0.1 -1.9 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1.5 0.85) (end -1.5 -0.85) (layer B.SilkS) (width 0.12))
@@ -4157,7 +4157,7 @@
     (fp_line (start -1.6 0.95) (end -1.6 -0.95) (layer B.CrtYd) (width 0.05))
     (fp_line (start -1.5 -0.85) (end 1.05 -0.85) (layer B.SilkS) (width 0.12))
     (fp_line (start -1.5 0.85) (end 1.05 0.85) (layer B.SilkS) (width 0.12))
-    (fp_text user %R (at 0 1.85 90) (layer B.Fab)
+    (fp_text user %R (at 0 1.85 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd rect (at -1.05 0 90) (size 0.6 0.45) (layers B.Cu B.Paste B.Mask)
@@ -4177,10 +4177,10 @@
     (tags "USB C Type-C Receptacle SMD")
     (path /pwr_usb)
     (attr smd)
-    (fp_text reference pwr_usb (at 0 -5.715 90) (layer F.SilkS)
+    (fp_text reference pwr_usb (at 0 -5.715 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "COM-15111 (Sparkfun)" (at 0 4.935 90) (layer F.Fab)
+    (fp_text value "COM-15111 (Sparkfun)" (at 0 4.935 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -4.47 -3.675) (end 4.47 -3.675) (layer F.Fab) (width 0.1))
@@ -4196,7 +4196,7 @@
     (fp_line (start 4.58 2.08) (end 4.58 3.785) (layer F.SilkS) (width 0.12))
     (fp_line (start 4.58 0.07) (end 4.58 -1.85) (layer F.SilkS) (width 0.12))
     (fp_line (start -4.58 -1.85) (end -4.58 0.07) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad A12 smd rect (at 3.35 -3.67 270) (size 0.3 1.15) (layers F.Cu F.Paste F.Mask)
@@ -4252,10 +4252,10 @@
     (tags SOT-23-6)
     (path /ref_buf/ic)
     (attr smd)
-    (fp_text reference ref_buf.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference ref_buf.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TLV9061SQDBVRQ1 (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
@@ -4269,7 +4269,7 @@
     (fp_line (start 1.9 -1.8) (end -1.9 -1.8) (layer F.CrtYd) (width 0.05))
     (fp_line (start 0.9 -1.61) (end -1.55 -1.61) (layer F.SilkS) (width 0.12))
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 5 smd rect (at 1.1 0) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -4297,10 +4297,10 @@
     (tags capacitor)
     (path /ref_buf/vdd_cap)
     (attr smd)
-    (fp_text reference ref_buf.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference ref_buf.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -4313,7 +4313,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4333,10 +4333,10 @@
     (tags resistor)
     (path /ref_div/bottom_res)
     (attr smd)
-    (fp_text reference ref_div.bottom_res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference ref_div.bottom_res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -4349,7 +4349,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 90) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4369,10 +4369,10 @@
     (tags resistor)
     (path /ref_div/top_res)
     (attr smd)
-    (fp_text reference ref_div.top_res (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference ref_div.top_res (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -4385,7 +4385,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 270) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4405,10 +4405,10 @@
     (tags capacitor)
     (path /reg_5v/boot_cap)
     (attr smd)
-    (fp_text reference reg_5v.boot_cap (at 0 1.43) (layer B.SilkS)
+    (fp_text reference reg_5v.boot_cap (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -4421,7 +4421,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4441,10 +4441,10 @@
     (tags resistor)
     (path /reg_5v/en_res)
     (attr smd)
-    (fp_text reference reg_5v.en_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference reg_5v.en_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF5103T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 510kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF5103T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 510kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4457,7 +4457,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4477,10 +4477,10 @@
     (tags resistor)
     (path /reg_5v/fb/top_res)
     (attr smd)
-    (fp_text reference reg_5v.fb.top_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference reg_5v.fb.top_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1102T5E (UNI-ROYAL(Uniroyal Elec)) - 11kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1102T5E (UNI-ROYAL(Uniroyal Elec)) - 11kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
@@ -4493,7 +4493,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4513,10 +4513,10 @@
     (tags capacitor)
     (path /reg_5v/hf_in_cap)
     (attr smd)
-    (fp_text reference reg_5v.hf_in_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference reg_5v.hf_in_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4529,7 +4529,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4549,10 +4549,10 @@
     (tags SOT-23-6)
     (path /reg_5v/ic)
     (attr smd)
-    (fp_text reference reg_5v.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference reg_5v.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "TPS54202H (Texas Instruments)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "TPS54202H (Texas Instruments)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
@@ -4566,7 +4566,7 @@
     (fp_line (start 1.9 -1.8) (end -1.9 -1.8) (layer F.CrtYd) (width 0.05))
     (fp_line (start 0.9 -1.61) (end -1.55 -1.61) (layer F.SilkS) (width 0.12))
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 5 smd rect (at 1.1 0 180) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -4594,10 +4594,10 @@
     (tags "inductor taiyo-yuden nr smd")
     (path /reg_5v/inductor)
     (attr smd)
-    (fp_text reference reg_5v.inductor (at 0 -4) (layer F.SilkS)
+    (fp_text reference reg_5v.inductor (at 0 -4) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "NR6028T470M (Taiyo Yuden) - 47µH, 920mA" (at 0 4.5) (layer F.Fab)
+    (fp_text value "NR6028T470M (Taiyo Yuden) - 47µH, 920mA" (at 0 4.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -3 0) (end -3 -2) (layer F.Fab) (width 0.1))
@@ -4618,7 +4618,7 @@
     (fp_line (start -3.45 3.25) (end 3.45 3.25) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.45 3.25) (end 3.45 -3.25) (layer F.CrtYd) (width 0.05))
     (fp_line (start 3.45 -3.25) (end -3.45 -3.25) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -2.35 0) (size 1.6 5.9) (layers F.Cu F.Paste F.Mask)
@@ -4638,10 +4638,10 @@
     (tags capacitor)
     (path /reg_5v/out_cap)
     (attr smd)
-    (fp_text reference reg_5v.out_cap (at 0 1.68 90) (layer B.SilkS)
+    (fp_text reference reg_5v.out_cap (at 0 1.68 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab)
+    (fp_text value "CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.68 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.7 -0.98) (end -1.7 -0.98) (layer B.CrtYd) (width 0.05))
@@ -4654,7 +4654,7 @@
     (fp_line (start 1 0.625) (end 1 -0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 0.625) (end 1 0.625) (layer B.Fab) (width 0.1))
     (fp_line (start -1 -0.625) (end -1 0.625) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.95 0 270) (size 1 1.45) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4674,10 +4674,10 @@
     (tags capacitor)
     (path /reg_3v3/in_cap)
     (attr smd)
-    (fp_text reference reg_3v3.in_cap (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference reg_3v3.in_cap (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -4690,7 +4690,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 90) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4710,10 +4710,10 @@
     (tags capacitor)
     (path /reg_analog/in_cap)
     (attr smd)
-    (fp_text reference reg_analog.in_cap (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference reg_analog.in_cap (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4726,7 +4726,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.775 0 90) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4746,10 +4746,10 @@
     (tags resistor)
     (path /rgb/blue_res)
     (attr smd)
-    (fp_text reference rgb.blue_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference rgb.blue_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4762,7 +4762,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4782,10 +4782,10 @@
     (tags resistor)
     (path /rgb/green_res)
     (attr smd)
-    (fp_text reference rgb.green_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference rgb.green_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4798,7 +4798,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4818,10 +4818,10 @@
     (tags "LED RGB Chip SMD")
     (path /rgb/package)
     (attr smd)
-    (fp_text reference rgb.package (at 0 -1.8 90) (layer F.SilkS)
+    (fp_text reference rgb.package (at 0 -1.8 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "EAST1616RGBB2 (Everlight Electronics Co Ltd)" (at 0 1.6 90) (layer F.Fab)
+    (fp_text value "EAST1616RGBB2 (Everlight Electronics Co Ltd)" (at 0 1.6 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.8) (layer F.Fab) (width 0.1))
@@ -4835,7 +4835,7 @@
     (fp_line (start 1.05 1.4) (end -1.05 1.4) (layer F.CrtYd) (width 0.05))
     (fp_line (start -1.05 1.4) (end -1.05 -1.4) (layer F.CrtYd) (width 0.05))
     (fp_line (start -1.05 -1.4) (end 1.05 -1.4) (layer F.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -0.425 -0.725 90) (size 0.65 0.85) (layers F.Cu F.Paste F.Mask)
@@ -4859,10 +4859,10 @@
     (tags resistor)
     (path /rgb/red_res)
     (attr smd)
-    (fp_text reference rgb.red_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference rgb.red_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -4875,7 +4875,7 @@
     (fp_line (start 0.8 0.4125) (end 0.8 -0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4125) (end 0.8 0.4125) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4125) (end -0.8 0.4125) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -4895,10 +4895,10 @@
     (tags "tag connect programming header pogo pins")
     (path /swd)
     (attr virtual)
-    (fp_text reference swd (at 0 5) (layer F.SilkS)
+    (fp_text reference swd (at 0 5) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value SWD (at 0 -4.8) (layer F.Fab)
+    (fp_text value SWD (at 0 -4.8) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -3.175 1.27) (end -3.175 0.635) (layer F.SilkS) (width 0.12))
@@ -4920,7 +4920,7 @@
     (fp_line (start 0 0.635) (end 1.27 -0.635) (layer Dwgs.User) (width 0.1))
     (fp_line (start 0.635 0.635) (end 1.905 -0.635) (layer Dwgs.User) (width 0.1))
     (fp_line (start 1.27 0.635) (end 2.54 -0.635) (layer Dwgs.User) (width 0.1))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_text user KEEPOUT (at 0 0) (layer Cmts.User)
@@ -4959,10 +4959,10 @@
     (tags SOT-23-5)
     (path /reg_3v3/ic)
     (attr smd)
-    (fp_text reference reg_3v3.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference reg_3v3.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "XC6209F332MR-G (Torex Semiconductor Ltd)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "XC6209F332MR-G (Torex Semiconductor Ltd)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
@@ -4976,7 +4976,7 @@
     (fp_line (start -0.9 -0.9) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 1.55) (end -0.9 1.55) (layer F.Fab) (width 0.1))
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd rect (at -1.1 -0.95) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -5001,10 +5001,10 @@
     (tags capacitor)
     (path /reg_3v3/out_cap)
     (attr smd)
-    (fp_text reference reg_3v3.out_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference reg_3v3.out_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
@@ -5017,7 +5017,7 @@
     (fp_line (start -1.48 0.73) (end 1.48 0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 0.73) (end 1.48 -0.73) (layer B.CrtYd) (width 0.05))
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.775 0 270) (size 0.9 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -5037,10 +5037,10 @@
     (tags SOT-23-5)
     (path /reg_analog/ic)
     (attr smd)
-    (fp_text reference reg_analog.ic (at 0 -2.9) (layer F.SilkS)
+    (fp_text reference reg_analog.ic (at 0 -2.9) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "AP2210K-3.0 (Torex Semiconductor Ltd)" (at 0 2.9) (layer F.Fab)
+    (fp_text value "AP2210K-3.0 (Torex Semiconductor Ltd)" (at 0 2.9) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 0.9 -1.55) (end 0.9 1.55) (layer F.Fab) (width 0.1))
@@ -5054,7 +5054,7 @@
     (fp_line (start -1.9 -1.8) (end 1.9 -1.8) (layer F.CrtYd) (width 0.05))
     (fp_line (start 0.9 -1.61) (end -1.55 -1.61) (layer F.SilkS) (width 0.12))
     (fp_line (start -0.9 1.61) (end 0.9 1.61) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0 90) (layer F.Fab)
+    (fp_text user %R (at 0 0 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 5 smd rect (at 1.1 -0.95) (size 1.06 0.65) (layers F.Cu F.Paste F.Mask)
@@ -5079,10 +5079,10 @@
     (tags "connector Hirose  top entry")
     (path /lcd/device)
     (attr smd)
-    (fp_text reference lcd.device (at 0 -3.7 90) (layer F.SilkS)
+    (fp_text reference lcd.device (at 0 -3.7 90) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "QT096T_IF09, FH12-8S-0.5SH(55)" (at 0 5.6 90) (layer F.Fab)
+    (fp_text value "QT096T_IF09, FH12-8S-0.5SH(55)" (at 0 5.6 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 5.05 -3) (end -5.05 -3) (layer F.CrtYd) (width 0.05))
@@ -5113,7 +5113,7 @@
     (fp_line (start -3.55 3.4) (end -2.95 3.4) (layer F.Fab) (width 0.1))
     (fp_line (start -3.55 -1.2) (end -3.55 3.4) (layer F.Fab) (width 0.1))
     (fp_line (start 0 -1.2) (end -3.55 -1.2) (layer F.Fab) (width 0.1))
-    (fp_text user %R (at 0 3.7 90) (layer F.Fab)
+    (fp_text user %R (at 0 3.7 90) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad MP smd rect (at 3.65 1.4 90) (size 1.8 2.2) (layers F.Cu F.Paste F.Mask))
@@ -5147,10 +5147,10 @@
     (tags resistor)
     (path /lcd/led_res)
     (attr smd)
-    (fp_text reference lcd.led_res (at 0 1.43 270) (layer B.SilkS)
+    (fp_text reference lcd.led_res (at 0 1.43 270) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab)
+    (fp_text value "0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -5163,7 +5163,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 270) (layer B.Fab)
+    (fp_text user %R (at 0 0 270) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0 270) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -5183,10 +5183,10 @@
     (tags capacitor)
     (path /lcd/vdd_cap)
     (attr smd)
-    (fp_text reference lcd.vdd_cap (at 0 1.43 90) (layer B.SilkS)
+    (fp_text reference lcd.vdd_cap (at 0 1.43 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab)
+    (fp_text value "CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.43 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -5199,7 +5199,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0 270) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -5219,10 +5219,10 @@
     (tags "SMD SMT button")
     (path /sw1)
     (attr smd)
-    (fp_text reference sw1 (at 0 -2.25) (layer F.SilkS)
+    (fp_text reference sw1 (at 0 -2.25) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab)
+    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 2.07 -1.57) (end 2.07 -1.27) (layer F.SilkS) (width 0.12))
@@ -5240,7 +5240,7 @@
     (fp_line (start 2.07 1.57) (end -2.07 1.57) (layer F.SilkS) (width 0.12))
     (fp_line (start 2.07 1.27) (end 2.07 1.57) (layer F.SilkS) (width 0.12))
     (fp_line (start -2.07 -1.57) (end 2.07 -1.57) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 2 smd roundrect (at 2.1 0) (size 0.8 2) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -5260,10 +5260,10 @@
     (tags "SMD SMT button")
     (path /sw2)
     (attr smd)
-    (fp_text reference sw2 (at 0 -2.25) (layer F.SilkS)
+    (fp_text reference sw2 (at 0 -2.25) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab)
+    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start -2.07 -1.57) (end 2.07 -1.57) (layer F.SilkS) (width 0.12))
@@ -5281,7 +5281,7 @@
     (fp_line (start 1.95 -1.45) (end 1.95 1.45) (layer F.Fab) (width 0.1))
     (fp_line (start -2.07 1.57) (end -2.07 1.27) (layer F.SilkS) (width 0.12))
     (fp_line (start 2.07 -1.57) (end 2.07 -1.27) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 1 smd roundrect (at -2.1 0) (size 0.8 2) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -5301,10 +5301,10 @@
     (tags "SMD SMT button")
     (path /sw3)
     (attr smd)
-    (fp_text reference sw3 (at 0 -2.25) (layer F.SilkS)
+    (fp_text reference sw3 (at 0 -2.25) (layer F.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
-    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab)
+    (fp_text value "3.9x2.9mm Switch" (at 0 2.5) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (fp_line (start 2.07 -1.57) (end 2.07 -1.27) (layer F.SilkS) (width 0.12))
@@ -5322,7 +5322,7 @@
     (fp_line (start 2.07 1.57) (end -2.07 1.57) (layer F.SilkS) (width 0.12))
     (fp_line (start 2.07 1.27) (end 2.07 1.57) (layer F.SilkS) (width 0.12))
     (fp_line (start -2.07 -1.57) (end 2.07 -1.57) (layer F.SilkS) (width 0.12))
-    (fp_text user %R (at 0 0) (layer F.Fab)
+    (fp_text user %R (at 0 0) (layer F.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)))
     )
     (pad 2 smd roundrect (at 2.1 0 180) (size 0.8 2) (layers F.Cu F.Paste F.Mask) (roundrect_rratio 0.25)
@@ -5342,10 +5342,10 @@
     (tags capacitor)
     (path /control/int/c)
     (attr smd)
-    (fp_text reference control.int.c (at 0 1.17 90) (layer B.SilkS)
+    (fp_text reference control.int.c (at 0 1.17 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value 1nF (at 0 -1.17 90) (layer B.Fab)
+    (fp_text value 1nF (at 0 -1.17 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 0.93 -0.47) (end -0.93 -0.47) (layer B.CrtYd) (width 0.05))
@@ -5356,7 +5356,7 @@
     (fp_line (start 0.5 0.25) (end 0.5 -0.25) (layer B.Fab) (width 0.1))
     (fp_line (start -0.5 0.25) (end 0.5 0.25) (layer B.Fab) (width 0.1))
     (fp_line (start -0.5 -0.25) (end -0.5 0.25) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.485 0 90) (size 0.59 0.64) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -5376,10 +5376,10 @@
     (tags capacitor)
     (path /reg_5v/in_cap/c[0])
     (attr smd)
-    (fp_text reference reg_5v.in_cap.c[0] (at 0 1.82 90) (layer B.SilkS)
+    (fp_text reference reg_5v.in_cap.c[0] (at 0 1.82 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL31A106KBHNNNE (Samsung Electro-Mechanics) - X5R ±10% 50V 10uF 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab)
+    (fp_text value "CL31A106KBHNNNE (Samsung Electro-Mechanics) - X5R ±10% 50V 10uF 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 2.28 -1.12) (end -2.28 -1.12) (layer B.CrtYd) (width 0.05))
@@ -5392,7 +5392,7 @@
     (fp_line (start 1.6 0.8) (end 1.6 -0.8) (layer B.Fab) (width 0.1))
     (fp_line (start -1.6 0.8) (end 1.6 0.8) (layer B.Fab) (width 0.1))
     (fp_line (start -1.6 -0.8) (end -1.6 0.8) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -1.4 0 270) (size 1.25 1.75) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.2)
@@ -5412,10 +5412,10 @@
     (tags capacitor)
     (path /reg_5v/in_cap/c[1])
     (attr smd)
-    (fp_text reference reg_5v.in_cap.c[1] (at 0 1.82 90) (layer B.SilkS)
+    (fp_text reference reg_5v.in_cap.c[1] (at 0 1.82 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL31A106KBHNNNE (Samsung Electro-Mechanics) - X5R ±10% 50V 10uF 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab)
+    (fp_text value "CL31A106KBHNNNE (Samsung Electro-Mechanics) - X5R ±10% 50V 10uF 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start -1.6 -0.8) (end -1.6 0.8) (layer B.Fab) (width 0.1))
@@ -5428,7 +5428,7 @@
     (fp_line (start -2.28 1.12) (end 2.28 1.12) (layer B.CrtYd) (width 0.05))
     (fp_line (start 2.28 1.12) (end 2.28 -1.12) (layer B.CrtYd) (width 0.05))
     (fp_line (start 2.28 -1.12) (end -2.28 -1.12) (layer B.CrtYd) (width 0.05))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 2 smd roundrect (at 1.4 0 270) (size 1.25 1.75) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.2)
@@ -5448,10 +5448,10 @@
     (tags capacitor)
     (path /reg_analog/out_cap)
     (attr smd)
-    (fp_text reference reg_analog.out_cap (at 0 1.82 90) (layer B.SilkS)
+    (fp_text reference reg_analog.out_cap (at 0 1.82 90) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "CL31B225KBHNNNE (Samsung Electro-Mechanics) - X7R 2.2uF ±10% 50V 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab)
+    (fp_text value "CL31B225KBHNNNE (Samsung Electro-Mechanics) - X7R 2.2uF ±10% 50V 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS" (at 0 -1.82 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 2.28 -1.12) (end -2.28 -1.12) (layer B.CrtYd) (width 0.05))
@@ -5464,7 +5464,7 @@
     (fp_line (start 1.6 0.8) (end 1.6 -0.8) (layer B.Fab) (width 0.1))
     (fp_line (start -1.6 0.8) (end 1.6 0.8) (layer B.Fab) (width 0.1))
     (fp_line (start -1.6 -0.8) (end -1.6 0.8) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0 90) (layer B.Fab)
+    (fp_text user %R (at 0 0 90) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -1.4 0 270) (size 1.25 1.75) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.2)
@@ -5484,10 +5484,10 @@
     (tags resistor)
     (path /reg_5v/fb/bottom_res)
     (attr smd)
-    (fp_text reference reg_5v.fb.bottom_res (at 0 1.43) (layer B.SilkS)
+    (fp_text reference reg_5v.fb.bottom_res (at 0 1.43) (layer B.SilkS) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
-    (fp_text value "0603WAF1501T5E (UNI-ROYAL(Uniroyal Elec)) - 1.5kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab)
+    (fp_text value "0603WAF1501T5E (UNI-ROYAL(Uniroyal Elec)) - 1.5kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS" (at 0 -1.43) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (fp_line (start 1.48 -0.73) (end -1.48 -0.73) (layer B.CrtYd) (width 0.05))
@@ -5500,7 +5500,7 @@
     (fp_line (start 0.8 0.4) (end 0.8 -0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 0.4) (end 0.8 0.4) (layer B.Fab) (width 0.1))
     (fp_line (start -0.8 -0.4) (end -0.8 0.4) (layer B.Fab) (width 0.1))
-    (fp_text user %R (at 0 0) (layer B.Fab)
+    (fp_text user %R (at 0 0) (layer B.Fab) hide
       (effects (font (size 0.8 0.6) (thickness 0.1)) (justify mirror))
     )
     (pad 1 smd roundrect (at -0.7875 0) (size 0.875 0.95) (layers B.Cu B.Paste B.Mask) (roundrect_rratio 0.25)
@@ -5514,6 +5514,9 @@
     )
   )
 
+  (gr_text "USB PD SMU v1" (at 136 25) (layer F.SilkS)
+    (effects (font (size 1.5 1) (thickness 0.15)))
+  )
   (dimension 26 (width 0.15) (layer Dwgs.User)
     (gr_text "26.000 mm" (at 237.3 36 90) (layer Dwgs.User)
       (effects (font (size 1 1) (thickness 0.15)))
