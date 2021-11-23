@@ -1,5 +1,4 @@
-from .PartsTable import *
-
+from .TableDeratingCapacitor import *
 
 class DigikeyTable(LazyTable):
   """Shared base class for Digikey product tables that contains common row definitions.
@@ -8,6 +7,7 @@ class DigikeyTable(LazyTable):
   MANUFACTURER = 'Manufacturer'
   PART_NUMBER = 'Manufacturer Part Number'
   DATASHEETS = 'Datasheets'
+  DESCRIPTION = 'Description'
 
   _RAW_COST_COLUMN = 'Unit Price (USD)'
   COST = PartsTableColumn(float)
