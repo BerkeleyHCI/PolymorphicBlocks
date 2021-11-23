@@ -354,12 +354,13 @@ class UsbSourceMeasureTest(BoardTop):
       (self.sw3, ), self.sw3_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
       shared_spi = self.mcu.new_io(SpiMaster)
+      self.spi_net = self.connect(shared_spi)
 
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
       self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
       self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
-      self.lcd_spi_net = self.connect(shared_spi, self.lcd.spi)  # MISO unused
+      self.connect(shared_spi, self.lcd.spi)  # MISO unused
       self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
 
       (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
@@ -420,7 +421,30 @@ class UsbSourceMeasureTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
+          'pd_int_net=43',
+          'sw1_chain_0=44',
+          'sw2_chain_0=45',
+          'sw3_chain_0=46',
+          'rgb_b_net=47',
+          'rgb_g_net=48',
+          'rgb_r_net=1',
 
+          'dac_ldac_net=2',
+          'dac_in_cs_net=3',
+          'dac_ip_cs_net=4',
+          'spi_net.mosi=6',
+          'spi_net.miso=7',
+          'spi_net.sck=8',
+          'adc_v_cs_net=12',
+          'adc_i_cs_net=13',
+          'dac_v_cs_net=15',
+
+          'lcd_reset_net=18',
+          'lcd_rs_net=21',
+          'lcd_cs_net=22',
+
+          'low_en_net=23',
+          'high_en_net=28',
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
