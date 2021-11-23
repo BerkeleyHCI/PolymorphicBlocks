@@ -74,6 +74,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
     self.assign(self.selected_resistance, part[JlcResistorTable.RESISTANCE])
+    self.assign(self.resistance, part[JlcResistorTable.RESISTANCE])
     self.assign(self.selected_power, part[JlcResistorTable.POWER_RATING])
     self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
 

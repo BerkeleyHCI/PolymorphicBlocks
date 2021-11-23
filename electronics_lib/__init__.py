@@ -1,7 +1,9 @@
 from electronics_abstract_parts import *
 
 from .PassiveResistor import ESeriesResistor, ChipResistor, AxialResistor, AxialVerticalResistor
+from .JlcResistor import JlcResistor
 from .PassiveCapacitor import SmtCeramicCapacitor, SmtCeramicCapacitorGeneric
+from .JlcCapacitor import JlcCapacitor
 from .PassiveInductor import SmtInductor
 from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
 from .Diodes import SmtDiode, SmtZenerDiode

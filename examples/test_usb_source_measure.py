@@ -415,6 +415,8 @@ class UsbSourceMeasureTest(BoardTop):
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
+        (['control', 'isen', 'res', 'res'], ChipResistor),  # big one not from JLC
+        (['control', 'int', 'c'], SmtCeramicCapacitorGeneric),  # no 1nF basic parts from JLC
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -436,6 +438,8 @@ class UsbSourceMeasureTest(BoardTop):
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
+        (Capacitor, JlcCapacitor),
+        (Resistor, JlcResistor),
       ],
     )
 
