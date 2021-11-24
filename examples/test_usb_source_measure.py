@@ -460,6 +460,8 @@ class UsbSourceMeasureTest(BoardTop):
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         # TODO debug impedance for integrator
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),
+        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
+
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
