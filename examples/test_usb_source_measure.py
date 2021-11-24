@@ -124,7 +124,7 @@ class ErrorAmplifier(GeneratorBlock):
                    series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
     top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
-                                                                      4 * input_resistance))
+                                                                      input_resistance / 4))
     # the 4x factor is a way to specify the series resistance of the divider assuming both resistors are equal,
     # since the DividerValues util only takes the parallel resistance
 
@@ -206,11 +206,11 @@ class SourceMeasureControl(Block):
       self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
                                                input_resistance=(10, 100)*kOhm))
       self.control_voltage = self.Export(self.err_volt.target)
-      self.err_source = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
+      self.err_source = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
                                                  input_resistance=(10, 100)*kOhm,
                                                  diode_spec='source'))
       self.control_current_source = self.Export(self.err_source.target)
-      self.err_sink = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
+      self.err_sink = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
                                                input_resistance=(10, 100)*kOhm,
                                                diode_spec='sink'))
       self.control_current_sink = self.Export(self.err_sink.target)
