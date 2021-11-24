@@ -120,7 +120,7 @@ class FetTable(DigikeyTable):
 
 @abstract_block
 class SmtFet(Fet, FootprintBlock, GeneratorBlock):
-  TABLE: PartsTable
+  TABLE_FN: Callable[[Any], PartsTable]
 
   @init_in_parent
   def __init__(self, **kwargs):
@@ -137,7 +137,7 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
   def select_part(self, part_spec: str, footprint_spec: str,
                   drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
-    part = self.TABLE.filter(lambda row: (
+    part = self.TABLE_FN().filter(lambda row: (
         (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[FetTable.FOOTPRINT]) and
         drain_voltage.fuzzy_in(row[FetTable.VDS_RATING]) and
@@ -166,16 +166,16 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
 
 
 class SmtNFet(NFet, SmtFet):
-  TABLE = FetTable.n_fet_table()
+  TABLE_FN = FetTable.n_fet_table
 
 
 class SmtPFet(PFet, SmtFet):
-  TABLE = FetTable.p_fet_table()
+  TABLE_FN = FetTable.p_fet_table
 
 
 @abstract_block
 class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
-  TABLE: PartsTable
+  TABLE_FN: Callable[[Any], PartsTable]
 
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
@@ -203,7 +203,7 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
                   drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
     # Pre-filter out by the static parameters
-    prefiltered_parts = self.TABLE.filter(lambda row: (
+    prefiltered_parts = self.TABLE_FN().filter(lambda row: (
         (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[FetTable.FOOTPRINT]) and
         drain_voltage.fuzzy_in(row[FetTable.VDS_RATING]) and
@@ -259,8 +259,8 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
 
 
 class SmtSwitchNFet(SwitchNFet, SmtSwitchFet):
-  TABLE = FetTable.n_fet_table()
+  TABLE_FN = FetTable.n_fet_table
 
 
 class SmtSwitchPFet(SwitchPFet, SmtSwitchFet):
-  TABLE = FetTable.p_fet_table()
+  TABLE_FN = FetTable.p_fet_table
