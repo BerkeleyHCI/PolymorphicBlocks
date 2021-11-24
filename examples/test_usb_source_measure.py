@@ -407,6 +407,10 @@ class UsbSourceMeasureTest(BoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+    self.jlc_th1 = self.Block(JlcToolingHole())
+    self.jlc_th2 = self.Block(JlcToolingHole())
+    self.jlc_th3 = self.Block(JlcToolingHole())
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

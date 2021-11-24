@@ -47,3 +47,13 @@ class MountingHole_M3(MountingHole):
 class MountingHole_M4(MountingHole):
   FOOTPRINT = 'MountingHole:MountingHole_4.3mm_M4_Pad_Via'
   VALUE = 'M4'
+
+
+class JlcToolingHole(FootprintBlock):
+  def contents(self):
+    super().contents()
+    self.footprint(
+      '', 'edg:JlcToolingHole_1.152mm',
+      {},
+      datasheet='https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order'
+    )

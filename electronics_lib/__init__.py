@@ -55,3 +55,4 @@ from .Labels import DuckLogo, LeadFreeIndicator, IdDots4
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4
 from .Mechanicals import MountingHole_NoPad_M2_5
+from .Mechanicals import JlcToolingHole
