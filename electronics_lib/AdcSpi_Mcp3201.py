@@ -52,7 +52,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
 
 
 class Mcp3201(Block):
-  """MCP3201 12-bit 111kSPS ADC configured in single-ended mode, since the IN- pin can't do much anyways.
+  """MCP3201 12-bit 100kSPS ADC configured in single-ended mode, since the IN- pin can't do much anyways.
 
   Some drop-in electrically compatible chips:
   - ADS7822 (12 bit, 200kSPS)

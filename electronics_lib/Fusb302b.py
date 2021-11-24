@@ -57,7 +57,7 @@ class Fusb302b(Block):
     self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.vbus = self.Export(self.ic.vbus)
-    # self.vconn = self.Export(self.ic.vconn)  # TODO add in once we can conditionally generate the capacitor
+    # TODO conditionally generate Vconn capacitor to support powering cables
 
     self.cc = self.Export(self.ic.cc)
     self.i2c = self.Export(self.ic.i2c)
@@ -77,4 +77,4 @@ class Fusb302b(Block):
       self.vdd_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vdd_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-    # TODO do we need Crecv, which does not show up on any application examples
+    # Crecv is specified in the reference schematic, but doesn't show up on open-source example designs

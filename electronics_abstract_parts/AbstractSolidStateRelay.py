@@ -58,7 +58,7 @@ class DigitalAnalogIsolatedSwitch(Block):
 
     self.connect(self.ain, self.ic.feta.as_analog_sink(
       voltage_limits=self.apull.link().voltage + self.ic.load_voltage_limit,
-      impedance=self.aout.link().sink_impedance
+      impedance=self.aout.link().sink_impedance + self.ic.load_resistance
     ))
     self.pull_merge = MergedAnalogSource.merge(
       self, self.apull,

@@ -71,7 +71,6 @@ class PartsTable:
     all_dict_rows = list(itertools.chain(*dict_rowss))
 
     if len(all_dict_rows) > 1:  # if nonempty, check for consistency
-
       first_keys = set(all_dict_rows[0].keys())
       for dict_row in all_dict_rows[1:]:
         difference = first_keys.symmetric_difference(set(dict_row.keys()))

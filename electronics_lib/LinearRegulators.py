@@ -397,7 +397,6 @@ class Ap2210(LinearRegulator):
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))
 
-    # wire things together
     self.connect(self.ic.vin, self.in_cap.pwr, self.pwr_in)
     self.connect(self.ic.vout, self.out_cap.pwr, self.pwr_out)
     self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)

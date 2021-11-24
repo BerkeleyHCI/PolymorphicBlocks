@@ -122,11 +122,11 @@ class ErrorAmplifier(GeneratorBlock):
 
   def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
                    series: int, tolerance: float) -> None:
+    # The 1/4 factor is a way to specify the series resistance of the divider assuming both resistors are equal,
+    # since the DividerValues util only takes the parallel resistance
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
     top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
                                                                       input_resistance / 4))
-    # the 4x factor is a way to specify the series resistance of the divider assuming both resistors are equal,
-    # since the DividerValues util only takes the parallel resistance
 
     self.rtop = self.Block(Resistor(
       resistance=Range.from_tolerance(top_resistance, tolerance)
@@ -220,7 +220,7 @@ class SourceMeasureControl(Block):
       self.int = imp.Block(IntegratorInverting(
         factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
         capacitance=1*nFarad(tol=0.15)))
-      self.int_link = self.connect(self.err_merge.source, self.int.input)  # to support impedance check waive
+      self.int_link = self.connect(self.err_merge.source, self.int.input)  # name it to support impedance check waive
       self.connect(self.ref_center, self.int.reference)
 
     with self.implicit_connect(
@@ -353,6 +353,8 @@ class UsbSourceMeasureTest(BoardTop):
       (self.sw2, ), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
       (self.sw3, ), self.sw3_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 
+      # TODO next revision: Blackberry trackball UI, speakers?
+
       shared_spi = self.mcu.new_io(SpiMaster)
       self.spi_net = self.connect(shared_spi)
 
@@ -390,17 +392,12 @@ class UsbSourceMeasureTest(BoardTop):
       self.high_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.high_en)
       self.low_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.low_en)
 
-    # TODO add UI elements: output enable tactile switch + LCD + 4 directional buttons
-
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.as_voltage_sink(), self.control.out)
 
-    # TODO next revision: Blackberry trackball UI?
-
     # TODO next revision: add high precision ADCs
-    # TODO next revision: add speaker?
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -458,8 +455,7 @@ class UsbSourceMeasureTest(BoardTop):
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
-        # TODO debug impedance for integrator
-        (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),
+        (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
 
       ],

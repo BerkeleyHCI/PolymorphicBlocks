@@ -243,7 +243,6 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
     ]
 
     new_decades = [decade for decade in test_decades
-                   if self.value_type
-                     .from_resistors(range_of_decade(decade[0]),
-                                     range_of_decade(decade[1])).intersects(target)]
+                   if self.value_type.from_resistors(range_of_decade(decade[0]),
+                                                     range_of_decade(decade[1])).intersects(target)]
     return new_decades
