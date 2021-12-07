@@ -5,9 +5,11 @@ from typing import *
 from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
+from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
+  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
+  FloatExpr, RangeExpr, \
   ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryBoolOp, BinaryOpBinding, BinaryNumOp
+from .Binding import LengthBinding, BinaryOpBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -71,34 +73,40 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
-  def create_reduce_op(self, op: ReductionOp) -> ArrayType:
-    return self.elt._new_bind(ReductionOpBinding(self, op))
+  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayType:
+    return self.elt._new_bind(UnarySetOpBinding(self, op))
 
   def sum(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.sum)
+    return self._create_unary_set_op(NumericOp.sum)
 
   def min(self) -> FloatExpr:
-    return FloatExpr()._new_bind(ReductionOpBinding(self, ReductionOp.min))
+    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min))
 
   def max(self) -> FloatExpr:
-    return FloatExpr()._new_bind(ReductionOpBinding(self, ReductionOp.max))
+    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
 
   def intersection(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.intersection)
+    return self._create_unary_set_op(RangeSetOp.intersection)
 
   def hull(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.hull)
+    return self._create_unary_set_op(RangeSetOp.hull)
 
   def equal_any(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.equal_any)
+    return self._create_unary_set_op(RangeSetOp.equal_any)
 
   # TODO: not sure if ArrayType is being checked properly =(
   def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_or))
+
+  def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_and))
 
 
 class ArrayRangeExpr(ArrayExpr[RangeExpr]):
-  def _create_binary_op(self, lhs: ConstraintExpr, rhs: ConstraintExpr, op: BinaryNumOp) -> ArrayRangeExpr:
+  def _create_binary_op(self,
+                        lhs: ConstraintExpr,
+                        rhs: ConstraintExpr,
+                        op: ExprOp) -> ArrayRangeExpr:
     """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
     Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
     to ensure this makes sense. No type checking happens here."""
@@ -106,7 +114,8 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr]):
     return self._new_bind(BinaryOpBinding(lhs, rhs, op))
 
   def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
-    return self._create_binary_op(RangeExpr._to_expr_type(other), self, BinaryNumOp.div)
+    return self._create_binary_op(
+      RangeExpr._to_expr_type(other), self,Op.div)
 
 
 @non_library
