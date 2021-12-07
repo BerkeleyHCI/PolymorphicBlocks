@@ -8,13 +8,14 @@ from .type_pb2 import *
 from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, ALLOCATE, LENGTH, NAME
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
-from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, ReductionExpr, MapExtractExpr
+from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \
+  BinarySetExpr, UnaryExpr, UnarySetExpr, MapExtractExpr
 from .lit_pb2 import ValueLit
 
 from edg_core.Range import Range
 
 if TYPE_CHECKING:
-  from .ref_pb2 import ReservedValue
+  from .ref_pb2 import Reserved
 
 PortTypes = Union[Port, PortArray, Bundle]
 BlockTypes = HierarchyBlock
@@ -173,12 +174,51 @@ def lit_to_string(lit: LitTypes) -> str:
 def expr_to_string(expr: ValueExpr) -> str:
   if expr.HasField('literal'):
     return str(lit_from_expr(expr))
+  elif expr.HasField('unary'):
+    un_op_prefix = {
+      UnaryExpr.NEGATE: '-',
+      UnaryExpr.NOT: '!',
+    }
+    un_op_fn_name = {
+      UnaryExpr.MIN: 'min',
+      UnaryExpr.MAX: 'max',
+      UnaryExpr.CENTER: 'center',
+      UnaryExpr.WIDTH: 'width',
+    }
+
+    if expr.unary.op in un_op_prefix:
+      return f'({un_op_prefix[expr.unary.op]} {expr_to_string(expr.unary.val)})'
+    elif expr.unary.op in un_op_fn_name:
+      return f'{un_op_fn_name[expr.unary.op]}({expr_to_string(expr.unary.val)})'
+    else:
+      return f'{UnaryExpr.Op.Name(expr.unary.op)}({expr_to_string(expr.unary.val)})'
+  elif expr.HasField('unary_set'):
+    unset_op_fn_name = {
+      UnarySetExpr.UNDEFINED: 'undef',
+      UnarySetExpr.SUM: 'sum',
+      UnarySetExpr.ALL_TRUE: 'all_true',
+      UnarySetExpr.ANY_TRUE: 'any_true',
+      UnarySetExpr.ALL_EQ: 'all_eq',
+      UnarySetExpr.ALL_UNIQUE: 'all_unique',
+      UnarySetExpr.MAXIMUM: 'max',
+      UnarySetExpr.MINIMUM: 'min',
+      UnarySetExpr.SET_EXTRACT: 'set_extract',
+      UnarySetExpr.INTERSECTION: 'intersection',
+      UnarySetExpr.HULL: 'null',
+      UnarySetExpr.NEGATE: 'negate',
+      UnarySetExpr.INVERT: 'invert',
+      }
+
+    if expr.unary_set.op in unset_op_fn_name:
+      return f'{unset_op_fn_name[expr.unary_set.op]}({expr_to_string(expr.unary_set.vals)})'
+    else:
+      return f'{UnarySetExpr.Op.Name(expr.unary_set.op)}({expr_to_string(expr.unary_set.vals)})'
   elif expr.HasField('binary'):
     bin_op_infix = {
       BinaryExpr.ADD: '+',
-      BinaryExpr.SUB: '-',
+        # BinaryExpr.SUB: '-',
       BinaryExpr.MULT: '*',
-      BinaryExpr.DIV: '/',
+        # BinaryExpr.DIV: '/',
       BinaryExpr.AND: '&&',
       BinaryExpr.OR: '||',
       BinaryExpr.XOR: '^',
@@ -195,7 +235,8 @@ def expr_to_string(expr: ValueExpr) -> str:
       BinaryExpr.MAX: 'max',
       BinaryExpr.MIN: 'min',
       BinaryExpr.INTERSECTION: 'intersect',  # TODO maybe should be a symbol
-      BinaryExpr.SUBSET: 'subset',  # TODO maybe should be a symbol
+      BinaryExpr.HULL: 'hull',
+      BinaryExpr.WITHIN: 'within',
       BinaryExpr.RANGE: 'range',
     }
     if expr.binary.op in bin_op_infix:
@@ -204,23 +245,20 @@ def expr_to_string(expr: ValueExpr) -> str:
       return f'{bin_op_fn_name[expr.binary.op]}({expr_to_string(expr.binary.lhs)}, {expr_to_string(expr.binary.rhs)})'
     else:
       return f'{BinaryExpr.Op.Name(expr.binary.op)}({expr_to_string(expr.binary.lhs)}, {expr_to_string(expr.binary.rhs)})'
-  elif expr.HasField('reduce'):
-    reduce_fn_name = {
-      ReductionExpr.UNDEFINED: 'undef',
-      ReductionExpr.SUM: 'sum',
-      ReductionExpr.ALL_TRUE: 'all_true',
-      ReductionExpr.ANY_TRUE: 'any_true',
-      ReductionExpr.ALL_EQ: 'all_eq',
-      ReductionExpr.ALL_UNIQUE: 'all_unique',
-      ReductionExpr.MAXIMUM: 'max',
-      ReductionExpr.MINIMUM: 'min',
-      ReductionExpr.SET_EXTRACT: 'set_extract',
-      ReductionExpr.INTERSECTION: 'intersection',
+  elif expr.HasField('binary_set'):
+    binset_op_infix = {
+      BinarySetExpr.ADD: '+',
+      BinarySetExpr.MULT: '*',
     }
-    if expr.binary.op in reduce_fn_name:
-      return f'reduce_{reduce_fn_name[expr.reduce.op]}({expr_to_string(expr.reduce.vals)})'
+    binset_op_fn_name = {
+      BinarySetExpr.UNDEFINED: 'undef',
+    }
+    if expr.binary_set.op in binset_op_infix:
+      return f'({expr_to_string(expr.binary_set.lhset)} {binset_op_infix[expr.binary_set.op]} {expr_to_string(expr.binary_set.rhs)})'
+    elif expr.binary_set.op in binset_op_fn_name:
+      return f'{binset_op_fn_name[expr.binary_set.op]}({expr_to_string(expr.binary_set.lhset)}, {expr_to_string(expr.binary_set.rhs)})'
     else:
-      return f'reduce_{ReductionExpr.Op.Name(expr.reduce.op)}({expr_to_string(expr.reduce.vals)})'
+      return f'{BinarySetExpr.Op.Name(expr.binary_set.op)}({expr_to_string(expr.binary_set.lhset)}, {expr_to_string(expr.binary_set.rhs)})'
   elif expr.HasField('struct'):
     elt_strs = [f'{key}: {expr_to_string(val)}' for key, val in expr.struct.vals.items()]
     elt_str = ','.join(elt_strs)
@@ -243,7 +281,7 @@ def expr_to_string(expr: ValueExpr) -> str:
     raise ValueError(f"no format rule for {expr}")
 
 
-def localpath_concat(*elts: Union[LocalPath, str, 'ReservedValue']) -> LocalPath:  # TODO workaround for broken enum typing
+def localpath_concat(*elts: Union[LocalPath, str, 'Reserved.V']) -> LocalPath:  # TODO workaround for broken enum typing
   result = LocalPath()
   for elt in elts:
     if isinstance(elt, LocalPath):
@@ -273,7 +311,7 @@ def libpath(name: str) -> LibraryPath:
   return pb
 
 
-def LocalPathList(path: Iterable[Union[str, 'ReservedValue']]) -> LocalPath:
+def LocalPathList(path: Iterable[Union[str, 'Reserved.V']]) -> LocalPath:
   pb = LocalPath()
   for step in path:
     if isinstance(step, str):
@@ -323,10 +361,10 @@ def EqualsValueExpr(path: Iterable[str], value: Union[Iterable[str], float, Tupl
   return pb
 
 
-def SubsetValueExpr(path: Iterable[str], value: Union[Iterable[str], Tuple[float, float]]) -> ValueExpr:
+def WithinValueExpr(path: Iterable[str], value: Union[Iterable[str], Tuple[float, float]]) -> ValueExpr:
   """Convenience shorthand constructor for a ValueExpr with a path on the lhs and a literal on the rhs"""
   pb = ValueExpr()
-  pb.binary.op = BinaryExpr.SUBSET
+  pb.binary.op = BinaryExpr.WITHIN
   pb.binary.lhs.ref.CopyFrom(LocalPathList(path))
 
   if isinstance(value, tuple) and isinstance(value[0], float) and isinstance(value[1], float):
