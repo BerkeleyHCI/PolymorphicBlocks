@@ -102,7 +102,7 @@ class CurrentSenseResistor(DiscreteApplication):
     super().__init__()
 
     self.res = self.Block(SeriesPowerResistor(resistance, current_limits))
-    self.pwr_in = self.Export(self.res.pwr_in, [Power, Input])
+    self.pwr_in = self.Export(self.res.pwr_in, [Input])
     self.pwr_out = self.Export(self.res.pwr_out, [Output])
 
     self.sense_in = self.Port(AnalogSource())

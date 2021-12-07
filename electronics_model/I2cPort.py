@@ -30,8 +30,8 @@ class I2cPullupPort(Bundle[I2cLink]):
     super().__init__()
     self.link_type = I2cLink
 
-    self.scl = self.Port(DigitalSingleSource())
-    self.sda = self.Port(DigitalSingleSource())
+    self.scl = self.Port(DigitalSingleSource(pullup_capable=True))
+    self.sda = self.Port(DigitalSingleSource(pullup_capable=True))
 
 
 class I2cMaster(Bundle[I2cLink]):

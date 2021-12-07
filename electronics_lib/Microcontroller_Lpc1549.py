@@ -138,6 +138,9 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
 
       '35': self.usb_0.dp,
       '36': self.usb_0.dm,
+
+      '37': self.i2c_0.scl,  # I2C_SCL, not 5v tolerant
+      '38': self.i2c_0.sda,  # I2C_SDA, not 5v tolerant
     }
 
     self.io_pins = {
@@ -166,8 +169,6 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
       # '33': self.pio0[20],  # reserved for SWDIO
       # '34': self.pio0[21],  # reserved for /RESET
 
-      # '37': self.pio0[22],  # I2C_SCL, not 5v tolerant
-      # '38': self.pio0[23],  # I2C_SCL, not 5v tolerant
       '43': self.pio0[24],
       '44': self.pio0[25],
       '45': self.pio0[26],

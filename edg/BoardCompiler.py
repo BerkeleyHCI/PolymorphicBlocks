@@ -29,7 +29,7 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str,
     raw_file.write(compiled.contents.SerializeToString())
 
   netlist_string = footprint.generate_netlist(netlist.blocks, netlist.nets)
-  with open(netlist_filename, 'w') as net_file:
+  with open(netlist_filename, 'w', encoding='utf-8') as net_file:
     net_file.write(netlist_string)
 
   write_schematic_stubs(netlist, target_dir, target_name)

@@ -2,9 +2,7 @@ from electronics_abstract_parts import *
 from .DigikeyTable import *
 
 
-class BaseFetTable(DigikeyTable):
-  _TABLES: List[str]
-
+class FetTable(DigikeyTable):
   VDS_RATING = PartsTableColumn(Range)
   IDS_RATING = PartsTableColumn(Range)
   VGS_RATING = PartsTableColumn(Range)
@@ -20,6 +18,7 @@ class BaseFetTable(DigikeyTable):
     'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
     'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
+    'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
   }
 
   @classmethod
@@ -45,6 +44,13 @@ class BaseFetTable(DigikeyTable):
         '2': drain,
         '3': source,
       },
+      'Package_SO:PowerPAK_SO-8_Single': {
+        '1': source,
+        '2': source,
+        '3': source,
+        '4': gate,
+        '5': drain,
+      },
     }[footprint]
 
   @classmethod
@@ -52,7 +58,7 @@ class BaseFetTable(DigikeyTable):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package / Case'])
+        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
 
         new_cols[cls.VDS_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
@@ -89,78 +95,87 @@ class BaseFetTable(DigikeyTable):
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
-    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir(cls._TABLES, 'resources'),
-                                          encoding='utf-8-sig')
+    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      'Digikey_NFETs.csv',
+      'Digikey_PFETs.csv',
+      'Digikey_FETs_SO8.csv',
+    ], 'resources'), encoding='utf-8-sig')
     return raw_table.map_new_columns(parse_row).sort_by(
       lambda row: row[cls.COST]
     )
 
+  @classmethod
+  def n_fet_table(cls) -> PartsTable:
+    # TODO maybe cache the results?
+    return cls.table().filter(lambda row: (
+        row['FET Type'] == 'N-Channel'
+    ))
 
-class NFetTable(BaseFetTable):
-  _TABLES = ['Digikey_NFETs.csv']
-
-
-class PFetTable(BaseFetTable):
-  _TABLES = ['Digikey_PFETs.csv']
-
+  @classmethod
+  def p_fet_table(cls) -> PartsTable:
+    # TODO maybe cache the results?
+    return cls.table().filter(lambda row: (
+        row['FET Type'] == 'P-Channel'
+    ))
 
 @abstract_block
 class SmtFet(Fet, FootprintBlock, GeneratorBlock):
-  TABLE: Type[BaseFetTable]
+  TABLE_FN: Callable[[Any], PartsTable]
 
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_drain_current_rating = self.Parameter(RangeExpr())
-    self.selected_gate_drive = self.Parameter(RangeExpr())
-    self.selected_power_rating = self.Parameter(RangeExpr())
-    self.selected_rds_on = self.Parameter(RangeExpr())
-    self.selected_gate_charge = self.Parameter(RangeExpr())
+
+    self.part_spec = self.Parameter(StringExpr(""))
+    self.footprint_spec = self.Parameter(StringExpr(""))
 
     self.generator(self.select_part,
+                   self.part_spec, self.footprint_spec,
                    self.drain_voltage, self.drain_current,
                    self.gate_voltage, self.rds_on, self.gate_charge, self.power)
 
-  def select_part(self, drain_voltage: Range, drain_current: Range,
+  def select_part(self, part_spec: str, footprint_spec: str,
+                  drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
-    part = self.TABLE.table().filter(lambda row: (
-        drain_voltage.fuzzy_in(row[self.TABLE.VDS_RATING]) and
-        drain_current.fuzzy_in(row[self.TABLE.IDS_RATING]) and
-        gate_voltage.fuzzy_in(row[self.TABLE.VGS_DRIVE]) and
-        row[self.TABLE.RDS_ON].fuzzy_in(rds_on) and
-        row[self.TABLE.GATE_CHARGE].fuzzy_in(gate_charge) and
-        power.fuzzy_in(row[self.TABLE.POWER_RATING])
+    part = self.TABLE_FN().filter(lambda row: (
+        (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[FetTable.FOOTPRINT]) and
+        drain_voltage.fuzzy_in(row[FetTable.VDS_RATING]) and
+        drain_current.fuzzy_in(row[FetTable.IDS_RATING]) and
+        gate_voltage.fuzzy_in(row[FetTable.VGS_RATING]) and
+        row[FetTable.RDS_ON].fuzzy_in(rds_on) and
+        row[FetTable.GATE_CHARGE].fuzzy_in(gate_charge) and
+        power.fuzzy_in(row[FetTable.POWER_RATING])
     )).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[self.TABLE.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[self.TABLE.RDS_ON])
-    self.assign(self.selected_power_rating, part[self.TABLE.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[self.TABLE.GATE_CHARGE])
+    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
 
     self.footprint(
-      'Q', part[self.TABLE.FOOTPRINT],
-      self.TABLE.footprint_pinmap(part[self.TABLE.FOOTPRINT],
-                                  self.gate, self.drain, self.source),
-      mfr=part[self.TABLE.MANUFACTURER], part=part[self.TABLE.PART_NUMBER],
+      'Q', part[FetTable.FOOTPRINT],
+      FetTable.footprint_pinmap(part[FetTable.FOOTPRINT],
+                                self.gate, self.drain, self.source),
+      mfr=part[FetTable.MANUFACTURER], part=part[FetTable.PART_NUMBER],
       value=f"Vds={part['Drain to Source Voltage (Vdss)']}, Ids={part['Current - Continuous Drain (Id) @ 25°C']}",
-      datasheet=part[self.TABLE.DATASHEETS]
+      datasheet=part[FetTable.DATASHEETS]
     )
 
 
 class SmtNFet(NFet, SmtFet):
-  TABLE = NFetTable
+  TABLE_FN = FetTable.n_fet_table
 
 
 class SmtPFet(PFet, SmtFet):
-  TABLE = PFetTable
+  TABLE_FN = FetTable.p_fet_table
 
 
 @abstract_block
 class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
-  TABLE: Type[BaseFetTable]
+  TABLE_FN: Callable[[Any], PartsTable]
 
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
@@ -169,33 +184,34 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_drain_current_rating = self.Parameter(RangeExpr())
-    self.selected_gate_drive = self.Parameter(RangeExpr())
-    self.selected_power_rating = self.Parameter(RangeExpr())
-    self.selected_rds_on = self.Parameter(RangeExpr())
-    self.selected_gate_charge = self.Parameter(RangeExpr())
+
+    self.part_spec = self.Parameter(StringExpr(""))
+    self.footprint_spec = self.Parameter(StringExpr(""))
 
     self.selected_static_power = self.Parameter(RangeExpr())
     self.selected_switching_power = self.Parameter(RangeExpr())
     self.selected_total_power = self.Parameter(RangeExpr())
 
     self.generator(self.select_part,
+                   self.part_spec, self.footprint_spec,
                    self.frequency, self.drive_current,
                    self.drain_voltage, self.drain_current,
                    self.gate_voltage, self.rds_on, self.gate_charge, self.power)
 
-  def select_part(self, frequency: Range, drive_current: Range,
+  def select_part(self, part_spec: str, footprint_spec: str,
+                  frequency: Range, drive_current: Range,
                   drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
     # Pre-filter out by the static parameters
-    prefiltered_parts = self.TABLE.table().filter(lambda row: (
-        drain_voltage.fuzzy_in(row[self.TABLE.VDS_RATING]) and
-        drain_current.fuzzy_in(row[self.TABLE.IDS_RATING]) and
-        gate_voltage.fuzzy_in(row[self.TABLE.VGS_DRIVE]) and
-        row[self.TABLE.RDS_ON].fuzzy_in(rds_on) and
-        row[self.TABLE.GATE_CHARGE].fuzzy_in(gate_charge) and
-        power.fuzzy_in(row[self.TABLE.POWER_RATING])
+    prefiltered_parts = self.TABLE_FN().filter(lambda row: (
+        (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[FetTable.FOOTPRINT]) and
+        drain_voltage.fuzzy_in(row[FetTable.VDS_RATING]) and
+        drain_current.fuzzy_in(row[FetTable.IDS_RATING]) and
+        gate_voltage.fuzzy_in(row[FetTable.VGS_DRIVE]) and
+        row[FetTable.RDS_ON].fuzzy_in(rds_on) and
+        row[FetTable.GATE_CHARGE].fuzzy_in(gate_charge) and
+        power.fuzzy_in(row[FetTable.POWER_RATING])
     ))
 
     # Then run the application-specific calculations and filter again by those
@@ -204,15 +220,15 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
-      new_cols[self.STATIC_POWER] = drain_current * drain_current * row[self.TABLE.RDS_ON]
+      new_cols[self.STATIC_POWER] = drain_current * drain_current * row[FetTable.RDS_ON]
 
-      rise_time = row[self.TABLE.GATE_CHARGE] / gate_drive_rise
-      fall_time = row[self.TABLE.GATE_CHARGE] / gate_drive_fall
+      rise_time = row[FetTable.GATE_CHARGE] / gate_drive_rise
+      fall_time = row[FetTable.GATE_CHARGE] / gate_drive_fall
       new_cols[self.SWITCHING_POWER] = (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
 
       new_cols[self.TOTAL_POWER] = new_cols[self.STATIC_POWER] + new_cols[self.SWITCHING_POWER]
 
-      if new_cols[self.TOTAL_POWER].fuzzy_in(row[self.TABLE.POWER_RATING]):
+      if new_cols[self.TOTAL_POWER].fuzzy_in(row[FetTable.POWER_RATING]):
         return new_cols
       else:
         return None
@@ -221,30 +237,30 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
       process_row
     ).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[self.TABLE.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[self.TABLE.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[self.TABLE.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[self.TABLE.RDS_ON])
-    self.assign(self.selected_power_rating, part[self.TABLE.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[self.TABLE.GATE_CHARGE])
+    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
 
     self.assign(self.selected_static_power, part[self.STATIC_POWER])
     self.assign(self.selected_switching_power, part[self.SWITCHING_POWER])
     self.assign(self.selected_total_power, part[self.TOTAL_POWER])
 
     self.footprint(
-      'Q', part[self.TABLE.FOOTPRINT],
-      self.TABLE.footprint_pinmap(part[self.TABLE.FOOTPRINT],
-                                  self.gate, self.drain, self.source),
-      mfr=part[self.TABLE.MANUFACTURER], part=part[self.TABLE.PART_NUMBER],
+      'Q', part[FetTable.FOOTPRINT],
+      FetTable.footprint_pinmap(part[FetTable.FOOTPRINT],
+                                self.gate, self.drain, self.source),
+      mfr=part[FetTable.MANUFACTURER], part=part[FetTable.PART_NUMBER],
       value=f"Vds={part['Drain to Source Voltage (Vdss)']}, Ids={part['Current - Continuous Drain (Id) @ 25°C']}",
-      datasheet=part[self.TABLE.DATASHEETS]
+      datasheet=part[FetTable.DATASHEETS]
     )
 
 
 class SmtSwitchNFet(SwitchNFet, SmtSwitchFet):
-  TABLE = NFetTable
+  TABLE_FN = FetTable.n_fet_table
 
 
 class SmtSwitchPFet(SwitchPFet, SmtSwitchFet):
-  TABLE = PFetTable
+  TABLE_FN = FetTable.p_fet_table

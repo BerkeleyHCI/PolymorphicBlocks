@@ -441,6 +441,8 @@ class GeneratorBlock(Block):
   ConstrType6 = TypeVar('ConstrType6', bound=Any)
   ConstrType7 = TypeVar('ConstrType7', bound=Any)
   ConstrType8 = TypeVar('ConstrType8', bound=Any)
+  ConstrType9 = TypeVar('ConstrType9', bound=Any)
+  ConstrType10 = TypeVar('ConstrType10', bound=Any)
 
   TargetsType = Iterable[Union[BasePort, ConstraintExpr, Block]]
 
@@ -494,6 +496,28 @@ class GeneratorBlock(Block):
                 req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
                 req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
                 req7: ConstraintExpr[ConstrType7], req8: ConstraintExpr[ConstrType8],
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
+
+  @overload
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
+                                    ConstrType9], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
+                req7: ConstraintExpr[ConstrType7], req8: ConstraintExpr[ConstrType8],
+                req9: ConstraintExpr[ConstrType9],
+                *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
+
+  @overload
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
+                                    ConstrType9, ConstrType10], None],
+                req1: ConstraintExpr[ConstrType1], req2: ConstraintExpr[ConstrType2],
+                req3: ConstraintExpr[ConstrType3], req4: ConstraintExpr[ConstrType4],
+                req5: ConstraintExpr[ConstrType5], req6: ConstraintExpr[ConstrType6],
+                req7: ConstraintExpr[ConstrType7], req8: ConstraintExpr[ConstrType8],
+                req9: ConstraintExpr[ConstrType9], req10: ConstraintExpr[ConstrType10],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this

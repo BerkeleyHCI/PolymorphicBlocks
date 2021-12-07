@@ -62,7 +62,6 @@ class Debugger(BoardTop):
     ) as imp:
       self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
       self.led_target = imp.Block(VoltageIndicatorLed())
-      self.connect(self.target_reg.pwr_out, self.led_target.signal)
 
     with self.implicit_connect(
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),

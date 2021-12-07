@@ -53,22 +53,8 @@ class PreferredNumberTestCase(unittest.TestCase):
 
 
 class RatioTestCase(unittest.TestCase):
-  class DummyESeriesRatioUtil(ESeriesRatioUtil[None]):
-    def _calculate_output(self, r1: float, r2: float) -> None:
-      return None
-
-    def _get_distance(self, proposed: None, target: None) -> List[float]:
-      return []
-
-    def _get_initial_decades(self, target: None) -> List[Tuple[int, int]]:
-      return [(0, 0)]
-
-    def _get_next_decades(self, decade: Tuple[int, int], target: None) -> List[Tuple[int, int]]:
-      return []
-
   def test_ratio_product(self):
-    calculator = RatioTestCase.DummyESeriesRatioUtil([1, 2, 3, 4])
-    self.assertEqual(calculator._generate_e_series_product(0, 0),
+    self.assertEqual(ESeriesRatioUtil._generate_e_series_product([1, 2, 3, 4], 0, 0),
                      [(1, 1),
                       (2, 1), (1, 2), (2, 2),
                       (3, 1), (1, 3), (3, 2), (2, 3), (3, 3),
