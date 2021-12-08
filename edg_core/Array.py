@@ -5,11 +5,16 @@ from typing import *
 from . import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
-  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
-  FloatExpr, RangeExpr, \
-  ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryOpBinding
+from .ConstraintExpr import \
+  ConstraintExpr, \
+  BoolLike, BoolExpr, BoolOp, EqOp, OrdOp, \
+  NumLikeSelfType, NumLikeCastable, NumLikeExpr, NumericOp, \
+  IntLike, IntExpr, \
+  FloatLit, FloatLike, FloatExpr, \
+  RangeLit, RangeLikeNonFloat, RangeLike, RangeExpr, RangeSetOp, \
+  StringLike, StringExpr
+from .Binding import Binding, LengthBinding, ParamBinding, ParamVariableBinding, \
+  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -41,81 +46,151 @@ class SampleElementBinding(Binding):
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     raise ValueError  # can't be used directly
 
+ScalarExpr = TypeVar('ScalarExpr', bound=Union[IntExpr, FloatExpr])
+""" Scalar Exprs """
+ScalarLike = TypeVar('ScalarLike', bound=Union[IntLike, FloatLike])
+""" Castable to Scalar """
 
-SelfType = TypeVar('SelfType', bound='ArrayExpr')
-ArrayType = TypeVar('ArrayType', bound=ConstraintExpr)
-class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
-  def __init__(self, elt: ArrayType) -> None:
+NumericExpr = TypeVar('NumericExpr', bound=Union[IntExpr, FloatExpr, RangeExpr])
+""" Exprs we can add, negate, and multiply """
+NumericLike = TypeVar('NumericLike', bound=Union[IntLike, FloatLike, RangeLike])
+""" Castables we can add, negate, and multiply """
+
+DivisibleExpr = TypeVar('DivisibleExpr', bound=Union[FloatExpr, RangeExpr])
+""" Exprs we can invert """
+DivisibleLike = TypeVar('DivisibleLike', bound=Union[FloatLike, RangeLike])
+""" Castables we can invert """
+
+ArrayType    = TypeVar('ArrayType', bound='ArrayExpr')
+ElemType     = TypeVar('ElemType', bound=ConstraintExpr)
+ElemExpr = TypeVar('ElemExpr', bound=ConstraintExpr)
+
+class ArrayExpr(ConstraintExpr[Any], Generic[ElemType]):
+
+  def __init__(self, elt: ElemType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
     self.elt = elt._new_bind(SampleElementBinding())
 
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:
+  def _new_bind(self: ArrayType,
+                binding: Binding) -> ArrayType:
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    clone: SelfType = type(self)(self.elt)
+    clone: ArrayType = type(self)(self.elt)
     clone.binding = binding
     return clone
 
-  def _bind(self: SelfType, binding: Binding) -> SelfType:
+  def _bind(self: ArrayType, binding: Binding) -> ArrayType:
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
     assert not self._is_bound()
-    assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
+    assert builder.get_curr_context() is self.parent,\
+      f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
     if not isinstance(binding, ParamBinding):
       assert self.initializer is None, "Only Parameters may have initializers"
-    clone: SelfType = type(self)(self.elt)
+    clone: ArrayType = type(self)(self.elt)
     clone.binding = binding
     return clone
 
   @classmethod
-  def _to_expr_type(cls, input: ArrayExpr) -> ArrayExpr:
+  def _to_expr_type(cls, input: ArrayType) -> ArrayType:
     return input
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
-  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayType:
-    return self.elt._new_bind(UnarySetOpBinding(self, op))
-
-  def sum(self) -> ArrayType:
-    return self._create_unary_set_op(NumericOp.sum)
-
-  def min(self) -> FloatExpr:
-    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min))
-
-  def max(self) -> FloatExpr:
-    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
-
-  def intersection(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.intersection)
-
-  def hull(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.hull)
-
-  def equal_any(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.equal_any)
-
-  # TODO: not sure if ArrayType is being checked properly =(
-  def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_or))
-
-  def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_and))
+  @classmethod
+  def _create_unary_set_op(cls,
+                           vars: ArrayType,
+                           op: Union[NumericOp,BoolOp,RangeSetOp],
+                           binder: ElemExpr) -> ElemExpr:
+    return binder._new_bind(UnarySetOpBinding(vars, op))
 
 
-class ArrayRangeExpr(ArrayExpr[RangeExpr]):
-  def _create_binary_op(self,
-                        lhs: ConstraintExpr,
-                        rhs: ConstraintExpr,
-                        op: ExprOp) -> ArrayRangeExpr:
+  @classmethod
+  def _create_binary_set_op(self,
+                            lhset: ArrayType,
+                            rhs: ConstraintExpr,
+                            op: NumericOp,
+                            binder: ElemExpr) -> ElemExpr:
     """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
     Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
     to ensure this makes sense. No type checking happens here."""
-    assert lhs._is_bound() and rhs._is_bound()
-    return self._new_bind(BinaryOpBinding(lhs, rhs, op))
+    assert lhset._is_bound() and rhs._is_bound()
+    return binder._new_bind(BinarySetOpBinding(lhset, rhs, op))
 
-  def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
-    return self._create_binary_op(
-      RangeExpr._to_expr_type(other), self,Op.div)
+  # TODO : Fix these types so they only function when ArrayType is NumLike
+  def __neg__(self: ArrayExpr[NumericExpr]) -> ArrayExpr[NumericExpr]:
+    return self._create_unary_set_op(self, NumericOp.negate, self)
+
+
+  def __add__(self: ArrayExpr[NumericExpr],
+              rhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self._create_binary_set_op(self,
+                                      self.elt._to_expr_type(rhs),
+                                      NumericOp.add,
+                                      self.elt)
+
+  def __radd__(self: ArrayExpr[NumericExpr],
+               lhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self.__add__(lhs)
+
+  def __sub__(self: ArrayExpr[NumericExpr],
+              rhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self.__add__(self.elt._to_expr_type(rhs).__neg__())
+
+  def __rsub__(self: ArrayExpr[NumericExpr],
+               lhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self.__neg__().__radd__(self.elt._to_expr_type(lhs))
+
+  def __mul__(self: ArrayExpr[NumericExpr],
+              rhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self._create_binary_set_op(self,
+                                      self.elt._to_expr_type(rhs),
+                                      NumericOp.mul,
+                                      self.elt)
+
+  def __rmul__(self: ArrayExpr[NumericExpr],
+               lhs: NumericLike) -> ArrayExpr[NumericExpr]:
+    return self.__mul__(self.elt._to_expr_type(lhs))
+
+  def _mul_inv__(self: ArrayExpr[DivisibleExpr]) -> ArrayExpr[DivisibleExpr]:
+    return self._create_unary_set_op(self, NumericOp.invert, self)
+
+
+  def __truediv__(self: ArrayExpr[DivisibleExpr],
+                  rhs: DivisibleLike) -> ArrayExpr[DivisibleExpr]:
+    return self.__mul__(self.elt._to_expr_type(rhs)._mul_inv__())
+
+  def __rtruediv__(self: ArrayExpr[DivisibleExpr],
+                   lhs: DivisibleLike) -> ArrayExpr[DivisibleExpr]:
+    return self._mul_inv__().__mul__(self.elt._to_expr_type(lhs))
+
+  def sum(self: ArrayExpr[ScalarExpr]) -> ScalarExpr:
+    return self._create_unary_set_op(self, NumericOp.sum, self.elt)
+
+  def min(self: ArrayExpr[NumericExpr]) -> NumericExpr:
+    return self._create_unary_set_op(self, RangeSetOp.min, self.elt)
+
+  def max(self: ArrayExpr[NumericExpr]) -> NumericExpr:
+    return self._create_unary_set_op(self, RangeSetOp.max, self.elt)
+
+  def intersection(self: ArrayExpr[RangeExpr]) -> RangeExpr:
+    return self._create_unary_set_op(self, RangeSetOp.intersection, self.elt)
+
+  def hull(self: ArrayExpr[RangeExpr]) -> RangeExpr:
+    return self._create_unary_set_op(self, RangeSetOp.hull, self.elt)
+
+  def equal_any(self: ArrayExpr[ElemType]) -> ElemType:
+    return self._create_unary_set_op(self, RangeSetOp.equal_any, self.elt)
+
+  # TODO: not sure if ArrayType is being checked properly =(
+  def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
+    return self._create_unary_set_op(self, BoolOp.op_or, BoolExpr())
+
+  def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
+    return self._create_unary_set_op(self, BoolOp.op_and, BoolExpr())
+
+# Rendered obsolete by refactor of mult and div
+class ArrayRangeExpr(ArrayExpr[RangeExpr]): pass
 
 
 @non_library

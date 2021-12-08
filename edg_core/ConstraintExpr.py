@@ -217,8 +217,6 @@ class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCasta
   def __neg__(self: NumLikeSelfType) -> NumLikeSelfType:
     return self._create_unary_op(self, NumericOp.negate)
 
-  def __mul_inv__(self: NumLikeSelfType) -> NumLikeSelfType:
-    return self._create_unary_op(self, NumericOp.invert)
 
   def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
@@ -238,11 +236,6 @@ class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCasta
   def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
     return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
 
-  def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
-
-  def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
 
   @classmethod
   def _create_bool_op(cls,
@@ -307,6 +300,15 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
     pb = edgir.ValInit()
     pb.floating.CopyFrom(edgir.Empty())
     return pb
+
+  def _mul_inv__(self: FloatExpr) -> FloatExpr:
+    return self._create_unary_op(self, NumericOp.invert)
+
+  def __truediv__(self: FloatExpr, rhs: FloatLike) -> FloatExpr:
+    return self.__mul__(self._to_expr_type(rhs)._mul_inv__())
+
+  def __rtruediv__(self: FloatExpr, lhs: FloatLike) -> FloatExpr:
+    return self._mul_inv__().__mul__(self._to_expr_type(lhs))
 
   def min(self, other: FloatLike) -> FloatExpr:
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.min)
@@ -413,25 +415,31 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
+  @classmethod
+  def _norm_range_like(cls, inp : RangeLike) -> Union[FloatExpr,RangeExpr] :
+    if isinstance(inp, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
+      return FloatExpr._to_expr_type(inp)
+    elif not isinstance(inp, FloatExpr):
+      return cls._to_expr_type(rhs)  # type: ignore
+    else:
+      return inp
+
+  def _mul_inv__(self) -> RangeExpr:
+    return self._create_unary_op(self, NumericOp.invert)
+
   # special option to allow range * float
   def __mul__(self, rhs: RangeLike) -> RangeExpr:
-    if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif not isinstance(rhs, FloatExpr):
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    else:
-      rhs_cast = rhs
-    return self._create_range_float_binary_op(self, rhs_cast, NumericOp.mul)
+    return self._create_range_float_binary_op(self,
+                                              self._norm_range_like(rhs),
+                                              NumericOp.mul)
 
   # special option to allow range / float
   def __truediv__(self, rhs: RangeLike) -> RangeExpr:
-    if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif not isinstance(rhs, FloatExpr):
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    else:
-      rhs_cast = rhs
-    return self * rhs_cast.__mul_inv__()
+    return self.__mul__(self._norm_range_like(rhs)._mul_inv__())
+
+  def __rtruediv__(self, lhs: RangeLike) -> RangeExpr:
+    return self._mul_inv__().__mul__(self._to_expr_type(lhs))
+
 
 StringLike = Union['StringExpr', str]
 class StringExpr(ConstraintExpr[str]):
