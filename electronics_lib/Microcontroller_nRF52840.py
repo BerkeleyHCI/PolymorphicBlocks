@@ -66,16 +66,15 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
                                         [self.uart_0, self.spi_0])))
 
   def pin_assign(self, pin_assigns_str: str) -> None:
-    system_pins: Dict[str, CircuitPort]
-    system_pins = {
-      1: self.gnd,
-      14: self.pwr_3v,
-      21: self.swd_reset,
-      23: self.usb_0.dm,
-      24: self.usb_0.dp,
-      31: self.swd_swclk,
-      32: self.swd_swdio,
-      37: self.gnd,
+    system_pins: Dict[str, CircuitPort] = {
+      '1': self.gnd,
+      '14': self.pwr_3v,
+      '21': self.swd_reset,
+      '23': self.usb_0.dm,
+      '24': self.usb_0.dp,
+      '31': self.swd_swclk,
+      '32': self.swd_swdio,
+      '37': self.gnd,
     }
 
     assigned_pins = PinAssignmentUtil(
@@ -87,11 +86,11 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
 
-    overassigned_pins = set(assigned_pins.keys()).intersection(set(system_pins.keys()))
+    overassigned_pins = set(assigned_pins.assigned_pins.keys()).intersection(set(system_pins.keys()))
     assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"
 
     all_pins = {
-      **{str(pin): port for pin, port in assigned_pins.items()},
+      **{str(pin): port for pin, port in assigned_pins.assigned_pins.items()},
       **{str(pin): port for pin, port in system_pins.items()}
     }
 
