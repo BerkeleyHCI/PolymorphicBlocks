@@ -3,57 +3,49 @@ from itertools import chain
 
 from electronics_abstract_parts import *
 
-class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock):
+
+class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock):
   """
-  nRF52840 configured as power source from USB.
-  Documentation: https://learn.adafruit.com/adafruit-itsybitsy-nrf52840-express
+  Holyiot 18010, nRF52840-based BLE module with castellated edge pads
   """
 
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr_bat = self.Port(VoltageSink(
-      voltage_limits=(3.5, 6) * Volt,
-    ), optional=True)
-    self.pwr_vhi = self.Port(VoltageSource(
-      voltage_out=(3.5, 6) * Volt,
-      current_limits=(0, 0.5) * Amp
-    ), optional=True)
-    self.pwr_3v = self.Port(VoltageSource(
-      voltage_out=3.3 * Volt(tol=0.10),
-      current_limits=(0, 0.5) * Amp
-    ), optional=True)
-    self.pwr_usb = self.Port(VoltageSource(
-      voltage_out=5 * Volt(tol=0.10),
-      current_limits=(0, 0.5) * Amp
-    ), optional=True)
-    self.gnd = self.Port(Ground(), optional=True)
+    self.pwr_3v = self.Port(VoltageSink(
+      voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
+      current_draw=(0, 212 / 64 + 4.8)  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
+    ))  # TODO propagate IO pin currents
+    self.pwr_usb = self.Port(VoltageSink(
+      voltage_limits=(4.35, 5.5)*Volt,
+      current_draw=(0.262, 7.73) * mAmp  # CPU/USB sleeping to everything active
+    ))
+    self.gnd = self.Port(Ground())
 
-    io_model = DigitalBidir(  # TODO no specs
-      voltage_limits=(-0.3, 3.6) * Volt,
-      current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, 3.3 * Volt),
-      current_limits=(-25, 25) * mAmp,
-      input_thresholds=(0.3 * 3.3*0.97,
-                        0.7 * 3.3*1.03),
-      output_thresholds=(0 * Volt, 3.3 * 0.97 * Volt),
-      pullup_capable=True, pulldown_capable=True
+    io_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr_3v,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
+      current_draw=(0, 0)*Amp,
+      input_threshold_factor=(0.3, 0.7),
+      pullup_capable=True, pulldown_capable=True,
     )
 
     adc_model = AnalogSink(
-      voltage_limits=(-0.3, 3.6) * Volt,
+      voltage_limits=(self.gnd.link().voltage.upper(), self.pwr_3v.link().voltage.lower()) +
+                     (-0.3, 0.3) * Volt,
       current_draw=(0, 0) * Amp,
-      impedance=100*kOhm  # TODO no specs
+      impedance=Range.from_lower(1)*MOhm
     )
 
     self.digital = ElementDict[DigitalBidir]()
-    for i in [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]:
+    for i in range(28):
       self.digital[i] = self.Port(io_model, optional=True)
       self._add_assignable_io(self.digital[i])
 
     self.adc = ElementDict[AnalogSink]()
-    for i in range(6):
+    for i in range(8):
       self.adc[i] = self.Port(adc_model, optional=True)
       self._add_assignable_io(self.adc[i])
 
@@ -75,13 +67,22 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
 
   def pin_assign(self, pin_assigns_str: str) -> None:
     system_pins: Dict[str, CircuitPort]
-    system_pins = {}
+    system_pins = {
+      1: self.gnd,
+      14: self.pwr_3v,
+      21: self.swd_reset,
+      23: self.usb_0.dm,
+      24: self.usb_0.dp,
+      31: self.swd_swclk,
+      32: self.swd_swdio,
+      37: self.gnd,
+    }
 
     assigned_pins = PinAssignmentUtil(
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
-                   [0, 1, 2, 3, 4, 5]),
+                   range(6, 14)),
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, DigitalBidir)],
-                   [0, 1, 2, 5, 7, 9, 10, 11, 12, 13]),
+                   chain(range(2, 14), range(15, 22), range(26, 31), range(33, 37))),
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
@@ -95,8 +96,8 @@ class Adafruit_ItsyBitsy_BLE(Microcontroller, FootprintBlock, AssignablePinBlock
     }
 
     self.footprint(
-      'U', 'Adafruit ItsyBitsy nRF52840 Express - Bluetooth LE',
+      'U', 'edg:Holyiot-18010-NRF52840',
       all_pins,
-      mfr='Adafruit', part='ItsyBitsy nRF52840 Express - Bluetooth LE',
+      mfr='Holyiot', part='18010',
       datasheet='https://learn.adafruit.com/adafruit-itsybitsy-nrf52840-express',
     )
