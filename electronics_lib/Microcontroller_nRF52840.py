@@ -16,12 +16,12 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     self.pwr_3v = self.Port(VoltageSink(
       voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
       current_draw=(0, 212 / 64 + 4.8)  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
-    ))  # TODO propagate IO pin currents
+    ), [Power])  # TODO propagate IO pin currents
     self.pwr_usb = self.Port(VoltageSink(
       voltage_limits=(4.35, 5.5)*Volt,
       current_draw=(0.262, 7.73) * mAmp  # CPU/USB sleeping to everything active
-    ))
-    self.gnd = self.Port(Ground())
+    ), optional=True)
+    self.gnd = self.Port(Ground(), [Common])
 
     io_model = DigitalBidir.from_supply(
       self.gnd, self.pwr_3v,
@@ -29,6 +29,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
       current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.3, 0.7),
+      output_threshold_factor=(0, 1),
       pullup_capable=True, pulldown_capable=True,
     )
 
@@ -57,23 +58,21 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
 
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
-    self.swd_swdio = self.Port(DigitalBidir(io_model), optional=True)
-    self.swd_swclk = self.Port(DigitalSink(io_model), optional=True)
-    self.swd_reset = self.Port(DigitalSink(io_model), optional=True)
+    self.swd = self.Port(SwdTargetPort(io_model), optional=True)
 
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(),
-                                        [self.uart_0, self.spi_0])))
+                                        [self.uart_0, self.spi_0, self.swd.swo])))
 
   def pin_assign(self, pin_assigns_str: str) -> None:
     system_pins: Dict[str, CircuitPort] = {
       '1': self.gnd,
       '14': self.pwr_3v,
-      '21': self.swd_reset,
+      '21': self.swd.reset,
       '23': self.usb_0.dm,
       '24': self.usb_0.dp,
-      '31': self.swd_swclk,
-      '32': self.swd_swdio,
+      '31': self.swd.swclk,
+      '32': self.swd.swdio,
       '37': self.gnd,
     }
 
