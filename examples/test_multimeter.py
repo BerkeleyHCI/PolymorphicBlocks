@@ -6,6 +6,46 @@ from electronics_abstract_parts.ResistiveDivider import DividerValues
 from edg import *
 
 
+class MultimeterAnalog(Block):
+  """Analog measurement stage for the volts stage of the multimeter.
+  Includes a 1M input resistor and a variable divider.
+  Purely DC sampling, and true-RMS functionality needs to be implemented in firmware
+
+  TODO: support wider ranges, to be implemented with port array support
+  """
+  @init_in_parent
+  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+    super().__init__()
+
+    # TODO: separate Vref?
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+
+    self.input_positive = self.Port(AnalogSink())
+    self.output = self.Port(AnalogSource())
+
+    self.volts_range = self.Port(DigitalSink())  # divider or not
+
+
+class MultimeterCurrentDriver(Block):
+  """Protected constant-current stage for the multimeter driver.
+
+  TODO: this uses an analog voltage which gives limited dynamic range,
+    instead this should range by switching across several resistors
+  """
+  @init_in_parent
+  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+    super().__init__()
+
+    # TODO: separate Vref?
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+
+    self.output = self.Port(AnalogSink())  # TBD this should be some kind of AnalogBidirectional
+
+    self.control = self.Port(AnalogSink())
+    self.enable = self.Port(DigitalSink())
+
 
 class MultimeterTest(BoardTop):
   def contents(self) -> None:
