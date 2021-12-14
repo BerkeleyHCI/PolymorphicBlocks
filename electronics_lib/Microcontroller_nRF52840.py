@@ -59,7 +59,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
     self.swd = self.Port(SwdTargetPort(io_model), optional=True)
-    self._add_assignable_io(self.swd.swo)  # really used as a UART console
+    # self._add_assignable_io(self.swd.swo)  # really used as a UART console
 
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(),
@@ -70,6 +70,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       '1': self.gnd,
       '14': self.pwr_3v,
       '21': self.swd.reset,
+      '22': self.pwr_usb,
       '23': self.usb_0.dm,
       '24': self.usb_0.dp,
       '31': self.swd.swclk,
@@ -80,8 +81,8 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     assigned_pins = PinAssignmentUtil(
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
                    range(6, 14)),
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, DigitalBidir)],
-                   chain(range(2, 14), range(15, 22), range(26, 31), range(33, 37))),
+      AnyPinAssign([port for port in self._all_assignable_ios if not isinstance(port, AnalogSink)],
+                   chain(range(2, 14), range(15, 21), range(26, 31), range(33, 37))),
     ).assign(
       [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
