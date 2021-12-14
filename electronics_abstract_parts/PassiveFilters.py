@@ -8,6 +8,7 @@ from .Categories import *
 
 
 class LowPassRc(AnalogFilter, GeneratorBlock):
+  """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
   @init_in_parent
   def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr(),
                voltage: RangeLike = RangeExpr()):
@@ -23,7 +24,6 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
     self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
 
   def generate_rc(self, cutoff_freq: Range, impedance: Range) -> None:
-    super().generate()
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
     capacitance = Range.cancel_multiply(1 / (2 * pi * impedance), 1 / cutoff_freq)
@@ -35,20 +35,52 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
 
 
 class DigitalLowPassRc(DigitalFilter, Block):
+  """Low-pass RC filter attached to a digital line.
+  Does not change the signal, only performs filtering
+  """
   @init_in_parent
   def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr()):
     super().__init__()
-    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq))
-    self.input = self.Export(self.rc.input.as_digital_sink(
+    self.input = self.Port(DigitalSink(), [Input])
+    self.output = self.Port(DigitalSource(), [Output])
+
+    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
+                                   voltage=self.input.link().voltage))
+    self.connect(self.input, self.rc.input.as_digital_sink(
       current_draw=RangeExpr()
-    ), [Input])
-    self.output = self.Export(self.rc.output.as_digital_source(
+    ))
+    self.connect(self.output, self.rc.output.as_digital_source(
       current_limits=RangeExpr.ALL,
       voltage_out=self.input.link().voltage,
       output_thresholds=self.input.link().output_thresholds
-    ), [Output])
+    ))
     self.assign(self.input.current_draw, self.output.link().current_drawn)
 
-    self.assign(self.rc.voltage, self.input.link().voltage)
+    self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])
+
+
+class LowPassRcDac(AnalogFilter, Block):
+  """Low-pass RC filter used as a simple DAC by filtering out a PWM signal.
+  The cutoff frequency of the filter should be sufficiently beneath the PWM frequency,
+  but enough above baseband to not distort the signal.
+  Lower frequencies will result in either higher impedance or larger caps.
+  This must be manually specified, since PWM frequency data is not part of the electronics model.
+  """
+  @init_in_parent
+  def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr()):
+    super().__init__()
+    self.input = self.Port(DigitalSink(), [Input])
+    self.output = self.Port(AnalogSource(), [Output])
+
+    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
+                                   voltage=self.input.link().voltage))
+    self.connect(self.input, self.rc.input.as_digital_sink(
+      current_draw=self.output.link().current_drawn
+    ))
+    self.connect(self.output, self.rc.output.as_analog_source(
+      current_limits=RangeExpr.ALL,
+      voltage_out=self.input.link().voltage,
+      impedance=impedance  # TODO use selected resistance from RC filter
+    ))
 
     self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])

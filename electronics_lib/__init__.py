@@ -47,7 +47,6 @@ from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
-
 from .Iso1050 import Iso1050dub
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector

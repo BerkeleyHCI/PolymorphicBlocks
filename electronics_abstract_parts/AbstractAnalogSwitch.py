@@ -10,8 +10,8 @@ class AnalogSwitch(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink())
-    self.gnd = self.Port(Ground())
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     self.control = self.Port(DigitalSink())
 
@@ -32,8 +32,8 @@ class AnalogMuxer(Block):
   def __init__(self) -> None:
     super().__init__()
     self.device = self.Block(AnalogSwitch())
-    self.pwr = self.Export(self.device.pwr)
-    self.gnd = self.Export(self.device.gnd)
+    self.pwr = self.Export(self.device.pwr, [Power])
+    self.gnd = self.Export(self.device.gnd, [Common])
     self.control = self.Export(self.device.control)
 
     # TODO: ideally this would be in0/in1, but just in (for AnalogDemuxer) is a reserved Python keyword
@@ -66,8 +66,8 @@ class AnalogDemuxer(Block):
   def __init__(self) -> None:
     super().__init__()
     self.device = self.Block(AnalogSwitch())
-    self.pwr = self.Export(self.device.pwr)
-    self.gnd = self.Export(self.device.gnd)
+    self.pwr = self.Export(self.device.pwr, [Power])
+    self.gnd = self.Export(self.device.gnd, [Common])
     self.control = self.Export(self.device.control)
 
     self.input = self.Export(self.device.com.as_analog_sink(

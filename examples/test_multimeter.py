@@ -14,7 +14,7 @@ class MultimeterAnalog(Block):
   TODO: support wider ranges, to be implemented with port array support
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self):
     super().__init__()
 
     # TODO: separate Vref?
@@ -24,7 +24,7 @@ class MultimeterAnalog(Block):
     self.input_positive = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.volts_range = self.Port(DigitalSink())  # divider or not
+    self.range = self.Port(DigitalSink())  # divider or not
 
 
 class MultimeterCurrentDriver(Block):
@@ -64,6 +64,7 @@ class MultimeterTest(BoardTop):
     self.gnd = self.connect(self.gnd_merge.source)
     self.vbat = self.connect(self.bat.pwr)
 
+    # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
@@ -83,6 +84,7 @@ class MultimeterTest(BoardTop):
       self.connect(self.reg_3v3.pwr_out, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
+    # DIGITAL DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
         ImplicitConnect(self.reg_3v3.gnd, [Common]),
@@ -114,11 +116,60 @@ class MultimeterTest(BoardTop):
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
       self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
 
+    # SPEAKER DOMAIN
+    with self.implicit_connect(
+        ImplicitConnect(self.reg_5v.pwr_out, [Power]),
+        ImplicitConnect(self.reg_5v.gnd, [Common]),
+    ) as imp:
+      (self.spk_drv, self.spk_dac, self.spk), self.spk_chain = self.chain(
+        self.mcu.new_io(DigitalBidir),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+        imp.Block(Lm4871()),
+        self.Block(Speaker()))
 
-    self.inn = self.Block(BananaSafetyJack())
-    # self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
-    self.inp = self.Block(BananaSafetyJack())
-    # self.connect(self.outp.port.as_voltage_sink(), self.control.out)
+    # ANALOG DOMAIN
+    with self.implicit_connect(
+        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
+        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+    ) as imp:
+      # NEGATIVE PORT
+      # 'virtual ground' can be switched between GND (low impedance for the current driver)
+      # and Vdd/2 (high impedance, but can measure negative voltages)
+      self.inn = self.Block(BananaSafetyJack())
+      self.inn_mux = imp.Block(AnalogMuxer())
+      self.connect(self.inn_mux.out, self.inn.port.as_analog_sink())
+      # TODO remove this with proper bridging adapters
+      from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
+      self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
+      self.connect(self.gnd_src.src, self.gnd_merge.source)
+      self.connect(self.inn_mux.input0, self.gnd_src.dst)
+      self.connect(self.inn_mux.input1, self.ref_buf.output)
+      self.inn_control_net = self.connect(self.mcu.new_io(DigitalBidir), self.inn_mux.control)
+
+      # POSITIVE PORT
+      self.inp = self.Block(BananaSafetyJack())
+      inp_port = self.inp.port.as_analog_source(
+        voltage_out=(0, 300)*Volt,
+        current_limits=(0, 10)*mAmp,
+        impedance=(0, 100)*Ohm,
+      )
+
+      # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
+      self.measure = imp.Block(MultimeterAnalog())
+      self.connect(self.measure.input_positive, inp_port)
+      self.measure_range_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.range)
+      self.measure_output_net = self.connect(self.mcu.new_io(AnalogSink), self.measure.output)
+
+      # TODO add optional 22b ADC
+
+      # DRIVER CIRCUITS
+      self.driver = imp.Block(MultimeterCurrentDriver())
+      self.connect(self.driver.output, inp_port)
+      (self.driver_dac, ), self.driver_control_chain = self.chain(
+        self.mcu.new_io(DigitalBidir),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 1*kHertz(tol=0.5))),
+        self.driver.control)
+      self.driver_enable_net = self.connect(self.mcu.new_io(DigitalBidir), self.driver.enable)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -149,6 +200,7 @@ class MultimeterTest(BoardTop):
         (BananaSafetyJack, Fcr7350),
         (Capacitor, JlcCapacitor),
         (Resistor, JlcResistor),
+        (AnalogSwitch, Nlas4157)
       ],
     )
 

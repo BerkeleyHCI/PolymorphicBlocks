@@ -19,12 +19,12 @@ from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractPassives import Resistor, UnpolarizedCapacitor, Capacitor, Inductor
 from .AbstractPassives import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor, DecouplingCapacitor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import LowPassRc, DigitalLowPassRc
+from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
 from .AbstractDiodes import Diode, ZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode
 from .AbstractFets import Fet, NFet, PFet, SwitchFet, SwitchNFet, SwitchPFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch
-from .AbstractAnalogSwitch import AnalogSwitch
+from .AbstractAnalogSwitch import AnalogSwitch, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp, OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
