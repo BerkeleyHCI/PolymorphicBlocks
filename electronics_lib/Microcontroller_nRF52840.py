@@ -15,7 +15,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
 
     self.pwr_3v = self.Port(VoltageSink(
       voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
-      current_draw=(0, 212 / 64 + 4.8)  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
+      current_draw=(0, 212 / 64 + 4.8) * mAmp  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
     ), [Power])  # TODO propagate IO pin currents
     self.pwr_usb = self.Port(VoltageSink(
       voltage_limits=(4.35, 5.5)*Volt,
@@ -59,7 +59,6 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
     self.swd = self.Port(SwdTargetPort(io_model), optional=True)
-    # self._add_assignable_io(self.swd.swo)  # really used as a UART console
 
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(),
@@ -78,13 +77,14 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       '37': self.gnd,
     }
 
+    digital_ports = [port for port in self._all_assignable_ios if not isinstance(port, AnalogSink)]
     assigned_pins = PinAssignmentUtil(
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
                    range(6, 14)),
-      AnyPinAssign([port for port in self._all_assignable_ios if not isinstance(port, AnalogSink)],
+      AnyPinAssign(digital_ports + [self.swd.swo],
                    chain(range(2, 14), range(15, 21), range(26, 31), range(33, 37))),
     ).assign(
-      [port for port in self._all_assignable_ios if self.get(port.is_connected())],
+      [port for port in self._all_assignable_ios if self.get(port.is_connected())] + [self.swd.swo],
       self._get_suggested_pin_maps(pin_assigns_str))
 
     overassigned_pins = set(assigned_pins.assigned_pins.keys()).intersection(set(system_pins.keys()))
