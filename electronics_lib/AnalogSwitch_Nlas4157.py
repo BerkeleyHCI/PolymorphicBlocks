@@ -22,7 +22,7 @@ class Nlas4157_Device(FootprintBlock):
       self.vcc.link().voltage.lower() + 0.5
     )))
     self.analog_current_limits = self.Parameter(RangeExpr((-300, 300)*mAmp))
-    self.analog_on_resistance = self.Parameter((0.3, 4.3)*Ohm)
+    self.analog_on_resistance = self.Parameter(RangeExpr((0.3, 4.3)*Ohm))
 
     self.a = self.Port(Passive())
     self.b1 = self.Port(Passive())

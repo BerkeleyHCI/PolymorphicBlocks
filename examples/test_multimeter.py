@@ -69,7 +69,7 @@ class MultimeterTest(BoardTop):
     ) as imp:
       (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.bat.pwr,
-        imp.Block(BoostConverter(output_voltage=5.0*Volt(tol=0.1))),
+        imp.Block(BoostConverter(output_voltage=5.0*Volt(tol=0.15))),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
@@ -90,7 +90,7 @@ class MultimeterTest(BoardTop):
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
       self.mcu = imp.Block(Holyiot_18010_Nrf52840())
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()), self.mcu.swd)
+      (self.swd, ), self.swd_chain = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()), self.mcu.swd)
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
 
@@ -141,7 +141,7 @@ class MultimeterTest(BoardTop):
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
-
+        (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

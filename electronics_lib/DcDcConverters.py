@@ -43,7 +43,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
 
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(580, 610) * mVolt,
-      impedance=(100, 300) * kOhm,
+      impedance=(80, 300) * kOhm,  # 87.5k parallel impedance in example, max 300k for R2
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
@@ -235,8 +235,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.581*Volt / self.fb.ratio.upper(),
-                 0.611*Volt / self.fb.ratio.lower()))
+                (0.581*Volt / self.fb.selected_ratio.upper(),
+                 0.611*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -357,8 +357,8 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.985*Volt / self.fb.ratio.upper(),
-                 1.015*Volt / self.fb.ratio.lower()))
+                (0.985*Volt / self.fb.selected_ratio.upper(),
+                 1.015*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -460,8 +460,8 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (1.17*Volt / self.fb.ratio.upper(),
-                 1.33*Volt / self.fb.ratio.lower()))
+                (1.17*Volt / self.fb.selected_ratio.upper(),
+                 1.33*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,

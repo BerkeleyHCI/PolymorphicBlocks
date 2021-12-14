@@ -59,10 +59,11 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
     self.swd = self.Port(SwdTargetPort(io_model), optional=True)
+    self._add_assignable_io(self.swd.swo)  # really used as a UART console
 
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(),
-                                        [self.uart_0, self.spi_0, self.swd.swo])))
+                                        [self.uart_0, self.spi_0, self.swd])))
 
   def pin_assign(self, pin_assigns_str: str) -> None:
     system_pins: Dict[str, CircuitPort] = {
