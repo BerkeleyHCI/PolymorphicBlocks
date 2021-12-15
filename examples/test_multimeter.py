@@ -98,7 +98,15 @@ class MultimeterCurrentDriver(Block):
       voltage_out=(0, max_in_voltage),
       impedance=self.res.resistance
     ))
-    self.connect(self.amp.out, self.fet.gate.as_analog_sink())
+
+    self.sw = self.Block(AnalogMuxer())
+    self.connect(self.sw.pwr, self.pwr)
+    self.connect(self.sw.gnd, self.gnd)
+    self.connect(self.enable, self.sw.control)
+    self.connect(self.fet.source.as_analog_source(), self.sw.input0)
+    self.connect(self.amp.out, self.sw.input1)
+    self.connect(self.sw.out, self.fet.gate.as_analog_sink())
+
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,
