@@ -1,5 +1,4 @@
 import unittest
-from typing import cast
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues

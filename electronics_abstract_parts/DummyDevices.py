@@ -123,4 +123,4 @@ class DummyAnalogSink(DummyDevice):
       voltage_limits=voltage_limit,
       current_draw=current_draw,
       impedance=impedance
-    ))
+    ), [Input])

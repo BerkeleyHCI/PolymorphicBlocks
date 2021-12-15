@@ -1,8 +1,5 @@
 import unittest
-from typing import cast
 
-from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
-from electronics_abstract_parts.ResistiveDivider import DividerValues
 from edg import *
 
 
@@ -24,7 +21,31 @@ class MultimeterAnalog(Block):
     self.input_positive = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.range = self.Port(DigitalSink())  # divider or not
+    self.select = self.Port(DigitalSink())  # divider or not
+
+  def contents(self):
+    super().contents()
+
+    self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
+    self.connect(self.res.a.as_analog_sink(), self.input_positive)
+    self.range = self.Block(AnalogDemuxer())
+    self.connect(self.range.pwr, self.pwr)
+    self.connect(self.range.gnd, self.gnd)
+    self.connect(self.select, self.range.control)
+    # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch
+    # to drop the voltage to safe limits
+    self.connect(self.res.b.as_analog_source(
+      voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+      current_limits=(-10, 10)*mAmp,
+      impedance=1*mOhm
+    ), self.range.input, self.output)
+    self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
+    self.connect(self.rdiv.a.as_analog_sink(), self.range.out0)
+    self.connect(self.rdiv.b.as_ground(), self.gnd)
+    (self.range1_nc, ), _ = self.chain(
+      self.range.out1,
+      self.Block(DummyAnalogSink())
+    )
 
 
 class MultimeterCurrentDriver(Block):
@@ -34,7 +55,7 @@ class MultimeterCurrentDriver(Block):
     instead this should range by switching across several resistors
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self, resistance: RangeLike = RangeExpr(), voltage_rating: RangeLike = RangeExpr()):
     super().__init__()
 
     # TODO: separate Vref?
@@ -46,6 +67,50 @@ class MultimeterCurrentDriver(Block):
     self.control = self.Port(AnalogSink())
     self.enable = self.Port(DigitalSink())
 
+    self.resistance = self.Parameter(RangeExpr(resistance))
+    self.voltage_rating = self.Parameter(RangeExpr(voltage_rating))
+
+  def contents(self):
+    super().contents()
+    max_in_voltage = self.control.link().voltage.upper()
+
+    self.res = self.Block(Resistor(
+      resistance=self.resistance
+    ))
+    self.connect(self.pwr, self.res.a.as_voltage_sink(
+      current_draw=(0, max_in_voltage / self.resistance.lower())
+    ))
+    self.fet = self.Block(PFet(
+      drain_voltage=(0, max_in_voltage),
+      drain_current=(0, max_in_voltage / self.resistance.lower()),
+      gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
+      rds_on=(0, 10)*Ohm,  # TODO kind of arbitrary
+      gate_charge=(0, float('inf')),
+      power=0 * Watt
+    ))
+    self.connect(self.res.b, self.fet.source)
+
+    self.amp = self.Block(Opamp())
+    self.connect(self.amp.pwr, self.pwr)
+    self.connect(self.amp.gnd, self.gnd)
+    self.connect(self.amp.inp, self.control)
+    self.connect(self.amp.inn, self.res.b.as_analog_source(
+      voltage_out=(0, max_in_voltage),
+      impedance=self.res.resistance
+    ))
+    self.connect(self.amp.out, self.fet.gate.as_analog_sink())
+
+    self.diode = self.Block(Diode(
+      reverse_voltage=self.voltage_rating,
+      current=(0, max_in_voltage / self.resistance.lower()),
+      voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
+      reverse_recovery_time=(0, float('inf'))
+    ))
+    self.connect(self.fet.drain, self.diode.anode)
+    self.connect(self.diode.cathode.as_analog_sink(  # TODO should be analog source
+      voltage_limits=self.voltage_rating
+    ), self.output)
+
 
 class FetPowerGate(Block):
   """A high-side PFET power gate that has a button to power on, can be latched
@@ -53,12 +118,22 @@ class FetPowerGate(Block):
   """
   def __init__(self):
     super().__init__()
-    self.pwr_in = self.Port(VoltageSink())
-    self.pwr_out = self.Port(VoltageSource())
+    self.pwr_in = self.Port(VoltageSink(
+      current_draw=RangeExpr(),
+      voltage_limits=RangeExpr.ALL
+    ), [Input])
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,
+      current_limits=RangeExpr.ALL
+    ), [Output])
+    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
     # TODO btn should model the pull-up voltage, since it can blow out a FET?
 
     self.btn_out = self.Port(DigitalSource())
     self.control = self.Port(DigitalSink())  # digital level control - gnd-referenced NFET gate
+
+  def contents(self):
+    super().contents()
 
 
 class MultimeterTest(BoardTop):
@@ -82,8 +157,9 @@ class MultimeterTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd_merge.source, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
+      (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.bat.pwr,
+        imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=5.0*Volt(tol=0.15))),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
@@ -110,6 +186,9 @@ class MultimeterTest(BoardTop):
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
 
+      self.sw0_net = self.chain(self.gate.btn_out, self.mcu.new_io(DigitalBidir))
+      self.gate_control_net = self.chain(self.mcu.new_io(DigitalBidir), self.gate.control)
+
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_r_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
       self.rgb_g_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
@@ -117,7 +196,6 @@ class MultimeterTest(BoardTop):
 
       (self.sw1, ), self.sw1_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
       (self.sw2, ), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.sw3, ), self.sw3_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
       # TODO next revision: proper navigation switch
 
       shared_spi = self.mcu.new_io(SpiMaster)
@@ -182,7 +260,7 @@ class MultimeterTest(BoardTop):
         self.measure.output,
         imp.Block(OpampFollower()),
         self.mcu.new_io(AnalogSink))
-      self.measure_range_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.range)
+      self.measure_select_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.select)
       self.measure_output_net = self.connect(self.mcu.new_io(AnalogSink), self.measure.output)
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
@@ -192,10 +270,11 @@ class MultimeterTest(BoardTop):
       self.adc_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc.cs)
       self.connect(self.reg_3v3.pwr_out, self.adc.ref)
 
-
-
       # DRIVER CIRCUITS
-      self.driver = imp.Block(MultimeterCurrentDriver())
+      self.driver = imp.Block(MultimeterCurrentDriver(
+        resistance=1 * kOhm(tol=0.1),
+        voltage_rating=(0, 300)*Volt
+      ))
       self.connect(self.driver.output, inp_port)
       (self.driver_dac, ), self.driver_control_chain = self.chain(
         self.mcu.new_io(DigitalBidir),
@@ -217,6 +296,7 @@ class MultimeterTest(BoardTop):
       instance_refinements=[
         (['reg_5v'], Tps61023),
         (['reg_3v3'], Xc6209),
+        (['measure', 'res'], ChipResistor),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -225,6 +305,7 @@ class MultimeterTest(BoardTop):
         # allow the regulator to go into tracking mode
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
+        (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

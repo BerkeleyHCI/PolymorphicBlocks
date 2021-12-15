@@ -58,6 +58,10 @@ class Nlas4157(AnalogSwitch):
     self.connect(self.nc, self.ic.b0)
     self.connect(self.control, self.ic.s)
 
+    self.assign(self.analog_voltage_limits, self.ic.analog_voltage_limits)
+    self.assign(self.analog_current_limits, self.ic.analog_current_limits)
+    self.assign(self.analog_on_resistance, self.ic.analog_on_resistance)
+
     # surprisingly, the datasheet doesn't actually specify any decoupling capacitors, but here's one anyways
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
