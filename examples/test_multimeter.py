@@ -118,14 +118,21 @@ class MultimeterTest(BoardTop):
 
     # SPEAKER DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_5v.pwr_out, [Power]),
         ImplicitConnect(self.reg_5v.gnd, [Common]),
     ) as imp:
-      (self.spk_drv, self.spk_dac, self.spk), self.spk_chain = self.chain(
+      (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.new_io(DigitalBidir),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
+
+      # the AA battery is incapable of driving this at full power,
+      # so this indicates it will be run at only partial power
+      (self.spk_pwr, ), _ = self.chain(
+        self.reg_5v.pwr_out,
+        self.Block(ForcedVoltageCurrentDraw((0, 0.1)*Amp)),
+        self.spk_drv.pwr
+      )
 
     # ANALOG DOMAIN
     with self.implicit_connect(
