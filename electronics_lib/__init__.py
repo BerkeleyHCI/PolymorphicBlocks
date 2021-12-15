@@ -24,7 +24,7 @@ from .SdCards import SdCard, SdSocket, MicroSdSocket
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210
 from .DcDcConverters import Tps561201, Tps54202h
 from .DcDcConverters import Lmr33630
-from .DcDcConverters import Ap3012, Tps61023
+from .DcDcConverters import Ap3012, Ltc3429
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64

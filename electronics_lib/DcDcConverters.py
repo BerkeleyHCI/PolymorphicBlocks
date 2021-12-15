@@ -1,6 +1,7 @@
 from electronics_abstract_parts import *
 
-class Tps61023_Device(DiscreteChip, FootprintBlock):
+
+class Ltc3429_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
@@ -29,7 +30,9 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
       datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
     )
 
-class Tps61023(DiscreteBoostConverter, GeneratorBlock):
+class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
+  """Low-input-voltage boost converter (starts as low as 0.85V).
+  Pin-compatible with the less-expensive UM3429S"""
   VALLEY_SWITCH_CURRENT_LIMIT = 3.7
   DUTYCYCLE_MIN_LIMIT = 0.0  # goes into PFM at light load
 
@@ -85,6 +88,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
       current_limits=(0, self.VALLEY_SWITCH_CURRENT_LIMIT)*Amp
     ))
+
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent

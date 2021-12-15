@@ -302,7 +302,7 @@ class MultimeterTest(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['reg_5v'], Tps61023),
+        (['reg_5v'], Ltc3429),
         (['reg_3v3'], Xc6209),
         (['measure', 'res'], ChipResistor),
       ],
