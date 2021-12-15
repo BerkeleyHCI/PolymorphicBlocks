@@ -47,6 +47,20 @@ class MultimeterCurrentDriver(Block):
     self.enable = self.Port(DigitalSink())
 
 
+class FetPowerGate(Block):
+  """A high-side PFET power gate that has a button to power on, can be latched
+  on by an external signal, and provides the button output as a signal.
+  """
+  def __init__(self):
+    super().__init__()
+    self.pwr_in = self.Port(VoltageSink())
+    self.pwr_out = self.Port(VoltageSource())
+    # TODO btn should model the pull-up voltage, since it can blow out a FET?
+
+    self.btn_out = self.Port(DigitalSource())
+    self.control = self.Port(DigitalSink())  # digital level control - gnd-referenced NFET gate
+
+
 class MultimeterTest(BoardTop):
   def contents(self) -> None:
     super().contents()
@@ -164,10 +178,21 @@ class MultimeterTest(BoardTop):
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
+      (self.measure_buffer, ), self.measure_chain = self.chain(
+        self.measure.output,
+        imp.Block(OpampFollower()),
+        self.mcu.new_io(AnalogSink))
       self.measure_range_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.range)
       self.measure_output_net = self.connect(self.mcu.new_io(AnalogSink), self.measure.output)
 
-      # TODO add optional 22b ADC
+      # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
+      (self.adc, ), _ = self.chain(self.measure_buffer.output,
+                                   imp.Block(Mcp3201()),
+                                   shared_spi)
+      self.adc_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc.cs)
+      self.connect(self.reg_3v3.pwr_out, self.adc.ref)
+
+
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver())

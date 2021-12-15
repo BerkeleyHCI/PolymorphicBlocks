@@ -12,7 +12,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
     self.vss = self.Port(Ground())
 
     self.vref = self.Port(VoltageSink(
-      voltage_limits=(0.25*Volt, self.vdd.link().voltage.lower()),
+      voltage_limits=(0.25*Volt, self.vdd.link().voltage.upper()),
       current_draw=(0.001, 150)*uAmp
     ))
     self.inp = self.Port(AnalogSink(
