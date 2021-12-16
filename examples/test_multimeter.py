@@ -326,16 +326,14 @@ class MultimeterTest(BoardTop):
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
-      (self.measure_buffer, ), self.measure_chain = self.chain(
+      (self.measure_buffer, self.adc), self.measure_chain = self.chain(
         self.measure.output,
         imp.Block(OpampFollower()),
-        self.mcu.new_io(AnalogSink))
+        imp.Block(Mcp3201()),
+        shared_spi)
       self.measure_select_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.select)
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
-      (self.adc, ), _ = self.chain(self.measure_buffer.output,
-                                   imp.Block(Mcp3201()),
-                                   shared_spi)
       self.adc_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc.cs)
       self.connect(self.reg_3v3.pwr_out, self.adc.ref)
 
@@ -369,7 +367,33 @@ class MultimeterTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
+          'rgb_r_net=36',
+          'rgb_b_net=2',
+          'rgb_g_net=3',
 
+          'spi_net.miso=28',
+          'adc_cs_net=27',
+          'lcd_cs_net=26',
+
+          'spi_net.sck=20',
+          'spi_net.mosi=19',
+          'lcd_rs_net=18',
+          'lcd_reset_net=17',
+
+          'spk_chain_0=15',
+
+          'measure_select_net=30',
+          'gate_control_net_0=29',
+
+          'sw0_net_0=13',
+          'driver_control_chain_0=12',
+          'driver_enable_net=11',
+
+          'sw1_chain_0=33',
+          'sw2_chain_0=6',
+
+          'inn_control_net=4',
+          'swd_chain_0.swo=5',
         ])),
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor

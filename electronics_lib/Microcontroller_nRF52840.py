@@ -59,6 +59,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     self.usb_0 = self.Port(UsbDevicePort(), optional=True)
 
     self.swd = self.Port(SwdTargetPort(io_model), optional=True)
+    self._add_assignable_io(self.swd)
 
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=list(chain(self.digital.values(), self.adc.values(),
@@ -81,17 +82,20 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
     assigned_pins = PinAssignmentUtil(
       AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
                    range(6, 14)),
-      AnyPinAssign(digital_ports + [self.swd.swo],
+      AnyPinAssign(digital_ports,
                    chain(range(2, 14), range(15, 21), range(26, 31), range(33, 37))),
     ).assign(
-      [port for port in self._all_assignable_ios if self.get(port.is_connected())] + [self.swd.swo],
+      [port for port in self._all_assignable_ios if self.get(port.is_connected())],
       self._get_suggested_pin_maps(pin_assigns_str))
 
     overassigned_pins = set(assigned_pins.assigned_pins.keys()).intersection(set(system_pins.keys()))
     assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"
 
+    # TODO REMOVE THIS NASTY HACK - needed to partially assign the SWD pins since SWCLK, SWDIO, reset are fixed
+    # but "SWO" is not a dedicated pin
     all_pins = {
-      **{str(pin): port for pin, port in assigned_pins.assigned_pins.items()},
+      **{str(pin): port for pin, port in assigned_pins.assigned_pins.items()
+         if port is not self.swd.reset and port is not self.swd.swclk and port is not self.swd.swdio},
       **{str(pin): port for pin, port in system_pins.items()}
     }
 
