@@ -73,6 +73,7 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       '22': self.pwr_usb,
       '23': self.usb_0.dm,
       '24': self.usb_0.dp,
+      '25': self.gnd,
       '31': self.swd.swclk,
       '32': self.swd.swdio,
       '37': self.gnd,

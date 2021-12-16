@@ -1,44 +1,44 @@
-"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
-1;"U13";"SO-8_3.9x4.9mm_P1.27mm";1;"MCP3201T-BI/SN (Microchip Technology)";;;
-2;"C15,C10,C9,C7,C4,C5";"C_0603_1608Metric";6;"CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-3;"U1";"BatteryHolder_Keystone_2460_1xAA";1;"2460 (Keystone)";;;
-4;"U14,U12,U4";"SOT-23-6";3;"TLV9061SQDBVRQ1 (Texas Instruments)";;;
-5;"C16,C17,C12,C13,C14,C6";"C_0603_1608Metric";6;"CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-6;"D6";"D_SMA";1;"GS1G-LTP (Micro Commercial Co) - Vr=400V, I=1A";;;
-7;"Q3";"SOT-23";1;"NTR5105PT1G (ON Semiconductor) - Vds=60V, Ids=196mA (Ta)";;;
-8;"R19,R20,R14";"R_0603_1608Metric";3;"0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 1kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-9;"U15,U10,U11";"SOT-363_SC-70-6";3;"NLAS4157 (ON Semiconductor)";;;
-10;"C18";"C_0603_1608Metric";1;"CL10B224KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 220nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-11;"Q2";"SOT-23";1;"NX7002AK,215 (Nexperia USA Inc.) - Vds=60V, Ids=190mA (Ta)";;;
-12;"R2,R1";"R_0603_1608Metric";2;"0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-13;"SW1,SW2,SW3";"SW_Push_SPST_NO_Alps_SKRK";3;"3.9x2.9mm Switch";;;
-14;"D2,D1";"D_SOD-323";2;"CUS520,H3F (Toshiba Semiconductor and Storage) - Vr=30V, I=200mA";;;
-15;"Q1";"SOT-23";1;"DMP3099L-7 (Diodes Incorporated) - Vds=30V, Ids=3.8A (Ta)";;;
-16;"J3,J4";"CLIFF_FCR7350";2;"FCR7350* (CLIFF)";;;
-17;"U5";"Holyiot-18010-NRF52840";1;"18010 (Holyiot)";;;
-18;"R18,R13";"R_0603_1608Metric";2;"0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-19;"R17";"R_2512_6332Metric";1;"1M, 1%, 1.0 W";;;
-20;"C1,C2,C3";"C_0805_2012Metric";3;"CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-21;"U9";"PinHeader_1x02_P2.54mm_Vertical";1;"Header 2-pos, speaker";;;
-22;"C8";"C_0603_1608Metric";1;"CL10B822KB8NNNC (Samsung Electro-Mechanics) - X7R ±10% 50V 8.2nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-23;"R16,R15";"R_0603_1608Metric";2;"0603WAF2202T5E (UNI-ROYAL(Uniroyal Elec)) - 22kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-24;"U8";"SO-8_3.9x4.9mm_P1.27mm";1;"LM4871MX (Texas Instruments)";;;
-25;"C11";"C_0603_1608Metric";1;"CL10B474KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 470nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS";;;
-26;"J1";"USB_C_Receptacle_XKB_U262-16XN-4BVC11";1;"COM-15111 (Sparkfun)";;;
-27;"U16";"Symbol_Duckling";1;"Duck";;;
-28;"2";"Indicator_IdDots_4";1;"IdDots4";;;
-29;"3,4,5";"JlcToolingHole_1.152mm";3;"";;;
-30;"U7";"Hirose_FH12-8S-0.5SH_1x08-1MP_P0.50mm_Horizontal";1;"QT096T_IF09, FH12-8S-0.5SH(55)";;;
-31;"1";"Indicator_LeadFree";1;"LeadFree";;;
-32;"D3";"LED_0603_1608Metric";1;"LED";;;
-33;"R7,R12,R11,R10";"R_0603_1608Metric";4;"0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-34;"D4";"D_SOD-323";1;"DDZ3V6ASF-7 (Diodes Incorporated) - Vz=3.57V, I=900mV @ 10mA";;;
-35;"R9,R8";"R_0603_1608Metric";2;"0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-36;"R6";"R_0603_1608Metric";1;"0603WAF1203T5E (UNI-ROYAL(Uniroyal Elec)) - 120kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-37;"R5";"R_0603_1608Metric";1;"0603WAF2703T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 270kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS";;;
-38;"U2";"SOT-23-6";1;"LTC3429BES6#TRMPBF (Linear Technology)";;;
-39;"U3";"SOT-23-5";1;"XC6209F332MR-G (Torex Semiconductor Ltd)";;;
-40;"D5";"LED_LiteOn_LTST-C19HE1WT";1;"EAST1616RGBB2 (Everlight Electronics Co Ltd)";;;
-41;"J2";"Tag-Connect_TC2050-IDC-FP_2x05_P1.27mm_Vertical";1;"SWD";;;
-42;"U6";"SOT-23";1;"TPD2E009 (Texas Instruments)";;;
-43;"L1";"L_0805_2012Metric";1;"MLZ2012N100LT000 (TDK Corporation) - 10µH, 500mA";;;
+"Id","Designator","Package","Quantity","Designation","Supplier and ref",
+1,"U13","SO-8_3.9x4.9mm_P1.27mm",1,"MCP3201T-BI/SN (Microchip Technology)",,,
+2,"C15,C10,C9,C7,C4,C5","C_0603_1608Metric",6,"CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+3,"U1","BatteryHolder_Keystone_2460_1xAA",1,"2460 (Keystone)",,,
+4,"U14,U12,U4","SOT-23-6",3,"TLV9061SQDBVRQ1 (Texas Instruments)",,,
+5,"C16,C17,C12,C13,C14,C6","C_0603_1608Metric",6,"CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+6,"D6","D_SMA",1,"GS1G-LTP (Micro Commercial Co) - Vr=400V, I=1A",,,
+7,"Q3","SOT-23",1,"NTR5105PT1G (ON Semiconductor) - Vds=60V, Ids=196mA (Ta)",,,
+8,"R19,R20,R14","R_0603_1608Metric",3,"0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 1kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+9,"U15,U10,U11","SOT-363_SC-70-6",3,"NLAS4157 (ON Semiconductor)",,,
+10,"C18","C_0603_1608Metric",1,"CL10B224KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 220nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+11,"Q2","SOT-23",1,"NX7002AK,215 (Nexperia USA Inc.) - Vds=60V, Ids=190mA (Ta)",,,
+12,"R2,R1","R_0603_1608Metric",2,"0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+13,"SW1,SW2,SW3","SW_Push_SPST_NO_Alps_SKRK",3,"3.9x2.9mm Switch",,,
+14,"D2,D1","D_SOD-323",2,"CUS520,H3F (Toshiba Semiconductor and Storage) - Vr=30V, I=200mA",,,
+15,"Q1","SOT-23",1,"DMP3099L-7 (Diodes Incorporated) - Vds=30V, Ids=3.8A (Ta)",,,
+16,"J3,J4","CLIFF_FCR7350",2,"FCR7350* (CLIFF)",,,
+17,"U5","Holyiot-18010-NRF52840",1,"18010 (Holyiot)",,,
+18,"R18,R13","R_0603_1608Metric",2,"0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+19,"R17","R_2512_6332Metric",1,"1M, 1%, 1.0 W",,,
+20,"C1,C2,C3","C_0805_2012Metric",3,"CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+21,"U9","PinHeader_1x02_P2.54mm_Vertical",1,"Header 2-pos, speaker",,,
+22,"C8","C_0603_1608Metric",1,"CL10B822KB8NNNC (Samsung Electro-Mechanics) - X7R ±10% 50V 8.2nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+23,"R16,R15","R_0603_1608Metric",2,"0603WAF2202T5E (UNI-ROYAL(Uniroyal Elec)) - 22kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+24,"U8","SO-8_3.9x4.9mm_P1.27mm",1,"LM4871MX (Texas Instruments)",,,
+25,"C11","C_0603_1608Metric",1,"CL10B474KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 470nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",,,
+26,"J1","USB_C_Receptacle_XKB_U262-16XN-4BVC11",1,"COM-15111 (Sparkfun)",,,
+27,"U16","Symbol_Duckling",1,"Duck",,,
+28,"2","Indicator_IdDots_4",1,"IdDots4",,,
+29,"3,4,5","JlcToolingHole_1.152mm",3,"",,,
+30,"U7","Hirose_FH12-8S-0.5SH_1x08-1MP_P0.50mm_Horizontal",1,"QT096T_IF09, FH12-8S-0.5SH(55)",,,
+31,"1","Indicator_LeadFree",1,"LeadFree",,,
+32,"D3","LED_0603_1608Metric",1,"LED",,,
+33,"R7,R12,R11,R10","R_0603_1608Metric",4,"0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+34,"D4","D_SOD-323",1,"DDZ3V6ASF-7 (Diodes Incorporated) - Vz=3.57V, I=900mV @ 10mA",,,
+35,"R9,R8","R_0603_1608Metric",2,"0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+36,"R6","R_0603_1608Metric",1,"0603WAF1203T5E (UNI-ROYAL(Uniroyal Elec)) - 120kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+37,"R5","R_0603_1608Metric",1,"0603WAF2703T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 270kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS",,,
+38,"U2","SOT-23-6",1,"LTC3429BES6#TRMPBF (Linear Technology)",,,
+39,"U3","SOT-23-5",1,"XC6209F332MR-G (Torex Semiconductor Ltd)",,,
+40,"D5","LED_LiteOn_LTST-C19HE1WT",1,"EAST1616RGBB2 (Everlight Electronics Co Ltd)",,,
+41,"J2","Tag-Connect_TC2050-IDC-FP_2x05_P1.27mm_Vertical",1,"SWD",,,
+42,"U6","SOT-23",1,"TPD2E009 (Texas Instruments)",,,
+43,"L1","L_0805_2012Metric",1,"MLZ2012N100LT000 (TDK Corporation) - 10µH, 500mA",,,

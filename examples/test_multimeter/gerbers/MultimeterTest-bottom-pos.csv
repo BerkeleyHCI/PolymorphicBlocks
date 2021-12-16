@@ -1,4 +1,4 @@
-Ref,Val,Package,PosX,PosY,Rot,Side
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
 "C1","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,10.000000,0.000000,bottom
 "C2","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,12.000000,0.000000,bottom
 "C3","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,14.000000,0.000000,bottom
