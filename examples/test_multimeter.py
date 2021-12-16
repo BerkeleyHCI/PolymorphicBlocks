@@ -168,7 +168,7 @@ class MultimeterTest(BoardTop):
       (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.bat.pwr,
         imp.Block(FetPowerGate()),
-        imp.Block(BoostConverter(output_voltage=5.0*Volt(tol=0.15))),
+        imp.Block(BoostConverter(output_voltage=(3.8, 4.3)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
