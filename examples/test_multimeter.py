@@ -85,8 +85,8 @@ class MultimeterCurrentDriver(Block):
       drain_current=(0, max_in_voltage / self.resistance.lower()),
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
       rds_on=(0, 10)*Ohm,  # TODO kind of arbitrary
-      gate_charge=(0, float('inf')),
-      power=0 * Watt
+      gate_charge=RangeExpr.ALL,
+      power=0*Watt  # TODO ignored
     ))
     self.connect(self.res.b, self.fet.source)
 
@@ -107,12 +107,11 @@ class MultimeterCurrentDriver(Block):
     self.connect(self.amp.out, self.sw.input1)
     self.connect(self.sw.out, self.fet.gate.as_analog_sink())
 
-
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,
       current=(0, max_in_voltage / self.resistance.lower()),
       voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
-      reverse_recovery_time=(0, float('inf'))
+      reverse_recovery_time=RangeExpr.ALL
     ))
     self.connect(self.fet.drain, self.diode.anode)
     self.connect(self.diode.cathode.as_analog_sink(  # TODO should be analog source
@@ -134,14 +133,77 @@ class FetPowerGate(Block):
       voltage_out=self.pwr_in.link().voltage,
       current_limits=RangeExpr.ALL
     ), [Output])
-    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-    # TODO btn should model the pull-up voltage, since it can blow out a FET?
+    self.gnd = self.Port(Ground(), [Common])
 
-    self.btn_out = self.Port(DigitalSource())
+    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+    self.btn_out = self.Port(DigitalSingleSource())
     self.control = self.Port(DigitalSink())  # digital level control - gnd-referenced NFET gate
 
   def contents(self):
     super().contents()
+
+    max_voltage = self.control.link().voltage.upper()
+    max_current = self.pwr_out.link().current_drawn.upper()
+
+    self.pull_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
+    ))
+    self.connect(self.pwr_in, self.pull_res.a.as_voltage_sink())
+    self.pwr_fet = self.Block(PFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, max_current),
+      gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
+      rds_on=(0, max_voltage / max_current / 10),  # TODO kind of arbitrary, should really be lower
+      gate_charge=(0, float('inf')),
+      power=0*Watt  # TODO ignored
+    ))
+    self.connect(self.pwr_in, self.pwr_fet.source.as_voltage_sink(
+      current_draw=self.pwr_out.link().current_drawn,
+      voltage_limits=RangeExpr.ALL,
+    ))
+    self.connect(self.pwr_fet.drain.as_voltage_source(
+      voltage_out = self.pwr_in.link().voltage,
+      current_limits=RangeExpr.ALL,
+    ), self.pwr_out)
+
+    self.amp_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
+    ))
+    self.amp_fet = self.Block(NFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, 0),  # effectively no current
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
+      rds_on=RangeExpr.ALL,  # negligible
+      gate_charge=RangeExpr.ALL,
+      power=0*Watt  # TODO ignored
+    ))
+    self.connect(self.control, self.amp_fet.gate.as_digital_sink(), self.amp_res.a.as_digital_sink())  # TODO more modeling here?
+
+    self.ctl_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+    self.btn_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+    self.btn = self.Block(Switch())
+    self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
+    self.connect(self.gnd, self.amp_fet.source.as_ground(), self.amp_res.b.as_ground(),
+                 self.btn.b.as_ground())
+
+    self.connect(self.btn_diode.anode.as_digital_single_source(
+      voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
+      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+      low_signal_driver=True
+    ), self.btn_out)
+
+    self.connect(self.pull_res.b, self.ctl_diode.anode, self.pwr_fet.gate, self.amp_fet.drain)
 
 
 class MultimeterTest(BoardTop):
