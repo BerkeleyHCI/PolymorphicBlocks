@@ -1,0 +1,44 @@
+Ref,Val,Package,PosX,PosY,Rot,Side
+"C1","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,10.000000,0.000000,bottom
+"C2","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,12.000000,0.000000,bottom
+"C3","CL21A106KAYNNNE (Samsung Electro-Mechanics) - X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0805_2012Metric",-10.000000,14.000000,0.000000,bottom
+"C4","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-10.000000,6.000000,0.000000,bottom
+"C5","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-10.000000,4.000000,180.000000,bottom
+"C6","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",52.000000,4.000000,270.000000,bottom
+"C7","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",19.000000,14.000000,0.000000,bottom
+"C8","CL10B822KB8NNNC (Samsung Electro-Mechanics) - X7R ±10% 50V 8.2nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",10.000000,2.000000,0.000000,bottom
+"C9","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",4.000000,4.000000,0.000000,bottom
+"C10","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",4.000000,2.000000,180.000000,bottom
+"C11","CL10B474KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 470nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",10.000000,6.000000,180.000000,bottom
+"C12","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",52.000000,12.000000,90.000000,bottom
+"C13","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-32.000000,13.000000,180.000000,bottom
+"C14","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-27.000000,13.000000,180.000000,bottom
+"C15","CL10A105KB8NNNC (Samsung Electro-Mechanics) - X5R ±10% 50V 1uF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",4.000000,12.000000,180.000000,bottom
+"C16","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-27.000000,3.000000,0.000000,bottom
+"C17","CC0603KRX7R9BB104 (YAGEO) - X7R 100nF ±10% 50V 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-32.000000,3.000000,0.000000,bottom
+"C18","CL10B224KA8NNNC (Samsung Electro-Mechanics) - X7R 25V ±10% 220nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS","C_0603_1608Metric",-27.000000,7.000000,0.000000,bottom
+"D1","CUS520,H3F (Toshiba Semiconductor and Storage) - Vr=30V, I=200mA","D_SOD-323",-21.000000,5.000000,180.000000,bottom
+"D2","CUS520,H3F (Toshiba Semiconductor and Storage) - Vr=30V, I=200mA","D_SOD-323",-16.000000,5.000000,-0.000000,bottom
+"D4","DDZ3V6ASF-7 (Diodes Incorporated) - Vz=3.57V, I=900mV @ 10mA","D_SOD-323",-5.000000,5.000000,0.000000,bottom
+"Q1","DMP3099L-7 (Diodes Incorporated) - Vds=30V, Ids=3.8A (Ta)","SOT-23",-21.000000,12.000000,90.000000,bottom
+"Q2","NX7002AK,215 (Nexperia USA Inc.) - Vds=60V, Ids=190mA (Ta)","SOT-23",-16.000000,9.000000,270.000000,bottom
+"Q3","NTR5105PT1G (ON Semiconductor) - Vds=60V, Ids=196mA (Ta)","SOT-23",-45.000000,3.000000,0.000000,bottom
+"R1","0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-21.000000,8.000000,-0.000000,bottom
+"R2","0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 10kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-16.000000,13.000000,-0.000000,bottom
+"R5","0603WAF2703T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 270kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-5.000000,14.000000,0.000000,bottom
+"R6","0603WAF1203T5E (UNI-ROYAL(Uniroyal Elec)) - 120kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-5.000000,12.000000,180.000000,bottom
+"R7","0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-5.000000,8.000000,180.000000,bottom
+"R8","0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",49.000000,3.000000,0.000000,bottom
+"R9","0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% 100kΩ ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",49.000000,1.000000,180.000000,bottom
+"R10","0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",43.000000,15.000000,0.000000,bottom
+"R11","0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",43.000000,3.000000,0.000000,bottom
+"R12","0603WAF6800T5E (UNI-ROYAL(Uniroyal Elec)) - 680Ω ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",43.000000,1.000000,0.000000,bottom
+"R13","0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",19.000000,2.000000,180.000000,bottom
+"R14","0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 1kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",10.000000,4.000000,180.000000,bottom
+"R15","0603WAF2202T5E (UNI-ROYAL(Uniroyal Elec)) - 22kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",10.000000,8.000000,180.000000,bottom
+"R16","0603WAF2202T5E (UNI-ROYAL(Uniroyal Elec)) - 22kΩ ±1% ±100ppm/℃ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",4.000000,6.000000,180.000000,bottom
+"R18","0603WAF1000T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±200ppm/℃ 100Ω 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-32.000000,11.000000,0.000000,bottom
+"R19","0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 1kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-50.000000,3.000000,90.000000,bottom
+"R20","0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec)) - ±1% ±100ppm/℃ 1kΩ 0.1W 0603 Chip Resistor - Surface Mount ROHS","R_0603_1608Metric",-27.000000,5.000000,180.000000,bottom
+"U5","18010 (Holyiot)","Holyiot-18010-NRF52840",30.000000,8.000000,90.000000,bottom
+"U6","TPD2E009 (Texas Instruments)","SOT-23",49.000000,14.000000,0.000000,bottom
