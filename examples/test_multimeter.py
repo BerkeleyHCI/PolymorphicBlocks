@@ -372,8 +372,8 @@ class MultimeterTest(BoardTop):
         (['mcu', 'pin_assigns'], ';'.join([
 
         ])),
-        # allow the regulator to go into tracking mode
-        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
+        (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
         (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
       ],
