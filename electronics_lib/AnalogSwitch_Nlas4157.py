@@ -32,7 +32,7 @@ class Nlas4157_Device(FootprintBlock):
     super().contents()
 
     self.footprint(
-      'U', 'Package_TO_SOT:SOT-363_SC-70-6',
+      'U', 'Package_TO_SOT_SMD:SOT-363_SC-70-6',
       {
         '1': self.b1,
         '2': self.gnd,
