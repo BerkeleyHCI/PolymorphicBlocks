@@ -331,7 +331,6 @@ class MultimeterTest(BoardTop):
         imp.Block(OpampFollower()),
         self.mcu.new_io(AnalogSink))
       self.measure_select_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.select)
-      self.measure_output_net = self.connect(self.mcu.new_io(AnalogSink), self.measure.output)
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
       (self.adc, ), _ = self.chain(self.measure_buffer.output,
