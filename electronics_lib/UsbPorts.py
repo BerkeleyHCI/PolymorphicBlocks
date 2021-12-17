@@ -163,6 +163,7 @@ class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a supe
 
   def contents(self):
     # Note, also compatible: https://www.diodes.com/assets/Datasheets/DT1452-02SO.pdf
+    # PESD5V0X1BT,215 (different architecture, but USB listed as application)
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23',
