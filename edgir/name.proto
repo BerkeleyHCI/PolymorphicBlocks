@@ -10,9 +10,9 @@
  */
 
 syntax = "proto3";
-package edg.name;
+package edgir.name;
 
-import "common.proto";
+import "edgir/common.proto";
 
 /**
    A namespace allows us to define a more useful organizational structure
@@ -50,7 +50,7 @@ message Namespace {
     */
   }
 
-  edg.common.Metadata meta = 127;
+  edgir.common.Metadata meta = 127;
 }
 
 /** A library name is a way to identify a specific library from a
@@ -68,5 +68,5 @@ message LibraryName {
       talking about. */
   string name = 2;
 
-  edg.common.Metadata meta = 127;
+  edgir.common.Metadata meta = 127;
 }

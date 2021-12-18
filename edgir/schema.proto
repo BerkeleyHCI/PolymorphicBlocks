@@ -7,9 +7,10 @@
  */
 
 syntax = "proto3";
-package edg.schema;
-import "common.proto";
-import "elem.proto";
+package edgir.schema;
+
+import "edgir/common.proto";
+import "edgir/elem.proto";
 
 /** This is the top-level schema for a library of blocks, ports, and links.
 

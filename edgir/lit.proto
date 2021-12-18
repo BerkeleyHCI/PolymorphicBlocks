@@ -6,10 +6,10 @@
  */
 
 syntax = "proto3";
-package edg.lit;
+package edgir.lit;
 
-import "common.proto";
-import "name.proto";
+import "edgir/common.proto";
+import "edgir/name.proto";
 
 /** The core expression primitives we start with are the value
     literals that we can use */
@@ -29,23 +29,6 @@ message TextLit {
   string val = 1;
 }
 
-//message SymbolLit {
-//  string val = 1;
-//}
-
-/** This is a specific new UID that will be concretely assigned
-    in the backend. */
-//message UIDLit {}
-
-
-//message SymbolLit {
-//  string val = 1;
-//}
-
-//message SymbolLit {
-//  string val = 1;
-//}
-
 message RangeLit {
   ValueLit minimum = 1;
   ValueLit maximum = 2;
@@ -61,12 +44,9 @@ message ValueLit {
     IntLit    integer  = 2;
     BoolLit   boolean  = 3;
     TextLit   text     = 4;
-//    SymbolLit symbol   = 5;
-//    UIDLit    uid      = 6;
-  //SetLit    set      = 8;
     StructLit struct   = 9;
     RangeLit  range    = 10;
   }
 
-  edg.common.Metadata meta = 127;
+  edgir.common.Metadata meta = 127;
 }

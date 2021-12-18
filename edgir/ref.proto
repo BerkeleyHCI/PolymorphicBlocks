@@ -10,10 +10,10 @@
  */
 
 syntax = "proto3";
-package edg.ref;
+package edgir.ref;
 
-import "common.proto";
-import "name.proto";
+import "edgir/common.proto";
+import "edgir/name.proto";
 
 /** These are reserved terms that we'll end up using in various places.
     I'd rather have these in the block/link/bridges where they're going
@@ -63,15 +63,15 @@ message LocalStep {
 message LocalPath {
   repeated LocalStep steps = 1;
 
-  edg.common.Metadata meta = 255;
+  edgir.common.Metadata meta = 255;
 }
 
 /** This is a path to an element within a library from the root of
     a library. To be used as a way to reference such elements. */
 message LibraryPath {
-  edg.name.LibraryName start = 1;
-  repeated edg.name.Namespace steps = 2;
+  edgir.name.LibraryName start = 1;
+  repeated edgir.name.Namespace steps = 2;
   LocalStep target = 3;
 
-  edg.common.Metadata meta = 255;
+  edgir.common.Metadata meta = 255;
 }

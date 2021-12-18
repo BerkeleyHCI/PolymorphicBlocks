@@ -9,31 +9,14 @@
    FIXME :: Does this make more sense in another file?
  */
 
-
-
 syntax = "proto3";
-package edg.init;
-import "expr.proto";
-import "name.proto";
-import "ref.proto";
-import "common.proto";
-import "lit.proto";
-import "type.proto";
+package edgir.init;
 
-/** Unlike everything else we have so far the initializer for a
-    UID needs to tell us whether we generate a new unique variable
-    or whether constraints will limit it to some arbitrary value. */
-//message UIDInit {
-//  oneof init {
-//    /** If this is set we generate a unique UID */
-//    edg.common.Empty new = 1;
-//
-//    /** If this is set, we assume that constraints will choose a UID for us */
-//    edg.common.Empty unknown = 2;
-//  }
-//
-//  edg.type.UIDType type = 10;
-//}
+import "edgir/expr.proto";
+import "edgir/name.proto";
+import "edgir/ref.proto";
+import "edgir/common.proto";
+import "edgir/lit.proto";
 
 /** This is the general way we initialize values in the local context.
 
@@ -41,30 +24,14 @@ import "type.proto";
     this since the data required for each type can be different. */
 message ValInit {
   oneof val {
-    edg.common.Empty floating = 1;
-    edg.common.Empty integer  = 2;
-    edg.common.Empty boolean  = 3;
-    edg.common.Empty text     = 4;
-//    edg.type.SymbolType      symbol   = 5;
-//    UIDInit         uid      = 6;
-//    edg.common.Empty array    = 7;
-    edg.common.Empty set      = 8;
-    edg.common.Empty struct   = 9;
-    edg.common.Empty range    = 10;
+    edgir.common.Empty floating = 1;
+    edgir.common.Empty integer  = 2;
+    edgir.common.Empty boolean  = 3;
+    edgir.common.Empty text     = 4;
+    edgir.common.Empty set      = 8;
+    edgir.common.Empty struct   = 9;
+    edgir.common.Empty range    = 10;
   }
 
-  edg.common.Metadata meta = 127;
-
+  edgir.common.Metadata meta = 127;
 }
-
-
-/** We initialize expressions by pointing to the relevant library
-    elements it steals declarations from.
-
-    This should probably never be empty, since that means we aren't
-    specifying a particulat element that goes in some given slot. */
-//message ElemInit {
-//  repeated edg.ref.LibraryPath elems = 1;
-//
-//  edg.common.Metadata meta = 127;
-//}

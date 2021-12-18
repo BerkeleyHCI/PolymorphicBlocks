@@ -5,7 +5,7 @@
     good place for. */
 
 syntax = "proto3";
-package edg.common;
+package edgir.common;
 
 /** Arbitrary metadata stored in tree form. */
 message Metadata {
