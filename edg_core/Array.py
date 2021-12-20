@@ -48,7 +48,7 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
-    self.elt = elt._new_bind(SampleElementBinding())
+    self.elt: ElemType = elt._new_bind(SampleElementBinding())
 
   def _new_bind(self: SelfType, binding: Binding) -> SelfType:
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
