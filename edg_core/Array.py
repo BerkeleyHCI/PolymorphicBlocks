@@ -48,7 +48,7 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
-    self.elt: ElemType = elt._new_bind(SampleElementBinding())
+    self.elt: ArrayType = elt._new_bind(SampleElementBinding())
 
   def _new_bind(self: SelfType, binding: Binding) -> SelfType:
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
@@ -96,26 +96,36 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
 
   # TODO: not sure if ArrayType is being checked properly =(
   def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_or))
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
 
   def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, ExprOp.op_and))
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
 class ArrayRangeExpr(ArrayExpr[RangeExpr]):
+  def _create_unary_op(self,
+                       val: ConstraintExpr,
+                       op: NumericOp) -> ArrayRangeExpr:
+    """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
+    Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
+    to ensure this makes sense. No type checking happens here."""
+    assert val._is_bound()
+    return self._new_bind(UnaryOpBinding(val, op))
+
   def _create_binary_op(self,
                         lhs: ConstraintExpr,
                         rhs: ConstraintExpr,
-                        op: ExprOp) -> ArrayRangeExpr:
+                        op: NumericOp) -> ArrayRangeExpr:
     """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
     Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
     to ensure this makes sense. No type checking happens here."""
     assert lhs._is_bound() and rhs._is_bound()
     return self._new_bind(BinaryOpBinding(lhs, rhs, op))
 
+  # TODO support pointwise multiply in the future
   def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
     return self._create_binary_op(
-      RangeExpr._to_expr_type(other), self,Op.div)
+      RangeExpr._to_expr_type(other), self._create_unary_op(self, NumericOp.invert), NumericOp.mul)
 
 
 @non_library

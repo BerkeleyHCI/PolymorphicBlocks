@@ -49,6 +49,7 @@ class OrdOp(Enum):
   gt = auto()
   le = auto()
   lt = auto()
+  within = auto()
 
 class RangeSetOp(Enum):
   # Range/Set
@@ -60,7 +61,6 @@ class RangeSetOp(Enum):
   intersection = auto()
   center = auto()
   width = auto()
-  within = auto()
 
   # Set
   equal_any = auto()
@@ -306,13 +306,13 @@ class BinaryOpBinding(Binding):
       OrdOp.le: edgir.BinaryExpr.LTE,
       OrdOp.gt: edgir.BinaryExpr.GT,
       OrdOp.ge: edgir.BinaryExpr.GTE,
+      OrdOp.within: edgir.BinaryExpr.WITHIN,
       # Range/Set
       RangeSetOp.min: edgir.BinaryExpr.MIN,
       RangeSetOp.max: edgir.BinaryExpr.MAX,
       # Range
       RangeSetOp.intersection: edgir.BinaryExpr.INTERSECTION,
       RangeSetOp.hull: edgir.BinaryExpr.HULL,
-      RangeSetOp.within: edgir.BinaryExpr.WITHIN,
     }
 
     super().__init__()
