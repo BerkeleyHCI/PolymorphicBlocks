@@ -329,7 +329,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
   EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
   EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
 
-  def __init__(self, initializer: Optional[RangeLike] = None):
+  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
     # must cast non-empty initializer type, because range supports wider initializers
     # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
     if initializer is not None and not isinstance(initializer, RangeExpr):

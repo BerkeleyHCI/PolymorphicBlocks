@@ -12,9 +12,9 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from edg_core.edgir import schema_pb2 as schema__pb2
-from edg_core.edgir import ref_pb2 as ref__pb2
-from edg_core.edgir import lit_pb2 as lit__pb2
+from edgir import schema_pb2 as schema__pb2
+from edgir import ref_pb2 as ref__pb2
+from edgir import lit_pb2 as lit__pb2
 from edg_core.edgrpc import hdl_pb2 as hdl__pb2
 
 
