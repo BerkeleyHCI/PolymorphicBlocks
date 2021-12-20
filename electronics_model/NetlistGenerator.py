@@ -1,7 +1,8 @@
 from functools import cmp_to_key
 from itertools import chain
-
 from typing import *
+
+import edgir
 from edg_core import *
 
 from . import footprint as kicad

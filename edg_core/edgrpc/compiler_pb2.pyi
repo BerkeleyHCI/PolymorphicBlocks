@@ -18,15 +18,15 @@ from edg_core.edgrpc.hdl_pb2 import (
     Refinements as hdl_pb2___Refinements,
 )
 
-from edg_core.edgir.lit_pb2 import (
+from edgir.lit_pb2 import (
     ValueLit as lit_pb2___ValueLit,
 )
 
-from edg_core.edgir.ref_pb2 import (
+from edgir.ref_pb2 import (
     LocalPath as ref_pb2___LocalPath,
 )
 
-from edg_core.edgir.schema_pb2 import (
+from edgir.schema_pb2 import (
     Design as schema_pb2___Design,
 )
 

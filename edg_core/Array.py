@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *
 
-from . import edgir
+import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
 from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \

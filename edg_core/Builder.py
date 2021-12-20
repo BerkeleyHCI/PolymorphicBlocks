@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from typing import *
-import sys
 
-from . import edgir
+import edgir
 
 if TYPE_CHECKING:
   from .Core import Refable

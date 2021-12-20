@@ -6,7 +6,8 @@ import importlib
 import inspect
 import sys
 
-from . import edgrpc, edgir
+import edgir
+from . import edgrpc
 from .Core import builder, LibraryElement
 from .Blocks import Link
 from .HierarchyBlock import Block, GeneratorBlock

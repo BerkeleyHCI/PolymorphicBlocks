@@ -1,5 +1,6 @@
 import unittest
 import io
+import edgir
 from . import *
 
 

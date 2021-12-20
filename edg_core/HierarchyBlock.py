@@ -5,7 +5,7 @@ from itertools import chain
 from numbers import Number
 from typing import *
 
-from . import edgir
+import edgir
 from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
 from .Binding import ParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr

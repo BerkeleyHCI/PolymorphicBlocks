@@ -1,7 +1,7 @@
 import unittest
 
+import edgir
 from .test_elaboration_common import TestPortBridge, TestPortSink
-from . import edgir
 from . import *
 
 

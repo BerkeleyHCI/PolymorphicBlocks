@@ -5,7 +5,7 @@ from functools import reduce
 from itertools import chain
 from typing import *
 
-from . import edgir
+import edgir
 from .Binding import Binding, ParamBinding, ParamVariableBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
   UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, IfThenElseBinding

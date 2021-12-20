@@ -5,7 +5,7 @@ from enum import Enum, auto
 from itertools import chain
 from typing import *
 
-from . import edgir
+import edgir
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Range import Range

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import *
 from abc import abstractmethod
 
-from . import edgir
+import edgir
 from .Builder import builder
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet

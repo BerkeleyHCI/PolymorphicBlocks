@@ -1,6 +1,6 @@
-from typing import *
 import unittest
 
+import edgir
 from . import *
 from .test_elaboration_common import TestLink
 

@@ -1,7 +1,6 @@
-from typing import *
 import unittest
-import sys
 
+import edgir
 from . import *
 from .test_elaboration_common import TestPortSource, TestPortSink
 from . import test_common

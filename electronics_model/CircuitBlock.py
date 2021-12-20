@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import *
 from edg_core import *
 
-from edg_core import edgir, IdentityDict  # TODO: this is ugly
+import edgir
+from edg_core import IdentityDict  # TODO: this is ugly
 from edg_core.ConstraintExpr import Refable
 
 if TYPE_CHECKING:

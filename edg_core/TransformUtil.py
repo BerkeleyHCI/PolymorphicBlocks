@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import *
 import sys  # for exception chaining
 
-from . import edgir
+import edgir
 
 
 class PathException(Exception):
