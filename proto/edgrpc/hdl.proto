@@ -4,12 +4,12 @@
 */
 
 syntax = "proto3";
-package edg.compiler;
+package edgrpc.hdl;
 
-import "schema.proto";
-import "ref.proto";
-import "elem.proto";
-import "lit.proto";
+import "edgir/schema.proto";
+import "edgir/ref.proto";
+import "edgir/elem.proto";
+import "edgir/lit.proto";
 
 
 message ModuleName {
@@ -17,16 +17,16 @@ message ModuleName {
 }
 
 message LibraryRequest {
-  ref.LibraryPath element = 2;  // library element asked for
+  edgir.ref.LibraryPath element = 2;  // library element asked for
 }
 
 message GeneratorRequest {
-  ref.LibraryPath element = 2;  // path of library element containing the generator
+  edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
   string fn = 3;  // name of generator function
 
   message Value {
-    ref.LocalPath path = 1;
-    lit.ValueLit value = 2;
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
   }
 
   repeated Value values = 4;
@@ -35,33 +35,33 @@ message GeneratorRequest {
 message Refinements {
   message Subclass {
     oneof source {
-      ref.LocalPath path = 1;
-      ref.LibraryPath cls = 2;
+      edgir.ref.LocalPath path = 1;
+      edgir.ref.LibraryPath cls = 2;
     }
-    ref.LibraryPath replacement = 3;
+    edgir.ref.LibraryPath replacement = 3;
   }
   message Value {
     message ClassParamPath {
-      ref.LibraryPath cls = 1;
-      ref.LocalPath param_path = 2;
+      edgir.ref.LibraryPath cls = 1;
+      edgir.ref.LocalPath param_path = 2;
     }
     oneof source {
-      ref.LocalPath path = 1;
+      edgir.ref.LocalPath path = 1;
       ClassParamPath cls_param = 2;
     }
-    lit.ValueLit value = 3;
+    edgir.lit.ValueLit value = 3;
   }
   repeated Subclass subclasses = 1;
   repeated Value values = 2;
 }
 
 message IndexResponse {
-  repeated ref.LibraryPath indexed = 1;
+  repeated edgir.ref.LibraryPath indexed = 1;
 }
 
 message LibraryResponse {
   oneof result {
-    schema.Library.NS.Val element = 1;
+    edgir.schema.Library.NS.Val element = 1;
     string error = 2;  // TODO source locators
   }
   Refinements refinements = 3;  // only valid if element is a top-level block, and not error
@@ -69,7 +69,7 @@ message LibraryResponse {
 
 message GeneratorResponse {
   oneof result {
-    elem.HierarchyBlock generated = 1;
+    edgir.elem.HierarchyBlock generated = 1;
     string error = 2;  // TODO source locators
   }
 }

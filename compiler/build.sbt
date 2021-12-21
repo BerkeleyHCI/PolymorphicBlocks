@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
 )
 
 Compile / PB.protoSources := Seq(
-  baseDirectory.value / "../edgir",
+  baseDirectory.value / "../proto",
   baseDirectory.value / "rpc",
 )
 

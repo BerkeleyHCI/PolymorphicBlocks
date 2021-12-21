@@ -11,10 +11,12 @@ from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \
   BinarySetExpr, UnaryExpr, UnarySetExpr, MapExtractExpr
 from .lit_pb2 import ValueLit
 
-from edg_core.Range import Range
-
 if TYPE_CHECKING:
   from .ref_pb2 import Reserved
+
+  # Avoid a runtime circular import, these imports are done locally in scope
+  # TODO this should be a separate util in edg_core
+  from edg_core.Range import Range
 
 PortTypes = Union[Port, PortArray, Bundle]
 BlockTypes = HierarchyBlock
@@ -47,7 +49,7 @@ def resolve_portlike(port: PortLike) -> PortTypes:
     raise ValueError(f"bad portlike {port}")
 
 
-LitTypes = Union[bool, float, Range, str]
+LitTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this prevents a circular import
 
 
 def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTypes]]:
@@ -78,6 +80,7 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
     return expr.integer.val
   elif expr.HasField('range') and \
        expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
+    from edg_core.Range import Range  # TODO fix me, this prevents a circular import
     return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
     return expr.text.val
@@ -86,6 +89,7 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
 
 
 def lit_to_valuelit(value: LitTypes) -> ValueLit:
+  from edg_core.Range import Range  # TODO fix me, this prevents a circular import
   pb = ValueLit()
   if isinstance(value, bool):
     pb.boolean.val = value
@@ -143,6 +147,7 @@ def string_to_lit(input: str, elt: ValInit) -> Optional[LitTypes]:
     except ValueError:
       return None
   elif elt.HasField('range'):  # TODO: support tolerance notation and single values?
+    from edg_core.Range import Range  # TODO fix me, this prevents a circular import
     elts = input.split(',')
     if len(elts) != 2:
       return None
@@ -158,6 +163,7 @@ def string_to_lit(input: str, elt: ValInit) -> Optional[LitTypes]:
 
 def lit_to_string(lit: LitTypes) -> str:
   import numbers
+  from edg_core.Range import Range  # TODO fix me, this prevents a circular import
   if isinstance(lit, bool):
     return str(lit)
   elif isinstance(lit, Range):

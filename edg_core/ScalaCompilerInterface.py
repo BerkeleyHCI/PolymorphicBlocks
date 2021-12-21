@@ -4,7 +4,7 @@ import os
 import subprocess
 
 import edgir
-from . import edgrpc
+import edgrpc
 from .BufferSerializer import BufferSerializer, BufferDeserializer
 from .Core import builder
 from .HierarchyBlock import Block
