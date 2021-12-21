@@ -115,6 +115,7 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr]):
 
   # TODO support pointwise multiply in the future
   def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
+    """Broadcast-pointwise invert-and-multiply (division with array as rhs)"""
     return self._create_binary_set_op(
       self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
