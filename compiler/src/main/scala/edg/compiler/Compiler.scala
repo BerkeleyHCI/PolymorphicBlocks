@@ -6,7 +6,7 @@ import edgir.expr.expr
 import edgir.ref.ref
 import edgir.ref.ref.LocalPath
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
-import edg.{ExprBuilder, wir}
+import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
 
 
@@ -52,11 +52,24 @@ object CompilerError {
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
 
-  case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError
+  case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError {
+    override def toString: String = {
+      s"Abstract block: $path (of type ${EdgirUtils.SimpleLibraryPath(blockType)})"
+    }
+  }
+
   case class FailedAssertion(root: DesignPath, constrName: String,
-                             value: expr.ValueExpr, result: ExprValue) extends CompilerError
+                             value: expr.ValueExpr, result: ExprValue) extends CompilerError {
+    override def toString: String = {
+      s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
+    }
+  }
   case class MissingAssertion(root: DesignPath, constrName: String,
-                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError
+                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError {
+    override def toString: String = {
+      s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
+    }
+  }
 
   // TODO should this be an error? Currently a debugging tool
   case class EmptyRange(param: IndirectDesignPath, root: DesignPath, constrName: String,

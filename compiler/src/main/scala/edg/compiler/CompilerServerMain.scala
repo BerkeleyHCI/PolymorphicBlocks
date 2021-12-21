@@ -32,7 +32,7 @@ object CompilerServerMain {
       val errors = compiler.getErrors() ++ checker.map(compiled)
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
-        error = errors.mkString(", "),
+        error = errors.mkString("\n"),
         solvedValues = constPropToSolved(compiler.getAllSolved)
       )
       result
