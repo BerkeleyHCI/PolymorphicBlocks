@@ -3,8 +3,8 @@ package edg
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
+import edgir.schema.schema
 import edg.ElemBuilder._
-import edg.schema.schema
 import edg.wir.DesignPath
 
 

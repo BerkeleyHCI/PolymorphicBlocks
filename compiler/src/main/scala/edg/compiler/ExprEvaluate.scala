@@ -215,7 +215,7 @@ object ExprEvaluate {
         case IntValue(opVal) => IntValue(-opVal)
         case _ => throw new ExprEvaluateException(s"Unknown unary operand type in ${unary.op} ${`val`} from $unary")
       }
-      case (Op.NOT, BooleanValue(opVal)) => BooleanValue(opVal)
+      case (Op.NOT, BooleanValue(opVal)) => BooleanValue(!opVal)
       case (Op.INVERT, `val`) => `val` match {
         case RangeValue(valMin, valMax) =>
           RangeValue(1.0 / valMax, 1.0 / valMin)

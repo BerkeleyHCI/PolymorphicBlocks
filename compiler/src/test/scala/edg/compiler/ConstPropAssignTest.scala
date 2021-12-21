@@ -36,7 +36,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
   }
 
   it should "handle multi-hop directed assignments" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath() + "a",
       DesignPath(),
@@ -51,7 +51,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
   }
 
   it should "handle multi-hop directed assignments, delayed" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath() + "b",
       DesignPath(),
@@ -101,7 +101,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
   }
 
   it should "handle evaluations on both side of assignments, delayed" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath() + "b", DesignPath(),
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2), ValueExpr.Ref("a"))

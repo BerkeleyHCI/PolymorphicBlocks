@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.ExprBuilder._
-import edg.expr.expr
+import edgir.expr.expr
 import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.ExprBuilder._
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -147,7 +147,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     constProp.setValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))
 
     evalTest.map(
-      ValueExpr.Reduce(expr.ReductionExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"))
+      ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"))
     ) should equal(ExprResult.Result(IntValue(6)))
   }
 }
