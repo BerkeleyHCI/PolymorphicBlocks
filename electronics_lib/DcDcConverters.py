@@ -47,8 +47,8 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (580*mVolt / self.fb.ratio.upper(),
-                 610*mVolt / self.fb.ratio.lower()))
+                (580*mVolt / self.fb.selected_ratio.upper(),
+                 610*mVolt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.spec_output_voltage,
