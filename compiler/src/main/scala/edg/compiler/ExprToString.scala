@@ -111,6 +111,7 @@ class ExprToString() extends ValueExprMap[String] {
       case Op.MIN => Some("min")
       case Op.MAX => Some("max")
       case Op.CENTER => Some("center")
+      case Op.WIDTH => Some("width")
       case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }
@@ -139,8 +140,8 @@ class ExprToString() extends ValueExprMap[String] {
     }
   }
 
-  override def mapSetUnary(unarySet: expr.UnaryExpr, vals: String): String = unarySet.op match {
-    case UnaryExprOp(op) => s"$op(${vals})"
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String): String = unarySet.op match {
+    case UnarySetExprOp(op) => s"$op(${vals})"
     case op => s"unknown[$op](${vals})"
   }
 

@@ -124,19 +124,25 @@ object ArrayValue {
     }
   }
 
-  // Extracts the min and maxes from an array of ranges
   object ExtractRange {
-    sealed trait ExtractedRange
-    // Array of ranges with no empty values
-    case class FullRange(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
-    // Array of ranges with empty values and full values
-    case class RangeWithEmpty(mins: Seq[Float], maxs: Seq[Float]) extends ExtractedRange
-    // Array of ranges with only empty values
-    case class EmptyRange() extends ExtractedRange
-    // Empty input array (contains neither ranges nor empty ranges
-    case class EmptyArray() extends ExtractedRange
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[RangeType]] = seqMapOption(vals.values) {
+      case elt: RangeType => elt
+    }
+  }
 
-    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[ExtractedRange] = seqMapOption(vals.values) {
+  // Extracts the min and maxes from an array of ranges
+  object UnpackRange {
+    sealed trait UnpackedRange
+    // Array of ranges with no empty values
+    case class FullRange(mins: Seq[Float], maxs: Seq[Float]) extends UnpackedRange
+    // Array of ranges with empty values and full values
+    case class RangeWithEmpty(mins: Seq[Float], maxs: Seq[Float]) extends UnpackedRange
+    // Array of ranges with only empty values
+    case class EmptyRange() extends UnpackedRange
+    // Empty input array (contains neither ranges nor empty ranges
+    case class EmptyArray() extends UnpackedRange
+
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[UnpackedRange] = seqMapOption(vals.values) {
       // the outer option returns None if it encounters a non-Range value
       case RangeValue(eltMin, eltMax) => Some((eltMin, eltMax))
       case RangeEmpty => None
