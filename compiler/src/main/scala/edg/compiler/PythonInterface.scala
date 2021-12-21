@@ -1,10 +1,10 @@
 package edg.compiler
 
 import collection.mutable
-import edg.compiler.{hdl => edgrpc}
-import edg.elem.elem
-import edg.ref.ref
-import edg.schema.schema
+import edgir.elem.elem
+import edgir.ref.ref
+import edgir.schema.schema
+import edgrpc.hdl.{hdl => edgrpc}
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort

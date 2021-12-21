@@ -1,7 +1,7 @@
 package edg.wir
 
-import edg.ref.ref
-import edg.common.common
+import edgir.ref.ref
+import edgir.common.common
 
 
 class InvalidPathException(message: String) extends Exception(message)

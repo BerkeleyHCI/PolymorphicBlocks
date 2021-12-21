@@ -1,10 +1,10 @@
 package edg.wir
 
-import edg.common.common
-import edg.elem.elem
-import edg.expr.expr
-import edg.init.init
-import edg.ref.ref
+import edgir.common.common
+import edgir.elem.elem
+import edgir.expr.expr
+import edgir.init.init
+import edgir.ref.ref
 import edg.util.SeqMapSortableFrom._
 
 import scala.collection.mutable

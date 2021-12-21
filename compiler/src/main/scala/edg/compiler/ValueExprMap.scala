@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.lit.lit
-import edg.ref.ref
-import edg.expr.expr
+import edgir.lit.lit
+import edgir.ref.ref
+import edgir.expr.expr
 
 
 /**

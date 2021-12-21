@@ -1,7 +1,7 @@
 package edg
 
-import edg.schema.schema
-import edg.elem.elem
+import edgir.schema.schema
+import edgir.elem.elem
 
 
 /** Functions for making small changes to IR trees.

@@ -4,11 +4,11 @@ package edg
 /** Convenience functions for building edg ir expression trees with less proto boilerplate
   */
 object ExprBuilder {
-  import edg.common.common
-  import edg.expr.expr
-  import edg.init.init
-  import edg.lit.lit
-  import edg.ref.ref
+  import edgir.common.common
+  import edgir.expr.expr
+  import edgir.init.init
+  import edgir.lit.lit
+  import edgir.ref.ref
 
   object ValueExpr {
     def Literal(literal: lit.ValueLit): expr.ValueExpr = expr.ValueExpr(expr = expr.ValueExpr.Expr.Literal(literal))

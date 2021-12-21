@@ -7,12 +7,12 @@ import edg.EdgirUtils.SimpleLibraryPath
 /** Convenience functions for building edg ir element trees with less proto boilerplate
   */
 object ElemBuilder {
-  import edg.common.common
-  import edg.init.init
-  import edg.elem.elem
-  import edg.expr.expr
-  import edg.ref.ref
-  import edg.schema.schema
+  import edgir.common.common
+  import edgir.init.init
+  import edgir.elem.elem
+  import edgir.expr.expr
+  import edgir.ref.ref
+  import edgir.schema.schema
   import ExprBuilder.ValueExpr
 
   // For constructing ValueExpr constraints typically used in top-level constraints

@@ -1,6 +1,6 @@
 package edg.compiler
 
-import edg.lit.lit
+import edgir.lit.lit
 
 import scala.collection.mutable
 import edg.ExprBuilder.Literal

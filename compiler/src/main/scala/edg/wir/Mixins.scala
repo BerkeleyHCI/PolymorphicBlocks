@@ -1,8 +1,8 @@
 package edg.wir
 
-import edg.elem.elem
-import edg.expr.expr
-import edg.init.init
+import edgir.elem.elem
+import edgir.expr.expr
+import edgir.init.init
 import edg.util.SeqMapSortableFrom._
 
 import scala.collection.mutable

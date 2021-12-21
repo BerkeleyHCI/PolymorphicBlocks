@@ -2,9 +2,9 @@ package edg.compiler
 
 import scala.collection.mutable
 import scala.collection.Set
+import edgir.expr.expr
+import edgir.init.init
 import edg.wir._
-import edg.expr.expr
-import edg.init.init
 import edg.util.{DependencyGraph, MutableBiMap}
 import edg.ExprBuilder
 import edg.compiler.ExprRef

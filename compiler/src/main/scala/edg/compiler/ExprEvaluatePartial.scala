@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.expr.expr
-import edg.lit.lit
-import edg.ref.ref
+import edgir.expr.expr
+import edgir.lit.lit
+import edgir.ref.ref
 import edg.wir.{DesignPath, IndirectDesignPath}
 
 

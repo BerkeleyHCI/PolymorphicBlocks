@@ -1,9 +1,9 @@
 package edg.wir
 
-import edg.init.init
-import edg.elem.elem
-import edg.expr.expr
-import edg.ref.ref
+import edgir.init.init
+import edgir.elem.elem
+import edgir.expr.expr
+import edgir.ref.ref
 
 import scala.collection.mutable
 

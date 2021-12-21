@@ -1,6 +1,6 @@
 package edg.wir
 
-import edg.common.common
+import edgir.common.common
 
 object ProtoUtil {
   def getNameOrder(pb: Option[common.Metadata]): Seq[String] = {

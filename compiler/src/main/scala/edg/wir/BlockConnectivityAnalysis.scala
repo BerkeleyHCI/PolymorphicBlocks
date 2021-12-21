@@ -1,9 +1,9 @@
 package edg.wir
 
-import edg.elem.elem
-import edg.expr.expr
-import edg.ref.ref
-import edg.ref.ref.LocalPath
+import edgir.elem.elem
+import edgir.expr.expr
+import edgir.ref.ref
+import edgir.ref.ref.LocalPath
 
 
 /** A connection to a link, from the point of view of (and relative to) some block

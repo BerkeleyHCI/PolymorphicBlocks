@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
 
 Compile / PB.protoSources := Seq(
   baseDirectory.value / "../proto",
-  baseDirectory.value / "rpc",
 )
 
 Compile / PB.targets := Seq(

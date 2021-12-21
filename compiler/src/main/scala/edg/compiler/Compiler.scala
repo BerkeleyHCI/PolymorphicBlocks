@@ -1,10 +1,10 @@
 package edg.compiler
 
 import scala.collection.{SeqMap, mutable}
-import edg.schema.schema
-import edg.expr.expr
-import edg.ref.ref
-import edg.ref.ref.LocalPath
+import edgir.schema.schema
+import edgir.expr.expr
+import edgir.ref.ref
+import edgir.ref.ref.LocalPath
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
@@ -274,7 +274,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           val portPb = library.getPort(libraryPath) match {
             case Errorable.Success(portPb) => portPb
             case Errorable.Error(err) =>
-              import edg.elem.elem, edg.IrPort
+              import edgir.elem.elem, edg.IrPort
               errors += CompilerError.LibraryError(path, libraryPath, err)
               IrPort.Port(elem.Port())
           }
@@ -305,7 +305,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
           case Errorable.Error(err) =>
-            import edg.elem.elem, edg.IrPort
+            import edgir.elem.elem, edg.IrPort
             errors += CompilerError.LibraryError(path, libraryPath, err)
             IrPort.Port(elem.Port())
         }
@@ -387,7 +387,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
-    import edg.ref.ref
+    import edgir.ref.ref
 
     // Elaborate ports, generating equivalence constraints as needed
     // TODO support port.NAME
@@ -538,7 +538,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
         blockPb
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.LibraryError(path, refinedLibrary, err)
         elem.HierarchyBlock()
     }
@@ -687,7 +687,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val linkPb = library.getLink(libraryPath) match {
       case Errorable.Success(linkPb) => linkPb
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.LibraryError(path, libraryPath, err)
         elem.Link()
     }
@@ -738,7 +738,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         require(generatedPb.getSelfClass == block.getBlockClass)
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
         elem.HierarchyBlock()
     }
