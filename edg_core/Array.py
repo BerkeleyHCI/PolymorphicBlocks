@@ -103,16 +103,7 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
 
 
 class ArrayRangeExpr(ArrayExpr[RangeExpr]):
-  def _create_unary_op(self,
-                       val: ConstraintExpr,
-                       op: NumericOp) -> ArrayRangeExpr:
-    """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
-    Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
-    to ensure this makes sense. No type checking happens here."""
-    assert val._is_bound()
-    return self._new_bind(UnaryOpBinding(val, op))
-
-  def _create_binary_op(self,
+  def _create_binary_set_op(self,
                         lhs: ConstraintExpr,
                         rhs: ConstraintExpr,
                         op: NumericOp) -> ArrayRangeExpr:
@@ -120,12 +111,12 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr]):
     Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
     to ensure this makes sense. No type checking happens here."""
     assert lhs._is_bound() and rhs._is_bound()
-    return self._new_bind(BinaryOpBinding(lhs, rhs, op))
+    return self._new_bind(BinarySetOpBinding(lhs, rhs, op))
 
   # TODO support pointwise multiply in the future
   def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
-    return self._create_binary_op(
-      RangeExpr._to_expr_type(other), self._create_unary_op(self, NumericOp.invert), NumericOp.mul)
+    return self._create_binary_set_op(
+      self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
 @non_library

@@ -301,6 +301,24 @@ object ExprEvaluate {
         case _ => RangeEmpty
       }
 
+      case (Op.NEGATE, vals) => vals match {
+        case ArrayValue.ExtractRange(arrayElts) =>
+          val resultElts = arrayElts.map { arrayElt =>
+            evalUnary(expr.UnaryExpr(op = expr.UnaryExpr.Op.NEGATE), arrayElt)
+          }
+          ArrayValue(resultElts)
+        case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
+      }
+
+      case (Op.INVERT, vals) => vals match {
+        case ArrayValue.ExtractRange(arrayElts) =>
+          val resultElts = arrayElts.map { arrayElt =>
+            evalUnary(expr.UnaryExpr(op = expr.UnaryExpr.Op.INVERT), arrayElt)
+          }
+          ArrayValue(resultElts)
+        case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
+      }
+
       case _ => throw new ExprEvaluateException(s"Unknown unary set op in ${unarySet.op} $vals from $unarySet")
     }
   }
