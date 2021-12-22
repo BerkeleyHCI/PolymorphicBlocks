@@ -88,12 +88,14 @@ class DiscreteBuckConverter(BuckConverter):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
+    self.dutycycle_limit = self.Parameter(RangeExpr((self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)))
     self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: Range, output_voltage: Range,
                           output_current_max: float, frequency: Range,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
+                          dutycycle_limit: Range
                           ) -> Passive:
     """
     Given the switch node, generates the passive (in and out filter caps, inductor) components,
@@ -107,7 +109,6 @@ class DiscreteBuckConverter(BuckConverter):
     TODO unify rated max current with something else, perhaps a block param?
     """
     dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
-    dutycycle_limit = Range(self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)
     self.assign(self.dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
@@ -190,12 +191,14 @@ class DiscreteBoostConverter(BoostConverter):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
+    self.dutycycle_limit = self.Parameter(RangeExpr((self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)))
     self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: Range, output_voltage: Range,
                           output_current_max: float, frequency: Range,
-                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range
+                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
+                          dutycycle_limit: Range
                           ) -> None:
     """
     - diode needs to be fast, consider forward voltage drop, forward current (> peak inductor current), reverse volts (> Vout)
@@ -206,7 +209,6 @@ class DiscreteBoostConverter(BoostConverter):
     TODO support capacitor ESR calculation
     """
     dutycycle = 1 - input_voltage / output_voltage * Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
-    dutycycle_limit = Range(self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)
     self.assign(self.dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable

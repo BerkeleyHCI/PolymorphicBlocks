@@ -53,7 +53,7 @@ class IndicatorLed(Light):
                   self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
 
     self.connect(self.signal, self.package.a.as_digital_sink(
-      current_draw=(0, self.signal.link().voltage.upper() / self.res.resistance.lower())
+      current_draw=self.signal.link().voltage / self.res.resistance
     ))
 
     self.connect(self.res.a, self.package.k)
@@ -72,7 +72,7 @@ class VoltageIndicatorLed(Light):
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.signal = self.Port(VoltageSink(), [InOut])  # TODO should this be Power instead?
+    self.signal = self.Port(VoltageSink(), [Power, InOut])
     self.gnd = self.Port(Ground(), [Common])
 
     self.require(self.signal.current_draw.within(current_draw))
@@ -93,12 +93,12 @@ class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      'D', 'calisco:LED_RGB_0606',
-      {  # ABGR configuration
-        '1': self.a,
-        '2': self.k_blue,
-        '3': self.k_green,
-        '4': self.k_red,
+      'D', 'LED_SMD:LED_LiteOn_LTST-C19HE1WT',
+      {  # ABGR configuration - also pins 1/2 and 3/4 are swapped on this pattern
+        '2': self.a,
+        '1': self.k_blue,
+        '4': self.k_green,
+        '3': self.k_red,
       },
       mfr='Everlight Electronics Co Ltd', part='EAST1616RGBB2'
     )

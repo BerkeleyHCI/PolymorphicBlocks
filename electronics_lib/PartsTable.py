@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  Tuple, cast, Protocol
+  Tuple, cast
 import itertools
 import re
 import csv
+
+import sys
+if sys.version_info[1] < 8:
+  from typing_extensions import Protocol
+else:
+  from typing import Protocol
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy
@@ -65,9 +71,10 @@ class PartsTable:
     all_dict_rows = list(itertools.chain(*dict_rowss))
 
     if len(all_dict_rows) > 1:  # if nonempty, check for consistency
-      first_keys = all_dict_rows[0].keys()
+      first_keys = set(all_dict_rows[0].keys())
       for dict_row in all_dict_rows[1:]:
-        assert dict_row.keys() == first_keys, f"row {dict_row} has different keys than first row keys {first_keys}"
+        difference = first_keys.symmetric_difference(set(dict_row.keys()))
+        assert not difference, f"table has different keys: {difference}"
     rows = [PartsTableRow(dict_row) for dict_row in all_dict_rows]
     return PartsTable(rows)
 

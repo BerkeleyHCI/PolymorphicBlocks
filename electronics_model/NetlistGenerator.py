@@ -86,11 +86,13 @@ class NetlistCollect(TransformUtil.Transform):
       part = self.design.get_value(path.to_tuple() + ('part',))
       value = self.design.get_value(path.to_tuple() + ('value',))
       refdes_prefix = self.design.get_value(path.to_tuple() + ('refdes_prefix',))
+      lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
 
       assert isinstance(footprint_name, str)
       assert isinstance(mfr, str) or mfr is None
       assert isinstance(part, str) or part is None
       assert isinstance(value, str) or value is None
+      assert isinstance(lcsc_part, str) or lcsc_part is None
       assert isinstance(refdes_prefix, str)
 
       part_comps = [
@@ -106,7 +108,10 @@ class NetlistCollect(TransformUtil.Transform):
 
       self.blocks[path] = (
         footprint_name,
+        # Uncomment one to set value field
+        # TODO this should be a user flag
         value_str
+        # lcsc_part or ""
       )
 
       refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1

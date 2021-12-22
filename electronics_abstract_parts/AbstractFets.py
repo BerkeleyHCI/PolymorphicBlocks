@@ -32,6 +32,13 @@ class Fet(DiscreteSemiconductor):
     self.gate_charge = self.Parameter(RangeExpr(gate_charge))
     self.power = self.Parameter(RangeExpr(power))
 
+    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
+    self.selected_drain_current_rating = self.Parameter(RangeExpr())
+    self.selected_gate_drive = self.Parameter(RangeExpr())
+    self.selected_power_rating = self.Parameter(RangeExpr())
+    self.selected_rds_on = self.Parameter(RangeExpr())
+    self.selected_gate_charge = self.Parameter(RangeExpr())
+
 
 @abstract_block
 class PFet(Fet):

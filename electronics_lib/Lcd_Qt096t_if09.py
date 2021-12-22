@@ -78,7 +78,7 @@ class Qt096t_if09(Lcd, Block):
     self.connect(self.spi.sck, self.device.scl)
     self.connect(self.spi.mosi, self.device.sda)
 
-    self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.1)))
+    self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
     self.connect(self.vdd_cap.pwr, self.pwr)
     self.connect(self.vdd_cap.gnd, self.gnd)
 

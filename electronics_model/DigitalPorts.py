@@ -7,7 +7,9 @@ from .VoltagePorts import CircuitPort, VoltageSink, VoltageSource
 from .Units import Volt
 
 
-class DigitalLink(CircuitLink):  # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
+class DigitalLink(CircuitLink):
+  # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
+
   def __init__(self) -> None:
     super().__init__()
 
@@ -328,9 +330,14 @@ class DigitalBidirBridge(CircuitPortBridge):
 
     self.outer_port = self.Port(DigitalBidir(voltage_out=RangeExpr(), current_draw=RangeExpr(),
                                              voltage_limits=RangeExpr(), current_limits=RangeExpr(),
-                                             output_thresholds=RangeExpr(), input_thresholds=RangeExpr()))
+                                             output_thresholds=RangeExpr(), input_thresholds=RangeExpr(),
+                                             # TODO see issue 58, how do we propagate this in both directions?
+                                             # pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
+                                             ))
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
-    self.inner_link = self.Port(DigitalBidir(voltage_limits=RangeExpr.ALL, current_limits=RangeExpr.ALL))
+    self.inner_link = self.Port(DigitalBidir(voltage_limits=RangeExpr.ALL, current_limits=RangeExpr.ALL,
+                                             pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
+                                             ))
 
   def contents(self) -> None:
     super().contents()
@@ -342,6 +349,13 @@ class DigitalBidirBridge(CircuitPortBridge):
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
+
+    # TODO this is a hacktastic in that it's not bidirectional, but it serves the use case for the USB PD CC case
+    self.assign(self.inner_link.pullup_capable, self.outer_port.link().pullup_capable)
+    self.assign(self.inner_link.pulldown_capable, self.outer_port.link().pulldown_capable)
+    # TODO see issue 58, how do we propagate this in both directions?
+    # self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
+    # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
 
 
 class DigitalSingleSource(DigitalBase):

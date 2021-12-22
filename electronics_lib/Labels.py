@@ -5,7 +5,7 @@ class LeadFreeIndicator(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', 'calisco:Indicator_LeadFree',
+      '', 'edg:Indicator_LeadFree',
       {},
       value='LeadFree'
     )
@@ -15,7 +15,7 @@ class IdDots4(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', 'calisco:Indicator_IdDots_4',
+      '', 'edg:Indicator_IdDots_4',
       {},
       value='IdDots4'
     )
@@ -25,7 +25,7 @@ class DuckLogo(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      'U', 'calisco:Symbol_Duckling',
+      'U', 'edg:Symbol_Duckling',
       {},
       value='Duck'
     )
