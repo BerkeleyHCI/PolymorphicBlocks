@@ -1,6 +1,6 @@
 package edg.wir
 
-import edg.ref.ref
+import edgir.ref.ref
 
 
 /**

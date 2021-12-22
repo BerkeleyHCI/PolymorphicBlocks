@@ -1,9 +1,9 @@
 package edg.wir
 
 import scala.collection.{AbstractMap, MapOps}
-import edg.elem.elem
-import edg.ref.ref
-import edg.schema.schema
+import edgir.elem.elem
+import edgir.ref.ref
+import edgir.schema.schema
 import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable

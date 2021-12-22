@@ -1,0 +1,375 @@
+/**
+   File : expr.proto
+   Package : edg.expr
+
+   These structures are used to describe expressions and their types.
+   ValueExprs are use to describe relationships between things in EDG.
+   They **DO NOT** change, define, or assert anything.
+
+   Declarations do all of those things by tying descriptions (expressions)
+   to definitions.
+
+   There is a heirarchy we use in EDG for describing types and types of types.
+    - ValueExprs := Values, References, Variables, Definitions, and Literals
+    - Types := A classification of expressions into related, disjoint groups.
+    - Kinds := A classification of types into related, disjoint groups.
+               i.e. Types for types
+    - Sorts := A classification of kinds into related, disjoint groups.
+               i.e. Types for Kinds
+
+   In general we will only really use values and types, with a kind appearing
+   in a small number number of places to help classify types into groups.
+   I don't think we should be using sorts at all in this module, but it's
+   defined for the sake on completeness.
+
+ */
+
+syntax = "proto3";
+package edgir.expr;
+
+import "edgir/ref.proto";
+import "edgir/common.proto";
+import "edgir/lit.proto";
+
+
+message UnaryExpr {
+ enum Op {
+   UNDEFINED = 0;
+
+   /** Negate :: Numeric a =>       a -> a
+              :: Numeric a => Range a -> Range a
+    */
+   NEGATE = 1;
+
+   /** Not :: Bool -> Bool */
+   NOT = 2;
+
+   /** Invert ::       Float -> Float
+              :: Range Float -> Range Float
+    */
+   INVERT = 3;
+
+   /** Min :: Range a -> a */
+   MIN = 4;
+
+   /** Max :: Range a -> a */
+   MAX = 5;
+
+   /** Center :: Range a -> a */
+   CENTER = 6;
+
+   /** Width :: Range a -> a */
+   WIDTH = 7;
+ }
+ Op op = 1;
+ ValueExpr val = 2;
+}
+
+message UnarySetExpr {
+  enum Op{
+    UNDEFINED = 0;
+
+    /** Sum :: (Numeric a) => Set a -> a
+            :: (Numeric a) => Set (Range a) -> Range a
+
+        Sum({}) = 0 */
+    SUM = 1;
+
+    /** All :: Set Bool -> Bool
+
+      All inputs are true
+      All({}) = True */
+    ALL_TRUE = 2;
+
+    /** Any :: Set Bool -> Bool
+
+      Any of the inputs are true
+      Any({}) = False */
+    ANY_TRUE = 3;
+
+    /** AllEq :: (Equality a) => Set a -> Bool
+
+      AllEq({}) = True */
+    ALL_EQ = 4;
+
+    /** AllUnique :: (Equality a) => Set a -> Bool
+
+      AllUnique(EmptySet) = True */
+    ALL_UNIQUE = 5;
+
+    /** Size :: Set a -> Integer */
+    // SIZE = 6;
+
+    /** Maximum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. */
+    MAXIMUM = 10;
+
+    /** Minimum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. */
+    MINIMUM = 11;
+
+    /** SetExtract :: Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. In addition this assumes all values in the set are equal. */
+    SET_EXTRACT = 12;
+
+    /** Intersection :: Set (Range a) -> Range a
+
+        May produce an empty range.
+        Intersection({}) = [-inf, +inf] */
+    INTERSECTION = 13;
+
+    /** Hull :: Set (Range a) -> Range a
+        Returns the convex hull (union with all the inner missing bits filled in)
+        Hull({}) = EmptyRange */
+    HULL = 14;
+
+    /** Negate :: Numeric a => Set a         -> Set a
+               :: Numeric a => Set (Range a) -> Set (Range a)
+
+     Pointwise negate */
+    NEGATE = 20;
+
+    /** Invert :: Set Float         -> Set Float
+               :: Set (Range Float) -> Set (Range Float)
+
+     Pointwise Invert */
+    INVERT = 21;
+  }
+  Op op = 1;
+  ValueExpr vals = 4;
+}
+
+message BinaryExpr {
+  enum Op {
+    UNDEFINED = 0;
+
+    /** Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+    */
+    ADD = 10;
+
+    /** Sub :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
+    // SUB = 11; // Use ADD and NEGATE instead
+
+    /** Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+             :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+             :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+             :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
+    MULT = 12;
+
+    /** Div :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+            :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+            :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+     */
+    // DIV = 13; // Use MULT and INVERT instead
+
+    /** And :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    AND = 20;
+
+    /** Or :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    OR = 21;
+
+    /** Xor :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    XOR = 22;
+
+    /** Implies :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    IMPLIES = 23;
+
+    /** Iff :: (lhs :: Bool, rhs :: Bool) -> Bool */
+    // IFF = 24; // Use EQ instead
+
+    /** Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool */
+    EQ = 30;
+
+    /** Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool */
+    NEQ = 31;
+
+    /** GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool */
+    GT = 40;
+
+    /** GTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool */
+    GTE = 41;
+
+    /** LT :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool */
+    LT = 42;
+
+    /** LTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool */
+    LTE = 44;
+
+    /** Max :: (Comparable a) => (lhs :: a, rhs :: a)  -> a */
+    MAX = 45;
+
+    /** Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a */
+    MIN = 46;
+
+    /** Union :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Set a
+
+      Note how, no matter the type of setlike thing we use as
+      input, the output is alwys an unordered set. */
+    // UNION = 50;
+
+    /** Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a */
+    INTERSECTION = 51;
+
+    /** Hull :: (lhs :: Range a, rhs :: Range a) -> Range a
+      Given two input ranges, returns the convex hull (union with
+      all the inner missing bits filled in) */
+    HULL = 54;
+
+    /** Intersects :: (Set_Like s, Equality a) => (lhs :: s a, rhs :: s a) -> Bool */
+    // INTERSECTS = 52;
+
+    /** Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool
+               :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool
+
+        Whether the lhs range or point is entirely within (contained by) the rhs.
+        Used to be named SUBSET changed to a name that doesn't also imply a set op. */
+    WITHIN = 53;
+
+    /** Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a */
+    RANGE = 1;
+
+    /** PlusOrMinus :: (Comparable a) => (midpoint :: a, variance :: a) -> Range a */
+    // PLUS_OR_MINUS = 2;
+  }
+
+  Op op = 1;
+  ValueExpr lhs = 2;
+  ValueExpr rhs = 3;
+}
+
+message BinarySetExpr {
+  enum Op {
+    UNDEFINED = 0;
+
+    /** Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+            :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+            :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+            :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+     */
+    ADD = 10;
+
+    /** Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+             :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+             :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+             :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+     */
+    MULT = 12;
+  }
+  Op op = 1;
+  ValueExpr lhset = 2;
+  ValueExpr rhs = 3;
+}
+
+/** Arrays have an expression form, allowing you to define them with a set of
+    constraints */
+//message ArrayExpr {
+//  repeated ValueExpr vals = 1;
+//  ValueExpr size = 2;
+//}
+
+/** Ranges have an expression form, allowing you to constrain them without
+    specifying them fully */
+message RangeExpr {
+  ValueExpr minimum = 1;
+  ValueExpr maximum = 2;
+}
+
+/** Structs have an expression form, allowing you to constrain them without
+    specifying them fully */
+message StructExpr {
+ map<string,ValueExpr> vals = 1;
+}
+
+/** IfThenElse :: (cond :: Bool, tru :: a, fal :: a) -> a  */
+message IfThenElseExpr {
+  ValueExpr cond = 1;
+  ValueExpr tru = 2;
+  ValueExpr fal = 3;
+
+  edgir.common.Metadata meta = 127;
+}
+
+/** Extract :: (container :: Array a           , index :: Int) -> a
+    Extract :: (container :: Struct{index :: a}, index :: string)     -> a
+    Extract :: (container :: Range a           , index :: {"minimum"|"maximum"}) -> a  */
+message ExtractExpr {
+  ValueExpr container = 1;
+  ValueExpr index = 2;
+}
+
+
+///** MapExtract :: (container :: Array a , path :: LocalRef{from :: a, to :: b}) -> Array b
+//    MapExtract :: (container :: Set   a , path :: LocalRef{from :: a, to :: b}) -> Set   b
+//
+//    This expression can map over a container and return a container of
+//    the relevant subexpression determined by a path. */
+message MapExtractExpr {
+  ValueExpr container = 1;
+  edgir.ref.LocalPath path = 2;
+}
+
+/** isConnected :: Port -> Port -> Bool
+
+   This tells us whether the specified ports are connected */
+message ConnectedExpr {
+  ValueExpr block_port = 1;
+  ValueExpr link_port  = 2;
+}
+
+
+/** isExported :: Port -> Port -> Bool
+
+   This tells us whether the specified port is exported to the hierarchy block exterior port */
+message ExportedExpr {
+  ValueExpr exterior_port = 1;
+  ValueExpr internal_block_port  = 2;
+}
+
+
+// Variable assignment (from an expression value), which allows dataflow to be directioned and explicit.
+// Assignments should not be cyclic.
+message AssignExpr {
+  edgir.ref.LocalPath dst = 1;
+  ValueExpr src = 2;
+}
+
+
+message ValueExpr {
+  oneof expr {
+    edgir.lit.ValueLit literal     = 1;
+    BinaryExpr       binary      = 2;
+    BinarySetExpr    binary_set  = 18;
+    UnaryExpr        unary       = 3;
+    UnarySetExpr     unary_set   = 4;
+    // SetExpr          set         = 5;
+    // ArrayExpr        array       = 6;
+    StructExpr       struct      = 7;
+    RangeExpr        range       = 8;
+    IfThenElseExpr   ifThenElse  = 10;
+    ExtractExpr      extract     = 12;
+    MapExtractExpr   map_extract = 14;
+    ConnectedExpr    connected   = 15;
+    ExportedExpr     exported    = 16;
+
+    AssignExpr assign    = 17;
+
+    edgir.ref.LocalPath  ref     = 99;
+  }
+
+  edgir.common.Metadata meta = 127;
+}

@@ -24,19 +24,13 @@ class ExprEvaluateTest extends AnyFlatSpec {
   }
 
   it should "handle binary arithmetic ops" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2.0), ValueExpr.Literal(3.0))
     ) should equal(FloatValue(5.0))
     evalTest.map(
-      ValueExpr.BinOp(Op.SUB, ValueExpr.Literal(2.0), ValueExpr.Literal(3.0))
-    ) should equal(FloatValue(-1.0))
-    evalTest.map(
       ValueExpr.BinOp(Op.MULT, ValueExpr.Literal(2.0), ValueExpr.Literal(3.0))
     ) should equal(FloatValue(6.0))
-    evalTest.map(
-      ValueExpr.BinOp(Op.DIV, ValueExpr.Literal(2.0), ValueExpr.Literal(4.0))
-    ) should equal(FloatValue(0.5))
 
     evalTest.map(
       ValueExpr.BinOp(Op.MAX, ValueExpr.Literal(2.0), ValueExpr.Literal(3.0))
@@ -52,8 +46,25 @@ class ExprEvaluateTest extends AnyFlatSpec {
     ) should equal(FloatValue(2.0))
   }
 
+  it should "handle unary arithmetic ops" in {
+    import edgir.expr.expr.UnaryExpr.Op
+    evalTest.map(
+      ValueExpr.UnaryOp(Op.NEGATE, ValueExpr.Literal(2.0))
+    ) should equal(FloatValue(-2.0))
+    evalTest.map(
+      ValueExpr.UnaryOp(Op.NEGATE, ValueExpr.Literal(-3.0))
+    ) should equal(FloatValue(3.0))
+
+    evalTest.map(
+      ValueExpr.UnaryOp(Op.INVERT, ValueExpr.Literal(2.0))
+    ) should equal(FloatValue(0.5))
+    evalTest.map(
+      ValueExpr.UnaryOp(Op.INVERT, ValueExpr.Literal(-0.5))
+    ) should equal(FloatValue(-2))
+  }
+
   it should "handle binary range ops" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(ValueExpr.BinOp(Op.INTERSECTION,
       ValueExpr.Literal(4.0, 6.0), ValueExpr.Literal(5.0, 7.0)
     )) should equal(RangeValue(5.0, 6.0))
@@ -82,35 +93,35 @@ class ExprEvaluateTest extends AnyFlatSpec {
     )) should equal(RangeValue(5.0, 10.0))
     // TODO test with empty ranges?
 
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(6.0), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(true))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(7.0), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(true))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(7.5), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(false))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(4.5), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(false))
 
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(true))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(5.5, 6.5), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(true))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(4.5, 6.5), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(false))
-    evalTest.map(ValueExpr.BinOp(Op.SUBSET,
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN,
       ValueExpr.Literal(5.5, 7.5), ValueExpr.Literal(5.0, 7.0)
     )) should equal(BooleanValue(false))
   }
 
   it should "handle arithmetic promotions" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(  // float + int -> float
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2.0), ValueExpr.Literal(3))
     ) should equal(FloatValue(5.0))
@@ -134,11 +145,11 @@ class ExprEvaluateTest extends AnyFlatSpec {
   }
 
   it should "handle chained ops" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(ValueExpr.BinOp(Op.ADD,
-      ValueExpr.BinOp(Op.SUB, ValueExpr.Literal(2.0), ValueExpr.Literal(-1)),
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2.0), ValueExpr.Literal(-1)),
       ValueExpr.Literal(3.0)
-    )) should equal(FloatValue(6.0))
+    )) should equal(FloatValue(4.0))
 
     evalTest.map(ValueExpr.BinOp(Op.AND,
       ValueExpr.BinOp(Op.OR, ValueExpr.Literal(true), ValueExpr.Literal(false)),
@@ -147,7 +158,7 @@ class ExprEvaluateTest extends AnyFlatSpec {
   }
 
   it should "handle equality" in {
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(
       ValueExpr.BinOp(Op.EQ, ValueExpr.Literal(3.0), ValueExpr.Literal(3.0))
     ) should equal(BooleanValue(true))
@@ -208,13 +219,17 @@ class ExprEvaluateTest extends AnyFlatSpec {
       ValueExpr.IfThenElse(ValueExpr.Literal(false), ValueExpr.Literal(4), ValueExpr.Literal(3))
     ) should equal(IntValue(3))
 
-    import edg.expr.expr.BinaryExpr.Op
+    import edgir.expr.expr.BinaryExpr.Op
     evalTest.map(
       ValueExpr.IfThenElse(ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(true)),
       ValueExpr.Literal(4), ValueExpr.Literal(3))
     ) should equal(IntValue(4))
     evalTest.map(
       ValueExpr.IfThenElse(ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(false)),
+        ValueExpr.Literal(4), ValueExpr.Literal(3))
+    ) should equal(IntValue(3))
+    evalTest.map(
+      ValueExpr.IfThenElse(ValueExpr.UnaryOp(edgir.expr.expr.UnaryExpr.Op.NOT, ValueExpr.Literal(true)),
         ValueExpr.Literal(4), ValueExpr.Literal(3))
     ) should equal(IntValue(3))
   }

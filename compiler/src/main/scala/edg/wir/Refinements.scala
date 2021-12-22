@@ -1,8 +1,8 @@
 package edg.wir
 
+import edgir.ref.ref
+import edgrpc.hdl.hdl
 import edg.compiler.ExprValue
-import edg.ref.ref
-import edg.compiler.hdl
 
 
 case class Refinements(

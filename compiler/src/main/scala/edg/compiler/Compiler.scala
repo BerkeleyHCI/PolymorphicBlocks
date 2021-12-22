@@ -1,12 +1,12 @@
 package edg.compiler
 
 import scala.collection.{SeqMap, mutable}
-import edg.schema.schema
-import edg.expr.expr
-import edg.ref.ref
-import edg.ref.ref.LocalPath
+import edgir.schema.schema
+import edgir.expr.expr
+import edgir.ref.ref
+import edgir.ref.ref.LocalPath
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
-import edg.{ExprBuilder, wir}
+import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
 
 
@@ -52,11 +52,24 @@ object CompilerError {
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError
 
-  case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError
+  case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError {
+    override def toString: String = {
+      s"Abstract block: $path (of type ${EdgirUtils.SimpleLibraryPath(blockType)})"
+    }
+  }
+
   case class FailedAssertion(root: DesignPath, constrName: String,
-                             value: expr.ValueExpr, result: ExprValue) extends CompilerError
+                             value: expr.ValueExpr, result: ExprValue) extends CompilerError {
+    override def toString: String = {
+      s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
+    }
+  }
   case class MissingAssertion(root: DesignPath, constrName: String,
-                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError
+                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError {
+    override def toString: String = {
+      s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
+    }
+  }
 
   // TODO should this be an error? Currently a debugging tool
   case class EmptyRange(param: IndirectDesignPath, root: DesignPath, constrName: String,
@@ -274,7 +287,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           val portPb = library.getPort(libraryPath) match {
             case Errorable.Success(portPb) => portPb
             case Errorable.Error(err) =>
-              import edg.elem.elem, edg.IrPort
+              import edgir.elem.elem, edg.IrPort
               errors += CompilerError.LibraryError(path, libraryPath, err)
               IrPort.Port(elem.Port())
           }
@@ -305,7 +318,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
           case Errorable.Error(err) =>
-            import edg.elem.elem, edg.IrPort
+            import edgir.elem.elem, edg.IrPort
             errors += CompilerError.LibraryError(path, libraryPath, err)
             IrPort.Port(elem.Port())
         }
@@ -377,7 +390,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         path, assign.src.get,
         constrName) // TODO add sourcelocators
     case (path, constrName, constr,
-        expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.Reduce(_) | expr.ValueExpr.Expr.IfThenElse(_)) =>
+        expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
+        expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
+        expr.ValueExpr.Expr.IfThenElse(_)) =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
     case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))
       if target.steps.last.step.isReservedParam
@@ -387,7 +402,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
-    import edg.ref.ref
+    import edgir.ref.ref
 
     // Elaborate ports, generating equivalence constraints as needed
     // TODO support port.NAME
@@ -540,7 +555,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
         blockPb
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.LibraryError(path, refinedLibrary, err)
         elem.HierarchyBlock()
     }
@@ -689,7 +704,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val linkPb = library.getLink(libraryPath) match {
       case Errorable.Success(linkPb) => linkPb
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.LibraryError(path, libraryPath, err)
         elem.Link()
     }
@@ -740,7 +755,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         require(generatedPb.getSelfClass == block.getBlockClass)
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
-        import edg.elem.elem
+        import edgir.elem.elem
         errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
         elem.HierarchyBlock()
     }

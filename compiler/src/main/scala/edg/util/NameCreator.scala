@@ -1,7 +1,7 @@
 package edg.util
 
-import edg.elem.elem
 import scala.collection.mutable
+import edgir.elem.elem
 
 
 object NameCreator {

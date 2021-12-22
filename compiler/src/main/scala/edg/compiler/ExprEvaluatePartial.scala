@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.expr.expr
-import edg.lit.lit
-import edg.ref.ref
+import edgir.expr.expr
+import edgir.lit.lit
+import edgir.ref.ref
 import edg.wir.{DesignPath, IndirectDesignPath}
 
 
@@ -35,9 +35,23 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
       ExprResult.Result(ExprEvaluate.evalBinary(binary, lhs, rhs))
   }
 
-  override def mapReduce(reduce: expr.ReductionExpr, vals: ExprResult): ExprResult = vals match {
+  override def mapBinarySet(binarySet: expr.BinarySetExpr,
+                            lhsset: ExprResult, rhs: ExprResult): ExprResult = (lhsset, rhs) match {
+    case (ExprResult.Missing(lhsset), ExprResult.Missing(rhs)) => ExprResult.Missing(lhsset ++ rhs)
+    case (lhsset @ ExprResult.Missing(_), ExprResult.Result(_)) => lhsset
+    case (ExprResult.Result(_), rhs @ ExprResult.Missing(_)) => rhs
+    case (ExprResult.Result(lhsset), ExprResult.Result(rhs)) =>
+      ExprResult.Result(ExprEvaluate.evalBinarySet(binarySet, lhsset, rhs))
+  }
+
+  override def mapUnary(unary: expr.UnaryExpr, `val`: ExprResult): ExprResult = `val` match {
+    case `val` @ ExprResult.Missing(_) => `val`
+    case ExprResult.Result(resVal) => ExprResult.Result(ExprEvaluate.evalUnary(unary, resVal))
+  }
+
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprResult): ExprResult = vals match {
     case vals @ ExprResult.Missing(_) => vals
-    case ExprResult.Result(vals) => ExprResult.Result(ExprEvaluate.evalReduce(reduce, vals))
+    case ExprResult.Result(vals) => ExprResult.Result(ExprEvaluate.evalUnarySet(unarySet, vals))
   }
 
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, ExprResult]): ExprResult =

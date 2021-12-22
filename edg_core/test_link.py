@@ -1,6 +1,6 @@
-from typing import *
 import unittest
 
+import edgir
 from . import *
 from .test_elaboration_common import TestLink
 
@@ -34,17 +34,17 @@ class LinkTestCase(unittest.TestCase):
     expected_constr.assign.dst.steps.add().name = 'float_param_sink_range'
     expected_constr.assign.src.binary.op = edgir.BinaryExpr.RANGE
 
-    expected_constr.assign.src.binary.lhs.reduce.op = edgir.ReductionExpr.MINIMUM
-    expected_constr.assign.src.binary.lhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_constr.assign.src.binary.lhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
+    expected_constr.assign.src.binary.lhs.unary_set.op = edgir.UnarySetExpr.MINIMUM
+    expected_constr.assign.src.binary.lhs.unary_set.vals.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_constr.assign.src.binary.lhs.unary_set.vals.map_extract.path.steps.add().name = 'float_param'
 
-    expected_constr.assign.src.binary.rhs.reduce.op = edgir.ReductionExpr.MAXIMUM
-    expected_constr.assign.src.binary.rhs.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_constr.assign.src.binary.rhs.reduce.vals.map_extract.path.steps.add().name = 'float_param'
+    expected_constr.assign.src.binary.rhs.unary_set.op = edgir.UnarySetExpr.MAXIMUM
+    expected_constr.assign.src.binary.rhs.unary_set.vals.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_constr.assign.src.binary.rhs.unary_set.vals.map_extract.path.steps.add().name = 'float_param'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
     expected_constr = edgir.ValueExpr()
-    expected_constr.binary.op = edgir.BinaryExpr.SUBSET
+    expected_constr.binary.op = edgir.BinaryExpr.WITHIN
     expected_constr.binary.lhs.ref.steps.add().name = 'source'
     expected_constr.binary.lhs.ref.steps.add().name = 'float_param'
     expected_constr.binary.rhs.ref.steps.add().name = 'source'
@@ -54,13 +54,13 @@ class LinkTestCase(unittest.TestCase):
     expected_constr = edgir.ValueExpr()
     expected_name = '(init)range_param_sink_common'
     expected_constr.assign.dst.steps.add().name = 'range_param_sink_common'
-    expected_constr.assign.src.reduce.op = edgir.ReductionExpr.INTERSECTION
-    expected_constr.assign.src.reduce.vals.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_constr.assign.src.reduce.vals.map_extract.path.steps.add().name = 'range_limit'
+    expected_constr.assign.src.unary_set.op = edgir.UnarySetExpr.INTERSECTION
+    expected_constr.assign.src.unary_set.vals.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_constr.assign.src.unary_set.vals.map_extract.path.steps.add().name = 'range_limit'
     self.assertEqual(expected_constr, self.pb.constraints[expected_name])
 
     expected_constr = edgir.ValueExpr()
-    expected_constr.binary.op = edgir.BinaryExpr.SUBSET
+    expected_constr.binary.op = edgir.BinaryExpr.WITHIN
     expected_constr.binary.lhs.ref.steps.add().name = 'source'
     expected_constr.binary.lhs.ref.steps.add().name = 'range_param'
     expected_constr.binary.rhs.ref.steps.add().name = 'range_param_sink_common'

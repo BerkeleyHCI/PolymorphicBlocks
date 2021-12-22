@@ -19,7 +19,6 @@ from .MultiBiDict import MultiBiDict
 from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_library
 from .Blocks import BasePort, BaseBlock
 from . import TransformUtil
-from . import edgir
 
 from .HdlInterfaceServer import HdlInterface
 from .BufferSerializer import BufferDeserializer, BufferSerializer

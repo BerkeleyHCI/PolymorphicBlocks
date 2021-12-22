@@ -5,11 +5,11 @@ from functools import reduce
 from itertools import chain
 from typing import *
 
-from . import edgir
+import edgir
 from .Binding import Binding, ParamBinding, ParamVariableBinding, BoolLiteralBinding, IntLiteralBinding, \
-  FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, ReductionOpBinding, \
-  BinaryOpBinding, IfThenElseBinding
-from .Binding import ReductionOp, BinaryNumOp, BinaryBoolOp
+  FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
+  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, IfThenElseBinding
+from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
 from .Builder import builder
 from .Core import Refable
 from .IdentityDict import IdentityDict
@@ -93,7 +93,7 @@ class ConstraintExpr(Refable, Generic[WrappedType]):
   # for now we define that all constraints can be checked for equivalence
   def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
     # TODO: avoid creating excess BoolExpr
-    return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), BinaryBoolOp.eq))
+    return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
 
 
 BoolLike = Union[bool, 'BoolExpr']
@@ -116,7 +116,10 @@ class BoolExpr(ConstraintExpr[bool]):
     return pb
 
   @classmethod
-  def _create_binary_op(cls, lhs: BoolExpr, rhs: BoolExpr, op: BinaryBoolOp) -> BoolExpr:  # TODO dedup w/ NumLike
+  def _create_binary_op(cls,
+                        lhs: BoolExpr,
+                        rhs: BoolExpr,
+                        op: Union[NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp]) -> BoolExpr:  # TODO dedup w/ NumLike
     """Creates a new expression that is the result of a binary operation on inputs"""
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
@@ -126,25 +129,29 @@ class BoolExpr(ConstraintExpr[bool]):
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
   def __and__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryBoolOp.op_and)
+    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_and)
 
   def __rand__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryBoolOp.op_and)
+    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_and)
 
   def __or__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryBoolOp.op_or)
+    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_or)
 
   def __ror__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryBoolOp.op_or)
+    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_or)
 
   def __xor__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryBoolOp.op_xor)
+    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_xor)
 
   def __rxor__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryBoolOp.op_xor)
+    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_xor)
 
   def implies(self, target: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(target), BinaryBoolOp.implies)
+    return self._create_binary_op(self, self._to_expr_type(target), BoolOp.implies)
+
+  def __bnot__(self) -> BoolExpr:
+    return self._new_bind(UnaryOpBinding(self,BoolOp.op_not))
+
 
   IteType = TypeVar('IteType', bound=ConstraintExpr)
   def then_else(self, then_val: IteType, else_val: IteType) -> IteType:
@@ -186,7 +193,19 @@ class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCasta
     raise NotImplementedError
 
   @classmethod
-  def _create_binary_op(cls, lhs: SelfType, rhs: SelfType, op: Union[BinaryNumOp, ReductionOp]) -> SelfType:
+  def _create_unary_op(cls,
+                       var: SelfType,
+                       op: NumericOp) -> SelfType:
+    """Creates a new expression that is the result of a unary operation on the input"""
+
+    assert var._is_bound()
+    return var._new_bind(UnaryOpBinding(var, op))
+
+  @classmethod
+  def _create_binary_op(cls,
+                        lhs: SelfType,
+                        rhs: SelfType,
+                        op: Union[NumericOp,RangeSetOp]) -> SelfType:
     """Creates a new expression that is the result of a binary operation on inputs"""
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
@@ -195,32 +214,41 @@ class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCasta
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
+  def __neg__(self: NumLikeSelfType) -> NumLikeSelfType:
+    return self._create_unary_op(self, NumericOp.negate)
+
+  def __mul_inv__(self: NumLikeSelfType) -> NumLikeSelfType:
+    return self._create_unary_op(self, NumericOp.invert)
+
   def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.add)
+    return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
 
   def __radd__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.add)
+    return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.add)
 
   def __sub__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.sub)
+    return self.__add__(self._to_expr_type(rhs).__neg__())
 
   def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.sub)
+    return self.__neg__().__radd__(self._to_expr_type(lhs))
 
   def __mul__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.mul)
+    return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.mul)
 
   def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.mul)
+    return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
 
   def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BinaryNumOp.div)
+    return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
 
   def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BinaryNumOp.div)
+    return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
 
   @classmethod
-  def _create_bool_op(cls, lhs: ConstraintExpr, rhs: ConstraintExpr, op: BinaryBoolOp) -> BoolExpr:
+  def _create_bool_op(cls,
+                      lhs: ConstraintExpr,
+                      rhs: ConstraintExpr,
+                      op:  Union[BoolOp,EqOp,OrdOp]) -> BoolExpr:
     if not isinstance(lhs, ConstraintExpr):
       raise TypeError(f"op args must be of type ConstraintExpr, got {lhs} of type {type(lhs)}")
     if not isinstance(rhs, ConstraintExpr):
@@ -229,19 +257,19 @@ class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCasta
     return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
 
   def __ne__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ne)
+    return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
 
   def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.gt)
+    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
 
   def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.ge)
+    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
 
   def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.lt)
+    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
 
   def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), BinaryBoolOp.le)
+    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
 
 
 IntLike = Union['IntExpr', int]
@@ -281,10 +309,10 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
     return pb
 
   def min(self, other: FloatLike) -> FloatExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.min)
+    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.min)
 
   def max(self, other: FloatLike) -> FloatExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.max)
+    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.max)
 
 
 RangeLit = Tuple[FloatLit, FloatLit]
@@ -301,14 +329,16 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
   EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
   EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
 
-  def __init__(self, initializer: Optional[RangeLike] = None):
+  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
     # must cast non-empty initializer type, because range supports wider initializers
     # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
     if initializer is not None and not isinstance(initializer, RangeExpr):
       initializer = self._to_expr_type(initializer)
     super().__init__(initializer)
-    self._lower = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.min)))
-    self._upper = FloatExpr()._bind(ParamVariableBinding(ReductionOpBinding(self, ReductionOp.max)))
+    self._lower = FloatExpr()._bind(ParamVariableBinding(
+      UnaryOpBinding(self, RangeSetOp.min)))
+    self._upper = FloatExpr()._bind(ParamVariableBinding(
+      UnaryOpBinding(self, RangeSetOp.max)))
 
   @classmethod
   def _to_expr_type(cls, input: RangeLike) -> RangeExpr:
@@ -346,19 +376,19 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     return pb
 
   def within(self, item: RangeLike) -> BoolExpr:
-    return self._create_bool_op(self, RangeExpr._to_expr_type(item), BinaryBoolOp.subset)
+    return self._create_bool_op(self, RangeExpr._to_expr_type(item), OrdOp.within)
 
   def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
     if isinstance(item, (RangeExpr, tuple, Range)):
       return RangeExpr._to_expr_type(item).within(self)
     elif isinstance(item, (int, float, FloatExpr)):
-      return self._create_bool_op(FloatExpr._to_expr_type(item), self, BinaryBoolOp.subset)
+      return self._create_bool_op(FloatExpr._to_expr_type(item), self, OrdOp.within)
 
   def intersect(self, other: RangeLike) -> RangeExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.intersection)
+    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.intersection)
 
   def hull(self, other: RangeLike) -> RangeExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, ReductionOp.hull)
+    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.hull)
 
   def lower(self) -> FloatExpr:
     return self._lower
@@ -367,7 +397,10 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     return self._upper
 
   @classmethod
-  def _create_range_float_binary_op(cls, lhs: RangeExpr, rhs: Union[RangeExpr, FloatExpr], op: BinaryNumOp) -> RangeExpr:
+  def _create_range_float_binary_op(cls,
+                                    lhs: RangeExpr,
+                                    rhs: Union[RangeExpr, FloatExpr],
+                                    op: Union[NumericOp]) -> RangeExpr:
     """Creates a new expression that is the result of a binary operation on inputs"""
     if not isinstance(lhs, RangeExpr):
       raise TypeError(f"range mul and div lhs must be range type, "
@@ -388,7 +421,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
       rhs_cast = self._to_expr_type(rhs)  # type: ignore
     else:
       rhs_cast = rhs
-    return self._create_range_float_binary_op(self, rhs_cast, BinaryNumOp.mul)
+    return self._create_range_float_binary_op(self, rhs_cast, NumericOp.mul)
 
   # special option to allow range / float
   def __truediv__(self, rhs: RangeLike) -> RangeExpr:
@@ -398,8 +431,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
       rhs_cast = self._to_expr_type(rhs)  # type: ignore
     else:
       rhs_cast = rhs
-    return self._create_range_float_binary_op(self, rhs_cast, BinaryNumOp.div)
-
+    return self * rhs_cast.__mul_inv__()
 
 StringLike = Union['StringExpr', str]
 class StringExpr(ConstraintExpr[str]):

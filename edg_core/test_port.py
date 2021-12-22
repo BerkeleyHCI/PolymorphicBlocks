@@ -1,7 +1,7 @@
 import unittest
 from typing import cast
-from . import edgir
 
+import edgir
 from .test_elaboration_common import TestPortBase, TestPortSource
 
 

@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.expr.expr
-import edg.lit.lit
-import edg.ref.ref
+import edgir.expr.expr
+import edgir.lit.lit
+import edgir.ref.ref
 import edg.wir.{DesignPath, IndirectDesignPath}
 
 import scala.collection.Set
@@ -38,9 +38,7 @@ class ExprToString() extends ValueExprMap[String] {
     object InfixOp {
       def unapply(op: Op): Option[String] = op match {
         case Op.ADD => Some("+")
-        case Op.SUB => Some("-")
-        case Op.MULT => Some("×")
-        case Op.DIV => Some("÷")
+       case Op.MULT => Some("×")
         case Op.AND => Some("&&")
         case Op.OR => Some("||")
         case Op.XOR => Some("^")
@@ -53,20 +51,20 @@ class ExprToString() extends ValueExprMap[String] {
         case Op.LTE => Some("≤")
         case Op.MAX | Op.MIN => None
         case Op.INTERSECTION => Some("∩")
-        case Op.SUBSET => Some("⊆")
         case Op.HULL => Some("h∪")
+        case Op.WITHIN => Some("⊆")
         case Op.RANGE => None
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
     }
     object PrefixOp {
       def unapply(op: Op): Option[String] = op match {
-        case Op.ADD | Op.SUB | Op.MULT | Op.DIV => None
+        case Op.ADD | Op.MULT => None
         case Op.AND | Op.OR | Op.XOR | Op.IMPLIES | Op.EQ | Op.NEQ => None
         case Op.GT | Op.GTE | Op.LT | Op.LTE => None
         case Op.MAX => Some("max")
         case Op.MIN => Some("min")
-        case Op.INTERSECTION | Op.HULL | Op.SUBSET => None
+        case Op.INTERSECTION | Op.HULL | Op.WITHIN => None
         case Op.RANGE => Some("range")
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
@@ -80,8 +78,51 @@ class ExprToString() extends ValueExprMap[String] {
     case op => s"unknown[$op]($lhs, $rhs)"
   }
 
-  private object ReductionExprOp {
-    import expr.ReductionExpr.Op
+  private object BinarySetExprOp {
+    import expr.BinarySetExpr.Op
+    object InfixOp {
+      def unapply(op: Op): Option[String] = op match {
+        case Op.ADD => Some("+")
+        case Op.MULT => Some("×")
+        case Op.UNDEFINED | Op.Unrecognized(_) => None
+      }
+    }
+    object PrefixOp {
+      def unapply(op: Op): Option[String] = op match {
+        case Op.ADD | Op.MULT => None
+        case Op.UNDEFINED | Op.Unrecognized(_) => None
+      }
+    }
+  }
+
+  override def mapBinarySet(binarySet: expr.BinarySetExpr,
+                            lhsset: String, rhs: String): String = binarySet.op match {
+    case BinarySetExprOp.InfixOp(op) => s"($lhsset $op $rhs)"
+    case BinarySetExprOp.PrefixOp(op) => s"$op($lhsset, $rhs)"
+    case op => s"unknown[$op]($lhsset, $rhs)"
+  }
+
+  private object UnaryExprOp {
+    import expr.UnaryExpr.Op
+    def unapply(op: Op): Option[String] = op match {
+      case Op.NEGATE => Some("negate")
+      case Op.NOT => Some("not")
+      case Op.INVERT => Some("invert")
+      case Op.MIN => Some("min")
+      case Op.MAX => Some("max")
+      case Op.CENTER => Some("center")
+      case Op.WIDTH => Some("width")
+      case Op.UNDEFINED | Op.Unrecognized(_) => None
+    }
+  }
+
+  override def mapUnary(unary: expr.UnaryExpr, `val`: String): String = unary.op match {
+    case UnaryExprOp(op) => s"$op(${`val`})"
+    case op => s"unknown[$op](${`val`})"
+  }
+
+  private object UnarySetExprOp {
+    import expr.UnarySetExpr.Op
     def unapply(op: Op): Option[String] = op match {
       case Op.SUM => Some("sum")
       case Op.ALL_TRUE => Some("allTrue")
@@ -93,12 +134,14 @@ class ExprToString() extends ValueExprMap[String] {
       case Op.SET_EXTRACT => Some("setExtract")
       case Op.INTERSECTION => Some("intersection")
       case Op.HULL => Some("hull")
+      case Op.NEGATE => Some("negate")
+      case Op.INVERT => Some("invert")
       case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }
 
-  override def mapReduce(reduce: expr.ReductionExpr, vals: String): String = reduce.op match {
-    case ReductionExprOp(op) => s"$op(${vals})"
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String): String = unarySet.op match {
+    case UnarySetExprOp(op) => s"$op(${vals})"
     case op => s"unknown[$op](${vals})"
   }
 

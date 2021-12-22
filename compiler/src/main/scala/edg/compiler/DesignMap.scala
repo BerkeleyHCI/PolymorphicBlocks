@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.elem.elem
-import edg.schema.schema
-import edg.ref.ref
+import edgir.elem.elem
+import edgir.schema.schema
+import edgir.ref.ref
 import edg.wir.{ProtoUtil, DesignPath}
 import edg.util.SeqMapSortableFrom._
 

@@ -3,7 +3,8 @@ from typing import Optional, Any, Type, Iterable, Union
 import os
 import subprocess
 
-from . import edgir, edgrpc
+import edgir
+import edgrpc
 from .BufferSerializer import BufferSerializer, BufferDeserializer
 from .Core import builder
 from .HierarchyBlock import Block
@@ -23,7 +24,8 @@ class CompiledDesign:
     self.values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
       for value in compiled.solvedValues}
 
-  def get_value(self, path: Iterable[Union[str, 'edgir.ReservedValue']]) -> Optional[edgir.LitTypes]:
+  # Reserved.V is a string because it doesn't load properly at runtime
+  def get_value(self, path: Iterable[Union[str, 'edgir.Reserved.V']]) -> Optional[edgir.LitTypes]:
     path_key = edgir.LocalPathList(path).SerializeToString()
     return self.values.get(path_key, None)
 

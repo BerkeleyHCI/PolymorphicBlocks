@@ -1,6 +1,7 @@
 import sys
 
-from edg_core import HdlInterface, edgrpc
+import edgrpc
+from edg_core import HdlInterface
 from edg_core import BufferDeserializer, BufferSerializer
 
 # This magic line of code makes the reloading in HdlInterfaceServer not break.

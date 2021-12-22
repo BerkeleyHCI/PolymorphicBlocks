@@ -1,12 +1,12 @@
 from types import ModuleType
-from typing import Optional, Set, Dict, Type, cast, List, Any
+from typing import Optional, Set, Dict, Type, cast, List
 
-import builtins
 import importlib
 import inspect
 import sys
 
-from . import edgrpc, edgir
+import edgir
+import edgrpc
 from .Core import builder, LibraryElement
 from .Blocks import Link
 from .HierarchyBlock import Block, GeneratorBlock

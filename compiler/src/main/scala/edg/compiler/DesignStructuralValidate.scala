@@ -1,7 +1,7 @@
 package edg.compiler
 
-import edg.elem.elem
-import edg.ref.ref
+import edgir.elem.elem
+import edgir.ref.ref
 import edg.wir.DesignPath
 
 import scala.collection.SeqMap

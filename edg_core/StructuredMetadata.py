@@ -2,7 +2,7 @@ from typing import Iterable
 
 from .Core import StructuredMetadata, Refable
 from .IdentityDict import IdentityDict
-from . import edgir
+import edgir
 
 class MetaNamespaceOrder(StructuredMetadata):
   def __init__(self):

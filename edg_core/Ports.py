@@ -4,7 +4,7 @@ from abc import abstractmethod
 from itertools import chain
 from typing import *
 
-from . import edgir
+import edgir
 from .Binding import ParamBinding, IsConnectedBinding, ParamVariableBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr

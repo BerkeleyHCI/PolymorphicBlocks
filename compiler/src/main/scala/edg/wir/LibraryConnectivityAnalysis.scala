@@ -1,7 +1,7 @@
 package edg.wir
 
-import edg.ref.ref
-import edg.elem.elem
+import edgir.ref.ref
+import edgir.elem.elem
 
 
 object LibraryConnectivityAnalysis {

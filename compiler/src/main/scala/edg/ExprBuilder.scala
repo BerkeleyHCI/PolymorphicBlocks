@@ -4,11 +4,11 @@ package edg
 /** Convenience functions for building edg ir expression trees with less proto boilerplate
   */
 object ExprBuilder {
-  import edg.common.common
-  import edg.expr.expr
-  import edg.init.init
-  import edg.lit.lit
-  import edg.ref.ref
+  import edgir.common.common
+  import edgir.expr.expr
+  import edgir.init.init
+  import edgir.lit.lit
+  import edgir.ref.ref
 
   object ValueExpr {
     def Literal(literal: lit.ValueLit): expr.ValueExpr = expr.ValueExpr(expr = expr.ValueExpr.Expr.Literal(literal))
@@ -33,8 +33,16 @@ object ExprBuilder {
       expr = expr.ValueExpr.Expr.Binary(expr.BinaryExpr(op = op, lhs = Some(lhs), rhs = Some(rhs)))
     )
 
-    def Reduce(op: expr.ReductionExpr.Op, vals: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Reduce(expr.ReductionExpr(op = op, vals = Some(vals)))
+    def BinSetOp(op: expr.BinarySetExpr.Op, lhs: expr.ValueExpr, rhs: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.BinarySet(expr.BinarySetExpr(op = op, lhset = Some(lhs), rhs = Some(rhs)))
+    )
+
+    def UnaryOp(op: expr.UnaryExpr.Op, vals: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.Unary(expr.UnaryExpr(op = op, `val` = Some(vals)))
+    )
+
+    def UnarySetOp(op: expr.UnarySetExpr.Op, vals: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.UnarySet(expr.UnarySetExpr(op = op, vals = Some(vals)))
     )
 
     def IfThenElse(cond: expr.ValueExpr, tru: expr.ValueExpr, fal: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(

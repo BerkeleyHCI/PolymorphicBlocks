@@ -1,6 +1,7 @@
 from typing import *
 import unittest
 
+import edgir
 from . import *
 from .test_common import TestBlockSource, TestBlockSink, TestPortSink, TestPortSource
 

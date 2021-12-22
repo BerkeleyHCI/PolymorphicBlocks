@@ -1,6 +1,6 @@
 package edg
 
-import edg.ref.ref
+import edgir.ref.ref
 
 object EdgirUtils {
   implicit class SimpleLibraryPath(path: ref.LibraryPath) {
