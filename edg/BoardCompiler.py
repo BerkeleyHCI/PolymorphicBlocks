@@ -1,11 +1,14 @@
-from typing import Type
+from typing import Type, Optional, cast
+from types import ModuleType
 
 import os
 from contextlib import suppress
-from edg_core import Block, ScalaCompiler, CompiledDesign
+from edg_core import Block, Link, Bundle, Port, ScalaCompiler, CompiledDesign
 from electronics_model import footprint, NetlistGenerator
-
+from edg_core.HdlInterfaceServer import LibraryElementResolver
+from edg_core.Builder import builder
 from .SchematicStubGenerator import write_schematic_stubs
+import edgir
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str,
@@ -53,3 +56,47 @@ def compile_board_inplace(design: Type[Block], errors_fatal: bool = True) -> Com
     print(f"error during compilation: \n{compiled.result.error}")
 
   return compiled
+
+
+def dump_library(module : ModuleType,
+                 target_dir: Optional[str] = None,
+                 target_name: Optional[str] = None,
+                 print_log : bool = False):
+
+  def log(s:str):
+    if print_log: print(s)
+
+  library = LibraryElementResolver()
+  library.load_module(module)
+  pb = edgir.Library()
+  target_dir = target_dir if target_dir else os.getcwd()
+  target_name = target_name if target_name else 'library'
+  output_file = os.path.join(target_dir, f'{target_name}.edg')
+
+  count = 0
+  for (name, cls) in library.lib_class_map.items():
+    obj = cls()
+    if isinstance(obj, Block):
+      log(f"Dumping block {name}")
+      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {cls}")
+      pb.root.members[name].hierarchy_block.CopyFrom(block_proto)
+    elif isinstance(obj, Link):
+      log(f"Dumping link {name}")
+      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {cls}")
+      assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
+      pb.root.members[name].link.CopyFrom(link_proto)
+    elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
+      log(f"Dumping bundle {name}")
+      pb.root.members[name].bundle.CopyFrom(obj._def_to_proto())
+    elif isinstance(obj, Port):
+      log(f"Dumping port {name}")
+      pb.root.members[name].port.CopyFrom(cast(Port, obj._def_to_proto()))
+    else:
+      log(f"Unknown category for class {cls}")
+
+    count += 1
+
+  with open(output_file, 'wb') as file:
+    file.write(pb.SerializeToString())
+
+  log(f"Wrote {count} classes to {output_file}")
