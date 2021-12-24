@@ -226,3 +226,9 @@ class BlinkyTestCase(unittest.TestCase):
 
   def test_design_complete(self) -> None:
     compile_board_inplace(TestBlinkyComplete)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_design(
+    TestBlinkyBasic,
+    target_name="testblinkybase",
+    print_log=True)

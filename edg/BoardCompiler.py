@@ -60,7 +60,7 @@ def compile_board_inplace(design: Type[Block], errors_fatal: bool = True) -> Com
 
 def dump_library(module : ModuleType,
                  target_dir: Optional[str] = None,
-                 target_name: Optional[str] = None,
+                 target_name: str = 'library',
                  print_log : bool = False):
 
   def log(s:str):
@@ -70,7 +70,6 @@ def dump_library(module : ModuleType,
   library.load_module(module)
   pb = edgir.Library()
   target_dir = target_dir if target_dir else os.getcwd()
-  target_name = target_name if target_name else 'library'
   output_file = os.path.join(target_dir, f'{target_name}.edg')
 
   count = 0
@@ -100,3 +99,31 @@ def dump_library(module : ModuleType,
     file.write(pb.SerializeToString())
 
   log(f"Wrote {count} classes to {output_file}")
+
+def dump_design(design : Type[Block],
+                target_dir : Optional[str] = None,
+                target_name : str = 'design',
+                print_log : bool = False):
+
+  def log(s:str):
+    if print_log: print(s)
+
+  target_dir = target_dir if target_dir else os.getcwd()
+  module_name = design.__module__.split(".")[-1]
+  design_name = design.__name__
+
+  if not os.path.exists(target_dir):
+    os.makedirs(target_dir)
+  assert os.path.isdir(target_dir), f"target_dir {target_dir} to compile_board must be directory"
+
+  output_file = os.path.join(target_dir, f'{target_name}.edg')
+
+  # assert isinstance(design, Block)
+
+  log(f"Dumping design {design_name}")
+  pb = builder.elaborate_toplevel(design, f"in elaborating design {design_name}")
+
+  with open(output_file, 'wb') as file:
+    file.write(pb.SerializeToString())
+
+  log(f"Wrote {design_name} to {output_file}")
