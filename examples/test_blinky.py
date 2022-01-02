@@ -1,7 +1,7 @@
 import unittest
 
 from edg import *
-
+import edg
 
 class TestBlinkyBasic(BoardTop):
   def contents(self):
@@ -182,6 +182,7 @@ class TestBlinkyComplete(BoardTop):
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
+
     with self.implicit_connect(
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
@@ -228,7 +229,11 @@ class BlinkyTestCase(unittest.TestCase):
     compile_board_inplace(TestBlinkyComplete)
 
 if __name__ == "__main__":
-  BoardCompiler.dump_design(
+  BoardCompiler.dump_examples(
     TestBlinkyBasic,
-    target_name="testblinkybase",
+    TestBlinkySimpleChain,
+    TestBlinkySimple,
+    TestBlinkyFlattened,
+    TestBlinkyComplete,
+    base_library=edg,
     print_log=True)

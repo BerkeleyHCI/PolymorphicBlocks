@@ -1,4 +1,4 @@
-from typing import Type, Optional, cast
+from typing import Type, Optional, cast, Dict, Any, Mapping
 from types import ModuleType
 
 import os
@@ -7,9 +7,12 @@ from edg_core import Block, Link, Bundle, Port, ScalaCompiler, CompiledDesign
 from electronics_model import footprint, NetlistGenerator
 from edg_core.HdlInterfaceServer import LibraryElementResolver
 from edg_core.Builder import builder
+from edg_core.Core import LibraryElement
 from .SchematicStubGenerator import write_schematic_stubs
 import edgir
-
+import pathlib
+import inspect
+import importlib
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str,
                   errors_fatal: bool = True) -> CompiledDesign:
@@ -61,6 +64,7 @@ def compile_board_inplace(design: Type[Block], errors_fatal: bool = True) -> Com
 def dump_library(module : ModuleType,
                  target_dir: Optional[str] = None,
                  target_name: str = 'library',
+                 base_library: Mapping[str,Type[LibraryElement]] = {},
                  print_log : bool = False):
 
   def log(s:str):
@@ -75,7 +79,10 @@ def dump_library(module : ModuleType,
   count = 0
   for (name, cls) in library.lib_class_map.items():
     obj = cls()
-    if isinstance(obj, Block):
+    if name in base_library:
+      log(f"Skipping {name}")
+      assert base_library[name] == cls, f"Inconsistent definitions for {name} in base and loaded library"
+    elif isinstance(obj, Block):
       log(f"Dumping block {name}")
       block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {cls}")
       pb.root.members[name].hierarchy_block.CopyFrom(block_proto)
@@ -89,11 +96,13 @@ def dump_library(module : ModuleType,
       pb.root.members[name].bundle.CopyFrom(obj._def_to_proto())
     elif isinstance(obj, Port):
       log(f"Dumping port {name}")
-      pb.root.members[name].port.CopyFrom(cast(Port, obj._def_to_proto()))
+      pb.root.members[name].port.CopyFrom(cast(edgir.Port, obj._def_to_proto()))
     else:
       log(f"Unknown category for class {cls}")
 
     count += 1
+
+  log(f"Writing library to {output_file}")
 
   with open(output_file, 'wb') as file:
     file.write(pb.SerializeToString())
@@ -118,12 +127,79 @@ def dump_design(design : Type[Block],
 
   output_file = os.path.join(target_dir, f'{target_name}.edg')
 
-  # assert isinstance(design, Block)
+  assert issubclass(design, Block), f"Designs must be blocks."
+
+  design_obj = design()
 
   log(f"Dumping design {design_name}")
-  pb = builder.elaborate_toplevel(design, f"in elaborating design {design_name}")
+  pb = builder.elaborate_toplevel(design_obj, f"in elaborating design {design_name}")
 
   with open(output_file, 'wb') as file:
     file.write(pb.SerializeToString())
 
   log(f"Wrote {design_name} to {output_file}")
+
+def dump_examples(*env_vars : Any,
+                  target_dir : Optional[str] = None,
+                  target_library_name : str = 'library_dump',
+                  target_design_suffix : str = '_dump',
+                  base_library : Optional[ModuleType] = None,
+                  print_log : bool = False):
+  """
+  Used as follows within an example:
+
+  > if __name__ == "__main__":
+  >   dump_examples(<examples go here>, print_log=True)
+  """
+
+  def log(s:str):
+    if print_log: print(s)
+  examples : Dict[str,Type[Block]] = dict()
+  example_module : ModuleType = cast(ModuleType, None)
+
+  # if called w/ `globals()` as first parameter just unpack that.
+  if len(env_vars) == 1 and isinstance(env_vars[0], dict):
+    env_vars = tuple(env_vars[0].values())
+
+  # Grab valid blocks from env_vars
+  for item in env_vars:
+    if inspect.isclass(item) and issubclass(item, Block):
+      log(f"Found example {item.__name__}")
+
+      # Make sure all examples are from the same module.
+      if example_module:
+        assert example_module == item.__module__, \
+          f"Cannot dump examples from multiple modules: {example_module} and {item.__module__}"
+      else:
+        example_module = item.__module__
+
+      examples[item.__name__] = item
+
+  example_module = importlib.import_module(example_module)
+  assert len(examples) > 0, f"No valid examples found"
+
+  # get target directory
+  if not target_dir:
+    module_file = example_module.__file__
+    target_dir = pathlib.Path(module_file).with_suffix('')
+  log(f"Dumping examples to {target_dir}")
+
+  # Dump library for base (if any)
+  base_lib : Mapping[str, Type[LibraryElement]] = dict()
+  if base_library:
+     base_lib_resolver = LibraryElementResolver()
+     base_lib_resolver.load_module(base_library)
+     base_lib = base_lib_resolver.lib_class_map
+
+  # Dump the example specific library
+  dump_library(example_module,
+               target_dir = target_dir,
+               target_name = target_library_name,
+               base_library = base_lib,
+               print_log = print_log)
+
+  for (name, example) in examples.items():
+    dump_design(example,
+                target_dir = target_dir,
+                target_name = f"{name}{target_design_suffix}",
+                print_log = print_log)
