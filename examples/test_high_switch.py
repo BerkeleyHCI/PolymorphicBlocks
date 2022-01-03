@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 
 
@@ -176,3 +176,9 @@ class TestHighSwitch(BoardTop):
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(TestHighSwitch)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    TestHighSwitch,
+    base_library=edg,
+    print_log=True)

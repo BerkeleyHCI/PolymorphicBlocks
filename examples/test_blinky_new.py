@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 
 
@@ -292,3 +292,12 @@ class BlinkyNewTestCase(unittest.TestCase):
 
   def test_design_lightsense(self) -> None:
     compile_board_inplace(NewBlinkyLightsense)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    NewBlinkyBuck,
+    NewBlinkyRefactored,
+    NewBlinkyMagsense,
+    NewBlinkyLightsense,
+    base_library=edg,
+    print_log=True)

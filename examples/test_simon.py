@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 
 
@@ -126,3 +126,9 @@ class TestSimon(BoardTop):
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(TestSimon)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    TestSimon,
+    base_library=edg,
+    print_log=True)

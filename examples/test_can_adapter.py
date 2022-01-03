@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 
 
@@ -113,3 +113,9 @@ class CanAdapter(BoardTop):
 class CanAdapterTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(CanAdapter)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    CanAdapter,
+    base_library=edg,
+    print_log=True)

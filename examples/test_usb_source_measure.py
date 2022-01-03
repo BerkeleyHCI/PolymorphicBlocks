@@ -1,4 +1,5 @@
 import unittest
+import edg
 from typing import cast
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
@@ -473,3 +474,9 @@ class UsbSourceMeasureTest(BoardTop):
 class UsbTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(UsbSourceMeasureTest)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    UsbSourceMeasureTest,
+    base_library=edg,
+    print_log=True)

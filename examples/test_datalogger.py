@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 
 
@@ -197,3 +197,9 @@ class TestDatalogger(BoardTop):
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(TestDatalogger)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    TestDatalogger,
+    base_library=edg,
+    print_log=True)

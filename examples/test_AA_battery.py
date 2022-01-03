@@ -1,5 +1,5 @@
 import unittest
-
+import edg
 from edg import *
 from electronics_lib.Batteries import AABattery
 from electronics_lib.DcDcConverters import Tps61023
@@ -28,9 +28,12 @@ class AABatteryCircuit(SimpleBoardTop):
     self.connect(self.mcu.pwr, self.swd.pwr)
 
 
-if __name__ == "__main__":
-  compile_board_inplace(AABatteryCircuit)
-
 class AABatteryCircuitTestCase(unittest.TestCase):
   def test_design_aa_battery(self) -> None:
     compile_board_inplace(AABatteryCircuit)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    AABatteryCircuit,
+    base_library=edg,
+    print_log=True)

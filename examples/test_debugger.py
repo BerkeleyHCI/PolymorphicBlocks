@@ -1,4 +1,5 @@
 import unittest
+import edg
 
 from edg import *
 
@@ -157,3 +158,9 @@ class Debugger(BoardTop):
 class DebuggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(Debugger)
+
+if __name__ == "__main__":
+  BoardCompiler.dump_examples(
+    Debugger,
+    base_library=edg,
+    print_log=True)

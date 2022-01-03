@@ -65,6 +65,7 @@ def dump_library(module : ModuleType,
                  target_dir: Optional[str] = None,
                  target_name: str = 'library',
                  base_library: Mapping[str,Type[LibraryElement]] = {},
+                 ignored_prefix: Optional[str] = None,
                  print_log : bool = False):
 
   def log(s:str):
@@ -79,7 +80,9 @@ def dump_library(module : ModuleType,
   count = 0
   for (name, cls) in library.lib_class_map.items():
     obj = cls()
-    if name in base_library:
+    if ignored_prefix and name.startswith(ignored_prefix):
+      log(f"Ignoring {name}")
+    elif name in base_library:
       log(f"Skipping {name}")
       assert base_library[name] == cls, f"Inconsistent definitions for {name} in base and loaded library"
     elif isinstance(obj, Block):
@@ -148,18 +151,27 @@ def dump_examples(*env_vars : Any,
   """
   Used as follows within an example:
 
+  > from edg import *
+  >
   > if __name__ == "__main__":
-  >   dump_examples(<examples go here>, print_log=True)
+  >   BoardCompiler.dump_examples(<examples go here>)
+
+  With printed logs and duplicate core library entries eliminated.
+
+  > import edg
+  > from edg import *
+  >
+  > if __name__ == "__main__":
+  >   BoardCompiler.dump_examples(
+  >     <examples go here>,
+  >     base_library=edg,
+  >     print_log=True)
   """
 
   def log(s:str):
     if print_log: print(s)
   examples : Dict[str,Type[Block]] = dict()
   example_module : ModuleType = cast(ModuleType, None)
-
-  # if called w/ `globals()` as first parameter just unpack that.
-  if len(env_vars) == 1 and isinstance(env_vars[0], dict):
-    env_vars = tuple(env_vars[0].values())
 
   # Grab valid blocks from env_vars
   for item in env_vars:
