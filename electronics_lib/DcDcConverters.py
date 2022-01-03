@@ -1,11 +1,12 @@
 from electronics_abstract_parts import *
 
-class Tps61023_Device(DiscreteChip, FootprintBlock):
+
+class Ltc3429_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()):
     super().__init__()
     self.vin = self.Port(VoltageSink(
-      voltage_limits=(0.5, 5.5)*Volt,
+      voltage_limits=(1.0, 4.4)*Volt,  # maximum minimum startup voltage to abs. max Vin
       current_draw=current_draw
     ))
     self.gnd = self.Port(Ground())
@@ -18,37 +19,38 @@ class Tps61023_Device(DiscreteChip, FootprintBlock):
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-6',
       {
-        '1': self.fb,
-        '2': self.vin, # en
-        '3': self.vin,
-        '4': self.gnd,
-        '5': self.sw,
-        '6': self.vout,
+        '1': self.sw,
+        '2': self.gnd,
+        '3': self.fb,
+        '4': self.vin,  # /SHDN
+        '5': self.vout,
+        '6': self.vin,
       },
-      mfr='Texas Instruments', part='TPS61023',
-      datasheet='https://www.ti.com/lit/ds/symlink/tps61023.pdf'
+      mfr='Linear Technology', part='LTC3429BES6#TRMPBF',
+      datasheet='https://www.analog.com/media/en/technical-documentation/data-sheets/3429fa.pdf'
     )
 
-class Tps61023(DiscreteBoostConverter, GeneratorBlock):
-  VALLEY_SWITCH_CURRENT_LIMIT = 3.7
-  DUTYCYCLE_MIN_LIMIT = 0.0  # goes into PFM at light load
+class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
+  """Low-input-voltage boost converter (starts as low as 0.85V).
+  Pin-compatible with the less-expensive UM3429S"""
+  NMOS_CURRENT_LIMIT = 0.6
 
   def contents(self):
     super().contents()
 
-    self.require(self.pwr_out.voltage_out.within((2.2, 5.5)*Volt))
+    self.require(self.pwr_out.voltage_out.within((2.2, 4.3)*Volt))  # >4.3v requires external diode
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
-    self.assign(self.frequency, (0.5, 1)*MHertz)
-    self.assign(self.efficiency, (0.7, 0.97))
+    self.assign(self.frequency, (380, 630)*kHertz)
+    self.assign(self.efficiency, (0.75, 0.95))  # arbitrary, >1mA load
 
     self.fb = self.Block(FeedbackVoltageDivider(
-      output_voltage=(580, 610) * mVolt,
-      impedance=(100, 300) * kOhm,
+      output_voltage=(1.192, 1.268) * Volt,
+      impedance=(40, 400) * kOhm,  # about 25 MOhm worst case input impedance, this is 100x below
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (580*mVolt / self.fb.selected_ratio.upper(),
-                 610*mVolt / self.fb.selected_ratio.lower()))
+                (1.192*Volt / self.fb.selected_ratio.upper(),
+                 1.268*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.spec_output_voltage,
@@ -62,7 +64,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
                          output_current: Range, frequency: Range,
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
                          dutycycle_limit: Range) -> None:
-    self.ic = self.Block(Tps61023_Device(
+    self.ic = self.Block(Ltc3429_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
     ))
@@ -73,7 +75,7 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
     self.connect(self.fb.gnd, self.gnd)
     self.connect(self.fb.output, self.ic.fb)
 
-    self._generate_converter(self.ic.sw, self.VALLEY_SWITCH_CURRENT_LIMIT,
+    self._generate_converter(self.ic.sw, self.NMOS_CURRENT_LIMIT,  # 600 mAmp NMOS current limit
                              input_voltage=input_voltage, output_voltage=output_voltage,
                              output_current_max=output_current.upper, frequency=frequency,
                              spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
@@ -83,8 +85,9 @@ class Tps61023(DiscreteBoostConverter, GeneratorBlock):
     # TODO add constraint on effective inductance and capacitance range
     self.connect(self.pwr_out, self.ic.vout.as_voltage_source(
       voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
-      current_limits=(0, self.VALLEY_SWITCH_CURRENT_LIMIT)*Amp
+      current_limits=(0, self.NMOS_CURRENT_LIMIT)*Amp
     ))
+
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
@@ -235,8 +238,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.581*Volt / self.fb.ratio.upper(),
-                 0.611*Volt / self.fb.ratio.lower()))
+                (0.581*Volt / self.fb.selected_ratio.upper(),
+                 0.611*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -357,8 +360,8 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.985*Volt / self.fb.ratio.upper(),
-                 1.015*Volt / self.fb.ratio.lower()))
+                (0.985*Volt / self.fb.selected_ratio.upper(),
+                 1.015*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -460,8 +463,8 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (1.17*Volt / self.fb.ratio.upper(),
-                 1.33*Volt / self.fb.ratio.lower()))
+                (1.17*Volt / self.fb.selected_ratio.upper(),
+                 1.33*Volt / self.fb.selected_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,

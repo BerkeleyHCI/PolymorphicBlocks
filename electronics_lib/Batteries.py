@@ -63,5 +63,5 @@ class AABattery(Battery, FootprintBlock):
         '1': self.pwr,
         '2': self.gnd,
       },
-      mfr='Keystone', part='2461'
+      mfr='Keystone', part='2460'
     )
