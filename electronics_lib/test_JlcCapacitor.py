@@ -30,7 +30,6 @@ class CapacitorTestCase(unittest.TestCase):
     self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Capacitor_SMD:C_0603_1608Metric')
     self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
     self.assertEqual(compiled.get_value(['dut', 'value']), 'X7R ±10% 50V 10nF 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS')
-    self.assertEqual(compiled.get_value(['dut', 'part']), '0603B103K500NT')
     self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C57112')
 
 
