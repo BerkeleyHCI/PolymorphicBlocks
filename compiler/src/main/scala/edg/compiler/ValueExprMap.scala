@@ -1,8 +1,8 @@
 package edg.compiler
 
-import edg.lit.lit
-import edg.ref.ref
-import edg.expr.expr
+import edgir.lit.lit
+import edgir.ref.ref
+import edgir.expr.expr
 
 
 /**
@@ -15,7 +15,9 @@ trait ValueExprMap[OutputType] {
     valueExpr.expr match {
       case expr.ValueExpr.Expr.Literal(valueExpr) => mapLiteral(valueExpr)  // no recursion, so direct map call
       case expr.ValueExpr.Expr.Binary(valueExpr) => wrapBinary(valueExpr)
-      case expr.ValueExpr.Expr.Reduce(valueExpr) => wrapReduce(valueExpr)
+      case expr.ValueExpr.Expr.BinarySet(valueExpr) => wrapBinarySet(valueExpr)
+      case expr.ValueExpr.Expr.Unary(valueExpr) => wrapUnary(valueExpr)
+      case expr.ValueExpr.Expr.UnarySet(valueExpr) => wrapUnarySet(valueExpr)
       case expr.ValueExpr.Expr.Struct(valueExpr) => wrapStruct(valueExpr)
       case expr.ValueExpr.Expr.Range(valueExpr) => wrapRange(valueExpr)
       case expr.ValueExpr.Expr.IfThenElse(valueExpr) => wrapIfThenElse(valueExpr)
@@ -35,8 +37,12 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapLiteral for $literal")
   def mapBinary(binary: expr.BinaryExpr, lhs: OutputType, rhs: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapBinary for $binary")
-  def mapReduce(reduce: expr.ReductionExpr, vals: OutputType): OutputType =
-    throw new NotImplementedError(s"Undefined mapReduce for $reduce")
+  def mapBinarySet(binarySet: expr.BinarySetExpr, lhsset: OutputType, rhs: OutputType): OutputType =
+    throw new NotImplementedError(s"Undefined mapBinarySet for $binarySet")
+  def mapUnary(unary: expr.UnaryExpr, `val`: OutputType): OutputType =
+    throw new NotImplementedError(s"Undefined mapUnary for $unary")
+  def mapUnarySet(unarySet: expr.UnarySetExpr, vals: OutputType): OutputType =
+    throw new NotImplementedError(s"Undefined mapBinarySet for $unarySet")
   def mapStruct(struct: expr.StructExpr, vals: Map[String, OutputType]): OutputType =
     throw new NotImplementedError(s"Undefined mapStruct for $struct")
   def mapRange(range: expr.RangeExpr, minimum: OutputType, maximum: OutputType): OutputType =
@@ -60,8 +66,14 @@ trait ValueExprMap[OutputType] {
   def wrapBinary(binary: expr.BinaryExpr): OutputType = {
     mapBinary(binary, map(binary.lhs.get), map(binary.rhs.get))
   }
-  def wrapReduce(reduce: expr.ReductionExpr): OutputType = {
-    mapReduce(reduce, map(reduce.vals.get))
+  def wrapBinarySet(binarySet: expr.BinarySetExpr): OutputType = {
+    mapBinarySet(binarySet, map(binarySet.lhset.get), map(binarySet.rhs.get))
+  }
+  def wrapUnary(unary: expr.UnaryExpr): OutputType = {
+    mapUnary(unary, map(unary.`val`.get))
+  }
+  def wrapUnarySet(unarySet: expr.UnarySetExpr): OutputType = {
+    mapUnarySet(unarySet, map(unarySet.vals.get))
   }
   def wrapStruct(struct: expr.StructExpr): OutputType = {
     mapStruct(struct, struct.vals.view.mapValues(value => map(value)).toMap)

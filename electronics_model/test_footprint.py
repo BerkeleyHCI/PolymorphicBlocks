@@ -1,6 +1,6 @@
-from typing import *
 import unittest
 
+import edgir
 from edg_core import *
 from . import *
 

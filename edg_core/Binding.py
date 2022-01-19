@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from enum import Enum
+from enum import Enum, auto
 from itertools import chain
 from typing import *
 
-from . import edgir
+import edgir
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Range import Range
@@ -16,39 +16,54 @@ if TYPE_CHECKING:
   from .Blocks import BaseBlock
   from .ConstraintExpr import ConstraintExpr, FloatExpr, BoolExpr
 
+## These are split mostly to let us have some finer grained types on various
+## binding helper functions.
 
-class ReductionOp(Enum):
-  min = 0
-  max = 1
-  sum = 2
-  equal_any = 3
-  all_equal = 4
-  all_unique = 5
-  intersection = 6
-  hull = 7
-  op_and = 8
-  op_or = 9
+class NumericOp(Enum):
 
+  # Additive
+  add = auto()
+  negate = auto()
+  sum = auto()
 
-class BinaryNumOp(Enum):
-  add = 0
-  sub = 1
-  mul = 2
-  div = 3
+  # Multiplicative
+  mul = auto()
+  invert = auto()
 
+class BoolOp(Enum):
+  op_and = auto()
+  op_not = auto()
+  op_or = auto()
+  op_xor = auto()
+  implies = auto()
 
-class BinaryBoolOp(Enum):
-  eq = 0
-  ne = 1
-  lt = 2
-  le = 3
-  gt = 4
-  ge = 5
-  subset = 6
-  op_and = 7,
-  op_or = 8,
-  op_xor = 9,
-  implies = 10,
+class EqOp(Enum):
+  eq = auto()
+  ne = auto()
+  all_equal = auto()
+  all_unique = auto()
+
+class OrdOp(Enum):
+  # Ordering
+  ge = auto()
+  gt = auto()
+  le = auto()
+  lt = auto()
+  within = auto()
+
+class RangeSetOp(Enum):
+  # Range/Set
+  max = auto()
+  min = auto()
+
+  # Range
+  hull = auto()
+  intersection = auto()
+  center = auto()
+  width = auto()
+
+  # Set
+  equal_any = auto()
 
 
 class Binding:
@@ -199,23 +214,21 @@ class RangeBuilderBinding(Binding):
     pb.binary.rhs.CopyFrom(self.upper._expr_to_proto(ref_map))
     return pb
 
-
-class ReductionOpBinding(Binding):
+class UnaryOpBinding(Binding):
   def __repr__(self) -> str:
-    return f"ReductionOp({self.op}, ...)"
+    return f"UnaryOp({self.op}, ...)"
 
-  def __init__(self, src: ConstraintExpr, op: ReductionOp):
+  def __init__(self,
+               src: ConstraintExpr,
+               op: Union[NumericOp,BoolOp,RangeSetOp]):
     self.op_map = {
-      ReductionOp.min: edgir.ReductionExpr.MINIMUM,
-      ReductionOp.max: edgir.ReductionExpr.MAXIMUM,
-      ReductionOp.sum: edgir.ReductionExpr.SUM,
-      ReductionOp.equal_any: edgir.ReductionExpr.SET_EXTRACT,
-      ReductionOp.all_equal: edgir.ReductionExpr.ALL_EQ,
-      ReductionOp.all_unique: edgir.ReductionExpr.ALL_UNIQUE,
-      ReductionOp.intersection: edgir.ReductionExpr.INTERSECTION,
-      ReductionOp.hull: edgir.ReductionExpr.HULL,
-      ReductionOp.op_and: edgir.ReductionExpr.ALL_TRUE,
-      ReductionOp.op_or: edgir.ReductionExpr.ANY_TRUE,
+      NumericOp.negate: edgir.UnaryExpr.NEGATE,
+      NumericOp.invert: edgir.UnaryExpr.INVERT,
+      BoolOp.op_not: edgir.UnaryExpr.NOT,
+      RangeSetOp.min: edgir.UnaryExpr.MIN,
+      RangeSetOp.max: edgir.UnaryExpr.MAX,
+      RangeSetOp.center: edgir.UnaryExpr.CENTER,
+      RangeSetOp.width: edgir.UnaryExpr.WIDTH,
     }
 
     super().__init__()
@@ -225,38 +238,81 @@ class ReductionOpBinding(Binding):
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.src._get_exprs())
 
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+  def expr_to_proto(self, expr: ConstraintExpr,
+                    ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
-    pb.reduce.op = self.op_map[self.op]
-    pb.reduce.vals.CopyFrom(self.src._expr_to_proto(ref_map))
+    pb.unary.op = self.op_map[self.op]
+    pb.unary.val.CopyFrom(self.src._expr_to_proto(ref_map))
     return pb
 
+class UnarySetOpBinding(Binding):
+  def __repr__(self) -> str:
+    return f"UnarySetOp({self.op}, ...)"
+
+  def __init__(self,
+               src: ConstraintExpr,
+               op: Union[NumericOp,BoolOp,EqOp,RangeSetOp]):
+    self.op_map = {
+      NumericOp.negate :edgir.UnarySetExpr.NEGATE,
+      NumericOp.invert: edgir.UnarySetExpr.INVERT,
+      NumericOp.sum: edgir.UnarySetExpr.SUM,
+      BoolOp.op_and: edgir.UnarySetExpr.ALL_TRUE,
+      BoolOp.op_or: edgir.UnarySetExpr.ANY_TRUE,
+      EqOp.all_equal: edgir.UnarySetExpr.ALL_EQ,
+      EqOp.all_unique: edgir.UnarySetExpr.ALL_UNIQUE,
+      RangeSetOp.min: edgir.UnarySetExpr.MINIMUM,
+      RangeSetOp.max: edgir.UnarySetExpr.MAXIMUM,
+      RangeSetOp.intersection: edgir.UnarySetExpr.INTERSECTION,
+      RangeSetOp.hull: edgir.UnarySetExpr.HULL,
+      RangeSetOp.equal_any: edgir.UnarySetExpr.SET_EXTRACT,
+    }
+
+    super().__init__()
+    self.src = src
+    self.op = op
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.src._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr,
+                    ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.unary_set.op = self.op_map[self.op]
+    pb.unary_set.vals.CopyFrom(self.src._expr_to_proto(ref_map))
+    return pb
 
 class BinaryOpBinding(Binding):
   def __repr__(self) -> str:
     return f"BinaryOp({self.op}, ...)"
 
-  def __init__(self, lhs: ConstraintExpr, rhs: ConstraintExpr, op: Union[BinaryNumOp, BinaryBoolOp, ReductionOp]):
+  def __init__(self,
+               lhs: ConstraintExpr,
+               rhs: ConstraintExpr,
+               op: Union[NumericOp,BoolOp,EqOp,OrdOp,RangeSetOp]):
     self.op_map = {
-      BinaryNumOp.add: edgir.BinaryExpr.ADD,
-      BinaryNumOp.sub: edgir.BinaryExpr.SUB,
-      BinaryNumOp.mul: edgir.BinaryExpr.MULT,
-      BinaryNumOp.div: edgir.BinaryExpr.DIV,
-      BinaryBoolOp.eq: edgir.BinaryExpr.EQ,
-      BinaryBoolOp.ne: edgir.BinaryExpr.NEQ,
-      BinaryBoolOp.lt: edgir.BinaryExpr.LT,
-      BinaryBoolOp.le: edgir.BinaryExpr.LTE,
-      BinaryBoolOp.gt: edgir.BinaryExpr.GT,
-      BinaryBoolOp.ge: edgir.BinaryExpr.GTE,
-      BinaryBoolOp.subset: edgir.BinaryExpr.SUBSET,
-      BinaryBoolOp.op_and: edgir.BinaryExpr.AND,
-      BinaryBoolOp.op_or: edgir.BinaryExpr.OR,
-      BinaryBoolOp.op_xor: edgir.BinaryExpr.XOR,
-      BinaryBoolOp.implies: edgir.BinaryExpr.IMPLIES,
-      ReductionOp.min: edgir.BinaryExpr.MIN,
-      ReductionOp.max: edgir.BinaryExpr.MAX,
-      ReductionOp.intersection: edgir.BinaryExpr.INTERSECTION,
-      ReductionOp.hull: edgir.BinaryExpr.HULL,
+      # Numeric
+      NumericOp.add: edgir.BinaryExpr.ADD,
+      NumericOp.mul: edgir.BinaryExpr.MULT,
+      # Boolean
+      BoolOp.op_and: edgir.BinaryExpr.AND,
+      BoolOp.op_or: edgir.BinaryExpr.OR,
+      BoolOp.op_xor: edgir.BinaryExpr.XOR,
+      BoolOp.implies: edgir.BinaryExpr.IMPLIES,
+      # Equality
+      EqOp.eq: edgir.BinaryExpr.EQ,
+      EqOp.ne: edgir.BinaryExpr.NEQ,
+      # Ordering
+      OrdOp.lt: edgir.BinaryExpr.LT,
+      OrdOp.le: edgir.BinaryExpr.LTE,
+      OrdOp.gt: edgir.BinaryExpr.GT,
+      OrdOp.ge: edgir.BinaryExpr.GTE,
+      OrdOp.within: edgir.BinaryExpr.WITHIN,
+      # Range/Set
+      RangeSetOp.min: edgir.BinaryExpr.MIN,
+      RangeSetOp.max: edgir.BinaryExpr.MAX,
+      # Range
+      RangeSetOp.intersection: edgir.BinaryExpr.INTERSECTION,
+      RangeSetOp.hull: edgir.BinaryExpr.HULL,
     }
 
     super().__init__()
@@ -272,6 +328,35 @@ class BinaryOpBinding(Binding):
     pb.binary.op = self.op_map[self.op]
     pb.binary.lhs.CopyFrom(self.lhs._expr_to_proto(ref_map))
     pb.binary.rhs.CopyFrom(self.rhs._expr_to_proto(ref_map))
+    return pb
+
+class BinarySetOpBinding(Binding):
+  def __repr__(self) -> str:
+    return f"BinaryOp({self.op}, ...)"
+
+  def __init__(self,
+               lhset: ConstraintExpr,
+               rhs: ConstraintExpr,
+               op: NumericOp):
+    self.op_map = {
+      # Numeric
+      NumericOp.add: edgir.BinarySetExpr.ADD,
+      NumericOp.mul: edgir.BinarySetExpr.MULT,
+    }
+
+    super().__init__()
+    self.lhset = lhset
+    self.rhs = rhs
+    self.op = op
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return chain(self.lhset._get_exprs(), self.rhs._get_exprs())
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.binary_set.op = self.op_map[self.op]
+    pb.binary_set.lhset.CopyFrom(self.lhset._expr_to_proto(ref_map))
+    pb.binary_set.rhs.CopyFrom(self.rhs._expr_to_proto(ref_map))
     return pb
 
 
@@ -312,7 +397,6 @@ class IsConnectedBinding(Binding):
     pb.ref.CopyFrom(ref_map[self.src])
     pb.ref.steps.add().reserved_param = edgir.IS_CONNECTED
     return pb
-
 
 class NameBinding(Binding):
   def __repr__(self) -> str:

@@ -1,5 +1,6 @@
 import unittest
 
+import edgir
 from . import *
 from .test_elaboration_common import TestPortBase
 

@@ -1,0 +1,30 @@
+/** Defines messages for a service that provides EDG compilation services.
+    Interface to the HDL (eg, library fetch) is not included here.
+
+    This no longer uses gRPC to avoid complexity of sockets.
+*/
+syntax = "proto3";
+package edgrpc.compiler;
+
+import "edgir/schema.proto";
+import "edgir/ref.proto";
+import "edgir/lit.proto";
+import "edgrpc/hdl.proto";
+
+
+message CompilerRequest {
+  repeated string modules = 1;
+  edgir.schema.Design design = 2;
+  edgrpc.hdl.Refinements refinements = 3;
+}
+
+message CompilerResult {
+  edgir.schema.Design design = 1;
+  string error = 3;
+
+  message Value {
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
+  }
+  repeated Value solvedValues = 2;
+}

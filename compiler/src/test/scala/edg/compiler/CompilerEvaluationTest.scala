@@ -12,7 +12,7 @@ import edg.wir.{IndirectDesignPath, IndirectStep}
 /** Tests compiler parameter and expression evaluation using ASSIGN constraints.
   */
 class CompilerEvaluationTest extends AnyFlatSpec {
-  import edg.expr.expr.ReductionExpr.Op
+  import edgir.expr.expr.UnarySetExpr.Op
   val library = Library(
     ports = Seq(
       Port.Port("sourcePort",
@@ -81,10 +81,10 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         ),
         constraints = Map(
           "calcSourceFloat" -> ValueExpr.Assign(Ref("sourceFloat"), ValueExpr.Ref("source", "floatVal")),
-          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.Reduce(Op.SUM,
+          "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.UnarySetOp(Op.SUM,
             ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
           )),
-          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.Reduce(Op.INTERSECTION,
+          "calcSinkIntersect" -> ValueExpr.Assign(Ref("sinkIntersect"), ValueExpr.UnarySetOp(Op.INTERSECTION,
             ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal"))
           )),
         )

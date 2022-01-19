@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import *
 from itertools import chain
+
+import edgir
+import edgrpc
 from .HierarchyBlock import Block
-from . import edgir, edgrpc
 
 
 class Refinements():

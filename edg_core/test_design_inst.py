@@ -1,6 +1,7 @@
 from typing import *
 import unittest
 
+import edgir
 from . import *
 from edg_core.ScalaCompilerInterface import ScalaCompiler
 from .test_common import TestPortSource, TestPortSink, TestBlockSource

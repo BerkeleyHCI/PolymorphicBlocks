@@ -1,8 +1,7 @@
-from typing import *
 import unittest
 
+import edgir
 from . import test_common, test_hierarchy_block  # needed for library detection
-from . import edgir
 from .HdlInterfaceServer import LibraryElementResolver
 import importlib
 

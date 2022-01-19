@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import *
 
-from . import edgir
+import edgir
 from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
-from .ConstraintExpr import BoolExpr, ConstraintExpr, Binding, ReductionOpBinding, ReductionOp, FloatExpr, RangeExpr, \
+from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
+  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
+  FloatExpr, RangeExpr, \
   ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryBoolOp, BinaryOpBinding, BinaryNumOp
+from .Binding import LengthBinding, BinaryOpBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -46,7 +48,7 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def __init__(self, elt: ArrayType) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
-    self.elt = elt._new_bind(SampleElementBinding())
+    self.elt: ArrayType = elt._new_bind(SampleElementBinding())
 
   def _new_bind(self: SelfType, binding: Binding) -> SelfType:
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
@@ -71,42 +73,51 @@ class ArrayExpr(ConstraintExpr[Any], Generic[ArrayType]):
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
-  def create_reduce_op(self, op: ReductionOp) -> ArrayType:
-    return self.elt._new_bind(ReductionOpBinding(self, op))
+  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayType:
+    return self.elt._new_bind(UnarySetOpBinding(self, op))
 
   def sum(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.sum)
+    return self._create_unary_set_op(NumericOp.sum)
 
   def min(self) -> FloatExpr:
-    return FloatExpr()._new_bind(ReductionOpBinding(self, ReductionOp.min))
+    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min))
 
   def max(self) -> FloatExpr:
-    return FloatExpr()._new_bind(ReductionOpBinding(self, ReductionOp.max))
+    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
 
   def intersection(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.intersection)
+    return self._create_unary_set_op(RangeSetOp.intersection)
 
   def hull(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.hull)
+    return self._create_unary_set_op(RangeSetOp.hull)
 
   def equal_any(self) -> ArrayType:
-    return self.create_reduce_op(ReductionOp.equal_any)
+    return self._create_unary_set_op(RangeSetOp.equal_any)
 
   # TODO: not sure if ArrayType is being checked properly =(
   def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(ReductionOpBinding(self, ReductionOp.op_or))
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
+
+  def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
 class ArrayRangeExpr(ArrayExpr[RangeExpr]):
-  def _create_binary_op(self, lhs: ConstraintExpr, rhs: ConstraintExpr, op: BinaryNumOp) -> ArrayRangeExpr:
+  def _create_binary_set_op(self,
+                        lhs: ConstraintExpr,
+                        rhs: ConstraintExpr,
+                        op: NumericOp) -> ArrayRangeExpr:
     """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
     Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
     to ensure this makes sense. No type checking happens here."""
     assert lhs._is_bound() and rhs._is_bound()
-    return self._new_bind(BinaryOpBinding(lhs, rhs, op))
+    return self._new_bind(BinarySetOpBinding(lhs, rhs, op))
 
+  # TODO support pointwise multiply in the future
   def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
-    return self._create_binary_op(RangeExpr._to_expr_type(other), self, BinaryNumOp.div)
+    """Broadcast-pointwise invert-and-multiply (division with array as rhs)"""
+    return self._create_binary_set_op(
+      self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
 @non_library

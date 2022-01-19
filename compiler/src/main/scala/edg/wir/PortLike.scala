@@ -1,10 +1,10 @@
 package edg.wir
 
-import edg.init.init
-import edg.elem.elem
-import edg.ref.ref
-
 import scala.collection.mutable
+
+import edgir.init.init
+import edgir.elem.elem
+import edgir.ref.ref
 
 
 sealed trait PortLike extends Pathable {

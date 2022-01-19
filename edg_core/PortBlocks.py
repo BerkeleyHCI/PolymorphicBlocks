@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *
 
-from . import edgir
+import edgir
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port

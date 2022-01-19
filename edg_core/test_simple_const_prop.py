@@ -1,5 +1,6 @@
 import unittest
 
+import edgir
 from . import *
 from edg_core.ScalaCompilerInterface import ScalaCompiler
 

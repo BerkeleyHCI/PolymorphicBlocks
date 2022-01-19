@@ -1,8 +1,8 @@
 package edg.compiler
 
+import edgrpc.compiler.{compiler => edgcompiler}
+import edgrpc.compiler.compiler.{CompilerRequest, CompilerResult}
 import edg.wir.{IndirectDesignPath, Refinements}
-import edg.compiler.{compiler => edgcompiler}
-import edg.compiler.compiler.{CompilerRequest, CompilerResult}
 
 import java.io.{File, PrintWriter, StringWriter}
 
@@ -32,7 +32,7 @@ object CompilerServerMain {
       val errors = compiler.getErrors() ++ checker.map(compiled)
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
-        error = errors.mkString(", "),
+        error = errors.mkString("\n"),
         solvedValues = constPropToSolved(compiler.getAllSolved)
       )
       result
@@ -50,7 +50,7 @@ object CompilerServerMain {
     val pyLib = new PythonInterfaceLibrary()
     pyLib.withPythonInterface(pyIf) {
       while (true) {
-        val request = compiler.CompilerRequest.parseDelimitedFrom(System.in)
+        val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
         request match {
           case Some(request) =>
             val result = compile(request, pyLib)
