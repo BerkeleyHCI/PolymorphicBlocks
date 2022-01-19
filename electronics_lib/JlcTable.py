@@ -23,18 +23,24 @@ class JlcTable(CapacitorTable):
       cls.JLC_PART_NUMBER: row['LCSC Part']
     }
 
-  """Extracts out component values from the "Description" column of JlCPCB_SMT_Parts_Library.csv
+  """Uses regex to extract out component values from the "Description" column of JlCPCB_SMT_Parts_Library.csv
      Ex: Gvien 'Description' => 1MΩ ±1% ±100ppm/℃ 0.25W 1206 Chip Resistor - Surface Mount ROHS
+               'Regex_Dictionary' => {
+                 'resistance': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])($|\s)",
+                 'tolerance': "(^|\s)([\u00B1]\d+(?:\.\d*)?%)($|\s)",
+                 'power': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?W)($|\s)",
+               }
+                
          Returns resistance:  1MΩ
-                 resistance tolerance:  ±1%
-                 power dissipation:  0.25W """
+           resistance tolerance:  ±1%
+           power dissipation:  0.25W """
 
   @staticmethod
-  def parse(discription, regex_dictionary):
+  def parse(description, regex_dictionary):
     extraction_table = {}
 
     for key in regex_dictionary:
-      matches = re.findall(regex_dictionary[key], discription)
+      matches = re.findall(regex_dictionary[key], description)
       if matches:  # discard if not matched
         assert len(matches) == 1  # excess matches fail noisily
         assert key not in extraction_table  # duplicate matches fail noisily
