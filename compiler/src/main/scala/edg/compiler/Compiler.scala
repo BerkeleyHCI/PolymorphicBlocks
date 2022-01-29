@@ -20,17 +20,10 @@ object ElaborateRecord {
   case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
   case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateRecord
 
-  // Dependency target, set for a block once it is known whether all the ports are connected or not
-  // (to resolve FullConnectedPort = false), though it may not be known where they are connected to.
-  // This supports elaborating a block (or generator) when the connected-ness of its ports are not necessary
-  // or known.
-  case class BlockPortsConnected(blockPath: DesignPath) extends ElaborateRecord
-
-  // dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
-  // and inserted into the link params data structure
+  // Dependency source, when the port's CONNECTED_LINK equivalences have been elaborated,
+  // and inserted into the link params data structure.
   case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
-  // dependency source, set when CONNECTED_LINK.NAME available (if connected) or IS_CONNECTED set to false
-  case class FullConnectedPort(portPath: DesignPath) extends ElaborateRecord
+
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateRecord
 
   // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
@@ -121,16 +114,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val constProp = new ConstProp() {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
-
-      val (paramPrefix, paramSuffix) = param.steps.splitAt(param.steps.length - 2)
-      if (paramSuffix == Seq(IndirectStep.ConnectedLink, IndirectStep.Name)) {
-        require(paramPrefix.nonEmpty)
-        val paramPortPath = DesignPath() ++ paramPrefix.map(_.asInstanceOf[IndirectStep.Element].name)
-        if (directConnectedPorts.contains(paramPortPath)) {  // this (kinda) filters out non-top-level ports, which behaves weirdly
-          // TODO debug with non-top-level ports?
-          elaboratePending.setValue(ElaborateRecord.FullConnectedPort(paramPortPath), None)
-        }
-      }
     }
   }
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
@@ -183,7 +166,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   processBlock(DesignPath(), root)
   elaboratePending.setValue(ElaborateRecord.Block(DesignPath()), None)
-  elaboratePending.setValue(ElaborateRecord.BlockPortsConnected(DesignPath()), None)  // top has no ports
 
   // Actual compilation methods
   //
