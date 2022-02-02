@@ -8,6 +8,7 @@ import edgir.ref.ref.LocalPath
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
+import edg.util.IterableUtils._
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -108,29 +109,37 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     path.getTarget.getName
   }
 
+  // Working design tree data structure
+  private val root = new wir.Block(inputDesignPb.getContents, None)
+  def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
+  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
+  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+  def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
 
+  // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
+  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())  // seed with root to kick off compilation
 
+  // Design parameters solving (constraint evaluation) and assertions
   private val constProp = new ConstProp() {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
-  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
-
-  // seed const prop with path assertions
-  for ((path, value) <- refinements.instanceValues) {
+  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)  // TODO clean up this API?
+  for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
     constProp.setForcedValue(path.asIndirect, value, "path refinement")
   }
 
-  // Supplemental elaboration data structures
-  // port -> (connected link path, list of params of the connected link)
-  private val connectedLinkParams = mutable.HashMap[DesignPath, (DesignPath, Seq[IndirectStep])]()
-  // set of all connected ports, built from root inwards
-  private val directConnectedPorts = mutable.Set[DesignPath]()  // direct (indicates whether the port is involved in a connect in enclosing)
+  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
-  // TODO clean up this API?
-  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
+  // Supplemental elaboration data structures
+  // link path -> list of params
+  private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()
+  // port -> connected link path
+  private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()
+  // set of all connected ports, built from root inwards, fully set for a block's boundary ports once its parent has been elaborated
+  private val directConnectedPorts = mutable.Set[DesignPath]()  // direct (indicates whether the port is involved in a connect in enclosing)
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -156,31 +165,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   //
   def onElaborate(record: ElaborateRecord): Unit = { }
 
-  // Seed compilation with the root
-  //
-  private val root = new wir.Block(inputDesignPb.getContents, None)
-  def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
-  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
-  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
-  def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
-
-  processBlock(DesignPath(), root)
-  elaboratePending.setValue(ElaborateRecord.Block(DesignPath()), None)
-
   // Actual compilation methods
   //
+
+  // Elaborate a connection (either a connect or export), by generating bidirectional equality constraints
+  // including link parameters (through CONNECTED_LINK) and IS_CONNECTED
+  // Neither port can be an array (container) port (array connects should be expanded into individual element connects),
+  // but ports may be bundle or inner ports (in bundles or arrays).
   protected def elaborateConnect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath): Unit = {
     debug(s"Generate connect equalities for $toLinkPortPath <-> $fromLinkPortPath")
 
     // Generate port-port parameter propagation
     // All connected ports should have params
-    val toLinkPort = resolvePort(toLinkPortPath)
-    val fromLinkPort = resolvePort(fromLinkPortPath)
-    val toLinkPortParams = toLinkPort.asInstanceOf[wir.HasParams].getParams.keys
-    val fromLinkPortParams = fromLinkPort.asInstanceOf[wir.HasParams].getParams.keys
-    require(toLinkPortParams == fromLinkPortParams,
-      s"connected ports at $toLinkPortPath, $fromLinkPortPath with different params")
-    for (paramName <- toLinkPortParams) {
+    val toLinkPort = resolvePort(toLinkPortPath).asInstanceOf[wir.HasParams]
+    val fromLinkPort = resolvePort(fromLinkPortPath).asInstanceOf[wir.HasParams]
+    for (paramName <- toLinkPort.getParams.keys listEq fromLinkPort.getParams.keys) {
       constProp.addEquality(
         toLinkPortPath.asIndirect + paramName,
         fromLinkPortPath.asIndirect + paramName
@@ -194,9 +193,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     )
 
     // Generate the CONNECTED_LINK equalities
-    val (linkPath, linkParams) = connectedLinkParams(toLinkPortPath)
-    connectedLinkParams.put(fromLinkPortPath, (linkPath, linkParams))  // propagate CONNECTED_LINK params
-    for (linkParam <- linkParams) {
+    val linkPath = connectedLink(toLinkPortPath)
+    connectedLink.put(fromLinkPortPath, linkPath)  // propagate CONNECTED_LINK params
+    for (linkParam <- linkParams(linkPath)) {
       constProp.addEquality(
         toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
         fromLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
@@ -206,9 +205,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Add sub-ports to the elaboration dependency graph, as appropriate
     (toLinkPort, fromLinkPort) match {
       case (toLinkPort: wir.Bundle, fromLinkPort: wir.Bundle) =>
-        require(toLinkPort.getElaboratedPorts.keys == fromLinkPort.getElaboratedPorts.keys,
-          s"connected bundles at $toLinkPortPath, $fromLinkPortPath with different ports")
-        for (portName <- toLinkPort.getElaboratedPorts.keys) {
+        for (portName <- toLinkPort.getElaboratedPorts.keys listEq fromLinkPort.getElaboratedPorts.keys) {
           elaboratePending.addNode(
             ElaborateRecord.Connect(toLinkPortPath + portName, fromLinkPortPath + portName),
             Seq(ElaborateRecord.ConnectedLink(toLinkPortPath + portName))
