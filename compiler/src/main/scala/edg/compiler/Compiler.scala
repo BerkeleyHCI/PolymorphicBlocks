@@ -23,6 +23,7 @@ object ElaborateRecord {
 
   // Dependency source, set when the connection from the link's port to portPath have been elaborated
   // (or in the link port case, when the link has been elaborated).
+  // If the port is not connected, this is set when the port has been elaborated
   case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
 
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateRecord
@@ -138,8 +139,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()
   // port -> connected link path
   private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()
-  // set of all connected ports, built from root inwards, fully set for a block's boundary ports once its parent has been elaborated
-  private val directConnectedPorts = mutable.Set[DesignPath]()  // direct (indicates whether the port is involved in a connect in enclosing)
+  // indicates whether the port is directly connected in the enclosing block
+  private val portDirectlyConnected = mutable.HashMap[DesignPath, Boolean]()
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -171,9 +172,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   //
 
   // Elaborate a connection (either a connect or export), by generating bidirectional equality constraints
-  // including link parameters (through CONNECTED_LINK) and IS_CONNECTED
+  // including link parameters (through CONNECTED_LINK) and IS_CONNECTED.
   // Neither port can be an array (container) port (array connects should be expanded into individual element connects),
   // but ports may be bundle or inner ports (in bundles or arrays).
+  // This depends on ports on both sides having been elaborated, as well as the link's parameters being available.
   protected def elaborateConnect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath): Unit = {
     debug(s"Generate connect equalities for $toLinkPortPath <-> $fromLinkPortPath")
 
@@ -181,18 +183,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // All connected ports should have params
     val toLinkPort = resolvePort(toLinkPortPath).asInstanceOf[wir.HasParams]
     val fromLinkPort = resolvePort(fromLinkPortPath).asInstanceOf[wir.HasParams]
-    for (paramName <- toLinkPort.getParams.keys listEq fromLinkPort.getParams.keys) {
+    val connectedSteps = (toLinkPort.getParams.keys listEq fromLinkPort.getParams.keys).map(IndirectStep.Element(_)) ++
+        Seq(IndirectStep.IsConnected)
+    for (connectedStep <- connectedSteps) {
       constProp.addEquality(
-        toLinkPortPath.asIndirect + paramName,
-        fromLinkPortPath.asIndirect + paramName
+        toLinkPortPath.asIndirect + connectedStep,
+        fromLinkPortPath.asIndirect + connectedStep
       )
     }
-
-    // Generate IS_CONNECTED propagation
-    constProp.addEquality(
-      toLinkPortPath.asIndirect + IndirectStep.IsConnected,
-      fromLinkPortPath.asIndirect + IndirectStep.IsConnected
-    )
 
     // Generate the CONNECTED_LINK equalities
     val linkPath = connectedLink(toLinkPortPath)
@@ -218,85 +216,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Register port as finished
     elaboratePending.setValue(ElaborateRecord.ConnectedLink(fromLinkPortPath), None)
-  }
-
-  // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
-    for ((paramName, param) <- hasParams.getParams) {
-      constProp.addDeclaration(path + paramName, param)
-    }
-  }
-
-  // Elaborates the port, mutating it in-place. Recursive.
-  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
-    // Instantiate as needed
-    val instantiated = port match {
-      case port: wir.PortLibrary =>
-        val libraryPath = port.target
-        debug(s"Elaborate Port at $path: ${readableLibraryPath(libraryPath)}")
-
-        val portPb = library.getPort(libraryPath) match {
-          case Errorable.Success(portPb) => portPb
-          case Errorable.Error(err) =>
-            import edgir.elem.elem, edg.IrPort
-            errors += CompilerError.LibraryError(path, libraryPath, err)
-            IrPort.Port(elem.Port())
-        }
-        val newPort = wir.PortLike.fromIrPort(portPb)
-        container.elaborate(path.lastString, newPort)
-        newPort
-      case port: wir.PortArray => port  // no instantiation needed
-      case port => throw new NotImplementedError(s"unknown unelaborated port $port")
-    }
-
-    // Process and recurse as needed
-    instantiated match {
-      case port: wir.Port =>
-        processParamDeclarations(path, port)
-      case port: wir.Bundle =>
-        processParamDeclarations(path, port)
-        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort)
-        }
-      case port: wir.PortArray =>
-        // arrays have no params, but we need to instantiate the array
-        val childPortNames = constProp.getArrayElts(path) match {
-          case Some(elts) => elts
-          case None =>  // TODO can the empty case be set with everything else?
-            constProp.setArrayElts(path, Seq())
-            constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
-            Seq()
-        }
-        val childPortLibraries = (childPortNames map { childPortName =>
-          childPortName -> wir.PortLibrary.apply(port.getType)
-        }).toMap
-        port.setPorts(childPortLibraries)
-        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort)
-        }
-      case port => throw new NotImplementedError(s"unknown instantiated port $port")
-    }
-  }
-
-  protected def processPortConnected(portPath: DesignPath, port: wir.PortLike,
-                                     setConnects: Boolean): Unit = port match {
-    case port @ (_: wir.Port | _: wir.Bundle) =>
-      val isConnected = directConnectedPorts.contains(portPath)
-      if (!isConnected) {
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
-          BooleanValue(false),
-          "top isConnected")
-        elaboratePending.setValue(ElaborateRecord.FullConnectedPort(portPath), None)
-      } else if (isConnected && setConnects) {
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
-          BooleanValue(true),
-          "top isConnected")
-      }
-    case port: wir.PortArray =>
-      port.getElaboratedPorts.foreach { case (name, subport) =>
-        processPortConnected(portPath + name, subport, setConnects)
-      }
-    case port => throw new NotImplementedError(s"unknown unelaborated port $port")
   }
 
   protected def setPortConnectedLinkParams(portPath: DesignPath, port: wir.PortLike,
@@ -329,6 +248,78 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  // Called for each param declaration, currently just registers the declaration and type signature.
+  protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
+    for ((paramName, param) <- hasParams.getParams) {
+      constProp.addDeclaration(path + paramName, param)
+    }
+  }
+
+  // Elaborates the port, mutating it in-place. Recursive.
+  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
+    // Instantiate as needed
+    val instantiated = port match {
+      case port: wir.PortLibrary =>
+        val libraryPath = port.target
+        debug(s"Elaborate Port at $path: ${readableLibraryPath(libraryPath)}")
+
+        val portPb = library.getPort(libraryPath) match {
+          case Errorable.Success(portPb) => portPb
+          case Errorable.Error(err) =>
+            import edgir.elem.elem, edg.IrPort
+            errors += CompilerError.LibraryError(path, libraryPath, err)
+            IrPort.Port(elem.Port())
+        }
+        val newPort = wir.PortLike.fromIrPort(portPb)
+        container.elaborate(path.lastString, newPort)
+        newPort
+      case port: wir.PortArray => port  // no instantiation needed
+      case port => throw new NotImplementedError(s"unknown unelaborated port $port")
+    }
+
+    // If not connected, set unconnected
+    // TODO should this be set at the block level for consistency?
+    val isConnected = portDirectlyConnected.contains(path)
+    if (!isConnected) {
+      portDirectlyConnected.put(path, false)
+      elaboratePending.setValue(ElaborateRecord.ConnectedLink(path), None)
+    } else {
+      require(portDirectlyConnected(path))  // it should not have been assigned false from anywhere else
+    }
+
+    // Process and recurse as needed
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    instantiated match {
+      case port: wir.Port =>
+        processParamDeclarations(path, port)
+      case port: wir.Bundle =>
+        processParamDeclarations(path, port)
+        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
+          elaboratePort(path + childPortName, port, childPort)
+          if (isConnected) {  // propagate connected-ness only if connected
+            portDirectlyConnected.put(path, true)
+          }
+        }
+      case port: wir.PortArray =>
+        // arrays have no params, but we need to instantiate the array
+        val childPortNames = constProp.getArrayElts(path) match {
+          case Some(elts) => elts
+          case None =>  // TODO can the empty case be set with everything else?
+            constProp.setArrayElts(path, Seq())
+            constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
+            Seq()
+        }
+        val childPortLibraries = (childPortNames map { childPortName =>
+          childPortName -> wir.PortLibrary.apply(port.getType)
+        }).toMap
+        port.setPorts(childPortLibraries)
+        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
+          elaboratePort(path + childPortName, port, childPort)
+        }
+      case port => throw new NotImplementedError(s"unknown instantiated port $port")
+    }
+  }
+
   // TODO clean this up... by a lot
   def processBlocklikeConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
@@ -352,9 +343,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edgir.ref.ref
 
     // Elaborate ports, generating equivalence constraints as needed
-    // TODO support port.NAME
-    elaborateContainedPorts(path, block)
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, block)
+    for ((portName, port) <- block.getUnelaboratedPorts) {
+      elaboratePort(path + portName, block, port)
+    }
 
     // Find allocate ports and lower them before processing all constraints
     val linkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[(String, Seq[String])]]()
@@ -530,9 +523,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
 
     // Elaborate ports, generating equivalence constraints as needed
-    // TODO support port.NAME
-    elaborateContainedPorts(path, link)
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, link)
+    for ((portName, port) <- link.getUnelaboratedPorts) {
+      elaboratePort(path + portName, link, port)
+    }
+
     for ((name, port) <- link.getElaboratedPorts) {
       setPortConnectedLinkParams(path + name, port, path, link.getParams.keys.toSeq, false)
       processPortConnected(path + name, port, true)
@@ -712,18 +708,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.append(generatedDiffBlock)
   }
 
-  protected def elaborateBlockPortsConnected(blockPath: DesignPath): Unit = {
-    val block = resolveBlock(blockPath)
-    for ((name, port) <- block.getElaboratedPorts) {
-      if (!directConnectedPorts.contains(blockPath + name)) {
-        // TODO this needs to not be transitive, should only fire for the topmost disconnected
-        // TODO this is hacky, to add the recursive elaboration record
-        setPortConnectedLinkParams(blockPath + name, port, DesignPath(), Seq(), true)
-      }
-      processPortConnected(blockPath + name, port, false)
-    }
-  }
-
 
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
@@ -749,9 +733,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord@ElaborateRecord.Generator(blockPath, fnName) =>
             elaborateGenerator(blockPath, fnName)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord@ElaborateRecord.BlockPortsConnected(blockPath) =>
-            elaborateBlockPortsConnected(blockPath)
-            elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
         }
       }
@@ -766,10 +747,5 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   def getParamValue(param: IndirectDesignPath): Option[ExprValue] = constProp.getValue(param)
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
-
-  def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLinkParams.get(port) match {
-    case Some((linkPath, linkParams)) if linkPath == DesignPath() => None  // this is a hack, because disconnected ports generate a dummy entry
-    case Some((linkPath, linkParams)) => Some(linkPath)
-    case None => None
-  }
+  def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLink.get(port)
 }
