@@ -466,6 +466,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  protected def instantiateBlock(path: DesignPath, block: edgir.elem.elem.HierarchyBlock): Unit = {
+
+  }
+
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
@@ -477,7 +481,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Instantiate block from library element to wir.Block
     val parent = resolveBlock(parentPath)
     val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.BlockLibrary].target
-    debug(s"Elaborate block at $path: ${readableLibraryPath(libraryPath)}")
     val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
       case Some(refinement) => (refinement, Some(libraryPath))
       case None => refinements.classRefinements.get(libraryPath) match {
@@ -485,6 +488,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case None => (libraryPath, None)
       }
     }
+    debug(s"Elaborate block at $path: ${readableLibraryPath(refinedLibrary)}")
 
     val blockPb = library.getBlock(refinedLibrary) match {
       case Errorable.Success(blockPb) =>
@@ -497,7 +501,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         errors += CompilerError.LibraryError(path, refinedLibrary, err)
         elem.HierarchyBlock()
     }
-    val block = new wir.Block(blockPb, unrefinedType)
 
     // Populate class-based value refinements
     refinements.classValues.get(refinedLibrary) match {
@@ -509,11 +512,73 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case None =>
     }
 
-    // Process block
-    processBlock(path, block)
+    if (blockPb.generators.isEmpty) {
+      // Non-generators: directly instantiate the block
+      val block = new wir.Block(blockPb, unrefinedType)
+      processBlock(path, block)
 
-    // Link block in parent
-    parent.elaborate(name, block)
+      // Link block in parent
+      parent.elaborate(name, block)
+    } else {
+      // Generators: add to queue without changing the block
+      require(blockPb.generators.size == 1)  // TODO proper single generator structure
+      val (generatorFnName, generator) = blockPb.generators.head
+      elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
+        generator.required_params.map { depPath =>
+          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+        } ++ generator.required_ports.map { depPort =>
+          ElaborateRecord.FullConnectedPort(path ++ depPort)
+        }
+      )
+    }
+
+
+  }
+
+  /** Elaborates the generator, running it and merging the result with the block.
+    */
+  protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
+    debug(s"Elaborate generator $fnName at $blockPath")
+    val block = resolveBlock(blockPath)
+    val generator = block.getGenerators(fnName)
+    block.removeGenerator(fnName)
+
+    val reqParamValues = generator.required_params.map { reqParam =>
+      reqParam -> constProp.getValue(blockPath.asIndirect ++ reqParam).get
+    }.toMap
+    val reqPortValues = generator.required_ports.flatMap { reqPort =>
+      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
+      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ isConnectedSuffix).get
+          .asInstanceOf[BooleanValue]
+      isConnectedValue.value match {
+        case true =>
+          val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
+          val connectedNameValue = constProp.getValue(blockPath.asIndirect ++ connectedNameSuffix).get
+              .asInstanceOf[TextValue]
+          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue,
+            connectedNameSuffix.asLocalPath() -> connectedNameValue)
+        case false =>
+          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue)
+      }
+    }.toMap
+
+    // TODO pass through IS_CONNECTED
+    val generatorResult = library.runGenerator(block.getBlockClass, fnName,
+      reqParamValues ++ reqPortValues
+    )
+    val generatedPb = generatorResult match {
+      case Errorable.Success(generatedPb) =>
+        require(generatedPb.getSelfClass == block.getBlockClass)
+        block.dedupGeneratorPb(generatedPb)
+      case Errorable.Error(err) =>
+        import edgir.elem.elem
+        errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
+        elem.HierarchyBlock()
+    }
+
+    val generatedDiffBlock = new wir.Block(generatedPb, None)
+    processBlock(blockPath, generatedDiffBlock)
+    block.append(generatedDiffBlock)
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -655,52 +720,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Link block in parent
     parent.elaborate(name, link)
-  }
-
-  /** Elaborates the generator, running it and merging the result with the block.
-    */
-  protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
-    debug(s"Elaborate generator $fnName at $blockPath")
-    val block = resolveBlock(blockPath)
-    val generator = block.getGenerators(fnName)
-    block.removeGenerator(fnName)
-
-    val reqParamValues = generator.required_params.map { reqParam =>
-      reqParam -> constProp.getValue(blockPath.asIndirect ++ reqParam).get
-    }.toMap
-    val reqPortValues = generator.required_ports.flatMap { reqPort =>
-      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ isConnectedSuffix).get
-          .asInstanceOf[BooleanValue]
-      isConnectedValue.value match {
-        case true =>
-          val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
-          val connectedNameValue = constProp.getValue(blockPath.asIndirect ++ connectedNameSuffix).get
-              .asInstanceOf[TextValue]
-          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue,
-            connectedNameSuffix.asLocalPath() -> connectedNameValue)
-        case false =>
-          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue)
-      }
-    }.toMap
-
-    // TODO pass through IS_CONNECTED
-    val generatorResult = library.runGenerator(block.getBlockClass, fnName,
-      reqParamValues ++ reqPortValues
-    )
-    val generatedPb = generatorResult match {
-      case Errorable.Success(generatedPb) =>
-        require(generatedPb.getSelfClass == block.getBlockClass)
-        block.dedupGeneratorPb(generatedPb)
-      case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
-        elem.HierarchyBlock()
-    }
-
-    val generatedDiffBlock = new wir.Block(generatedPb, None)
-    processBlock(blockPath, generatedDiffBlock)
-    block.append(generatedDiffBlock)
   }
 
 
