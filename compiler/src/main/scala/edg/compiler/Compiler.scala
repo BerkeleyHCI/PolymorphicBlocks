@@ -218,36 +218,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     elaboratePending.setValue(ElaborateRecord.ConnectedLink(fromLinkPortPath), None)
   }
 
-  protected def setPortConnectedLinkParams(portPath: DesignPath, port: wir.PortLike,
-                                           linkPath: DesignPath, params: Seq[String],
-                                           recursive: Boolean): Unit = {
-    port match {
-      case port @ (_: wir.Port | _: wir.Bundle) =>
-        val allParams = params.map(IndirectStep.Element(_)) :+ IndirectStep.Name
-        connectedLinkParams.put(portPath, (linkPath, allParams))
-        allParams.foreach { paramName =>
-          constProp.addEquality(
-            portPath.asIndirect + IndirectStep.ConnectedLink + paramName,
-            linkPath.asIndirect + paramName
-          )
-        }
-        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-      case port: wir.PortArray => port.getElaboratedPorts.foreach { case (name, subport) =>
-        setPortConnectedLinkParams(portPath + name, subport, linkPath, params, recursive)
-      }
-      case port => throw new NotImplementedError(s"unknown unelaborated port $port")
-    }
-    // Recurse (for non mandatory types) if needed
-    port match {
-      case port: wir.Bundle => if (recursive) {
-        port.getElaboratedPorts.foreach { case (name, subport) =>
-          setPortConnectedLinkParams(portPath + name, subport, linkPath, params, recursive)
-        }
-      }
-      case _ =>  // ignore
-    }
-  }
-
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
@@ -288,11 +258,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Process and recurse as needed
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     instantiated match {
       case port: wir.Port =>
+        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
       case port: wir.Bundle =>
+        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
           elaboratePort(path + childPortName, port, childPort)
@@ -301,7 +272,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           }
         }
       case port: wir.PortArray =>
-        // arrays have no params, but we need to instantiate the array
+        // arrays have no params (including name), but we need to instantiate the array
         val childPortNames = constProp.getArrayElts(path) match {
           case Some(elts) => elts
           case None =>  // TODO can the empty case be set with everything else?
@@ -317,6 +288,31 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           elaboratePort(path + childPortName, port, childPort)
         }
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
+    }
+  }
+
+  // Additional processing that needs to be done on link-side ports.
+  protected def processLinkPort(portPath: DesignPath, port: wir.PortLike, linkPath: DesignPath): Unit = {
+    port match {
+      case _: wir.Port | _: wir.Bundle =>
+        // Set CONNECTED_LINK, IS_CONNECTED params and seed ConnectedLink elaboration dependencies
+        // Non-recursive: this should be called be inner links to handle those connections,
+        // then those parameters will be forwarded with the link's connect / export statements.
+        linkParams(linkPath).foreach { paramName =>
+          constProp.addEquality(
+            portPath.asIndirect + IndirectStep.ConnectedLink + paramName,
+            linkPath.asIndirect + paramName
+          )
+        }
+        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(true))
+
+        connectedLink.put(portPath, linkPath)
+        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+      case port: wir.PortArray => port.getElaboratedPorts.foreach { case (childName, childPort) =>
+        // Array contents are treated as top-level ports
+        processLinkPort(portPath + childName, childPort, linkPath)
+      }
+      case port => throw new NotImplementedError(s"unknown port $port")
     }
   }
 
@@ -341,6 +337,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edgir.ref.ref
+
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
     // Elaborate ports, generating equivalence constraints as needed
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
@@ -510,7 +508,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
       case None =>
     }
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
     // Process block
     processBlock(path, block)
@@ -522,16 +519,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
 
+    // Set my parameters in the global data structure
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    val allParams = link.getParams.keys.toSeq.map(IndirectStep.Element(_)) :+ IndirectStep.Name
+    linkParams.put(path, allParams)
+
     // Elaborate ports, generating equivalence constraints as needed
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, link)
     for ((portName, port) <- link.getUnelaboratedPorts) {
       elaboratePort(path + portName, link, port)
-    }
-
-    for ((name, port) <- link.getElaboratedPorts) {
-      setPortConnectedLinkParams(path + name, port, path, link.getParams.keys.toSeq, false)
-      processPortConnected(path + name, port, true)
     }
 
     // All inner link ports that need to be allocated, and constraints connecting to it
@@ -652,8 +649,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elem.Link()
     }
     val link = new wir.Link(linkPb)
-
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
     // Process block
     processLink(path, link)
