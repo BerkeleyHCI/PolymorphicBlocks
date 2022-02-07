@@ -15,21 +15,24 @@ class IllegalConstraintException(msg: String) extends Exception(msg)
 
 
 sealed trait ElaborateRecord
+sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
+sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
 object ElaborateRecord {
-  case class Block(blockPath: DesignPath) extends ElaborateRecord
-  case class Link(linkPath: DesignPath) extends ElaborateRecord
-  case class Param(paramPath: IndirectDesignPath) extends ElaborateRecord
-  case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateRecord
+  case class Block(blockPath: DesignPath) extends ElaborateTask with ElaborateDependency
+  case class Link(linkPath: DesignPath) extends ElaborateTask with ElaborateDependency
+  // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
+  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
 
-  // Dependency source, set when the connection from the link's port to portPath have been elaborated
+  case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateTask with ElaborateDependency
+
+  // Dependency source only, for a parameter value
+  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency
+
+  // Set when the connection from the link's port to portPath have been elaborated
   // (or in the link port case, when the link has been elaborated).
-  // If the port is not connected, this is set when the port has been elaborated
-  case class ConnectedLink(portPath: DesignPath) extends ElaborateRecord
-
-  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateRecord
-
-  // These are dependency targets only, to expand CONNECTED_LINK and parameter equivalences when ready
-  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateRecord
+  // If the port is not connected, this is set when the port has been elaborated.
+  // When this is complete, the port's IS_CONNECTED, CONNECTED_LINK (if applicable) will have their final values.
+  case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
 }
 
 
@@ -429,25 +432,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _ => throw new IllegalConstraintException(s"unknown constraint in block $path: $constrName = $constr")
     }}
 
-    // Queue up generators as needed
-    for ((generatorFnName, generator) <- block.getGenerators) {
-      elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
-        generator.required_params.map { depPath =>
-          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        } ++ generator.required_ports.map { depPort =>
-          ElaborateRecord.FullConnectedPort(path ++ depPort)
-        }
-      )
-    }
-
-    val blockGeneratorsElaborate = block.getGenerators.map { case (generatorFnName, generator) =>
-      val generatorRecord = ElaborateRecord.Generator(path, generatorFnName)
-      generator.connecting_blocks.map { connectingBlockPath =>
-        require(connectingBlockPath.steps.length == 1)  // TODO cleaner way to handle this?
-        (connectingBlockPath.steps.head.getName, generatorRecord)
-      }
-    }.flatten.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
-
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
     val selfPortsConnectedElaborateRecord = ElaborateRecord.BlockPortsConnected(path)
@@ -512,27 +496,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case None =>
     }
 
-    if (blockPb.generators.isEmpty) {
-      // Non-generators: directly instantiate the block
+    if (blockPb.generators.isEmpty) {  // Non-generators: directly instantiate the block
       val block = new wir.Block(blockPb, unrefinedType)
       processBlock(path, block)
 
       // Link block in parent
       parent.elaborate(name, block)
-    } else {
-      // Generators: add to queue without changing the block
+    } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
       elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
-        generator.required_params.map { depPath =>
+        generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        } ++ generator.required_ports.map { depPort =>
-          ElaborateRecord.FullConnectedPort(path ++ depPort)
+        } ++ generator.requiredPorts.map { depPort =>
+          ElaborateRecord.ConnectedLink(path ++ depPort)
         }
       )
     }
-
-
   }
 
   /** Elaborates the generator, running it and merging the result with the block.
@@ -747,11 +727,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord@ElaborateRecord.Generator(blockPath, fnName) =>
             elaborateGenerator(blockPath, fnName)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord => throw new IllegalArgumentException(s"unknown ready elaboration target $elaborateRecord")
+          case _: ElaborateDependency =>
+            throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
         }
       }
     }
-
     ElemBuilder.Design(root.toPb)
   }
 

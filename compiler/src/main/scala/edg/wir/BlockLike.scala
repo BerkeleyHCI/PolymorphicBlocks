@@ -14,12 +14,6 @@ sealed trait BlockLike extends Pathable {
   def toPb: elem.BlockLike
 }
 
-case class Generator(
-    required_params: Seq[ref.LocalPath],
-    required_ports: Seq[ref.LocalPath],
-    connecting_blocks: Seq[ref.LocalPath]
-)
-
 /**
   * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
   * (instead of the proto), while everything else is kept in the proto.
@@ -36,15 +30,6 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
   protected val meta: mutable.SeqMap[String, common.Metadata] = mutable.SeqMap() ++ pb.getMeta.getMembers.node
-
-  protected val generators: mutable.SeqMap[String, Generator] = {
-    pb.generators.view.mapValues { generatorPb =>
-      Generator(generatorPb.requiredParams, generatorPb.requiredPorts, generatorPb.connectedBlocks)
-    }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
-  }
-
-  def getGenerators: Map[String, Generator] = generators.toMap
-  def removeGenerator(name: String): Unit = generators.remove(name)
 
   override def isElaborated: Boolean = true
 
