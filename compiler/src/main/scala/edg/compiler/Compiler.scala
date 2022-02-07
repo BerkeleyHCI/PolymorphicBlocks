@@ -110,8 +110,8 @@ object CompilerError {
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
   // TODO better debug toggle
-//  protected def debug(msg: => String): Unit = println(msg)
-  protected def debug(msg: => String): Unit = { }
+  protected def debug(msg: => String): Unit = println(msg)
+//  protected def debug(msg: => String): Unit = { }
 
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName
@@ -183,8 +183,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // but ports may be bundle or inner ports (in bundles or arrays).
   // This depends on ports on both sides having been elaborated, as well as the link's parameters being available.
   protected def elaborateConnect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath): Unit = {
-    debug(s"Generate connect equalities for $toLinkPortPath <-> $fromLinkPortPath")
-
     // Generate port-port parameter propagation
     // All connected ports should have params
     val toLinkPort = resolvePort(toLinkPortPath).asInstanceOf[wir.HasParams]
@@ -239,7 +237,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val instantiated = port match {
       case port: wir.PortLibrary =>
         val libraryPath = port.target
-        debug(s"Elaborate Port at $path: ${readableLibraryPath(libraryPath)}")
+        debug(s"Elaborate port at $path: ${readableLibraryPath(libraryPath)}")
 
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
@@ -470,7 +468,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case None => (libraryPath, None)
       }
     }
-    debug(s"Elaborate block at $path: ${readableLibraryPath(refinedLibrary)}")
 
     val blockPb = library.getBlock(refinedLibrary) match {
       case Errorable.Success(blockPb) =>
@@ -515,8 +512,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   /** Elaborates the generator, running it and merging the result with the block.
     */
   protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
-    debug(s"Elaborate generator ${generator.fnName} at ${generator.blockPath}")
-
     // Get required values for the generator
     val reqParamValues = generator.requiredParams.map { reqParam =>
       reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).get
@@ -688,7 +683,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Instantiate block from library element to wir.Block
     val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
     val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LinkLibrary].target
-    debug(s"Elaborate link at $path: ${readableLibraryPath(libraryPath)}")
 
     val linkPb = library.getLink(libraryPath) match {
       case Errorable.Success(linkPb) => linkPb
@@ -724,22 +718,35 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         onElaborate(elaborateRecord)
         elaborateRecord match {
           case elaborateRecord@ElaborateRecord.Block(blockPath) =>
+            debug(s"Elaborate block $blockPath")
             elaborateBlock(blockPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.Link(linkPath) =>
+            debug(s"Elaborate link $linkPath")
             elaborateLink(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
+            debug(s"Elaborate connect $toLinkPortPath <-> $fromLinkPortPath")
             elaborateConnect(toLinkPortPath, fromLinkPortPath)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord: ElaborateRecord.Generator =>
-            elaborateGenerator(elaborateRecord)
-            elaboratePending.setValue(elaborateRecord, None)
+          case generator: ElaborateRecord.Generator =>
+            debug(s"Elaborate generator ${generator.fnName} at ${generator.blockPath}")
+            elaborateGenerator(generator)
+            elaboratePending.setValue(generator, None)
           case _: ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
         }
       }
     }
+
+    val pendingBlocking = elaboratePending.getMissingBlocking
+    if (pendingBlocking.nonEmpty) {
+      debug(s"Compiler completed with remaining tasks:")
+      pendingBlocking.foreach { case (pending, blocking) =>
+        debug(s"- $pending: $blocking")
+      }
+    }
+
     ElemBuilder.Design(root.toPb)
   }
 
