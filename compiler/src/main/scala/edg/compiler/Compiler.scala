@@ -404,8 +404,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 ElaborateRecord.Link(path + linkPort.head),
                 ElaborateRecord.ConnectedLink(path ++ linkPort))
             )
-            directConnectedPorts += (path ++ blockPort)
-            directConnectedPorts += (path ++ linkPort)
+            require(!portDirectlyConnected.contains(path ++ blockPort))
+            portDirectlyConnected.put(path ++ blockPort, true)
+            require(!portDirectlyConnected.contains(path ++ linkPort))
+            portDirectlyConnected.put(path ++ linkPort, true)
           case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
             throw new Exception("This constraint should have been lowered")
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
@@ -424,7 +426,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 ElaborateRecord.ConnectedLink(path ++ extPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
-            directConnectedPorts += (path ++ intPort)
+            require(!portDirectlyConnected.contains(path ++ intPort))
+            portDirectlyConnected.put(path ++ intPort, true)
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
             throw new NotImplementedError(s"TODO: export port array <-> port array: ${constr.expr}")
           case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
@@ -438,15 +441,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
-    val selfPortsConnectedElaborateRecord = ElaborateRecord.BlockPortsConnected(path)
     for (blockName <- block.getUnelaboratedBlocks.keys) {
       debug(s"Push block to pending: ${path + blockName}")
-      val blockElaborateRecord = ElaborateRecord.Block(path + blockName)
-      elaboratePending.addNode(blockElaborateRecord, Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortsConnected(path + blockName),
-        Seq(blockElaborateRecord, selfPortsConnectedElaborateRecord) ++
-            blockGeneratorsElaborate.getOrElse(blockName, Seq())
-      )
+      elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
@@ -604,7 +601,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 ElaborateRecord.ConnectedLink(path ++ intPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
-            directConnectedPorts += (path ++ intPort)
+            require(!portDirectlyConnected.contains(path ++ intPort))
+            portDirectlyConnected.put(path ++ intPort, true)
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
               ValueExpr.RefAllocate(intPortArray)) =>
             innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
@@ -650,7 +648,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 ElaborateRecord.Link(path + intPortArray.head),
                 ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
             )
-            directConnectedPorts += (path ++ intPortArray + arrayIndex)
+            require(!portDirectlyConnected.contains(path ++ intPortArray + arrayIndex))
+            portDirectlyConnected.put(path ++ intPortArray + arrayIndex, true)
 
             val newConstrName = if (extPorts.length == 1) {
               constrName  // constraints don't expand
