@@ -198,14 +198,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       )
     }
 
-    // Generate the CONNECTED_LINK equalities
-    val linkPath = connectedLink(toLinkPortPath)
-    connectedLink.put(fromLinkPortPath, linkPath)  // propagate CONNECTED_LINK params
-    for (linkParam <- linkParams(linkPath)) {
-      constProp.addEquality(
-        toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
-        fromLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
-      )
+    connectedLink.get(toLinkPortPath) match {
+      case Some(linkPath) =>  // Generate the CONNECTED_LINK equalities, if there is a connected link
+        connectedLink.put(fromLinkPortPath, linkPath)  // propagate CONNECTED_LINK params
+        for (linkParam <- linkParams(linkPath)) {
+          constProp.addEquality(
+            toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
+            fromLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
+          )
+        }
+      case None =>
     }
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
