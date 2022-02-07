@@ -25,6 +25,7 @@ object ElaborateRecord {
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
+                       unrefinedClass: Option[LibraryPath],
                        requiredParams: Seq[ref.LocalPath], requiredPorts: Seq[ref.LocalPath]
                       ) extends ElaborateTask with ElaborateDependency
 
@@ -508,7 +509,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
-      elaboratePending.addNode(ElaborateRecord.Generator(path, generatorFnName),
+      elaboratePending.addNode(ElaborateRecord.Generator(path, refinedLibrary, generatorFnName,
+          unrefinedType, generator.requiredParams, generator.requiredParams),
         generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
         } ++ generator.requiredPorts.map { depPort =>
@@ -522,8 +524,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     */
   protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
     debug(s"Elaborate generator ${generator.fnName} at ${generator.blockPath}")
-    val block = resolveBlock(generator.blockPath)
 
+    // Get required values for the generator
     val reqParamValues = generator.requiredParams.map { reqParam =>
       reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).get
     }.toMap
@@ -548,22 +550,25 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       param.asLocalPath() -> constProp.getValue(generator.blockPath.asIndirect ++ param).get
     }
 
-    val generatorResult = library.runGenerator(generator.blockClass, generator.fnName,
+    // Run generator and plug in
+    val generatedPb = library.runGenerator(generator.blockClass, generator.fnName,
       reqParamValues ++ reqPortValues
-    )
-    val generatedPb = generatorResult match {
+    ) match {
       case Errorable.Success(generatedPb) =>
-        require(generatedPb.getSelfClass == block.getBlockClass)
-        block.dedupGeneratorPb(generatedPb)
+        require(generatedPb.getSelfClass == generator.blockClass)
+        generatedPb
       case Errorable.Error(err) =>
         import edgir.elem.elem
         errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName, err)
         elem.HierarchyBlock()
     }
+    val block = new wir.Block(generatedPb, generator.unrefinedClass)
+    processBlock(generator.blockPath, block)
 
-    val generatedDiffBlock = new wir.Block(generatedPb, None)
-    processBlock(blockPath, generatedDiffBlock)
-    block.append(generatedDiffBlock)
+    // Link block in parent
+    val (parentPath, name) = generator.blockPath.split
+    val parent = resolveBlock(parentPath)
+    parent.elaborate(name, block)
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -729,8 +734,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord@ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
             elaborateConnect(toLinkPortPath, fromLinkPortPath)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord@ElaborateRecord.Generator(blockPath, fnName) =>
-            elaborateGenerator(blockPath, fnName)
+          case elaborateRecord: ElaborateRecord.Generator =>
+            elaborateGenerator(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
           case _: ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
