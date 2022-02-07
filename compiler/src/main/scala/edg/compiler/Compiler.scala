@@ -4,7 +4,7 @@ import scala.collection.{SeqMap, mutable}
 import edgir.schema.schema
 import edgir.expr.expr
 import edgir.ref.ref
-import edgir.ref.ref.LocalPath
+import edgir.ref.ref.{LibraryPath, LocalPath}
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
@@ -18,12 +18,15 @@ sealed trait ElaborateRecord
 sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
 sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
 object ElaborateRecord {
+  // TODO completion does not necessarily mean the block is elaborated (it may have just registered the generator)
   case class Block(blockPath: DesignPath) extends ElaborateTask with ElaborateDependency
   case class Link(linkPath: DesignPath) extends ElaborateTask with ElaborateDependency
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
 
-  case class Generator(blockPath: DesignPath, fnName: String) extends ElaborateTask with ElaborateDependency
+  case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
+                       requiredParams: Seq[ref.LocalPath], requiredPorts: Seq[ref.LocalPath]
+                      ) extends ElaborateTask with ElaborateDependency
 
   // Dependency source only, for a parameter value
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency
@@ -517,33 +520,35 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   /** Elaborates the generator, running it and merging the result with the block.
     */
-  protected def elaborateGenerator(blockPath: DesignPath, fnName: String): Unit = {
-    debug(s"Elaborate generator $fnName at $blockPath")
-    val block = resolveBlock(blockPath)
-    val generator = block.getGenerators(fnName)
-    block.removeGenerator(fnName)
+  protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
+    debug(s"Elaborate generator ${generator.fnName} at ${generator.blockPath}")
+    val block = resolveBlock(generator.blockPath)
 
-    val reqParamValues = generator.required_params.map { reqParam =>
-      reqParam -> constProp.getValue(blockPath.asIndirect ++ reqParam).get
+    val reqParamValues = generator.requiredParams.map { reqParam =>
+      reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).get
     }.toMap
-    val reqPortValues = generator.required_ports.flatMap { reqPort =>
+
+    val reqPortValues = generator.requiredPorts.flatMap { reqPort =>
       val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val isConnectedValue = constProp.getValue(blockPath.asIndirect ++ isConnectedSuffix).get
-          .asInstanceOf[BooleanValue]
-      isConnectedValue.value match {
-        case true =>
-          val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
-          val connectedNameValue = constProp.getValue(blockPath.asIndirect ++ connectedNameSuffix).get
-              .asInstanceOf[TextValue]
-          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue,
-            connectedNameSuffix.asLocalPath() -> connectedNameValue)
-        case false =>
-          Map(isConnectedSuffix.asLocalPath() -> isConnectedValue)
-      }
-    }.toMap
+      val isConnected = constProp.getValue(generator.blockPath.asIndirect ++ isConnectedSuffix)
+          .get.asInstanceOf[BooleanValue]
 
-    // TODO pass through IS_CONNECTED
-    val generatorResult = library.runGenerator(block.getBlockClass, fnName,
+      if (isConnected.value) {
+        Seq(
+          isConnectedSuffix,
+          PathSuffix() ++ reqPort + IndirectStep.ConnectedLink,
+          PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name,
+        )
+      } else {
+        Seq(
+          isConnectedSuffix
+        )
+      }
+    }.map { param =>
+      param.asLocalPath() -> constProp.getValue(generator.blockPath.asIndirect ++ param).get
+    }
+
+    val generatorResult = library.runGenerator(generator.blockClass, generator.fnName,
       reqParamValues ++ reqPortValues
     )
     val generatedPb = generatorResult match {
@@ -552,7 +557,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         block.dedupGeneratorPb(generatedPb)
       case Errorable.Error(err) =>
         import edgir.elem.elem
-        errors += CompilerError.GeneratorError(blockPath, block.getBlockClass, fnName, err)
+        errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName, err)
         elem.HierarchyBlock()
     }
 
