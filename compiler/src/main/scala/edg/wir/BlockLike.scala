@@ -6,6 +6,7 @@ import edgir.expr.expr
 import edgir.init.init
 import edgir.ref.ref
 import edg.util.SeqMapSortableFrom._
+import edgir.ref.ref.LibraryPath
 
 import scala.collection.mutable
 
@@ -22,18 +23,15 @@ sealed trait BlockLike extends Pathable {
   */
 class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val NAMESPACE_META_KEY = "_namespace_order"  // TODO this should be more based on type matching instead of keys
-
   private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
-  protected val meta: mutable.SeqMap[String, common.Metadata] = mutable.SeqMap() ++ pb.getMeta.getMembers.node
 
   override def isElaborated: Boolean = true
 
-  def getBlockClass = pb.getSelfClass
+  def getBlockClass: LibraryPath = pb.getSelfClass
 
   override def getParams: Map[String, init.ValInit] = pb.params
 
@@ -57,7 +55,10 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
         case None => pb.prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
-      generators=Map(),
+      ports=ports.view.mapValues(_.toPb).toMap,
+      blocks=blocks.view.mapValues(_.toPb).toMap,
+      links=links.view.mapValues(_.toPb).toMap,
+      constraints=constraints.toMap,
     )
   }
 

@@ -126,7 +126,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
-  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())  // seed with root to kick off compilation
 
   // Design parameters solving (constraint evaluation) and assertions
   private val constProp = new ConstProp() {
@@ -451,10 +450,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  protected def instantiateBlock(path: DesignPath, block: edgir.elem.elem.HierarchyBlock): Unit = {
-
-  }
-
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
@@ -497,12 +492,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case None =>
     }
 
-    if (blockPb.generators.isEmpty) {  // Non-generators: directly instantiate the block
+    if (blockPb.generators.isEmpty) {  // non-generators: directly instantiate the block
       val block = new wir.Block(blockPb, unrefinedType)
       processBlock(path, block)
-
-      // Link block in parent
-      parent.elaborate(name, block)
+      parent.elaborate(name, block)  // link block in parent
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
@@ -716,6 +709,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     */
   def compile(): schema.Design = {
     import edg.ElemBuilder
+
+    // We don't use the usual elaboration flow for the root block because it has no parent and breaks the flow
+    processBlock(DesignPath(), root)
+    elaboratePending.setValue(ElaborateRecord.Block(DesignPath()), None)
 
     // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
