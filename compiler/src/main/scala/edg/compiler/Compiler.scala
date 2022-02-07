@@ -237,7 +237,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val instantiated = port match {
       case port: wir.PortLibrary =>
         val libraryPath = port.target
-        debug(s"Elaborate port at $path: ${readableLibraryPath(libraryPath)}")
+        debug(s"Elaborate port @ $path")
 
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
@@ -400,7 +400,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ linkPort, path ++ blockPort),
               Seq(ElaborateRecord.Block(path + blockPort.head),
-                ElaborateRecord.Link(path + linkPort.head),
                 ElaborateRecord.ConnectedLink(path ++ linkPort))
             )
             require(!portDirectlyConnected.contains(path ++ blockPort))
@@ -572,6 +571,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((portName, port) <- link.getUnelaboratedPorts) {
       elaboratePort(path + portName, link, port)
     }
+    for ((portName, port) <- link.getElaboratedPorts) {
+      processLinkPort(path + portName, port, path)
+    }
 
     // All inner link ports that need to be allocated, and constraints connecting to it
     // as (path to inner link port array -> constraint names)
@@ -586,9 +588,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
-              Seq(ElaborateRecord.Link(path),
-                ElaborateRecord.Link(path + intPort.head),
-                ElaborateRecord.ConnectedLink(path ++ intPort))
+              Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
@@ -634,9 +634,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ intPortArray + arrayIndex, path ++ extPort),
-              Seq(ElaborateRecord.Link(path),
-                ElaborateRecord.Link(path + intPortArray.head),
-                ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
+              Seq(ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
             )
             require(!portDirectlyConnected.contains(path ++ intPortArray + arrayIndex))
             portDirectlyConnected.put(path ++ intPortArray + arrayIndex, true)
@@ -718,11 +716,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         onElaborate(elaborateRecord)
         elaborateRecord match {
           case elaborateRecord@ElaborateRecord.Block(blockPath) =>
-            debug(s"Elaborate block $blockPath")
+            debug(s"Elaborate block @ $blockPath")
             elaborateBlock(blockPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.Link(linkPath) =>
-            debug(s"Elaborate link $linkPath")
+            debug(s"Elaborate link @ $linkPath")
             elaborateLink(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
@@ -730,7 +728,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaborateConnect(toLinkPortPath, fromLinkPortPath)
             elaboratePending.setValue(elaborateRecord, None)
           case generator: ElaborateRecord.Generator =>
-            debug(s"Elaborate generator ${generator.fnName} at ${generator.blockPath}")
+            debug(s"Elaborate generator '${generator.fnName}' @ ${generator.blockPath}")
             elaborateGenerator(generator)
             elaboratePending.setValue(generator, None)
           case _: ElaborateDependency =>
