@@ -18,8 +18,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
     links = Seq(
       Link.Link("link",
         ports = Map(
-          "source" -> Port.Library("source"),
-          "sinks" -> Port.Array("sink")
+          "source" -> Port.Library("sourcePort"),
+          "sinks" -> Port.Array("sinkPort")
         ),
         // practically invalid, missing connect constraints
       ),
