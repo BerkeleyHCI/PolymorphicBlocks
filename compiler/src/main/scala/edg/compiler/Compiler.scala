@@ -272,10 +272,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort)
           if (isConnected) {  // propagate connected-ness only if connected
-            portDirectlyConnected.put(path, true)
+            portDirectlyConnected.put(path + childPortName, true)
           }
+          elaboratePort(path + childPortName, port, childPort)
         }
       case port: wir.PortArray =>
         // arrays have no params (including name), but we need to instantiate the array
