@@ -151,6 +151,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.getContents
@@ -207,6 +208,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
+    compiler.getErrors() shouldBe empty
     compiled should equal(referenceElaborated)
   }
 
@@ -242,6 +244,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
 
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     compiled.contents.get.links("link").getLink.constraints should equal(expectedLinkConstraints)
   }

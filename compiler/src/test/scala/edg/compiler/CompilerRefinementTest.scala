@@ -74,6 +74,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       classRefinements = Map(LibraryPath("superclassBlock") -> LibraryPath("subclassBlock"))
     ))
     compiler.compile() should equal(expected)
+    compiler.getErrors() shouldBe empty
   }
 
   "Compiler on design with subclass refinement" should "error if selected class is not a subclass" in {
@@ -104,6 +105,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassBlock"))
     ))
     compiler.compile() should equal(expected)
+    compiler.getErrors() shouldBe empty
   }
 
   "Compiler on design with subclass values" should "work" in {
@@ -125,6 +127,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       )
     ))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
     compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(5)))
   }
 
@@ -145,6 +148,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
       instanceValues = Map(DesignPath() + "block" + "superParam" -> IntValue(3))
     ))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
     compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(3)))
   }
 }

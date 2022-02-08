@@ -171,6 +171,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     val compiled = compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.contents.get
@@ -209,6 +210,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // Check basic to-link value propagation
     compiler.getValue(IndirectDesignPath() + "link" + "outerParam") should equal(Some(IntValue(42)))

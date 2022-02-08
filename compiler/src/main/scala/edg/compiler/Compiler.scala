@@ -364,11 +364,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edgir.ref.ref
-
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
 
     // Elaborate ports, generating equivalence constraints as needed
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, block)
     for ((portName, port) <- block.getUnelaboratedPorts) {
       elaboratePort(path + portName, block, port)
@@ -592,7 +590,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     linkParams.put(path, allParams)
 
     // Elaborate ports, generating equivalence constraints as needed
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, link)
     for ((portName, port) <- link.getUnelaboratedPorts) {
       elaboratePort(path + portName, link, port)

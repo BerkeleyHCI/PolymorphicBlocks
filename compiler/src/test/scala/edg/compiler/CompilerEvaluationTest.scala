@@ -111,6 +111,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // Check one-step prop
     compiler.getValue(IndirectDesignPath() + "source" + "floatVal") should equal(Some(FloatValue(3.0)))
@@ -187,6 +188,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // check link reductions
     compiler.getValue(IndirectDesignPath() + "link" + "sourceFloat") should equal(Some(FloatValue(3.0)))
@@ -248,6 +250,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // check link reductions
     compiler.getValue(IndirectDesignPath() + "link" + "sinkSum") should equal(Some(FloatValue(0.0)))
@@ -276,6 +279,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // check CONNECTED_LINK through outer (direct connection)
     val linkThroughSource = IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink
@@ -310,6 +314,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
@@ -328,6 +333,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
     ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
     compiler.compile()
+    compiler.getErrors() shouldBe empty
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
