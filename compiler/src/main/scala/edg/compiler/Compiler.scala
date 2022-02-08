@@ -110,8 +110,8 @@ object CompilerError {
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
   // TODO better debug toggle
-  protected def debug(msg: => String): Unit = println(msg)
-//  protected def debug(msg: => String): Unit = { }
+//  protected def debug(msg: => String): Unit = println(msg)
+  protected def debug(msg: => String): Unit = { }
 
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName
@@ -253,23 +253,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }
 
-    // If not connected, set unconnected
-    // TODO should this be set at the block level for consistency?
-    val propagateConnected = instantiated match {
-      case _ @ (_: wir.Port | _: wir.Bundle) =>
-        if (!portDirectlyConnected.contains(path)) {
-          portDirectlyConnected.put(path, false)
-          constProp.setValue(path.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
-          elaboratePending.setValue(ElaborateRecord.ConnectedLink(path), None)
-          false
-        } else {
-          require(portDirectlyConnected(path))  // it should not have been assigned false from anywhere else
-          true
-        }
-      case _: wir.PortArray => false  // bundles should not have connection status
-      case port => throw new NotImplementedError(s"unknown instantiated port $port")
-    }
-
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
@@ -279,9 +262,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          if (propagateConnected) {  // propagate connected-ness only if connected
-            portDirectlyConnected.put(path + childPortName, true)
-          }
           elaboratePort(path + childPortName, port, childPort)
         }
       case port: wir.PortArray =>
@@ -304,6 +284,41 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  // Additional processing for block-side ports
+  protected def processBlockPort(portPath: DesignPath, port: wir.PortLike): Unit = {
+    val topIsConnected = port match {  // If not connected, set unconnected
+      case _ @ (_: wir.Port | _: wir.Bundle) =>
+        if (!portDirectlyConnected.contains(portPath)) {
+          portDirectlyConnected.put(portPath, false)
+          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+          false
+        } else {
+          require(portDirectlyConnected(portPath))  // it should not have been assigned false from anywhere else
+          true
+        }
+      case _: wir.PortArray => false  // arrays should not have connection status
+      case port => throw new NotImplementedError(s"unknown instantiated port $port")
+    }
+
+    port match {
+      case port: wir.Bundle =>
+        for ((childPortName, childPort) <- port.getElaboratedPorts) {
+          if (topIsConnected) {  // only propagate connectivity status
+            portDirectlyConnected.put(portPath + childPortName, true)
+          }  // in the false case, it would be set during the recursive call
+          processBlockPort(portPath + childPortName, childPort)
+        }
+      case port: wir.PortArray =>
+        // don't propagate connectivity status, since connectivity should be directly set for array elts
+        for ((childPortName, childPort) <- port.getElaboratedPorts) {
+          processBlockPort(portPath + childPortName, childPort)
+        }
+      case _: wir.Port =>  // no recursion case for leaf types
+      case port => throw new NotImplementedError(s"unknown instantiated port $port")
+    }
+  }
+
   // Additional processing that needs to be done on link-side ports.
   protected def processLinkPort(portPath: DesignPath, port: wir.PortLike, linkPath: DesignPath): Unit = {
     port match {
@@ -317,9 +332,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             linkPath.asIndirect + paramName
           )
         }
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(true))
-
         connectedLink.put(portPath, linkPath)
+        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(true))
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
       case port: wir.PortArray => port.getElaboratedPorts.foreach { case (childName, childPort) =>
         // Array contents are treated as top-level ports
@@ -358,6 +372,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     processParamDeclarations(path, block)
     for ((portName, port) <- block.getUnelaboratedPorts) {
       elaboratePort(path + portName, block, port)
+    }
+    for ((portName, port) <- block.getElaboratedPorts) {
+      processBlockPort(path + portName, port)
     }
 
     // Find allocate ports and lower them before processing all constraints
