@@ -18,8 +18,8 @@ sealed trait ElaborateRecord
 sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
 sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
 object ElaborateRecord {
-  // TODO completion does not necessarily mean the block is elaborated (it may have just registered the generator)
-  case class Block(blockPath: DesignPath) extends ElaborateTask with ElaborateDependency
+  case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
+  case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency  // including generator, if applicable
   case class Link(linkPath: DesignPath) extends ElaborateTask with ElaborateDependency
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
@@ -423,7 +423,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ linkPort, path ++ blockPort),
-              Seq(ElaborateRecord.Block(path + blockPort.head),
+              Seq(ElaborateRecord.BlockElaborated(path + blockPort.head),
                 ElaborateRecord.ConnectedLink(path ++ linkPort))
             )
             require(!portDirectlyConnected.contains(path ++ blockPort))
@@ -443,8 +443,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ extPort, path ++ intPort),
-              Seq(ElaborateRecord.Block(path),
-                ElaborateRecord.Block(path + intPort.head),
+              Seq(ElaborateRecord.BlockElaborated(path + intPort.head),
                 ElaborateRecord.ConnectedLink(path ++ extPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
@@ -518,6 +517,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       val block = new wir.Block(blockPb, unrefinedType)
       processBlock(path, block)
       parent.elaborate(name, block)  // link block in parent
+      elaboratePending.setValue(ElaborateRecord.BlockElaborated(path), None)
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
@@ -579,6 +579,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val (parentPath, name) = generator.blockPath.split
     val parent = resolveBlock(parentPath)
     parent.elaborate(name, block)
+
+    elaboratePending.setValue(ElaborateRecord.BlockElaborated(generator.blockPath), None)
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -612,7 +614,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
-              Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
+              Seq(
+                ElaborateRecord.ConnectedLink(path ++ intPort)
+              )
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
@@ -730,7 +734,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // We don't use the usual elaboration flow for the root block because it has no parent and breaks the flow
     processBlock(DesignPath(), root)
-    elaboratePending.setValue(ElaborateRecord.Block(DesignPath()), None)
+    elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
 
     // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
