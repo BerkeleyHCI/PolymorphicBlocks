@@ -142,10 +142,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Working design tree data structure
-  private val root = new wir.Block(inputDesignPb.getContents, None)
+  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to cleanly support generators
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
-  def resolveBlock(path: DesignPath): wir.Block = root.resolve(path.steps).asInstanceOf[wir.Block]
-  def resolveLink(path: DesignPath): wir.Link = root.resolve(path.steps).asInstanceOf[wir.Link]
+  def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
+  def resolveLink(path: DesignPath): wir.LinkLike = root.resolve(path.steps).asInstanceOf[wir.LinkLike]
   def resolvePort(path: DesignPath): wir.PortLike = root.resolve(path.steps).asInstanceOf[wir.PortLike]
 
   // Main data structure that tracks the next unit to elaborate
@@ -500,11 +500,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     * Expands connects in the parent, as needed.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
-    val (parentPath, name) = path.split
-
     // Instantiate block from library element to wir.Block
-    val parent = resolveBlock(parentPath)
-    val libraryPath = parent.getUnelaboratedBlocks(name).asInstanceOf[wir.BlockLibrary].target
+    val libraryPath = resolveBlock(path).asInstanceOf[wir.BlockLibrary].target
     val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
       case Some(refinement) => (refinement, Some(libraryPath))
       case None => refinements.classRefinements.get(libraryPath) match {
@@ -538,7 +535,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     if (blockPb.generators.isEmpty) {  // non-generators: directly instantiate the block
       val block = new wir.Block(blockPb, unrefinedType)
       processBlock(path, block)
-      parent.elaborate(name, block)  // link block in parent
+      if (path.steps.nonEmpty) {
+        val (parentPath, name) = path.split
+        val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
+        parent.elaborate(name, block)  // link block in parent
+      } else {
+        root = block
+      }
       elaboratePending.setValue(ElaborateRecord.BlockElaborated(path), None)
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
@@ -606,9 +609,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     processBlock(generator.blockPath, block)
 
     // Link block in parent
-    val (parentPath, name) = generator.blockPath.split
-    val parent = resolveBlock(parentPath)
-    parent.elaborate(name, block)
+    if (generator.blockPath.steps.nonEmpty) {
+      val (parentPath, name) = generator.blockPath.split
+      val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
+      parent.elaborate(name, block)
+    } else {
+      root = block
+    }
     elaboratePending.setValue(ElaborateRecord.BlockElaborated(generator.blockPath), None)
   }
 
@@ -761,8 +768,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ElemBuilder
 
     // We don't use the usual elaboration flow for the root block because it has no parent and breaks the flow
-    processBlock(DesignPath(), root)
-    elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
+    // TODO DEDUP w/ ELABORATE / GENERATORS FLOW
+    val rootPb = root.toPb.getHierarchy
+    if (rootPb.generators.nonEmpty) {
+      require(rootPb.generators.size == 1)  // TODO proper single generator structure
+      val (generatorFnName, generator) = rootPb.generators.head
+      elaboratePending.addNode(ElaborateRecord.Generator(DesignPath(), rootPb.getSelfClass, generatorFnName,
+        None, generator.requiredParams, generator.requiredParams),
+        generator.requiredParams.map { depPath =>
+          ElaborateRecord.ParamValue(DesignPath().asIndirect ++ depPath)
+        } ++ generator.requiredPorts.map { depPort =>
+          ElaborateRecord.ConnectedLink(DesignPath() ++ depPort)
+        }
+      )
+    } else {
+      processBlock(DesignPath(), root)
+      elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
+    }
 
     // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")

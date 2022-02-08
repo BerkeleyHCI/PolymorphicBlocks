@@ -106,7 +106,10 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 }
 
 case class PortLibrary(target: ref.LibraryPath) extends PortLike {
-  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+  }
   def toPb: elem.PortLike = elem.PortLike(elem.PortLike.Is.LibElem(target))
   override def isElaborated: Boolean = false
 }

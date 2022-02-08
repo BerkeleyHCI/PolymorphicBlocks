@@ -68,7 +68,10 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
 }
 
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
-  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+  }
   def toPb: elem.BlockLike = elem.BlockLike(elem.BlockLike.Type.LibElem(target))
   override def isElaborated: Boolean = false
 }
