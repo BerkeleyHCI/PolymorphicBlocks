@@ -255,12 +255,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // If not connected, set unconnected
     // TODO should this be set at the block level for consistency?
-    val isConnected = portDirectlyConnected.contains(path)
-    if (!isConnected) {
-      portDirectlyConnected.put(path, false)
-      elaboratePending.setValue(ElaborateRecord.ConnectedLink(path), None)
-    } else {
-      require(portDirectlyConnected(path))  // it should not have been assigned false from anywhere else
+    val propagateConnected = instantiated match {
+      case _ @ (_: wir.Port | _: wir.Bundle) =>
+        if (!portDirectlyConnected.contains(path)) {
+          portDirectlyConnected.put(path, false)
+          constProp.setValue(path.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(path), None)
+          false
+        } else {
+          require(portDirectlyConnected(path))  // it should not have been assigned false from anywhere else
+          true
+        }
+      case _: wir.PortArray => false  // bundles should not have connection status
+      case port => throw new NotImplementedError(s"unknown instantiated port $port")
     }
 
     // Process and recurse as needed
@@ -272,7 +279,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          if (isConnected) {  // propagate connected-ness only if connected
+          if (propagateConnected) {  // propagate connected-ness only if connected
             portDirectlyConnected.put(path + childPortName, true)
           }
           elaboratePort(path + childPortName, port, childPort)
