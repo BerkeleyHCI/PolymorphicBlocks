@@ -9,6 +9,7 @@ import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLi
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
 import edg.util.IterableUtils._
+import EdgirUtils._
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -19,15 +20,19 @@ sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that c
 sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
 object ElaborateRecord {
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
-  case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency  // including generator, if applicable
+  case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency // including generator, if applicable
   case class Link(linkPath: DesignPath) extends ElaborateTask with ElaborateDependency
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
-  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
+  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask {
+    override def toString: String = s"Connect($toLinkPortPath <-> $fromLinkPortPath)"
+  }
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
                        unrefinedClass: Option[LibraryPath],
                        requiredParams: Seq[ref.LocalPath], requiredPorts: Seq[ref.LocalPath]
-                      ) extends ElaborateTask with ElaborateDependency
+                      ) extends ElaborateTask with ElaborateDependency {
+    override def toString: String = s"Generator(${blockClass.toSimpleString}.$fnName @ $blockPath)"
+  }
 
   // Dependency source only, for a parameter value
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency
@@ -42,35 +47,54 @@ object ElaborateRecord {
 
 sealed trait CompilerError
 object CompilerError {
-  case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError  // may be redundant w/ below
+  case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError {
+    // These error may be redundant with below, but provides dependency data
+    override def toString: String = {
+      s"Unelaborated missing dependencies $elaborateRecord:\n" +
+          s"${missing.map(x => s"- $x").mkString("\n")}"
+    }
+  }
 
-  case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError
-  case class Generator(path: DesignPath, target: ref.LibraryPath, fn: String) extends CompilerError
+  case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError {
+    override def toString: String = s"Unelaborated library element ${target.toSimpleString} @ $path"
+  }
+  case class Generator(path: DesignPath, target: ref.LibraryPath, fn: String) extends CompilerError {
+    override def toString: String = s"Unelaborated generator ${target.toSimpleString}.$fn @ $path"
+  }
 
-  case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError
-  case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError
-  case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath) extends CompilerError
+  case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError {
+    override def toString: String = s"Library error ${target.toSimpleString} @ $path: $err"
+  }
+  case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError {
+    override def toString: String = s"Generator error ${target.toSimpleString}.$fn @ $path: $err"
+  }
+  case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath)
+      extends CompilerError {
+    override def toString: String =
+      s"Invalid refinement ${refinedLibrary.toSimpleString} -> ${designLibrary.toSimpleString} @ $path"
+  }
 
   case class OverAssign(target: IndirectDesignPath,
-                        causes: Seq[OverAssignCause]) extends CompilerError
+                        causes: Seq[OverAssignCause]) extends CompilerError {
+    override def toString: String = {
+      s"Overassign to $target:\n" +
+        s"${causes.map(x => s"- $x").mkString("\n")}"
+    }
+  }
 
   case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError {
-    override def toString: String = {
-      s"Abstract block: $path (of type ${EdgirUtils.SimpleLibraryPath(blockType)})"
-    }
+    override def toString: String = s"Abstract block: $path (of type ${blockType.toSimpleString})"
   }
 
   case class FailedAssertion(root: DesignPath, constrName: String,
                              value: expr.ValueExpr, result: ExprValue) extends CompilerError {
-    override def toString: String = {
+    override def toString: String =
       s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
-    }
   }
   case class MissingAssertion(root: DesignPath, constrName: String,
                               value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError {
-    override def toString: String = {
+    override def toString: String =
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
-    }
   }
 
   // TODO should this be an error? Currently a debugging tool
@@ -80,9 +104,13 @@ object CompilerError {
   sealed trait OverAssignCause
   object OverAssignCause {
     case class Assign(target: IndirectDesignPath, root: DesignPath, constrName: String, value: expr.ValueExpr)
-        extends OverAssignCause
+        extends OverAssignCause {
+      override def toString = s"Assign $target <- ${ExprToString(value)} @ $root.$constrName"
+    }
     case class Equal(target: IndirectDesignPath, source: IndirectDesignPath)  // TODO constraint info once we track that?
-        extends OverAssignCause
+        extends OverAssignCause {
+      override def toString = s"Equals $target = $source"
+    }
   }
 }
 
