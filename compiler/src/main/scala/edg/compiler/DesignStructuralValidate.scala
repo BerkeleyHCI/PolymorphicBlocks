@@ -36,9 +36,7 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
     } else {
       Seq()
     }
-    val errors = block.generators.map { case (name, generator) =>
-      CompilerError.Generator(path, block.getSelfClass, generator.fn)
-    } ++ ports.values.flatten ++ blocks.values.flatten ++ links.values.flatten
+    val errors = ports.values.flatten ++ blocks.values.flatten ++ links.values.flatten
     errors.toSeq ++ abstractError
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): Seq[CompilerError] = {

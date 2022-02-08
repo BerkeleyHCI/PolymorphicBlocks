@@ -54,12 +54,8 @@ object CompilerError {
           s"${missing.map(x => s"- $x").mkString("\n")}"
     }
   }
-
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError {
     override def toString: String = s"Unelaborated library element ${target.toSimpleString} @ $path"
-  }
-  case class Generator(path: DesignPath, target: ref.LibraryPath, fn: String) extends CompilerError {
-    override def toString: String = s"Unelaborated generator ${target.toSimpleString}.$fn @ $path"
   }
 
   case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError {
@@ -591,7 +587,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       reqParamValues ++ reqPortValues
     ) match {
       case Errorable.Success(generatedPb) =>
-        require(generatedPb.getSelfClass == generator.blockClass)
+        if (generatedPb.getSelfClass != generator.blockClass) {
+          errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName,
+            s"Generated class ${generatedPb.getSelfClass.toSimpleString} not equal to " +
+                s"generator class ${generator.blockClass.toSimpleString}")
+        }
+        if (generatedPb.generators.nonEmpty) {
+          errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName,
+            s"Generated ${generatedPb.getSelfClass.toSimpleString} still contains generators")
+        }
         generatedPb
       case Errorable.Error(err) =>
         import edgir.elem.elem
@@ -605,7 +609,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val (parentPath, name) = generator.blockPath.split
     val parent = resolveBlock(parentPath)
     parent.elaborate(name, block)
-
     elaboratePending.setValue(ElaborateRecord.BlockElaborated(generator.blockPath), None)
   }
 
