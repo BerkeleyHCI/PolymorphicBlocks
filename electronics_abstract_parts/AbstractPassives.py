@@ -126,8 +126,8 @@ class UnpolarizedCapacitor(PassiveComponent):
   def __init__(self, capacitance: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.capacitance = self.Parameter(RangeExpr(capacitance))
-    self.voltage = self.Parameter(RangeExpr(voltage))  # defined as operating voltage range
+    self.capacitance = capacitance
+    self.voltage = voltage  # defined as operating voltage range
 
 
 @abstract_block

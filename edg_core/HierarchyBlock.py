@@ -42,9 +42,8 @@ def init_in_parent(fn: InitType) -> InitType:
         else:
           arg_val = arg_default
 
-        param_name = '(constr)' + arg_name
-        if param_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
-          prev_val = self._init_params[param_name]
+        if arg_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
+          prev_val = self._init_params[arg_name]
           assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} ({id(arg_val)}) over prior {prev_val} ({id(prev_val)})"
         else:  # not previously declared, create a new constructor parameter
           if isinstance(arg_val, ConstraintExpr) and not arg_val._is_bound():
@@ -78,7 +77,7 @@ def init_in_parent(fn: InitType) -> InitType:
 
           # Create new parameter in self, and pass through this one instead of the original
           param_bound = param_model._bind(ParamBinding(self))
-          self._init_params[param_name] = param_bound
+          self._init_params[arg_name] = param_bound
 
           if arg_name in kwargs:
             kwargs[arg_name] = param_bound

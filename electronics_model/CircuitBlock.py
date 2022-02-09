@@ -44,14 +44,14 @@ class FootprintBlock(Block):
   # TODO perhaps don't allow part / package initializers since those shouldn't be used
   def __init__(self) -> None:
     super().__init__()
-    self.footprint_name = self.Parameter(StringExpr())
-    self.datasheet = self.Parameter(StringExpr())
+    self.fp_footprint = self.Parameter(StringExpr())
+    self.fp_datasheet = self.Parameter(StringExpr())
 
-    self.mfr = self.Parameter(StringExpr())
-    self.part = self.Parameter(StringExpr())
-    self.value = self.Parameter(StringExpr())
-    self.refdes = self.Parameter(StringExpr())
-    self.refdes_prefix = self.Parameter(StringExpr())
+    self.fp_mfr = self.Parameter(StringExpr())
+    self.fp_part = self.Parameter(StringExpr())
+    self.fp_value = self.Parameter(StringExpr())
+    self.fp_refdes = self.Parameter(StringExpr())
+    self.fp_refdes_prefix = self.Parameter(StringExpr())
 
   def _metadata_to_proto(self, src: Any, path: List[str],
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
@@ -88,24 +88,24 @@ class FootprintBlock(Block):
 
     self.pinning = self.Metadata(pinning)
 
-    self.assign(self.footprint_name, footprint)
-    self.assign(self.refdes_prefix, refdes)
+    self.assign(self.fp_footprint, footprint)
+    self.assign(self.fp_refdes_prefix, refdes)
     if mfr is not None:
-      self.assign(self.mfr, mfr)
+      self.assign(self.fp_mfr, mfr)
     else:
-      self.assign(self.mfr, '')
+      self.assign(self.fp_mfr, '')
     if part is not None:
-      self.assign(self.part, part)
+      self.assign(self.fp_part, part)
     else:
-      self.assign(self.part, '')
+      self.assign(self.fp_part, '')
     if value is not None:
-      self.assign(self.value, value)
+      self.assign(self.fp_value, value)
     else:
-      self.assign(self.value, '')
+      self.assign(self.fp_value, '')
     if datasheet is not None:
-      self.assign(self.datasheet, datasheet)
+      self.assign(self.fp_datasheet, datasheet)
     else:
-      self.assign(self.datasheet, '')
+      self.assign(self.fp_datasheet, '')
 
 
 @abstract_block
