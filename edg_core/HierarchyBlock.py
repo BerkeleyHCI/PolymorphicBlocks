@@ -409,17 +409,12 @@ class GeneratorBlock(Block):
     self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
     self._generators: collections.OrderedDict[str, GeneratorBlock.GeneratorRecord] = collections.OrderedDict()
 
-    # Track generatorr targets to know where to not generate default initializers
-    self._generator_target_ports = IdentitySet[BasePort]()
-    self._generator_target_params = IdentitySet[ConstraintExpr]()
-
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
-    connect_blocks: Tuple[Block, ...]  # blocks that this generator can connect to
 
   # DEPRECATED - pending experimentation to see if this can be removed
   # This is an older API that has the .get(...) in the genreator function,
@@ -431,7 +426,7 @@ class GeneratorBlock(Block):
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), (), ())
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), ())
 
   ConstrType1 = TypeVar('ConstrType1', bound=Any)
   ConstrType2 = TypeVar('ConstrType2', bound=Any)
@@ -537,22 +532,7 @@ class GeneratorBlock(Block):
 
     assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
 
-    target_blocks = []
-
-    for target in targets:
-      if isinstance(target, Block):
-        target_blocks.append(target)
-      if isinstance(target, BasePort):
-        self._generator_target_ports.add(target)
-      elif isinstance(target, ConstraintExpr):
-        self._generator_target_params.add(target)
-      elif isinstance(target, Block):
-        pass  # written into the GeneratorRecord instead for the compiler
-      else:
-        raise TypeError(f"unknown generator target type {target}")
-
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs,
-                                                               tuple(target_blocks))
+    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs)
 
   # Generator solved-parameter-access interface
   #
@@ -602,24 +582,12 @@ class GeneratorBlock(Block):
   # Generator serialization and parsing
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
-    # TODO dedup w/ HierarchyBlock._def_to_proto
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, Block)
-
-    pb = edgir.HierarchyBlock()
-    pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
-    pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first TODO why?
-    pb = self._populate_def_proto_block_base(pb)
-    pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_param_init(pb, IdentitySet(*chain(self._init_params.values(),
-                                                                    self._generator_target_params)))
-    pb = self._populate_def_proto_port_init(pb, IdentitySet(*chain(self._connected_ports(),
-                                                                   self._generator_target_ports)))
-
-    if self._elaboration_state != BlockElaborationState.post_generate:  # don't write generators if invoking the generator
+    if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
+      pb = edgir.HierarchyBlock()
       pb = self._populate_def_proto_block_generator(pb)
-
-    return pb
+      return pb
+    else:
+      return super()._def_to_proto()
 
   def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     assert self._generators, f"{self} did not define any generator functions"
@@ -633,8 +601,6 @@ class GeneratorBlock(Block):
         pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
       for req_port in record.req_ports:
         pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
-      for connect_block in record.connect_blocks:
-        pb.generators[name].connected_blocks.add().CopyFrom(ref_map[connect_block])
 
     return pb
 
