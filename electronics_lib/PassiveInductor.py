@@ -71,12 +71,10 @@ class InductorTable(DigikeyTable):
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
+  def __init__(self, *args, part_spec: StringLike = "", footprint_spec: StringLike = "",  **kwargs):
+    super().__init__(*args, **kwargs)
     self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
-                   self.part_spec, self.footprint_spec)
+                   part_spec, footprint_spec)
 
     # Output values
     self.selected_inductance = self.Parameter(RangeExpr())

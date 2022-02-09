@@ -7,7 +7,7 @@ from .Categories import *
 class Resistor(PassiveComponent):
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr(), power: RangeLike = (0, 0) * Watt) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
@@ -15,20 +15,20 @@ class Resistor(PassiveComponent):
 
     self.spec_resistance = self.Parameter(RangeExpr(resistance))
     self.resistance = self.Parameter(RangeExpr())
-    self.power = self.Parameter(RangeExpr(power))  # operating power range
+    self.power = power  # operating power range
 
 
 class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
     self.io = self.Port(DigitalSingleSource(), [InOut])
 
-    self.resistance = self.Parameter(RangeExpr(resistance))
+    self.resistance = resistance
 
   def contents(self):
     super().contents()
@@ -42,13 +42,13 @@ class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
-
-    self.resistance = self.Parameter(RangeExpr(resistance))
 
     self.gnd = self.Port(Ground(), [Common])
     self.io = self.Port(DigitalSingleSource(), [InOut])
+
+    self.resistance = resistance
 
   def contents(self):
     super().contents()
@@ -61,14 +61,14 @@ class PulldownResistor(DiscreteApplication):
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
+  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])
 
-    self.resistance = self.Parameter(RangeExpr(resistance))
-    self.current_limits = self.Parameter(RangeExpr(current_limits))
+    self.resistance = resistance
+    self.current_limits = current_limits
 
   def contents(self):
     super().contents()
@@ -97,7 +97,7 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TOD
 class CurrentSenseResistor(DiscreteApplication):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr()) -> None:
+  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
     self.res = self.Block(SeriesPowerResistor(resistance, current_limits))
@@ -122,7 +122,7 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   # TODO no default capacitance and voltage rating
   @init_in_parent
-  def __init__(self, capacitance: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
 
     self.capacitance = capacitance
@@ -146,7 +146,7 @@ class DecouplingCapacitor(DiscreteApplication):
   Implemented as a shim block."""
   # TODO no default capacitance
   @init_in_parent
-  def __init__(self, capacitance: RangeLike = RangeExpr()) -> None:
+  def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
@@ -166,7 +166,7 @@ class DecouplingCapacitor(DiscreteApplication):
 class Inductor(PassiveComponent):
   # TODO no default inductance
   @init_in_parent
-  def __init__(self, inductance: RangeLike = RangeExpr(),
+  def __init__(self, inductance: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO),
                frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
     super().__init__()

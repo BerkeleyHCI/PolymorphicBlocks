@@ -9,6 +9,7 @@ import edgir
 from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
 from .Binding import ParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
+from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .Core import Refable, non_library
 from .Range import Range
 from .Exceptions import *
@@ -34,46 +35,36 @@ def init_in_parent(fn: InitType) -> InitType:
         self._init_params = {}
 
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(fn).parameters.items())[1:]):  # discard 0=self
-        arg_default = arg_param.default
+        if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+          continue  # ignore *args and **kwargs, those will get resolved at a lower level
+
         if arg_name in kwargs:
           arg_val = kwargs[arg_name]
         elif arg_index < len(args):
           arg_val = args[arg_index]
+        elif arg_param.default != inspect._empty:
+          arg_val = arg_param.default
         else:
-          arg_val = arg_default
+          arg_val = None
 
         if arg_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
           prev_val = self._init_params[arg_name]
           assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} ({id(arg_val)}) over prior {prev_val} ({id(prev_val)})"
         else:  # not previously declared, create a new constructor parameter
-          if isinstance(arg_val, ConstraintExpr) and not arg_val._is_bound():
-            assert arg_val.initializer is None, \
-              f"in constructor arguments got non-bound {arg_name} but initialized with {arg_val.initializer};" +\
-              "default arguments should just use the literal (eg, 1.0 instead of FloatExpr(1.0))"
-            arg_val = None
+          if isinstance(arg_val, ConstraintExpr):
+            assert arg_val._is_bound(), f"in constructor arguments got non-bound default {arg_name}={arg_val}: " + \
+                "either leave default empty or pass in a value (eg, not a parameter type like RangeExpr())"
 
-          if isinstance(arg_default, param_types):  # only care about ConstraintExpr-like args
-            # TODO unify w/ ConstraintExpr Union-type
-            # TODO check arg_val type, so a better error message is generated
-            if isinstance(arg_default, (bool, BoolExpr)):
-              param_model: ConstraintExpr = BoolExpr(arg_val)
-            elif isinstance(arg_default, (float, int, FloatExpr)):
-              param_model = FloatExpr(arg_val)
-            elif isinstance(arg_default, (Range, RangeExpr)) or (isinstance(arg_default, tuple) and
-                isinstance(arg_default[0], float_like_types) and isinstance(arg_default[0], float_like_types)):
-              param_model = RangeExpr(arg_val)
-            elif isinstance(arg_default, (str, StringExpr)):
-              param_model = StringExpr(arg_val)
-            else:
-              raise ValueError(f"In {fn}, unknown Constraint-like argument {arg_name}={arg_default} of type {type(arg_default)}")
-          elif isinstance(arg_default, (BaseBlock, BasePort)):
-            raise NotImplementedError(f"in {fn}, argument passing for Block and Port types not implemented: {arg_name}={arg_default}")
-          elif arg_default is inspect._empty:  # type: ignore
-            if (arg_param.kind in (arg_param.VAR_POSITIONAL, arg_param.VAR_KEYWORD)):
-              continue  # TODO in future, recurse into these to make sure they're all set
-            raise NotImplementedError(f"in {fn}, argument {arg_name} with no default, TODO support type-hint inference")
+          if arg_param.annotation in (BoolLike, BoolExpr):
+            param_model: ConstraintExpr = BoolExpr(arg_val)
+          elif arg_param.annotation in (FloatLike, FloatExpr):
+            param_model = FloatExpr(arg_val)
+          elif arg_param.annotation in (RangeLike, RangeExpr):
+            param_model = RangeExpr(arg_val)
+          elif arg_param.annotation in (StringLike, StringExpr):
+            param_model = StringExpr(arg_val)
           else:
-            raise NotImplementedError(f"In {fn}, unrecognized argument to Block: {arg_name}={arg_default} of type {type(arg_default)}")
+            raise ValueError(f"In {fn}, unknown argument type {arg_name}: {arg_param.annotation}")
 
           # Create new parameter in self, and pass through this one instead of the original
           param_bound = param_model._bind(ParamBinding(self))
