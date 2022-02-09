@@ -5,7 +5,6 @@ from .Categories import *
 
 @abstract_block
 class Resistor(PassiveComponent):
-
   # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike = RangeExpr(), power: RangeLike = (0, 0) * Watt) -> None:
@@ -153,7 +152,7 @@ class DecouplingCapacitor(DiscreteApplication):
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.gnd = self.Port(VoltageSink(), [Common, Output])
 
-    self.capacitance = self.Parameter(RangeExpr(capacitance))
+    self.capacitance = capacitance
 
   def contents(self):
     super().contents()
@@ -175,8 +174,8 @@ class Inductor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.inductance = self.Parameter(RangeExpr(inductance))
-    self.current = self.Parameter(RangeExpr(current))  # defined as operating current range, non-directioned
-    self.frequency = self.Parameter(RangeExpr(frequency))  # defined as operating frequency range
+    self.inductance = inductance
+    self.current = current  # defined as operating current range, non-directioned
+    self.frequency = frequency  # defined as operating frequency range
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())

@@ -20,6 +20,6 @@ class InductorTestCase(unittest.TestCase):
   def test_inductor(self) -> None:
     compiled = ScalaCompiler.compile(InductorTestTop)
 
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Inductor_SMD:L_0805_2012Metric')
-    self.assertEqual(compiled.get_value(['dut', 'part']), 'MLZ2012N2R2LT000')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '2.2µH, 800mA')
+    self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Inductor_SMD:L_0805_2012Metric')
+    self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'MLZ2012N2R2LT000')
+    self.assertEqual(compiled.get_value(['dut', 'fp_value']), '2.2µH, 800mA')
