@@ -547,7 +547,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
       elaboratePending.addNode(ElaborateRecord.Generator(path, refinedLibrary, generatorFnName,
-          unrefinedType, generator.requiredParams, generator.requiredParams),
+          unrefinedType, generator.requiredParams, generator.requiredPorts),
         generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
         } ++ generator.requiredPorts.map { depPort =>
@@ -566,6 +566,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }.toMap
 
     val reqPortValues = generator.requiredPorts.flatMap { reqPort =>
+        System.err.println(s"required port $reqPort")
       val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
       val isConnected = constProp.getValue(generator.blockPath.asIndirect ++ isConnectedSuffix)
           .get.asInstanceOf[BooleanValue]
@@ -774,7 +775,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       require(rootPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = rootPb.generators.head
       elaboratePending.addNode(ElaborateRecord.Generator(DesignPath(), rootPb.getSelfClass, generatorFnName,
-        None, generator.requiredParams, generator.requiredParams),
+        None, generator.requiredParams, generator.requiredPorts),
         generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(DesignPath().asIndirect ++ depPath)
         } ++ generator.requiredPorts.map { depPort =>

@@ -22,6 +22,7 @@ class TestGeneratorDependency(Block):
 
 
 class GeneratorDependency(GeneratorBlock):
+  @init_in_parent
   def __init__(self, float_preset: FloatLike = FloatExpr()) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
@@ -38,6 +39,7 @@ class TestGeneratorMultiParameter(Block):
 
 
 class GeneratorMultiParameter(GeneratorBlock):
+  @init_in_parent
   def __init__(self, float_preset1: FloatLike = FloatExpr(), float_preset2: FloatLike = FloatExpr()) -> None:
     super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
