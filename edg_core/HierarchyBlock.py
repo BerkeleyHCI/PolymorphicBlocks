@@ -583,26 +583,19 @@ class GeneratorBlock(Block):
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
+      assert len(self._generators) == 1, f"{self} does not have exactly 1 generator"
+
       pb = edgir.HierarchyBlock()
-      pb = self._populate_def_proto_block_generator(pb)
+      ref_map = self._get_ref_map(edgir.LocalPath())
+      for (name, record) in self._generators.items():
+        pb.generators[name]  # even if rest of the fields are empty, make sure to create a record
+        for req_param in record.req_params:
+          pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
+        for req_port in record.req_ports:
+          pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
       return pb
     else:
       return super()._def_to_proto()
-
-  def _populate_def_proto_block_generator(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
-    assert self._generators, f"{self} did not define any generator functions"
-
-    ref_map = self._get_ref_map(edgir.LocalPath())
-
-    for (name, record) in self._generators.items():
-      pb.generators[name]  # even if rest of the fields are empty, make sure to create a record
-      # TODO maybe there should be done data here?
-      for req_param in record.req_params:
-        pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
-      for req_port in record.req_ports:
-        pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
-
-    return pb
 
   def _parse_param_values(self, values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> None:
     ref_map = self._get_ref_map(edgir.LocalPath())
