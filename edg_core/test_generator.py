@@ -4,7 +4,13 @@ from . import *
 from .ScalaCompilerInterface import ScalaCompiler
 
 
-class TestGeneratorAssign(GeneratorBlock):
+class TestGeneratorAssign(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorAssign())
+
+
+class GeneratorAssign(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     # Because this doesn't have dependency parameters, this is the top-level design
@@ -55,7 +61,7 @@ class TestGenerator(unittest.TestCase):
   def test_generator_assign(self):
     compiled = ScalaCompiler.compile(TestGeneratorAssign)
 
-    self.assertEqual(compiled.get_value(['float_param']), 2.0)
+    self.assertEqual(compiled.get_value(['block', 'float_param']), 2.0)
 
   def test_generator_dependency(self):
     compiled = ScalaCompiler.compile(TestGeneratorDependency)
@@ -106,7 +112,7 @@ class TestBlockSink(Block):
     self.port = self.Port(TestPortSink(range_value))
 
 
-class TestGeneratorIsConnected(GeneratorBlock):
+class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
@@ -123,7 +129,7 @@ class TestGeneratorIsConnected(GeneratorBlock):
 class TestGeneratorConnectedTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorIsConnected())
+    self.generator = self.Block(GeneratorIsConnected())
     self.sink = self.Block(TestBlockSink((0.5, 2.5)))
     self.link = self.connect(self.generator.port, self.sink.port)
 
@@ -131,10 +137,10 @@ class TestGeneratorConnectedTop(Block):
 class TestGeneratorNotConnectedTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorIsConnected())
+    self.generator = self.Block(GeneratorIsConnected())
 
 
-class TestGeneratorInnerConnect(GeneratorBlock):
+class GeneratorInnerConnect(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(), optional=True)
@@ -148,7 +154,7 @@ class TestGeneratorInnerConnect(GeneratorBlock):
 class TestGeneratorInnerConnectTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorInnerConnect())
+    self.generator = self.Block(GeneratorInnerConnect())
     self.sink = self.Block(TestBlockSink((1.5, 3.5)))
     self.link = self.connect(self.generator.port, self.sink.port)
 
@@ -177,7 +183,13 @@ class TestGeneratorException(BaseException):
   pass
 
 
-class TestGeneratorFailure(GeneratorBlock):
+class TestGeneratorFailure(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorFailure())
+
+
+class GeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr(41.0))  # to test context in error messages

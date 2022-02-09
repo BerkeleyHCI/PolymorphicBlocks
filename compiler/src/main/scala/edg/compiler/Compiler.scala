@@ -206,46 +206,44 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Neither port can be an array (container) port (array connects should be expanded into individual element connects),
   // but ports may be bundle or inner ports (in bundles or arrays).
   // This depends on ports on both sides having been elaborated, as well as the link's parameters being available.
-  protected def elaborateConnect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath): Unit = {
+  protected def elaborateConnect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
     // Generate port-port parameter propagation
     // All connected ports should have params
     val toLinkPort = resolvePort(toLinkPortPath).asInstanceOf[wir.HasParams]
-    val fromLinkPort = resolvePort(fromLinkPortPath).asInstanceOf[wir.HasParams]
-    val connectedSteps = (toLinkPort.getParams.keys listEq fromLinkPort.getParams.keys).map(IndirectStep.Element(_)) ++
-        Seq(IndirectStep.IsConnected)
+    val connectedSteps = toLinkPort.getParams.keys.map(IndirectStep.Element(_)) ++ Seq(IndirectStep.IsConnected)
     for (connectedStep <- connectedSteps) {
       constProp.addEquality(
         toLinkPortPath.asIndirect + connectedStep,
-        fromLinkPortPath.asIndirect + connectedStep
+        toBlockPortPath.asIndirect + connectedStep
       )
     }
 
     connectedLink.get(toLinkPortPath) match {
       case Some(linkPath) =>  // Generate the CONNECTED_LINK equalities, if there is a connected link
-        connectedLink.put(fromLinkPortPath, linkPath)  // propagate CONNECTED_LINK params
+        connectedLink.put(toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
         for (linkParam <- linkParams(linkPath)) {
           constProp.addEquality(
             toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
-            fromLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
+            toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
           )
         }
       case None =>
     }
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
-    (toLinkPort, fromLinkPort) match {
-      case (toLinkPort: wir.Bundle, fromLinkPort: wir.Bundle) =>
-        for (portName <- toLinkPort.getElaboratedPorts.keys listEq fromLinkPort.getElaboratedPorts.keys) {
+    toLinkPort match {
+      case toLinkPort: wir.Bundle =>
+        for (portName <- toLinkPort.getElaboratedPorts.keys) {
           elaboratePending.addNode(
-            ElaborateRecord.Connect(toLinkPortPath + portName, fromLinkPortPath + portName),
+            ElaborateRecord.Connect(toLinkPortPath + portName, toBlockPortPath + portName),
             Seq(ElaborateRecord.ConnectedLink(toLinkPortPath + portName))
           )
         }
-      case (toLinkPort, fromLinkPort) => // everything else ignored
+      case toLinkPort => // everything else ignored
     }
 
     // Register port as finished
-    elaboratePending.setValue(ElaborateRecord.ConnectedLink(fromLinkPortPath), None)
+    elaboratePending.setValue(ElaborateRecord.ConnectedLink(toBlockPortPath), None)
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
@@ -445,8 +443,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ linkPort, path ++ blockPort),
-              Seq(ElaborateRecord.BlockElaborated(path + blockPort.head),
-                ElaborateRecord.ConnectedLink(path ++ linkPort))
+              Seq(ElaborateRecord.ConnectedLink(path ++ linkPort))
             )
             require(!portDirectlyConnected.contains(path ++ blockPort))
             portDirectlyConnected.put(path ++ blockPort, true)
@@ -465,8 +462,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ extPort, path ++ intPort),
-              Seq(ElaborateRecord.BlockElaborated(path + intPort.head),
-                ElaborateRecord.ConnectedLink(path ++ extPort))
+              Seq(ElaborateRecord.ConnectedLink(path ++ extPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
@@ -550,8 +546,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           unrefinedType, generator.requiredParams, generator.requiredPorts),
         generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        } ++ generator.requiredPorts.map { depPort =>
-          ElaborateRecord.ConnectedLink(path ++ depPort)
+        } ++ generator.requiredPorts.flatMap { depPort =>
+            if (portDirectlyConnected.contains(path ++ depPort)) {
+              Some(ElaborateRecord.ConnectedLink(path ++ depPort))
+            } else {  // don't block on non-connected ports
+              // TODO the disconnected logic is very spread around, this needs to be centralized
+              None
+            }
         }
       )
     }
@@ -566,24 +567,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }.toMap
 
     val reqPortValues = generator.requiredPorts.flatMap { reqPort =>
-        System.err.println(s"required port $reqPort")
       val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val isConnected = constProp.getValue(generator.blockPath.asIndirect ++ isConnectedSuffix)
-          .get.asInstanceOf[BooleanValue]
-
-      if (isConnected.value) {
-        Seq(
-          isConnectedSuffix,
-          PathSuffix() ++ reqPort + IndirectStep.ConnectedLink,
-          PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name,
+      // TODO centralize not-connected logic
+      if (portDirectlyConnected.contains(generator.blockPath ++ reqPort)) {
+        val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
+        Map(
+          isConnectedSuffix -> BooleanValue(true),
+          connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix).get,
         )
       } else {
-        Seq(
-          isConnectedSuffix
-        )
+        Map(isConnectedSuffix -> BooleanValue(false))
       }
-    }.map { param =>
-      param.asLocalPath() -> constProp.getValue(generator.blockPath.asIndirect ++ param).get
+    }.map { case (param, value) =>
+      param.asLocalPath() -> value
     }
 
     // Run generator and plug in
@@ -650,9 +646,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
               ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
-              Seq(
-                ElaborateRecord.ConnectedLink(path ++ intPort)
-              )
+              Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
@@ -769,23 +763,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ElemBuilder
 
     // We don't use the usual elaboration flow for the root block because it has no parent and breaks the flow
-    // TODO DEDUP w/ ELABORATE / GENERATORS FLOW
+    // TODO unify with BlockLike in Design
     val rootPb = root.toPb.getHierarchy
-    if (rootPb.generators.nonEmpty) {
-      require(rootPb.generators.size == 1)  // TODO proper single generator structure
-      val (generatorFnName, generator) = rootPb.generators.head
-      elaboratePending.addNode(ElaborateRecord.Generator(DesignPath(), rootPb.getSelfClass, generatorFnName,
-        None, generator.requiredParams, generator.requiredPorts),
-        generator.requiredParams.map { depPath =>
-          ElaborateRecord.ParamValue(DesignPath().asIndirect ++ depPath)
-        } ++ generator.requiredPorts.map { depPort =>
-          ElaborateRecord.ConnectedLink(DesignPath() ++ depPort)
-        }
-      )
-    } else {
-      processBlock(DesignPath(), root)
-      elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
-    }
+    require(rootPb.generators.isEmpty, "root generators not supported")
+    processBlock(DesignPath(), root)
+    elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
 
     // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
