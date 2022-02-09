@@ -48,7 +48,9 @@ def init_in_parent(fn: InitType) -> InitType:
           assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} ({id(arg_val)}) over prior {prev_val} ({id(prev_val)})"
         else:  # not previously declared, create a new constructor parameter
           if isinstance(arg_val, ConstraintExpr) and not arg_val._is_bound():
-            assert arg_val.initializer is None, f"in got non-bound {arg_name} but initialized with {arg_val.initializer}"
+            assert arg_val.initializer is None, \
+              f"in constructor arguments got non-bound {arg_name} but initialized with {arg_val.initializer};" +\
+              "default arguments should just use the literal (eg, 1.0 instead of FloatExpr(1.0))"
             arg_val = None
 
           if isinstance(arg_default, param_types):  # only care about ConstraintExpr-like args

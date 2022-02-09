@@ -123,8 +123,7 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   # TODO no default capacitance and voltage rating
   @init_in_parent
-  def __init__(self, capacitance: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr(),
-               part_spec: StringLike = "") -> None:
+  def __init__(self, capacitance: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
     self.capacitance = self.Parameter(RangeExpr(capacitance))
