@@ -481,6 +481,7 @@ class GeneratorBlock(Block):
                 req5: ConstraintExpr[ConstrType5, Any], req6: ConstraintExpr[ConstrType6, Any],
                 req7: ConstraintExpr[ConstrType7, Any], req8: ConstraintExpr[ConstrType8, Any],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
+
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7, ConstrType8,
@@ -491,6 +492,7 @@ class GeneratorBlock(Block):
                 req7: ConstraintExpr[ConstrType7, Any], req8: ConstraintExpr[ConstrType8, Any],
                 req9: ConstraintExpr[ConstrType9, Any],
                 *, req_ports: Iterable[BasePort] = [], targets: TargetsType = []) -> None: ...
+
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7, ConstrType8,

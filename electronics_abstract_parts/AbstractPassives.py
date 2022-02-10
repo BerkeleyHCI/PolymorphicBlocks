@@ -7,7 +7,7 @@ from .Categories import *
 class Resistor(PassiveComponent):
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeExpr, power: RangeExpr = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
@@ -22,7 +22,7 @@ class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeExpr) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -42,7 +42,7 @@ class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
   # TODO no default resistance
   @init_in_parent
-  def __init__(self, resistance: RangeExpr) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
     self.gnd = self.Port(Ground(), [Common])
@@ -61,7 +61,7 @@ class PulldownResistor(DiscreteApplication):
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
-  def __init__(self, resistance: RangeExpr, current_limits: RangeExpr) -> None:
+  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(), [Power, Input])
@@ -97,7 +97,7 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TOD
 class CurrentSenseResistor(DiscreteApplication):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
-  def __init__(self, resistance: RangeExpr, current_limits: RangeExpr) -> None:
+  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
     self.res = self.Block(SeriesPowerResistor(resistance, current_limits))
@@ -122,7 +122,7 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   # TODO no default capacitance and voltage rating
   @init_in_parent
-  def __init__(self, capacitance: RangeExpr, voltage: RangeExpr) -> None:
+  def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
 
     self.capacitance = capacitance
@@ -146,7 +146,7 @@ class DecouplingCapacitor(DiscreteApplication):
   Implemented as a shim block."""
   # TODO no default capacitance
   @init_in_parent
-  def __init__(self, capacitance: RangeExpr) -> None:
+  def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
@@ -166,9 +166,9 @@ class DecouplingCapacitor(DiscreteApplication):
 class Inductor(PassiveComponent):
   # TODO no default inductance
   @init_in_parent
-  def __init__(self, inductance: RangeExpr,
-               current: RangeExpr = Default(RangeExpr.ZERO),
-               frequency: RangeExpr = Default(RangeExpr.EMPTY_ZERO)) -> None:
+  def __init__(self, inductance: RangeLike,
+               current: RangeLike = Default(RangeExpr.ZERO),
+               frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
