@@ -71,7 +71,7 @@ class InductorTable(DigikeyTable):
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, *args, part_spec: StringLike = "", footprint_spec: StringLike = "",  **kwargs):
+  def __init__(self, *args, part_spec: StringExpr = "", footprint_spec: StringExpr = "",  **kwargs):
     super().__init__(*args, **kwargs)
     self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
                    part_spec, footprint_spec)
