@@ -29,7 +29,7 @@ class TestGeneratorDependency(Block):
 
 class GeneratorDependency(GeneratorBlock):
   @init_in_parent
-  def __init__(self, float_preset: FloatLike = FloatExpr()) -> None:
+  def __init__(self, float_preset: FloatLike) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
     self.generator(self.float_gen, float_preset)
@@ -46,7 +46,7 @@ class TestGeneratorMultiParameter(Block):
 
 class GeneratorMultiParameter(GeneratorBlock):
   @init_in_parent
-  def __init__(self, float_preset1: FloatLike = FloatExpr(), float_preset2: FloatLike = FloatExpr()) -> None:
+  def __init__(self, float_preset1: FloatLike, float_preset2: FloatLike) -> None:
     super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
     self.float_param2 = self.Parameter(FloatExpr())
@@ -100,14 +100,14 @@ class TestPortSink(Port[TestLink]):
 
 class TestBlockSource(Block):
   @init_in_parent
-  def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
+  def __init__(self, float_value: FloatLike) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(float_value))
 
 
 class TestBlockSink(Block):
   @init_in_parent
-  def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
+  def __init__(self, range_value: RangeLike) -> None:
     super().__init__()
     self.port = self.Port(TestPortSink(range_value))
 
@@ -192,10 +192,9 @@ class TestGeneratorFailure(Block):
 class GeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.float_param = self.Parameter(FloatExpr(41.0))  # to test context in error messages
-    self.generator(self.errorfn, self.float_param)
+    self.generator(self.errorfn)
 
-  def errorfn(self, float_param: float) -> None:
+  def errorfn(self) -> None:
     def helperfn() -> None:
       raise TestGeneratorException("test text")
     helperfn()
