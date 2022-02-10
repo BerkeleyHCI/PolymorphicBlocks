@@ -223,8 +223,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         connectedLink.put(toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
         for (linkParam <- linkParams(linkPath)) {
           constProp.addEquality(
-            toLinkPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
-            toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam
+            toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
+            linkPath.asIndirect + linkParam,
           )
         }
       case None =>
@@ -306,8 +306,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Additional processing for block-side ports
-  protected def processBlockPort(portPath: DesignPath, port: wir.PortLike): Unit = {
+  // Additional processing for ports that sets not-connected if they haven't been connected (in the enclosing block)
+  protected def setPortNotConnected(portPath: DesignPath, port: wir.PortLike): Unit = {
     val topIsConnected = port match {  // If not connected, set unconnected
       case _ @ (_: wir.Port | _: wir.Bundle) =>
         if (!portDirectlyConnected.contains(portPath)) {
@@ -327,39 +327,34 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.Bundle =>
         for ((childPortName, childPort) <- port.getElaboratedPorts) {
           if (topIsConnected) {  // only propagate connectivity status
+            require(!portDirectlyConnected.contains(portPath + childPortName))
             portDirectlyConnected.put(portPath + childPortName, true)
           }  // in the false case, it would be set during the recursive call
-          processBlockPort(portPath + childPortName, childPort)
+          setPortNotConnected(portPath + childPortName, childPort)
         }
       case port: wir.PortArray =>
         // don't propagate connectivity status, since connectivity should be directly set for array elts
         for ((childPortName, childPort) <- port.getElaboratedPorts) {
-          processBlockPort(portPath + childPortName, childPort)
+          setPortNotConnected(portPath + childPortName, childPort)
         }
       case _: wir.Port =>  // no recursion case for leaf types
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
     }
   }
 
-  // Additional processing that needs to be done on link-side ports.
-  protected def processLinkPort(portPath: DesignPath, port: wir.PortLike, linkPath: DesignPath): Unit = {
+  // Sets the ConnectedLink for all the top-level ports (recursing into arrays, but not bundles)
+  protected def setPortConnectedLink(portPath: DesignPath, port: wir.PortLike, linkPath: DesignPath): Unit = {
     port match {
       case _: wir.Port | _: wir.Bundle =>
-        // Set CONNECTED_LINK, IS_CONNECTED params and seed ConnectedLink elaboration dependencies
-        // Non-recursive: this should be called be inner links to handle those connections,
-        // then those parameters will be forwarded with the link's connect / export statements.
-        linkParams(linkPath).foreach { paramName =>
-          constProp.addEquality(
-            portPath.asIndirect + IndirectStep.ConnectedLink + paramName,
-            linkPath.asIndirect + paramName
-          )
+        // false case set in setPortNotConnected - TODO this needs serious cleaning
+        if (portDirectlyConnected.contains(portPath)) {
+          connectedLink.put(portPath, linkPath)
+          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(true))
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
         }
-        connectedLink.put(portPath, linkPath)
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(true))
-        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
       case port: wir.PortArray => port.getElaboratedPorts.foreach { case (childName, childPort) =>
         // Array contents are treated as top-level ports
-        processLinkPort(portPath + childName, childPort, linkPath)
+        setPortConnectedLink(portPath + childName, childPort, linkPath)
       }
       case port => throw new NotImplementedError(s"unknown port $port")
     }
@@ -394,7 +389,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, block, port)
     }
     for ((portName, port) <- block.getElaboratedPorts) {
-      processBlockPort(path + portName, port)
+      setPortNotConnected(path + portName, port)
     }
 
     // Find allocate ports and lower them before processing all constraints
@@ -628,7 +623,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, link, port)
     }
     for ((portName, port) <- link.getElaboratedPorts) {
-      processLinkPort(path + portName, port, path)
+      setPortConnectedLink(path + portName, port, path)
+      setPortNotConnected(path + portName, port)
     }
 
     // All inner link ports that need to be allocated, and constraints connecting to it
@@ -648,7 +644,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             )
             // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
-            portDirectlyConnected.put(path ++ intPort, true)
+            if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
+              portDirectlyConnected.put(path ++ intPort, true)
+            }
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
               ValueExpr.RefAllocate(intPortArray)) =>
             innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
@@ -693,7 +691,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               Seq(ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
             )
             require(!portDirectlyConnected.contains(path ++ intPortArray + arrayIndex))
-            portDirectlyConnected.put(path ++ intPortArray + arrayIndex, true)
+            if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
+              portDirectlyConnected.put(path ++ intPortArray + arrayIndex, true)
+            }
 
             val newConstrName = if (extPorts.length == 1) {
               constrName  // constraints don't expand
