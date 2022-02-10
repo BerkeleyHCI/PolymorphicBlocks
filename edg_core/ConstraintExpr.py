@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
 WrappedType = TypeVar('WrappedType', covariant=True)
-CastableType = TypeVar('CastableType', covariant=True)
+CastableType = TypeVar('CastableType', contravariant=True)
 class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
@@ -100,7 +100,6 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 BoolLike = Union[bool, 'BoolExpr']
 class BoolExpr(ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
-
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
@@ -183,7 +182,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
 NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
-class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable]):
+class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
   @classmethod
