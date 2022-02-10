@@ -61,9 +61,9 @@ class TestSpiCircuit(Block):
     self.slave1 = self.Block(TestFakeSpiSlave())
     self.slave2 = self.Block(TestFakeSpiSlave())
 
-    self.spi = self.connect(self.master.spi, self.slave1.spi, self.slave2.spi)
-    self.cs1 = self.connect(self.master.cs_out_1, self.slave1.cs_in)
-    self.cs2 = self.connect(self.master.cs_out_2, self.slave2.cs_in)
+    self.spi_link = self.connect(self.master.spi, self.slave1.spi, self.slave2.spi)
+    self.cs1_link = self.connect(self.master.cs_out_1, self.slave1.cs_in)
+    self.cs2_link = self.connect(self.master.cs_out_2, self.slave2.cs_in)
 
 
 class TestFakeUartBlock(FootprintBlock):
