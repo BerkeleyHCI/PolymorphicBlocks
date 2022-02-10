@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -5,11 +6,11 @@ from .Categories import *
 @abstract_block
 class Fuse(DiscreteComponent, DiscreteApplication):
   @init_in_parent
-  def __init__(self, trip_current: RangeLike = RangeExpr()) -> None:
+  def __init__(self, trip_current: RangeLike) -> None:
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
     super().__init__()
 
-    self.trip_current = self.Parameter(RangeExpr(trip_current))
+    self.trip_current = cast(RangeExpr, trip_current)
 
     self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr(),
                                         voltage_limits=RangeExpr.ALL),

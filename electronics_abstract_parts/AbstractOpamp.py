@@ -76,8 +76,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
   @init_in_parent
-  def __init__(self, amplification: RangeLike, impedance: RangeLike = (10, 100)*kOhm, *,
-               series: IntLike = 24, tolerance: FloatLike = 0.01):  # to be overridden by refinements
+  def __init__(self, amplification: RangeLike, impedance: RangeLike = Default((10, 100)*kOhm), *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):  # to be overridden by refinements
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -165,7 +165,8 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
   ratio specifies Rf/R1, the amplification ratio.
   """
   @init_in_parent
-  def __init__(self, ratio: RangeLike = RangeExpr(), input_impedance: RangeLike = RangeExpr()):
+  def __init__(self, ratio: RangeLike, input_impedance: RangeLike, *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -177,13 +178,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.output_reference = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.ratio = self.Parameter(RangeExpr(ratio))
-    self.input_impedance = self.Parameter(RangeExpr(input_impedance))
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance,
+    self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance,
                    targets=[self.input_positive, self.input_negative, self.output_reference])
 
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
@@ -273,9 +268,13 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
   Vout = - 1/RC * int(Vin) (integrating over time)
+
+  Series is lower and tolerance is higher because there's a cap involved
+  TODO - separate series for cap, and series and tolerance by decade?
   """
   @init_in_parent
-  def __init__(self, factor: RangeLike = RangeExpr(), capacitance: RangeLike = RangeExpr()):
+  def __init__(self, factor: RangeLike, capacitance: RangeLike, *,
+               series: IntLike = Default(6), tolerance: FloatLike = Default(0.05)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -286,15 +285,7 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource())
     self.reference = self.Port(AnalogSink())  # negative reference for the input and output signals
 
-    self.factor = self.Parameter(RangeExpr(factor))
-    self.capacitance = self.Parameter(RangeExpr(capacitance))
-
-    # Series is lower and tolerance is higher because there's a cap involved
-    # TODO separate tolerances and series by decade, and for the cap
-    self.series = self.Parameter(IntExpr(6))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.05))  # can be overridden by refinements
-
-    self.generator(self.generate_components, self.factor, self.capacitance, self.series, self.tolerance,
+    self.generator(self.generate_components, factor, capacitance, series, tolerance,
                    targets=[self.input])
 
   def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:

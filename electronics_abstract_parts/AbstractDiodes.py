@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -10,17 +11,17 @@ class Diode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, reverse_voltage: RangeLike = RangeExpr(), current: RangeLike = RangeExpr(),
-               voltage_drop: RangeLike = RangeExpr(), reverse_recovery_time: RangeLike = RangeExpr()) -> None:
+  def __init__(self, reverse_voltage: RangeLike, current: RangeLike, voltage_drop: RangeLike,
+               reverse_recovery_time: RangeLike) -> None:
     super().__init__()
 
     self.anode = self.Port(Passive())
     self.cathode = self.Port(Passive())
 
-    self.reverse_voltage = self.Parameter(RangeExpr(reverse_voltage))
-    self.current = self.Parameter(RangeExpr(current))
-    self.reverse_recovery_time = self.Parameter(RangeExpr(reverse_recovery_time))
-    self.voltage_drop = self.Parameter(RangeExpr(voltage_drop))
+    self.reverse_voltage = cast(RangeExpr, reverse_voltage)
+    self.current = cast(RangeExpr, current)
+    self.voltage_drop = cast(RangeExpr, voltage_drop)
+    self.reverse_recovery_time = cast(RangeExpr, reverse_recovery_time)
 
 
 @abstract_block
@@ -31,27 +32,28 @@ class ZenerDiode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, zener_voltage: RangeLike = RangeExpr(),
+  def __init__(self, zener_voltage: RangeLike,
                forward_voltage_drop: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
     self.anode = self.Port(Passive())
     self.cathode = self.Port(Passive())
 
-    self.zener_voltage = self.Parameter(RangeExpr(zener_voltage))
-    self.forward_voltage_drop = self.Parameter(RangeExpr(forward_voltage_drop))
+    self.zener_voltage = zener_voltage
+    self.forward_voltage_drop = forward_voltage_drop
 
 
 class ProtectionZenerDiode(DiscreteApplication):
   """Zener diode reversed across a power rail to provide transient overvoltage protection (and become an incandescent
   indicator on a reverse voltage)"""
   @init_in_parent
-  def __init__(self, voltage: RangeLike = RangeExpr()):
+  def __init__(self, voltage: RangeLike):
     super().__init__()
-    self.voltage = self.Parameter(RangeExpr(voltage))
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.gnd = self.Port(Ground(), [Common])
+
+    self.voltage = voltage
 
   def contents(self):
     super().contents()
