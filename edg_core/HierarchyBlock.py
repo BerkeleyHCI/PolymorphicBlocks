@@ -56,6 +56,8 @@ def init_in_parent(fn: InitType) -> InitType:
 
           if arg_param.annotation in (BoolLike, BoolExpr):
             param_model: ConstraintExpr = BoolExpr(arg_val)
+          elif arg_param.annotation in (IntLike, IntExpr):
+            param_model = IntExpr(arg_val)
           elif arg_param.annotation in (FloatLike, FloatExpr):
             param_model = FloatExpr(arg_val)
           elif arg_param.annotation in (RangeLike, RangeExpr):

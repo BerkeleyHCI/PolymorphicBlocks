@@ -76,7 +76,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
   @init_in_parent
-  def __init__(self, amplification: RangeLike = RangeExpr(), impedance: RangeLike = (10, 100)*kOhm):
+  def __init__(self, amplification: RangeLike, impedance: RangeLike = (10, 100)*kOhm, *,
+               series: IntLike = 24, tolerance: FloatLike = 0.01):  # to be overridden by refinements
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -88,13 +89,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource(), [Output])
     self.reference = self.Port(AnalogSink())
 
-    self.amplification = self.Parameter(RangeExpr(amplification))
-    self.impedance = self.Parameter(RangeExpr(impedance))
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance,
+    self.generator(self.generate_resistors, amplification, impedance, series, tolerance,
                    targets=[self.reference, self.output])
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
