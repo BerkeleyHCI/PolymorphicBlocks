@@ -16,12 +16,12 @@ class IllegalConstraintException(msg: String) extends Exception(msg)
 
 
 sealed trait ElaborateRecord
-sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
-sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
 object ElaborateRecord {
+  sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
+  sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
+
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
-  case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency // including generator, if applicable
-  case class Link(linkPath: DesignPath) extends ElaborateTask with ElaborateDependency
+  case class Link(linkPath: DesignPath) extends ElaborateTask
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask {
     override def toString: String = s"Connect($toLinkPortPath <-> $fromLinkPortPath)"
@@ -30,7 +30,7 @@ object ElaborateRecord {
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
                        unrefinedClass: Option[LibraryPath],
                        requiredParams: Seq[ref.LocalPath], requiredPorts: Seq[ref.LocalPath]
-                      ) extends ElaborateTask with ElaborateDependency {
+                      ) extends ElaborateTask {
     override def toString: String = s"Generator(${blockClass.toSimpleString}.$fnName @ $blockPath)"
   }
 
@@ -538,7 +538,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       } else {
         root = block
       }
-      elaboratePending.setValue(ElaborateRecord.BlockElaborated(path), None)
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
@@ -613,7 +612,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     } else {
       root = block
     }
-    elaboratePending.setValue(ElaborateRecord.BlockElaborated(generator.blockPath), None)
   }
 
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
@@ -767,7 +765,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val rootPb = root.toPb.getHierarchy
     require(rootPb.generators.isEmpty, "root generators not supported")
     processBlock(DesignPath(), root)
-    elaboratePending.setValue(ElaborateRecord.BlockElaborated(DesignPath()), None)
 
     // Ports at top break IS_CONNECTED implies CONNECTED_LINK has valid params
     require(root.getElaboratedPorts.isEmpty, "design top may not have ports")
@@ -792,7 +789,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             debug(s"Elaborate generator '${generator.fnName}' @ ${generator.blockPath}")
             elaborateGenerator(generator)
             elaboratePending.setValue(generator, None)
-          case _: ElaborateDependency =>
+          case _: ElaborateRecord.ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
         }
       }
