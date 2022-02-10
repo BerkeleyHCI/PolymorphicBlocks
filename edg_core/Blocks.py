@@ -424,8 +424,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return constraint
 
   ConstrType = TypeVar('ConstrType')
-  def assign(self, target: ConstraintExpr[ConstrType],
-             value: Union[ConstraintExpr[ConstrType], ConstrType],
+  def assign(self, target: ConstraintExpr[ConstrType, Any],
+             value: Union[ConstraintExpr[ConstrType, Any], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")

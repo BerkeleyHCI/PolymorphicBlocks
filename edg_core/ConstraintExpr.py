@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
 WrappedType = TypeVar('WrappedType', covariant=True)
-class ConstraintExpr(Refable, Generic[WrappedType]):
+CastableType = TypeVar('CastableType', covariant=True)
+class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
   """
@@ -97,7 +98,7 @@ class ConstraintExpr(Refable, Generic[WrappedType]):
 
 
 BoolLike = Union[bool, 'BoolExpr']
-class BoolExpr(ConstraintExpr[bool]):
+class BoolExpr(ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
 
   @classmethod
@@ -182,7 +183,7 @@ class BoolExpr(ConstraintExpr[bool]):
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
 NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
-class NumLikeExpr(ConstraintExpr[WrappedType], Generic[WrappedType, NumLikeCastable]):
+class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
   @classmethod
@@ -434,7 +435,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     return self * rhs_cast.__mul_inv__()
 
 StringLike = Union['StringExpr', str]
-class StringExpr(ConstraintExpr[str]):
+class StringExpr(ConstraintExpr[str, StringLike]):
   """String expression, can be used as a constraint"""
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
@@ -456,7 +457,7 @@ class StringExpr(ConstraintExpr[str]):
     return isinstance(self.binding, StringLiteralBinding)
 
 
-class AssignExpr(ConstraintExpr[None]):
+class AssignExpr(ConstraintExpr[None, None]):
   """Assignment expression, should be an internal type"""
   @classmethod
   def _to_expr_type(cls, input: Any) -> AssignExpr:
