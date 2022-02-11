@@ -58,8 +58,6 @@ class InitializerTestCase(unittest.TestCase):
       edgir.AssignLit(['bundle_port', 'b', 'float_param'], -1.0),
       pb.constraints["(init)bundle_port.b.float_param"])
 
-    self.assertEqual(len(pb.param_defaults), 0)
-
   def test_nested_initializer(self):
     pb = TestNestedBlock()._elaborated_def_to_proto()
 
@@ -82,8 +80,6 @@ class InitializerTestCase(unittest.TestCase):
       edgir.AssignLit(['inner', 'bundle_param'], 31.0),
       pb.constraints["(init)inner.bundle_param"])
 
-    self.assertEqual(len(pb.param_defaults), 0)
-
   def test_nested_inner(self):
     pb = InternalBlock()._elaborated_def_to_proto()
 
@@ -95,9 +91,6 @@ class InitializerTestCase(unittest.TestCase):
     self.assertIn("(init)inner_bundle.a.float_param", pb.constraints)  # don't care about literal initializers
     self.assertIn("(init)inner_bundle.b.float_param", pb.constraints)  # don't care about literal initializers
 
-    self.assertEqual(len(pb.param_defaults), 1)
-    self.assertEqual(pb.param_defaults['inner_param'], edgir.lit_to_expr(3.0))
-
   def test_default_initializer(self):
     pb = TestDefaultBlock()._elaborated_def_to_proto()
 
@@ -105,8 +98,6 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(
       edgir.AssignLit(['inner', 'inner_param'], 3.0),
       pb.constraints["(init)inner.inner_param"])
-
-    self.assertEqual(len(pb.param_defaults), 0)
 
   def test_multiple_initializer(self):
     pb = TestMultipleInstantiationBlock()._elaborated_def_to_proto()
@@ -118,5 +109,3 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(
       edgir.AssignLit(['inner2', 'inner_param'], 3.0),
       pb.constraints["(init)inner2.inner_param"])
-
-    self.assertEqual(len(pb.param_defaults), 0)
