@@ -4,12 +4,12 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
-import edg.ExprBuilder.{Ref, ValInit}
+import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir
 import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
 
 
-/** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
+/** Tests refinement using the supplemental refinements data structure.
   */
 class CompilerRefinementTest extends AnyFlatSpec {
   val library = Library(
@@ -30,6 +30,19 @@ class CompilerRefinementTest extends AnyFlatSpec {
         params = Map(
           "superParam" -> ValInit.Integer,
           "subParam" -> ValInit.Integer,
+        ),
+        ports = Map(
+          "port" -> Port.Library("port"),
+        )
+      ),
+      Block.Block("subclassDefaultBlock",  // contains a default param
+        superclasses = Seq("superclassBlock"),
+        params = Map(
+          "superParam" -> ValInit.Integer,
+          "defaultParam" -> ValInit.Integer,
+        ),
+        paramDefaults = Map(
+          "defaultParam" -> ValueExpr.Literal(42),
         ),
         ports = Map(
           "port" -> Port.Library("port"),
@@ -106,6 +119,15 @@ class CompilerRefinementTest extends AnyFlatSpec {
     ))
     compiler.compile() should equal(expected)
     compiler.getErrors() shouldBe empty
+  }
+
+  "Compiler on refinement with default parameters" should "work" in {
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassDefaultBlock"))
+    ))
+    compiler.compile()
+    compiler.getErrors() shouldBe empty
+    compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(IntValue(42))
   }
 
   "Compiler on design with subclass values" should "work" in {
