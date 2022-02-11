@@ -71,15 +71,15 @@ class InductorTable(DigikeyTable):
 
 class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, *args, part_spec: StringLike = "", footprint_spec: StringLike = "",  **kwargs):
+  def __init__(self, *args, part: StringLike = "", footprint: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.generator(self.select_inductor, self.inductance, self.current, self.frequency,
-                   part_spec, footprint_spec)
+                   part, footprint)
 
     # Output values
-    self.selected_inductance = self.Parameter(RangeExpr())
-    self.selected_current_rating = self.Parameter(RangeExpr())
-    self.selected_frequency_rating = self.Parameter(RangeExpr())
+    self.actual_inductance = self.Parameter(RangeExpr())
+    self.actual_current_rating = self.Parameter(RangeExpr())
+    self.actual_frequency_rating = self.Parameter(RangeExpr())
 
   def select_inductor(self, inductance: Range, current: Range, frequency: Range,
                       part_spec: str, footprint_spec: str) -> None:
@@ -91,9 +91,9 @@ class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
         frequency.fuzzy_in(row[InductorTable.FREQUENCY_RATING])
     )).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
-    self.assign(self.selected_inductance, part[InductorTable.INDUCTANCE])
-    self.assign(self.selected_current_rating, part[InductorTable.CURRENT_RATING])
-    self.assign(self.selected_frequency_rating, part[InductorTable.FREQUENCY_RATING])
+    self.assign(self.actual_inductance, part[InductorTable.INDUCTANCE])
+    self.assign(self.actual_current_rating, part[InductorTable.CURRENT_RATING])
+    self.assign(self.actual_frequency_rating, part[InductorTable.FREQUENCY_RATING])
 
     self.footprint(
       'L', part[InductorTable.FOOTPRINT],

@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_abstract_parts import *
 
 
@@ -27,13 +28,13 @@ class BufferedSupply(PowerConditioner):
   See https://electronics.stackexchange.com/questions/178605/op-amp-mosfet-constant-current-power-source
   """
   @init_in_parent
-  def __init__(self, charging_current: RangeLike = RangeExpr(), sense_resistance: RangeLike = RangeExpr(),
-               voltage_drop: RangeLike = RangeExpr()) -> None:
+  def __init__(self, charging_current: RangeLike, sense_resistance: RangeLike,
+               voltage_drop: RangeLike) -> None:
     super().__init__()
 
-    self.charging_current = self.Parameter(RangeExpr(charging_current))
-    self.sense_resistance = self.Parameter(RangeExpr(sense_resistance))
-    self.voltage_drop = self.Parameter(RangeExpr(voltage_drop))
+    self.charging_current = cast(RangeExpr, charging_current)
+    self.sense_resistance = cast(RangeExpr, sense_resistance)
+    self.voltage_drop = cast(RangeExpr, voltage_drop)
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])
@@ -110,7 +111,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
   preferred if both are connected.
   """
   @init_in_parent
-  def __init__(self, voltage_drop: RangeLike = RangeExpr(), reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
+  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink())  # high-priority source
@@ -145,7 +146,7 @@ class DiodePowerMerge(PowerConditioner, Block):
   """Diode power merge block for two voltage sources.
   """
   @init_in_parent
-  def __init__(self, voltage_drop: RangeLike = RangeExpr(), reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
+  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
     self.pwr_in1 = self.Port(VoltageSink())

@@ -1,5 +1,5 @@
 import unittest
-from .JlcResistor import JlcResistor, JlcResistorTable
+from .JlcResistor import JlcResistor
 from .test_passive_common import *
 
 class JlcResistorTestTop(Block):
@@ -17,6 +17,6 @@ class JlcResistorTestCase(unittest.TestCase):
   def test_resistor(self) -> None:
     compiled = ScalaCompiler.compile(JlcResistorTestTop)
 
-    self.assertEqual(compiled.get_value(['dut', 'footprint_name']), 'Resistor_SMD:R_1206_3216Metric')
-    self.assertEqual(compiled.get_value(['dut', 'part']), '1206W4F7500T5E')
-    self.assertEqual(compiled.get_value(['dut', 'value']), '0.25W ±1% 750Ω ±100ppm/℃ 1206 Chip Resistor - Surface Mount ROHS')
+    self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Resistor_SMD:R_1206_3216Metric')
+    self.assertEqual(compiled.get_value(['dut', 'fp_part']), '1206W4F7500T5E')
+    self.assertEqual(compiled.get_value(['dut', 'fp_value']), '0.25W ±1% 750Ω ±100ppm/℃ 1206 Chip Resistor - Surface Mount ROHS')

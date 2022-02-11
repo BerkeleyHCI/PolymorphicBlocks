@@ -148,12 +148,12 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
         power.fuzzy_in(row[FetTable.POWER_RATING])
     )).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
-    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
+    self.assign(self.actual_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.actual_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.actual_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.actual_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.actual_gate_charge, part[FetTable.GATE_CHARGE])
 
     self.footprint(
       'Q', part[FetTable.FOOTPRINT],
@@ -188,9 +188,9 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
     self.part_spec = self.Parameter(StringExpr(""))
     self.footprint_spec = self.Parameter(StringExpr(""))
 
-    self.selected_static_power = self.Parameter(RangeExpr())
-    self.selected_switching_power = self.Parameter(RangeExpr())
-    self.selected_total_power = self.Parameter(RangeExpr())
+    self.actual_static_power = self.Parameter(RangeExpr())
+    self.actual_switching_power = self.Parameter(RangeExpr())
+    self.actual_total_power = self.Parameter(RangeExpr())
 
     self.generator(self.select_part,
                    self.part_spec, self.footprint_spec,
@@ -237,16 +237,16 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
       process_row
     ).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
-    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
+    self.assign(self.actual_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.actual_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.actual_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.actual_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.actual_gate_charge, part[FetTable.GATE_CHARGE])
 
-    self.assign(self.selected_static_power, part[self.STATIC_POWER])
-    self.assign(self.selected_switching_power, part[self.SWITCHING_POWER])
-    self.assign(self.selected_total_power, part[self.TOTAL_POWER])
+    self.assign(self.actual_static_power, part[self.STATIC_POWER])
+    self.assign(self.actual_switching_power, part[self.SWITCHING_POWER])
+    self.assign(self.actual_total_power, part[self.TOTAL_POWER])
 
     self.footprint(
       'Q', part[FetTable.FOOTPRINT],

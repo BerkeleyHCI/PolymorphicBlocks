@@ -1,6 +1,7 @@
 from .PassiveCapacitor import *
 from .JlcFootprint import JlcFootprint
 
+
 class JlcCapacitorTable(JlcTable):
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)

@@ -50,7 +50,7 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
 
-    self.selected_capacitance = self.Parameter(FloatExpr())
+    self.actual_capacitance = self.Parameter(FloatExpr())
 
     self.generator(self.select_part, self.frequency,
                    targets=[self.crystal])
@@ -60,7 +60,7 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
       row[CrystalTable.FREQUENCY] in frequency
     )).first(f"no crystal matching f={frequency} Hz")
 
-    self.assign(self.selected_capacitance, part[CrystalTable.CAPACITANCE])
+    self.assign(self.actual_capacitance, part[CrystalTable.CAPACITANCE])
     self.assign(self.crystal.frequency, part[CrystalTable.FREQUENCY])
 
     self.footprint(
@@ -90,7 +90,7 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
   CAPACITOR_TOLERANCE = 0.38
 
   @init_in_parent
-  def __init__(self, frequency: RangeLike = RangeExpr()) -> None:
+  def __init__(self, frequency: RangeLike) -> None:
     """Crystal and supporting circuitry to connect it to an oscillator driver.
     Should include load capacitors."""
     super().__init__()
@@ -101,8 +101,8 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
 
     cap_model = Capacitor(
       capacitance=(
-          (self.package.selected_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 - self.CAPACITOR_TOLERANCE),
-          (self.package.selected_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 + self.CAPACITOR_TOLERANCE)),
+        (self.package.actual_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 - self.CAPACITOR_TOLERANCE),
+        (self.package.actual_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 + self.CAPACITOR_TOLERANCE)),
       voltage=self.crystal.link().drive_voltage
     )
     self.cap_a = self.Block(cap_model)

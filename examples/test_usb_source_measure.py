@@ -47,8 +47,8 @@ class GatedEmitterFollower(Block):
 
     self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
       current_draw=self.current,
-      voltage_limits=self.high_fet.selected_drain_voltage_rating.intersect(
-        self.low_fet.selected_drain_voltage_rating)
+      voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
+        self.low_fet.actual_drain_voltage_rating)
     ))
     self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
     output_driver = self.high_fet.source.as_voltage_source(

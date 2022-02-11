@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_model import *
 from .Categories import *
 from .AbstractPassives import Inductor, DecouplingCapacitor
@@ -7,10 +8,10 @@ from .AbstractPassives import Inductor, DecouplingCapacitor
 class DcDcConverter(PowerConditioner):
   """Base class for all DC-DC converters with shared ground (non-isoalted)."""
   @init_in_parent
-  def __init__(self, output_voltage: RangeExpr = RangeExpr()) -> None:
+  def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
 
-    self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
+    self.output_voltage = output_voltage
 
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=RangeExpr(),
@@ -22,15 +23,15 @@ class DcDcConverter(PowerConditioner):
     ), [Output])  # TODO mark as future-connected here?
     self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
 
-    self.require(self.pwr_out.voltage_out.within(self.spec_output_voltage),
+    self.require(self.pwr_out.voltage_out.within(self.output_voltage),
                    "Output voltage must be within spec")
 
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
   @init_in_parent
-  def __init__(self, output_voltage: RangeExpr = RangeExpr()) -> None:
-    super().__init__(output_voltage)
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.dropout = self.Parameter(RangeExpr())
     self.quiescent_current = self.Parameter(RangeExpr())
 
@@ -44,14 +45,16 @@ class DcDcSwitchingConverter(DcDcConverter):
   """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
   """
   @init_in_parent
-  def __init__(self, output_voltage: RangeExpr = RangeExpr(), ripple_current_factor: RangeLike = RangeExpr(),
-               input_ripple_limit: FloatExpr = 75 * mVolt, output_ripple_limit: FloatExpr = 25 * mVolt) -> None:
+  def __init__(self, *args, ripple_current_factor: RangeLike,
+               input_ripple_limit: FloatLike = Default(75 * mVolt),
+               output_ripple_limit: FloatLike = Default(25 * mVolt),
+               **kwargs) -> None:
     # TODO can this be integrated with some kind of AbstractDcDcConverter?
-    super().__init__(output_voltage)
+    super().__init__(*args, **kwargs)
 
-    self.ripple_current_factor = self.Parameter(RangeExpr(ripple_current_factor))
-    self.input_ripple_limit = self.Parameter(FloatExpr(input_ripple_limit))
-    self.output_ripple_limit = self.Parameter(FloatExpr(output_ripple_limit))
+    self.ripple_current_factor = cast(RangeExpr, ripple_current_factor)
+    self.input_ripple_limit = cast(FloatExpr, input_ripple_limit)
+    self.output_ripple_limit = cast(FloatExpr, output_ripple_limit)
     self.efficiency = self.Parameter(RangeExpr())
 
     self.require(self.pwr_in.current_draw.within((
@@ -62,10 +65,10 @@ class DcDcSwitchingConverter(DcDcConverter):
 @abstract_block
 class BuckConverter(DcDcSwitchingConverter):
   """Step-down switching converter"""
-  def __init__(self, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
+  def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     # TODO can this be integrated with some kind of AbstractDcDcConverter?
-    super().__init__(ripple_current_factor=ripple_current_factor, **kwargs)
+    super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
     self.frequency = self.Parameter(RangeExpr())
 
@@ -86,10 +89,10 @@ class DiscreteBuckConverter(BuckConverter):
   DUTYCYCLE_MAX_LIMIT = 0.9
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
 
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.dutycycle_limit = self.Parameter(RangeExpr((self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)))
-    self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
+    self.actual_dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: Range, output_voltage: Range,
@@ -109,10 +112,10 @@ class DiscreteBuckConverter(BuckConverter):
     TODO unify rated max current with something else, perhaps a block param?
     """
     dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
-    self.assign(self.dutycycle, dutycycle)
+    self.assign(self.actual_dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    self.require(self.dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
+    self.require(self.actual_dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
     # these are actual numbers to be used in calculations
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
@@ -165,10 +168,10 @@ class DiscreteBuckConverter(BuckConverter):
 @abstract_block
 class BoostConverter(DcDcSwitchingConverter):
   """Step-up switching converter"""
-  def __init__(self, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
+  def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     # TODO can this be integrated with some kind of AbstractDcDcConverter?
-    super().__init__(ripple_current_factor=ripple_current_factor, **kwargs)
+    super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
     self.frequency = self.Parameter(RangeExpr())
 
@@ -189,8 +192,8 @@ class DiscreteBoostConverter(BoostConverter):
   DUTYCYCLE_MAX_LIMIT = 0.85  # by datasheet
   WORST_EFFICIENCY_ESTIMATE = 0.8  # from TI reference
 
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.dutycycle_limit = self.Parameter(RangeExpr((self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)))
     self.dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
 

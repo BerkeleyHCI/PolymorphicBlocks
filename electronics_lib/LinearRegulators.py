@@ -41,7 +41,7 @@ class Ld1117_Device(DiscreteChip, FootprintBlock):
 class Ld1117(LinearRegulator, GeneratorBlock):
   def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.generator(self.select_part, self.spec_output_voltage,
+    self.generator(self.select_part, self.output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
@@ -111,7 +111,7 @@ class Ldl1117_Device(DiscreteChip, FootprintBlock):
 class Ldl1117(LinearRegulator, GeneratorBlock):
   def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.generator(self.select_part, self.spec_output_voltage,
+    self.generator(self.select_part, self.output_voltage,
                    targets=[self.pwr_in, self.pwr_out, self.gnd])
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
@@ -248,7 +248,7 @@ class Ap2204k(LinearRegulator):
   # TODO unify with _Block version, with optional en and generators
 
   def contents(self):
-    self.ic = self.Block(Ap2204k_Block(self.spec_output_voltage))
+    self.ic = self.Block(Ap2204k_Block(self.output_voltage))
     self.assign(self.dropout, self.ic.dropout)
     self.assign(self.quiescent_current, self.ic.quiescent_current)
 
@@ -321,7 +321,7 @@ class Xc6209(LinearRegulator):
   """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
   Low-ESR ceramic cap compatible"""
   def contents(self):
-    self.ic = self.Block(Xc6209_Device(spec_output_voltage=self.spec_output_voltage))
+    self.ic = self.Block(Xc6209_Device(spec_output_voltage=self.output_voltage))
     self.assign(self.dropout, self.ic.dropout)
     self.assign(self.quiescent_current, self.ic.quiescent_current)
 
@@ -389,7 +389,7 @@ class Ap2210_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
 class Ap2210(LinearRegulator):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR"""
   def contents(self):
-    self.ic = self.Block(Ap2210_Device(spec_output_voltage=self.spec_output_voltage))
+    self.ic = self.Block(Ap2210_Device(spec_output_voltage=self.output_voltage))
     self.assign(self.dropout, self.ic.dropout)
     self.assign(self.quiescent_current, self.ic.quiescent_current)
     self.assign(self.pwr_out.current_limits, RangeExpr.ALL)  # checked within the chip

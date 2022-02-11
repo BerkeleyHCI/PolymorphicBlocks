@@ -46,14 +46,14 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(1.192, 1.268) * Volt,
       impedance=(40, 400) * kOhm,  # about 25 MOhm worst case input impedance, this is 100x below
-      assumed_input_voltage=self.spec_output_voltage
+      assumed_input_voltage=self.output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
                 (1.192*Volt / self.fb.actual_ratio.upper(),
                  1.268*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
-                   self.pwr_in.link().voltage, self.spec_output_voltage,
+                   self.pwr_in.link().voltage, self.output_voltage,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
                    self.dutycycle_limit,
@@ -132,7 +132,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(0.749, 0.787) * Volt,
       impedance=(1, 10) * kOhm,
-      assumed_input_voltage=self.spec_output_voltage
+      assumed_input_voltage=self.output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
                 (0.749*Volt / self.fb.actual_ratio.upper(),
@@ -235,7 +235,7 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(0.581, 0.611) * Volt,
       impedance=(1, 10) * kOhm,
-      assumed_input_voltage=self.spec_output_voltage
+      assumed_input_voltage=self.output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
                 (0.581*Volt / self.fb.actual_ratio.upper(),
@@ -357,7 +357,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(0.985, 1.015) * Volt,  # TODO dedup w/ the definition in the device?
       impedance=(10, 100) * kOhm,
-      assumed_input_voltage=self.spec_output_voltage
+      assumed_input_voltage=self.output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
                 (0.985*Volt / self.fb.actual_ratio.upper(),
@@ -460,7 +460,7 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(1.17, 1.33) * Volt,
       impedance=(1, 10) * kOhm,
-      assumed_input_voltage=self.spec_output_voltage
+      assumed_input_voltage=self.output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
                 (1.17*Volt / self.fb.actual_ratio.upper(),

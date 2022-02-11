@@ -107,10 +107,10 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_current_rating = self.Parameter(RangeExpr())
-    self.selected_voltage_drop = self.Parameter(RangeExpr())
-    self.selected_reverse_recovery_time = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+    self.actual_current_rating = self.Parameter(RangeExpr())
+    self.actual_voltage_drop = self.Parameter(RangeExpr())
+    self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
     self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
                    self.reverse_recovery_time)
@@ -126,10 +126,10 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
         row[DiodeTable.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
     )).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
 
-    self.assign(self.selected_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
-    self.assign(self.selected_current_rating, part[DiodeTable.CURRENT_RATING])
-    self.assign(self.selected_voltage_drop, part[DiodeTable.FORWARD_VOLTAGE])
-    self.assign(self.selected_reverse_recovery_time, part[DiodeTable.REVERSE_RECOVERY])
+    self.assign(self.actual_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
+    self.assign(self.actual_current_rating, part[DiodeTable.CURRENT_RATING])
+    self.assign(self.actual_voltage_drop, part[DiodeTable.FORWARD_VOLTAGE])
+    self.assign(self.actual_reverse_recovery_time, part[DiodeTable.REVERSE_RECOVERY])
 
     self.footprint(
       'D', part[DiodeTable.FOOTPRINT],
@@ -186,8 +186,8 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.selected_zener_voltage = self.Parameter(RangeExpr())
-    self.selected_forward_voltage_drop = self.Parameter(RangeExpr())
+    self.actual_zener_voltage = self.Parameter(RangeExpr())
+    self.actual_forward_voltage_drop = self.Parameter(RangeExpr())
 
     self.generator(self.select_part, self.zener_voltage, self.forward_voltage_drop)
     # TODO: also support optional part and footprint name
@@ -198,8 +198,8 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
         row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
     )).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")
 
-    self.assign(self.selected_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
-    self.assign(self.selected_forward_voltage_drop, part[ZenerTable.FORWARD_VOLTAGE])
+    self.assign(self.actual_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
+    self.assign(self.actual_forward_voltage_drop, part[ZenerTable.FORWARD_VOLTAGE])
 
     self.footprint(
       'D', part[ZenerTable.FOOTPRINT],
