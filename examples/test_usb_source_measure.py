@@ -134,14 +134,14 @@ class ErrorAmplifier(GeneratorBlock):
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
     self.connect(self.target, self.rtop.a.as_analog_sink(
-      impedance=self.rtop.resistance + self.rbot.resistance
+      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
     ))
     self.connect(self.actual, self.rbot.a.as_analog_sink(
-      impedance=self.rtop.resistance + self.rbot.resistance
+      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
     ))
     self.connect(self.amp.inp, self.rtop.b.as_analog_source(
       voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
-      impedance=1 / (1 / self.rtop.resistance + 1 / self.rbot.resistance)
+      impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
     ), self.rbot.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
 
     self.rout = self.Block(Resistor(
@@ -158,23 +158,23 @@ class ErrorAmplifier(GeneratorBlock):
       ))
       if diode_spec == 'source':
         self.connect(self.amp.out, self.diode.anode.as_analog_sink(
-          impedance=self.rout.resistance + self.output.link().sink_impedance
+          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
         ))
         resistor_output_port = self.diode.cathode.as_analog_source(
-          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
         )
       elif diode_spec == 'sink':
         self.connect(self.amp.out, self.diode.cathode.as_analog_sink(
-          impedance=self.rout.resistance + self.output.link().sink_impedance
+          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
         ))
         resistor_output_port = self.diode.anode.as_analog_source(
-          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
         )
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     self.connect(resistor_output_port, self.rout.a.as_analog_sink())
     self.connect(self.output, self.rout.b.as_analog_source(
-      impedance=self.rout.resistance
+      impedance=self.rout.actual_resistance
     ), self.amp.inn)
 
 

@@ -53,7 +53,7 @@ class IndicatorLed(Light):
                   self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
 
     self.connect(self.signal, self.package.a.as_digital_sink(
-      current_draw=self.signal.link().voltage / self.res.resistance
+      current_draw=self.signal.link().voltage / self.res.actual_resistance
     ))
 
     self.connect(self.res.a, self.package.k)
@@ -83,7 +83,7 @@ class VoltageIndicatorLed(Light):
                   self.signal.link().voltage.lower() / self.target_current_draw.lower())))
 
     self.connect(self.signal, self.package.a.as_voltage_sink(
-      current_draw=self.signal.link().voltage / self.res.resistance
+      current_draw=self.signal.link().voltage / self.res.actual_resistance
     ))
     self.connect(self.res.a, self.package.k)
     self.connect(self.res.b.as_ground(), self.gnd)
@@ -156,18 +156,18 @@ class IndicatorSinkRgbLed(Light):
     self.connect(self.green_res.a, self.package.k_green)
     self.connect(self.blue_res.a, self.package.k_blue)
     self.connect(self.red_res.b.as_digital_sink(
-      current_draw=(-1 * self.red.link().voltage.upper() / self.red_res.resistance.lower(), 0)
+      current_draw=(-1 * self.red.link().voltage.upper() / self.red_res.actual_resistance.lower(), 0)
     ), self.red)
     self.connect(self.green_res.b.as_digital_sink(
-      current_draw=(-1 * self.green.link().voltage.upper() / self.green_res.resistance.lower(), 0)
+      current_draw=(-1 * self.green.link().voltage.upper() / self.green_res.actual_resistance.lower(), 0)
     ), self.green)
     self.connect(self.blue_res.b.as_digital_sink(
-      current_draw=(-1 * self.blue.link().voltage.upper() / self.blue_res.resistance.lower(), 0)
+      current_draw=(-1 * self.blue.link().voltage.upper() / self.blue_res.actual_resistance.lower(), 0)
     ), self.blue)
 
     self.connect(self.pwr, self.package.a.as_voltage_sink(
       current_draw=(0,
-                    self.red.link().voltage.upper() / self.red_res.resistance.lower() +
-                    self.green.link().voltage.upper() / self.green_res.resistance.lower() +
-                    self.blue.link().voltage.upper() / self.blue_res.resistance.lower())
+                    self.red.link().voltage.upper() / self.red_res.actual_resistance.lower() +
+                    self.green.link().voltage.upper() / self.green_res.actual_resistance.lower() +
+                    self.blue.link().voltage.upper() / self.blue_res.actual_resistance.lower())
     ))

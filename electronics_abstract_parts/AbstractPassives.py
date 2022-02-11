@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_model import *
 from itertools import chain
 from .Categories import *
@@ -13,9 +14,9 @@ class Resistor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.spec_resistance = self.Parameter(RangeExpr(resistance))
-    self.resistance = self.Parameter(RangeExpr())
-    self.power = power  # operating power range
+    self.resistance = cast(RangeExpr, resistance)
+    self.actual_resistance = self.Parameter(RangeExpr())
+    self.power = cast(RangeExpr, power)  # operating power range
 
 
 class PullupResistor(DiscreteApplication):

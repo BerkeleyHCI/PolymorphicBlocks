@@ -543,5 +543,5 @@ class LiteralConstructor:
 DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, IntLike, FloatLike, RangeLike, StringLike])
 def Default(constr: DefaultType) -> DefaultType:
   if isinstance(constr, ConstraintExpr):
-    assert constr.initializer is not None, "default must have initialzier"
+    assert constr.binding is not None, f"default {constr} must have initializer"
   return constr

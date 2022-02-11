@@ -54,18 +54,18 @@ def init_in_parent(fn: InitType) -> InitType:
               "either leave default empty or pass in a value or uninitialized type " +\
               "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))"
 
-          if arg_param.annotation in (BoolLike, BoolExpr):
+          if arg_param.annotation in (BoolLike, "BoolLike", BoolExpr, "BoolExpr"):
             param_model: ConstraintExpr = BoolExpr(arg_val)
-          elif arg_param.annotation in (IntLike, IntExpr):
+          elif arg_param.annotation in (IntLike, "IntLike", IntExpr, "IntExpr"):
             param_model = IntExpr(arg_val)
-          elif arg_param.annotation in (FloatLike, FloatExpr):
+          elif arg_param.annotation in (FloatLike, "FloatLike", FloatExpr, "FloatExpr"):
             param_model = FloatExpr(arg_val)
-          elif arg_param.annotation in (RangeLike, RangeExpr):
+          elif arg_param.annotation in (RangeLike, "RangeLike", RangeExpr, "RangeExpr"):
             param_model = RangeExpr(arg_val)
-          elif arg_param.annotation in (StringLike, StringExpr):
+          elif arg_param.annotation in (StringLike, "StringLike", StringExpr, "StringExpr"):
             param_model = StringExpr(arg_val)
           else:
-            raise ValueError(f"In {fn}, unknown argument type {arg_name}: {arg_param.annotation}")
+            raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
 
           # Create new parameter in self, and pass through this one instead of the original
           param_bound = param_model._bind(ParamBinding(self))

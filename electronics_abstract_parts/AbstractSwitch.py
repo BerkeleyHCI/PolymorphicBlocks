@@ -1,3 +1,4 @@
+from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -5,14 +6,14 @@ from .Categories import *
 @abstract_block
 class Switch(DiscreteComponent):
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, current: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.voltage = self.Parameter(RangeExpr(voltage))
+    self.current = cast(RangeExpr, current)
+    self.voltage = cast(RangeExpr, voltage)
 
 
 class DigitalSwitch(DiscreteApplication):

@@ -96,7 +96,7 @@ class MultimeterCurrentDriver(Block):
     self.connect(self.amp.inp, self.control)
     self.connect(self.amp.inn, self.res.b.as_analog_source(
       voltage_out=(0, max_in_voltage),
-      impedance=self.res.resistance
+      impedance=self.res.actual_resistance
     ))
 
     self.sw = self.Block(AnalogMuxer())

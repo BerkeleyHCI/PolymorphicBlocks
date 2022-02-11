@@ -49,8 +49,8 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (1.192*Volt / self.fb.selected_ratio.upper(),
-                 1.268*Volt / self.fb.selected_ratio.lower()))
+                (1.192*Volt / self.fb.actual_ratio.upper(),
+                 1.268*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.spec_output_voltage,
@@ -135,8 +135,8 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.749*Volt / self.fb.selected_ratio.upper(),
-                 0.787*Volt / self.fb.selected_ratio.lower()))
+                (0.749*Volt / self.fb.actual_ratio.upper(),
+                 0.787*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -238,8 +238,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.581*Volt / self.fb.selected_ratio.upper(),
-                 0.611*Volt / self.fb.selected_ratio.lower()))
+                (0.581*Volt / self.fb.actual_ratio.upper(),
+                 0.611*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -360,8 +360,8 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (0.985*Volt / self.fb.selected_ratio.upper(),
-                 1.015*Volt / self.fb.selected_ratio.lower()))
+                (0.985*Volt / self.fb.actual_ratio.upper(),
+                 1.015*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
@@ -463,8 +463,8 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
       assumed_input_voltage=self.spec_output_voltage
     ))
     self.assign(self.pwr_out.voltage_out,
-                (1.17*Volt / self.fb.selected_ratio.upper(),
-                 1.33*Volt / self.fb.selected_ratio.lower()))
+                (1.17*Volt / self.fb.actual_ratio.upper(),
+                 1.33*Volt / self.fb.actual_ratio.lower()))
 
     self.generator(self.generate_converter,
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,

@@ -51,7 +51,7 @@ class DigitalAnalogIsolatedSwitch(Block):
                   self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())
     ))
     self.connect(self.signal, self.ic.leda.as_digital_sink(
-      current_draw=self.signal.link().voltage / self.res.resistance
+      current_draw=self.signal.link().voltage / self.res.actual_resistance
     ))
     self.connect(self.res.a, self.ic.ledk)
     self.connect(self.res.b.as_ground(), self.gnd)

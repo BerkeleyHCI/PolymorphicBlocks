@@ -103,16 +103,16 @@ class Amplifier(AnalogFilter, GeneratorBlock):
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
     self.connect(self.amp.out, self.output, self.r1.a.as_analog_sink(
-      impedance=self.r1.resistance + self.r2.resistance
+      impedance=self.r1.actual_resistance + self.r2.actual_resistance
     ))
     self.connect(self.r1.b.as_analog_source(
       voltage_out=self.amp.out.voltage_out,
-      impedance=1/(1/self.r1.resistance + 1/self.r2.resistance)
+      impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
     ), self.r2.a.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inn)
     self.connect(self.reference, self.r2.b.as_analog_sink(
-      impedance=self.r1.resistance + self.r2.resistance
+      impedance=self.r1.actual_resistance + self.r2.actual_resistance
     ))
 
 
@@ -200,30 +200,30 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
 
     self.connect(self.input_negative, self.r1.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r1.resistance + self.rf.resistance
+      impedance=self.r1.actual_resistance + self.rf.actual_resistance
     ))
     self.connect(self.input_positive, self.r2.a.as_analog_sink(
-      impedance=self.r2.resistance + self.rg.resistance
+      impedance=self.r2.actual_resistance + self.rg.actual_resistance
     ))
 
     self.connect(self.amp.out, self.output, self.rf.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r1.resistance + self.rf.resistance
+      impedance=self.r1.actual_resistance + self.rf.actual_resistance
     ))
     self.connect(self.r1.b.as_analog_source(
       voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
-      impedance=1 / (1 / self.r1.resistance + 1 / self.rf.resistance)  # combined R1 and Rf resistance
+      impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)  # combined R1 and Rf resistance
     ), self.rf.b.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inn)
     self.connect(self.r2.b.as_analog_source(
       voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
-      impedance=1 / (1 / self.r2.resistance + 1 / self.rg.resistance)  # combined R2 and Rg resistance
+      impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)  # combined R2 and Rg resistance
     ), self.rg.b.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inp)
     self.connect(self.rg.a.as_analog_sink(
-      impedance=self.r2.resistance + self.rg.resistance
+      impedance=self.r2.actual_resistance + self.rg.actual_resistance
     ), self.output_reference)
 
 
@@ -302,10 +302,10 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
 
     self.connect(self.input, self.r.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r.resistance
+      impedance=self.r.actual_resistance
     ))
     self.connect(self.amp.out, self.output, self.c.pos.as_analog_sink())  # TODO impedance of the feedback circuit?
     self.connect(self.r.b.as_analog_source(
-      impedance=self.r.resistance
+      impedance=self.r.actual_resistance
     ), self.c.neg.as_analog_sink(), self.amp.inn)
     self.connect(self.reference, self.amp.inp)

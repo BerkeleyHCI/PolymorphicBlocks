@@ -57,7 +57,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
     super().__init__(**kwargs)
     self.part_spec = self.Parameter(StringExpr(""))
     self.footprint_spec = self.Parameter(StringExpr(""))
-    self.generator(self.select_resistor, self.spec_resistance, self.power,
+    self.generator(self.select_resistor, self.resistance, self.power,
                    self.part_spec, self.footprint_spec)
 
     # Output values
@@ -74,7 +74,7 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
     self.assign(self.selected_resistance, part[JlcResistorTable.RESISTANCE])
-    self.assign(self.resistance, part[JlcResistorTable.RESISTANCE])
+    self.assign(self.actual_resistance, part[JlcResistorTable.RESISTANCE])
     self.assign(self.selected_power, part[JlcResistorTable.POWER_RATING])
     self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
 

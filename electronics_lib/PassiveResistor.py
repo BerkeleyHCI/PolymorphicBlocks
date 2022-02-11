@@ -22,7 +22,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
-    self.generator(self.select_resistor, self.spec_resistance, self.power,
+    self.generator(self.select_resistor, self.resistance, self.power,
                    self.footprint_spec, self.series, self.tolerance)
 
     # Output values
@@ -47,7 +47,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     if not suitable_packages:
       raise ValueError(f"no resistor package for {power.upper} W power")
 
-    self.assign(self.resistance, selected_range)
+    self.assign(self.actual_resistance, selected_range)
     self.assign(self.selected_power_rating, suitable_packages[0][0])
 
     self.footprint(
