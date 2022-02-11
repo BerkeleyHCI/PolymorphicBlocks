@@ -96,7 +96,7 @@ class InitializerTestCase(unittest.TestCase):
     self.assertIn("(init)inner_bundle.b.float_param", pb.constraints)  # don't care about literal initializers
 
     self.assertEqual(len(pb.param_defaults), 1)
-    self.assertEqual(pb.param_defaults['float_param'], edgir.lit_to_expr(3.0))
+    self.assertEqual(pb.param_defaults['inner_param'], edgir.lit_to_expr(3.0))
 
   def test_default_initializer(self):
     pb = TestDefaultBlock()._elaborated_def_to_proto()

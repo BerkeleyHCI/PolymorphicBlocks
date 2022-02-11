@@ -197,6 +197,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     for name, block in self._blocks.items():
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
 
+    # generate param defaults
+    for param_name, self_param in self._init_params.items():
+      if self_param.initializer is not None:
+        # default values can't depend on anything so the ref_map is empty
+        pb.param_defaults[param_name].CopyFrom(self_param.initializer._expr_to_proto(IdentityDict()))
+
     # actually generate the links and connects
     link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
