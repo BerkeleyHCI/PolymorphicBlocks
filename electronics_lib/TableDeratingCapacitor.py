@@ -180,8 +180,8 @@ class JlcDummyCapacitor(DummyCapacitor, JlcFootprint):
   Dummy capacitor that has lcsc_part as an additional parameter
   """
   @init_in_parent
-  def __init__(self, lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
-               part_number: StringLike = "", value: StringLike = "", *args, **kwargs):
+  def __init__(self, set_lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
+               part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
     super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
 
-    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.lcsc_part, set_lcsc_part)
