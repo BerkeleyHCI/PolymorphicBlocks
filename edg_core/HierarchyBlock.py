@@ -18,6 +18,7 @@ from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut
 from .Ports import BasePort, Port
 
+
 InitType = TypeVar('InitType', bound=Callable[..., None])
 def init_in_parent(fn: InitType) -> InitType:
   import inspect
@@ -46,7 +47,7 @@ def init_in_parent(fn: InitType) -> InitType:
 
         if arg_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
           prev_val = self._init_params[arg_name]
-          assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} ({id(arg_val)}) over prior {prev_val} ({id(prev_val)})"
+          assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} over prior {prev_val}"
         else:  # not previously declared, create a new constructor parameter
           if isinstance(arg_val, ConstraintExpr):
             assert arg_val._is_bound() or arg_val.initializer is None,\
@@ -54,8 +55,9 @@ def init_in_parent(fn: InitType) -> InitType:
               "either leave default empty or pass in a value or uninitialized type " +\
               "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))"
 
+          param_model: ConstraintExpr
           if arg_param.annotation in (BoolLike, "BoolLike", BoolExpr, "BoolExpr"):
-            param_model: ConstraintExpr = BoolExpr(arg_val)
+            param_model = BoolExpr(arg_val)
           elif arg_param.annotation in (IntLike, "IntLike", IntExpr, "IntExpr"):
             param_model = IntExpr(arg_val)
           elif arg_param.annotation in (FloatLike, "FloatLike", FloatExpr, "FloatExpr"):

@@ -175,6 +175,7 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
       value=value
     )
 
+
 class JlcDummyCapacitor(DummyCapacitor, JlcFootprint):
   """
   Dummy capacitor that has lcsc_part as an additional parameter
