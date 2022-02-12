@@ -156,7 +156,7 @@ class Tps561201(DiscreteBuckConverter):
     self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
 
     ripple = (
-        self.ripple_current_factor.lower() * self.pwr_out.link().current_drawn.lower(),
+        self.ripple_current_factor.lower() * self.pwr_out.link().current_drawn.upper(),
         (self.ripple_current_factor.upper() * self.pwr_out.link().current_drawn.upper()).max(
           self.ripple_current_factor.lower() * 1.2  # rated current
         )
@@ -167,6 +167,10 @@ class Tps561201(DiscreteBuckConverter):
       self.pwr_in.link().voltage, self.pwr_out.voltage_out, self.frequency,
       self.pwr_out.link().current_drawn.upper(), inductor_current_ripple=ripple
     ))
+    self.connect(self.power_path.pwr_in, self.pwr_in)
+    self.connect(self.power_path.pwr_out, self.pwr_out)
+    self.connect(self.power_path.switch, self.ic.sw)
+    self.connect(self.power_path.gnd, self.gnd)
 
     # self.generator(self.generate_converter,
     #                self.pwr_in.link().voltage, self.pwr_out.voltage_out,

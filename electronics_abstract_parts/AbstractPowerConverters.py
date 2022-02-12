@@ -98,7 +98,7 @@ class BuckConverterPowerPath(GeneratorBlock):
 
     self.pwr_in = self.Port(VoltageSink())  # mainly used for the input capacitor
     self.pwr_out = self.Port(VoltageSource())  # source from the inductor
-    self.switch = self.Port(Passive())  # TODO should this be modeled, eg current draws?
+    self.switch = self.Port(VoltageSink())
     self.gnd = self.Port(Ground(), [Common])
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
@@ -166,6 +166,10 @@ class BuckConverterPowerPath(GeneratorBlock):
     self.connect(self.switch, self.inductor.a.as_voltage_sink(
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
+    self.connect(self.pwr_out, self.inductor.b.as_voltage_source(
+      voltage_out=output_voltage,  # TODO proper parameter propagation
+      current_limits=(0, 1.2)*Amp  # TODO proper parameter propagation
+    ))
 
 
 class BoostConverterPowerPath(GeneratorBlock):
