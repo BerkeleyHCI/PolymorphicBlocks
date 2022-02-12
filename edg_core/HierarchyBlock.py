@@ -21,6 +21,18 @@ from .Ports import BasePort, Port
 
 InitType = TypeVar('InitType', bound=Callable[..., None])
 def init_in_parent(fn: InitType) -> InitType:
+  """
+  This is a wrapper around any Block's __init__ that takes parameters, so arguments passed into the parameters
+  generate into parameter assignments in the parent Block scope.
+
+  This also handles default values, which are generated into the Block containing the __init__.
+
+  It is explicitly not supported for a subclass to modify the parameters passed to a super().__init__ call.
+  This can interact badly with refinement, since the parameters of super().__init__ could be directly assigned
+  in an enclosing block, yet the subclass would also re-assign the same parameter, leading to a conflicting assign.
+  These cases should use composition instead of inheritance, by instantiating the "super" Block and so its parameters
+  are not made available to the enclosing scope.
+  """
   import inspect
   from .Builder import builder
 
