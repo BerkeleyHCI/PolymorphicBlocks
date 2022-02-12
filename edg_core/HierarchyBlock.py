@@ -181,6 +181,17 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
     )
 
+  def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+    pb = super()._populate_def_proto_block_base(pb)
+
+    # generate param defaults
+    for param_name, self_param in self._init_params.items():
+      if self_param.initializer is not None:
+        # default values can't depend on anything so the ref_map is empty
+        pb.param_defaults[param_name].CopyFrom(self_param.initializer._expr_to_proto(IdentityDict()))
+
+    return pb
+
   def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     self._blocks.finalize()
     self._connects.finalize()
@@ -196,12 +207,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     for name, block in self._blocks.items():
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
-
-    # generate param defaults
-    for param_name, self_param in self._init_params.items():
-      if self_param.initializer is not None:
-        # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(self_param.initializer._expr_to_proto(IdentityDict()))
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
@@ -637,6 +642,7 @@ class GeneratorBlock(Block):
           pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
         for req_port in record.req_ports:
           pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
+      pb = self._populate_def_proto_block_base(pb)
       return pb
     else:
       return super()._def_to_proto()

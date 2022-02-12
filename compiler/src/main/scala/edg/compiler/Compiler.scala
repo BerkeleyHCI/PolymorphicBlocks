@@ -521,7 +521,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
             case Errorable.Error(err) =>  // TODO cleaner error handling
               import edgir.elem.elem
-              errors += CompilerError.LibraryError(path, refinedLibrary, err)
+              errors += CompilerError.LibraryError(path, libraryPath, err)
               elem.HierarchyBlock()
           }
           blockPb
