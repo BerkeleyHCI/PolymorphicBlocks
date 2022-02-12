@@ -89,8 +89,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource(), [Output])
     self.reference = self.Port(AnalogSink())
 
-    self.generator(self.generate_resistors, amplification, impedance, series, tolerance,
-                   targets=[self.reference, self.output])
+    self.generator(self.generate_resistors, amplification, impedance, series, tolerance)
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
@@ -178,8 +177,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.output_reference = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance,
-                   targets=[self.input_positive, self.input_negative, self.output_reference])
+    self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance)
 
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
@@ -285,8 +283,7 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource())
     self.reference = self.Port(AnalogSink())  # negative reference for the input and output signals
 
-    self.generator(self.generate_components, factor, capacitance, series, tolerance,
-                   targets=[self.input])
+    self.generator(self.generate_components, factor, capacitance, series, tolerance)
 
   def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)

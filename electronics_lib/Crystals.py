@@ -52,8 +52,7 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
 
     self.actual_capacitance = self.Parameter(FloatExpr())
 
-    self.generator(self.select_part, self.frequency,
-                   targets=[self.crystal])
+    self.generator(self.select_part, self.frequency)
 
   def select_part(self, frequency: Range):
     part = CrystalTable.table().filter(lambda row: (

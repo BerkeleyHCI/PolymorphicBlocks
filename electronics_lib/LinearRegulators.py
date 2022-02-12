@@ -41,8 +41,7 @@ class Ld1117_Device(DiscreteChip, FootprintBlock):
 class Ld1117(LinearRegulator, GeneratorBlock):
   def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.generator(self.select_part, self.output_voltage,
-                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+    self.generator(self.select_part, self.output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     parts = [
@@ -111,8 +110,7 @@ class Ldl1117_Device(DiscreteChip, FootprintBlock):
 class Ldl1117(LinearRegulator, GeneratorBlock):
   def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.generator(self.select_part, self.output_voltage,
-                   targets=[self.pwr_in, self.pwr_out, self.gnd])
+    self.generator(self.select_part, self.output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
@@ -206,8 +204,7 @@ class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than to
 
     self.require(self.pwr_out.voltage_out.within(output_voltage))
 
-    self.generator(self.select_part, self.spec_output_voltage,
-                   targets=[self.pwr_in, self.pwr_out, self.gnd, self.en])
+    self.generator(self.select_part, self.spec_output_voltage)
 
   def select_part(self, spec_output_voltage: Range):
     TOLERANCE = 0.02
@@ -281,8 +278,7 @@ class Xc6209_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
     self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.gnd = self.Port(Ground())
 
-    self.generator(self.select_part, self.spec_output_voltage,
-                   targets=[self.vout])
+    self.generator(self.select_part, self.spec_output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
@@ -350,8 +346,7 @@ class Ap2210_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
     self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
     self.gnd = self.Port(Ground())
 
-    self.generator(self.select_part, self.spec_output_voltage,
-                   targets=[self.vout])
+    self.generator(self.select_part, self.spec_output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C

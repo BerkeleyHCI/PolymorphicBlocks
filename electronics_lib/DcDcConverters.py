@@ -56,8 +56,7 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
                    self.pwr_in.link().voltage, self.output_voltage,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit,
-                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+                   self.dutycycle_limit)
 
 
   def generate_converter(self, input_voltage: Range, output_voltage: Range,
@@ -142,8 +141,7 @@ class Tps561201(DiscreteBuckConverter, GeneratorBlock):
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit,
-                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+                   self.dutycycle_limit)
 
   def generate_converter(self, input_voltage: Range, output_voltage: Range,
                          output_current: Range, frequency: Range,
@@ -245,8 +243,7 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit,
-                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+                   self.dutycycle_limit)
 
   def generate_converter(self, input_voltage: Range, output_voltage: Range,
                          output_current: Range, frequency: Range,
@@ -367,8 +364,7 @@ class Lmr33630(DiscreteBuckConverter, GeneratorBlock):
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit,
-                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+                   self.dutycycle_limit)
 
   def generate_converter(self, input_voltage: Range, output_voltage: Range,
                          output_current: Range, frequency: Range,
@@ -470,8 +466,7 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
                    self.pwr_in.link().voltage, self.pwr_out.voltage_out,
                    self.pwr_out.link().current_drawn,
                    self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit,
-                   targets=[self.fb, self.pwr_in, self.pwr_out, self.gnd])
+                   self.dutycycle_limit)
 
 
   def generate_converter(self, input_voltage: Range, output_voltage: Range,

@@ -389,13 +389,7 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
                    req_ports=chain(self.digital.values(),
                                    self.adc.values(), self.dac.values(),
                                    self.uart.values(), self.spi.values(),
-                                   [self.can_0, self.i2c_0, self.usb_0]),
-                   targets=chain([self.ic],  # connected block
-                                 [self.swd.swo, self.swd.swdio, self.swd.swclk, self.swd.reset],
-                                 self.digital.values(),
-                                 self.adc.values(), self.dac.values(),
-                                 self.uart.values(), self.spi.values(),
-                                 [self.can_0, self.i2c_0, self.usb_0]))  # TODO pass in connected blocks
+                                   [self.can_0, self.i2c_0, self.usb_0]))
 
     #
     # Reference Circuit Block

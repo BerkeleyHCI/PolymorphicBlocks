@@ -167,13 +167,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=chain(self.digital.values(),
                                    self.adc.values(),
-                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
-                   targets=chain([self.pwr, self.gnd],
-                                 [self.ic],  # connected block
-                                 self.digital.values(),
-                                 self.adc.values(),
-                                 [self.uart_0, self.spi_0, self.can_0, self.usb_0]))  # TODO pass in connected blocks
-
+                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]))
 
 
   def pin_assign(self, pin_assigns_str: str) -> None:

@@ -116,8 +116,7 @@ class ErrorAmplifier(GeneratorBlock):
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
     self.generator(self.generate_amp, self.output_resistance, self.input_resistance, self.diode_spec,
-                   self.series, self.tolerance,
-                   targets=[self.target, self.actual, self.output])
+                   self.series, self.tolerance)
 
   def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
                    series: int, tolerance: float) -> None:
