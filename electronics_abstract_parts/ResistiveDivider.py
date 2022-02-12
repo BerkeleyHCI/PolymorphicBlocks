@@ -114,12 +114,11 @@ class BaseVoltageDivider(Filter, Block):
   ratio and impedance.
   Subclasses should define the ratio and impedance spec."""
   @init_in_parent
-  def __init__(self) -> None:
+  def __init__(self, impedance: RangeLike) -> None:
     super().__init__()
 
-    self.ratio = self.Parameter(RangeExpr())
-    self.impedance = self.Parameter(RangeExpr())
-    self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=self.impedance))
+    self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
+    self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
     self.input = self.Export(self.div.top.as_voltage_sink(
       current_draw=RangeExpr(),
@@ -146,10 +145,9 @@ class VoltageDivider(BaseVoltageDivider):
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike) -> None:
-    super().__init__()
+    super().__init__(impedance=impedance)
 
     self.output_voltage = cast(RangeExpr, output_voltage)
-    self.assign(self.impedance, impedance)
 
     ratio_lower = self.output_voltage.lower() / self.input.link().voltage.lower()
     ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
@@ -164,11 +162,10 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
   @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike,
                assumed_input_voltage: RangeLike) -> None:
-    super().__init__()
+    super().__init__(impedance=impedance)
 
     self.output_voltage = cast(RangeExpr, output_voltage)  # TODO eliminate this casting?
     self.assumed_input_voltage = cast(RangeExpr, assumed_input_voltage)  # TODO eliminate this casting?
-    self.assign(self.impedance, impedance)
 
     ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
     ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
