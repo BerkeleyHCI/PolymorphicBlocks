@@ -11,7 +11,7 @@ class BaseParamClass(Block):  # Base class containing no parameters or default
 
 class NondefaultParamClass(BaseParamClass):  # contains a single non-default param
   @init_in_parent
-  def __init__(self, nondefault_param: IntLike) -> None:
+  def __init__(self, nondefault_param: IntLike = IntExpr()) -> None:
     super().__init__()
 
 
@@ -29,7 +29,8 @@ class OverrideDefaultSubClass(DefaultParamSubClass):  # changes the default para
 
 class CombinedParamSubClass(DefaultParamSubClass):  # adds a default param on top of the inherited params
   @init_in_parent
-  def __init__(self, nondefault_param2: FloatLike, default_param2: StringLike = Default("test"), **kwargs) -> None:
+  def __init__(self, nondefault_param2: FloatLike = FloatExpr(),
+               default_param2: StringLike = Default("test"), **kwargs) -> None:
     super().__init__(**kwargs)
 
 
