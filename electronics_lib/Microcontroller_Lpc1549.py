@@ -334,8 +334,6 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
     self.xtal = self.Export(self.ic.xtal, optional=True)
     self.xtal_rtc = self.Export(self.ic.xtal_rtc, optional=True)
 
-    self.frequency = self.Parameter(RangeExpr(frequency))  # TODO move into _Device, but const prop needs to ignore inner contents
-
     # TODO these should be array types?
     # TODO model current flows from digital ports
     self.digital = ElementDict[DigitalBidir]()
@@ -402,7 +400,7 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
     #
     # Reference Circuit Block
     #
-    self.require(self.ic.IRC_FREQUENCY.within(self.frequency) | self.xtal.is_connected(),
+    self.require(self.ic.IRC_FREQUENCY.within(frequency) | self.xtal.is_connected(),
                  "requested frequency out of internal RC range")  # TODO configure clock dividers?
 
     # TODO associate capacitors with a particular Vdd, Vss pin
