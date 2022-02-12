@@ -67,7 +67,7 @@ object CompilerError {
   case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath)
       extends CompilerError {
     override def toString: String =
-      s"Invalid refinement ${refinedLibrary.toSimpleString} -> ${designLibrary.toSimpleString} @ $path"
+      s"Invalid refinement ${refinedLibrary.toSimpleString} <- ${designLibrary.toSimpleString} @ $path"
   }
 
   case class OverAssign(target: IndirectDesignPath,
