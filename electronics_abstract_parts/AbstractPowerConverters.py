@@ -73,13 +73,24 @@ class BuckConverter(DcDcSwitchingConverter):
     self.frequency = self.Parameter(RangeExpr())
 
 
-class BuckConverterPowerStage(GeneratorBlock):
-  # Heuristic for inductor ripple current is 0.3-0.4 of the output current.
-  # Per the LMR33630 datasheet, if the actual current is much lower, use the device's rated current.
-  # Ripple current largely trades off inductor maximum current and inductance.
+class BuckConverterPowerPath(GeneratorBlock):
+  """Provides a helper function to generate the power path for a switching buck converter.
+
+  Heuristic for inductor ripple current is 0.3-0.4 of the output current.
+  Per the LMR33630 datasheet, if the actual current is much lower, use the device's rated current.
+  Ripple current largely trades off inductor maximum current and inductance.
+
+  Useful resources:
+  https://www.ti.com/lit/an/slva477b/slva477b.pdf
+    Component sizing in continuous mode
+    Listed references go into more detail
+  http://www.onmyphd.com/?p=voltage.regulators.buck.step.down.converter
+    Very detailed analysis including component sizing, operating modes, calculating losses
+  """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: FloatLike, inductor_current_ripple: RangeLike, *,
+               efficiency: RangeLike = Default((0.9, 1.0)),  # from TI reference
                input_voltage_ripple: FloatLike = Default(75*mVolt),
                output_voltage_ripple: FloatLike = Default(25*mVolt),
                dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
@@ -90,13 +101,17 @@ class BuckConverterPowerStage(GeneratorBlock):
     self.switch = self.Port(Passive())  # TODO should this be modeled, eg current draws?
     self.gnd = self.Port(Ground(), [Common])
 
+    self.actual_dutycycle = self.Parameter(RangeExpr())
+
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
-                   inductor_current_ripple,
+                   inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
 
 
-  def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range, output_current_max: float,
-                        inductor_current_ripple: Range, input_voltage_ripple: float, output_voltage_ripple: float,
+  def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
+                        output_current_max: float, inductor_current_ripple: Range,
+                        efficiency: Range,
+                        input_voltage_ripple: float, output_voltage_ripple: float,
                         dutycycle_limit: Range) -> None:
     """
     Sizes and generates the power stage passives (in and out filter caps, inductor).
@@ -107,7 +122,7 @@ class BuckConverterPowerStage(GeneratorBlock):
     TODO support capacitor ESR calculation
     TODO unify rated max current with something else, perhaps a block param?
     """
-    dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
+    dutycycle = output_voltage / input_voltage / efficiency
     self.assign(self.actual_dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
@@ -151,6 +166,11 @@ class BuckConverterPowerStage(GeneratorBlock):
     self.connect(self.switch, self.inductor.a.as_voltage_sink(
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
+
+
+class BoostConverterPowerPath(GeneratorBlock):
+  # TODO IMPLEMENT ME
+  pass
 
 
 @abstract_block

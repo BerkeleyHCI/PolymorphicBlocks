@@ -137,16 +137,6 @@ class Tps561201(DiscreteBuckConverter):
                 (0.749*Volt / self.fb.actual_ratio.upper(),
                  0.787*Volt / self.fb.actual_ratio.lower()))
 
-    self.generator(self.generate_converter,
-                   self.pwr_in.link().voltage, self.pwr_out.voltage_out,
-                   self.pwr_out.link().current_drawn,
-                   self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
-                   self.dutycycle_limit)
-
-  def generate_converter(self, input_voltage: Range, output_voltage: Range,
-                         output_current: Range, frequency: Range,
-                         spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
-                         dutycycle_limit: Range) -> None:
     self.ic = self.Block(Tps561201_Device(
       current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
                     self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
@@ -165,21 +155,43 @@ class Tps561201(DiscreteBuckConverter):
     self.connect(self.vbst_cap.neg.as_voltage_sink(), self.ic.sw)
     self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
 
-    # TODO dedup across all converters
-    inductor_out = self._generate_converter(self.ic.sw, 1.2,
-                                            input_voltage=input_voltage, output_voltage=output_voltage,
-                                            output_current_max=output_current.upper, frequency=frequency,
-                                            spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
-                                            ripple_factor=ripple_factor,
-                                            dutycycle_limit=dutycycle_limit)
-
-    self.connect(self.pwr_out, inductor_out.as_voltage_source(
-      voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
-      current_limits=(0, 1.2)*Amp
-    ))
-
+    ripple = (
+        self.ripple_current_factor.lower() * self.pwr_out.link().current_drawn.lower(),
+        (self.ripple_current_factor.upper() * self.pwr_out.link().current_drawn.upper()).max(
+          self.ripple_current_factor.lower() * 1.2  # rated current
+        )
+    )
     # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
     # TODO the ripple current needs to be massively increased
+    self.power_path = self.Block(BuckConverterPowerPath(
+      self.pwr_in.link().voltage, self.pwr_out.voltage_out, self.frequency,
+      self.pwr_out.link().current_drawn.upper(), inductor_current_ripple=ripple
+    ))
+
+    # self.generator(self.generate_converter,
+    #                self.pwr_in.link().voltage, self.pwr_out.voltage_out,
+    #                self.pwr_out.link().current_drawn,
+    #                self.frequency, self.output_ripple_limit, self.input_ripple_limit, self.ripple_current_factor,
+    #                self.dutycycle_limit)
+
+  # def generate_converter(self, input_voltage: Range, output_voltage: Range,
+  #                        output_current: Range, frequency: Range,
+  #                        spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
+  #                        dutycycle_limit: Range) -> None:
+  #
+  #   # TODO dedup across all converters
+  #   inductor_out = self._generate_converter(self.ic.sw, 1.2,
+  #                                           input_voltage=input_voltage, output_voltage=output_voltage,
+  #                                           output_current_max=output_current.upper, frequency=frequency,
+  #                                           spec_output_ripple=spec_output_ripple, spec_input_ripple=spec_input_ripple,
+  #                                           ripple_factor=ripple_factor,
+  #                                           dutycycle_limit=dutycycle_limit)
+  #
+  #   self.connect(self.pwr_out, inductor_out.as_voltage_source(
+  #     voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+  #     current_limits=(0, 1.2)*Amp
+  #   ))
+
     # self.constrain(self.out_cap.capacitance.within((20, 68)*uFarad(tol=0.2)))
     # self.constrain(self.inductor.inductance.within((3.3, 4.7)*uHenry(tol=0.2)))  # TODO down to 2.2 for lower output voltages
 

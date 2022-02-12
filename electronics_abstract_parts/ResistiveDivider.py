@@ -59,14 +59,12 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
 
   @init_in_parent
-  def __init__(self, ratio: RangeLike, impedance: RangeLike) -> None:
+  def __init__(self, ratio: RangeLike, impedance: RangeLike, *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)) -> None:
     super().__init__()
 
     self.ratio = cast(RangeExpr, ratio)
     self.impedance = cast(RangeExpr, impedance)
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
 
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
@@ -76,7 +74,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.center = self.Port(Passive())
     self.bottom = self.Port(Passive())
 
-    self.generator(self.generate_divider, self.ratio, self.impedance, self.series, self.tolerance)
+    self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
