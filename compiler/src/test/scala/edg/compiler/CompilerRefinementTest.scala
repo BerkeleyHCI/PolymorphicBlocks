@@ -130,6 +130,16 @@ class CompilerRefinementTest extends AnyFlatSpec {
     compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(Some(IntValue(42)))
   }
 
+  "Compiler on refinement with overridden default parameters" should "work" in {
+    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassDefaultBlock")),
+      instanceValues = Map(DesignPath() + "block" + "defaultParam" -> IntValue(3))
+    ))
+    compiler.compile()
+    compiler.getErrors() shouldBe empty
+    compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(Some(IntValue(3)))
+  }
+
   "Compiler on design with subclass values" should "work" in {
     val expected = Design(Block.Block("topDesign",
       blocks = Map(
@@ -154,18 +164,6 @@ class CompilerRefinementTest extends AnyFlatSpec {
   }
 
   "Compiler on design with path values" should "work" in {
-    val expected = Design(Block.Block("topDesign",
-      blocks = Map(
-        "block" -> Block.Block(selfClass="superclassBlock",
-          params = Map(
-            "superParam" -> ValInit.Integer,
-          ),
-          ports = Map(
-            "port" -> Port.Port(selfClass="port"),
-          )
-        ),
-      )
-    ))
     val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library), Refinements(
       instanceValues = Map(DesignPath() + "block" + "superParam" -> IntValue(3))
     ))
