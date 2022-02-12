@@ -5,11 +5,11 @@ from . import *
 from .test_bundle import TestBundle
 
 
-class BaseBlock(Block):  # Base class containing no parameters or default
+class BaseParamClass(Block):  # Base class containing no parameters or default
   pass
 
 
-class NondefaultParamClass(BaseBlock):  # contains a single non-default param
+class NondefaultParamClass(BaseParamClass):  # contains a single non-default param
   @init_in_parent
   def __init__(self, nondefault_param: IntLike) -> None:
     super().__init__()
@@ -35,7 +35,7 @@ class CombinedParamSubClass(DefaultParamSubClass):  # adds a default param on to
 
 class DefaultTestCase(unittest.TestCase):
   def test_base(self):
-    pb = BaseBlock()._elaborated_def_to_proto()
+    pb = BaseParamClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 0)
 
