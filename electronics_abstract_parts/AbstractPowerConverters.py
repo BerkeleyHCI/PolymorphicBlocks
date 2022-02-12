@@ -73,6 +73,29 @@ class BuckConverter(DcDcSwitchingConverter):
     self.frequency = self.Parameter(RangeExpr())
 
 
+class BuckConverterPowerStage(GeneratorBlock):
+  @init_in_parent
+  def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
+               output_current: FloatLike,
+               spec_input_ripple: FloatLike, spec_output_ripple: FloatLike, ripple_factor: RangeLike,
+               dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
+    super().__init__()
+
+    self.input = self.Port(VoltageSink())  # mainly used for the input capacitor
+    self.output = self.Port(VoltageSource())  # source from the inductor
+    self.switch = self.Port(Passive())  # TODO should this be modeled?
+    self.gnd = self.Port(Ground(), [Common])
+
+    self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
+                   spec_input_ripple, spec_output_ripple, ripple_factor, dutycycle_limit)
+
+
+  def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range, output_current_max: float,
+                        spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
+                        dutycycle_limit: Range) -> None:
+    pass
+
+
 @abstract_block
 class DiscreteBuckConverter(BuckConverter):
   """Provides a helper function to generate the power path for a switching buck converter.
