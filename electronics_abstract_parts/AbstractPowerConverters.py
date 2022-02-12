@@ -76,8 +76,10 @@ class BuckConverter(DcDcSwitchingConverter):
 class BuckConverterPowerStage(GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: FloatLike,
-               spec_input_ripple: FloatLike, spec_output_ripple: FloatLike, ripple_factor: RangeLike,
+               output_current: FloatLike, *,
+               spec_input_ripple: FloatLike = Default(75*mVolt), spec_output_ripple: FloatLike = Default(25*mVolt),
+               # ripple factor is very heuristic, intended 0.3-0.4 but widened for inductor tolerance
+               ripple_factor: RangeLike = Default((0.2, 0.5)),
                dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
     super().__init__()
 
