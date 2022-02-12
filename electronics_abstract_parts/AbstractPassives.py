@@ -15,8 +15,8 @@ class Resistor(PassiveComponent):
     self.b = self.Port(Passive())
 
     self.resistance = cast(RangeExpr, resistance)
-    self.actual_resistance = self.Parameter(RangeExpr())
     self.power = cast(RangeExpr, power)  # operating power range
+    self.actual_resistance = self.Parameter(RangeExpr())
 
 
 class PullupResistor(DiscreteApplication):
@@ -29,7 +29,7 @@ class PullupResistor(DiscreteApplication):
     self.pwr = self.Port(VoltageSink(), [Power])
     self.io = self.Port(DigitalSingleSource(), [InOut])
 
-    self.resistance = resistance
+    self.resistance = cast(RangeExpr, resistance)
 
   def contents(self):
     super().contents()
@@ -49,7 +49,7 @@ class PulldownResistor(DiscreteApplication):
     self.gnd = self.Port(Ground(), [Common])
     self.io = self.Port(DigitalSingleSource(), [InOut])
 
-    self.resistance = resistance
+    self.resistance = cast(RangeExpr, resistance)
 
   def contents(self):
     super().contents()
@@ -68,8 +68,8 @@ class SeriesPowerResistor(DiscreteApplication):
     self.pwr_in = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])
 
-    self.resistance = resistance
-    self.current_limits = current_limits
+    self.resistance = cast(RangeExpr, resistance)
+    self.current_limits = cast(RangeExpr, current_limits)
 
   def contents(self):
     super().contents()

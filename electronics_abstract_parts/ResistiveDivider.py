@@ -133,9 +133,9 @@ class BaseVoltageDivider(Filter, Block):
     ), [Output])
     self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
 
-    self.selected_ratio = self.Parameter(RangeExpr(self.div.actual_ratio))
-    self.selected_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
-    self.selected_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
+    self.actual_ratio = self.Parameter(RangeExpr(self.div.actual_ratio))
+    self.actual_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
+    self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
 
     self.assign(self.input.current_draw, self.output.link().current_drawn)
     # TODO also model static current draw into gnd

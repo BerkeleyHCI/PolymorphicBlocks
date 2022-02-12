@@ -192,7 +192,7 @@ class FetPowerGate(Block):
       voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
       reverse_recovery_time=RangeExpr.ALL
     ))
-    self.btn = self.Block(Switch())
+    self.btn = self.Block(Switch(voltage=0*Volt))  # TODO - actually model switch voltage
     self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
     self.connect(self.gnd, self.amp_fet.source.as_ground(), self.amp_res.b.as_ground(),
                  self.btn.b.as_ground())

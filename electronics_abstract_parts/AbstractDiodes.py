@@ -39,8 +39,8 @@ class ZenerDiode(DiscreteSemiconductor):
     self.anode = self.Port(Passive())
     self.cathode = self.Port(Passive())
 
-    self.zener_voltage = zener_voltage
-    self.forward_voltage_drop = forward_voltage_drop
+    self.zener_voltage = cast(RangeExpr, zener_voltage)
+    self.forward_voltage_drop = cast(RangeExpr, forward_voltage_drop)
 
 
 class ProtectionZenerDiode(DiscreteApplication):
@@ -53,7 +53,7 @@ class ProtectionZenerDiode(DiscreteApplication):
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.gnd = self.Port(Ground(), [Common])
 
-    self.voltage = voltage
+    self.voltage = cast(RangeExpr, voltage)
 
   def contents(self):
     super().contents()

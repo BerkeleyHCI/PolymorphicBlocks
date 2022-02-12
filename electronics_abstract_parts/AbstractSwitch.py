@@ -6,7 +6,7 @@ from .Categories import *
 @abstract_block
 class Switch(DiscreteComponent):
   @init_in_parent
-  def __init__(self, current: RangeLike, voltage: RangeLike) -> None:
+  def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
