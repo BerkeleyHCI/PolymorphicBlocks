@@ -127,7 +127,7 @@ class CompilerRefinementTest extends AnyFlatSpec {
     ))
     compiler.compile()
     compiler.getErrors() shouldBe empty
-    compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(IntValue(42))
+    compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(Some(IntValue(42)))
   }
 
   "Compiler on design with subclass values" should "work" in {
