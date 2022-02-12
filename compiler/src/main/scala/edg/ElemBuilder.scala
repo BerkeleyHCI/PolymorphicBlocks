@@ -48,13 +48,15 @@ object ElemBuilder {
     def Block(selfClass: String,
               superclasses: Seq[String] = Seq(),
               params: Map[String, init.ValInit] = Map(),
+              paramDefaults: Map[String, expr.ValueExpr] = Map(),
               ports: Map[String, elem.PortLike] = Map(),
               blocks: Map[String, elem.BlockLike] = Map(),
               links: Map[String, elem.LinkLike] = Map(),
               constraints: Map[String, expr.ValueExpr] = Map(),
               prerefine: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
-      params=params, ports=ports, blocks=blocks, links=links,
+      params=params, paramDefaults=paramDefaults,
+      ports=ports, blocks=blocks, links=links,
       constraints=constraints,
       selfClass=Some(LibraryPath(selfClass)),
       superclasses=superclasses map {

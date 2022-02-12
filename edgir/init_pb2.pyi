@@ -9,14 +9,15 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
-#* This is the general way we initialize values in the local context.
-#
-#I think the frontend should have more type specific wrappers around
-#this since the data required for each type can be different.
 class ValInit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    """* This is the general way we initialize values in the local context.
+
+    I think the frontend should have more type specific wrappers around
+    this since the data required for each type can be different.
+    """
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
     FLOATING_FIELD_NUMBER: builtins.int
     INTEGER_FIELD_NUMBER: builtins.int
     BOOLEAN_FIELD_NUMBER: builtins.int
@@ -43,16 +44,16 @@ class ValInit(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        floating : typing.Optional[edgir.common_pb2.Empty] = ...,
-        integer : typing.Optional[edgir.common_pb2.Empty] = ...,
-        boolean : typing.Optional[edgir.common_pb2.Empty] = ...,
-        text : typing.Optional[edgir.common_pb2.Empty] = ...,
-        set : typing.Optional[edgir.common_pb2.Empty] = ...,
-        struct : typing.Optional[edgir.common_pb2.Empty] = ...,
-        range : typing.Optional[edgir.common_pb2.Empty] = ...,
-        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
+        floating: typing.Optional[edgir.common_pb2.Empty] = ...,
+        integer: typing.Optional[edgir.common_pb2.Empty] = ...,
+        boolean: typing.Optional[edgir.common_pb2.Empty] = ...,
+        text: typing.Optional[edgir.common_pb2.Empty] = ...,
+        set: typing.Optional[edgir.common_pb2.Empty] = ...,
+        struct: typing.Optional[edgir.common_pb2.Empty] = ...,
+        range: typing.Optional[edgir.common_pb2.Empty] = ...,
+        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal[u"boolean",b"boolean",u"floating",b"floating",u"integer",b"integer",u"meta",b"meta",u"range",b"range",u"set",b"set",u"struct",b"struct",u"text",b"text",u"val",b"val"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal[u"boolean",b"boolean",u"floating",b"floating",u"integer",b"integer",u"meta",b"meta",u"range",b"range",u"set",b"set",u"struct",b"struct",u"text",b"text",u"val",b"val"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal[u"val",b"val"]) -> typing.Optional[typing_extensions.Literal["floating","integer","boolean","text","set","struct","range"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","set",b"set","struct",b"struct","text",b"text","val",b"val"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","set",b"set","struct",b"struct","text",b"text","val",b"val"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["val",b"val"]) -> typing.Optional[typing_extensions.Literal["floating","integer","boolean","text","set","struct","range"]]: ...
 global___ValInit = ValInit

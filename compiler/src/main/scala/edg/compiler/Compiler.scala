@@ -67,7 +67,7 @@ object CompilerError {
   case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath)
       extends CompilerError {
     override def toString: String =
-      s"Invalid refinement ${refinedLibrary.toSimpleString} -> ${designLibrary.toSimpleString} @ $path"
+      s"Invalid refinement ${refinedLibrary.toSimpleString} <- ${designLibrary.toSimpleString} @ $path"
   }
 
   case class OverAssign(target: IndirectDesignPath,
@@ -493,6 +493,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def elaborateBlock(path: DesignPath): Unit = {
     // Instantiate block from library element to wir.Block
     val libraryPath = resolveBlock(path).asInstanceOf[wir.BlockLibrary].target
+
     val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
       case Some(refinement) => (refinement, Some(libraryPath))
       case None => refinements.classRefinements.get(libraryPath) match {
@@ -503,10 +504,30 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val blockPb = library.getBlock(refinedLibrary) match {
       case Errorable.Success(blockPb) =>
-        if (!library.isSubclassOf(refinedLibrary, libraryPath)) {
-          errors += CompilerError.RefinementSubclassError(path, refinedLibrary, libraryPath)
+        if (unrefinedType.isDefined) {  // check refinement validity and add default params
+          if (!library.isSubclassOf(refinedLibrary, libraryPath)) {
+            errors += CompilerError.RefinementSubclassError(path, refinedLibrary, libraryPath)
+          }
+          library.getBlock(libraryPath) match {
+            case Errorable.Success(unrefinedPb) =>
+              val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
+              refinedNewParams.foreach { refinedNewParam =>
+                blockPb.paramDefaults.get(refinedNewParam) match {
+                  case Some(refinedDefault) =>
+                    constProp.addAssignment(path.asIndirect + refinedNewParam, path, refinedDefault,
+                        s"(default)${refinedLibrary.toSimpleString}.$refinedNewParam")
+                  case None =>  // ignored
+                }
+              }
+            case Errorable.Error(err) =>  // TODO cleaner error handling
+              import edgir.elem.elem
+              errors += CompilerError.LibraryError(path, libraryPath, err)
+              elem.HierarchyBlock()
+          }
+          blockPb
+        } else {  // no default params
+          blockPb
         }
-        blockPb
       case Errorable.Error(err) =>
         import edgir.elem.elem
         errors += CompilerError.LibraryError(path, refinedLibrary, err)

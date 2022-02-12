@@ -11,24 +11,25 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
-#* This is the top-level schema for a library of blocks, ports, and links.
-#
-#It need not be complete (containing all the blocks to be used in a design)
-#or closed (containing enough information that every reference/inheritance
-#can be resolved).
-#
-#It can be merged with other libraries when there are no namespace collisions
-#or definitional conflicts. This means that we can shuffle around partial
-#libraries, for merging, modification, etc..
 class Library(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    #* Library Namespace, avoiding collision w/ edg.name.Namespace
+    """* This is the top-level schema for a library of blocks, ports, and links.
+
+    It need not be complete (containing all the blocks to be used in a design)
+    or closed (containing enough information that every reference/inheritance
+    can be resolved).
+
+    It can be merged with other libraries when there are no namespace collisions
+    or definitional conflicts. This means that we can shuffle around partial
+    libraries, for merging, modification, etc..
+    """
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
     class NS(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        """* Library Namespace, avoiding collision w/ edg.name.Namespace"""
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
         class Val(google.protobuf.message.Message):
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor
             PORT_FIELD_NUMBER: builtins.int
             BUNDLE_FIELD_NUMBER: builtins.int
             HIERARCHY_BLOCK_FIELD_NUMBER: builtins.int
@@ -46,51 +47,52 @@ class Library(google.protobuf.message.Message):
             def namespace(self) -> global___Library.NS: ...
             def __init__(self,
                 *,
-                port : typing.Optional[edgir.elem_pb2.Port] = ...,
-                bundle : typing.Optional[edgir.elem_pb2.Bundle] = ...,
-                hierarchy_block : typing.Optional[edgir.elem_pb2.HierarchyBlock] = ...,
-                link : typing.Optional[edgir.elem_pb2.Link] = ...,
-                namespace : typing.Optional[global___Library.NS] = ...,
+                port: typing.Optional[edgir.elem_pb2.Port] = ...,
+                bundle: typing.Optional[edgir.elem_pb2.Bundle] = ...,
+                hierarchy_block: typing.Optional[edgir.elem_pb2.HierarchyBlock] = ...,
+                link: typing.Optional[edgir.elem_pb2.Link] = ...,
+                namespace: typing.Optional[global___Library.NS] = ...,
                 ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal[u"bundle",b"bundle",u"hierarchy_block",b"hierarchy_block",u"link",b"link",u"namespace",b"namespace",u"port",b"port",u"type",b"type"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal[u"bundle",b"bundle",u"hierarchy_block",b"hierarchy_block",u"link",b"link",u"namespace",b"namespace",u"port",b"port",u"type",b"type"]) -> None: ...
-            def WhichOneof(self, oneof_group: typing_extensions.Literal[u"type",b"type"]) -> typing.Optional[typing_extensions.Literal["port","bundle","hierarchy_block","link","namespace"]]: ...
+            def HasField(self, field_name: typing_extensions.Literal["bundle",b"bundle","hierarchy_block",b"hierarchy_block","link",b"link","namespace",b"namespace","port",b"port","type",b"type"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["bundle",b"bundle","hierarchy_block",b"hierarchy_block","link",b"link","namespace",b"namespace","port",b"port","type",b"type"]) -> None: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["type",b"type"]) -> typing.Optional[typing_extensions.Literal["port","bundle","hierarchy_block","link","namespace"]]: ...
 
         class MembersEntry(google.protobuf.message.Message):
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
-            key: typing.Text = ...
+            key: typing.Text
             @property
             def value(self) -> global___Library.NS.Val: ...
             def __init__(self,
                 *,
-                key : typing.Text = ...,
-                value : typing.Optional[global___Library.NS.Val] = ...,
+                key: typing.Text = ...,
+                value: typing.Optional[global___Library.NS.Val] = ...,
                 ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal[u"value",b"value"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal[u"key",b"key",u"value",b"value"]) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
         MEMBERS_FIELD_NUMBER: builtins.int
         @property
         def members(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Library.NS.Val]: ...
         def __init__(self,
             *,
-            members : typing.Optional[typing.Mapping[typing.Text, global___Library.NS.Val]] = ...,
+            members: typing.Optional[typing.Mapping[typing.Text, global___Library.NS.Val]] = ...,
             ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal[u"members",b"members"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["members",b"members"]) -> None: ...
 
-    #* How we identify a library within a set. Will probably
-    #evolve to capture more metadata.
     class LibIdent(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        """* How we identify a library within a set. Will probably
+        evolve to capture more metadata.
+        """
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
         NAME_FIELD_NUMBER: builtins.int
-        name: typing.Text = ...
+        name: typing.Text
         def __init__(self,
             *,
-            name : typing.Text = ...,
+            name: typing.Text = ...,
             ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal[u"name",b"name"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["name",b"name"]) -> None: ...
 
     ID_FIELD_NUMBER: builtins.int
     IMPORTS_FIELD_NUMBER: builtins.int
@@ -106,26 +108,27 @@ class Library(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        id : typing.Optional[global___Library.LibIdent] = ...,
-        imports : typing.Optional[typing.Iterable[typing.Text]] = ...,
-        root : typing.Optional[global___Library.NS] = ...,
-        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
+        id: typing.Optional[global___Library.LibIdent] = ...,
+        imports: typing.Optional[typing.Iterable[typing.Text]] = ...,
+        root: typing.Optional[global___Library.NS] = ...,
+        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal[u"id",b"id",u"meta",b"meta",u"root",b"root"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal[u"id",b"id",u"imports",b"imports",u"meta",b"meta",u"root",b"root"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["id",b"id","meta",b"meta","root",b"root"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["id",b"id","imports",b"imports","meta",b"meta","root",b"root"]) -> None: ...
 global___Library = Library
 
-#* This is a Design for an embedded system at some level of abstraction.
 class Design(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    """* This is a Design for an embedded system at some level of abstraction."""
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
     CONTENTS_FIELD_NUMBER: builtins.int
-    #* Delegate the actual contents of the design to a hierarchy block, for which ports are ignored
     @property
-    def contents(self) -> edgir.elem_pb2.HierarchyBlock: ...
+    def contents(self) -> edgir.elem_pb2.HierarchyBlock:
+        """* Delegate the actual contents of the design to a hierarchy block, for which ports are ignored"""
+        pass
     def __init__(self,
         *,
-        contents : typing.Optional[edgir.elem_pb2.HierarchyBlock] = ...,
+        contents: typing.Optional[edgir.elem_pb2.HierarchyBlock] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal[u"contents",b"contents"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal[u"contents",b"contents"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["contents",b"contents"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["contents",b"contents"]) -> None: ...
 global___Design = Design

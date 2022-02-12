@@ -233,9 +233,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._elaboration_state = BlockElaborationState.post_contents
     return self._def_to_proto()
 
-  # TODO: can we unify PortBridge into ProtoType? Difference seems to be in meta and repeated superclasses
-  ProtoType = TypeVar('ProtoType', bound=edgir.BlockLikeTypes)
-  def _populate_def_proto_block_base(self, pb: ProtoType) -> ProtoType:
+  def _populate_def_proto_block_base(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     """Populates the structural parts of a block proto: parameters, ports, superclasses"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -274,8 +272,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_port_init(self, pb: ProtoType,
-                                    ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> ProtoType:
+  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType,
+                                    ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> BaseBlockEdgirType:
     # TODO this is structurally ugly!
     # TODO TODO: for non-generated exported initializers, check and assert default-ness
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
@@ -317,8 +315,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_param_init(self, pb: ProtoType,
-                                    ignore_params: IdentitySet[ConstraintExpr] = IdentitySet()) -> ProtoType:
+  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType,
+                                    ignore_params: IdentitySet[ConstraintExpr] = IdentitySet()) -> BaseBlockEdgirType:
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
     for (name, param) in self._parameters.items():
       if param.initializer is not None and param not in ignore_params:
@@ -328,7 +326,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         self._namespace_order.append(f'(init){name}')
     return pb
 
-  def _populate_def_proto_block_contents(self, pb: ProtoType) -> ProtoType:
+  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
