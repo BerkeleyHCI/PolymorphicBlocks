@@ -74,28 +74,83 @@ class BuckConverter(DcDcSwitchingConverter):
 
 
 class BuckConverterPowerStage(GeneratorBlock):
+  # Heuristic for inductor ripple current is 0.3-0.4 of the output current.
+  # Per the LMR33630 datasheet, if the actual current is much lower, use the device's rated current.
+  # Ripple current largely trades off inductor maximum current and inductance.
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: FloatLike, *,
-               spec_input_ripple: FloatLike = Default(75*mVolt), spec_output_ripple: FloatLike = Default(25*mVolt),
-               # ripple factor is very heuristic, intended 0.3-0.4 but widened for inductor tolerance
-               ripple_factor: RangeLike = Default((0.2, 0.5)),
+               output_current: FloatLike, inductor_current_ripple: RangeLike, *,
+               input_voltage_ripple: FloatLike = Default(75*mVolt),
+               output_voltage_ripple: FloatLike = Default(25*mVolt),
                dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
     super().__init__()
 
-    self.input = self.Port(VoltageSink())  # mainly used for the input capacitor
-    self.output = self.Port(VoltageSource())  # source from the inductor
-    self.switch = self.Port(Passive())  # TODO should this be modeled?
+    self.pwr_in = self.Port(VoltageSink())  # mainly used for the input capacitor
+    self.pwr_out = self.Port(VoltageSource())  # source from the inductor
+    self.switch = self.Port(Passive())  # TODO should this be modeled, eg current draws?
     self.gnd = self.Port(Ground(), [Common])
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
-                   spec_input_ripple, spec_output_ripple, ripple_factor, dutycycle_limit)
+                   inductor_current_ripple,
+                   input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
 
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range, output_current_max: float,
-                        spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
+                        inductor_current_ripple: Range, input_voltage_ripple: float, output_voltage_ripple: float,
                         dutycycle_limit: Range) -> None:
-    pass
+    """
+    Sizes and generates the power stage passives (in and out filter caps, inductor).
+    Main assumptions in component sizing:
+    - Operating only in continuous mode
+    - TODO: also consider boundary and discontinuous mode
+
+    TODO support capacitor ESR calculation
+    TODO unify rated max current with something else, perhaps a block param?
+    """
+    dutycycle = output_voltage / input_voltage / Range(self.WORST_EFFICIENCY_ESTIMATE, 1)
+    self.assign(self.actual_dutycycle, dutycycle)
+    # if these are violated, these generally mean that the converter will start tracking the input
+    # these can (maybe?) be waived if tracking (plus losses) is acceptable
+    self.require(self.actual_dutycycle.within(dutycycle_limit), f"dutycycle {dutycycle} outside limit {dutycycle_limit}")
+    # these are actual numbers to be used in calculations, accounting for tracking behavior
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
+
+    # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
+    # this range must be constructed manually to not double-count the tolerance stackup of the voltages
+    inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
+    inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+    inductance = Range(inductance_min, inductance_max)
+
+    # TODO size based on transient response, add to voltage tolerance stackups
+    output_capacitance = Range.from_lower(inductor_current_ripple.upper /
+                                          (8 * frequency.lower * output_voltage_ripple))
+    # TODO pick a single worst-case DC
+    input_capacitance = Range.from_lower(output_current_max * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
+                                         (frequency.lower * input_voltage_ripple))
+
+    sw_current_max = output_current_max + inductor_current_ripple.upper / 2
+
+    self.inductor = self.Block(Inductor(
+      inductance=inductance*Henry,
+      current=(0, sw_current_max)*Amp,
+      frequency=frequency*Hertz
+    ))
+
+    self.in_cap = self.Block(DecouplingCapacitor(
+      capacitance=input_capacitance*Farad,
+    ))
+    self.out_cap = self.Block(DecouplingCapacitor(
+      capacitance=output_capacitance*Farad,
+    ))
+    self.connect(self.pwr_in, self.in_cap.pwr)
+    self.connect(self.pwr_out, self.out_cap.pwr)
+    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+
+    self.connect(self.switch, self.inductor.a.as_voltage_sink(
+      voltage_limits=RangeExpr.ALL,
+      current_draw=(0, sw_current_max)*Amp))
 
 
 @abstract_block

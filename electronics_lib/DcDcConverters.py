@@ -118,7 +118,7 @@ class Tps561201_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Tps561201(DiscreteBuckConverter, GeneratorBlock):
+class Tps561201(DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
   def contents(self):
     super().contents()
