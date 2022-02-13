@@ -89,17 +89,20 @@ class BuckConverterPowerPath(GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: FloatLike, inductor_current_ripple: RangeLike, *,
+               output_current: FloatLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
                efficiency: RangeLike = Default((0.9, 1.0)),  # from TI reference
                input_voltage_ripple: FloatLike = Default(75*mVolt),
                output_voltage_ripple: FloatLike = Default(25*mVolt),
                dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink())  # mainly used for the input capacitor
+    self.pwr_in = self.Port(VoltageSink(), [Power])  # mainly used for the input capacitor
     self.pwr_out = self.Port(VoltageSource())  # source from the inductor
     self.switch = self.Port(VoltageSink())
     self.gnd = self.Port(Ground(), [Common])
+
+    self.output_voltage = output_voltage
+    self.current_limits = current_limits
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
 
@@ -167,8 +170,8 @@ class BuckConverterPowerPath(GeneratorBlock):
       voltage_limits=RangeExpr.ALL,
       current_draw=(0, sw_current_max)*Amp))
     self.connect(self.pwr_out, self.inductor.b.as_voltage_source(
-      voltage_out=output_voltage,  # TODO proper parameter propagation
-      current_limits=(0, 1.2)*Amp  # TODO proper parameter propagation
+      voltage_out=self.output_voltage,
+      current_limits=self.current_limits
     ))
 
 
@@ -197,6 +200,8 @@ class DiscreteBuckConverter(BuckConverter):
     super().__init__(*args, **kwargs)
     self.dutycycle_limit = self.Parameter(RangeExpr((self.DUTYCYCLE_MIN_LIMIT, self.DUTYCYCLE_MAX_LIMIT)))
     self.actual_dutycycle = self.Parameter(RangeExpr())  # calculated duty cycle
+
+    self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
   def _generate_converter(self, switch_node: VoltageSource, rated_max_current_amps: float,
                           input_voltage: Range, output_voltage: Range,
