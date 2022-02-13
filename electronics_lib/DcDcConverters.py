@@ -41,7 +41,6 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
     self.require(self.pwr_out.voltage_out.within((2.2, 4.3)*Volt))  # >4.3v requires external diode
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
     self.assign(self.frequency, (380, 630)*kHertz)
-    self.assign(self.efficiency, (0.75, 0.95))  # arbitrary, >1mA load
 
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(1.192, 1.268) * Volt,
@@ -64,8 +63,8 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
                          dutycycle_limit: Range) -> None:
     self.ic = self.Block(Ltc3429_Device(
-      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower())
     ))
     self.connect(self.pwr_in, self.ic.vin)
     self.connect(self.gnd, self.ic.gnd)
@@ -208,7 +207,6 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
     self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
     self.assign(self.frequency, (390, 590)*kHertz)
-    self.assign(self.efficiency, (0.75, 0.95))  # Efficiency stats from first page for ~>10mA
 
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(0.581, 0.611) * Volt,
@@ -230,8 +228,8 @@ class Tps54202h(DiscreteBuckConverter, GeneratorBlock):
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
                          dutycycle_limit: Range) -> None:
     self.ic = self.Block(Tps54202h_Device(
-      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower())
     ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)
@@ -308,7 +306,6 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 
     self.assign(self.frequency, (1.1, 1.9)*MHertz)
-    self.assign(self.efficiency, (0.75, 0.8))  # Efficiency stats from first page for ~>10mA
 
     self.fb = self.Block(FeedbackVoltageDivider(
       output_voltage=(1.17, 1.33) * Volt,
@@ -331,8 +328,8 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
                          spec_output_ripple: float, spec_input_ripple: float, ripple_factor: Range,
                          dutycycle_limit: Range) -> None:
     self.ic = self.Block(Ap3012_Device(
-      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
+      current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper(),
+                    self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower())
     ))
     self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.gnd, self.ic.gnd)

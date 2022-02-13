@@ -55,11 +55,6 @@ class DcDcSwitchingConverter(DcDcConverter):
     self.ripple_current_factor = cast(RangeExpr, ripple_current_factor)
     self.input_ripple_limit = cast(FloatExpr, input_ripple_limit)
     self.output_ripple_limit = cast(FloatExpr, output_ripple_limit)
-    self.efficiency = self.Parameter(RangeExpr())
-
-    self.require(self.pwr_in.current_draw.within((
-      self.pwr_out.link().current_drawn * self.pwr_out.voltage_out / self.pwr_in.link().voltage / self.efficiency + (0, 0.01)  # TODO avoid fudge factor
-    )))
 
 
 @abstract_block
