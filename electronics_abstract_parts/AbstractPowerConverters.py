@@ -111,7 +111,6 @@ class BuckConverterPowerPath(GeneratorBlock):
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
 
-
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
                         output_current: Range, inductor_current_ripple: Range,
                         efficiency: Range,
