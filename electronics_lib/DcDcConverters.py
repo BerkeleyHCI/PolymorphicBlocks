@@ -146,18 +146,12 @@ class Tps561201(DiscreteBuckConverter):
       self.connect(self.vbst_cap.neg.as_voltage_sink(), self.ic.sw)
       self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
 
-      ripple = (
-          self.ripple_current_factor.lower() * self.pwr_out.link().current_drawn.upper(),
-          (self.ripple_current_factor.upper() * self.pwr_out.link().current_drawn.upper()).max(
-            self.ripple_current_factor.lower() * 1.2  # rated current
-          )
-      )
       # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
       # TODO the ripple current needs to be massively increased
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
-        inductor_current_ripple=ripple
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=1.2*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

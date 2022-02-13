@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, Optional
 from electronics_model import *
 from .Categories import *
 from .AbstractPassives import Inductor, DecouplingCapacitor
@@ -69,11 +69,7 @@ class BuckConverter(DcDcSwitchingConverter):
 
 
 class BuckConverterPowerPath(GeneratorBlock):
-  """Provides a helper function to generate the power path for a switching buck converter.
-
-  Heuristic for inductor ripple current is 0.3-0.4 of the output current.
-  Per the LMR33630 datasheet, if the actual current is much lower, use the device's rated current.
-  Ripple current largely trades off inductor maximum current and inductance.
+  """A helper block that generate the power path for a switching buck converter.
 
   Useful resources:
   https://www.ti.com/lit/an/slva477b/slva477b.pdf
@@ -100,7 +96,7 @@ class BuckConverterPowerPath(GeneratorBlock):
     self.current_limits = current_limits
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
-    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw
+    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
@@ -186,6 +182,27 @@ class DiscreteBuckConverter(BuckConverter):
   DUTYCYCLE_MIN_LIMIT = 0.1
   DUTYCYCLE_MAX_LIMIT = 0.9
   WORST_EFFICIENCY_ESTIMATE = 0.9  # from TI reference
+
+  @staticmethod
+  def _calculate_ripple(output_current: RangeLike, *, rated_current: Optional[FloatLike] = None,
+                        ripple_ratio: RangeLike = Default((0.2, 0.5))) -> RangeExpr:
+    """
+    Calculates the target inductor ripple current (with parameters - concrete values not necessary)
+    given the output current draw, and optionally a non-default ripple ratio and rated current.
+
+    In general, ripple current largely trades off inductor maximum current and inductance.
+
+    The default ripple ratio is an expansion of the heuristic 0.3-0.4 to account for tolerancing.
+    the rated current is used to set a reasonable ceiling for ripple current, when the actual current
+    is very low. Per the LMR33630 datasheet, the device's rated current should be used in these cases.
+    """
+    output_current_range = RangeExpr._to_expr_type(output_current)
+    ripple_ratio_range = RangeExpr._to_expr_type(ripple_ratio)
+    return RangeExpr._to_expr_type((
+      ripple_ratio_range.lower() * output_current_range.upper(),
+      (ripple_ratio_range.upper() * output_current_range.upper()).max(
+        ripple_ratio_range.lower() * rated_current  # rated current
+      )))
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
