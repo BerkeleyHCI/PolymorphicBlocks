@@ -140,26 +140,22 @@ class BuckConverterPowerPath(GeneratorBlock):
                       (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
     inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
-    inductance = Range(inductance_min, inductance_max)
-
-    # TODO size based on transient response, add to voltage tolerance stackups
-    output_capacitance = Range.from_lower(inductor_current_ripple.upper /
-                                          (8 * frequency.lower * output_voltage_ripple))
-    # TODO pick a single worst-case DC
-    input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
-                                         (frequency.lower * input_voltage_ripple))
-
     self.assign(self.peak_current, output_current.upper + inductor_current_ripple.upper / 2)
-
     self.inductor = self.Block(Inductor(
-      inductance=inductance*Henry,
+      inductance=(inductance_min, inductance_max)*Henry,
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
 
+    # TODO pick a single worst-case DC
+    input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
+                                         (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
     ))
+    # TODO size based on transient response, add to voltage tolerance stackups
+    output_capacitance = Range.from_lower(inductor_current_ripple.upper /
+                                          (8 * frequency.lower * output_voltage_ripple))
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=output_capacitance*Farad,
     ))
