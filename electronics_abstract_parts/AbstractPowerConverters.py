@@ -98,13 +98,14 @@ class BuckConverterPowerPath(GeneratorBlock):
 
     self.pwr_in = self.Port(VoltageSink(), [Power])  # mainly used for the input capacitor
     self.pwr_out = self.Port(VoltageSource())  # source from the inductor
-    self.switch = self.Port(VoltageSink())  # TODO should this be a full range or an average?
+    self.switch = self.Port(VoltageSink())  # current draw defined as average
     self.gnd = self.Port(Ground(), [Common])
 
     self.output_voltage = output_voltage
     self.current_limits = current_limits
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
+    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
@@ -148,11 +149,11 @@ class BuckConverterPowerPath(GeneratorBlock):
     input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
                                          (frequency.lower * input_voltage_ripple))
 
-    sw_current_max = output_current.upper + inductor_current_ripple.upper / 2
+    self.assign(self.peak_current, output_current.upper + inductor_current_ripple.upper / 2)
 
     self.inductor = self.Block(Inductor(
       inductance=inductance*Henry,
-      current=(0, sw_current_max)*Amp,
+      current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
 
@@ -168,7 +169,7 @@ class BuckConverterPowerPath(GeneratorBlock):
 
     self.connect(self.switch, self.inductor.a.as_voltage_sink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=(0, sw_current_max)*Amp))
+      current_draw=output_current*dutycycle))
     self.connect(self.pwr_out, self.inductor.b.as_voltage_source(
       voltage_out=self.output_voltage,
       current_limits=self.current_limits
