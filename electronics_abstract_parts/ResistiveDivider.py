@@ -164,6 +164,10 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
 
     self.output_voltage = cast(RangeExpr, output_voltage)  # TODO eliminate this casting?
     self.assumed_input_voltage = cast(RangeExpr, assumed_input_voltage)  # TODO eliminate this casting?
+    self.actual_input_voltage = self.Parameter(RangeExpr(
+      (self.output_voltage.lower() / self.actual_ratio.upper(),
+       self.output_voltage.upper() / self.actual_ratio.lower())
+    ))
 
     ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
     ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()

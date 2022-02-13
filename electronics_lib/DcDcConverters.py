@@ -90,14 +90,14 @@ class Ltc3429(DiscreteBoostConverter, GeneratorBlock):
 
 class Tps561201_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
-  def __init__(self, current_draw: RangeLike = RangeExpr()):
+  def __init__(self):
     super().__init__()
+    self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(4.5, 17)*Volt,
-      current_draw=current_draw
+      current_draw=self.sw.link().current_drawn  # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
     self.vbst = self.Port(VoltageSource())
 
@@ -125,25 +125,19 @@ class Tps561201(DiscreteBuckConverter):
 
     self.require(self.pwr_out.voltage_out.within((0.76, 17)*Volt))
     self.assign(self.frequency, 580*kHertz(tol=0))
-    self.assign(self.efficiency, (0.7, 0.95))  # Efficiency stats from first page for ~>10mA  # TODO dedup w/ worst estimate?
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.ic = imp.Block(Tps561201_Device(
-        current_draw=(self.pwr_out.link().current_drawn.lower() * self.pwr_out.voltage_out.lower() / self.pwr_in.link().voltage.upper() / self.efficiency.upper(),
-                      self.pwr_out.link().current_drawn.upper() * self.pwr_out.voltage_out.upper() / self.pwr_in.link().voltage.lower() / self.efficiency.lower())
-      ))
+      self.ic = imp.Block(Tps561201_Device())
 
       self.fb = imp.Block(FeedbackVoltageDivider(
         output_voltage=(0.749, 0.787) * Volt,
         impedance=(1, 10) * kOhm,
         assumed_input_voltage=self.output_voltage
       ))
-      self.assign(self.pwr_out.voltage_out,
-                  (0.749*Volt / self.fb.actual_ratio.upper(),
-                   0.787*Volt / self.fb.actual_ratio.lower()))
+      self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
       self.connect(self.fb.output, self.ic.fb)
       self.connect(self.fb.input, self.pwr_out)
 
@@ -162,10 +156,9 @@ class Tps561201(DiscreteBuckConverter):
       # The control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
       # TODO the ripple current needs to be massively increased
       self.power_path = imp.Block(BuckConverterPowerPath(
-        self.pwr_in.link().voltage, self.pwr_out.voltage_out, self.frequency,
-        self.pwr_out.link().current_drawn.upper(), (0, 1.2)*Amp,
-        inductor_current_ripple=ripple,
-        efficiency=self.efficiency
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
+        self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
+        inductor_current_ripple=ripple
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
