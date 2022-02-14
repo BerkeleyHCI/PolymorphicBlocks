@@ -198,11 +198,12 @@ class DiscreteBuckConverter(BuckConverter):
     """
     output_current_range = RangeExpr._to_expr_type(output_current)
     ripple_ratio_range = RangeExpr._to_expr_type(ripple_ratio)
+    upper_ripple_limit = ripple_ratio_range.upper() * output_current_range.upper()
+    if rated_current is not None:  # if rated current is specified, extend the upper limit for small current draws
+      upper_ripple_limit = upper_ripple_limit.max(ripple_ratio_range.lower() * rated_current)
     return RangeExpr._to_expr_type((
       ripple_ratio_range.lower() * output_current_range.upper(),
-      (ripple_ratio_range.upper() * output_current_range.upper()).max(
-        ripple_ratio_range.lower() * rated_current  # rated current
-      )))
+      upper_ripple_limit))
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
