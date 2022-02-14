@@ -56,6 +56,7 @@ class DcDcSwitchingConverter(DcDcConverter):
     self.input_ripple_limit = cast(FloatExpr, input_ripple_limit)
     self.output_ripple_limit = cast(FloatExpr, output_ripple_limit)
 
+    self.frequency = self.Parameter(RangeExpr())
 
 @abstract_block
 class BuckConverter(DcDcSwitchingConverter):
@@ -65,7 +66,7 @@ class BuckConverter(DcDcSwitchingConverter):
     # TODO can this be integrated with some kind of AbstractDcDcConverter?
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
-    self.frequency = self.Parameter(RangeExpr())
+    self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
 
 class BuckConverterPowerPath(GeneratorBlock):
@@ -290,8 +291,6 @@ class BoostConverter(DcDcSwitchingConverter):
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     # TODO can this be integrated with some kind of AbstractDcDcConverter?
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
-
-    self.frequency = self.Parameter(RangeExpr())
 
 
 @abstract_block
