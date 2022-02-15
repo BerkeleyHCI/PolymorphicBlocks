@@ -1,3 +1,4 @@
+from typing import cast
 import unittest
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
@@ -15,7 +16,7 @@ class GatedEmitterFollower(Block):
   analog feedback circuit.
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -26,8 +27,8 @@ class GatedEmitterFollower(Block):
     self.high_en = self.Port(DigitalSink())
     self.low_en = self.Port(DigitalSink())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.rds_on = self.Parameter(RangeExpr(rds_on))
+    self.current = cast(RangeExpr, current)
+    self.rds_on = cast(RangeExpr, rds_on)
 
   def contents(self) -> None:
     super().contents()
@@ -96,8 +97,7 @@ class ErrorAmplifier(GeneratorBlock):
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   @init_in_parent
-  def __init__(self, output_resistance: RangeLike = RangeExpr(), input_resistance: RangeLike = RangeExpr(),
-               diode_spec: StringLike = ""):
+  def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -108,9 +108,9 @@ class ErrorAmplifier(GeneratorBlock):
     self.actual = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.output_resistance = self.Parameter(RangeExpr(output_resistance))
-    self.input_resistance = self.Parameter(RangeExpr(input_resistance))
-    self.diode_spec = self.Parameter(StringExpr(diode_spec))
+    self.output_resistance = cast(RangeExpr, output_resistance)
+    self.input_resistance = cast(RangeExpr, input_resistance)
+    self.diode_spec = cast(StringExpr, diode_spec)
 
     self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
     self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
@@ -181,7 +181,7 @@ class SourceMeasureControl(Block):
   """Analog feedback circuit for the source-measure unit
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -194,15 +194,16 @@ class SourceMeasureControl(Block):
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.rds_on = self.Parameter(RangeExpr(rds_on))
+    self.current = cast(RangeExpr, current)
+    self.rds_on = cast(RangeExpr, rds_on)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr_logic, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
-                                               input_resistance=(10, 100)*kOhm))
+                                               input_resistance=(10, 100)*kOhm,
+                                               diode_spec=''))
       self.control_voltage = self.Export(self.err_volt.target)
       self.err_source = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
                                                  input_resistance=(10, 100)*kOhm,

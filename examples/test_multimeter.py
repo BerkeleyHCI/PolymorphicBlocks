@@ -1,3 +1,4 @@
+from typing import cast
 import unittest
 
 from edg import *
@@ -67,8 +68,8 @@ class MultimeterCurrentDriver(Block):
     self.control = self.Port(AnalogSink())
     self.enable = self.Port(DigitalSink())
 
-    self.resistance = self.Parameter(RangeExpr(resistance))
-    self.voltage_rating = self.Parameter(RangeExpr(voltage_rating))
+    self.resistance = cast(RangeExpr, resistance)
+    self.voltage_rating = cast(RangeExpr, voltage_rating)
 
   def contents(self):
     super().contents()

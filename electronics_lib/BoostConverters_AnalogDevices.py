@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 
 class Ltc3429_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
-  def __init__(self):
+  def __init__(self, output_voltage: RangeLike):
     super().__init__()
     self.vin = self.Port(VoltageSink(
       voltage_limits=(1.0, 4.4)*Volt,  # maximum minimum startup voltage to abs. max Vin
@@ -12,7 +12,10 @@ class Ltc3429_Device(DiscreteChip, FootprintBlock):
     self.gnd = self.Port(Ground(), [Common])
     self.sw = self.Port(VoltageSource())
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))
-    self.vout = self.Port(VoltageSink())  # TODO model as voltage source
+    self.vout = self.Port(VoltageSource(
+      voltage_out=output_voltage,
+      current_limits=Range.zero_to_upper(Ltc3429.NMOS_CURRENT_LIMIT),  # TODO is this the actual output limit?
+    ))
 
   def contents(self) -> None:
     super().contents()
@@ -46,8 +49,6 @@ class Ltc3429(DiscreteBoostConverter):
         ImplicitConnect(self.pwr_in, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.ic = imp.Block(Ltc3429_Device())
-
       self.fb = imp.Block(FeedbackVoltageDivider(
         output_voltage=(1.192, 1.268) * Volt,
         impedance=(40, 400) * kOhm,  # about 25 MOhm worst case input impedance, this is 100x below
@@ -55,6 +56,9 @@ class Ltc3429(DiscreteBoostConverter):
       ))
       self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
       self.connect(self.fb.input, self.pwr_out)
+
+      self.ic = imp.Block(Ltc3429_Device(self.fb.actual_input_voltage))
+      self.connect(self.ic.vout, self.pwr_out)
       self.connect(self.fb.output, self.ic.fb)
 
       # TODO add constraint on effective inductance and capacitance range

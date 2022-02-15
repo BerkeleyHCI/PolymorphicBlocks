@@ -34,7 +34,7 @@ class LightsDriver(Block):
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.current_draw = self.Parameter(RangeExpr(current_draw))
+    self.current_draw = current_draw
 
     self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
