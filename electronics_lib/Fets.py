@@ -179,26 +179,23 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
   TOTAL_POWER = PartsTableColumn(Range)
 
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
+  def __init__(self, *args, part_spec: StringLike = Default(""), footprint_spec: StringLike = Default(""),
+               **kwargs):
+    super().__init__(*args, **kwargs)
 
     self.actual_static_power = self.Parameter(RangeExpr())
     self.actual_switching_power = self.Parameter(RangeExpr())
     self.actual_total_power = self.Parameter(RangeExpr())
 
-    self.generator(self.select_part,
-                   self.part_spec, self.footprint_spec,
-                   self.frequency, self.drive_current,
+    self.generator(self.select_part, self.frequency, self.drive_current,
                    self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power)
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power,
+                   part_spec, footprint_spec)
 
-  def select_part(self, part_spec: str, footprint_spec: str,
-                  frequency: Range, drive_current: Range,
+  def select_part(self, frequency: Range, drive_current: Range,
                   drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
+                  part_spec: str, footprint_spec: str) -> None:
     # Pre-filter out by the static parameters
     prefiltered_parts = self.TABLE_FN().filter(lambda row: (
         (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and

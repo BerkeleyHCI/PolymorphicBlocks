@@ -44,7 +44,7 @@ class Ap3012(DiscreteBoostConverter):
     ) as imp:
       self.ic = imp.Block(Ap3012_Device())
 
-      self.fb = self.Block(FeedbackVoltageDivider(
+      self.fb = imp.Block(FeedbackVoltageDivider(
         output_voltage=(1.17, 1.33) * Volt,
         impedance=(1, 10) * kOhm,
         assumed_input_voltage=self.output_voltage
