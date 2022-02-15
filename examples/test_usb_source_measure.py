@@ -463,6 +463,6 @@ class UsbSourceMeasureTest(BoardTop):
     )
 
 
-class UsbTestCase(unittest.TestCase):
+class UsbSourceMeasureTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(UsbSourceMeasureTest)
