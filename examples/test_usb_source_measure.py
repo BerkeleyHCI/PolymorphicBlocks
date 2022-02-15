@@ -441,7 +441,7 @@ class UsbSourceMeasureTest(BoardTop):
           'high_en_net=23',
         ])),
         # allow the regulator to go into tracking mode
-        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),

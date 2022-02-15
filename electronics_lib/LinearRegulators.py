@@ -301,8 +301,8 @@ class Ap2210(LinearRegulator):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.ic = imp.Block(Ap2210_Device(output_voltage=self.output_voltage))
-      self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
-      self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))
+      self.in_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+      self.out_cap = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
