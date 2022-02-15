@@ -7,7 +7,7 @@ from .Categories import *
 class Battery(DiscreteApplication):
   @init_in_parent
   def __init__(self, voltage: RangeLike,
-               current: RangeLike = Default(RangeExpr.ZERO),
+               current: RangeLike = Default(RangeExpr.ZERO), *,
                capacity: FloatLike = Default(0.0)):
     super().__init__()
 
@@ -15,11 +15,10 @@ class Battery(DiscreteApplication):
       voltage_out=RangeExpr(), current_limits=RangeExpr()))  # set by subclasses
     self.gnd = self.Port(GroundSource())
 
-    self.capacity = cast(RangeExpr, capacity)
     self.voltage = cast(RangeExpr, voltage)
+    self.capacity = cast(FloatExpr, capacity)
+    self.actual_capacity = self.Parameter(RangeExpr())
 
     self.require(self.pwr.voltage_out.within(voltage))
     self.require(self.pwr.current_limits.contains(current))
-    self.require(self.capacity.lower() >= capacity)
-
-    self.assign(self.pwr.voltage_out, self.voltage)
+    self.require(self.actual_capacity.upper() >= capacity)
