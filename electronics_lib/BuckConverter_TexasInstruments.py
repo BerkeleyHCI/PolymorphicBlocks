@@ -50,8 +50,8 @@ class Tps561201(DiscreteBuckConverter):
         assumed_input_voltage=self.output_voltage
       ))
       self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
-      self.connect(self.fb.output, self.ic.fb)
       self.connect(self.fb.input, self.pwr_out)
+      self.connect(self.fb.output, self.ic.fb)
 
       self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.2.4
 
