@@ -29,20 +29,8 @@ class DcDcConverter(PowerConditioner):
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
-  """Application circuit, inclulding supporting components like capacitors,
+  """Application circuit, inclulding supporting components like capacitors if needed,
   around a linear regulator step-down converter."""
-  @init_in_parent
-  def __init__(self, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
-
-    # these device model parameters must be provided by subtypes
-    self.actual_dropout = self.Parameter(RangeExpr())
-    self.actual_quiescent_current = self.Parameter(RangeExpr())
-
-    self.require(self.pwr_in.current_draw.within(
-      self.pwr_out.link().current_drawn + self.actual_quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
-    self.require(self.pwr_in.link().voltage.lower() >=
-                 self.pwr_out.link().voltage.upper() + self.actual_dropout.upper())  # TODO more elegant?
 
 
 @abstract_block
