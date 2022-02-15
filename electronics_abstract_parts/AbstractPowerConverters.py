@@ -11,33 +11,67 @@ class DcDcConverter(PowerConditioner):
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
 
-    self.output_voltage = output_voltage
+    self.output_voltage = cast(RangeExpr, output_voltage)
 
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=RangeExpr(),
       current_draw=RangeExpr()
-    ), [Power, Input])  # TODO mark as future-connected here?
+    ), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(
       voltage_out=RangeExpr(),
       current_limits=RangeExpr()
-    ), [Output])  # TODO mark as future-connected here?
-    self.gnd = self.Port(Ground(), [Common])  # TODO mark as future-connected?
+    ), [Output])
+    self.gnd = self.Port(Ground(), [Common])
 
     self.require(self.pwr_out.voltage_out.within(self.output_voltage),
-                   "Output voltage must be within spec")
+                 "Output voltage must be within spec")
 
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
+  """Application circuit, inclulding supporting components like capacitors,
+  around a linear regulator step-down converter."""
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.dropout = self.Parameter(RangeExpr())
-    self.quiescent_current = self.Parameter(RangeExpr())
 
-    # TODO these constraints establish a theoretical bound, but allows (and demands) subtypes refine to exact values
-    self.require(self.pwr_in.current_draw.within(self.pwr_out.link().current_drawn + self.quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
-    self.require(self.pwr_in.link().voltage.lower() >= self.pwr_out.link().voltage.upper() + self.dropout.upper())  # TODO more elegant?
+    # these device model parameters must be provided by subtypes
+    self.actual_dropout = self.Parameter(RangeExpr())
+    self.actual_quiescent_current = self.Parameter(RangeExpr())
+
+    self.require(self.pwr_in.current_draw.within(
+      self.pwr_out.link().current_drawn + self.actual_quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
+    self.require(self.pwr_in.link().voltage.lower() >=
+                 self.pwr_out.link().voltage.upper() + self.actual_dropout.upper())  # TODO more elegant?
+
+
+@abstract_block
+class LinearRegulatorDevice(DiscreteChip):
+  """Abstract base class that provides common functionality for a linear regulator chip.
+  Does not include supporting components like capacitors.
+  """
+  @init_in_parent
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr_in = self.Port(VoltageSink(
+      voltage_limits=RangeExpr(),
+      current_draw=RangeExpr()
+    ), [Power, Input])
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=RangeExpr(),
+      current_limits=RangeExpr()
+    ), [Output])
+    self.gnd = self.Port(Ground(), [Common])
+
+    # these device model parameters must be provided by subtypes
+    self.actual_dropout = self.Parameter(RangeExpr())
+    self.actual_quiescent_current = self.Parameter(RangeExpr())
+
+    self.require(self.pwr_in.current_draw.within(
+      self.pwr_out.link().current_drawn + self.actual_quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
+    self.require(self.pwr_in.link().voltage.lower() >=
+                 self.pwr_out.link().voltage.upper() + self.actual_dropout.upper())  # TODO more elegant?
 
 
 @abstract_block

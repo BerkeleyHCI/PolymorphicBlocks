@@ -9,8 +9,8 @@ class Ld1117_Device(DiscreteChip, FootprintBlock):
     super().__init__()
     self.part_in = self.Parameter(StringExpr(part))
 
-    self.quiescent_current = self.Parameter(RangeExpr((5, 10) * mAmp))
-    self.dropout = self.Parameter(RangeExpr((0, 1.2) * Volt))
+    self.actual_quiescent_current = self.Parameter(RangeExpr((5, 10) * mAmp))
+    self.actual_dropout = self.Parameter(RangeExpr((0, 1.2) * Volt))
 
     # Part datasheet, Table 9
     self.vin = self.Port(VoltageSink(
@@ -21,7 +21,7 @@ class Ld1117_Device(DiscreteChip, FootprintBlock):
       voltage_out=voltage_out,
       current_limits=(0, 0.8) * Amp  # most conservative estimate, up to 1300mA
     ))
-    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.quiescent_current)
+    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.actual_quiescent_current)
     self.gnd = self.Port(Ground())
 
   def contents(self):
@@ -39,8 +39,8 @@ class Ld1117_Device(DiscreteChip, FootprintBlock):
 
 
 class Ld1117(LinearRegulator, GeneratorBlock):
-  def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
@@ -108,8 +108,8 @@ class Ldl1117_Device(DiscreteChip, FootprintBlock):
 
 
 class Ldl1117(LinearRegulator, GeneratorBlock):
-  def __init__(self, voltage_out: RangeLike = RangeExpr()) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.output_voltage)
 
   def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
@@ -189,8 +189,8 @@ class Ap2204k_Device(DiscreteChip, FootprintBlock):
 
 class Ap2204k_Block(GeneratorBlock):  # TODO needs better categorization than top-level blocks
   @init_in_parent
-  def __init__(self, output_voltage: RangeLike = RangeExpr()):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
 
     self.spec_output_voltage = self.Parameter(RangeExpr(output_voltage))
 
@@ -263,8 +263,8 @@ class Xc6209_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
   # Also pin-compatible with MCP1802 and NJM2882F.
   # NJM2882F has a noise bypass pin.
   @init_in_parent
-  def __init__(self, spec_output_voltage: RangeLike = RangeExpr()):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.spec_output_voltage = self.Parameter(RangeExpr(spec_output_voltage))
 
     self.quiescent_current = self.Parameter(RangeExpr((0.01, 50) * uAmp))  # typ is 250uA
@@ -318,8 +318,8 @@ class Xc6209(LinearRegulator):
   Low-ESR ceramic cap compatible"""
   def contents(self):
     self.ic = self.Block(Xc6209_Device(spec_output_voltage=self.output_voltage))
-    self.assign(self.dropout, self.ic.dropout)
-    self.assign(self.quiescent_current, self.ic.quiescent_current)
+    self.assign(self.actual_dropout, self.ic.actual_dropout)
+    self.assign(self.actual_quiescent_current, self.ic.actual_quiescent_current)
 
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
@@ -331,12 +331,12 @@ class Xc6209(LinearRegulator):
 
 class Ap2210_Device(DiscreteChip, GeneratorBlock, FootprintBlock):
   @init_in_parent
-  def __init__(self, spec_output_voltage: RangeLike = RangeExpr()):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.spec_output_voltage = self.Parameter(RangeExpr(spec_output_voltage))
 
-    self.quiescent_current = self.Parameter(RangeExpr((0.01, 15000) * uAmp))  # GND pin current
-    self.dropout = self.Parameter(RangeExpr((15, 500) * mVolt))
+    self.actual_quiescent_current = self.Parameter(RangeExpr((0.01, 15000) * uAmp))  # GND pin current
+    self.actual_dropout = self.Parameter(RangeExpr((15, 500) * mVolt))
 
     self.vin = self.Port(VoltageSink(
       voltage_limits=(2.5, 13.2) * Volt,
@@ -385,8 +385,8 @@ class Ap2210(LinearRegulator):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR"""
   def contents(self):
     self.ic = self.Block(Ap2210_Device(spec_output_voltage=self.output_voltage))
-    self.assign(self.dropout, self.ic.dropout)
-    self.assign(self.quiescent_current, self.ic.quiescent_current)
+    self.assign(self.actual_dropout, self.ic.dropout)
+    self.assign(self.actual_quiescent_current, self.ic.quiescent_current)
     self.assign(self.pwr_out.current_limits, RangeExpr.ALL)  # checked within the chip
 
     self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
