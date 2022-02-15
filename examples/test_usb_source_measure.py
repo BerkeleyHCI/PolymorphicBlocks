@@ -97,7 +97,8 @@ class ErrorAmplifier(GeneratorBlock):
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   @init_in_parent
-  def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike):
+  def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike, *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -108,15 +109,8 @@ class ErrorAmplifier(GeneratorBlock):
     self.actual = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.output_resistance = cast(RangeExpr, output_resistance)
-    self.input_resistance = cast(RangeExpr, input_resistance)
-    self.diode_spec = cast(StringExpr, diode_spec)
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_amp, self.output_resistance, self.input_resistance, self.diode_spec,
-                   self.series, self.tolerance)
+    self.generator(self.generate_amp, output_resistance, input_resistance, diode_spec,
+                   series, tolerance)
 
   def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
                    series: int, tolerance: float) -> None:
