@@ -8,10 +8,10 @@ class Ap3012_Device(DiscreteChip, FootprintBlock):
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(2.6, 16)*Volt,  # TODO quiescent current
     ), [Power])
-    self.gnd = self.Port(Ground())
+    self.gnd = self.Port(Ground(), [Common])
     self.sw = self.Port(VoltageSource(
       current_limits=(0, 500)*mAmp  # TODO how to model sink current limits?!
-    ), [Common])
+    ))
     self.fb = self.Port(AnalogSink(impedance=(12500, float('inf')) * kOhm))  # based on input current spec
 
   def contents(self):
