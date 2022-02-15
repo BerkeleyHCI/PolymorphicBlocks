@@ -3,13 +3,10 @@ from electronics_abstract_parts import *
 
 class Ap3012_Device(DiscreteChip, FootprintBlock):
   @init_in_parent
-  def __init__(self, current_draw: RangeLike = RangeExpr()):
-    # TODO the power path doesn't actually go through Vin, instead it goes through the inductor
-    # But this is modeled here to be similar to the buck case, and the macromodel is valid anyways
+  def __init__(self):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=(2.6, 16)*Volt,
-      current_draw=current_draw
+      voltage_limits=(2.6, 16)*Volt,  # TODO quiescent current
     ))
     self.gnd = self.Port(Ground())
     self.sw = self.Port(VoltageSource(
@@ -39,7 +36,6 @@ class Ap3012(DiscreteBoostConverter, GeneratorBlock):
   def contents(self):
     super().contents()
 
-    self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 
     self.assign(self.frequency, (1.1, 1.9)*MHertz)
 
