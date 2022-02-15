@@ -42,24 +42,27 @@ class LinearRegulatorDevice(DiscreteChip):
   def __init__(self) -> None:
     super().__init__()
 
+    # these device model parameters must be provided by subtypes
+    self.actual_dropout = self.Parameter(RangeExpr())
+    self.actual_quiescent_current = self.Parameter(RangeExpr())
+    self.actual_target_voltage = self.Parameter(RangeExpr())
+
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=RangeExpr(),
       current_draw=RangeExpr()
     ), [Power, Input])
+    # dropout voltage is modeled to expand the tolerance range for actual output voltage
     self.pwr_out = self.Port(VoltageSource(
-      voltage_out=RangeExpr(),
+      voltage_out=(  # bounds are lowest of the target voltage or dropout voltage
+        self.actual_target_voltage.lower().min(self.pwr_in.link().voltage.lower() - self.actual_dropout.upper()),
+        self.actual_target_voltage.upper().min(self.pwr_in.link().voltage.upper() - self.actual_dropout.lower()),
+      ),
       current_limits=RangeExpr()
     ), [Output])
     self.gnd = self.Port(Ground(), [Common])
 
-    # these device model parameters must be provided by subtypes
-    self.actual_dropout = self.Parameter(RangeExpr())
-    self.actual_quiescent_current = self.Parameter(RangeExpr())
-
     self.assign(self.pwr_in.current_draw,
                 self.pwr_out.link().current_drawn + self.actual_quiescent_current)
-    self.require(self.pwr_in.link().voltage.lower() >=
-                 self.pwr_out.link().voltage.upper() + self.actual_dropout.upper())  # TODO more elegant?
 
 
 @abstract_block

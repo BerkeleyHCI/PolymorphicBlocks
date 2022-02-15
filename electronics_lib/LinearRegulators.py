@@ -28,7 +28,7 @@ class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage, part_number = suitable_parts[0]
 
-    self.assign(self.pwr_out.voltage_out, part_output_voltage)
+    self.assign(self.actual_target_voltage, part_output_voltage)
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
       {
@@ -82,7 +82,7 @@ class Ldl1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage_nominal, part_number = suitable_parts[0]
 
-    self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
       {
@@ -144,7 +144,7 @@ class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage_nominal, part_number = suitable_parts[0]
 
-    self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
       {
@@ -221,7 +221,7 @@ class Xc6209_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage_nominal, part_number, part_dropout = suitable_parts[0]
 
-    self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.assign(self.actual_dropout, part_dropout * Volt)
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
@@ -277,7 +277,7 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage_nominal, part_number = suitable_parts[0]
 
-    self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
       {
