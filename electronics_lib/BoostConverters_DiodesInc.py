@@ -6,7 +6,8 @@ class Ap3012_Device(DiscreteChip, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=(2.6, 16)*Volt,  # TODO quiescent current
+      voltage_limits=(2.6, 16)*Volt,
+      # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.sw = self.Port(VoltageSource(
