@@ -35,7 +35,7 @@ class LinearRegulator(DcDcConverter):
 
 @abstract_block
 class LinearRegulatorDevice(DiscreteChip):
-  """Abstract base class that provides common functionality for a linear regulator chip.
+  """Abstract base class that provides a default model with common functionality for a linear regulator chip.
   Does not include supporting components like capacitors.
   """
   @init_in_parent
@@ -56,8 +56,8 @@ class LinearRegulatorDevice(DiscreteChip):
     self.actual_dropout = self.Parameter(RangeExpr())
     self.actual_quiescent_current = self.Parameter(RangeExpr())
 
-    self.require(self.pwr_in.current_draw.within(
-      self.pwr_out.link().current_drawn + self.actual_quiescent_current + (0, 0.01)))  # TODO avoid fudge factor
+    self.assign(self.pwr_in.current_draw,
+                self.pwr_out.link().current_drawn + self.actual_quiescent_current)
     self.require(self.pwr_in.link().voltage.lower() >=
                  self.pwr_out.link().voltage.upper() + self.actual_dropout.upper())  # TODO more elegant?
 

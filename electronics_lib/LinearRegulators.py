@@ -3,49 +3,21 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Ld1117_Device(DiscreteChip, FootprintBlock):
+class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
   @init_in_parent
-  def __init__(self, part: StringLike = StringExpr(), voltage_out: RangeLike = RangeExpr()):
+  def __init__(self, output_voltage: RangeLike):
     super().__init__()
-    self.part_in = self.Parameter(StringExpr(part))
+
+    self.assign(self.pwr_in.voltage_limits, (0, 15) * Volt)
+    self.assign(self.pwr_out.current_limits, (0, 0.8) * Amp)  # most conservative estimate, up to 1300mA
 
     self.actual_quiescent_current = self.Parameter(RangeExpr((5, 10) * mAmp))
     self.actual_dropout = self.Parameter(RangeExpr((0, 1.2) * Volt))
 
-    # Part datasheet, Table 9
-    self.vin = self.Port(VoltageSink(
-      voltage_limits=(0, 15) * Volt,
-      current_draw=RangeExpr()
-    ))
-    self.vout = self.Port(VoltageSource(
-      voltage_out=voltage_out,
-      current_limits=(0, 0.8) * Amp  # most conservative estimate, up to 1300mA
-    ))
-    self.assign(self.vin.current_draw, self.vout.link().current_drawn + self.actual_quiescent_current)
-    self.gnd = self.Port(Ground())
+    self.generator(self.select_part, output_voltage)
 
-  def contents(self):
-    super().contents()
-    self.footprint(
-      'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
-      {
-        '1': self.gnd,
-        '2': self.vout,
-        '3': self.vin,
-      },
-      mfr='STMicroelectronics', part=self.part_in,
-      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/99/3b/7d/91/91/51/4b/be/CD00000544.pdf/files/CD00000544.pdf/jcr:content/translations/en.CD00000544.pdf',
-    )
-
-
-class Ld1117(LinearRegulator, GeneratorBlock):
-  def __init__(self, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.output_voltage)
-
-  def select_part(self, spec_output_voltage: Range):  # TODO can some block params be made available pre-generate?
-    parts = [
-      # output voltage, quiescent current
+  def select_part(self, output_voltage: Range):  # TODO can some block params be made available pre-generate?
+    parts = [  # output voltage, quiescent current
       (Range(1.140, 1.260), 'LD1117S12TR'),
       (Range(1.76, 1.84), 'LD1117S18TR'),
       (Range(2.45, 2.55), 'LD1117S25TR'),
@@ -53,23 +25,36 @@ class Ld1117(LinearRegulator, GeneratorBlock):
       (Range(4.9, 5.1), 'LD1117S50TR'),
     ]
     suitable_parts = [(part_out, part_number)
-      for part_out, part_number in parts
-      if part_out in spec_output_voltage
-    ]
-    assert suitable_parts, f"no regulator with compatible output {spec_output_voltage}"
-    part_out, part_number = suitable_parts[0]
+                      for part_out, part_number in parts if part_out in output_voltage]
+    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+    part_output_voltage, part_number = suitable_parts[0]
 
-    self.ic = self.Block(Ld1117_Device(part=part_number, voltage_out=part_out*Volt))
-    self.assign(self.dropout, self.ic.dropout)
-    self.assign(self.quiescent_current, self.ic.quiescent_current)
+    self.assign(self.pwr_out.voltage_out, part_output_voltage)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+      {
+        '1': self.gnd,
+        '2': self.pwr_out,
+        '3': self.pwr_in,
+      },
+      mfr='STMicroelectronics', part=part_number,
+      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/99/3b/7d/91/91/51/4b/be/CD00000544.pdf/files/CD00000544.pdf/jcr:content/translations/en.CD00000544.pdf',
+    )
 
-    self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
-    self.out_cap = self.Block(DecouplingCapacitor(capacitance=10 * uFarad(tol=0.2)))
 
-    # wire things together
-    self.connect(self.ic.vin, self.in_cap.pwr, self.pwr_in)
-    self.connect(self.ic.vout, self.out_cap.pwr, self.pwr_out)
-    self.connect(self.ic.gnd, self.in_cap.gnd, self.out_cap.gnd, self.gnd)
+class Ld1117(LinearRegulator, GeneratorBlock):
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ic = imp.Block(Ld1117_Device(self.output_voltage))
+      self.in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
+      self.out_cap = imp.Block(DecouplingCapacitor(capacitance=10 * uFarad(tol=0.2)))
+
+      self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+      self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
 class Ldl1117_Device(DiscreteChip, FootprintBlock):
