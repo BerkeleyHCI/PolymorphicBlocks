@@ -11,7 +11,7 @@ import edg.wir
 /** Tests compiler PortArray expansion / elaboration and connected constraint allocation with link-side PortArray only.
   * Not dependent on generators or parameter propagation.
   */
-class CompilerPortArrayExpansionTest extends AnyFlatSpec {
+class CompilerPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
       Port.Port("sourcePort"),
@@ -149,9 +149,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "sink2Connect" -> Constraint.Connected(Ref("sink2", "port"), Ref("link", "sinks", "2")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.getContents
@@ -206,10 +204,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
-    compiled should equal(referenceElaborated)
+    testCompile(inputDesign, library, expectedDesign=Some(referenceElaborated))
   }
 
   "Compiler on design with bundle source and array bundle sink" should "expand link connections" in {
@@ -242,9 +237,7 @@ class CompilerPortArrayExpansionTest extends AnyFlatSpec {
       "sinkBExport.2" -> Constraint.Exported(Ref("sinks", "2", "b"), Ref("b", "sinks", "2")),
     )
 
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiled.contents.get.links("link").getLink.constraints should equal(expectedLinkConstraints)
   }

@@ -11,7 +11,7 @@ import edg.wir.{IndirectDesignPath, IndirectStep}
 
 /** Tests compiler parameter and expression evaluation using ASSIGN constraints.
   */
-class CompilerEvaluationTest extends AnyFlatSpec {
+class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
   import edgir.expr.expr.UnarySetExpr.Op
   val library = Library(
     ports = Seq(
@@ -109,9 +109,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // Check one-step prop
     compiler.getValue(IndirectDesignPath() + "source" + "floatVal") should equal(Some(FloatValue(3.0)))
@@ -186,9 +184,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink2IntersectVal" -> Constraint.Assign(Ref("sink2", "intersectVal"), ValueExpr.Literal(6.0, 9.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check link reductions
     compiler.getValue(IndirectDesignPath() + "link" + "sourceFloat") should equal(Some(FloatValue(3.0)))
@@ -248,9 +244,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check link reductions
     compiler.getValue(IndirectDesignPath() + "link" + "sinkSum") should equal(Some(FloatValue(0.0)))
@@ -277,9 +271,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sink0IntersectVal" -> Constraint.Assign(Ref("sink0", "intersectVal"), ValueExpr.Literal(5.0, 7.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check CONNECTED_LINK through outer (direct connection)
     val linkThroughSource = IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink
@@ -312,9 +304,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
@@ -331,9 +321,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check IS_CONNECTED
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
@@ -368,8 +356,7 @@ class CompilerEvaluationTest extends AnyFlatSpec {
         ),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiler.getValue(IndirectDesignPath() + "ifUndef") should equal(None)
     compiler.getValue(IndirectDesignPath() + "ifTrue") should equal(Some(IntValue(45)))

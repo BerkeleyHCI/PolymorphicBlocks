@@ -8,7 +8,6 @@ import edgir.ref.ref.{LibraryPath, LocalPath}
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable}
-import edg.util.IterableUtils._
 import EdgirUtils._
 
 
@@ -69,7 +68,6 @@ object CompilerError {
                         causes: Seq[OverAssignCause]) extends CompilerError {
     override def toString: String = s"Overassign to $target:\n" +
         s"${causes.map(x => s"- $x").mkString("\n")}"
-    }
   }
 
   case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError {
