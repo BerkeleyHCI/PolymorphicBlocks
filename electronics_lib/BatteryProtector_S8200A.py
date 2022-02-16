@@ -71,10 +71,9 @@ class BatteryProtector_S8200A(Block):
 
     self.connect(self.pwr_in, self.pwr_out)
 
-    (self.vdd_vss_cap, ), _ = self.chain(
-      self.ic.vdd,
-      self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.10))),
-      self.ic.vss)
+    self.vdd_vss_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.10)))
+    self.connect(self.ic.vdd, self.vdd_vss_cap.pwr)
+    self.connect(self.ic.vss, self.vdd_vss_cap.gnd)
 
     # do fet
     self.connect(self.ic.vss, self.do_fet.source.as_ground())
