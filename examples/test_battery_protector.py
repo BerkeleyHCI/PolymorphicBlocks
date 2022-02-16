@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class BatteryProtectorCircuit(SimpleBoardTop):
+class BatteryProtectorCircuit(BoardTop):
   def contents(self) -> None:
     super().contents()
     self.battery_protector = self.Block(BatteryProtector_S8200A())

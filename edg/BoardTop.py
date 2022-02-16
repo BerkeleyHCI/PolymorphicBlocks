@@ -20,17 +20,3 @@ class BoardTop(DesignTop):
         (SwitchPFet, SmtSwitchPFet)
       ]
     )
-
-
-class SimpleBoardTop(BoardTop):
-  """Temporary / hackaround design top with explicit empty pin assignments
-  (automatically allocate) for microcontrollers, for simplicity of tutorials."""
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_values=[
-        (Lpc1549_48, ['pin_assigns'], ''),
-        (Lpc1549_64, ['pin_assigns'], ''),
-        (Stm32f103_48, ['pin_assigns'], ''),
-        (Nucleo_F303k8, ['pin_assigns'], ''),
-      ]
-    )

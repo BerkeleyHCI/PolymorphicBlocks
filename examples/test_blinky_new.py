@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class NewBlinkyOvervolt(SimpleBoardTop):
+class NewBlinkyOvervolt(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -18,7 +18,7 @@ class NewBlinkyOvervolt(SimpleBoardTop):
     self.connect(self.mcu.gnd, self.swd.gnd, self.jack.gnd)
 
 
-class NewBlinkyBuck(SimpleBoardTop):
+class NewBlinkyBuck(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -43,7 +43,7 @@ class NewBlinkyBuck(SimpleBoardTop):
       ])
 
 
-class NewBlinkyRefactored(SimpleBoardTop):
+class NewBlinkyRefactored(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -135,7 +135,7 @@ class Ref_Lf21215tmr(Block):
     super().contents()
 
 
-class NewBlinkyMagsense(SimpleBoardTop):
+class NewBlinkyMagsense(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -167,7 +167,7 @@ class NewBlinkyMagsense(SimpleBoardTop):
       ])
 
 
-class NewBlinkyLightsense(SimpleBoardTop):
+class NewBlinkyLightsense(BoardTop):
   def contents(self) -> None:
     super().contents()
 

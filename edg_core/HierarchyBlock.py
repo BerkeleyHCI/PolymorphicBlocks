@@ -434,18 +434,6 @@ class GeneratorBlock(Block):
     req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
-  # DEPRECATED - pending experimentation to see if this can be removed
-  # This is an older API that has the .get(...) in the genreator function,
-  # instead of handling it in infrastructure and passing results to the generator as args.
-  # def generator_getfn(self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
-  #   assert callable(fn), f"fn {fn} must be a method (callable)"
-  #   fn_name = fn.__name__
-  #   assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
-  #   assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
-  #
-  #   assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-  #   self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), ())
-
   ConstrType1 = TypeVar('ConstrType1', bound=Any)
   ConstrCastable1 = TypeVar('ConstrCastable1', bound=Any)
   ConstrType2 = TypeVar('ConstrType2', bound=Any)
@@ -628,19 +616,6 @@ class GeneratorBlock(Block):
       raise NotImplementedError(f"get({self._name_of(param)}) on unknown type, got {value}")
     return value  # type: ignore
 
-  def get_opt(self, param: ConstraintExpr[ConstrType, Any]) -> Optional[ConstrType]:
-    # TODO can this be unified with get() without a default? type inference seems to choke
-    if self._has(param):
-      return self.get(param)
-    else:
-      return None
-
-  def _has(self, param: ConstraintExpr) -> bool:  # temporary, hack: all ConstraintExpr should be solved with const prop
-    assert self._param_values is not None, "Can't call _has(...) outside generate()"
-    return param in self._param_values
-
-  # TODO maybe disallow Block from being called in contents() ?
-
   # Generator serialization and parsing
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
@@ -693,8 +668,6 @@ class GeneratorBlock(Block):
 
     return self._def_to_proto()
 
-  def generate(self):
-    raise RuntimeError("generate deprecated")
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])
 def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
