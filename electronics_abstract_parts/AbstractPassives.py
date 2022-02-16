@@ -49,32 +49,23 @@ class SeriesPowerResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink(), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource(), [Output])
-
     self.resistance = self.ArgParameter(resistance)
     self.current_limits = self.ArgParameter(current_limits)
-
-  def contents(self):
-    super().contents()
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
       power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
-    self.connect(self.res.a.as_voltage_sink(
+
+    self.pwr_in = self.Export(self.res.a.as_voltage_sink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=RangeExpr()
-    ), self.pwr_in)
-    self.connect(self.res.b.as_voltage_source(
+    ), [Power, Input])
+    self.pwr_out = self.Export(self.res.b.as_voltage_source(
       voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
       current_limits=self.current_limits
-    ), self.pwr_out)
-
-    # Note, this is a worst-case current draw that uses passed in current limits, instead of actual current draw
-    # This is done to avoid a cyclic dependency
-    # TODO: better current limits using actual current drawn
+    ), [Output])
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
@@ -110,8 +101,8 @@ class UnpolarizedCapacitor(PassiveComponent):
   def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
 
-    self.capacitance = capacitance
-    self.voltage = voltage  # defined as operating voltage range
+    self.capacitance = self.ArgParameter(capacitance)
+    self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
 
 
 @abstract_block
@@ -134,17 +125,11 @@ class DecouplingCapacitor(DiscreteApplication):
   def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power, Input])
-    self.gnd = self.Port(VoltageSink(), [Common, Output])
+    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
+    self.pwr = self.Export(self.cap.pos.as_voltage_sink())
+    self.gnd = self.Export(self.cap.neg.as_voltage_sink())
 
-    self.capacitance = capacitance
-
-  def contents(self):
-    super().contents()
-    self.cap = self.Block(Capacitor(self.capacitance, voltage=(self.pwr.link().voltage - self.gnd.link().voltage)))
-
-    self.connect(self.pwr, self.cap.pos.as_voltage_sink())
-    self.connect(self.gnd, self.cap.neg.as_voltage_sink())
+    self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
 
 @abstract_block
