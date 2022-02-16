@@ -365,6 +365,29 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return ImplicitScope(self, implicits)
 
+  CastableType = TypeVar('CastableType')
+  from .ConstraintExpr import BoolLike, BoolExpr, FloatLike, FloatExpr, RangeLike, RangeExpr
+  # type ignore is needed because IntLike overlaps BoolLike
+  @overload
+  def ArgParameter(self, param: BoolLike) -> BoolExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: IntLike) -> IntExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: FloatLike) -> FloatExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: RangeLike) -> RangeExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: StringLike) -> StringExpr: ...  # type: ignore
+
+  def ArgParameter(self, param: CastableType) -> ConstraintExpr[Any, CastableType]:
+    """Registers a constructor argument parameter for this Block.
+    This doesn't actually do anything, but is needed to help the type system converter the *Like to a *Expr."""
+    if not isinstance(param, ConstraintExpr):
+      raise TypeError(f"param to ArgParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
+    if param.binding is None:
+      raise TypeError(f"param to ArgParameter(...) must have binding")
+    return param
+
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False) -> T:
     """Registers a port for this Block"""
