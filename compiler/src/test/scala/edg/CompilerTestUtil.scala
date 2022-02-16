@@ -1,9 +1,10 @@
-package edg.compiler
+package edg
 
+import edg.compiler.Compiler
+import edg.wir.{EdgirLibrary, Refinements}
+import edgir.schema.schema.{Design, Library}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
-import edgir.schema.schema.{Design, Library}
-import edg.wir.{EdgirLibrary, Refinements}
 
 
 trait CompilerTestUtil extends AnyFlatSpec {
@@ -18,6 +19,4 @@ trait CompilerTestUtil extends AnyFlatSpec {
     }
     (compiler, compiled)
   }
-
-//  val (compiler, compiled) = testCompile(inputDesign, library, expectedDesign=Some(referenceElaborated))
 }

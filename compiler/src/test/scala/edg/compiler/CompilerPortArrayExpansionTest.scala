@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValueExpr}
-import edg.wir
+import edg.{CompilerTestUtil, wir}
 
 
 /** Tests compiler PortArray expansion / elaboration and connected constraint allocation with link-side PortArray only.

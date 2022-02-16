@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
-import edg.wir
+import edg.{CompilerTestUtil, wir}
 
 
 /** Library with simple problem structure that can be shared across tests.

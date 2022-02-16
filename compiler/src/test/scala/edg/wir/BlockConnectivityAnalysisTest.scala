@@ -6,10 +6,10 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
 import edg.compiler.Compiler
-import edg.wir
+import edg.{wir, CompilerTestUtil}
 
 
-class BlockConnectivityAnalysisTest extends AnyFlatSpec {
+class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
   private val library = Library(
     ports = Seq(
       Port.Port("sourcePort"),
@@ -89,9 +89,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         "dut" -> Block.Library("exportSinkBlock")
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
     val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks("dut").getHierarchy)
 
     analysis.getConnected(Ref("port")) should equal(
@@ -122,9 +120,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         "sink2Connect" -> Constraint.Connected(Ref("sink2Block", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
     val analysis = new BlockConnectivityAnalysis(compiled.getContents)
 
     val expectedConnects = Connection.Link(
@@ -152,9 +148,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec {
         "dut" -> Block.Library("bridgedSinkBlock")
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
-    compiler.getErrors() shouldBe empty
+    val (compiler, compiled) = testCompile(inputDesign, library)
     val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks("dut").getHierarchy)
 
     val expectedConnects = Connection.Link(

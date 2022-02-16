@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
-import edg.wir
+import edg.{CompilerTestUtil, wir}
 import edg.wir.{IndirectDesignPath, IndirectStep}
 
 
