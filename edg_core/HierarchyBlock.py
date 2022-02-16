@@ -424,11 +424,12 @@ class GeneratorBlock(Block):
   def __init__(self):
     super().__init__()
     self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
-    self._generators: collections.OrderedDict[str, GeneratorBlock.GeneratorRecord] = collections.OrderedDict()
+    self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
 
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
+    fn_name: str
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
@@ -436,14 +437,14 @@ class GeneratorBlock(Block):
   # DEPRECATED - pending experimentation to see if this can be removed
   # This is an older API that has the .get(...) in the genreator function,
   # instead of handling it in infrastructure and passing results to the generator as args.
-  def generator_getfn(self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
-    assert callable(fn), f"fn {fn} must be a method (callable)"
-    fn_name = fn.__name__
-    assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
-    assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
-
-    assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), ())
+  # def generator_getfn(self, fn: Callable[[], None], *reqs: ConstraintExpr) -> None:
+  #   assert callable(fn), f"fn {fn} must be a method (callable)"
+  #   fn_name = fn.__name__
+  #   assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
+  #   assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
+  #
+  #   assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
+  #   self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, (), ())
 
   ConstrType1 = TypeVar('ConstrType1', bound=Any)
   ConstrCastable1 = TypeVar('ConstrCastable1', bound=Any)
@@ -587,10 +588,13 @@ class GeneratorBlock(Block):
     fn_name = fn.__name__
     assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
     assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
+    assert self._generator is None, f"redefinition of generator, multiple generators not allowed"
 
-    assert fn_name not in self._generators, f"redefinition of generator {fn_name}"
+    for (i, req_param) in enumerate(reqs):
+      assert isinstance(req_param.binding, InitParamBinding), \
+        f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
 
-    self._generators[fn_name] = GeneratorBlock.GeneratorRecord(reqs, tuple(req_ports), reqs)
+    self._generator = GeneratorBlock.GeneratorRecord(fn_name, reqs, tuple(req_ports), reqs)
 
   # Generator solved-parameter-access interface
   #
@@ -641,16 +645,15 @@ class GeneratorBlock(Block):
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
-      assert len(self._generators) == 1, f"{self} does not have exactly 1 generator"
+      assert self._generator is not None, f"{self} did not define a generator"
 
       pb = edgir.HierarchyBlock()
       ref_map = self._get_ref_map(edgir.LocalPath())
-      for (name, record) in self._generators.items():
-        pb.generators[name]  # even if rest of the fields are empty, make sure to create a record
-        for req_param in record.req_params:
-          pb.generators[name].required_params.add().CopyFrom(ref_map[req_param])
-        for req_port in record.req_ports:
-          pb.generators[name].required_ports.add().CopyFrom(ref_map[req_port])
+      pb.generators[self._generator.fn_name]  # even if rest of the fields are empty, make sure to create a record
+      for req_param in self._generator.req_params:
+        pb.generators[self._generator.fn_name].required_params.add().CopyFrom(ref_map[req_param])
+      for req_port in self._generator.req_ports:
+        pb.generators[self._generator.fn_name].required_ports.add().CopyFrom(ref_map[req_port])
       pb = self._populate_def_proto_block_base(pb)
       return pb
     else:
@@ -668,6 +671,7 @@ class GeneratorBlock(Block):
 
   def _generated_def_to_proto(self, generate_fn_name: str,
                               generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> edgir.HierarchyBlock:
+    assert self._generator is not None, f"{self} did not define a generator"
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
 
@@ -681,13 +685,8 @@ class GeneratorBlock(Block):
         port.link()  # lazy-initialize connected_link refs so it's ready for params
     self._parse_param_values(generate_values)
 
-    # TODO: support ValueExpr, perhaps by ConstraintExpr matching or eager conversion to ValueExpr
-    # or some kind of matching (eg, by index) from generator record to request
-    fn_args = [self.get(arg_param)
-      for arg_param in self._generators[generate_fn_name].fn_args]
-
     fn = getattr(self, generate_fn_name)
-    fn(*fn_args)
+    fn(*self._generator.fn_args)
 
     self._elaboration_state = BlockElaborationState.post_generate
 

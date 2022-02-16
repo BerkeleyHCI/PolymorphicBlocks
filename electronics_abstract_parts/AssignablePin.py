@@ -10,13 +10,14 @@ class AssignablePinBlock(GeneratorBlock):
   new_io(tpe): returns a fresh IO port of type tpe
   suggest_pin(port, str): suggests a pinmap
   TODO should these be separate?"""
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, pin_assigns: StringLike = ""):
     super().__init__()
 
     self._all_assignable_ios: List[Port] = []
     self._remaining_assignable_ios: Dict[Type[Port], List[Port]] = {}
 
-    self.pin_assigns = self.Parameter(StringExpr())
+    self.pin_assigns = cast(StringExpr, pin_assigns)
 
   # TODO type signature could be enhanced to only allow iterable pin with Bundle type
   PortType = TypeVar('PortType', bound=Union[CircuitPort, Bundle])
