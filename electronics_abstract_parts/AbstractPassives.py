@@ -137,8 +137,8 @@ class Inductor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.inductance = inductance
-    self.current = current  # defined as operating current range, non-directioned
-    self.frequency = frequency  # defined as operating frequency range
+    self.inductance = self.ArgParameter(inductance)
+    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
+    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())
