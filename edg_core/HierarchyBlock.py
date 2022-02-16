@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import collections
-from itertools import chain
 from numbers import Number
 from typing import *
 
 import edgir
 from .Blocks import BaseBlock, BlockElaborationState, ConnectedPorts
-from .Binding import ParamBinding, AssignBinding
+from .Binding import InitParamBinding, AssignBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .Core import Refable, non_library
@@ -82,7 +81,7 @@ def init_in_parent(fn: InitType) -> InitType:
             raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
 
           # Create new parameter in self, and pass through this one instead of the original
-          param_bound = param_model._bind(ParamBinding(self))
+          param_bound = param_model._bind(InitParamBinding(self))
           self._init_params[arg_name] = param_bound
 
           if arg_name in kwargs:
