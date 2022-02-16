@@ -686,7 +686,8 @@ class GeneratorBlock(Block):
     self._parse_param_values(generate_values)
 
     fn = getattr(self, generate_fn_name)
-    fn(*self._generator.fn_args)
+    fn_args = [self.get(arg_param) for arg_param in self._generator.fn_args]
+    fn(*fn_args)
 
     self._elaboration_state = BlockElaborationState.post_generate
 
