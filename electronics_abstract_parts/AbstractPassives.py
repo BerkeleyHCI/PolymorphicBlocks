@@ -1,6 +1,4 @@
-from typing import cast
 from electronics_model import *
-from itertools import chain
 from .Categories import *
 
 
@@ -14,8 +12,8 @@ class Resistor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.resistance = cast(RangeExpr, resistance)
-    self.power = cast(RangeExpr, power)  # operating power range
+    self.resistance = self.ArgParameter(resistance)
+    self.power = self.ArgParameter(power)  # operating power range
     self.actual_resistance = self.Parameter(RangeExpr())
 
 
@@ -26,17 +24,10 @@ class PullupResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.io = self.Port(DigitalSingleSource(), [InOut])
+    self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.resistance = cast(RangeExpr, resistance)
-
-  def contents(self):
-    super().contents()
-    self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
-
-    self.connect(self.pwr, self.res.a.as_voltage_sink())
-    self.connect(self.io, self.res.b.as_digital_pull_high_from_supply(self.pwr))
+    self.pwr = self.Export(self.res.a.as_voltage_sink(), [Power])
+    self.io = self.Export(self.res.b.as_digital_pull_high_from_supply(self.pwr), [InOut])
 
 
 class PulldownResistor(DiscreteApplication):
@@ -46,17 +37,10 @@ class PulldownResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.gnd = self.Port(Ground(), [Common])
-    self.io = self.Port(DigitalSingleSource(), [InOut])
+    self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.resistance = cast(RangeExpr, resistance)
-
-  def contents(self):
-    super().contents()
-    self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
-
-    self.connect(self.gnd, self.res.a.as_ground())
-    self.connect(self.io, self.res.b.as_digital_pull_low_from_supply(self.gnd))
+    self.gnd = self.Export(self.res.a.as_ground(), [Common])
+    self.io = self.Export(self.res.b.as_digital_pull_low_from_supply(self.gnd), [InOut])
 
 
 class SeriesPowerResistor(DiscreteApplication):
@@ -68,8 +52,8 @@ class SeriesPowerResistor(DiscreteApplication):
     self.pwr_in = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])
 
-    self.resistance = cast(RangeExpr, resistance)
-    self.current_limits = cast(RangeExpr, current_limits)
+    self.resistance = self.ArgParameter(resistance)
+    self.current_limits = self.ArgParameter(current_limits)
 
   def contents(self):
     super().contents()

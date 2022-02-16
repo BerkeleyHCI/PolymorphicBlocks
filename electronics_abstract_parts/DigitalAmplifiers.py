@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .AbstractFets import SwitchNFet, SwitchPFet
 from .AbstractPassives import Resistor
@@ -23,9 +22,9 @@ class HighSideSwitch(Block):
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     ), [Output])
 
-    self.pull_resistance = cast(RangeExpr, pull_resistance)
-    self.max_rds = cast(FloatExpr, max_rds)
-    self.frequency = cast(RangeExpr, frequency)
+    self.pull_resistance = self.ArgParameter(pull_resistance)
+    self.max_rds = self.ArgParameter(max_rds)
+    self.frequency = self.ArgParameter(frequency)
 
     pwr_voltage = self.pwr.link().voltage
     out_current = self.output.link().current_drawn
@@ -87,8 +86,8 @@ class HalfBridgeNFet(Block):
 
     self.output = self.Port(DigitalSource.from_supply(self.gnd, self.pwr))  # current limits from supply
 
-    self.max_rds = cast(FloatExpr, max_rds)
-    self.frequency = cast(RangeExpr, frequency)
+    self.max_rds = self.ArgParameter(max_rds)
+    self.frequency = self.ArgParameter(frequency)
 
     pwr_voltage = self.pwr.link().voltage
     out_current = self.output.link().current_drawn

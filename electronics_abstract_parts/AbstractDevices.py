@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -15,8 +14,8 @@ class Battery(DiscreteApplication):
       voltage_out=RangeExpr(), current_limits=RangeExpr()))  # set by subclasses
     self.gnd = self.Port(GroundSource())
 
-    self.voltage = cast(RangeExpr, voltage)
-    self.capacity = cast(FloatExpr, capacity)
+    self.voltage = self.ArgParameter(voltage)
+    self.capacity = self.ArgParameter(capacity)
     self.actual_capacity = self.Parameter(RangeExpr())
 
     self.require(self.pwr.voltage_out.within(voltage))

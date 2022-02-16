@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -12,8 +11,8 @@ class Switch(DiscreteComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.current = cast(RangeExpr, current)
-    self.voltage = cast(RangeExpr, voltage)
+    self.current = self.ArgParameter(current)
+    self.voltage = self.ArgParameter(voltage)
 
 
 class DigitalSwitch(DiscreteApplication):

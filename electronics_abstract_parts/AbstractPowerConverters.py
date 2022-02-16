@@ -1,4 +1,4 @@
-from typing import cast, Optional
+from typing import Optional
 from electronics_model import *
 from .Categories import *
 from .AbstractPassives import Inductor, DecouplingCapacitor
@@ -11,7 +11,7 @@ class DcDcConverter(PowerConditioner):
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
 
-    self.output_voltage = cast(RangeExpr, output_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
 
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=RangeExpr(),
@@ -98,9 +98,9 @@ class DcDcSwitchingConverter(DcDcConverter):
     """
     super().__init__(*args, **kwargs)
 
-    self.ripple_current_factor = cast(RangeExpr, ripple_current_factor)
-    self.input_ripple_limit = cast(FloatExpr, input_ripple_limit)
-    self.output_ripple_limit = cast(FloatExpr, output_ripple_limit)
+    self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
+    self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
+    self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
     self.frequency = self.Parameter(RangeExpr())
 
