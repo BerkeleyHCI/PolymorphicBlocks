@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from math import log10, ceil
-from typing import List, Tuple, cast
+from typing import List, Tuple
 
 from edg_core import *
 from electronics_model import Common, Passive
@@ -63,8 +63,8 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)) -> None:
     super().__init__()
 
-    self.ratio = cast(RangeExpr, ratio)
-    self.impedance = cast(RangeExpr, impedance)
+    self.ratio = self.ArgParameter(ratio)
+    self.impedance = self.ArgParameter(impedance)
 
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
@@ -145,7 +145,7 @@ class VoltageDivider(BaseVoltageDivider):
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike) -> None:
     super().__init__(impedance=impedance)
 
-    self.output_voltage = cast(RangeExpr, output_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
 
     ratio_lower = self.output_voltage.lower() / self.input.link().voltage.lower()
     ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
@@ -162,8 +162,8 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
                assumed_input_voltage: RangeLike) -> None:
     super().__init__(impedance=impedance)
 
-    self.output_voltage = cast(RangeExpr, output_voltage)  # TODO eliminate this casting?
-    self.assumed_input_voltage = cast(RangeExpr, assumed_input_voltage)  # TODO eliminate this casting?
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.assumed_input_voltage = self.ArgParameter(assumed_input_voltage)
     self.actual_input_voltage = self.Parameter(RangeExpr(
       (self.output_voltage.lower() / self.actual_ratio.upper(),
        self.output_voltage.upper() / self.actual_ratio.lower())

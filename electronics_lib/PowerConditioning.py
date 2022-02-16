@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_abstract_parts import *
 
 
@@ -32,9 +31,9 @@ class BufferedSupply(PowerConditioner):
                voltage_drop: RangeLike) -> None:
     super().__init__()
 
-    self.charging_current = cast(RangeExpr, charging_current)
-    self.sense_resistance = cast(RangeExpr, sense_resistance)
-    self.voltage_drop = cast(RangeExpr, voltage_drop)
+    self.charging_current = self.ArgParameter(charging_current)
+    self.sense_resistance = self.ArgParameter(sense_resistance)
+    self.voltage_drop = self.ArgParameter(voltage_drop)
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])

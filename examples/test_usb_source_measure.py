@@ -1,4 +1,3 @@
-from typing import cast
 import unittest
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
@@ -27,8 +26,8 @@ class GatedEmitterFollower(Block):
     self.high_en = self.Port(DigitalSink())
     self.low_en = self.Port(DigitalSink())
 
-    self.current = cast(RangeExpr, current)
-    self.rds_on = cast(RangeExpr, rds_on)
+    self.current = self.ArgParameter(current)
+    self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self) -> None:
     super().contents()
@@ -188,8 +187,8 @@ class SourceMeasureControl(Block):
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
 
-    self.current = cast(RangeExpr, current)
-    self.rds_on = cast(RangeExpr, rds_on)
+    self.current = self.ArgParameter(current)
+    self.rds_on = self.ArgParameter(rds_on)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr_logic, [Power]),
