@@ -4,7 +4,6 @@ from .Categories import *
 
 @abstract_block
 class Resistor(PassiveComponent):
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
@@ -19,7 +18,6 @@ class Resistor(PassiveComponent):
 
 class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
@@ -32,7 +30,6 @@ class PullupResistor(DiscreteApplication):
 
 class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
@@ -96,7 +93,6 @@ class CurrentSenseResistor(DiscreteApplication):
 @abstract_block
 class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
-  # TODO no default capacitance and voltage rating
   @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
@@ -108,7 +104,6 @@ class UnpolarizedCapacitor(PassiveComponent):
 @abstract_block
 class Capacitor(UnpolarizedCapacitor):
   """Polarized capacitor, which we assume will be the default"""
-  # TODO no default capacitance and voltage rating
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
@@ -120,21 +115,19 @@ class Capacitor(UnpolarizedCapacitor):
 class DecouplingCapacitor(DiscreteApplication):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
-  # TODO no default capacitance
   @init_in_parent
   def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()
 
     self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
-    self.pwr = self.Export(self.cap.pos.as_voltage_sink())
-    self.gnd = self.Export(self.cap.neg.as_voltage_sink())
+    self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
+    self.gnd = self.Export(self.cap.neg.as_voltage_sink(), [Common])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
 
 @abstract_block
 class Inductor(PassiveComponent):
-  # TODO no default inductance
   @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO),
