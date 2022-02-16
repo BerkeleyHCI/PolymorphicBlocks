@@ -111,7 +111,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
   preferred if both are connected.
   """
   @init_in_parent
-  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
+  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink())  # high-priority source

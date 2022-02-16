@@ -17,15 +17,13 @@ class IllegalConstraintException(msg: String) extends Exception(msg)
 
 sealed trait ElaborateRecord
 object ElaborateRecord {
-  sealed trait ElaborateTask extends ElaborateRecord  // a elaboration task that can be run
-  sealed trait ElaborateDependency extends ElaborateRecord  // a elaboration dependency
+  sealed trait ElaborateTask extends ElaborateRecord  // an elaboration task that can be run
+  sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency
 
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
   case class Link(linkPath: DesignPath) extends ElaborateTask
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
-  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask {
-    override def toString: String = s"Connect($toLinkPortPath <-> $fromLinkPortPath)"
-  }
+  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
                        unrefinedClass: Option[LibraryPath],
@@ -34,8 +32,7 @@ object ElaborateRecord {
     override def toString: String = s"Generator(${blockClass.toSimpleString}.$fnName @ $blockPath)"
   }
 
-  // Dependency source only, for a parameter value
-  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency
+  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
   // Set when the connection from the link's port to portPath have been elaborated
   // (or in the link port case, when the link has been elaborated).
@@ -48,11 +45,9 @@ object ElaborateRecord {
 sealed trait CompilerError
 object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError {
-    // These error may be redundant with below, but provides dependency data
-    override def toString: String = {
-      s"Unelaborated missing dependencies $elaborateRecord:\n" +
-          s"${missing.map(x => s"- $x").mkString("\n")}"
-    }
+    // These errors may be redundant with below, but provides dependency data
+    override def toString: String = s"Unelaborated missing dependencies $elaborateRecord:\n" +
+        s"${missing.map(x => s"- $x").mkString("\n")}"
   }
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError {
     override def toString: String = s"Unelaborated library element ${target.toSimpleString} @ $path"
@@ -72,8 +67,7 @@ object CompilerError {
 
   case class OverAssign(target: IndirectDesignPath,
                         causes: Seq[OverAssignCause]) extends CompilerError {
-    override def toString: String = {
-      s"Overassign to $target:\n" +
+    override def toString: String = s"Overassign to $target:\n" +
         s"${causes.map(x => s"- $x").mkString("\n")}"
     }
   }
@@ -142,7 +136,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Working design tree data structure
-  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to cleanly support generators
+  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
   def resolveLink(path: DesignPath): wir.LinkLike = root.resolve(path.steps).asInstanceOf[wir.LinkLike]
@@ -165,12 +159,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
   // Supplemental elaboration data structures
-  // link path -> list of params
-  private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()
-  // port -> connected link path
-  private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()
-  // indicates whether the port is directly connected in the enclosing block
-  private val portDirectlyConnected = mutable.HashMap[DesignPath, Boolean]()
+  private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
+  private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()  // port -> connected link path
+  private val portDirectlyConnected = mutable.HashMap[DesignPath, Boolean]()  // if port directly connected in enclosing block
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -205,7 +196,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // including link parameters (through CONNECTED_LINK) and IS_CONNECTED.
   // Neither port can be an array (container) port (array connects should be expanded into individual element connects),
   // but ports may be bundle or inner ports (in bundles or arrays).
-  // This depends on ports on both sides having been elaborated, as well as the link's parameters being available.
+  // Only the link side port needs to have been elaborated.
   protected def elaborateConnect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
     // Generate port-port parameter propagation
     // All connected ports should have params
@@ -573,8 +564,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  /** Elaborates the generator, running it and merging the result with the block.
-    */
+  // Elaborates the generator, replacing the block stub with the generated implementation.
+  //
   protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
     // Get required values for the generator
     val reqParamValues = generator.requiredParams.map { reqParam =>
@@ -663,7 +654,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
               Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
-            // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
             require(!portDirectlyConnected.contains(path ++ intPort))
             if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
               portDirectlyConnected.put(path ++ intPort, true)
@@ -813,14 +803,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _: ElaborateRecord.ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
         }
-      }
-    }
-
-    val pendingBlocking = elaboratePending.getMissingBlocking
-    if (pendingBlocking.nonEmpty) {
-      debug(s"Compiler completed with remaining tasks:")
-      pendingBlocking.foreach { case (pending, blocking) =>
-        debug(s"- $pending: $blocking")
       }
     }
 

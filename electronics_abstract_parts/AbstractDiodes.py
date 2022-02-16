@@ -11,8 +11,9 @@ class Diode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, reverse_voltage: RangeLike, current: RangeLike, voltage_drop: RangeLike,
-               reverse_recovery_time: RangeLike) -> None:
+  def __init__(self, reverse_voltage: RangeLike, current: RangeLike, *,
+               voltage_drop: RangeLike = Default(Range.all()),
+               reverse_recovery_time: RangeLike = Default(Range.all())) -> None:
     super().__init__()
 
     self.anode = self.Port(Passive())
@@ -32,7 +33,7 @@ class ZenerDiode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, zener_voltage: RangeLike,
+  def __init__(self, zener_voltage: RangeLike, *,
                forward_voltage_drop: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 

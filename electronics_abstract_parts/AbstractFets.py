@@ -17,9 +17,9 @@ class Fet(DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
   @init_in_parent
-  def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike,
-               gate_voltage: RangeLike, rds_on: RangeLike,
-               gate_charge: RangeLike, power: RangeLike) -> None:
+  def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
+               gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
+               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(0)) -> None:
     super().__init__()
 
     self.source = self.Port(Passive())
