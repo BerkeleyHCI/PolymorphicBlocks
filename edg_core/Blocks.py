@@ -475,7 +475,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
-
   def connect(self, *ports: BasePort) -> ConnectedPorts:
     for port in ports:
       if not isinstance(port, BasePort):
