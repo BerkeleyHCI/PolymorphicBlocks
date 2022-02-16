@@ -315,10 +315,6 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.max)
 
 
-# RangeLit = Tuple[FloatLit, FloatLit]
-# A RangeLike type excluding the float-to-range implicit conversion
-# RangeLikeNonFloat = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
-# RangeLike = Union[RangeLikeNonFloat, FloatLike]
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   # Some range literals for defaults
