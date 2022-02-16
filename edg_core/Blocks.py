@@ -475,6 +475,24 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
+  CastableType = TypeVar('CastableType')
+  from .ConstraintExpr import BoolLike, BoolExpr, FloatLike, FloatExpr, RangeLike, RangeExpr
+  @overload
+  def ArgParameter(self, param: BoolLike) -> BoolExpr: ...
+  @overload
+  def ArgParameter(self, param: FloatLike) -> FloatExpr: ...
+  @overload
+  def ArgParameter(self, param: RangeLike) -> RangeExpr: ...
+
+  def ArgParameter(self, param: CastableType) -> ConstraintExpr[Any, CastableType]:
+    """Registers a constructor argument parameter for this Blo/ck.
+    This doesn't actually do anything, but is needed to help the type system converter the *Like to a *Expr."""
+    if not isinstance(param, ConstraintExpr):
+      raise TypeError(f"param to ArgParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
+    if param.binding is None:
+      raise TypeError(f"param to ArgParameter(...) must have binding")
+    return param
+
   def connect(self, *ports: BasePort) -> ConnectedPorts:
     for port in ports:
       if not isinstance(port, BasePort):
