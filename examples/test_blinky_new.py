@@ -247,12 +247,11 @@ class Ref_Bh1620fvc_Device(FootprintBlock):
 
 class Ref_Bh1620fvc(Block):
   @init_in_parent
-  def __init__(self, max_illuminance: FloatLike = FloatExpr(),
-               target_voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, max_illuminance: FloatLike, target_voltage: RangeLike) -> None:
     super().__init__()
 
     # in L-gain mode, Vout = 0.0057e-6 * Ev * Rl
-    rload = RangeExpr._to_expr_type(target_voltage) / (0.0057e-6) / FloatExpr._to_expr_type(max_illuminance)
+    rload = RangeExpr._to_expr_type(target_voltage) / 0.0057e-6 / max_illuminance
     # without the typer, this would be written as:
     # rload = target_voltage / (0.0057e-6) / max_illuminance
 

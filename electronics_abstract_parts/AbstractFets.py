@@ -19,7 +19,7 @@ class Fet(DiscreteSemiconductor):
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
                gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
-               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(0)) -> None:
+               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0))) -> None:
     super().__init__()
 
     self.source = self.Port(Passive())
