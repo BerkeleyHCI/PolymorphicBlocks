@@ -382,6 +382,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Find allocate ports and lower them before processing all constraints
+    // link-side port array -> list of (constraint name, block port)
     val linkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[(String, Seq[String])]]()
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) =>
@@ -637,9 +638,53 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       setPortNotConnected(path + portName, port)
     }
 
-    // All inner link ports that need to be allocated, and constraints connecting to it
-    // as (path to inner link port array -> constraint names)
-    val innerLinkArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
+    // Find allocate ports and lower them before processing all constraints
+    // path to inner link port array -> list of array elements
+    val intPortArrayEltss = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
+    link.getConstraints.view.mapValues(_.expr).collect {  // extract exported constraints only
+      case (constrName, expr.ValueExpr.Expr.Exported(exported)) =>
+        (constrName, exported.getExteriorPort, exported.getInternalBlockPort)
+    }.collect {  // extract array ones that need lowering, into (name, external ports, internal array)
+      case (constrName, ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
+      ValueExpr.RefAllocate(intPortArray)) =>  // array-array connect
+        val extPorts = constProp.getArrayElts(path ++ extPortArray).get.map { extArrayElt =>
+          (extPortArray :+ extArrayElt) ++ extPortInner }
+        (constrName, extPorts, intPortArray)
+      case (constrName, ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray)) =>  // element-array connect
+        val extPorts = Seq(extPort)
+        (constrName, extPorts, intPortArray)
+    }.foreach { case (constrName, extPorts, intPortArray) =>  // expand the connections
+      link.mapMultiConstraint(constrName) { constr =>
+        val intPortArrayElts = intPortArrayEltss.getOrElseUpdate(intPortArray, mutable.ListBuffer())
+        val startIndex = intPortArrayElts.length
+        extPorts.zipWithIndex.map { case (extPort, extPortIndex) =>
+          val intPortIndex = (startIndex + extPortIndex).toString
+          intPortArrayElts.append(intPortIndex)
+
+          val newConstrName = extPorts.length match {
+            case 1 => constrName // constraint doesn't expand
+            case _ => constrName + "." + extPortIndex // expands into multiple constraints, each needs a unique name
+          }
+          val newConstr = constr.update(
+            _.exported.exteriorPort.ref.steps := extPort.map { pathElt =>
+              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
+            },
+            _.exported.internalBlockPort.ref.steps := (intPortArray :+ intPortIndex).map { pathElt =>
+              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
+            },
+          )
+
+          newConstrName -> newConstr
+        }
+      }
+    }
+
+    // Actually define arrays
+    intPortArrayEltss.foreach { case (intPortArray, intPortArrayElts) =>
+      debug(s"Array defined: ${path ++ intPortArray} = $intPortArrayElts")
+      constProp.setArrayElts(path ++ intPortArray, intPortArrayElts.toSeq)
+      constProp.setValue(path.asIndirect ++ intPortArray + IndirectStep.Length, IntValue(intPortArrayElts.length))
+    }
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
@@ -656,77 +701,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
               portDirectlyConnected.put(path ++ intPort, true)
             }
-          case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
-              ValueExpr.RefAllocate(intPortArray)) =>
-            innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
-          case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray)) =>
-            innerLinkArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()) += constrName
-          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.RefAllocate(intPortArray)) =>
-            throw new NotImplementedError(s"TODO: export port array <-> port array: ${constr.expr}")
-          case (ValueExpr.RefAllocate(extPortArray), ValueExpr.Ref(intPort)) =>
-            throw new NotImplementedError(s"TODO: export port array <-> port: ${constr.expr}")
           case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
     }}
-
-    // Expand arrays
-    innerLinkArrayConstraints.foreach { case (intPortArray, constrNames) =>
-      var nextIndex = 0
-      val intPortArrayElts = constrNames.flatMap { constrName =>
-        var thisArrayElts = mutable.ListBuffer[String]()
-        link.mapMultiConstraint(constrName) { constr =>
-          val extPorts = (constr.getExported.getExteriorPort, constr.getExported.getInternalBlockPort) match {
-            // get individual external ports
-            case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
-            ValueExpr.RefAllocate(constrIntPortArray)) =>  // vector-vector connect
-              require(intPortArray == constrIntPortArray)
-              constProp.getArrayElts(path ++ extPortArray).get.map { extArrayElt =>
-                (extPortArray :+ extArrayElt) ++ extPortInner }
-            case (ValueExpr.Ref(extPort), ValueExpr.RefAllocate(constrIntPortArray)) =>  // element-vector connect
-              require(intPortArray == constrIntPortArray)
-              Seq(extPort)
-            case _ => throw new IllegalArgumentException(s"Unknown constraint in expanding array: $constr")
-          }
-          val startIndex = nextIndex
-          nextIndex += extPorts.length
-
-          extPorts.zipWithIndex.map { case (extPort, index) =>
-            val arrayIndex = (index + startIndex).toString
-            thisArrayElts += arrayIndex
-
-            elaboratePending.addNode(
-              ElaborateRecord.Connect(path ++ intPortArray + arrayIndex, path ++ extPort),
-              Seq(ElaborateRecord.ConnectedLink(path ++ intPortArray + arrayIndex))
-            )
-            require(!portDirectlyConnected.contains(path ++ intPortArray + arrayIndex))
-            if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
-              portDirectlyConnected.put(path ++ intPortArray + arrayIndex, true)
-            }
-
-            val newConstrName = if (extPorts.length == 1) {
-              constrName  // constraints don't expand
-            } else {
-              constrName + "." + index  // expands into multiple constraints, each needs a unique name
-            }
-            val newConstr = constr.update(
-              _.exported.exteriorPort.ref.steps := extPort.map { pathElt =>
-                ref.LocalStep(ref.LocalStep.Step.Name(pathElt)) },
-              _.exported.internalBlockPort.ref.steps := (intPortArray :+ arrayIndex).map { pathElt =>
-                ref.LocalStep(ref.LocalStep.Step.Name(pathElt)) },
-            )
-
-            newConstrName -> newConstr
-          }
-        }
-
-        thisArrayElts.toSeq
-      }.toSeq
-      debug(s"Array defined: ${path ++ intPortArray} = $intPortArrayElts")
-      constProp.setArrayElts(path ++ intPortArray, intPortArrayElts)
-      constProp.setValue(path.asIndirect ++ intPortArray + IndirectStep.Length,
-        IntValue(intPortArrayElts.length))
-    }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (linkName <- link.getUnelaboratedLinks.keys) {
