@@ -1,6 +1,7 @@
 from .PassiveCapacitor import *
 from .JlcFootprint import JlcFootprint
 
+
 class JlcCapacitorTable(JlcTable):
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)
@@ -85,12 +86,12 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
   def generate_parallel_capacitor(self, row: PartsTableRow,
                                   capacitance: Range, voltage: Range) -> None:
     super().generate_parallel_capacitor(row, capacitance, voltage)
-    cap_model = JlcDummyCapacitor(capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
-                                  voltage=self.voltage,
-                                  lcsc_part=row[JlcTable.JLC_PART_NUMBER],
+    cap_model = JlcDummyCapacitor(set_lcsc_part=row[JlcTable.JLC_PART_NUMBER],
                                   footprint=row[self._TABLE.FOOTPRINT],
                                   manufacturer=row[self._TABLE.MANUFACTURER], part_number=row[self._TABLE.PART_NUMBER],
-                                  value=row[self._TABLE.DESCRIPTION])
+                                  value=row[self._TABLE.DESCRIPTION],
+                                  capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
+                                  voltage=self.voltage)
     self.c = ElementDict[JlcDummyCapacitor]()
     for i in range(row[self.PARALLEL_COUNT]):
       self.c[i] = self.Block(cap_model)

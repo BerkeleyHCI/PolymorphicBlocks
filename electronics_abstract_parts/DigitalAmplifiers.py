@@ -5,8 +5,8 @@ from .AbstractPassives import Resistor
 
 class HighSideSwitch(Block):
   @init_in_parent
-  def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1 * Ohm,
-               frequency: RangeLike = RangeExpr()) -> None:
+  def __init__(self, pull_resistance: RangeLike = Default(10000*Ohm(tol=0.01)), max_rds: FloatLike = Default(1 * Ohm),
+               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])  # amplifier voltage
@@ -22,9 +22,9 @@ class HighSideSwitch(Block):
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     ), [Output])
 
-    self.pull_resistance = self.Parameter(RangeExpr(pull_resistance))
-    self.max_rds = self.Parameter(FloatExpr(max_rds))
-    self.frequency = self.Parameter(RangeExpr(frequency))
+    self.pull_resistance = self.ArgParameter(pull_resistance)
+    self.max_rds = self.ArgParameter(max_rds)
+    self.frequency = self.ArgParameter(frequency)
 
     pwr_voltage = self.pwr.link().voltage
     out_current = self.output.link().current_drawn
@@ -76,7 +76,7 @@ class HighSideSwitch(Block):
 
 class HalfBridgeNFet(Block):
   @init_in_parent
-  def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr()) -> None:
+  def __init__(self, max_rds: FloatLike = Default(1*Ohm), frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()  # TODO MODEL ALL THESE
     self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])
@@ -86,8 +86,8 @@ class HalfBridgeNFet(Block):
 
     self.output = self.Port(DigitalSource.from_supply(self.gnd, self.pwr))  # current limits from supply
 
-    self.max_rds = self.Parameter(FloatExpr(max_rds))
-    self.frequency = self.Parameter(RangeExpr(frequency))
+    self.max_rds = self.ArgParameter(max_rds)
+    self.frequency = self.ArgParameter(frequency)
 
     pwr_voltage = self.pwr.link().voltage
     out_current = self.output.link().current_drawn

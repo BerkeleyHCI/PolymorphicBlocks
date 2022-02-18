@@ -116,14 +116,15 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   MAX_CAP_PACKAGE = 'Capacitor_SMD:C_1206_3216Metric' # default package for largest possible capacitor
 
   @init_in_parent
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args, footprint_spec: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs):
+    """
+    footprint_spec specifies an optional constraint on footprint
+    derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.
+    """
     super().__init__(*args, **kwargs)
 
-    self.footprint_spec = self.Parameter(StringExpr(""))
-    self.derating_coeff = self.Parameter(FloatExpr(1)) # simple multiplier for capacitance derating, does not scale with package or applied voltage
-
     self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage,
-                   self.footprint_spec, self.derating_coeff)
+                   footprint_spec, derating_coeff)
 
     # Output values
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())

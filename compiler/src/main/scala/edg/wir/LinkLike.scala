@@ -53,7 +53,10 @@ class Link(pb: elem.Link) extends LinkLike
 }
 
 case class LinkLibrary(target: ref.LibraryPath) extends LinkLike {
-  def resolve(suffix: Seq[String]): Pathable = throw new InvalidPathException(s"Can't resolve into library $target")
+  def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+  }
   def toPb: elem.LinkLike = elem.LinkLike(elem.LinkLike.Type.LibElem(target))
   override def isElaborated: Boolean = false
 }

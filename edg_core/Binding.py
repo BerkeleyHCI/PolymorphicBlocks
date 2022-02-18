@@ -105,8 +105,12 @@ class ParamBinding(Binding):
     return pb
 
 
+class InitParamBinding(ParamBinding):
+  """Binding that indicates this is a parameter from an __init__ argument"""
+
+
 class ParamVariableBinding(Binding):
-  """Variable internal to a parameter, treated as a pseudo-parameter"""
+  """Variable internal to a parameter (eg, LENGTH, RangeExpr.upper()), treated as a pseudo-parameter"""
   def __repr__(self) -> str:
     return f"ParamVar({self.binding})"
 

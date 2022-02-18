@@ -79,13 +79,11 @@ class NetlistCollect(TransformUtil.Transform):
             self.edges.setdefault(src_path, []).append(dst_path)
 
     if 'pinning' in block.meta.members.node:
-
-      # vals = find_constraints({'footprint_name', 'mfr', 'part', 'value', 'refdes_prefix'}, block.constraints.values())
-      footprint_name = self.design.get_value(path.to_tuple() + ('footprint_name',))
-      mfr = self.design.get_value(path.to_tuple() + ('mfr',))
-      part = self.design.get_value(path.to_tuple() + ('part',))
-      value = self.design.get_value(path.to_tuple() + ('value',))
-      refdes_prefix = self.design.get_value(path.to_tuple() + ('refdes_prefix',))
+      footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
+      mfr = self.design.get_value(path.to_tuple() + ('fp_mfr',))
+      part = self.design.get_value(path.to_tuple() + ('fp_part',))
+      value = self.design.get_value(path.to_tuple() + ('fp_value',))
+      refdes_prefix = self.design.get_value(path.to_tuple() + ('fp_refdes_prefix',))
       lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
 
       assert isinstance(footprint_name, str)

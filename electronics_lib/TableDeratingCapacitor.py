@@ -35,22 +35,18 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
   PARALLEL_COST = PartsTableColumn(float)
 
   @init_in_parent
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args,
+               single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad),
+               part: StringLike = Default(""), footprint: StringLike = Default(""),
+               **kwargs):
     super().__init__(*args, **kwargs)
-
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
-
-    # Default that can be overridden
-    self.single_nominal_capacitance = self.Parameter(RangeExpr((0, 22)*uFarad))  # maximum capacitance in a single part
-
-    self.generator(self.select_capacitor, self.capacitance, self.voltage, self.single_nominal_capacitance,
-                   self.part_spec, self.footprint_spec)
+    self.generator(self.select_capacitor, self.capacitance, self.voltage, single_nominal_capacitance,
+                   part, footprint)
 
     # Output values
-    self.selected_capacitance = self.Parameter(RangeExpr())
-    self.selected_derated_capacitance = self.Parameter(RangeExpr())
-    self.selected_voltage_rating = self.Parameter(RangeExpr())
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_derated_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
 
   def select_capacitor(self, capacitance: Range, voltage: Range,
                        single_nominal_capacitance: Range,
@@ -78,9 +74,9 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
   def generate_single_capacitor(self, part: PartsTableRow,
                               capacitance: Range, voltage: Range) -> None:
-    self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
-    self.assign(self.selected_capacitance, part[self._TABLE.CAPACITANCE])
-    self.assign(self.selected_derated_capacitance, part[self.DERATED_CAPACITANCE])
+    self.assign(self.actual_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
+    self.assign(self.actual_capacitance, part[self._TABLE.CAPACITANCE])
+    self.assign(self.actual_derated_capacitance, part[self.DERATED_CAPACITANCE])
 
     self.footprint(
       'C', part[self._TABLE.FOOTPRINT],
@@ -96,9 +92,9 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
 
   def generate_parallel_capacitor(self, part: PartsTableRow,
                                   capacitance: Range, voltage: Range) -> None:
-    self.assign(self.selected_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
-    self.assign(self.selected_capacitance, part[self.PARALLEL_CAPACITANCE])
-    self.assign(self.selected_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
+    self.assign(self.actual_voltage_rating, part[self._TABLE.VOLTAGE_RATING])
+    self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])
+    self.assign(self.actual_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
 
 
   def filter_capacitor(self, voltage: Range, single_nominal_capacitance: Range,
@@ -178,13 +174,14 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
       value=value
     )
 
+
 class JlcDummyCapacitor(DummyCapacitor, JlcFootprint):
   """
   Dummy capacitor that has lcsc_part as an additional parameter
   """
   @init_in_parent
-  def __init__(self, lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
-               part_number: StringLike = "", value: StringLike = "", *args, **kwargs):
+  def __init__(self, set_lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
+               part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
     super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
 
-    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.lcsc_part, set_lcsc_part)

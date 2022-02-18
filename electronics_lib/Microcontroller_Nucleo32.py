@@ -46,13 +46,13 @@ class Nucleo_F303k8(Microcontroller, FootprintBlock, AssignablePinBlock):  # TOD
     adc_model = AnalogSink(
       voltage_limits=(-0.3, 3.6) * Volt,
       current_draw=(0, 0) * Amp,
-      impedance=100*kOhm  # TODO: actually spec'd as maximum external impedance; internal impedance not given
+      impedance=100*kOhm(tol=0)  # TODO: actually spec'd as maximum external impedance; internal impedance not given
     )
 
     dac_model = AnalogSource(
       voltage_out=(0.2, 3.1) * Volt,  # TODO should derive from common rail
       current_limits=(0, 0) * Amp,  # TODO not given by spec
-      impedance=15*kOhm  # assumes buffer off
+      impedance=15*kOhm(tol=0)  # assumes buffer off
     )
 
     self.digital = ElementDict[DigitalBidir]()

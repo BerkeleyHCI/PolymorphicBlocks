@@ -31,7 +31,7 @@ class TestOpamp(Opamp):
 class TestResistor(Resistor):
   def contents(self):
     super().contents()
-    self.assign(self.resistance, self.spec_resistance)
+    self.assign(self.actual_resistance, self.resistance)
 
 
 class AmplifierTestTop(Block):
@@ -56,5 +56,5 @@ class OpampCircuitTest(unittest.TestCase):
       ]
     ))
 
-    self.assertEqual(compiled.get_value(['dut', 'r1', 'spec_resistance']), Range.from_tolerance(100e3, 0.01))
-    self.assertEqual(compiled.get_value(['dut', 'r2', 'spec_resistance']), Range.from_tolerance(100e3, 0.01))
+    self.assertEqual(compiled.get_value(['dut', 'r1', 'resistance']), Range.from_tolerance(100e3, 0.01))
+    self.assertEqual(compiled.get_value(['dut', 'r2', 'resistance']), Range.from_tolerance(100e3, 0.01))

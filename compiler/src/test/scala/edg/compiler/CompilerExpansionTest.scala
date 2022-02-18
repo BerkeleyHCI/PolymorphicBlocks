@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
-import edg.wir
+import edg.{CompilerTestUtil, wir}
 
 
 /** Library with simple problem structure that can be shared across tests.
@@ -64,9 +64,7 @@ object CompilerExpansionTest {
 
 /** Basic test that tests block, link, and port expansion behavior, by matching the reference output exactly.
   */
-class CompilerExpansionTest extends AnyFlatSpec {
-
-
+class CompilerExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   "Compiler on design with single source and sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
@@ -107,8 +105,7 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
-    compiler.compile() should equal(referenceElaborated)
+    testCompile(inputDesign, CompilerExpansionTest.library, expectedDesign=Some(referenceElaborated))
   }
 
   "Compiler on design with single nested source and sink" should "expand blocks" in {
@@ -171,7 +168,6 @@ class CompilerExpansionTest extends AnyFlatSpec {
         "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(CompilerExpansionTest.library))
-    compiler.compile() should equal(referenceElaborated)
+    testCompile(inputDesign, CompilerExpansionTest.library, expectedDesign=Some(referenceElaborated))
   }
 }

@@ -27,13 +27,13 @@ class BufferedSupply(PowerConditioner):
   See https://electronics.stackexchange.com/questions/178605/op-amp-mosfet-constant-current-power-source
   """
   @init_in_parent
-  def __init__(self, charging_current: RangeLike = RangeExpr(), sense_resistance: RangeLike = RangeExpr(),
-               voltage_drop: RangeLike = RangeExpr()) -> None:
+  def __init__(self, charging_current: RangeLike, sense_resistance: RangeLike,
+               voltage_drop: RangeLike) -> None:
     super().__init__()
 
-    self.charging_current = self.Parameter(RangeExpr(charging_current))
-    self.sense_resistance = self.Parameter(RangeExpr(sense_resistance))
-    self.voltage_drop = self.Parameter(RangeExpr(voltage_drop))
+    self.charging_current = self.ArgParameter(charging_current)
+    self.sense_resistance = self.ArgParameter(sense_resistance)
+    self.voltage_drop = self.ArgParameter(voltage_drop)
 
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(), [Output])
@@ -54,7 +54,7 @@ class BufferedSupply(PowerConditioner):
     ) as imp:
       self.sense = self.Block(Resistor(  # TODO replace with SeriesResistor/CurrentSenseResistor - that propagates current
         resistance=self.sense_resistance,
-        power=max_charge_current * max_charge_current * self.sense_resistance.upper()
+        power=(0, max_charge_current * max_charge_current * self.sense_resistance.upper())
       ))
       self.connect(self.pwr, self.sense.a.as_voltage_sink(
         current_draw=(0, max_charge_current)))
@@ -110,7 +110,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
   preferred if both are connected.
   """
   @init_in_parent
-  def __init__(self, voltage_drop: RangeLike = RangeExpr(), reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
+  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink())  # high-priority source
@@ -145,7 +145,7 @@ class DiodePowerMerge(PowerConditioner, Block):
   """Diode power merge block for two voltage sources.
   """
   @init_in_parent
-  def __init__(self, voltage_drop: RangeLike = RangeExpr(), reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
+  def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
     self.pwr_in1 = self.Port(VoltageSink())

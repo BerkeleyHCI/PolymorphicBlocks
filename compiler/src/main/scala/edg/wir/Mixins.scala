@@ -16,6 +16,7 @@ trait HasMutablePorts {
   def elaborate(name: String, port: PortLike): Unit = {
     require(!ports(name).isElaborated && port.isElaborated)
     ports.update(name, port)
+    require(ports(name).isElaborated)
   }
 
   protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
@@ -35,6 +36,7 @@ trait HasMutableBlocks {
   def elaborate(name: String, block: BlockLike): Unit = {
     require(!blocks(name).isElaborated && block.isElaborated)
     blocks.update(name, block)
+    require(blocks(name).isElaborated)
   }
 
   protected def parseBlocks(pb: Map[String, elem.BlockLike], nameOrder: Seq[String]):
@@ -52,6 +54,7 @@ trait HasMutableLinks {
   def elaborate(name: String, link: LinkLike): Unit = {
     require(!links(name).isElaborated && link.isElaborated)
     links.update(name, link)
+    require(links(name).isElaborated)
   }
 
   protected def parseLinks(pb: Map[String, elem.LinkLike], nameOrder: Seq[String]):

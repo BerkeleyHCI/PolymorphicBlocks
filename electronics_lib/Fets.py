@@ -123,20 +123,17 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
   TABLE_FN: Callable[[Any], PartsTable]
 
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, part_spec: StringLike = Default(""), footprint_spec: StringLike = Default(""),
+               **kwargs):
+    super().__init__(*args, **kwargs)
 
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.generator(self.select_part, self.drain_voltage, self.drain_current,
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power,
+                   part_spec, footprint_spec,)
 
-    self.generator(self.select_part,
-                   self.part_spec, self.footprint_spec,
-                   self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power)
-
-  def select_part(self, part_spec: str, footprint_spec: str,
-                  drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
+  def select_part(self, drain_voltage: Range, drain_current: Range,
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
+                  part_spec: str, footprint_spec: str,) -> None:
     part = self.TABLE_FN().filter(lambda row: (
         (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[FetTable.FOOTPRINT]) and
@@ -148,12 +145,12 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
         power.fuzzy_in(row[FetTable.POWER_RATING])
     )).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
-    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
+    self.assign(self.actual_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.actual_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.actual_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.actual_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.actual_gate_charge, part[FetTable.GATE_CHARGE])
 
     self.footprint(
       'Q', part[FetTable.FOOTPRINT],
@@ -182,26 +179,23 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
   TOTAL_POWER = PartsTableColumn(Range)
 
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, part_spec: StringLike = Default(""), footprint_spec: StringLike = Default(""),
+               **kwargs):
+    super().__init__(*args, **kwargs)
 
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
+    self.actual_static_power = self.Parameter(RangeExpr())
+    self.actual_switching_power = self.Parameter(RangeExpr())
+    self.actual_total_power = self.Parameter(RangeExpr())
 
-    self.selected_static_power = self.Parameter(RangeExpr())
-    self.selected_switching_power = self.Parameter(RangeExpr())
-    self.selected_total_power = self.Parameter(RangeExpr())
-
-    self.generator(self.select_part,
-                   self.part_spec, self.footprint_spec,
-                   self.frequency, self.drive_current,
+    self.generator(self.select_part, self.frequency, self.drive_current,
                    self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power)
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power,
+                   part_spec, footprint_spec)
 
-  def select_part(self, part_spec: str, footprint_spec: str,
-                  frequency: Range, drive_current: Range,
+  def select_part(self, frequency: Range, drive_current: Range,
                   drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range) -> None:
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
+                  part_spec: str, footprint_spec: str) -> None:
     # Pre-filter out by the static parameters
     prefiltered_parts = self.TABLE_FN().filter(lambda row: (
         (not part_spec or part_spec == row[FetTable.PART_NUMBER]) and
@@ -237,16 +231,16 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
       process_row
     ).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.selected_drain_voltage_rating, part[FetTable.VDS_RATING])
-    self.assign(self.selected_drain_current_rating, part[FetTable.IDS_RATING])
-    self.assign(self.selected_gate_drive, part[FetTable.VGS_DRIVE])
-    self.assign(self.selected_rds_on, part[FetTable.RDS_ON])
-    self.assign(self.selected_power_rating, part[FetTable.POWER_RATING])
-    self.assign(self.selected_gate_charge, part[FetTable.GATE_CHARGE])
+    self.assign(self.actual_drain_voltage_rating, part[FetTable.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, part[FetTable.IDS_RATING])
+    self.assign(self.actual_gate_drive, part[FetTable.VGS_DRIVE])
+    self.assign(self.actual_rds_on, part[FetTable.RDS_ON])
+    self.assign(self.actual_power_rating, part[FetTable.POWER_RATING])
+    self.assign(self.actual_gate_charge, part[FetTable.GATE_CHARGE])
 
-    self.assign(self.selected_static_power, part[self.STATIC_POWER])
-    self.assign(self.selected_switching_power, part[self.SWITCHING_POWER])
-    self.assign(self.selected_total_power, part[self.TOTAL_POWER])
+    self.assign(self.actual_static_power, part[self.STATIC_POWER])
+    self.assign(self.actual_switching_power, part[self.SWITCHING_POWER])
+    self.assign(self.actual_total_power, part[self.TOTAL_POWER])
 
     self.footprint(
       'Q', part[FetTable.FOOTPRINT],

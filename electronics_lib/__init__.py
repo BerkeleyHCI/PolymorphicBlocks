@@ -16,15 +16,15 @@ from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 
-from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader,\
-  SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
+from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
+from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210
-from .DcDcConverters import Tps561201, Tps54202h
-from .DcDcConverters import Lmr33630
-from .DcDcConverters import Ap3012, Ltc3429
+from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
+from .BoostConverters_AnalogDevices import Ltc3429
+from .BoostConverters_DiodesInc import Ap3012
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
@@ -48,6 +48,7 @@ from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .Iso1050 import Iso1050dub
+from .BatteryProtector_S8200A import BatteryProtector_S8200A
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode

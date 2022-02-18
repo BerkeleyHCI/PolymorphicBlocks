@@ -21,7 +21,7 @@ This project consists of two (and a half) major parts:
 
 ### Static checking
 This project has optional static typing annotations for Python which can be checked using [mypy](http://mypy-lang.org/).
-If you have mypy installed, you can typecheck code using:
+If you have mypy installed (you may also need the type stubs for protobuf: `pip install mypy-protobuf`), you can typecheck code using:
 
 ```
 mypy --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples

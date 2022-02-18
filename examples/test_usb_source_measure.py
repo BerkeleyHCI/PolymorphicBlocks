@@ -15,7 +15,7 @@ class GatedEmitterFollower(Block):
   analog feedback circuit.
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -26,8 +26,8 @@ class GatedEmitterFollower(Block):
     self.high_en = self.Port(DigitalSink())
     self.low_en = self.Port(DigitalSink())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.rds_on = self.Parameter(RangeExpr(rds_on))
+    self.current = self.ArgParameter(current)
+    self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self) -> None:
     super().contents()
@@ -47,8 +47,8 @@ class GatedEmitterFollower(Block):
 
     self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
       current_draw=self.current,
-      voltage_limits=self.high_fet.selected_drain_voltage_rating.intersect(
-        self.low_fet.selected_drain_voltage_rating)
+      voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
+        self.low_fet.actual_drain_voltage_rating)
     ))
     self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
     output_driver = self.high_fet.source.as_voltage_source(
@@ -96,8 +96,8 @@ class ErrorAmplifier(GeneratorBlock):
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   @init_in_parent
-  def __init__(self, output_resistance: RangeLike = RangeExpr(), input_resistance: RangeLike = RangeExpr(),
-               diode_spec: StringLike = ""):
+  def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike, *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -108,16 +108,8 @@ class ErrorAmplifier(GeneratorBlock):
     self.actual = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.output_resistance = self.Parameter(RangeExpr(output_resistance))
-    self.input_resistance = self.Parameter(RangeExpr(input_resistance))
-    self.diode_spec = self.Parameter(StringExpr(diode_spec))
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_amp, self.output_resistance, self.input_resistance, self.diode_spec,
-                   self.series, self.tolerance,
-                   targets=[self.target, self.actual, self.output])
+    self.generator(self.generate_amp, output_resistance, input_resistance, diode_spec,
+                   series, tolerance)
 
   def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
                    series: int, tolerance: float) -> None:
@@ -134,14 +126,14 @@ class ErrorAmplifier(GeneratorBlock):
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
     self.connect(self.target, self.rtop.a.as_analog_sink(
-      impedance=self.rtop.resistance + self.rbot.resistance
+      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
     ))
     self.connect(self.actual, self.rbot.a.as_analog_sink(
-      impedance=self.rtop.resistance + self.rbot.resistance
+      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
     ))
     self.connect(self.amp.inp, self.rtop.b.as_analog_source(
       voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
-      impedance=1 / (1 / self.rtop.resistance + 1 / self.rbot.resistance)
+      impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
     ), self.rbot.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
 
     self.rout = self.Block(Resistor(
@@ -158,23 +150,23 @@ class ErrorAmplifier(GeneratorBlock):
       ))
       if diode_spec == 'source':
         self.connect(self.amp.out, self.diode.anode.as_analog_sink(
-          impedance=self.rout.resistance + self.output.link().sink_impedance
+          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
         ))
         resistor_output_port = self.diode.cathode.as_analog_source(
-          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
         )
       elif diode_spec == 'sink':
         self.connect(self.amp.out, self.diode.cathode.as_analog_sink(
-          impedance=self.rout.resistance + self.output.link().sink_impedance
+          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
         ))
         resistor_output_port = self.diode.anode.as_analog_source(
-          impedance=self.amp.out.link().source_impedance + self.rout.resistance
+          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
         )
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     self.connect(resistor_output_port, self.rout.a.as_analog_sink())
     self.connect(self.output, self.rout.b.as_analog_source(
-      impedance=self.rout.resistance
+      impedance=self.rout.actual_resistance
     ), self.amp.inn)
 
 
@@ -182,7 +174,7 @@ class SourceMeasureControl(Block):
   """Analog feedback circuit for the source-measure unit
   """
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr()):
+  def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(), [Power])
@@ -195,15 +187,16 @@ class SourceMeasureControl(Block):
     self.measured_voltage = self.Port(AnalogSource())
     self.measured_current = self.Port(AnalogSource())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.rds_on = self.Parameter(RangeExpr(rds_on))
+    self.current = self.ArgParameter(current)
+    self.rds_on = self.ArgParameter(rds_on)
 
     with self.implicit_connect(
             ImplicitConnect(self.pwr_logic, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
-                                               input_resistance=(10, 100)*kOhm))
+                                               input_resistance=(10, 100)*kOhm,
+                                               diode_spec=''))
       self.control_voltage = self.Export(self.err_volt.target)
       self.err_source = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
                                                  input_resistance=(10, 100)*kOhm,
@@ -447,7 +440,7 @@ class UsbSourceMeasureTest(BoardTop):
           'high_en_net=23',
         ])),
         # allow the regulator to go into tracking mode
-        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
@@ -469,6 +462,6 @@ class UsbSourceMeasureTest(BoardTop):
     )
 
 
-class UsbTestCase(unittest.TestCase):
+class UsbSourceMeasureTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(UsbSourceMeasureTest)

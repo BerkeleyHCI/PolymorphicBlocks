@@ -16,28 +16,28 @@ class Fet(DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
   @init_in_parent
-  def __init__(self, drain_voltage: RangeLike = RangeExpr(), drain_current: RangeLike = RangeExpr(),
-               gate_voltage: RangeLike = RangeExpr(), rds_on: RangeLike = RangeExpr(),
-               gate_charge: RangeLike = RangeExpr(), power: RangeLike = RangeExpr()) -> None:
+  def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
+               gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
+               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0))) -> None:
     super().__init__()
 
     self.source = self.Port(Passive())
     self.drain = self.Port(Passive())
     self.gate = self.Port(Passive())
 
-    self.drain_voltage = self.Parameter(RangeExpr(drain_voltage))
-    self.drain_current = self.Parameter(RangeExpr(drain_current))
-    self.gate_voltage = self.Parameter(RangeExpr(gate_voltage))
-    self.rds_on = self.Parameter(RangeExpr(rds_on))
-    self.gate_charge = self.Parameter(RangeExpr(gate_charge))
-    self.power = self.Parameter(RangeExpr(power))
+    self.drain_voltage = self.ArgParameter(drain_voltage)
+    self.drain_current = self.ArgParameter(drain_current)
+    self.gate_voltage = self.ArgParameter(gate_voltage)
+    self.rds_on = self.ArgParameter(rds_on)
+    self.gate_charge = self.ArgParameter(gate_charge)
+    self.power = self.ArgParameter(power)
 
-    self.selected_drain_voltage_rating = self.Parameter(RangeExpr())
-    self.selected_drain_current_rating = self.Parameter(RangeExpr())
-    self.selected_gate_drive = self.Parameter(RangeExpr())
-    self.selected_power_rating = self.Parameter(RangeExpr())
-    self.selected_rds_on = self.Parameter(RangeExpr())
-    self.selected_gate_charge = self.Parameter(RangeExpr())
+    self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
+    self.actual_drain_current_rating = self.Parameter(RangeExpr())
+    self.actual_gate_drive = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())
+    self.actual_rds_on = self.Parameter(RangeExpr())
+    self.actual_gate_charge = self.Parameter(RangeExpr())
 
 
 @abstract_block
@@ -61,13 +61,13 @@ class SwitchFet(Fet):
   Models static and switching power dissipation. Gate charge and power parameters are optional, they will be the
   stricter of the explicit input or model-derived parameters."""
   # TODO ideally this would just instantaite a Fet internally, but the parts selection becomes more complex b/c
-  # paramters are cross-dependent
+  # parameters are cross-dependent
   @init_in_parent
-  def __init__(self, frequency: RangeLike = RangeExpr(), drive_current: RangeLike = RangeExpr(), **kwargs) -> None:
+  def __init__(self, frequency: RangeLike, drive_current: RangeLike, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.frequency = self.Parameter(RangeExpr(frequency))
-    self.drive_current = self.Parameter(RangeExpr(drive_current))  # positive is turn-on drive, negative is turn-off drive
+    self.frequency = self.ArgParameter(frequency)
+    self.drive_current = self.ArgParameter(drive_current)  # positive is turn-on drive, negative is turn-off drive
 
 
 @abstract_block

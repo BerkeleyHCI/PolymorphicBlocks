@@ -101,7 +101,7 @@ case class DesignPath(steps: Seq[String]) {
   // Separates into (prefix, last) where last is the last element, and prefix is a DesignPath of all but the last
   // element.
   def split: (DesignPath, String) = {
-    require(steps.nonEmpty)
+    require(steps.nonEmpty, s"splitting empty DesignPath")
     (DesignPath(steps.slice(0, steps.length - 1)), steps.last)
   }
 

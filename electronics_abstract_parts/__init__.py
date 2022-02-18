@@ -28,8 +28,9 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp, OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
-from .AbstractPowerConverters import DcDcConverter, LinearRegulator, DcDcSwitchingConverter
+from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
+from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver

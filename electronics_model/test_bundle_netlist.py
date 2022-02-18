@@ -61,9 +61,9 @@ class TestSpiCircuit(Block):
     self.slave1 = self.Block(TestFakeSpiSlave())
     self.slave2 = self.Block(TestFakeSpiSlave())
 
-    self.spi = self.connect(self.master.spi, self.slave1.spi, self.slave2.spi)
-    self.cs1 = self.connect(self.master.cs_out_1, self.slave1.cs_in)
-    self.cs2 = self.connect(self.master.cs_out_2, self.slave2.cs_in)
+    self.spi_link = self.connect(self.master.spi, self.slave1.spi, self.slave2.spi)
+    self.cs1_link = self.connect(self.master.cs_out_1, self.slave1.cs_in)
+    self.cs2_link = self.connect(self.master.cs_out_2, self.slave2.cs_in)
 
 
 class TestFakeUartBlock(FootprintBlock):
@@ -132,25 +132,25 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_spi_netlist(self) -> None:
     net = self.generate_net(TestSpiCircuit)
 
-    self.assertEqual(net.nets['cs1'], {
+    self.assertEqual(net.nets['cs1_link'], {
       Pin('master', '0'),
       Pin('slave1', '4'),
     })
-    self.assertEqual(net.nets['cs2'], {
+    self.assertEqual(net.nets['cs2_link'], {
       Pin('master', '1'),
       Pin('slave2', '4'),
     })
-    self.assertEqual(net.nets['spi.sck'], {
+    self.assertEqual(net.nets['spi_link.sck'], {
       Pin('master', '2'),
       Pin('slave1', '1'),
       Pin('slave2', '1'),
     })
-    self.assertEqual(net.nets['spi.mosi'], {
+    self.assertEqual(net.nets['spi_link.mosi'], {
       Pin('master', '4'),
       Pin('slave1', '2'),
       Pin('slave2', '2'),
     })
-    self.assertEqual(net.nets['spi.miso'], {
+    self.assertEqual(net.nets['spi_link.miso'], {
       Pin('master', '3'),
       Pin('slave1', '3'),
       Pin('slave2', '3'),

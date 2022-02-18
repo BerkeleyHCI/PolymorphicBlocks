@@ -68,6 +68,9 @@ message PortLike {
 
 message HierarchyBlock {
   map<string, edgir.init.ValInit>   params = 10;
+  // Refinements may introduce new parameters which would not be assigned a value in the parent class.
+  // In those cases, those new parameters are given these default values.
+  map<string, edgir.expr.ValueExpr> param_defaults = 15;
   map<string, PortLike>          ports  = 11;
   /** Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
       VoltageSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or

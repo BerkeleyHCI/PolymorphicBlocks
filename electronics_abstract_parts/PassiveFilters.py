@@ -1,5 +1,3 @@
-from typing import *
-
 from math import pi
 
 from electronics_model import *
@@ -10,12 +8,12 @@ from .Categories import *
 class LowPassRc(AnalogFilter, GeneratorBlock):
   """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
   @init_in_parent
-  def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr(),
-               voltage: RangeLike = RangeExpr()):
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike,
+               voltage: RangeLike):
     super().__init__()
-    self.impedance = self.Parameter(RangeExpr(impedance))
-    self.cutoff_freq = self.Parameter(RangeExpr(cutoff_freq))
-    self.voltage = self.Parameter(RangeExpr(voltage))
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+    self.voltage = self.ArgParameter(voltage)
 
     self.input = self.Port(Passive())
     self.output = self.Port(Passive())
@@ -39,7 +37,7 @@ class DigitalLowPassRc(DigitalFilter, Block):
   Does not change the signal, only performs filtering
   """
   @init_in_parent
-  def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr()):
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(DigitalSink(), [Input])
     self.output = self.Port(DigitalSource(), [Output])
@@ -67,7 +65,7 @@ class LowPassRcDac(AnalogFilter, Block):
   This must be manually specified, since PWM frequency data is not part of the electronics model.
   """
   @init_in_parent
-  def __init__(self, impedance: RangeLike = RangeExpr(), cutoff_freq: RangeLike = RangeExpr()):
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(DigitalSink(), [Input])
     self.output = self.Port(AnalogSource(), [Output])

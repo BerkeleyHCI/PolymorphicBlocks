@@ -76,7 +76,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
   @init_in_parent
-  def __init__(self, amplification: RangeLike = RangeExpr(), impedance: RangeLike = (10, 100)*kOhm):
+  def __init__(self, amplification: RangeLike, impedance: RangeLike = Default((10, 100)*kOhm), *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):  # to be overridden by refinements
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -88,14 +89,7 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource(), [Output])
     self.reference = self.Port(AnalogSink())
 
-    self.amplification = self.Parameter(RangeExpr(amplification))
-    self.impedance = self.Parameter(RangeExpr(impedance))
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_resistors, self.amplification, self.impedance, self.series, self.tolerance,
-                   targets=[self.reference, self.output])
+    self.generator(self.generate_resistors, amplification, impedance, series, tolerance)
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
@@ -108,16 +102,16 @@ class Amplifier(AnalogFilter, GeneratorBlock):
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
     self.connect(self.amp.out, self.output, self.r1.a.as_analog_sink(
-      impedance=self.r1.resistance + self.r2.resistance
+      impedance=self.r1.actual_resistance + self.r2.actual_resistance
     ))
     self.connect(self.r1.b.as_analog_source(
       voltage_out=self.amp.out.voltage_out,
-      impedance=1/(1/self.r1.resistance + 1/self.r2.resistance)
+      impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
     ), self.r2.a.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inn)
     self.connect(self.reference, self.r2.b.as_analog_sink(
-      impedance=self.r1.resistance + self.r2.resistance
+      impedance=self.r1.actual_resistance + self.r2.actual_resistance
     ))
 
 
@@ -170,7 +164,8 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
   ratio specifies Rf/R1, the amplification ratio.
   """
   @init_in_parent
-  def __init__(self, ratio: RangeLike = RangeExpr(), input_impedance: RangeLike = RangeExpr()):
+  def __init__(self, ratio: RangeLike, input_impedance: RangeLike, *,
+               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -182,14 +177,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.output_reference = self.Port(AnalogSink())
     self.output = self.Port(AnalogSource())
 
-    self.ratio = self.Parameter(RangeExpr(ratio))
-    self.input_impedance = self.Parameter(RangeExpr(input_impedance))
-
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.generate_resistors, self.ratio, self.input_impedance, self.series, self.tolerance,
-                   targets=[self.input_positive, self.input_negative, self.output_reference])
+    self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance)
 
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
@@ -210,30 +198,30 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
 
     self.connect(self.input_negative, self.r1.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r1.resistance + self.rf.resistance
+      impedance=self.r1.actual_resistance + self.rf.actual_resistance
     ))
     self.connect(self.input_positive, self.r2.a.as_analog_sink(
-      impedance=self.r2.resistance + self.rg.resistance
+      impedance=self.r2.actual_resistance + self.rg.actual_resistance
     ))
 
     self.connect(self.amp.out, self.output, self.rf.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r1.resistance + self.rf.resistance
+      impedance=self.r1.actual_resistance + self.rf.actual_resistance
     ))
     self.connect(self.r1.b.as_analog_source(
       voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
-      impedance=1 / (1 / self.r1.resistance + 1 / self.rf.resistance)  # combined R1 and Rf resistance
+      impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)  # combined R1 and Rf resistance
     ), self.rf.b.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inn)
     self.connect(self.r2.b.as_analog_source(
       voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
-      impedance=1 / (1 / self.r2.resistance + 1 / self.rg.resistance)  # combined R2 and Rg resistance
+      impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)  # combined R2 and Rg resistance
     ), self.rg.b.as_analog_sink(
       # treated as an ideal sink for now
     ), self.amp.inp)
     self.connect(self.rg.a.as_analog_sink(
-      impedance=self.r2.resistance + self.rg.resistance
+      impedance=self.r2.actual_resistance + self.rg.actual_resistance
     ), self.output_reference)
 
 
@@ -278,9 +266,13 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
   Vout = - 1/RC * int(Vin) (integrating over time)
+
+  Series is lower and tolerance is higher because there's a cap involved
+  TODO - separate series for cap, and series and tolerance by decade?
   """
   @init_in_parent
-  def __init__(self, factor: RangeLike = RangeExpr(), capacitance: RangeLike = RangeExpr()):
+  def __init__(self, factor: RangeLike, capacitance: RangeLike, *,
+               series: IntLike = Default(6), tolerance: FloatLike = Default(0.05)):
     super().__init__()
 
     self.amp = self.Block(Opamp())
@@ -291,16 +283,7 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource())
     self.reference = self.Port(AnalogSink())  # negative reference for the input and output signals
 
-    self.factor = self.Parameter(RangeExpr(factor))
-    self.capacitance = self.Parameter(RangeExpr(capacitance))
-
-    # Series is lower and tolerance is higher because there's a cap involved
-    # TODO separate tolerances and series by decade, and for the cap
-    self.series = self.Parameter(IntExpr(6))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.05))  # can be overridden by refinements
-
-    self.generator(self.generate_components, self.factor, self.capacitance, self.series, self.tolerance,
-                   targets=[self.input])
+    self.generator(self.generate_components, factor, capacitance, series, tolerance)
 
   def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
@@ -316,10 +299,10 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
 
     self.connect(self.input, self.r.a.as_analog_sink(
       # TODO very simplified and probably very wrong
-      impedance=self.r.resistance
+      impedance=self.r.actual_resistance
     ))
     self.connect(self.amp.out, self.output, self.c.pos.as_analog_sink())  # TODO impedance of the feedback circuit?
     self.connect(self.r.b.as_analog_source(
-      impedance=self.r.resistance
+      impedance=self.r.actual_resistance
     ), self.c.neg.as_analog_sink(), self.amp.inn)
     self.connect(self.reference, self.amp.inp)

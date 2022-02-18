@@ -15,21 +15,17 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, series: IntLike = Default(24), tolerance: FloatLike = Default(0.01),
+               footprint: StringLike = Default(""), **kwargs):
+    super().__init__(*args, **kwargs)
 
-    self.footprint_spec = self.Parameter(StringExpr(""))
-    self.series = self.Parameter(IntExpr(24))  # can be overridden by refinements
-    self.tolerance = self.Parameter(FloatExpr(0.01))  # can be overridden by refinements
-
-    self.generator(self.select_resistor, self.spec_resistance, self.power,
-                   self.footprint_spec, self.series, self.tolerance)
+    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint)
 
     # Output values
-    self.selected_power_rating = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())
 
-  def select_resistor(self, resistance: Range, power: Range, footprint_spec: str,
-                      series: int, tolerance: float) -> None:
+  def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
+                      footprint_spec: str) -> None:
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
@@ -47,8 +43,8 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     if not suitable_packages:
       raise ValueError(f"no resistor package for {power.upper} W power")
 
-    self.assign(self.resistance, selected_range)
-    self.assign(self.selected_power_rating, suitable_packages[0][0])
+    self.assign(self.actual_resistance, selected_range)
+    self.assign(self.actual_power_rating, suitable_packages[0][0])
 
     self.footprint(
       'R', suitable_packages[0][1],

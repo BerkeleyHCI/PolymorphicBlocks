@@ -41,8 +41,12 @@ class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
 
     self.swd = self.Port(SwdTargetPort(standard_dio_model))  # TODO maybe make optional?
 
-    self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz, voltage_out=self.vdd.link().voltage), optional=True)  # TODO other specs from Table 23
-    self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz, voltage_out=self.vdd.link().voltage), optional=True)  # Table 22
+    self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
+                                         voltage_out=self.vdd.link().voltage),
+                           optional=True)  # TODO other specs from Table 23
+    self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz,
+                                       voltage_out=self.vdd.link().voltage),
+                         optional=True)  # Table 22
 
     self.pa = ElementDict[DigitalBidir]()
     for i in chain(range(13), [15]):
@@ -167,13 +171,7 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     self.generator(self.pin_assign, self.pin_assigns,
                    req_ports=chain(self.digital.values(),
                                    self.adc.values(),
-                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]),
-                   targets=chain([self.pwr, self.gnd],
-                                 [self.ic],  # connected block
-                                 self.digital.values(),
-                                 self.adc.values(),
-                                 [self.uart_0, self.spi_0, self.can_0, self.usb_0]))  # TODO pass in connected blocks
-
+                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]))
 
 
   def pin_assign(self, pin_assigns_str: str) -> None:

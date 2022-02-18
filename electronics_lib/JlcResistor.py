@@ -53,16 +53,13 @@ class JlcResistorTable(JlcTable):
 
 class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self.part_spec = self.Parameter(StringExpr(""))
-    self.footprint_spec = self.Parameter(StringExpr(""))
-    self.generator(self.select_resistor, self.spec_resistance, self.power,
-                   self.part_spec, self.footprint_spec)
+  def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator(self.select_resistor, self.resistance, self.power,
+                   part, footprint)
 
     # Output values
-    self.selected_resistance = self.Parameter(RangeExpr())
-    self.selected_power = self.Parameter(RangeExpr())
+    self.actual_power = self.Parameter(RangeExpr())
 
   def select_resistor(self, resistance: Range, power_dissipation: Range,
                       part_spec: str, footprint_spec: str) -> None:
@@ -73,9 +70,8 @@ class JlcResistor(Resistor, JlcFootprint, FootprintBlock, GeneratorBlock):
             power_dissipation.fuzzy_in(row[JlcResistorTable.POWER_RATING])
     )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
-    self.assign(self.selected_resistance, part[JlcResistorTable.RESISTANCE])
-    self.assign(self.resistance, part[JlcResistorTable.RESISTANCE])
-    self.assign(self.selected_power, part[JlcResistorTable.POWER_RATING])
+    self.assign(self.actual_resistance, part[JlcResistorTable.RESISTANCE])
+    self.assign(self.actual_power, part[JlcResistorTable.POWER_RATING])
     self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
 
     self.footprint(

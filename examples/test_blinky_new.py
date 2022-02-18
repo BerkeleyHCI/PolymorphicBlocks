@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class NewBlinkyOvervolt(SimpleBoardTop):
+class NewBlinkyOvervolt(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -18,7 +18,7 @@ class NewBlinkyOvervolt(SimpleBoardTop):
     self.connect(self.mcu.gnd, self.swd.gnd, self.jack.gnd)
 
 
-class NewBlinkyBuck(SimpleBoardTop):
+class NewBlinkyBuck(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -43,7 +43,7 @@ class NewBlinkyBuck(SimpleBoardTop):
       ])
 
 
-class NewBlinkyRefactored(SimpleBoardTop):
+class NewBlinkyRefactored(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -135,7 +135,7 @@ class Ref_Lf21215tmr(Block):
     super().contents()
 
 
-class NewBlinkyMagsense(SimpleBoardTop):
+class NewBlinkyMagsense(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -167,7 +167,7 @@ class NewBlinkyMagsense(SimpleBoardTop):
       ])
 
 
-class NewBlinkyLightsense(SimpleBoardTop):
+class NewBlinkyLightsense(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -247,14 +247,12 @@ class Ref_Bh1620fvc_Device(FootprintBlock):
 
 class Ref_Bh1620fvc(Block):
   @init_in_parent
-  def __init__(self, max_illuminance: FloatLike = FloatExpr(),
-               target_voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, max_illuminance: FloatLike, target_voltage: RangeLike) -> None:
     super().__init__()
 
+    self.target_voltage = self.ArgParameter(target_voltage)  # needed for the typer to not be unhappy
     # in L-gain mode, Vout = 0.0057e-6 * Ev * Rl
-    rload = RangeExpr._to_expr_type(target_voltage) / (0.0057e-6) / FloatExpr._to_expr_type(max_illuminance)
-    # without the typer, this would be written as:
-    # rload = target_voltage / (0.0057e-6) / max_illuminance
+    rload = self.target_voltage / 0.0057e-6 / max_illuminance
 
     self.ic = self.Block(Ref_Bh1620fvc_Device(rload))
     self.pwr = self.Export(self.ic.vcc, [Power])

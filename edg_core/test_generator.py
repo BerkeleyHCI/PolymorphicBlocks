@@ -4,9 +4,16 @@ from . import *
 from .ScalaCompilerInterface import ScalaCompiler
 
 
-class TestGeneratorAssign(GeneratorBlock):
+class TestGeneratorAssign(Block):
   def __init__(self) -> None:
     super().__init__()
+    self.block = self.Block(GeneratorAssign())
+
+
+class GeneratorAssign(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    # Because this doesn't have dependency parameters, this is the top-level design
     self.float_param = self.Parameter(FloatExpr())
     self.generator(self.float_gen)
 
@@ -14,50 +21,58 @@ class TestGeneratorAssign(GeneratorBlock):
     self.assign(self.float_param, 2.0)
 
 
-class TestGeneratorDependency(GeneratorBlock):
+class TestGeneratorDependency(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.float_preset = self.Parameter(FloatExpr(3.0))
+    self.block = self.Block(GeneratorDependency(3.0))
+
+
+class GeneratorDependency(GeneratorBlock):
+  @init_in_parent
+  def __init__(self, float_preset: FloatLike) -> None:
+    super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.generator(self.float_gen, self.float_preset)
+    self.generator(self.float_gen, float_preset)
 
   def float_gen(self, float_preset: float) -> None:
     self.assign(self.float_param, float_preset * 2)
 
 
-class TestGeneratorMultiDependency(GeneratorBlock):
+class TestGeneratorMultiParameter(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.float_preset = self.Parameter(FloatExpr(5.0))
+    self.block = self.Block(GeneratorMultiParameter(5.0, 10.0))
+
+
+class GeneratorMultiParameter(GeneratorBlock):
+  @init_in_parent
+  def __init__(self, float_preset1: FloatLike, float_preset2: FloatLike) -> None:
+    super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
     self.float_param2 = self.Parameter(FloatExpr())
-    self.generator(self.float_gen1, self.float_preset)
-    self.generator(self.float_gen2, self.float_param1)
+    self.generator(self.float_gen, float_preset1, float_preset2)
 
-  def float_gen1(self, float_preset: float) -> None:
-    self.assign1 = self.assign(self.float_param1, float_preset * 3)
-
-  def float_gen2(self, float_param1: float) -> None:
-    # TODO better name inference to avoid name collisions in multiple generates
-    self.assign2 = self.assign(self.float_param2, float_param1 + 7)
+  def float_gen(self, float_preset1: float, float_preset2: float) -> None:
+    self.assign1 = self.assign(self.float_param1, float_preset1 * 3)
+    self.assign2 = self.assign(self.float_param2, float_preset2 + 7)
 
 
 class TestGenerator(unittest.TestCase):
   def test_generator_assign(self):
     compiled = ScalaCompiler.compile(TestGeneratorAssign)
 
-    self.assertEqual(compiled.get_value(['float_param']), 2.0)
+    self.assertEqual(compiled.get_value(['block', 'float_param']), 2.0)
 
   def test_generator_dependency(self):
     compiled = ScalaCompiler.compile(TestGeneratorDependency)
 
-    self.assertEqual(compiled.get_value(['float_param']), 6.0)
+    self.assertEqual(compiled.get_value(['block', 'float_param']), 6.0)
 
   def test_generator_multi_dependency(self):
-    compiled = ScalaCompiler.compile(TestGeneratorMultiDependency)
+    compiled = ScalaCompiler.compile(TestGeneratorMultiParameter)
 
-    self.assertEqual(compiled.get_value(['float_param1']), 15.0)
-    self.assertEqual(compiled.get_value(['float_param2']), 22.0)
+    self.assertEqual(compiled.get_value(['block', 'float_param1']), 15.0)
+    self.assertEqual(compiled.get_value(['block', 'float_param2']), 17.0)
 
 
 class TestLink(Link):
@@ -85,19 +100,19 @@ class TestPortSink(Port[TestLink]):
 
 class TestBlockSource(Block):
   @init_in_parent
-  def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
+  def __init__(self, float_value: FloatLike) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(float_value))
 
 
 class TestBlockSink(Block):
   @init_in_parent
-  def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
+  def __init__(self, range_value: RangeLike) -> None:
     super().__init__()
     self.port = self.Port(TestPortSink(range_value))
 
 
-class TestGeneratorIsConnected(GeneratorBlock):
+class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
@@ -114,7 +129,7 @@ class TestGeneratorIsConnected(GeneratorBlock):
 class TestGeneratorConnectedTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorIsConnected())
+    self.generator = self.Block(GeneratorIsConnected())
     self.sink = self.Block(TestBlockSink((0.5, 2.5)))
     self.link = self.connect(self.generator.port, self.sink.port)
 
@@ -122,10 +137,10 @@ class TestGeneratorConnectedTop(Block):
 class TestGeneratorNotConnectedTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorIsConnected())
+    self.generator = self.Block(GeneratorIsConnected())
 
 
-class TestGeneratorInnerConnect(GeneratorBlock):
+class GeneratorInnerConnect(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(), optional=True)
@@ -139,7 +154,7 @@ class TestGeneratorInnerConnect(GeneratorBlock):
 class TestGeneratorInnerConnectTop(Block):
   def __init__(self):
     super().__init__()
-    self.generator = self.Block(TestGeneratorInnerConnect())
+    self.generator = self.Block(GeneratorInnerConnect())
     self.sink = self.Block(TestBlockSink((1.5, 3.5)))
     self.link = self.connect(self.generator.port, self.sink.port)
 
@@ -168,13 +183,18 @@ class TestGeneratorException(BaseException):
   pass
 
 
-class TestGeneratorFailure(GeneratorBlock):
+class TestGeneratorFailure(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.float_param = self.Parameter(FloatExpr(41.0))  # to test context in error messages
-    self.generator(self.errorfn, self.float_param)
+    self.block = self.Block(GeneratorFailure())
 
-  def errorfn(self, float_param: float) -> None:
+
+class GeneratorFailure(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.generator(self.errorfn)
+
+  def errorfn(self) -> None:
     def helperfn() -> None:
       raise TestGeneratorException("test text")
     helperfn()

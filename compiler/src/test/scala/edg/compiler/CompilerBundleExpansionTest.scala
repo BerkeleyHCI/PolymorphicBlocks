@@ -5,13 +5,13 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
-import edg.wir
+import edg.{CompilerTestUtil, wir}
 import edg.wir.{IndirectDesignPath, IndirectStep}
 
 
 /** Tests compiler Bundle expansion / elaboration, including nested links.
   */
-class CompilerBundleExpansionTest extends AnyFlatSpec {
+class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
       Port.Port(
@@ -169,8 +169,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    val compiled = compiler.compile()
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.contents.get
@@ -207,8 +206,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec {
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val compiler = new Compiler(inputDesign, new wir.EdgirLibrary(library))
-    compiler.compile()
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     // Check basic to-link value propagation
     compiler.getValue(IndirectDesignPath() + "link" + "outerParam") should equal(Some(IntValue(42)))

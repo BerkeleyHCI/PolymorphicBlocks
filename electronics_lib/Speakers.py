@@ -99,7 +99,7 @@ class Speaker(DiscreteApplication, FootprintBlock):
     super().__init__()
 
     self.input = self.Port(SpeakerPort(
-      impedance=8*Ohm
+      impedance=8*Ohm(tol=0)
     ), [Input])
 
   def contents(self):

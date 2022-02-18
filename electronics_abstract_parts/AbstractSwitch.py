@@ -5,14 +5,14 @@ from .Categories import *
 @abstract_block
 class Switch(DiscreteComponent):
   @init_in_parent
-  def __init__(self, current: RangeLike = RangeExpr(), voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp(tol=0))) -> None:
     super().__init__()
 
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.current = self.Parameter(RangeExpr(current))
-    self.voltage = self.Parameter(RangeExpr(voltage))
+    self.current = self.ArgParameter(current)
+    self.voltage = self.ArgParameter(voltage)
 
 
 class DigitalSwitch(DiscreteApplication):
