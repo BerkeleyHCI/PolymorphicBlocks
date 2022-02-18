@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -19,10 +18,10 @@ class Diode(DiscreteSemiconductor):
     self.anode = self.Port(Passive())
     self.cathode = self.Port(Passive())
 
-    self.reverse_voltage = cast(RangeExpr, reverse_voltage)
-    self.current = cast(RangeExpr, current)
-    self.voltage_drop = cast(RangeExpr, voltage_drop)
-    self.reverse_recovery_time = cast(RangeExpr, reverse_recovery_time)
+    self.reverse_voltage = self.ArgParameter(reverse_voltage)
+    self.current = self.ArgParameter(current)
+    self.voltage_drop = self.ArgParameter(voltage_drop)
+    self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
 
 
 @abstract_block
@@ -40,8 +39,8 @@ class ZenerDiode(DiscreteSemiconductor):
     self.anode = self.Port(Passive())
     self.cathode = self.Port(Passive())
 
-    self.zener_voltage = cast(RangeExpr, zener_voltage)
-    self.forward_voltage_drop = cast(RangeExpr, forward_voltage_drop)
+    self.zener_voltage = self.ArgParameter(zener_voltage)
+    self.forward_voltage_drop = self.ArgParameter(forward_voltage_drop)
 
 
 class ProtectionZenerDiode(DiscreteApplication):
@@ -54,7 +53,7 @@ class ProtectionZenerDiode(DiscreteApplication):
     self.pwr = self.Port(VoltageSink(), [Power, Input])
     self.gnd = self.Port(Ground(), [Common])
 
-    self.voltage = cast(RangeExpr, voltage)
+    self.voltage = self.ArgParameter(voltage)
 
   def contents(self):
     super().contents()

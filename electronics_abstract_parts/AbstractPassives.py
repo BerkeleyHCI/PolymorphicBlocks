@@ -1,12 +1,9 @@
-from typing import cast
 from electronics_model import *
-from itertools import chain
 from .Categories import *
 
 
 @abstract_block
 class Resistor(PassiveComponent):
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
@@ -14,49 +11,33 @@ class Resistor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.resistance = cast(RangeExpr, resistance)
-    self.power = cast(RangeExpr, power)  # operating power range
+    self.resistance = self.ArgParameter(resistance)
+    self.power = self.ArgParameter(power)  # operating power range
     self.actual_resistance = self.Parameter(RangeExpr())
 
 
 class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.io = self.Port(DigitalSingleSource(), [InOut])
+    self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.resistance = cast(RangeExpr, resistance)
-
-  def contents(self):
-    super().contents()
-    self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
-
-    self.connect(self.pwr, self.res.a.as_voltage_sink())
-    self.connect(self.io, self.res.b.as_digital_pull_high_from_supply(self.pwr))
+    self.pwr = self.Export(self.res.a.as_voltage_sink(), [Power])
+    self.io = self.Export(self.res.b.as_digital_pull_high_from_supply(self.pwr), [InOut])
 
 
 class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
-  # TODO no default resistance
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.gnd = self.Port(Ground(), [Common])
-    self.io = self.Port(DigitalSingleSource(), [InOut])
+    self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.resistance = cast(RangeExpr, resistance)
-
-  def contents(self):
-    super().contents()
-    self.res = self.Block(Resistor(self.resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
-
-    self.connect(self.gnd, self.res.a.as_ground())
-    self.connect(self.io, self.res.b.as_digital_pull_low_from_supply(self.gnd))
+    self.gnd = self.Export(self.res.a.as_ground(), [Common])
+    self.io = self.Export(self.res.b.as_digital_pull_low_from_supply(self.gnd), [InOut])
 
 
 class SeriesPowerResistor(DiscreteApplication):
@@ -65,32 +46,23 @@ class SeriesPowerResistor(DiscreteApplication):
   def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink(), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource(), [Output])
-
-    self.resistance = cast(RangeExpr, resistance)
-    self.current_limits = cast(RangeExpr, current_limits)
-
-  def contents(self):
-    super().contents()
+    self.resistance = self.ArgParameter(resistance)
+    self.current_limits = self.ArgParameter(current_limits)
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
       power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
-    self.connect(self.res.a.as_voltage_sink(
+
+    self.pwr_in = self.Export(self.res.a.as_voltage_sink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=RangeExpr()
-    ), self.pwr_in)
-    self.connect(self.res.b.as_voltage_source(
+    ), [Power, Input])
+    self.pwr_out = self.Export(self.res.b.as_voltage_source(
       voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
       current_limits=self.current_limits
-    ), self.pwr_out)
-
-    # Note, this is a worst-case current draw that uses passed in current limits, instead of actual current draw
-    # This is done to avoid a cyclic dependency
-    # TODO: better current limits using actual current drawn
+    ), [Output])
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
@@ -121,19 +93,17 @@ class CurrentSenseResistor(DiscreteApplication):
 @abstract_block
 class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
-  # TODO no default capacitance and voltage rating
   @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
     super().__init__()
 
-    self.capacitance = capacitance
-    self.voltage = voltage  # defined as operating voltage range
+    self.capacitance = self.ArgParameter(capacitance)
+    self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
 
 
 @abstract_block
 class Capacitor(UnpolarizedCapacitor):
   """Polarized capacitor, which we assume will be the default"""
-  # TODO no default capacitance and voltage rating
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
@@ -145,27 +115,19 @@ class Capacitor(UnpolarizedCapacitor):
 class DecouplingCapacitor(DiscreteApplication):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
-  # TODO no default capacitance
   @init_in_parent
   def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power, Input])
-    self.gnd = self.Port(VoltageSink(), [Common, Output])
+    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
+    self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
+    self.gnd = self.Export(self.cap.neg.as_voltage_sink(), [Common])
 
-    self.capacitance = capacitance
-
-  def contents(self):
-    super().contents()
-    self.cap = self.Block(Capacitor(self.capacitance, voltage=(self.pwr.link().voltage - self.gnd.link().voltage)))
-
-    self.connect(self.pwr, self.cap.pos.as_voltage_sink())
-    self.connect(self.gnd, self.cap.neg.as_voltage_sink())
+    self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
 
 @abstract_block
 class Inductor(PassiveComponent):
-  # TODO no default inductance
   @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO),
@@ -175,8 +137,8 @@ class Inductor(PassiveComponent):
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
-    self.inductance = inductance
-    self.current = current  # defined as operating current range, non-directioned
-    self.frequency = frequency  # defined as operating frequency range
+    self.inductance = self.ArgParameter(inductance)
+    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
+    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())

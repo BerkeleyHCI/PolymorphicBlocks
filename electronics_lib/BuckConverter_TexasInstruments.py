@@ -138,7 +138,7 @@ class Tps54202h(DiscreteBuckConverter):
 
       # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
       # a pull-up resistor isn't used because
-      self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0))
+      self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0*Amp(tol=0)))
       self.connect(self.pwr_in, self.en_res.a.as_voltage_sink())
       self.connect(self.en_res.b.as_digital_source(), self.ic.en)
 

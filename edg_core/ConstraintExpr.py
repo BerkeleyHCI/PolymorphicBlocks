@@ -315,11 +315,8 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.max)
 
 
-RangeLit = Tuple[FloatLit, FloatLit]
-# A RangeLike type excluding the float-to-range implicit conversion
-RangeLikeNonFloat = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
-RangeLike = Union[RangeLikeNonFloat, FloatLike]
-class RangeExpr(NumLikeExpr[Range, RangeLike]):
+RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
+class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -341,7 +338,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
       UnaryOpBinding(self, RangeSetOp.max)))
 
   @classmethod
-  def _to_expr_type(cls, input: RangeLike) -> RangeExpr:
+  def _to_expr_type(cls, input: Union[RangeLike, FloatLike]) -> RangeExpr:
     if isinstance(input, RangeExpr):
       assert input._is_bound()
       return input
@@ -414,7 +411,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
   # special option to allow range * float
-  def __mul__(self, rhs: RangeLike) -> RangeExpr:
+  def __mul__(self, rhs: Union[RangeLike, FloatLike]) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
       rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
     elif not isinstance(rhs, FloatExpr):
@@ -424,7 +421,7 @@ class RangeExpr(NumLikeExpr[Range, RangeLike]):
     return self._create_range_float_binary_op(self, rhs_cast, NumericOp.mul)
 
   # special option to allow range / float
-  def __truediv__(self, rhs: RangeLike) -> RangeExpr:
+  def __truediv__(self, rhs: Union[RangeLike, FloatLike]) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
       rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
     elif not isinstance(rhs, FloatExpr):

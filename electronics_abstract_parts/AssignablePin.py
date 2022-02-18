@@ -17,7 +17,7 @@ class AssignablePinBlock(GeneratorBlock):
     self._all_assignable_ios: List[Port] = []
     self._remaining_assignable_ios: Dict[Type[Port], List[Port]] = {}
 
-    self.pin_assigns = cast(StringExpr, pin_assigns)
+    self.pin_assigns = self.ArgParameter(pin_assigns)
 
   # TODO type signature could be enhanced to only allow iterable pin with Bundle type
   PortType = TypeVar('PortType', bound=Union[CircuitPort, Bundle])

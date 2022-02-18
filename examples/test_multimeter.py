@@ -1,4 +1,3 @@
-from typing import cast
 import unittest
 
 from edg import *
@@ -68,8 +67,8 @@ class MultimeterCurrentDriver(Block):
     self.control = self.Port(AnalogSink())
     self.enable = self.Port(DigitalSink())
 
-    self.resistance = cast(RangeExpr, resistance)
-    self.voltage_rating = cast(RangeExpr, voltage_rating)
+    self.resistance = self.ArgParameter(resistance)
+    self.voltage_rating = self.ArgParameter(voltage_rating)
 
   def contents(self):
     super().contents()
@@ -85,9 +84,6 @@ class MultimeterCurrentDriver(Block):
       drain_voltage=(0, max_in_voltage),
       drain_current=(0, max_in_voltage / self.resistance.lower()),
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
-      rds_on=(0, 10)*Ohm,  # TODO kind of arbitrary
-      gate_charge=RangeExpr.ALL,
-      power=0*Watt  # TODO ignored
     ))
     self.connect(self.res.b, self.fet.source)
 
@@ -155,9 +151,6 @@ class FetPowerGate(Block):
       drain_voltage=(0, max_voltage),
       drain_current=(0, max_current),
       gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
-      rds_on=(0, max_voltage / max_current / 10),  # TODO kind of arbitrary, should really be lower
-      gate_charge=(0, float('inf')),
-      power=0*Watt  # TODO ignored
     ))
     self.connect(self.pwr_in, self.pwr_fet.source.as_voltage_sink(
       current_draw=self.pwr_out.link().current_drawn,
@@ -174,10 +167,7 @@ class FetPowerGate(Block):
     self.amp_fet = self.Block(NFet(
       drain_voltage=(0, max_voltage),
       drain_current=(0, 0),  # effectively no current
-      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
-      rds_on=RangeExpr.ALL,  # negligible
-      gate_charge=RangeExpr.ALL,
-      power=0*Watt  # TODO ignored
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
     ))
     self.connect(self.control, self.amp_fet.gate.as_digital_sink(), self.amp_res.a.as_digital_sink())  # TODO more modeling here?
 
@@ -193,7 +183,7 @@ class FetPowerGate(Block):
       voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
       reverse_recovery_time=RangeExpr.ALL
     ))
-    self.btn = self.Block(Switch(voltage=0*Volt))  # TODO - actually model switch voltage
+    self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
     self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
     self.connect(self.gnd, self.amp_fet.source.as_ground(), self.amp_res.b.as_ground(),
                  self.btn.b.as_ground())

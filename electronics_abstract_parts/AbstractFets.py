@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -19,19 +18,19 @@ class Fet(DiscreteSemiconductor):
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
                gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
-               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(0)) -> None:
+               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0))) -> None:
     super().__init__()
 
     self.source = self.Port(Passive())
     self.drain = self.Port(Passive())
     self.gate = self.Port(Passive())
 
-    self.drain_voltage = cast(RangeExpr, drain_voltage)
-    self.drain_current = cast(RangeExpr, drain_current)
-    self.gate_voltage = cast(RangeExpr, gate_voltage)
-    self.rds_on = cast(RangeExpr, rds_on)
-    self.gate_charge = cast(RangeExpr, gate_charge)
-    self.power = cast(RangeExpr, power)
+    self.drain_voltage = self.ArgParameter(drain_voltage)
+    self.drain_current = self.ArgParameter(drain_current)
+    self.gate_voltage = self.ArgParameter(gate_voltage)
+    self.rds_on = self.ArgParameter(rds_on)
+    self.gate_charge = self.ArgParameter(gate_charge)
+    self.power = self.ArgParameter(power)
 
     self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
     self.actual_drain_current_rating = self.Parameter(RangeExpr())
@@ -67,8 +66,8 @@ class SwitchFet(Fet):
   def __init__(self, frequency: RangeLike, drive_current: RangeLike, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.frequency = cast(RangeExpr, frequency)
-    self.drive_current = cast(RangeExpr, drive_current)  # positive is turn-on drive, negative is turn-off drive
+    self.frequency = self.ArgParameter(frequency)
+    self.drive_current = self.ArgParameter(drive_current)  # positive is turn-on drive, negative is turn-off drive
 
 
 @abstract_block

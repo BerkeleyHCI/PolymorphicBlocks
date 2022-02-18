@@ -1,4 +1,3 @@
-from typing import cast
 from electronics_model import *
 from .Categories import *
 
@@ -10,7 +9,7 @@ class Crystal(DiscreteComponent):
     """Discrete crystal component."""
     super().__init__()
 
-    self.frequency = cast(RangeExpr, frequency)
+    self.frequency = self.ArgParameter(frequency)
 
     # actual frequency to be fulled in by subclass
     self.crystal = self.Port(CrystalPort(frequency=RangeExpr()), [InOut])

@@ -1,5 +1,3 @@
-from typing import *
-
 from math import pi
 
 from electronics_model import *
@@ -13,9 +11,9 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike,
                voltage: RangeLike):
     super().__init__()
-    self.impedance = cast(RangeExpr, impedance)
-    self.cutoff_freq = cast(RangeExpr, cutoff_freq)
-    self.voltage = cast(RangeExpr, voltage)
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+    self.voltage = self.ArgParameter(voltage)
 
     self.input = self.Port(Passive())
     self.output = self.Port(Passive())
