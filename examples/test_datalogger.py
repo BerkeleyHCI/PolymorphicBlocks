@@ -59,7 +59,6 @@ class TestDatalogger(BoardTop):
       self.connect(self.mcu.usb_0, self.usb_conn.usb)
 
       (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
-      self.can.can.not_connected()
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())

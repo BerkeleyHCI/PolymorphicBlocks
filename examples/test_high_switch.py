@@ -90,7 +90,6 @@ class TestHighSwitch(BoardTop):
       (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
 
       (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
-      self.can.can.not_connected()
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())

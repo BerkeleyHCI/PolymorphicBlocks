@@ -60,18 +60,11 @@ class CanDiffLink(Link):
     self.canl = self.connect(self.nodes.map_extract(lambda node: node.canl))
 
 
-class CanDiffNotConnected(NotConnectableBlock['CanDiffPort']):
-  def __init__(self) -> None:
-    super().__init__()
-    self.port = self.Port(CanDiffPort())
-
-
-class CanDiffPort(Bundle[CanDiffLink], NotConnectablePort):
+class CanDiffPort(Bundle[CanDiffLink]):
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
     self.link_type = CanDiffLink
     self.bridge_type = CanDiffBridge
-    self.not_connected_type = CanDiffNotConnected
 
     if model is None:  # ideal by default
       model = DigitalBidir()
