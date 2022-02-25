@@ -136,10 +136,12 @@ class ElementDict(Generic[ElementType]):
 class ElementMeta(type):
   def __call__(cls, *args, **kwargs):
     parent = builder.get_curr_context()
+    block_context = builder.get_enclosing_block()
     try:
       obj = type.__call__(cls, *args, **kwargs)
       obj._initializer_args = (args, kwargs)
       obj._parent = parent
+      obj._block_context = block_context
       obj._post_init()
     finally:
       if builder.get_curr_context() is not parent:  # in case the constructor skipped internal element init

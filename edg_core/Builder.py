@@ -20,11 +20,13 @@ class Builder:
     self.stack.pop()
     assert self.get_curr_context() is elt
 
-  def get_curr_block(self) -> BaseBlock:
+  def get_enclosing_block(self) -> Optional[BaseBlock]:
     from .Blocks import BaseBlock
-    elt = self.stack[-1]
-    assert isinstance(elt, BaseBlock)
-    return elt
+    # traverse down the stack and get the first BaseBlock, ignoring things like ports
+    for elt in reversed(self.stack):
+      if isinstance(elt, BaseBlock):
+        return elt
+    return None
 
   def get_curr_context(self) -> Optional[Refable]:
     if not self.stack:
