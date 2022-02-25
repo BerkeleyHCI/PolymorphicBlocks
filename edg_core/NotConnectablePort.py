@@ -20,18 +20,25 @@ class NotConnectablePort(Port):
     self.not_connected_type: Type[NotConnectableBlock[Port]]  # TODO type check this!
 
   def not_connected(self) -> Block:
-    """Marks this edge port as not connected, can be called on a boundary port only."""
+    """Marks this port as not connected; can either be done on a boundary port (for example, when subclassing
+    a general interface where pins aren't used) or a port on an inner block (for example, when unused)."""
     # TODO should this be a more general infrastructural function?
     # TODO dedup w/ Port._convert
-    block_parent = cast(Block, self._block_parent())
-    if block_parent is None:
+    context_block = builder.get_enclosing_block()
+    if self._parent is None:
       raise UnconnectableError(f"{self} must be bound to mark not-connected")
-    if block_parent is not builder.get_enclosing_block():
-      raise UnconnectableError(f"can only mark not-connected on ports of the current block")
 
-    nc_block = block_parent.Block(self.not_connected_type())
-    block_parent.manager.add_element(
-      f"(not_connected){block_parent._name_of(self)}",
-      nc_block)
-    block_parent.connect(self, nc_block.port)  # we don't name it to avoid explicit name conflicts
+    nc_block = context_block.Block(self.not_connected_type())
+    if context_block is self._block_parent():
+      context_block.manager.add_element(
+        f"(not_connected){context_block._name_of(self)}",
+        nc_block)
+    elif context_block is self._block_parent().parent:
+      context_block.manager.add_element(
+        f"(not_connected){context_block._name_of(self._block_parent())}_{self._block_parent()._name_of(self)}",
+        nc_block)
+    else:
+      raise UnconnectableError(f"can only mark not-connected on ports of the current block or inner block")
+
+    context_block.connect(self, nc_block.port)  # instance variable not assigned to avoid naming conflicts
     return nc_block

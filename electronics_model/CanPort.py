@@ -8,8 +8,8 @@ class CanLogicLink(Link):
   """Logic level CAN link, RXD and TXD signals"""
   def __init__(self) -> None:
     super().__init__()
-    self.controller = self.Port(CanControllerPort())  # TODO mark as required
-    self.transceiver = self.Port(CanTransceiverPort())  # TODO mark as required
+    self.controller = self.Port(CanControllerPort(DigitalBidir.empty()))  # TODO mark as required
+    self.transceiver = self.Port(CanTransceiverPort(DigitalBidir.empty()))  # TODO mark as required
 
     # TODO write custom top level digital constraints
     # TODO model frequency ... somewhere
@@ -60,11 +60,18 @@ class CanDiffLink(Link):
     self.canl = self.connect(self.nodes.map_extract(lambda node: node.canl))
 
 
-class CanDiffPort(Bundle[CanDiffLink]):
+class CanDiffNotConnected(NotConnectableBlock['CanDiffPort']):
+  def __init__(self) -> None:
+    super().__init__()
+    self.port = self.Port(CanDiffPort())
+
+
+class CanDiffPort(Bundle[CanDiffLink], NotConnectablePort):
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
     self.link_type = CanDiffLink
     self.bridge_type = CanDiffBridge
+    self.not_connected_type = CanDiffNotConnected
 
     if model is None:  # ideal by default
       model = DigitalBidir()
