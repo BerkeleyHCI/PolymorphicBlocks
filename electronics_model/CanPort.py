@@ -27,8 +27,10 @@ class CanControllerPort(Bundle[CanLogicLink]):
     super().__init__()
     self.link_type = CanLogicLink
 
-    self.txd = self.Port(DigitalSource(model))
-    self.rxd = self.Port(DigitalSink(model))
+    if model is None:  # ideal by default
+      model = DigitalBidir()
+    self.txd = self.Port(DigitalSource.from_bidir(model))
+    self.rxd = self.Port(DigitalSink.from_bidir(model))
 
 
 class CanTransceiverPort(Bundle[CanLogicLink]):
@@ -36,15 +38,17 @@ class CanTransceiverPort(Bundle[CanLogicLink]):
     super().__init__()
     self.link_type = CanLogicLink
 
-    self.txd = self.Port(DigitalSink(model))
-    self.rxd = self.Port(DigitalSource(model))
+    if model is None:  # ideal by default
+      model = DigitalBidir()
+    self.txd = self.Port(DigitalSink.from_bidir(model))
+    self.rxd = self.Port(DigitalSource.from_bidir(model))
 
 
 class CanDiffLink(Link):
   """Differential CAN link, CANH and CANL signals"""
   def __init__(self) -> None:
     super().__init__()
-    self.nodes = self.Port(Vector(CanDiffPort()))  # TODO mark as required
+    self.nodes = self.Port(Vector(CanDiffPort(DigitalBidir.empty())))  # TODO mark as required
 
     # TODO write custom top level digital constraints
     # TODO future: digital constraints through link inference
@@ -62,16 +66,18 @@ class CanDiffPort(Bundle[CanDiffLink]):
     self.link_type = CanDiffLink
     self.bridge_type = CanDiffBridge
 
-    self.canh = self.Port(DigitalBidir(model))
-    self.canl = self.Port(DigitalBidir(model))
+    if model is None:  # ideal by default
+      model = DigitalBidir()
+    self.canh = self.Port(model)
+    self.canl = self.Port(model)
 
 
 class CanDiffBridge(PortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(CanDiffPort())
-    self.inner_link = self.Port(CanDiffPort())
+    self.outer_port = self.Port(CanDiffPort(DigitalBidir.empty()))
+    self.inner_link = self.Port(CanDiffPort(DigitalBidir.empty()))
 
   def contents(self) -> None:
     super().contents()

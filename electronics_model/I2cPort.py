@@ -10,8 +10,8 @@ class I2cLink(Link):
     super().__init__()
 
     self.pull = self.Port(I2cPullupPort())
-    self.master = self.Port(I2cMaster())
-    self.devices = self.Port(Vector(I2cSlave()))
+    self.master = self.Port(I2cMaster(DigitalBidir.empty()))
+    self.devices = self.Port(Vector(I2cSlave(DigitalBidir.empty())))
 
   def contents(self) -> None:
     super().contents()
@@ -39,8 +39,10 @@ class I2cMaster(Bundle[I2cLink]):
     super().__init__()
     self.link_type = I2cLink
 
-    self.scl = self.Port(DigitalSource(model))
-    self.sda = self.Port(DigitalBidir(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.scl = self.Port(DigitalSource.from_bidir(model))
+    self.sda = self.Port(model)
 
     self.frequency = self.Parameter(RangeExpr(Default(RangeExpr.EMPTY_ZERO)))
 
@@ -50,7 +52,9 @@ class I2cSlave(Bundle[I2cLink]):
     super().__init__()
     self.link_type = I2cLink
 
-    self.scl = self.Port(DigitalSink(model))
-    self.sda = self.Port(DigitalBidir(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.scl = self.Port(DigitalSink.from_bidir(model))
+    self.sda = self.Port(model)
 
     self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies

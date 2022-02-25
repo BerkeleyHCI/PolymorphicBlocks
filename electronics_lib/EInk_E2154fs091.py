@@ -21,10 +21,10 @@ class E2154fs091_Device(DiscreteChip, FootprintBlock):
       output_thresholds=(0.4, self.pwr.link().voltage.upper() - 0.4),
     )
 
-    self.busy = self.Port(DigitalSource(dio_model))
-    self.reset = self.Port(DigitalSink(dio_model))
-    self.dc = self.Port(DigitalSink(dio_model))
-    self.cs = self.Port(DigitalSink(dio_model))
+    self.busy = self.Port(DigitalSource.from_bidir(dio_model))
+    self.reset = self.Port(DigitalSink.from_bidir(dio_model))
+    self.dc = self.Port(DigitalSink.from_bidir(dio_model))
+    self.cs = self.Port(DigitalSink.from_bidir(dio_model))
     self.spi = self.Port(SpiSlave(model=dio_model))
 
     # TODO model all these parts, then fix all the Passive connections

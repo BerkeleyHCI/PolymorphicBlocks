@@ -8,8 +8,8 @@ class SwdLink(Link):
   def __init__(self) -> None:
     super().__init__()
 
-    self.host: SwdHostPort = self.Port(SwdHostPort())
-    self.device: SwdTargetPort = self.Port(SwdTargetPort())
+    self.host: SwdHostPort = self.Port(SwdHostPort(DigitalBidir.empty()))
+    self.device: SwdTargetPort = self.Port(SwdTargetPort(DigitalBidir.empty()))
 
   def contents(self) -> None:
     super().contents()
@@ -25,10 +25,12 @@ class SwdHostPort(Bundle[SwdLink]):
     super().__init__()
     self.link_type = SwdLink
 
-    self.swdio = self.Port(DigitalBidir(model))
-    self.swclk = self.Port(DigitalSource(model))
-    self.swo = self.Port(DigitalSink(model))
-    self.reset = self.Port(DigitalSource(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.swdio = self.Port(model)
+    self.swclk = self.Port(DigitalSource.from_bidir(model))
+    self.swo = self.Port(DigitalSink.from_bidir(model))
+    self.reset = self.Port(DigitalSource.from_bidir(model))
 
 
 class SwdTargetPort(Bundle[SwdLink]):
@@ -36,7 +38,9 @@ class SwdTargetPort(Bundle[SwdLink]):
     super().__init__()
     self.link_type = SwdLink
 
-    self.swdio = self.Port(DigitalBidir(model))
-    self.swclk = self.Port(DigitalSink(model))
-    self.swo = self.Port(DigitalSource(model))
-    self.reset = self.Port(DigitalSink(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.swdio = self.Port(model)
+    self.swclk = self.Port(DigitalSink.from_bidir(model))
+    self.swo = self.Port(DigitalSource.from_bidir(model))
+    self.reset = self.Port(DigitalSink.from_bidir(model))
