@@ -25,6 +25,7 @@ class NotConnectablePort(Port):
     # TODO should this be a more general infrastructural function?
     # TODO dedup w/ Port._convert
     context_block = builder.get_enclosing_block()
+    assert isinstance(context_block, Block)
     if self._parent is None:
       raise UnconnectableError(f"{self} must be bound to mark not-connected")
 
