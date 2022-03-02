@@ -176,7 +176,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     self._blocks = self.manager.new_dict(Block)  # type: ignore
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
-    self._port_tags = IdentityDict[Port, Set[PortTag[Any]]]()
+    self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
 
   def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[Port]:
     out = []
