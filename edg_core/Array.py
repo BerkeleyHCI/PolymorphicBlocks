@@ -13,6 +13,8 @@ from .Binding import LengthBinding, BinaryOpBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
+if TYPE_CHECKING:
+  from .HierarchyBlock import Block
 
 class MapExtractBinding(Binding):
   def __init__(self, container: Vector, elt: ConstraintExpr):
@@ -171,8 +173,10 @@ class Vector(BaseVector, Generic[VectorType]):
     super().__init__()
 
     assert not tpe._is_bound()
+    self._tpe = tpe
     self._elt_sample = tpe._bind(self, ignore_context=True)
-    self._elts: Optional[Dict[str, VectorType]]
+    self._elts: Optional[Dict[str, VectorType]] = None
+    self._allocates: List[VectorType] = []  # used to track .allocate() for ref_map purposes
 
     self._length = IntExpr()._bind(ParamVariableBinding(LengthBinding(self)))
 
@@ -190,6 +194,10 @@ class Vector(BaseVector, Generic[VectorType]):
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
+    if self._elts is not None:
+      array_ports = pb.array.ports
+      for name, elt in self._elts.items():
+        array_ports[name].CopyFrom(elt._instance_to_proto())
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -201,9 +209,35 @@ class Vector(BaseVector, Generic[VectorType]):
   def init_elts(self, length: Union[List[str], int]) -> None:
     """Initializes elements of this array (if this is not to be a dynamically-sized array - including
     when subclassing a base class with a dynamically-sized array) with either the number of elements
-    or with specific names of elements."""
-    pass
+    or with specific names of elements.
+    Can only be called from the block defining this port (where this is a boundary port),
+    and this port must be bound."""
+    assert self._is_bound(), "not bound, can't create array elements"
+    assert builder.get_curr_block() is self._block_parent(), "can only init_elts in block parent of array"
+    assert self._elts is None, "cannot double init_elts"
+    if isinstance(length, int):
+      length_list = [str(elt) for elt in range(length)]
+    elif isinstance(length, list):
+      length_list = length
+    else:
+      raise TypeError(f"unknown length type {length}")
 
+    self._elts = {elt: self._tpe._bind(self, ignore_context=True) for elt in length_list}
+
+  def allocate(self) -> VectorType:
+    """Returns a new port of this Vector.
+    Can only be called from the block containing the block containing this as a port (used to allocate a
+    port of an internal block).
+    To create elements where this is the boundary block, use init_elts(...).
+    """
+    assert self._is_bound(), "not bound, can't allocate array elements"
+    block_parent = self._block_parent()
+    assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
+    assert builder.get_curr_block() is block_parent.parent, "can only allocate ports of internal blocks"
+    # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
+    allocated = self._tpe._bind(self, ignore_context=True)
+    self._allocates.append(allocated)
+    return allocated
 
   def length(self) -> IntExpr:
     return self._length

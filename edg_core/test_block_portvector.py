@@ -15,7 +15,7 @@ class TestBlockPortVectorBase(Block):
 class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
-    # TODO need syntax to initialize fixed members
+    self.vector.init_elts(2)
 
 
 class BlockBaseProtoTestCase(unittest.TestCase):
