@@ -390,7 +390,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False) -> T:
     """Registers a port for this Block"""
-    if not isinstance(tpe, Port):
+    from .Array import Vector
+    if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     if optional and tags:
       raise BlockDefinitionError(self, "optional ports cannot have implicit connection tags",
