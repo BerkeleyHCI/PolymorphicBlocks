@@ -210,6 +210,7 @@ class Vector(BaseVector, Generic[VectorType]):
     """Initializes elements of this array (if this is not to be a dynamically-sized array - including
     when subclassing a base class with a dynamically-sized array) with either the number of elements
     or with specific names of elements.
+    Items can be accessed (from inside the containing block) by indexing (__getitem__).
     Can only be called from the block defining this port (where this is a boundary port),
     and this port must be bound."""
     assert self._is_bound(), "not bound, can't create array elements"
@@ -223,6 +224,12 @@ class Vector(BaseVector, Generic[VectorType]):
       raise TypeError(f"unknown length type {length}")
 
     self._elts = {elt: self._tpe._bind(self, ignore_context=True) for elt in length_list}
+
+  def elts(self) -> Dict[str, VectorType]:
+    """Returns the items (as a list of (str, Port)) resulting from init_elts."""
+    assert self._elts is not None, "must init_elts before getting items"
+    assert builder.get_curr_block() is self._block_parent(), "can only get items in block parent of array"
+    return self._elts
 
   def allocate(self) -> VectorType:
     """Returns a new port of this Vector.
