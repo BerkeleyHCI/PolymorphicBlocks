@@ -203,6 +203,11 @@ class Vector(BaseVector, Generic[VectorType]):
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+    return super()._get_ref_map(prefix) + IdentityDict(
+      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in self._elts.items()]
+    )
+
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self._elt_sample._get_ref_map(edgir.LocalPath())
 
@@ -245,6 +250,13 @@ class Vector(BaseVector, Generic[VectorType]):
     allocated = self._tpe._bind(self, ignore_context=True)
     self._allocates.append(allocated)
     return allocated
+
+  def allocate_vector(self) -> Vector[VectorType]:
+    """Returns a new dynamic-length, array-port slice of this Vector.
+    Can only be called from the block containing the block containing this as a port (used to allocate a
+    port of an internal block).
+    """
+    raise NotImplementedError
 
   def length(self) -> IntExpr:
     return self._length

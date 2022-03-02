@@ -9,7 +9,7 @@ from .test_elaboration_common import TestPortSink, TestBlockSink
 class TestBlockPortVectorBase(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.vector = self.Port(Vector(TestPortSink()))
+    self.vector = self.Port(Vector(TestPortSink()), optional=True)  # avoid required constraint
 
 
 class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
@@ -24,10 +24,10 @@ class TestBlockPortVectorExport(TestBlockPortVectorBase):
     self.vector.init_elts(2)
     vector_elts = list(self.vector.elts().values())
     assert len(vector_elts) == 2
+    self.block0 = self.Block(TestBlockSink())
+    self.exported0 = self.connect(self.block0.sink, vector_elts[0])
     self.block1 = self.Block(TestBlockSink())
-    self.connect(self.block1.sink, vector_elts[0])
-    self.block2 = self.Block(TestBlockSink())
-    self.connect(self.block2.sink, vector_elts[1])
+    self.exported1 = self.connect(self.block1.sink, vector_elts[1])
 
 
 class BlockVectorBaseProtoTestCase(unittest.TestCase):
@@ -39,8 +39,7 @@ class BlockVectorBaseProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_port_init(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 1)
-    self.assertIn('(reqd)vector', self.pb.constraints)  # only required constraint should generate
+    self.assertEqual(len(self.pb.constraints), 0)  # no constraints should generate
 
 
 class BlockVectorProtoTestCase(unittest.TestCase):
@@ -61,4 +60,18 @@ class VectorExportProtoTestCase(unittest.TestCase):
     self.pb = TestBlockPortVectorExport()._elaborated_def_to_proto()
 
   def test_export(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 3)  # including required
+    self.assertEqual(len(self.pb.constraints), 2)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
+    expected_conn.exported.exterior_port.ref.steps.add().name = '0'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = 'block0'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
+    expected_conn.exported.exterior_port.ref.steps.add().name = '1'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = 'block1'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, self.pb.constraints.values())
