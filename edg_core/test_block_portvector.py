@@ -15,6 +15,7 @@ class TestBlockPortVectorBase(Block):
 class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
+    # TODO need syntax to initialize fixed members
 
 
 class BlockBaseProtoTestCase(unittest.TestCase):
@@ -37,4 +38,7 @@ class BlockProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortBase")
-    # TBD: fixed length
+    array_ports = self.pb.ports['vector'].array.ports
+    self.assertEqual(len(array_ports), 2)
+    self.assertEqual(array_ports['0'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(array_ports['1'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
