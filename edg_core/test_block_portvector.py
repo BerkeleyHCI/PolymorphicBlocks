@@ -92,15 +92,15 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     self.pb = TestBlockPortVectorConnect()._elaborated_def_to_proto()
 
   def test_export(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 2)
+    self.assertEqual(len(self.pb.constraints), 4)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     expected_conn.connected.block_port.ref.steps.add().name = 'vector'
-    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.Reserved.ALLOCATE
+    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
     expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.Reserved.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -110,4 +110,18 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
     self.assertIn(expected_conn, self.pb.constraints.values())
 
-    raise NotImplementedError  # repeat for elt1
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connected.block_port.ref.steps.add().name = 'vector'
+    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'source1'
+    expected_conn.connected.block_port.ref.steps.add().name = 'source'
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
+    expected_conn.connected.link_port.ref.steps.add().name = 'source'
+    self.assertIn(expected_conn, self.pb.constraints.values())

@@ -204,7 +204,8 @@ class Vector(BaseVector, Generic[VectorType]):
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     elts_items = self._elts.items() if self._elts is not None else []
     return super()._get_ref_map(prefix) + IdentityDict(
-      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]
+      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
+      *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.ALLOCATE)) for elt in self._allocates]
     )
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
