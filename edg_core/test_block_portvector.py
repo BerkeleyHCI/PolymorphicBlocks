@@ -2,7 +2,7 @@ import unittest
 
 import edgir
 from . import *
-from .test_elaboration_common import TestPortSink, TestBlockSink
+from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSource
 
 
 @abstract_block
@@ -28,6 +28,16 @@ class TestBlockPortVectorExport(TestBlockPortVectorBase):
     self.exported0 = self.connect(self.block0.sink, vector_elts[0])
     self.block1 = self.Block(TestBlockSink())
     self.exported1 = self.connect(self.block1.sink, vector_elts[1])
+
+
+class TestBlockPortVectorConnect(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.sink = self.Block(TestBlockPortVectorBase())
+    self.source0 = self.Block(TestBlockSource())
+    self.source1 = self.Block(TestBlockSource())
+    self.conn0 = self.connect(self.source0.source, self.sink.vector.allocate())
+    self.conn1 = self.connect(self.source1.source, self.sink.vector.allocate())
 
 
 class BlockVectorBaseProtoTestCase(unittest.TestCase):
@@ -75,3 +85,29 @@ class VectorExportProtoTestCase(unittest.TestCase):
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'block1'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
+
+
+class VectorConnectProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockPortVectorConnect()._elaborated_def_to_proto()
+
+  def test_export(self) -> None:
+    self.assertEqual(len(self.pb.constraints), 2)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connected.block_port.ref.steps.add().name = 'vector'
+    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.Reserved.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.Reserved.ALLOCATE
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'source0'
+    expected_conn.connected.block_port.ref.steps.add().name = 'source'
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
+    expected_conn.connected.link_port.ref.steps.add().name = 'source'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    raise NotImplementedError  # repeat for elt1

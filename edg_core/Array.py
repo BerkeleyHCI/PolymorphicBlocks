@@ -13,8 +13,6 @@ from .Binding import LengthBinding, BinaryOpBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
-if TYPE_CHECKING:
-  from .HierarchyBlock import Block
 
 class MapExtractBinding(Binding):
   def __init__(self, container: Vector, elt: ConstraintExpr):
@@ -242,6 +240,7 @@ class Vector(BaseVector, Generic[VectorType]):
     port of an internal block).
     To create elements where this is the boundary block, use init_elts(...).
     """
+    from .HierarchyBlock import Block
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
