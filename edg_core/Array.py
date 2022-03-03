@@ -202,8 +202,9 @@ class Vector(BaseVector, Generic[VectorType]):
     raise RuntimeError()  # this doesn't generate into a library element
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+    elts_items = self._elts.items() if self._elts is not None else []
     return super()._get_ref_map(prefix) + IdentityDict(
-      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in self._elts.items()]
+      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]
     )
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:

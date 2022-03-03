@@ -51,18 +51,20 @@ class ConnectedPorts():
     raise NotImplementedError("net joining not implemented, connect statements should be additive")
 
   def _validate_connect(self, port: BasePort) -> None:
-    port_parent = port._block_parent()
-    if port_parent is None:
+    block_parent = port._block_parent()
+    if block_parent is None:
       raise UnconnectableError(f"In {self.parent}, can't connect port model {port}, "
                                "need to assign it to a block using self.Port(...)")
-    elif port_parent is not self.parent:
-      if port_parent.parent is None:
+    elif block_parent is not self.parent:
+      if block_parent.parent is None:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block not assigned to parent with self.Block(...)")
-      elif port_parent.parent is not self.parent:
+      elif block_parent.parent is not self.parent:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block at level above or nested more than one level deep")
-    if port_parent is not self.parent and port.parent is not port_parent:
+    if block_parent is not self.parent and not (
+        (port.parent is block_parent) or (isinstance(port.parent, Vector) and port.parent.parent is block_parent)):
+      # TODO the one-level-deep vector check is a bit of a hack - this should be a bit more principled
       # note: connecting to sub-ports of parent block's exterior ports are allowed,
       # provided there is no overlap of connectionss
       raise UnconnectableError(f"In {self.parent}, can't connect port sub-element {port}, "
