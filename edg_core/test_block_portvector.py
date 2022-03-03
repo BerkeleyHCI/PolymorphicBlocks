@@ -40,6 +40,13 @@ class TestBlockPortVectorConnect(Block):
     self.conn1 = self.connect(self.source1.source, self.sink.vector.allocate())
 
 
+class TestBlockPortVectorConstraint(TestBlockPortVectorBase):
+  def __init__(self) -> None:
+    super().__init__()
+    # check reduction ops work on block-side as well
+    self.float_param_sink_sum = self.Parameter(FloatExpr(self.vector.sum(lambda p: p.float_param)))
+
+
 class BlockVectorBaseProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorBase()._elaborated_def_to_proto()
@@ -125,3 +132,18 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
     self.assertIn(expected_conn, self.pb.constraints.values())
+
+
+class VectorConstraintProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockPortVectorConstraint()._elaborated_def_to_proto()
+
+  def test_port_def(self) -> None:
+    self.assertEqual(len(self.pb.constraints), 1)
+
+    expected_constr = edgir.ValueExpr()
+    expected_constr.assign.dst.steps.add().name = 'float_param_sink_sum'
+    expected_constr.assign.src.unary_set.op = edgir.UnarySetExpr.SUM
+    expected_constr.assign.src.unary_set.vals.map_extract.container.ref.steps.add().name = 'vector'
+    expected_constr.assign.src.unary_set.vals.map_extract.path.steps.add().name = 'float_param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
