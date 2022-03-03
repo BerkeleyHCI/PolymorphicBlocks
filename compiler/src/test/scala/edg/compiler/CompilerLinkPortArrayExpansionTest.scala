@@ -11,7 +11,7 @@ import edg.{CompilerTestUtil, wir}
 /** Tests compiler PortArray expansion / elaboration and connected constraint allocation with link-side PortArray only.
   * Not dependent on generators or parameter propagation.
   */
-class CompilerPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
+class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
       Port.Port("sourcePort"),
