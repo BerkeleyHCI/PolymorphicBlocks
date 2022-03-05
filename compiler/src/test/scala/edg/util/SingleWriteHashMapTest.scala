@@ -35,4 +35,16 @@ class SingleWriteHashMapTest extends AnyFlatSpec {
       map.put(1, 11)
     }
   }
+
+  it should "support getOrElseUpdate" in {
+    val map = SingleWriteHashMap[Int, Int]()
+    map.getOrElseUpdate(1, 11) should equal(11)
+    map(1) should equal(11)
+    map.getOrElseUpdate(1, 0) should equal(11)
+    assertThrows[IllegalArgumentException] {
+      map.put(1, 11)
+    }
+    map.put(2, 22)
+    map.getOrElseUpdate(2, 0) should equal(22)
+  }
 }

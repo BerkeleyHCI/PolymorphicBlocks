@@ -10,6 +10,10 @@ class SingleWriteHashMap[K, V] {
 
   def get(key: K): Option[V] = map.get(key)
 
+  def getOrElseUpdate(key: K, default: V): V = map.getOrElseUpdate(key, default)
+
+  def contains(key: K): Boolean = map.contains(key)
+
   def put(key: K, value: V): Unit = {
     require(!map.contains(key), s"repeated put for key $key with existing value ${map(key)} and new value $value")
     map.put(key, value)

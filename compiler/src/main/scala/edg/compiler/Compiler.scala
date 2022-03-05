@@ -7,7 +7,7 @@ import edgir.ref.ref
 import edgir.ref.ref.{LibraryPath, LocalPath}
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, ExprBuilder, wir}
-import edg.util.{DependencyGraph, Errorable}
+import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
 
 
@@ -168,7 +168,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Supplemental elaboration data structures
   private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()  // port -> connected link path
-  private val portDirectlyConnected = mutable.HashMap[DesignPath, Boolean]()  // if port directly connected in enclosing block
+  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()  // if port directly connected in enclosing block
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -325,7 +325,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.Bundle =>
         for ((childPortName, childPort) <- port.getElaboratedPorts) {
           if (topIsConnected) {  // only propagate connectivity status
-            require(!portDirectlyConnected.contains(portPath + childPortName))
             portDirectlyConnected.put(portPath + childPortName, true)
           }  // in the false case, it would be set during the recursive call
           setPortNotConnected(portPath + childPortName, childPort)
@@ -385,9 +384,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
-          require(!portDirectlyConnected.contains(blockPath ++ blockPort))
           portDirectlyConnected.put(blockPath ++ blockPort, true)
-          require(!portDirectlyConnected.contains(blockPath ++ linkPort))
           portDirectlyConnected.put(blockPath ++ linkPort, true)
           Some(())
         case _ => None  // anything with allocates is not processed
@@ -399,7 +396,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
           // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
-          require(!portDirectlyConnected.contains(blockPath ++ intPort))
           portDirectlyConnected.put(blockPath ++ intPort, true)
           Some(())
         case _ => None  // anything with allocates is not processed
@@ -703,7 +699,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
               Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
-            require(!portDirectlyConnected.contains(path ++ intPort))
             if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
               portDirectlyConnected.put(path ++ intPort, true)
             }
