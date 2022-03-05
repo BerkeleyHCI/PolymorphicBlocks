@@ -389,7 +389,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           portDirectlyConnected.put(blockPath ++ blockPort, true)
           require(!portDirectlyConnected.contains(blockPath ++ linkPort))
           portDirectlyConnected.put(blockPath ++ linkPort, true)
-          Some(Unit)
+          Some(())
         case _ => None  // anything with allocates is not processed
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
@@ -401,7 +401,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
           require(!portDirectlyConnected.contains(blockPath ++ intPort))
           portDirectlyConnected.put(blockPath ++ intPort, true)
-          Some(Unit)
+          Some(())
         case _ => None  // anything with allocates is not processed
       }
       case _ => None  // not defined
@@ -786,19 +786,54 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // by replacing ALLOCATEs with concrete indices.
   // This must also handle internal-side export statements.
   protected def elaborateBlockPortArray(record: ElaborateRecord.BlockPortArray): Unit = {
+    import edg.ExprBuilder.{Ref, ValueExpr}
+    var nextPortIndex: Int = 0
     val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
-    val constraints = record.constraintNames.map { constrName => constrName -> block.getConstraints(constrName) }
-
-    // Expand connects when available (no more ALLOCATEs)
+    record.constraintNames foreach { constrName =>
+      block.mapMultiConstraint(constrName) { constr => constr.expr match {
+        case expr.ValueExpr.Expr.Connected(connected) =>
+          val steps = constr.getConnected.getBlockPort.getRef.steps
+          require(steps.last == Ref.AllocateStep)
+          val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
+          nextPortIndex += 1
+          Seq("" -> constr.update(_.connected.blockPort.ref.steps := steps.init :+ portIndex))
+        case expr.ValueExpr.Expr.Exported(exported) =>
+          val steps = constr.getExported.getInternalBlockPort.getRef.steps
+          require(steps.last == Ref.AllocateStep)
+          val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
+          nextPortIndex += 1
+          Seq("" -> constr.update(_.exported.internalBlockPort.ref.steps := steps.init :+ portIndex))
+        case _ => throw new IllegalArgumentException  // implementation error
+      }}
+    }
+    // Try expanding the constraint
+    record.constraintNames foreach { constrName =>
+      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
+    }
   }
 
   // Once a link-side port array has all its element widths available, this lowers the connect statements
   // by replacing ALLOCATEs with concrete indices.
   protected def elaborateLinkPortArray(record: ElaborateRecord.LinkPortArray): Unit = {
-
+    import edg.ExprBuilder.{Ref, ValueExpr}
+    var nextPortIndex: Int = 0
+    val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
+    record.constraintNames foreach { constrName =>
+      block.mapMultiConstraint(constrName) { constr => constr.expr match {
+        case expr.ValueExpr.Expr.Connected(connected) =>
+          val steps = constr.getConnected.getLinkPort.getRef.steps
+          require(steps.last == Ref.AllocateStep)
+          val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
+          nextPortIndex += 1
+          Seq("" -> constr.update(_.connected.linkPort.ref.steps := steps.init :+ portIndex))
+        case _ => throw new IllegalArgumentException  // implementation error
+      }}
+    }
+    // Try expanding the constraint
+    record.constraintNames foreach { constrName =>
+      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
+    }
   }
-
-
 
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
