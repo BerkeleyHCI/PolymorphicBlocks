@@ -17,7 +17,7 @@ class IllegalConstraintException(msg: String) extends Exception(msg)
 sealed trait ElaborateRecord
 object ElaborateRecord {
   sealed trait ElaborateTask extends ElaborateRecord  // an elaboration task that can be run
-  sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency
+  sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency source
 
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
   case class Link(linkPath: DesignPath) extends ElaborateTask
@@ -30,6 +30,15 @@ object ElaborateRecord {
                       ) extends ElaborateTask {
     override def toString: String = s"Generator(${blockClass.toSimpleString}.$fnName @ $blockPath)"
   }
+
+  // In connect and export constraints, replaces all (internal) block-side ALLOCATEs with concrete subelt names.
+  // When a connect is fully resolved (no more ALLOCATEs), generates the Connect elaboration task.
+  case class BlockPortArray(parent: DesignPath, constraintNames: Seq[String])
+      extends ElaborateTask with ElaborateDependency
+  // In connect constraints, replaces all link-side ALLOCATEs with concrete subelt names.
+  // When a connect is fully resolved (no more ALLOCATEs), generates the Connect elaboration task.
+  case class LinkPortArray(parent: DesignPath, constraintNames: Seq[String])
+      extends ElaborateTask with ElaborateDependency
 
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
@@ -350,7 +359,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // TODO clean this up... by a lot
-  def processBlocklikeConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
+  def processParamConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
       constProp.addAssignment(
         path.asIndirect ++ assign.dst.get,
@@ -365,6 +374,38 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       if target.steps.last.step.isReservedParam
           && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
       assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
+  }
+
+  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr.Expr): Option[Unit] = {
+    import edg.ExprBuilder.ValueExpr
+    constr match {
+      case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
+        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+          elaboratePending.addNode(
+            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
+            Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
+          )
+          require(!portDirectlyConnected.contains(blockPath ++ blockPort))
+          portDirectlyConnected.put(blockPath ++ blockPort, true)
+          require(!portDirectlyConnected.contains(blockPath ++ linkPort))
+          portDirectlyConnected.put(blockPath ++ linkPort, true)
+          Some(Unit)
+        case _ => None  // anything with allocates is not processed
+      }
+      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+          elaboratePending.addNode(
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+            Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+          )
+          // TODO: this allows exporting into exterior ports' inner ports. Is this clean?
+          require(!portDirectlyConnected.contains(blockPath ++ intPort))
+          portDirectlyConnected.put(blockPath ++ intPort, true)
+          Some(Unit)
+        case _ => None  // anything with allocates is not processed
+      }
+      case _ => None  // not defined
+    }
   }
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
@@ -421,8 +462,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // All ports that need to be allocated, with the list of connected ports,
     // as (port array path -> list(constraint name, block port))
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
-        processBlocklikeConstraint(path, constrName, constr, expr)
+      case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
+        processParamConstraint(path, constrName, constr, expr)
       case expr.ValueExpr.Expr.Connected(connected) =>
         (connected.getBlockPort, connected.getLinkPort) match {
           case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
@@ -688,8 +729,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr if processBlocklikeConstraint.isDefinedAt(path, constrName, constr, expr) =>
-        processBlocklikeConstraint(path, constrName, constr, expr)
+      case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
+        processParamConstraint(path, constrName, constr, expr)
       case expr.ValueExpr.Expr.Exported(exported) =>
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
@@ -741,6 +782,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     parent.elaborate(name, link)
   }
 
+  // Once a block-side port array has all its element widths available, this lowers the connect statements
+  // by replacing ALLOCATEs with concrete indices.
+  // This must also handle internal-side export statements.
+  protected def elaborateBlockPortArray(record: ElaborateRecord.BlockPortArray): Unit = {
+    val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
+    val constraints = record.constraintNames.map { constrName => constrName -> block.getConstraints(constrName) }
+
+    // Expand connects when available (no more ALLOCATEs)
+  }
+
+  // Once a link-side port array has all its element widths available, this lowers the connect statements
+  // by replacing ALLOCATEs with concrete indices.
+  protected def elaborateLinkPortArray(record: ElaborateRecord.LinkPortArray): Unit = {
+
+  }
+
+
 
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
@@ -772,10 +830,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             debug(s"Elaborate connect $toLinkPortPath <-> $fromLinkPortPath")
             elaborateConnect(toLinkPortPath, fromLinkPortPath)
             elaboratePending.setValue(elaborateRecord, None)
+
           case generator: ElaborateRecord.Generator =>
             debug(s"Elaborate generator '${generator.fnName}' @ ${generator.blockPath}")
             elaborateGenerator(generator)
             elaboratePending.setValue(generator, None)
+
+          case blockPortArray: ElaborateRecord.BlockPortArray =>
+            elaborateBlockPortArray(blockPortArray)
+            elaboratePending.setValue(blockPortArray, None)
+          case linkPortArray: ElaborateRecord.LinkPortArray =>
+            elaborateLinkPortArray(linkPortArray)
+            elaboratePending.setValue(linkPortArray, None)
+
           case _: ElaborateRecord.ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
         }
