@@ -67,7 +67,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
+      "sink1Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
     )
     val (compiler, compiled) = testCompile(inputDesign, library)
 
