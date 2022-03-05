@@ -422,9 +422,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       setPortNotConnected(path + portName, port)
     }
 
-    // Find allocate ports and lower them before processing all constraints
-    // link-side port array -> list of (constraint name, block port)
-    val linkPortAllocates = mutable.HashMap[Seq[String], mutable.ListBuffer[(String, Seq[String])]]()
+    // Find allocate ports and generate the port array lowering compiler tasks
     val blockPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val linkPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
 
@@ -447,6 +445,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
       case _ =>
     }}
+
+    // Since links can only be elaborated after all arrays defined, build up the list of all array tasks
+    // for links
+    val linkArrayRecords = mutable.HashMap[String, mutable.ListBuffer[ElaborateRecord]]()
+    blockPortArrayConstraints.foreach { case (portArrayPath, constrNames) =>
+      elaboratePending.addNode(ElaborateRecord.BlockPortArray(path, portArrayPath, constrNames.toSeq),
+        Seq())
+    }
+    linkPortArrayConstraints.foreach { case (portArrayPath, constrNames) =>
+      val linkArrayTask = ElaborateRecord.LinkPortArray(path, portArrayPath, constrNames.toSeq)
+      linkArrayRecords.getOrElseUpdate(portArrayPath.head, mutable.ListBuffer()).append(linkArrayTask)
+      elaboratePending.addNode(linkArrayTask, Seq())
+    }
 
 //    // For fully resolved arrays, allocate port numbers and set array elements
 //    linkPortAllocates.foreach { case (linkPortArray, blockConstrPorts) =>
@@ -478,6 +489,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       constr.expr match {
         case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
           processParamConstraint(path, constrName, constr, expr)
+        case _ =>
       }
       processConnectedConstraint(path, constrName, constr.expr)
     }
@@ -535,7 +547,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
-      elaboratePending.addNode(ElaborateRecord.Link(path + linkName), Seq())
+      elaboratePending.addNode(ElaborateRecord.Link(path + linkName),
+        linkArrayRecords.getOrElse(linkName, Seq()).toSeq)
     }
   }
 
