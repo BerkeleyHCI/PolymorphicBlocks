@@ -30,6 +30,8 @@ object ElaborateRecord {
   }
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
+  // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
+  // connectedLink and linkParams.
   case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, connectType: ConnectType)
       extends ElaborateTask
 
@@ -56,10 +58,9 @@ object ElaborateRecord {
 
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
-  // Set when the connection from the link's port to portPath have been elaborated
-  // (or in the link port case, when the link has been elaborated).
-  // If the port is not connected, this is set when the port has been elaborated.
-  // When this is complete, the port's IS_CONNECTED, CONNECTED_LINK (if applicable) will have their final values.
+  // Set when the connection from the link's port to portPath have been elaborated, or for link ports
+  // when the link has been elaborated.
+  // When this is completed, connectedLink for the port and linkParams for the link will be set.
   case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
 }
 
@@ -180,10 +181,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
   // Supplemental elaboration data structures
-  private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
+  private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   linkParams.put(DesignPath(), Seq())  // empty path means disconnected
-  private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()  // port -> connected link path
-  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()  // port externally connected, non-recursive
+  private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
+
+  // Set true when a connect involving the port is seen, or false when a port is known not-connected
+  // Not a recursive data structure
+  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -595,22 +599,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Sets the ConnectedLink for all the top-level ports (recursing into arrays, but not bundles)
-  protected def setPortConnectedLink(portPath: DesignPath, port: wir.PortLike, linkPath: DesignPath): Unit = {
-    port match {
-      case _: wir.Port | _: wir.Bundle =>
-        if (portDirectlyConnected.contains(portPath)) {
-          connectedLink.put(portPath, linkPath)
-          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        }
-      case port: wir.PortArray => port.getElaboratedPorts.foreach { case (childName, childPort) =>
-        // Array contents are treated as top-level ports
-        setPortConnectedLink(portPath + childName, childPort, linkPath)
-      }
-      case port => throw new NotImplementedError(s"unknown port $port")
-    }
-  }
-
   protected def processLink(path: DesignPath, link: wir.Link): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
 
@@ -624,8 +612,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((portName, port) <- link.getUnelaboratedPorts) {
       elaboratePort(path + portName, link, port)
     }
+
+    def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
+      case _: wir.Port | _: wir.Bundle =>
+        if (portDirectlyConnected.contains(portPath)) {
+          connectedLink.put(portPath, path)
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+        }
+      case port: wir.PortArray =>
+        port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
+          setConnectedLink(portPath + subPortName, subPort)
+        }
+    }
     for ((portName, port) <- link.getElaboratedPorts) {
-      setPortConnectedLink(path + portName, port, path)
+      setConnectedLink(path + portName, port)
     }
 
     // Find allocate ports and lower them before processing all constraints
