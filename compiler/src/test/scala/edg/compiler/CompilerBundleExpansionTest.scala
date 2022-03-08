@@ -213,7 +213,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerParam") should equal(Some(IntValue(7)))
 
     // Check IS_CONNECTED, including recursively
-    compiler.getValue(IndirectDesignPath() + "link" + "port" + IndirectStep.IsConnected) should
+    compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(true)))

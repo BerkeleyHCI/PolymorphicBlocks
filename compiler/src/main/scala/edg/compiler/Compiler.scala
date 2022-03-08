@@ -32,7 +32,8 @@ object ElaborateRecord {
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
   // connectedLink and linkParams.
-  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, connectType: ConnectType)
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, container: DesignPath,
+                     connectType: ConnectType)
       extends ElaborateTask
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
@@ -252,10 +253,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     toLinkPort match {
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getElaboratedPorts.keys) {
-          // TODO propagate connected-ness downwards, add unit test
+          constProp.addEquality(connect.toLinkPortPath.asIndirect + IndirectStep.IsConnected,
+            connect.toLinkPortPath.asIndirect + portName + IndirectStep.IsConnected)
+          constProp.addEquality(connect.toBlockPortPath.asIndirect + IndirectStep.IsConnected,
+            connect.toBlockPortPath.asIndirect + portName + IndirectStep.IsConnected)
+
           elaboratePending.addNode(
             ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
-              connect.connectType),
+              connect.container, connect.connectType),
             Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
           )
         }
@@ -351,7 +356,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort,
-              ElaborateRecord.ConnectType.BlockConnect),
+              blockPath, ElaborateRecord.ConnectType.BlockConnect),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
           portDirectlyConnected.put(blockPath ++ blockPort, true)
@@ -365,7 +370,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort,
-              ElaborateRecord.ConnectType.BlockExport),  // TODO HANDLE LINK EXPORTS
+              blockPath, ElaborateRecord.ConnectType.BlockExport),  // TODO HANDLE LINK EXPORTS
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
           portDirectlyConnected.put(blockPath ++ intPort, true)
@@ -686,7 +691,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
-              ElaborateRecord.Connect(path ++ intPort, path ++ extPort, ElaborateRecord.ConnectType.LinkExport),
+              ElaborateRecord.Connect(path ++ intPort, path ++ extPort, path, ElaborateRecord.ConnectType.LinkExport),
               Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
             portDirectlyConnected.put(path ++ intPort, true)
@@ -739,10 +744,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // the connections are known (enclosing block elaborated, array / allocate connects lowered) and
   // ports are known (block elaborated).
   protected def elaborateNotConnected(connected: ElaborateRecord.BlockPortNotConnected): Unit = {
+    val blockLike = resolve(connected.path)
+
     def setPortDisconnected(portPath: DesignPath): Unit = {
       constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
-      connectedLink.put(portPath, DesignPath())
-      elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+      if (blockLike.isInstanceOf[wir.Block]) {
+        // only set fake connected-link on block-side disconnected ports, the link side
+        connectedLink.put(portPath, DesignPath())
+        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+      }
     }
 
     // For the top port, we take connectedness status (and infer disconnected-ness) from portDirectlyConnected
@@ -778,7 +788,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
     }
 
-    val ports = (resolve(connected.path): @unchecked) match {
+    val ports = (blockLike: @unchecked) match {
       case block: wir.Block => block.getElaboratedPorts
       case link: wir.Link => link.getElaboratedPorts
     }

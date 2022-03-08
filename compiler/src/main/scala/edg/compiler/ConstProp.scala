@@ -8,6 +8,7 @@ import edg.wir._
 import edg.util.{DependencyGraph, MutableBiMap}
 import edg.ExprBuilder
 import edg.compiler.ExprRef
+import edgir.ref.ref.LocalPath
 
 
 sealed trait DepValue  // TODO better name - dependency graph value
@@ -195,6 +196,18 @@ class ConstProp {
     paramSource.put(target, paramSourceRecord)
     forcedParams += target
     onParamSolved(target, value)
+  }
+
+  /**
+    * Adds a directed equality (param1 <- param2) and propagates as needed
+    */
+  def addDirectedEquality(target: IndirectDesignPath, source: IndirectDesignPath, root: DesignPath,
+                          constrName: String = ""): Unit = {
+    val pathPrefix = root.asIndirect.toLocalPath.steps
+    val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
+    require(sourcePrefix == pathPrefix)
+    val sourceExpr = ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix))
+    addAssignment(target, root, sourceExpr, constrName=constrName)
   }
 
   /**
