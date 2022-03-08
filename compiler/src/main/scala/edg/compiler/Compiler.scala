@@ -21,8 +21,17 @@ object ElaborateRecord {
 
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
   case class Link(linkPath: DesignPath) extends ElaborateTask
+
+  sealed trait ConnectType
+  object ConnectType {
+    object BlockConnect extends ConnectType
+    object BlockExport extends ConnectType
+    object LinkExport extends ConnectType
+  }
+
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
-  case class Connect(toLinkPortPath: DesignPath, fromLinkPortPath: DesignPath) extends ElaborateTask
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, connectType: ConnectType)
+      extends ElaborateTask
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
                        unrefinedClass: Option[LibraryPath],
@@ -34,7 +43,7 @@ object ElaborateRecord {
   // When port arrays have been lowered and the block elaborated (so ports are available), mark unconnected
   // ports are not-connected and set IsConnected.
   // NOTE: generator IsConnected dependencies are handled separately, since they must be available pre-elaborate.
-  case class BlockPortConnected(path: DesignPath) extends ElaborateTask
+  case class BlockPortNotConnected(path: DesignPath) extends ElaborateTask
 
   // In connect and export constraints, replaces all (internal) block-side ALLOCATEs with concrete subelt names.
   // When a connect is fully resolved (no more ALLOCATEs), generates the Connect elaboration task.
@@ -173,8 +182,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Supplemental elaboration data structures
   private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()  // port -> connected link path
-  // If port is directly connected in the enclosing block, incrementally set during different stages of compilation.
-  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()  // if port directly connected in enclosing block
+  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()  // port externally connected, non-recursive
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -210,24 +218,24 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Neither port can be an array (container) port (array connects should be expanded into individual element connects),
   // but ports may be bundle or inner ports (in bundles or arrays).
   // Only the link side port needs to have been elaborated.
-  protected def elaborateConnect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
+  protected def elaborateConnect(connect: ElaborateRecord.Connect): Unit = {
     // Generate port-port parameter propagation
     // All connected ports should have params
-    val toLinkPort = resolvePort(toLinkPortPath).asInstanceOf[wir.HasParams]
+    val toLinkPort = resolvePort(connect.toLinkPortPath).asInstanceOf[wir.HasParams]
     val connectedSteps = toLinkPort.getParams.keys.map(IndirectStep.Element(_)) ++ Seq(IndirectStep.IsConnected)
     for (connectedStep <- connectedSteps) {
       constProp.addEquality(
-        toLinkPortPath.asIndirect + connectedStep,
-        toBlockPortPath.asIndirect + connectedStep
+        connect.toLinkPortPath.asIndirect + connectedStep,
+        connect.toBlockPortPath.asIndirect + connectedStep
       )
     }
 
-    connectedLink.get(toLinkPortPath) match {
+    connectedLink.get(connect.toLinkPortPath) match {
       case Some(linkPath) =>  // Generate the CONNECTED_LINK equalities, if there is a connected link
-        connectedLink.put(toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
+        connectedLink.put(connect.toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
         for (linkParam <- linkParams(linkPath)) {
           constProp.addEquality(
-            toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
+            connect.toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
             linkPath.asIndirect + linkParam,
           )
         }
@@ -239,15 +247,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getElaboratedPorts.keys) {
           elaboratePending.addNode(
-            ElaborateRecord.Connect(toLinkPortPath + portName, toBlockPortPath + portName),
-            Seq(ElaborateRecord.ConnectedLink(toLinkPortPath + portName))
+            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
+              connect.connectType),
+            Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
           )
         }
       case toLinkPort => // everything else ignored
     }
 
     // Register port as finished
-    elaboratePending.setValue(ElaborateRecord.ConnectedLink(toBlockPortPath), None)
+    elaboratePending.setValue(ElaborateRecord.ConnectedLink(connect.toBlockPortPath), None)
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
@@ -334,21 +343,27 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
+            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort,
+              ElaborateRecord.ConnectType.BlockConnect),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
           portDirectlyConnected.put(blockPath ++ blockPort, true)
           portDirectlyConnected.put(blockPath ++ linkPort, true)
+          constProp.setValue(blockPath.asIndirect ++ blockPort + IndirectStep.IsConnected, BooleanValue(true))
+          constProp.setValue(blockPath.asIndirect ++ linkPort + IndirectStep.IsConnected, BooleanValue(true))
           Some(())
         case _ => None  // anything with allocates is not processed
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort,
+              ElaborateRecord.ConnectType.BlockExport),  // TODO HANDLE LINK EXPORTS
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
           portDirectlyConnected.put(blockPath ++ intPort, true)
+          constProp.addEquality(blockPath.asIndirect ++ intPort + IndirectStep.IsConnected,
+            blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)  // TODO can be directed assignment
           Some(())
         case _ => None  // anything with allocates is not processed
       }
@@ -421,7 +436,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       debug(s"Push block to pending: ${path + blockName}")
       val blockTask = ElaborateRecord.Block(path + blockName)
       elaboratePending.addNode(blockTask, Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortConnected(path + blockName),
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + blockName),
         Seq(blockTask) ++ blockArrayRecords.getOrElse(blockName, Seq()))
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
@@ -429,7 +444,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       val linkTask = ElaborateRecord.Link(path + linkName)
       elaboratePending.addNode(linkTask,
         linkArrayRecords.getOrElse(linkName, Seq()).toSeq)
-      elaboratePending.addNode(ElaborateRecord.BlockPortConnected(path + linkName),
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + linkName),
         Seq(linkTask) ++ linkArrayRecords.getOrElse(linkName, Seq()))
     }
   }
@@ -661,6 +676,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Process constraints, as in the block case
+    // TODO UNIFY w/ PROCESS CONNECTED CONSTRAINT
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
         processParamConstraint(path, constrName, constr, expr)
@@ -668,12 +684,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
-              ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
+              ElaborateRecord.Connect(path ++ intPort, path ++ extPort, ElaborateRecord.ConnectType.LinkExport),
               Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
-            if (portDirectlyConnected(path ++ extPort)) {  // unlike Blocks, inner links inherit connectedness
-              portDirectlyConnected.put(path ++ intPort, true)
-            }
+            portDirectlyConnected.put(path ++ intPort, true)
+            constProp.addEquality(path.asIndirect ++ intPort + IndirectStep.IsConnected,
+              path.asIndirect ++ extPort + IndirectStep.IsConnected)  // TODO can be directed assignment
           case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
         }
       case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
@@ -684,7 +700,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       debug(s"Push link to pending: ${path + linkName}")
       val linkTask = ElaborateRecord.Link(path + linkName)
       elaboratePending.addNode(linkTask, Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortConnected(path + linkName),
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + linkName),
         Seq(linkTask))
     }
   }
@@ -756,49 +772,46 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Additional processing for ports that sets not-connected status (or connected status) recursively once
   // the connections are known (enclosing block elaborated, array / allocate connects lowered) and
   // ports are known (block elaborated).
-  protected def elaborateConnected(connected: ElaborateRecord.BlockPortConnected): Unit = {
+  protected def elaborateNotConnected(connected: ElaborateRecord.BlockPortNotConnected): Unit = {
     // For the top port, we take connectedness status (and infer disconnected-ness) from portDirectlyConnected
-    def setConnectedTop(portPath: DesignPath, port: PortLike): Unit = port match {
+    def processConnectedTop(portPath: DesignPath, port: PortLike): Unit = port match {
       case port: wir.Port =>
-        val connected = portDirectlyConnected.getOrElseUpdate(portPath, false)
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(connected))
+        if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
+          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+        }
       case port: wir.Bundle =>
-        val connected = portDirectlyConnected.getOrElseUpdate(portPath, false)
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(connected))
-        port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-          setConnectedRecursive(portPath + subPortName, subPort, connected)
+        if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
+          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+          port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
+            setNotConnectedRecursive(portPath + subPortName, subPort)
+          }
         }
       case port: wir.PortArray =>
-        require(!portDirectlyConnected.contains(portPath))
+        require(!portDirectlyConnected.contains(portPath))  // the array itself should never be set
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-          setConnectedTop(portPath + subPortName, subPort)
+          processConnectedTop(portPath + subPortName, subPort)
         }
     }
 
     // For inner ports, we take connectedness status from the top level
-    def setConnectedRecursive(portPath: DesignPath, port: PortLike, connected: Boolean): Unit = port match {
+    def setNotConnectedRecursive(portPath: DesignPath, port: PortLike): Unit = port match {
       case port: wir.Port =>
-        portDirectlyConnected.put(portPath, false)
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(connected))
+        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
       case port: wir.Bundle =>
-        portDirectlyConnected.put(portPath, false)
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(connected))
+        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-          setConnectedRecursive(portPath + subPortName, subPort, connected)
+          setNotConnectedRecursive(portPath + subPortName, subPort)
         }
       case port: wir.PortArray => throw new AssertionError("unexpected port type")
     }
 
-    resolve(connected.path) match {
-      case block: wir.Block =>
-        block.getElaboratedPorts.foreach { case (portName, port) =>
-          setConnectedTop(connected.path + portName, port)
-        }
-      case link: wir.Link =>
-        link.getElaboratedPorts.foreach { case (portName, port) =>
-          setConnectedTop(connected.path + portName, port)
-        }
+    val ports = resolve(connected.path) match {
+      case block: wir.Block => block.getElaboratedPorts
+      case link: wir.Link => link.getElaboratedPorts
       case elt => throw new AssertionError(s"unexpected blocklike type $elt")
+    }
+    ports.foreach { case (portName, port) =>
+      processConnectedTop(connected.path + portName, port)
     }
   }
 
@@ -893,9 +906,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             debug(s"Elaborate link @ $linkPath")
             elaborateLink(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord@ElaborateRecord.Connect(toLinkPortPath, fromLinkPortPath) =>
-            debug(s"Elaborate connect $toLinkPortPath <-> $fromLinkPortPath")
-            elaborateConnect(toLinkPortPath, fromLinkPortPath)
+          case connect: ElaborateRecord.Connect =>
+            debug(s"Elaborate connect $connect")
+            elaborateConnect(connect)
             elaboratePending.setValue(elaborateRecord, None)
 
           case generator: ElaborateRecord.Generator =>
@@ -903,8 +916,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaborateGenerator(generator)
             elaboratePending.setValue(generator, None)
 
-          case connected: ElaborateRecord.BlockPortConnected =>
-            elaborateConnected(connected)
+          case connected: ElaborateRecord.BlockPortNotConnected =>
+            elaborateNotConnected(connected)
             elaboratePending.setValue(connected, None)
 
           case blockPortArray: ElaborateRecord.BlockPortArray =>
