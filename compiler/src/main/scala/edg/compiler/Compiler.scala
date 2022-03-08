@@ -22,6 +22,8 @@ object ElaborateRecord {
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
   case class Link(linkPath: DesignPath) extends ElaborateTask
 
+  case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency  // accounts for generators
+
   sealed trait ConnectType
   object ConnectType {
     object BlockConnect extends ConnectType
@@ -446,10 +448,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // subtree ports can't know connected state until own connected state known
     for (blockName <- block.getUnelaboratedBlocks.keys) {
       debug(s"Push block to pending: ${path + blockName}")
-      val blockTask = ElaborateRecord.Block(path + blockName)
-      elaboratePending.addNode(blockTask, Seq())
+      elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
       elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + blockName),
-        Seq(blockTask) ++ blockArrayRecords.getOrElse(blockName, Seq()))
+        Seq(ElaborateRecord.BlockElaborated(path + blockName)) ++ blockArrayRecords.getOrElse(blockName, Seq()))
     }
     for (linkName <- block.getUnelaboratedLinks.keys) {
       debug(s"Push link to pending: ${path + linkName}")
@@ -459,6 +460,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + linkName),
         Seq(linkTask) ++ linkArrayRecords.getOrElse(linkName, Seq()))
     }
+
+    // Mark this block as done
+    elaboratePending.setValue(ElaborateRecord.BlockElaborated(path), None)
   }
 
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
