@@ -21,11 +21,7 @@ trait HasMutablePorts {
 
   protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, PortLike] = {
-    pb.view.mapValues { _.`is` match {
-      case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
-      case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
-      case like => throw new NotImplementedError(s"Non-library sub-port $like")
-    }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
+    pb.view.mapValues { PortLike.fromLibraryPb(_) }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 }
 

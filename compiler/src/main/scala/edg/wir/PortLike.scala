@@ -18,6 +18,12 @@ object PortLike {
     case IrPort.Bundle(bundle) => new Bundle(bundle)
     case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
   }
+
+  def fromLibraryPb(portLike: elem.PortLike): PortLike = portLike.`is` match {
+    case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
+    case elem.PortLike.Is.Array(like) => new PortArray(like)
+    case like => throw new NotImplementedError(s"Non-library sub-port $like")
+  }
 }
 
 class Port(pb: elem.Port) extends PortLike
@@ -73,6 +79,11 @@ class Bundle(pb: elem.Bundle) extends PortLike
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
+
+  if (pb.ports.nonEmpty) {  // for non-empty (block-side, concrete) port arrays, initialize the ports
+    setPorts(pb.ports.map { case (portName, portLike) => portName -> PortLike.fromLibraryPb(portLike)
+    })
+  }
 
   override def isElaborated: Boolean = portsSet
 
