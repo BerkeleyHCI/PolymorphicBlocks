@@ -238,7 +238,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     connectedLink.get(connect.toLinkPortPath) match {
       case Some(linkPath) =>  // Generate the CONNECTED_LINK equalities, if there is a connected link
         connectedLink.put(connect.toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
-        for (linkParam <- linkParams(linkPath)) {
+        val allParams = linkParams(linkPath) :+ IndirectStep.Name
+        for (linkParam <- allParams) {
           constProp.addEquality(
             connect.toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
             linkPath.asIndirect + linkParam,
@@ -251,6 +252,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     toLinkPort match {
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getElaboratedPorts.keys) {
+          // TODO propagate connected-ness downwards, add unit test
           elaboratePending.addNode(
             ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
               connect.connectType),
@@ -604,8 +606,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Set my parameters in the global data structure
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
-    val allParams = link.getParams.keys.toSeq.map(IndirectStep.Element(_)) :+ IndirectStep.Name
-    linkParams.put(path, allParams)
+    linkParams.put(path, link.getParams.keys.toSeq.map(IndirectStep.Element(_)))
 
     // Elaborate ports, generating equivalence constraints as needed
     processParamDeclarations(path, link)
@@ -745,7 +746,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // For the top port, we take connectedness status (and infer disconnected-ness) from portDirectlyConnected
-    def processConnectedTop(portPath: DesignPath, port: PortLike): Unit = port match {
+    def processConnectedTop(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case port: wir.Port =>
         if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
           setPortDisconnected(portPath)
@@ -765,7 +766,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // For inner ports, we take connectedness status from the top level
-    def setNotConnectedRecursive(portPath: DesignPath, port: PortLike): Unit = port match {
+    def setNotConnectedRecursive(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case port: wir.Port =>
         portDirectlyConnected.put(portPath, false)  // result is not used, but prevents overwriting
         setPortDisconnected(portPath)
@@ -775,13 +776,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
           setNotConnectedRecursive(portPath + subPortName, subPort)
         }
-      case port: wir.PortArray => throw new AssertionError("unexpected port type")
     }
 
-    val ports = resolve(connected.path) match {
+    val ports = (resolve(connected.path): @unchecked) match {
       case block: wir.Block => block.getElaboratedPorts
       case link: wir.Link => link.getElaboratedPorts
-      case elt => throw new AssertionError(s"unexpected blocklike type $elt")
     }
     ports.foreach { case (portName, port) =>
       processConnectedTop(connected.path + portName, port)
@@ -801,7 +800,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
 
     record.constraintNames foreach { constrName =>
-      block.mapMultiConstraint(constrName) { constr => constr.expr match {
+      block.mapMultiConstraint(constrName) { constr => (constr.expr: @unchecked) match {
         case expr.ValueExpr.Expr.Connected(connected) =>
           require(constr.getConnected.getBlockPort.getRef.steps == portArraySteps :+ Ref.AllocateStep)
           val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
@@ -814,7 +813,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           arrayElts.append(nextPortIndex.toString)
           nextPortIndex += 1
           Seq(constrName -> constr.update(_.exported.internalBlockPort.ref.steps := portArraySteps :+ portIndex))
-        case _ => throw new IllegalArgumentException  // implementation error
       }}
     }
     // Try expanding the constraint
@@ -834,14 +832,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
 
     record.constraintNames foreach { constrName =>
-      block.mapMultiConstraint(constrName) { constr => constr.expr match {
+      block.mapMultiConstraint(constrName) { constr => (constr.expr: @unchecked) match {
         case expr.ValueExpr.Expr.Connected(connected) =>
           require(constr.getConnected.getLinkPort.getRef.steps == portArraySteps :+ Ref.AllocateStep)
           val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
           arrayElts.append(nextPortIndex.toString)
           nextPortIndex += 1
           Seq(constrName -> constr.update(_.connected.linkPort.ref.steps := portArraySteps :+ portIndex))
-        case _ => throw new IllegalArgumentException  // implementation error
       }}
     }
     debug(s"Link-side Port Array defined: ${record.parent ++ record.portArray} = $arrayElts")
