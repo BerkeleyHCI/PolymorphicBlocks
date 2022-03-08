@@ -181,6 +181,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Supplemental elaboration data structures
   private val linkParams = mutable.HashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
+  linkParams.put(DesignPath(), Seq())  // empty path means disconnected
   private val connectedLink = mutable.HashMap[DesignPath, DesignPath]()  // port -> connected link path
   private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()  // port externally connected, non-recursive
 
@@ -733,61 +734,31 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     parent.elaborate(name, link)
   }
 
-
-  // Additional processing for ports that sets not-connected if they haven't been connected (in the enclosing block)
-//  protected def setPortNotConnected(portPath: DesignPath, port: wir.PortLike): Unit = {
-//    val topIsConnected = port match {  // If not connected, set unconnected
-//      case _ @ (_: wir.Port | _: wir.Bundle) =>
-//        if (!portDirectlyConnected.contains(portPath)) {
-//          portDirectlyConnected.put(portPath, false)
-//          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
-//          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-//          false
-//        } else {
-//          require(portDirectlyConnected(portPath))  // it should not have been assigned false from anywhere else
-//          true
-//        }
-//      case _: wir.PortArray => false  // arrays should not have connection status
-//      case port => throw new NotImplementedError(s"unknown instantiated port $port")
-//    }
-//
-//    port match {
-//      case port: wir.Bundle =>
-//        for ((childPortName, childPort) <- port.getElaboratedPorts) {
-//          if (topIsConnected) {  // only propagate connectivity status
-//            portDirectlyConnected.put(portPath + childPortName, true)
-//          }  // in the false case, it would be set during the recursive call
-//          setPortNotConnected(portPath + childPortName, childPort)
-//        }
-//      case port: wir.PortArray =>
-//        // don't propagate connectivity status, since connectivity should be directly set for array elts
-//        for ((childPortName, childPort) <- port.getElaboratedPorts) {
-//          setPortNotConnected(portPath + childPortName, childPort)
-//        }
-//      case _: wir.Port =>  // no recursion case for leaf types
-//      case port => throw new NotImplementedError(s"unknown instantiated port $port")
-//    }
-//  }
-
   // Additional processing for ports that sets not-connected status (or connected status) recursively once
   // the connections are known (enclosing block elaborated, array / allocate connects lowered) and
   // ports are known (block elaborated).
   protected def elaborateNotConnected(connected: ElaborateRecord.BlockPortNotConnected): Unit = {
+    def setPortDisconnected(portPath: DesignPath): Unit = {
+      constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+      connectedLink.put(portPath, DesignPath())
+      elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+    }
+
     // For the top port, we take connectedness status (and infer disconnected-ness) from portDirectlyConnected
     def processConnectedTop(portPath: DesignPath, port: PortLike): Unit = port match {
       case port: wir.Port =>
         if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
-          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+          setPortDisconnected(portPath)
         }
       case port: wir.Bundle =>
         if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
-          constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+          setPortDisconnected(portPath)
           port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
             setNotConnectedRecursive(portPath + subPortName, subPort)
           }
         }
       case port: wir.PortArray =>
-        require(!portDirectlyConnected.contains(portPath))  // the array itself should never be set
+        portDirectlyConnected.put(portPath, false)  // array itself should never be set, this also prevents overwriting
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
           processConnectedTop(portPath + subPortName, subPort)
         }
@@ -796,9 +767,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // For inner ports, we take connectedness status from the top level
     def setNotConnectedRecursive(portPath: DesignPath, port: PortLike): Unit = port match {
       case port: wir.Port =>
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+        portDirectlyConnected.put(portPath, false)  // result is not used, but prevents overwriting
+        setPortDisconnected(portPath)
       case port: wir.Bundle =>
-        constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
+        portDirectlyConnected.put(portPath, false)  // result is not used, but prevents overwriting
+        setPortDisconnected(portPath)
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
           setNotConnectedRecursive(portPath + subPortName, subPort)
         }
