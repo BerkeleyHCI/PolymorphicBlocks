@@ -244,7 +244,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiler.getValue(IndirectDesignPath() + "link" + "port" + IndirectStep.IsConnected) should
+    compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(false)))
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(false)))
