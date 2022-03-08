@@ -1,7 +1,6 @@
 package edg.wir
 
-import scala.collection.mutable
-
+import scala.collection.{SeqMap, mutable}
 import edgir.init.init
 import edgir.elem.elem
 import edgir.ref.ref
@@ -77,12 +76,12 @@ class Bundle(pb: elem.Bundle) extends PortLike
 }
 
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
+  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
 
   if (pb.ports.nonEmpty) {  // for non-empty (block-side, concrete) port arrays, initialize the ports
-    setPorts(pb.ports.map { case (portName, portLike) => portName -> PortLike.fromLibraryPb(portLike)
-    })
+    setPorts(SeqMap.from(parsePorts(pb.ports, nameOrder)))
   }
 
   override def isElaborated: Boolean = portsSet
@@ -99,7 +98,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 
   def getType: ref.LibraryPath = pb.getSelfClass
 
-  def setPorts(newPorts: Map[String, PortLike]): Unit = {
+  def setPorts(newPorts: SeqMap[String, PortLike]): Unit = {
     require(ports.isEmpty)
     ports ++= newPorts
     portsSet = true

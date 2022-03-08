@@ -72,10 +72,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiled.contents.get.constraints should equal(referenceConstraints)
+
+    // TODO This should expand but throw an error because the parts don't exist
   }
 
   "Compiler on design with concrete source and array sink" should "expand blocks" in {
-    // TODO can this be deduplicated wit the above, since the only thing that changes is the nominal type?
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source0" -> Block.Library("sourceBlock"),

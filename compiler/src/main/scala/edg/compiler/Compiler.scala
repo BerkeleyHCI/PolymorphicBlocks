@@ -320,9 +320,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
             Seq()
         }
-        val childPortLibraries = (childPortNames map { childPortName =>
+        val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
           childPortName -> wir.PortLibrary.apply(port.getType)
-        }).toMap
+        })
         port.setPorts(childPortLibraries)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
           elaboratePort(path + childPortName, port, childPort)
