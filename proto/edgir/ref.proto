@@ -28,7 +28,6 @@ enum Reserved {
   IS_CONNECTED = 40;  // true implies CONNECTED_LINK resolves; not available on PortArray
 //  EXISTS = 41;
   LENGTH = 42;  // available on PortArray and LinkArray
-  ALLOCATE = 43;  // available on PortArray
   NAME = 44;
 }
 
@@ -40,6 +39,10 @@ enum Reserved {
 message LocalStep {
   oneof step {
     Reserved reserved_param = 1;
+
+    // Allocates a new element in an array, valid for arrays only.
+    // Empty string means automatically allocated, while a non-empty string is a suggested name.
+    string allocate = 2;
 	
     /**
      A local name is what something is called in the context of its parent,

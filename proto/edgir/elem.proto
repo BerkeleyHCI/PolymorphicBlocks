@@ -43,12 +43,19 @@ message Bundle {
 }
 
 message PortArray {
+  message Ports {
+    map<string, PortLike> ports = 10;
+  }
+
   /* The class that applies to every port in the set/array. Used
      when a new port is instantiated by the front or back end. */
   edgir.ref.LibraryPath self_class = 20;
 
-  /* Only designs should contain actual ports here */
-  map<string, PortLike> ports = 13;
+  /* Library blocks may define ports (if fixed number of ports) or not (for generators or abstract blocks).
+     A valid design must define ports, but the ports may be empty. */
+  oneof contains {
+    Ports ports = 14;
+  }
 
   edgir.common.Metadata meta = 127;
 }
