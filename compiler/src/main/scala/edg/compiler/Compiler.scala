@@ -24,18 +24,10 @@ object ElaborateRecord {
 
   case class BlockElaborated(blockPath: DesignPath) extends ElaborateDependency  // accounts for generators
 
-  sealed trait ConnectType
-  object ConnectType {
-    object BlockConnect extends ConnectType
-    object BlockExport extends ConnectType
-    object LinkExport extends ConnectType
-  }
-
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
   // connectedLink and linkParams.
-  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, container: DesignPath,
-                     connectType: ConnectType)
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath)
       extends ElaborateTask
 
   case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
@@ -261,8 +253,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             connect.toBlockPortPath.asIndirect + portName + IndirectStep.IsConnected)
 
           elaboratePending.addNode(
-            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
-              connect.container, connect.connectType),
+            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName),
             Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
           )
         }
@@ -357,8 +348,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort,
-              blockPath, ElaborateRecord.ConnectType.BlockConnect),
+            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
           portDirectlyConnected.put(blockPath ++ blockPort, true)
@@ -371,13 +361,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort,
-              blockPath, ElaborateRecord.ConnectType.BlockExport),  // TODO HANDLE LINK EXPORTS
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
           portDirectlyConnected.put(blockPath ++ intPort, true)
           constProp.addEquality(blockPath.asIndirect ++ intPort + IndirectStep.IsConnected,
-            blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)  // TODO can be directed assignment
+            blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)
           Some(())
         case _ => None  // anything with allocates is not processed
       }
@@ -399,22 +388,32 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val blockPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val linkPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
 
+    // This is used to track generators to know which ports might (for arrays) or are be connected
+    val blockTopPortsConnected = mutable.Set[(String, String)]()  // as block, top port, that has a connect to it
+
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) =>
         (connected.getBlockPort, connected.getLinkPort) match {
           case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
             blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
             linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
           case (ValueExpr.RefAllocate(blockPortArray), _) =>
             blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-          case (_, ValueExpr.RefAllocate(linkPortArray)) =>
+            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
+          case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
             linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-          case _ =>
+            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
+          case (ValueExpr.Ref(blockPort), _) =>
+            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (_, ValueExpr.RefAllocate(blockPortArray)) =>
             blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
+          case (_, ValueExpr.Ref(blockPort)) =>
+            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
           case _ =>
         }
       case _ =>
@@ -695,7 +694,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             elaboratePending.addNode(
-              ElaborateRecord.Connect(path ++ intPort, path ++ extPort, path, ElaborateRecord.ConnectType.LinkExport),
+              ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
               Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
             )
             portDirectlyConnected.put(path ++ intPort, true)
