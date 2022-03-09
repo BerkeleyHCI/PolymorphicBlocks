@@ -183,6 +183,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Set true when a connect involving the port is seen, or false when a port is known not-connected
   // Not a recursive data structure
   private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()
+  // Set true if this block-side port-array contains a connect to its element
+  private val portArrayConnected = SingleWriteHashMap[DesignPath, Boolean]()
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -388,36 +390,38 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val blockPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val linkPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
 
-    // This is used to track generators to know which ports might (for arrays) or are be connected
-    val blockTopPortsConnected = mutable.Set[(String, String)]()  // as block, top port, that has a connect to it
-
+    val connectedPortArrays = mutable.Set[DesignPath]()
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) =>
-        (connected.getBlockPort, connected.getLinkPort) match {
-          case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
-            blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-            linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
-          case (ValueExpr.RefAllocate(blockPortArray), _) =>
-            blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
-          case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
-            linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
-          case (ValueExpr.Ref(blockPort), _) =>
-            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
-        }
-      case expr.ValueExpr.Expr.Exported(exported) =>
-        (exported.getExteriorPort, exported.getInternalBlockPort) match {
-          case (_, ValueExpr.RefAllocate(blockPortArray)) =>
-            blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-            blockTopPortsConnected.add((blockPortArray(0), blockPortArray(1)))
-          case (_, ValueExpr.Ref(blockPort)) =>
-            blockTopPortsConnected.add((blockPort(0), blockPort(1)))
-          case _ =>
-        }
-      case _ =>
+      case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
+        case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.RefAllocate(linkPortArray)) =>
+          blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+          linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.RefAllocate(blockPortArray), _) =>
+          blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
+          linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+        case _ => // ignored
+      }
+      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (_, ValueExpr.RefAllocate(blockPortArray)) =>
+          blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case _ =>  // ignored
+      }
+      case _ =>  // all other constraints ignored
     }}
+
+    connectedPortArrays.foreach { connectedPortArray =>  // aggregated write to SingleWriteHashMap here
+      portArrayConnected.put(connectedPortArray, true)
+    }
 
     // Since links can only be elaborated after all arrays defined, build up the list of all array tasks for links
     val linkArrayRecords = mutable.HashMap[String, mutable.ListBuffer[ElaborateRecord]]()
