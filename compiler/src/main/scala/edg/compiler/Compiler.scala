@@ -56,7 +56,13 @@ object ElaborateRecord {
   // Set when the connection from the link's port to portPath have been elaborated, or for link ports
   // when the link has been elaborated.
   // When this is completed, connectedLink for the port and linkParams for the link will be set.
+  // If the portPath is an port array, this is set once all the constituent connections are set, if there are any.
+  // For arrays with no connections, this will never be set.
   case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
+
+  // A task that marks ConnectedLink for a PortArray once all its element's ConnectedLinks are set.
+  // For PortArrays with no connections, this will never be set.
+  case class ArrayConnectedLink(portPath: DesignPath) extends ElaborateTask
 }
 
 
@@ -331,8 +337,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
       constProp.addAssignment(
         path.asIndirect ++ assign.dst.get,
-        path, assign.src.get,
-        constrName) // TODO add sourcelocators
+        path, assign.src.get, constrName) // TODO add sourcelocators
     case (path, constrName, constr,
         expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
@@ -353,8 +358,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
-          portDirectlyConnected.put(blockPath ++ blockPort, true)
-          portDirectlyConnected.put(blockPath ++ linkPort, true)
           constProp.setValue(blockPath.asIndirect ++ blockPort + IndirectStep.IsConnected, BooleanValue(true))
           constProp.setValue(blockPath.asIndirect ++ linkPort + IndirectStep.IsConnected, BooleanValue(true))
           Some(())
@@ -366,7 +369,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
-          portDirectlyConnected.put(blockPath ++ intPort, true)
           constProp.addEquality(blockPath.asIndirect ++ intPort + IndirectStep.IsConnected,
             blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)
           Some(())
@@ -389,7 +391,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Find allocate ports and generate the port array lowering compiler tasks
     val blockPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val linkPortArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
-
     val connectedPortArrays = mutable.Set[DesignPath]()
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
@@ -399,22 +400,28 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
           require(blockPortArray.length == 2)
           connectedPortArrays.add(path ++ blockPortArray)
-        case (ValueExpr.RefAllocate(blockPortArray), _) =>
+        case (ValueExpr.RefAllocate(blockPortArray), ValueExpr.Ref(linkPort)) =>
           blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
 
+          portDirectlyConnected.put(path ++ linkPort, true)
           require(blockPortArray.length == 2)
           connectedPortArrays.add(path ++ blockPortArray)
         case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray)) =>
           linkPortArrayConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-        case _ => // ignored
+          portDirectlyConnected.put(path ++ blockPort, true)
+        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+          portDirectlyConnected.put(path ++ blockPort, true)
+          portDirectlyConnected.put(path ++ linkPort, true)
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (_, ValueExpr.RefAllocate(blockPortArray)) =>
-          blockPortArrayConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+        case (_, ValueExpr.RefAllocate(intPortArray)) =>
+          blockPortArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
 
-          require(blockPortArray.length == 2)
-          connectedPortArrays.add(path ++ blockPortArray)
-        case _ =>  // ignored
+          require(intPortArray.length == 2)
+          connectedPortArrays.add(path ++ intPortArray)
+        case (_, ValueExpr.Ref(intPort)) =>
+          portDirectlyConnected.put(path ++ intPort, true)
+
       }
       case _ =>  // all other constraints ignored
     }}
@@ -540,19 +547,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     } else {  // Generators: add to queue without changing the block
       require(blockPb.generators.size == 1)  // TODO proper single generator structure
       val (generatorFnName, generator) = blockPb.generators.head
+      val generatorParams = generator.requiredParams.map { depPath =>
+          // TODO IS_CONNECTED needs to be handled separately
+        ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+      }
+      val generatorPorts = generator.requiredPorts.flatMap { depPort =>
+        if (portDirectlyConnected.contains(path ++ depPort)) {
+          Some(ElaborateRecord.ConnectedLink(path ++ depPort))
+        } else if (depPort.steps.length > 1 && portArrayConnected.contains(path + depPort.steps.head.getName)) {
+          Some(ElaborateRecord.ConnectedLink(path ++ depPort))
+        } else {  // don't block on non-connected ports
+          None
+        }
+      }
       elaboratePending.addNode(ElaborateRecord.Generator(path, refinedLibrary, generatorFnName,
           unrefinedType, generator.requiredParams, generator.requiredPorts),
-        generator.requiredParams.map { depPath =>
-          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        } ++ generator.requiredPorts.flatMap { depPort =>
-            if (portDirectlyConnected.contains(path ++ depPort)) {
-              Some(ElaborateRecord.ConnectedLink(path ++ depPort))
-            } else {  // don't block on non-connected ports
-              // TODO the disconnected logic is very spread around, this needs to be centralized
-              None
-            }
-        }
-      )
+        generatorParams ++ generatorPorts)
     }
   }
 
@@ -561,7 +571,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
     // Get required values for the generator
     val reqParamValues = generator.requiredParams.map { reqParam =>
-      reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).get
+      reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).getOrElse(
+        throw new IllegalArgumentException(s"missing param ${generator.blockPath.asIndirect ++ reqParam}"))
     }.toMap
 
     val reqPortValues = generator.requiredPorts.flatMap { reqPort =>
@@ -571,7 +582,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
         Map(
           isConnectedSuffix -> BooleanValue(true),
-          connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix).get,
+          connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix).getOrElse(
+            throw new IllegalArgumentException(s"missing port value ${generator.blockPath.asIndirect ++ connectedNameSuffix}"))
         )
       } else {
         Map(isConnectedSuffix -> BooleanValue(false))
@@ -836,6 +848,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     record.constraintNames foreach { constrName =>
       processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
     }
+    // Propagate to portDirectlyConnected
+    arrayElts.foreach { elt =>
+      portDirectlyConnected.put(record.parent ++ record.portArray + elt, true)
+    }
+    // Set the dependencies for the array's ConnectedLink
+    elaboratePending.addNode(ElaborateRecord.ArrayConnectedLink(record.parent ++ record.portArray),
+      arrayElts.toSeq.map { elt => ElaborateRecord.ConnectedLink(record.parent ++ record.portArray + elt) }
+    )
   }
 
   // Once a link-side port array has all its element widths available, this lowers the connect statements
@@ -864,6 +884,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Try expanding the constraint
     record.constraintNames foreach { constrName =>
       processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
+    }
+    // Propagate to portDirectlyConnected
+    arrayElts.foreach { elt =>
+      portDirectlyConnected.put(record.parent ++ record.portArray + elt, true)
     }
   }
 
@@ -913,6 +937,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case linkPortArray: ElaborateRecord.LinkPortArray =>
             elaborateLinkPortArray(linkPortArray)
             elaboratePending.setValue(linkPortArray, None)
+
+          case arrayConnectedLink: ElaborateRecord.ArrayConnectedLink =>
+            elaboratePending.setValue(ElaborateRecord.ConnectedLink(arrayConnectedLink.portPath), None)
+            elaboratePending.setValue(arrayConnectedLink, None)
 
           case _: ElaborateRecord.ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
