@@ -332,49 +332,63 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // TODO clean this up... by a lot
-  def processParamConstraint: PartialFunction[(DesignPath, String, expr.ValueExpr, expr.ValueExpr.Expr), Unit] = {
-    case (path, constrName, constr, expr.ValueExpr.Expr.Assign(assign)) =>
+  // Attempts to process a parameter constraint, returning true if it is a matching constraint
+  def processParamConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
+                             constrValue: expr.ValueExpr.Expr): Boolean = constrValue match {
+    case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignment(
-        path.asIndirect ++ assign.dst.get,
-        path, assign.src.get, constrName) // TODO add sourcelocators
-    case (path, constrName, constr,
-        expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
+        blockPath.asIndirect ++ assign.dst.get,
+        blockPath, assign.src.get, constrName) // TODO add sourcelocators
+      true
+    case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
-        expr.ValueExpr.Expr.IfThenElse(_)) =>
-      assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
-    case (path, constrName, constr, expr.ValueExpr.Expr.Ref(target))
+        expr.ValueExpr.Expr.IfThenElse(_) =>
+      assertions += ((blockPath, constrName, constr, SourceLocator.empty))  // TODO add source locators
+      true
+    case expr.ValueExpr.Expr.Ref(target)
       if target.steps.last.step.isReservedParam
           && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
-      assertions += ((path, constrName, constr, SourceLocator.empty))  // TODO add source locators
+      assertions += ((blockPath, constrName, constr, SourceLocator.empty))  // TODO add source locators
+      true
+    case _ => false
   }
 
-  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr.Expr): Option[Unit] = {
+  // Attempts to process a connected constraint, returning true if it is a matching constraint
+  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr.Expr,
+                                 isLink: Boolean): Boolean = {
     import edg.ExprBuilder.ValueExpr
     constr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+          require(!isLink)
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
           constProp.setValue(blockPath.asIndirect ++ blockPort + IndirectStep.IsConnected, BooleanValue(true))
           constProp.setValue(blockPath.asIndirect ++ linkPort + IndirectStep.IsConnected, BooleanValue(true))
-          Some(())
-        case _ => None  // anything with allocates is not processed
+          true
+        case _ => false  // anything with allocates is not processed
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-          elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
-            Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
-          )
+          if (!isLink) {
+            elaboratePending.addNode(
+              ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+              Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+            )
+          } else {  // for links, the external port faces to the block, so args must be flipped
+            elaboratePending.addNode(
+              ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
+              Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
+            )
+          }
           constProp.addEquality(blockPath.asIndirect ++ intPort + IndirectStep.IsConnected,
             blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)
-          Some(())
-        case _ => None  // anything with allocates is not processed
+          true
+        case _ => false  // anything with allocates is not processed
       }
-      case _ => None  // not defined
+      case _ => false  // not defined
     }
   }
 
@@ -412,6 +426,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           portDirectlyConnected.put(path ++ blockPort, true)
           portDirectlyConnected.put(path ++ linkPort, true)
+        case _ => throw new AssertionError("impossible connected format")
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (_, ValueExpr.RefAllocate(intPortArray)) =>
@@ -421,7 +436,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           connectedPortArrays.add(path ++ intPortArray)
         case (_, ValueExpr.Ref(intPort)) =>
           portDirectlyConnected.put(path ++ intPort, true)
-
+        case _ => throw new AssertionError("impossible exported format")
       }
       case _ =>  // all other constraints ignored
     }}
@@ -446,12 +461,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
-      constr.expr match {
-        case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
-          processParamConstraint(path, constrName, constr, expr)
-        case _ =>
-      }
-      processConnectedConstraint(path, constrName, constr.expr)
+      processParamConstraint(path, constrName, constr, constr.expr)
+      processConnectedConstraint(path, constrName, constr.expr, false)
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
@@ -655,6 +666,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Find allocate ports and lower them before processing all constraints
     // path to inner link port array -> list of array elements
+    // TODO refactor for consistency with block side array-connects
     val intPortArrayEltss = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
     link.getConstraints.view.mapValues(_.expr).collect {  // extract exported constraints only
       case (constrName, expr.ValueExpr.Expr.Exported(exported)) =>
@@ -688,11 +700,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
             },
           )
-
           newConstrName -> newConstr
         }
       }
     }
+
+    link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) => portDirectlyConnected.put(path ++ intPort, true)
+        case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
+      }
+      case _ =>
+    }}
 
     // Actually define arrays
     intPortArrayEltss.foreach { case (intPortArray, intPortArrayElts) =>
@@ -702,24 +721,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Process constraints, as in the block case
-    // TODO UNIFY w/ PROCESS CONNECTED CONSTRAINT
-    link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr if processParamConstraint.isDefinedAt(path, constrName, constr, expr) =>
-        processParamConstraint(path, constrName, constr, expr)
-      case expr.ValueExpr.Expr.Exported(exported) =>
-        (exported.getExteriorPort, exported.getInternalBlockPort) match {
-          case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-            elaboratePending.addNode(
-              ElaborateRecord.Connect(path ++ intPort, path ++ extPort),
-              Seq(ElaborateRecord.ConnectedLink(path ++ intPort))
-            )
-            portDirectlyConnected.put(path ++ intPort, true)
-            constProp.addEquality(path.asIndirect ++ intPort + IndirectStep.IsConnected,
-              path.asIndirect ++ extPort + IndirectStep.IsConnected)  // TODO can be directed assignment
-          case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
-        }
-      case _ => throw new IllegalConstraintException(s"unknown constraint in link $path: $constrName = $constr")
-    }}
+    link.getConstraints.foreach { case (constrName, constr) =>
+      processParamConstraint(path, constrName, constr, constr.expr)
+      processConnectedConstraint(path, constrName, constr.expr, true)
+    }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     for (linkName <- link.getUnelaboratedLinks.keys) {
@@ -846,7 +851,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     // Try expanding the constraint
     record.constraintNames foreach { constrName =>
-      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
+      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, false)
     }
     // Propagate to portDirectlyConnected
     arrayElts.foreach { elt =>
@@ -882,8 +887,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
     constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
     // Try expanding the constraint
+    // TODO this needs to be set based on whether the context is a block or link, currently this can't get called on
+    // link side because lowering is done in the link
     record.constraintNames foreach { constrName =>
-      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr)
+      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, false)
     }
     // Propagate to portDirectlyConnected
     arrayElts.foreach { elt =>
