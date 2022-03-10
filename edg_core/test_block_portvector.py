@@ -66,7 +66,7 @@ class BlockVectorProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
-    array_ports = self.pb.ports['vector'].array.ports
+    array_ports = self.pb.ports['vector'].array.ports.ports
     self.assertEqual(len(array_ports), 2)
     self.assertEqual(array_ports['0'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
     self.assertEqual(array_ports['1'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")

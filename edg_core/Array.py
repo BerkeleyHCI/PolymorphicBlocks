@@ -193,7 +193,7 @@ class Vector(BaseVector, Generic[VectorType]):
     pb = edgir.PortLike()
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
     if self._elts is not None:
-      array_ports = pb.array.ports
+      array_ports = pb.array.ports.ports
       for name, elt in self._elts.items():
         array_ports[name].CopyFrom(elt._instance_to_proto())
     return pb

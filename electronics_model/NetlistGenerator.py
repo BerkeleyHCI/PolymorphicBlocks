@@ -12,8 +12,8 @@ from . import footprint as kicad
 def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
   if port.HasField('port'):
     return [path]
-  elif port.HasField('array'):
-    return chain(*[flatten_port(path.append_port(name), port) for name, port in port.array.ports.items()])
+  elif port.HasField('array') and port.array.HasField('ports'):
+    return chain(*[flatten_port(path.append_port(name), port) for name, port in port.array.ports.ports.items()])
   else:
     raise ValueError(f"don't know how to flatten netlistable port {port}")
 
@@ -177,8 +177,8 @@ class NetlistCollect(TransformUtil.Transform):
     if port.HasField('bundle'):  # TODO maybe shorten if just one?
       for name, _ in port.bundle.ports.items():
         self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
-    elif port.HasField('array'):
-      for index in range(len(port.array.ports)):
+    elif port.HasField('array') and port.array.HasField('ports'):
+      for index in range(len(port.array.ports.ports)):
         name = str(index)
         self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
 

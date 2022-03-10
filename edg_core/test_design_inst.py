@@ -54,9 +54,9 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(pb.links['test_net'].link.self_class.target.name, 'edg_core.test_common.TestLink')
     self.assertEqual(pb.links['test_net'].link.ports['source'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSource")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.self_class.target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports.ports['0'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.self_class.target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports.ports['1'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
     expected_conn = edgir.ValueExpr()
@@ -137,9 +137,9 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(pb.links['test_net'].link.self_class.target.name, 'edg_core.test_common.TestLink')
     self.assertEqual(pb.links['test_net'].link.ports['source'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSource")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['0'].port.self_class.target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports.ports['0'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
-    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports['1'].port.self_class.target.name,
+    self.assertEqual(pb.links['test_net'].link.ports['sinks'].array.ports.ports['1'].port.self_class.target.name,
                      "edg_core.test_common.TestPortSink")
 
     expected_conn = edgir.ValueExpr()
