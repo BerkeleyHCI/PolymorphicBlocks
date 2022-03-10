@@ -111,7 +111,9 @@ object ExprBuilder {
     }
 
     def Array(values: Seq[lit.ValueLit]): lit.ValueLit = {
-
+      lit.ValueLit(`type` = lit.ValueLit.Type.Array(lit.ArrayLit(
+        elts = values
+      )))
     }
   }
 

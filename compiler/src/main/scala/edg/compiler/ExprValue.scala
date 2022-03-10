@@ -172,7 +172,7 @@ object ArrayValue {
 }
 
 case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
-  override def toLit: lit.ValueLit = throw new NotImplementedError("Can't toLit on Array")
+  override def toLit: lit.ValueLit = Literal.Array(values.map(_.toLit))
   override def toStringValue: String = {
     val valuesString = values.map{_.toStringValue}.mkString(", ")
     s"[$valuesString]"
