@@ -3,7 +3,7 @@ package edg.compiler
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValueExpr}
-import edg.wir.DesignPath
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -82,6 +82,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     compiled.contents.get.constraints should equal(referenceConstraints)
 
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("named")))))
+
     val dsv = new DesignStructuralValidate()
     dsv.map(Design(compiled.contents.get)) should equal(Seq(
       CompilerError.UndefinedPortArray(DesignPath() + "sink" + "port", LibraryPath("sinkPort")),
@@ -115,6 +120,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiled.contents.get.constraints should equal(referenceConstraints)
+
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
+        equal(Some(IntValue(2)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
 
     val dsv = new DesignStructuralValidate()
     dsv.map(Design(compiled.contents.get)) should equal(Seq())
