@@ -109,6 +109,10 @@ object ExprBuilder {
       lit.ValueLit(`type` = lit.ValueLit.Type.Range(lit.RangeLit(
         minimum = Some(Floating(valueMin)), maximum = Some(Floating(valueMax)))))
     }
+
+    def Array(values: Seq[lit.ValueLit]): lit.ValueLit = {
+
+    }
   }
 
   private def localPathStepsNameOption(steps: Seq[ref.LocalStep]): Option[Seq[String]] = {

@@ -19,9 +19,6 @@ import "edgir/common.proto";
     I think the frontend should have more type specific wrappers around
     this since the data required for each type can be different. */
 message ValInit {
-  message Array {
-    repeated ValInit elts = 1;
-  }
   oneof val {
     edgir.common.Empty floating = 1;
     edgir.common.Empty integer  = 2;
@@ -30,7 +27,6 @@ message ValInit {
     edgir.common.Empty set      = 8;
     edgir.common.Empty struct   = 9;
     edgir.common.Empty range    = 10;
-    Array              array    = 400;
   }
 
   edgir.common.Metadata meta = 127;
