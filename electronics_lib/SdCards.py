@@ -28,7 +28,7 @@ class SdCard(Memory):
     )
 
     self.spi = self.Port(SpiSlave(dio_model), [InOut])  # TODO does this port directionality make sense?
-    self.cs = self.Port(DigitalSink(dio_model))
+    self.cs = self.Port(DigitalSink.from_bidir(dio_model))
 
 
 class SdSocket(SdCard, Connector, FootprintBlock):

@@ -37,30 +37,11 @@ class PortBridge(Block):
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
-  def _def_to_proto(self) -> edgir.HierarchyBlock:
-    pb = edgir.HierarchyBlock()
-    pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
-    pb = self._populate_def_proto_block_base(pb)
-    pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_param_init(pb)
-    pb = self._populate_def_proto_port_init(pb)
-
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, PortBridge)
-
-    return pb
-
-  # TODO: dedup w/ BaseBlock
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     if self.__class__ == PortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
       return IdentityDict()
 
-    # return super().get_ref_map(prefix) +  # TODO: dedup w/ BaseBlock, and does this break anything?
-    return IdentityDict(
-      *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
-      self.outer_port._get_ref_map(edgir.localpath_concat(prefix, 'outer_port')),
-      self.inner_link._get_ref_map(edgir.localpath_concat(prefix, 'inner_link'))
-    )
+    return super()._get_ref_map(prefix)
 
 
 AdapterDstType = TypeVar('AdapterDstType', bound=Port)

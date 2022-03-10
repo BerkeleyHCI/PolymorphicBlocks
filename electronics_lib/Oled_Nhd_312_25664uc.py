@@ -20,12 +20,12 @@ class Nhd_312_25664uc_Device(DiscreteChip, FootprintBlock):
       input_threshold_factor=(0.2, 0.8),
       output_threshold_factor=(0.1, 0.9)
     )
-    self.dc = self.Port(DigitalSink(io_model))
-    self.sclk = self.Port(DigitalSink(io_model))
-    self.sdin = self.Port(DigitalSink(io_model))
+    self.dc = self.Port(DigitalSink.from_bidir(io_model))
+    self.sclk = self.Port(DigitalSink.from_bidir(io_model))
+    self.sdin = self.Port(DigitalSink.from_bidir(io_model))
 
-    self.nres = self.Port(DigitalSink(io_model))
-    self.ncs = self.Port(DigitalSink(io_model))
+    self.nres = self.Port(DigitalSink.from_bidir(io_model))
+    self.ncs = self.Port(DigitalSink.from_bidir(io_model))
 
   def contents(self):
     super().contents()

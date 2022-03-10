@@ -7,8 +7,8 @@ from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 class UartLink(Link):
   def __init__(self) -> None:
     super().__init__()
-    self.a = self.Port(UartPort())
-    self.b = self.Port(UartPort())
+    self.a = self.Port(UartPort(DigitalBidir.empty()))
+    self.b = self.Port(UartPort(DigitalBidir.empty()))
 
   def contents(self) -> None:
     super().contents()
@@ -22,8 +22,10 @@ class UartPort(Bundle[UartLink]):
     super().__init__()
     self.link_type = UartLink
 
-    self.tx = self.Port(DigitalSource(model))
-    self.rx = self.Port(DigitalSink(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.tx = self.Port(DigitalSource.from_bidir(model))
+    self.rx = self.Port(DigitalSink.from_bidir(model))
 
     self.baud = self.Parameter(RangeExpr(Default(RangeExpr.EMPTY_ZERO)))
     self.baud_limit = self.Parameter(RangeExpr(Default(RangeExpr.INF)))
