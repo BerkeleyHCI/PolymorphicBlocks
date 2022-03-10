@@ -48,12 +48,12 @@ object IndirectStep {  // namespace
 
   def apply(pb: ref.LocalStep): IndirectStep = pb.step match {
     case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
+    case ref.LocalStep.Step.Allocate(_) =>
+      throw new IllegalArgumentException(s"Can't resolve ALLOCATE into IndirectStep")
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
-    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) =>
-      throw new IllegalArgumentException(s"Can't resolve ALLOCATE into IndirectStep")
     case ref.LocalStep.Step.ReservedParam(step @
         (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
     ) =>
