@@ -865,6 +865,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           Seq(constrName -> constr.update(_.exported.internalBlockPort.ref.steps := portArraySteps :+ portIndexStep))
       }}
     }
+    constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
+    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Elements,
+      ArrayValue(arrayElts.toSeq.map(TextValue(_))))
+    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
     // Try expanding the constraint
     record.constraintNames foreach { constrName =>
       processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, false)
@@ -905,6 +909,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     debug(s"Link-side Port Array defined: ${record.parent ++ record.portArray} = $arrayElts")
     constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
+    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Elements,
+      ArrayValue(arrayElts.toSeq.map(TextValue(_))))
     constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
     // Try expanding the constraint
     // TODO this needs to be set based on whether the context is a block or link, currently this can't get called on
