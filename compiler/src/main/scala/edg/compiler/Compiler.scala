@@ -835,7 +835,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // TODO: can this be de-duplicated with elaborateLinkPortArray?
   protected def elaborateBlockPortArray(record: ElaborateRecord.BlockPortArray): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
-    var nextPortIndex: Int = 0
+    var prevPortIndex: Int = -1
     val arrayElts = mutable.ListBuffer[String]()
 
     val portArraySteps = Ref.apply(record.portArray: _*).steps
@@ -844,17 +844,25 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     record.constraintNames foreach { constrName =>
       block.mapMultiConstraint(constrName) { constr => (constr.expr: @unchecked) match {
         case expr.ValueExpr.Expr.Connected(connected) =>
-          require(constr.getConnected.getBlockPort.getRef.steps == portArraySteps :+ Ref.AllocateStep)
-          val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
-          arrayElts.append(nextPortIndex.toString)
-          nextPortIndex += 1
-          Seq(constrName -> constr.update(_.connected.blockPort.ref.steps := portArraySteps :+ portIndex))
+          val ValueExpr.RefAllocate(record.portArray, suggestedName) = constr.getConnected.getBlockPort
+          val portIndex = suggestedName match {
+            case None => prevPortIndex += 1; prevPortIndex.toString
+            case Some(suggestedName) => suggestedName
+          }
+          val portIndexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(portIndex))
+          arrayElts.append(portIndex)
+
+          Seq(constrName -> constr.update(_.connected.blockPort.ref.steps := portArraySteps :+ portIndexStep))
         case expr.ValueExpr.Expr.Exported(exported) =>
-          require(constr.getExported.getInternalBlockPort.getRef.steps == portArraySteps :+ Ref.AllocateStep)
-          val portIndex = ref.LocalStep(step=ref.LocalStep.Step.Name(nextPortIndex.toString))
-          arrayElts.append(nextPortIndex.toString)
-          nextPortIndex += 1
-          Seq(constrName -> constr.update(_.exported.internalBlockPort.ref.steps := portArraySteps :+ portIndex))
+          val ValueExpr.RefAllocate(record.portArray, suggestedName) = constr.getExported.getInternalBlockPort
+          val portIndex = suggestedName match {
+            case None => prevPortIndex += 1; prevPortIndex.toString
+            case Some(suggestedName) => suggestedName
+          }
+          val portIndexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(portIndex))
+          arrayElts.append(portIndex)
+
+          Seq(constrName -> constr.update(_.exported.internalBlockPort.ref.steps := portArraySteps :+ portIndexStep))
       }}
     }
     // Try expanding the constraint
@@ -875,7 +883,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // by replacing ALLOCATEs with concrete indices.
   protected def elaborateLinkPortArray(record: ElaborateRecord.LinkPortArray): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
-    var nextPortIndex: Int = 0
+    var prevPortIndex: Int = -1
     val arrayElts = mutable.ListBuffer[String]()
 
     val portArraySteps = Ref.apply(record.portArray: _*).steps
@@ -886,11 +894,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case expr.ValueExpr.Expr.Connected(connected) =>
           val ValueExpr.RefAllocate(record.portArray, suggestedName) = constr.getConnected.getLinkPort
           val portIndex = suggestedName match {
-            case None =>
-              nextPortIndex += 1
-              nextPortIndex.toString
-            case Some(suggestedName) =>
-              suggestedName
+            case None => prevPortIndex += 1; prevPortIndex.toString
+            case Some(suggestedName) => suggestedName
           }
           val portIndexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(portIndex))
           arrayElts.append(portIndex)
