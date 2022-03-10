@@ -33,6 +33,12 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH))
     }
   }
+  object Elements extends IndirectStep {
+    override def toString: String = "ELEMENTS"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS))
+    }
+  }
   object Name extends IndirectStep {
     override def toString: String = "NAME"
     override def asLocalStep: ref.LocalStep = {
@@ -52,6 +58,7 @@ object IndirectStep {  // namespace
       throw new IllegalArgumentException(s"Can't resolve ALLOCATE into IndirectStep")
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => IndirectStep.Elements
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
     case ref.LocalStep.Step.ReservedParam(step @

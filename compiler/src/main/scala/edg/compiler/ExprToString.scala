@@ -190,6 +190,7 @@ class ExprToString() extends ValueExprMap[String] {
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "(connectedLink)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "(isConnected)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "(length)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => "(elements)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => "(name)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"(unrecognized[$op])"
     } }.mkString(".")
