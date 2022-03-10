@@ -3,6 +3,7 @@ package edg.compiler
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValueExpr}
+import edg.wir.DesignPath
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -73,7 +74,10 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     compiled.contents.get.constraints should equal(referenceConstraints)
 
-    // TODO This should expand but throw an error because the parts don't exist
+    val dsv = new DesignStructuralValidate()
+    dsv.map(Design(compiled.contents.get)) should equal(Seq(
+      CompilerError.UndefinedPortArray(DesignPath() + "sink" + "port", LibraryPath("sinkPort")),
+    ))
   }
 
   "Compiler on design with concrete source and array sink" should "expand blocks" in {
@@ -103,5 +107,8 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiled.contents.get.constraints should equal(referenceConstraints)
+
+    val dsv = new DesignStructuralValidate()
+    dsv.map(Design(compiled.contents.get)) should equal(Seq())
   }
 }

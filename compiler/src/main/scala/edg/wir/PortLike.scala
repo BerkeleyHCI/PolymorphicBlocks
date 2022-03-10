@@ -86,7 +86,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
     case _ =>
   }
 
-  override def isElaborated: Boolean = portsSet
+  override def isElaborated: Boolean = portsSet && ports.values.forall(_.isElaborated)
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -101,13 +101,13 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   def getType: ref.LibraryPath = pb.getSelfClass
 
   def setPorts(newPorts: SeqMap[String, PortLike]): Unit = {
-    require(ports.isEmpty)
+    require(!portsSet)
     ports ++= newPorts
     portsSet = true
   }
 
   def toEltPb: elem.PortArray = {
-    if (!isElaborated) {
+    if (!portsSet) {
       pb
     } else {
       pb.copy(

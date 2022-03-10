@@ -76,6 +76,9 @@ object CompilerError {
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError {
     override def toString: String = s"Unelaborated library element ${target.toSimpleString} @ $path"
   }
+  case class UndefinedPortArray(path: DesignPath, portType: ref.LibraryPath) extends CompilerError {
+    override def toString: String = s"Undefined port array ${portType.toSimpleString} @ $path"
+  }
 
   case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError {
     override def toString: String = s"Library error ${target.toSimpleString} @ $path: $err"
@@ -280,7 +283,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Elaborates the port, mutating it in-place. Recursive.
-  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
+  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike,
+                              isLink: Boolean): Unit = {
     // Instantiate as needed
     val instantiated = port match {
       case port: wir.PortLibrary =>
@@ -310,23 +314,25 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort)
+          elaboratePort(path + childPortName, port, childPort, isLink)
         }
       case port: wir.PortArray =>
-        // arrays have no params (including name), but we need to instantiate the array
-        val childPortNames = constProp.getArrayElts(path) match {
-          case Some(elts) => elts
-          case None =>  // TODO can the empty case be set with everything else?
-            constProp.setArrayElts(path, Seq())
-            constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
-            Seq()
+        // only define port array elts for links; blocks are required to define array elts
+        if (isLink) {  // TODO can this be cleaned up?
+          val childPortNames = constProp.getArrayElts(path) match {
+            case Some(elts) => elts
+            case None => // TODO can the empty case be set with everything else?
+              constProp.setArrayElts(path, Seq())
+              constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
+              Seq()
+          }
+          val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
+            childPortName -> wir.PortLibrary.apply(port.getType)
+          })
+          port.setPorts(childPortLibraries)
         }
-        val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
-          childPortName -> wir.PortLibrary.apply(port.getType)
-        })
-        port.setPorts(childPortLibraries)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort)
+          elaboratePort(path + childPortName, port, childPort, isLink)
         }
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
     }
@@ -399,7 +405,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports, generating equivalence constraints as needed
     processParamDeclarations(path, block)
     for ((portName, port) <- block.getUnelaboratedPorts) {
-      elaboratePort(path + portName, block, port)
+      elaboratePort(path + portName, block, port, false)
     }
 
     // Find allocate ports and generate the port array lowering compiler tasks
@@ -646,7 +652,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports, generating equivalence constraints as needed
     processParamDeclarations(path, link)
     for ((portName, port) <- link.getUnelaboratedPorts) {
-      elaboratePort(path + portName, link, port)
+      elaboratePort(path + portName, link, port, true)
     }
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
