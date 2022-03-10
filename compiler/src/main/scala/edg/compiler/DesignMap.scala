@@ -61,7 +61,7 @@ trait DesignMap[PortType, BlockType, LinkType] {
 
   def wrapPortArray(path: DesignPath, port: elem.PortArray): PortType = {
     val nameOrder = ProtoUtil.getNameOrder(port.meta)
-    val ports = port.ports.map { case (name, elt) =>
+    val ports = port.contains.ports.getOrElse(elem.PortArray.Ports()).ports.map { case (name, elt) =>
       name -> wrapPortlike(path + name, elt) }
         .sortKeysFrom(nameOrder)
     mapPortArray(path, port, ports)

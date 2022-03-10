@@ -80,8 +80,10 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
 
-  if (pb.ports.nonEmpty) {  // for non-empty (block-side, concrete) port arrays, initialize the ports
-    setPorts(SeqMap.from(parsePorts(pb.ports, nameOrder)))
+  pb.contains match {
+    case elem.PortArray.Contains.Ports(ports) =>
+      setPorts(SeqMap.from(parsePorts(ports.ports, nameOrder)))
+    case _ =>
   }
 
   override def isElaborated: Boolean = portsSet
@@ -105,9 +107,15 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   }
 
   def toEltPb: elem.PortArray = {
-    pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-    )
+    if (!isElaborated) {
+      pb
+    } else {
+      pb.copy(
+        contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
+          ports.view.mapValues(_.toPb).toMap
+        ))
+      )
+    }
   }
 
   override def toPb: elem.PortLike = {

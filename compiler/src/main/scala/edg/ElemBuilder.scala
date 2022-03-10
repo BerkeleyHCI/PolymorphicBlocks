@@ -134,9 +134,11 @@ object ElemBuilder {
     def Array(selfClass: String, count: Int, port: elem.PortLike): elem.PortLike =
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
         selfClass=Some(LibraryPath(selfClass)),
-        ports=(0 until count).map { i =>
-          i.toString -> port
-        }.toMap
+        contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
+          (0 until count).map { i =>
+            i.toString -> port
+          }.toMap
+        ))
       )))
   }
 
