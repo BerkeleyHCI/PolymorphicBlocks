@@ -58,7 +58,7 @@ class InnerLinkTestCase(unittest.TestCase):
     expected_conn.exported.exterior_port.map_extract.path.steps.add().name = 'a'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'a_net'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sinks'
-    expected_conn.exported.internal_block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.exported.internal_block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -73,5 +73,5 @@ class InnerLinkTestCase(unittest.TestCase):
     expected_conn.exported.exterior_port.map_extract.path.steps.add().name = 'b'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'b_net'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sinks'
-    expected_conn.exported.internal_block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.exported.internal_block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())

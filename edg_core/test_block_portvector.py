@@ -104,10 +104,10 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     expected_conn.connected.block_port.ref.steps.add().name = 'vector'
-    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.block_port.ref.steps.add().allocate = ''
     expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -120,10 +120,10 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     expected_conn.connected.block_port.ref.steps.add().name = 'vector'
-    expected_conn.connected.block_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.block_port.ref.steps.add().allocate = ''
     expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()

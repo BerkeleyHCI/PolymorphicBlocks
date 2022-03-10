@@ -513,7 +513,7 @@ class Link(BaseBlock[edgir.Link]):
       if isinstance(ref, BaseVector):
         new_path = edgir.LocalPath()
         new_path.CopyFrom(path)
-        new_path.steps.append(edgir.LocalStep(reserved_param=edgir.ALLOCATE))
+        new_path.steps.append(edgir.LocalStep(allocate=''))
         return new_path
       else:
         return path
