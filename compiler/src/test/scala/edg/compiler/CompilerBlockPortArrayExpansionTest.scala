@@ -52,7 +52,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "source2" -> Block.Library("sourceBlock"),
-        "sink" -> Block.Library("baseSinksBlock"),
+        "sinks" -> Block.Library("baseSinksBlock"),
       ),
       links = Map(
         "link0" -> Link.Library("link"),
@@ -89,7 +89,14 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     val dsv = new DesignStructuralValidate()
     dsv.map(Design(compiled.contents.get)) should equal(Seq(
-      CompilerError.UndefinedPortArray(DesignPath() + "sink" + "port", LibraryPath("sinkPort")),
+      CompilerError.UndefinedPortArray(DesignPath() + "sinks" + "port", LibraryPath("sinkPort")),
+    ))
+
+    val drv = new DesignRefsValidate()
+    drv.validate(Design(compiled.contents.get)) should equal(Seq(
+      CompilerError.BadRef(DesignPath() + "sink0Connect", IndirectDesignPath() + "sinks" + "port" + "0"),
+      CompilerError.BadRef(DesignPath() + "sink1Connect", IndirectDesignPath() + "sinks" + "port" + "1"),
+      CompilerError.BadRef(DesignPath() + "sink2Connect", IndirectDesignPath() + "sinks" + "port" + "named")
     ))
   }
 
@@ -98,7 +105,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
       blocks = Map(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
-        "sink" -> Block.Library("concreteSinksBlock"),
+        "sinks" -> Block.Library("concreteSinksBlock"),
       ),
       links = Map(
         "link0" -> Link.Library("link"),
@@ -128,5 +135,8 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     val dsv = new DesignStructuralValidate()
     dsv.map(Design(compiled.contents.get)) should equal(Seq())
+
+    val drv = new DesignRefsValidate()
+    drv.validate(Design(compiled.contents.get)) should equal(Seq())
   }
 }

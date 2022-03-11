@@ -98,6 +98,8 @@ object CompilerError {
         s"${causes.map(x => s"- $x").mkString("\n")}"
   }
 
+  case class BadRef(path: DesignPath, ref: IndirectDesignPath) extends CompilerError
+
   case class AbstractBlock(path: DesignPath, blockType: ref.LibraryPath) extends CompilerError {
     override def toString: String = s"Abstract block: $path (of type ${blockType.toSimpleString})"
   }
