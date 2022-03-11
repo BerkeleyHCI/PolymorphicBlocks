@@ -82,9 +82,8 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
       (containingPath + constrName, containingPath.asIndirect ++ ref)
     }
     (constr.expr: @unchecked) match {
-      case _: expr.ValueExpr.Expr.Assign => paramRefs.appendAll(refs)
-      case _: expr.ValueExpr.Expr.Ref => paramRefs.appendAll(refs)
       case _: expr.ValueExpr.Expr.Connected => connectRefs.appendAll(refs)
+      case _ => paramRefs.appendAll(refs)  // assume everything else is a ref, TODO clarify with top-level Statements
     }
   }
 
