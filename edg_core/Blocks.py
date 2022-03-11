@@ -379,7 +379,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
-      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamBinding)):  # TODO ParamVariableBinding?
+      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, ParamBinding):
         if isinstance(expr.parent, BaseBlock):
           block_parent = expr.parent
         elif isinstance(expr.parent, BasePort):
@@ -404,6 +404,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
                                           "Only own ports, or immediate contained blocks' ports can be accessed. "
                                           "To pass in parameters from constructors, don't forget @init_in_parent")
+
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)
 
