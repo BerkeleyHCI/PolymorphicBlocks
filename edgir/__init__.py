@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING
+from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING, List, cast
 
 from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
@@ -49,7 +49,8 @@ def resolve_portlike(port: PortLike) -> PortTypes:
     raise ValueError(f"bad portlike {port}")
 
 
-LitTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this prevents a circular import
+LitLeafTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this prevents a circular import
+LitTypes = Union[LitLeafTypes, List[LitLeafTypes]]
 
 
 def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTypes]]:
@@ -84,6 +85,12 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
     return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
     return expr.text.val
+  elif expr.HasField('array'):
+    elts = [valuelit_to_lit(elt) for elt in expr.array.elts]
+    if None in elts:
+      return None
+    else:
+      return cast(List[LitLeafTypes], elts)
   else:
     return None
 
