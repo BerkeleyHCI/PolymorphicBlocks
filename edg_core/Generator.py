@@ -4,6 +4,7 @@ from numbers import Number
 from typing import *
 
 import edgir
+from .Array import ArrayExpr
 from .Binding import InitParamBinding, ElementsBinding
 from .Blocks import BlockElaborationState
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
@@ -213,6 +214,8 @@ class GeneratorBlock(Block):
       assert isinstance(value, bool), f"get({self._name_of(param)}) expected bool, got {value}"
     elif isinstance(param, StringExpr):
       assert isinstance(value, str), f"get({self._name_of(param)}) expected str, got {value}"
+    elif isinstance(param, ArrayExpr):
+      assert isinstance(value, list), f"get({self._name_of(param)}) expected list, got {value}"
     else:
       raise NotImplementedError(f"get({self._name_of(param)}) on unknown type, got {value}")
     return value  # type: ignore

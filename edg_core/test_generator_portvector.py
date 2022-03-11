@@ -3,7 +3,7 @@ from typing import List
 
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
-from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSource
+from .test_generator import TestPortSink, TestBlockSink, TestBlockSource
 
 
 class GeneratorInnerBlock(GeneratorBlock):
@@ -14,6 +14,7 @@ class GeneratorInnerBlock(GeneratorBlock):
 
   def generate(self, elements: List[str]) -> None:
     assert(elements == ['0', '1', '2'])
+    self.ports.init_elts(elements)
 
 
 class TestGeneratorElements(Block):
@@ -21,12 +22,12 @@ class TestGeneratorElements(Block):
     super().__init__()
     self.block = self.Block(GeneratorInnerBlock())
 
-    self.source0 = self.Block(TestBlockSource())
-    self.source1 = self.Block(TestBlockSource())
-    self.source2 = self.Block(TestBlockSource())
-    self.connect(self.source0.source, self.block.ports.allocate())
-    self.connect(self.source1.source, self.block.ports.allocate())
-    self.connect(self.source2.source, self.block.ports.allocate())
+    self.source0 = self.Block(TestBlockSource(1.0))
+    self.source1 = self.Block(TestBlockSource(1.0))
+    self.source2 = self.Block(TestBlockSource(1.0))
+    self.connect(self.source0.port, self.block.ports.allocate())
+    self.connect(self.source1.port, self.block.ports.allocate())
+    self.connect(self.source2.port, self.block.ports.allocate())
 
 
 class TestGeneratorPortVector(unittest.TestCase):
