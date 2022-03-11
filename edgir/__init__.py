@@ -4,7 +4,7 @@ from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
 from .name_pb2 import *
 from .impl_pb2 import *
-from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, NAME
+from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, ELEMENTS, NAME
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \

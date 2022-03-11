@@ -438,6 +438,24 @@ class LengthBinding(Binding):
     return pb
 
 
+class ElementsBinding(Binding):
+  def __repr__(self) -> str:
+    return f"Elements"
+
+  def __init__(self, src: Vector):
+    super().__init__()
+    self.src = src
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.src]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.ref.CopyFrom(ref_map[self.src])
+    pb.ref.steps.add().reserved_param = edgir.ELEMENTS
+    return pb
+
+
 class AssignBinding(Binding):
   # Convenience method to make an assign expr without the rest of this proto infrastructure
   @staticmethod

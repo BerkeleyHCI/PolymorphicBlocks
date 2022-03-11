@@ -7,9 +7,9 @@ from .IdentityDict import IdentityDict
 from .Core import Refable, non_library
 from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
   UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
-  FloatExpr, RangeExpr, \
+  FloatExpr, RangeExpr, StringExpr, \
   ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryOpBinding
+from .Binding import LengthBinding, BinaryOpBinding, ElementsBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -177,6 +177,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates: List[VectorType] = []  # used to track .allocate() for ref_map purposes
 
     self._length = IntExpr()._bind(ParamVariableBinding(LengthBinding(self)))
+    self._elements = ArrayExpr(StringExpr())._bind(ParamVariableBinding(ElementsBinding(self)))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -261,6 +262,9 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def length(self) -> IntExpr:
     return self._length
+
+  def elements(self) -> ArrayExpr[StringExpr]:
+    return self._elements
 
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
