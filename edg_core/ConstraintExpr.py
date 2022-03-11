@@ -6,7 +6,7 @@ from itertools import chain
 from typing import *
 
 import edgir
-from .Binding import Binding, ParamBinding, ParamVariableBinding, BoolLiteralBinding, IntLiteralBinding, \
+from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
   UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, IfThenElseBinding
 from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
@@ -332,10 +332,8 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
     if initializer is not None and not isinstance(initializer, RangeExpr):
       initializer = self._to_expr_type(initializer)
     super().__init__(initializer)
-    self._lower = FloatExpr()._bind(ParamVariableBinding(
-      UnaryOpBinding(self, RangeSetOp.min)))
-    self._upper = FloatExpr()._bind(ParamVariableBinding(
-      UnaryOpBinding(self, RangeSetOp.max)))
+    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
+    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
 
   @classmethod
   def _to_expr_type(cls, input: Union[RangeLike, FloatLike]) -> RangeExpr:

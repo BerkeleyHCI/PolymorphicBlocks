@@ -109,22 +109,6 @@ class InitParamBinding(ParamBinding):
   """Binding that indicates this is a parameter from an __init__ argument"""
 
 
-class ParamVariableBinding(Binding):
-  """Variable internal to a parameter (eg, LENGTH, RangeExpr.upper()), treated as a pseudo-parameter"""
-  def __repr__(self) -> str:
-    return f"ParamVar({self.binding})"
-
-  def __init__(self, binding: Binding):
-    super().__init__()
-    self.binding = binding
-
-  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
-    return []
-
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    return self.binding.expr_to_proto(expr, ref_map)
-
-
 class LiteralBinding(Binding):
   """Base class for literal bindings"""
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:

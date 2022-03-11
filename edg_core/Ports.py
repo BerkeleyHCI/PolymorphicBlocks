@@ -5,7 +5,7 @@ from itertools import chain
 from typing import *
 
 import edgir
-from .Binding import ParamBinding, IsConnectedBinding, ParamVariableBinding, NameBinding
+from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
@@ -109,8 +109,8 @@ class Port(BasePort, Generic[PortLinkType]):
     self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
     self.manager_ignored.update(['_is_connected'])
-    self._is_connected = BoolExpr()._bind(ParamVariableBinding(IsConnectedBinding(self)))
-    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
+    self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
+    self._name = StringExpr()._bind(NameBinding(self))
 
   def _bridge(self) -> Optional[PortBridge]:
     """Creates a (unbound) bridge and returns it."""

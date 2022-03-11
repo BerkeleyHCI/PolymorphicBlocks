@@ -8,7 +8,7 @@ from .Core import Refable, non_library
 from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
   UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
   FloatExpr, RangeExpr, StringExpr, \
-  ParamBinding, IntExpr, ParamVariableBinding, NumLikeExpr, RangeLike
+  ParamBinding, IntExpr, NumLikeExpr, RangeLike
 from .Binding import LengthBinding, BinaryOpBinding, ElementsBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
@@ -176,8 +176,8 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elts: Optional[Dict[str, VectorType]] = None
     self._allocates: List[VectorType] = []  # used to track .allocate() for ref_map purposes
 
-    self._length = IntExpr()._bind(ParamVariableBinding(LengthBinding(self)))
-    self._elements = ArrayExpr(StringExpr())._bind(ParamVariableBinding(ElementsBinding(self)))
+    self._length = IntExpr()._bind(LengthBinding(self))
+    self._elements = ArrayExpr(StringExpr())._bind(ElementsBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -205,6 +205,8 @@ class Vector(BaseVector, Generic[VectorType]):
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     elts_items = self._elts.items() if self._elts is not None else []
     return super()._get_ref_map(prefix) + IdentityDict(
+      [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
+       (self._elements, edgir.localpath_concat(prefix, edgir.ELEMENTS))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
       *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate())) for elt in self._allocates]
     )

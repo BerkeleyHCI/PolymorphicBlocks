@@ -12,7 +12,7 @@ from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .Binding import AssignBinding, NameBinding
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, StringExpr
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr
 from .Ports import BasePort, Port, Bundle
 from .StructuredMetadata import MetaNamespaceOrder
 
@@ -209,7 +209,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
-    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
+    self._name = StringExpr()._bind(NameBinding(self))
 
     self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
@@ -379,7 +379,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
-      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamVariableBinding, ParamBinding)):
+      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamBinding)):  # TODO ParamVariableBinding?
         if isinstance(expr.parent, BaseBlock):
           block_parent = expr.parent
         elif isinstance(expr.parent, BasePort):
