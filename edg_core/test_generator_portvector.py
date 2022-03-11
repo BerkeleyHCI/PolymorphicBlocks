@@ -33,3 +33,28 @@ class TestGeneratorElements(Block):
 class TestGeneratorPortVector(unittest.TestCase):
   def test_generator_assign(self):
     compiled = ScalaCompiler.compile(TestGeneratorElements)
+
+
+class GeneratorInnerBlockInvalid(GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.ports = self.Port(Vector(TestPortSink()))
+    self.generator(self.generate, self.ports.elements())
+
+  def generate(self, elements: List[str]) -> None:
+    self.ports.init_elts(['nope'])
+
+
+class TestGeneratorElementsInvalid(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorInnerBlockInvalid())
+
+    self.source0 = self.Block(TestBlockSource(1.0))
+    self.connect(self.source0.port, self.block.ports.allocate())
+
+
+class TestGeneratorPortVectorInvalid(unittest.TestCase):
+  def test_generator_assign(self):
+    with self.assertRaises(AssertionError):
+      compiled = ScalaCompiler.compile(TestGeneratorElementsInvalid)
