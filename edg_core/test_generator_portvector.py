@@ -13,7 +13,7 @@ class GeneratorInnerBlock(GeneratorBlock):
     self.generator(self.generate, self.ports.elements())
 
   def generate(self, elements: List[str]) -> None:
-    assert(elements == ['0', '1', '2'])
+    assert(elements == ['0', 'named', '1'])
     self.ports.init_elts(elements)
 
 
@@ -26,7 +26,7 @@ class TestGeneratorElements(Block):
     self.source1 = self.Block(TestBlockSource(1.0))
     self.source2 = self.Block(TestBlockSource(1.0))
     self.connect(self.source0.port, self.block.ports.allocate())
-    self.connect(self.source1.port, self.block.ports.allocate())
+    self.connect(self.source1.port, self.block.ports.allocate('named'))
     self.connect(self.source2.port, self.block.ports.allocate())
 
 

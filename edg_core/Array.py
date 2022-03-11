@@ -174,7 +174,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._tpe = tpe
     self._elt_sample = tpe._bind(self, ignore_context=True)
     self._elts: Optional[Dict[str, VectorType]] = None
-    self._allocates: List[VectorType] = []  # used to track .allocate() for ref_map purposes
+    self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
     self._elements = ArrayExpr(StringExpr())._bind(ElementsBinding(self))
@@ -204,11 +204,13 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     elts_items = self._elts.items() if self._elts is not None else []
+
     return super()._get_ref_map(prefix) + IdentityDict(
       [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
        (self._elements, edgir.localpath_concat(prefix, edgir.ELEMENTS))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
-      *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate())) for elt in self._allocates]
+      *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
+        for (suggested_name, elt) in self._allocates]
     )
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
@@ -239,7 +241,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_curr_block() is self._block_parent(), "can only get items in block parent of array"
     return self._elts
 
-  def allocate(self) -> VectorType:
+  def allocate(self, suggested_name: Optional[str] = None) -> VectorType:
     """Returns a new port of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
@@ -252,7 +254,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_curr_block() is block_parent.parent, "can only allocate ports of internal blocks"
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = self._tpe._bind(self, ignore_context=True)
-    self._allocates.append(allocated)
+    self._allocates.append((suggested_name, allocated))
     return allocated
 
   def allocate_vector(self) -> Vector[VectorType]:
