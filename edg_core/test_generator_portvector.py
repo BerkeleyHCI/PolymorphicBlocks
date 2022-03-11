@@ -56,5 +56,5 @@ class TestGeneratorElementsInvalid(Block):
 
 class TestGeneratorPortVectorInvalid(unittest.TestCase):
   def test_generator_assign(self):
-    with self.assertRaises(AssertionError):
-      compiled = ScalaCompiler.compile(TestGeneratorElementsInvalid)
+    with self.assertRaises(CompilerCheckError):
+      ScalaCompiler.compile(TestGeneratorElementsInvalid)

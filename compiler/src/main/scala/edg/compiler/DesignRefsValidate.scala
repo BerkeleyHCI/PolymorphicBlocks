@@ -48,7 +48,7 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
     container ++ index
   }
   override def mapMapExtract(mapExtract: expr.MapExtractExpr): Seq[ref.LocalPath] = {
-    throw new NotImplementedError("map-extract not supported")
+    Seq()  // TODO depends on knowledge of array sizes
   }
   override def mapConnected(connected: expr.ConnectedExpr, blockPort: Seq[ref.LocalPath],
                             linkPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
@@ -68,6 +68,7 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
 
 /** Checks that refs in the design are valid.
   * TODO: check parameter references - but these needs CONNECTED_LINK values
+  * TODO: also needs to handle MapExtract properly, which needs array sizes
   */
 class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   // as list of (constr path, ref)
