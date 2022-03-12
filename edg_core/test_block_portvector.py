@@ -15,13 +15,15 @@ class TestBlockPortVectorBase(Block):
 class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
-    self.vector.init_elts(2)
+    self.vector.append_elt(TestPortSink())
+    self.vector.append_elt(TestPortSink())
 
 
 class TestBlockPortVectorExport(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
-    self.vector.init_elts(2)
+    self.vector.append_elt(TestPortSink())
+    self.vector.append_elt(TestPortSink())
     vector_elts = list(self.vector.elts().values())
     assert len(vector_elts) == 2
     self.block0 = self.Block(TestBlockSink())

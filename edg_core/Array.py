@@ -127,7 +127,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', bound='BasePort', covariant=True)
+VectorType = TypeVar('VectorType', bound='BasePort')
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt

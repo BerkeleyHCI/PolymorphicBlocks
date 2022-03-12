@@ -309,8 +309,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           process_port_inits(subport, path + [name])
       elif isinstance(port, Vector):
         check_recursive_no_initializer(port._get_elt_sample(), path)
-        for (index, subport) in port._elts.items():
-          process_port_inits(subport, path + [index])
+        if port._elts is not None:
+          for (index, subport) in port._elts.items():
+            process_port_inits(subport, path + [index])
 
     for (name, port) in self._ports.items():
       process_port_inits(port, [name])
