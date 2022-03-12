@@ -1,6 +1,7 @@
 import unittest
 from typing import List
 
+import edgir
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
 from .test_generator import TestPortSink, TestBlockSink, TestBlockSource
@@ -14,7 +15,9 @@ class GeneratorInnerBlock(GeneratorBlock):
 
   def generate(self, elements: List[str]) -> None:
     assert(elements == ['0', 'named', '1'])
-    self.ports.init_elts(elements)
+    self.ports.append_elt(TestPortSink((-1, 1)))
+    self.ports.append_elt(TestPortSink((-5, 5)), 'named')
+    self.ports.append_elt(TestPortSink((-2, 2)))
 
 
 class TestGeneratorElements(Block):
@@ -31,9 +34,21 @@ class TestGeneratorElements(Block):
 
 
 class TestGeneratorPortVector(unittest.TestCase):
-  def test_generator_assign(self):
-    compiled = ScalaCompiler.compile(TestGeneratorElements)
+  def test_generator(self):
+    ScalaCompiler.compile(TestGeneratorElements)
 
+  def test_initializer(self):
+    compiled = ScalaCompiler.compile(TestGeneratorElements)
+    pb = compiled.contents.blocks['block'].hierarchy
+    self.assertEqual(
+      edgir.AssignLit(['ports', '0', 'range_param'], Range(-1, 1)),
+      pb.constraints["(init)ports.0.range_param"])
+    self.assertEqual(
+      edgir.AssignLit(['ports', 'named', 'range_param'], Range(-5, 5)),
+      pb.constraints["(init)ports.named.range_param"])
+    self.assertEqual(
+      edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)),
+      pb.constraints["(init)ports.1.range_param"])
 
 class GeneratorInnerBlockInvalid(GeneratorBlock):
   def __init__(self) -> None:
@@ -42,7 +57,7 @@ class GeneratorInnerBlockInvalid(GeneratorBlock):
     self.generator(self.generate, self.ports.elements())
 
   def generate(self, elements: List[str]) -> None:
-    self.ports.init_elts(['nope'])
+    self.ports.append_elt(TestPortSink(), 'nope')
 
 
 class TestGeneratorElementsInvalid(Block):
@@ -55,6 +70,6 @@ class TestGeneratorElementsInvalid(Block):
 
 
 class TestGeneratorPortVectorInvalid(unittest.TestCase):
-  def test_generator_assign(self):
+  def test_generator_error(self):
     with self.assertRaises(CompilerCheckError):
       ScalaCompiler.compile(TestGeneratorElementsInvalid)

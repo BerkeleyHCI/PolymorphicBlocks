@@ -173,7 +173,8 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self, ignore_context=True)
-    self._elts: Optional[Dict[str, VectorType]] = None
+    self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
+    self._elt_next_index = 0
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
@@ -216,24 +217,26 @@ class Vector(BaseVector, Generic[VectorType]):
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self._elt_sample._get_ref_map(edgir.LocalPath())
 
-  def init_elts(self, length: Union[List[str], int]) -> None:
-    """Initializes elements of this array (if this is not to be a dynamically-sized array - including
+  def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
+    """Appends a new element of this array (if this is not to be a dynamically-sized array - including
     when subclassing a base class with a dynamically-sized array) with either the number of elements
     or with specific names of elements.
-    Items can be accessed (from inside the containing block) by indexing (__getitem__).
+    Argument is the port model (optionally with initializers) and an optional suggested name.
     Can only be called from the block defining this port (where this is a boundary port),
     and this port must be bound."""
     assert self._is_bound(), "not bound, can't create array elements"
-    assert builder.get_curr_block() is self._block_parent(), "can only init_elts in block parent of array"
-    assert self._elts is None, "cannot double init_elts"
-    if isinstance(length, int):
-      length_list = [str(elt) for elt in range(length)]
-    elif isinstance(length, list):
-      length_list = length
-    else:
-      raise TypeError(f"unknown length type {length}")
+    assert builder.get_curr_block() is self._block_parent(), "can only create elts in block parent of array"
+    assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
-    self._elts = {elt: self._tpe._bind(self, ignore_context=True) for elt in length_list}
+    if self._elts is None:
+      self._elts = {}
+    if suggested_name is None:
+      suggested_name = str(self._elt_next_index)
+      self._elt_next_index += 1
+    assert suggested_name not in self._elts, f"duplicate Port Vector element name {suggested_name}"
+
+    self._elts[suggested_name] = tpe._bind(self)
+    return self._elts[suggested_name]
 
   def elts(self) -> Dict[str, VectorType]:
     """Returns the items (as a list of (str, Port)) resulting from init_elts."""

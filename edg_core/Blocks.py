@@ -276,7 +276,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType,
                                     ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> BaseBlockEdgirType:
-    # TODO this is structurally ugly!
+    # TODO this is structurally ugly! There should be BasePort._initializers, but we need the name available here
     # TODO TODO: for non-generated exported initializers, check and assert default-ness
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
 
@@ -290,7 +290,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           check_recursive_no_initializer(subport, path + [name])
       elif isinstance(port, Vector):
         check_recursive_no_initializer(port._get_elt_sample(), path)
-      # TODO needs to be something like sealed types for match comprehensiveness
 
     def process_port_inits(port: BasePort, path: List[str]) -> None:
       if port in ignore_ports:
@@ -310,7 +309,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           process_port_inits(subport, path + [name])
       elif isinstance(port, Vector):
         check_recursive_no_initializer(port._get_elt_sample(), path)
-      # TODO needs to be something like sealed types for match comprehensiveness
+        for (index, subport) in port._elts.items():
+          process_port_inits(subport, path + [index])
 
     for (name, port) in self._ports.items():
       process_port_inits(port, [name])
