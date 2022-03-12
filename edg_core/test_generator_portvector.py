@@ -50,6 +50,7 @@ class TestGeneratorPortVector(unittest.TestCase):
       edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)),
       pb.constraints["(init)ports.1.range_param"])
 
+
 class GeneratorInnerBlockInvalid(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
