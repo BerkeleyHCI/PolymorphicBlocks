@@ -30,7 +30,9 @@ class ExprToString() extends ValueExprMap[String] {
     case lit.ValueLit.Type.Boolean(literal) => literal.`val`.toString
     case lit.ValueLit.Type.Text(literal) => literal.`val`
     case lit.ValueLit.Type.Range(literal) => s"(${mapLiteral(literal.getMinimum)}, ${mapLiteral(literal.getMaximum)})"
-    case literal => throw new ExprEvaluateException(s"(unknown literal $literal)")
+    case lit.ValueLit.Type.Array(array) =>
+      val arrayElts = array.elts.map(mapLiteral)
+      s"[${arrayElts.mkString(", ")}]"
   }
 
   private object BinaryExprOp {

@@ -3,22 +3,14 @@ package edg.compiler
 import edgir.expr.expr
 import edgir.lit.lit
 import edgir.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath}
-
-
-sealed trait ExprRef
-
-object ExprRef {
-  case class Param(path: IndirectDesignPath) extends ExprRef
-  case class Array(path: DesignPath) extends ExprRef
-}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 
 
 sealed trait ExprResult
 
 object ExprResult {
   case class Result(value: ExprValue) extends ExprResult
-  case class Missing(refs: Set[ExprRef]) extends ExprResult
+  case class Missing(refs: Set[IndirectDesignPath]) extends ExprResult
 }
 
 
@@ -97,13 +89,13 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
     )
     val containerPath = root ++ container
-    refs.getArrayElts(containerPath) match {
-      case Some(elts) =>
+    refs.getValue(containerPath.asIndirect + IndirectStep.Elements) match {
+      case Some(ArrayValue.ExtractText(elts)) =>
         val eltsVals = elts.map { elt =>
           val eltPath = containerPath.asIndirect + elt ++ mapExtract.getPath
           refs.getValue(eltPath) match {
             case Some(value) => ExprResult.Result(value)
-            case None => ExprResult.Missing(Set(ExprRef.Param(eltPath)))
+            case None => ExprResult.Missing(Set(eltPath))
         }}
         if (eltsVals.forall(_.isInstanceOf[ExprResult.Result])) {
           val values = eltsVals.map { _.asInstanceOf[ExprResult.Result].value }
@@ -112,7 +104,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
           val missings = eltsVals.collect { case ExprResult.Missing(refs) => refs }
           ExprResult.Missing(missings.flatten.toSet)
         }
-      case None => ExprResult.Missing(Set(ExprRef.Array(containerPath)))
+      case None => ExprResult.Missing(Set(containerPath.asIndirect + IndirectStep.Elements))
     }
   }
 
@@ -123,7 +115,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
     val refPath = root.asIndirect ++ path
     refs.getValue(refPath) match {
       case Some(value) => ExprResult.Result(value)
-      case None => ExprResult.Missing(Set(ExprRef.Param(refPath)))
+      case None => ExprResult.Missing(Set(refPath))
     }
   }
 }

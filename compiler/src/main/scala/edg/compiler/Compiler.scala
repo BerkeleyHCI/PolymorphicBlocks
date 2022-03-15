@@ -110,7 +110,7 @@ object CompilerError {
       s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
   }
   case class MissingAssertion(root: DesignPath, constrName: String,
-                              value: expr.ValueExpr, missing: Set[ExprRef]) extends CompilerError {
+                              value: expr.ValueExpr, missing: Set[IndirectDesignPath]) extends CompilerError {
     override def toString: String =
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
   }
@@ -868,8 +868,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }}
     }
     constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
-    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Elements,
-      ArrayValue(arrayElts.toSeq.map(TextValue(_))))
     constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
     // Try expanding the constraint
     record.constraintNames foreach { constrName =>
@@ -911,8 +909,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     debug(s"Link-side Port Array defined: ${record.parent ++ record.portArray} = $arrayElts")
     constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
-    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Elements,
-      ArrayValue(arrayElts.toSeq.map(TextValue(_))))
     constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
     // Try expanding the constraint
     // TODO this needs to be set based on whether the context is a block or link, currently this can't get called on
