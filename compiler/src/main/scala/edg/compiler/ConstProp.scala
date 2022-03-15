@@ -231,7 +231,7 @@ class ConstProp {
   }
 
   def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    params.setValue(target.asIndirect + IndirectStep.Elements, ArrayValue(elts.map(TextValue(_))))
+    setValue(target.asIndirect + IndirectStep.Elements, ArrayValue(elts.map(TextValue(_))))
     onArraySolved(target, elts)
     update()
   }
