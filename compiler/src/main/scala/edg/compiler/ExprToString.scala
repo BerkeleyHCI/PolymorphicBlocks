@@ -33,6 +33,8 @@ class ExprToString() extends ValueExprMap[String] {
     case lit.ValueLit.Type.Array(array) =>
       val arrayElts = array.elts.map(mapLiteral)
       s"[${arrayElts.mkString(", ")}]"
+    case lit.ValueLit.Type.Struct(value) => "unsupported struct"
+    case lit.ValueLit.Type.Empty => "(empty)"
   }
 
   private object BinaryExprOp {

@@ -90,8 +90,8 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
     )
     val containerPath = root ++ container
     refs.getValue(containerPath.asIndirect + IndirectStep.Elements) match {
-      case Some(ArrayValue.ExtractText(elts)) =>
-        val eltsVals = elts.map { elt =>
+      case Some(paramValue) =>
+        val eltsVals = ArrayValue.ExtractText(paramValue).map { elt =>
           val eltPath = containerPath.asIndirect + elt ++ mapExtract.getPath
           refs.getValue(eltPath) match {
             case Some(value) => ExprResult.Result(value)

@@ -168,6 +168,10 @@ object ArrayValue {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[String]] = seqMapOption(vals.values) {
       case TextValue(elt) => elt
     }
+    def apply(vals: ExprValue): Seq[String] = vals match {
+      case ArrayValue.ExtractText(values) => values
+      case _ => throw new ClassCastException("expr was not array of text")
+    }
   }
 }
 

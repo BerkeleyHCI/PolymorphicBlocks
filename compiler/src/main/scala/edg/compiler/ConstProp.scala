@@ -256,8 +256,8 @@ class ConstProp {
   }
 
   def getArrayElts(target: DesignPath): Option[Seq[String]] = {
-    params.getValue(target.asIndirect + IndirectStep.Elements).map {
-      case ArrayValue.ExtractText(elts) => elts
+    params.getValue(target.asIndirect + IndirectStep.Elements).map { paramValue =>
+      ArrayValue.ExtractText(paramValue)
     }
   }
 
