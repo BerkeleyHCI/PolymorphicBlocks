@@ -39,6 +39,12 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS))
     }
   }
+  object Allocated extends IndirectStep {
+    override def toString: String = "ALLOCATED"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED))
+    }
+  }
   object Name extends IndirectStep {
     override def toString: String = "NAME"
     override def asLocalStep: ref.LocalStep = {
@@ -59,6 +65,7 @@ object IndirectStep {  // namespace
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => IndirectStep.Elements
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => IndirectStep.Allocated
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
     case ref.LocalStep.Step.ReservedParam(step @

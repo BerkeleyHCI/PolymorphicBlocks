@@ -30,7 +30,9 @@ enum Reserved {
   LENGTH = 42;  // available on PortArray and LinkArray
   NAME = 44;
   ELEMENTS = 45;  // available on PortArray and LinkArray, returns a list of string of element names
-                  // when requested on a generator, returns a list of connected (allocated) ports
+                  // cannot be used as a generator dependency
+  ALLOCATED = 46;  // available on PortArray, returns a list of string of incoming connection names,
+                   // which may be user-specified or automatically-generated.
 }
 
 /** This is an actual step you take within the local

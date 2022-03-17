@@ -404,5 +404,4 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
       throw new MissingValueException(root.asIndirect ++ path)
     )
   }
-
 }
