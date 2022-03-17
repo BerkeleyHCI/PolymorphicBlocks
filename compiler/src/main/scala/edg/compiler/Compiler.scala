@@ -42,6 +42,26 @@ object ElaborateRecord {
   // NOTE: generator IsConnected dependencies are handled separately, since they must be available pre-elaborate.
   case class BlockPortNotConnected(path: DesignPath) extends ElaborateTask
 
+  // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
+  // Only called for port arrays without defined elements (so excluding blocks that define their ports, including
+  // generator-defined port arrays which are structurally similar).
+  // Created but never run for abstract blocks with abstract port array).
+  case class ElaboratePortArray(parent: DesignPath, portName: Seq[String]) extends ElaborateTask
+
+  // Lowers array-allocate connections to individual leaf-level allocate connections, once all array connections to
+  // a port array are of known length.
+  // Also defines the ALLOCATED param of the port array, giving an arbitrary name to anonymous ALLOCATEs.
+  // Also created for port arrays that have no array-connects, to define the ALLOCATE parameter.
+  // constraintNames includes all ALLOCATEs to the target port, whether array or not.
+  case class LowerArrayAllocateConnections(parent: DesignPath, portName: Seq[String], constraintNames: Seq[String])
+      extends ElaborateTask with ElaborateDependency
+
+  // Lowers leaf-level allocate connections by replacing the ALLOCATE with a port name.
+  // Requires array-allocate connections have been already lowered to leaf-level allocate connections, and that
+  // the port's ELEMENTS have been defined.
+  case class LowerAllocateConnections(parent: DesignPath, portName: Seq[String], constraintNames: Seq[String],
+                                      portIsLink: Boolean) extends ElaborateTask
+
   // In connect and export constraints, replaces all (internal) block-side ALLOCATEs with concrete subelt names.
   // When a connect is fully resolved (no more ALLOCATEs), generates the Connect elaboration task.
   case class BlockPortArray(parent: DesignPath, portArray: Seq[String], constraintNames: Seq[String])
