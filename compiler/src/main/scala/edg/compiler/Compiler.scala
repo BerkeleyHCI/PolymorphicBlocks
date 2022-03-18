@@ -843,16 +843,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // input function (which is provided the option suggested name).
   // Raises an exception if this is not a leaf connect, or if there is not exactly one connected ref that matches
   // the specified portPath.
-  protected def mapLeafConnectAllocate(connect: expr.ValueExpr, portPath: Seq[String])(fn: Option[String] => String):
+  protected def mapLeafConnectAllocate(constr: expr.ValueExpr, portPath: Seq[String])(fn: Option[String] => String):
       expr.ValueExpr = {
     import edg.ExprBuilder.{Ref, ValueExpr}
     val ExpectedPortPath = portPath
-    connect.expr match {
+    constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.RefAllocate(ExpectedPortPath, _), ValueExpr.RefAllocate(ExpectedPortPath, _)) =>
           throw new AssertionError("both block and link ref matches port")
         case (ValueExpr.RefAllocate(ExpectedPortPath, suggestedName), _) =>
+          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
+          constr.update(_.connected.blockPort.ref.steps.last := newStep)
         case (_, ValueExpr.RefAllocate(ExpectedPortPath, suggestedName)) =>
+          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
+          constr.update(_.connected.linkPort.ref.steps.last := newStep)
         case _ =>
           throw new AssertionError("neither block nor link ref matches port")
       }
@@ -860,7 +864,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.RefAllocate(ExpectedPortPath, _), ValueExpr.RefAllocate(ExpectedPortPath, _)) =>
           throw new AssertionError("both external and internal ref matches port")
         case (ValueExpr.RefAllocate(ExpectedPortPath, suggestedName), _) =>
+          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
+          constr.update(_.exported.exteriorPort.ref.steps.last := newStep)
         case (_, ValueExpr.RefAllocate(ExpectedPortPath, suggestedName)) =>
+          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
+          constr.update(_.exported.internalBlockPort.ref.steps.last := newStep)
         case _ =>
           throw new AssertionError("neither internal nor internal ref matches port")
       }
@@ -872,24 +880,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
   // to lower the ALLOCATE connections to concrete indices once the port is known.
   protected def lowerArrayAllocateConnections(record: ElaborateRecord.LowerArrayAllocateConnections): Unit = {
-    import edg.ExprBuilder.{Ref, ValueExpr}
     val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
     // TODO actually lower array connect, once we have them
 
     // Build up the list of constraints
     var prevPortIndex: Int = -1
-    val allocatedIndices = SeqMap[String, String]()  // constraint name -> allocated name
+    val allocatedIndices = mutable.SeqMap[String, String]()  // constraint name -> allocated name
     record.constraintNames foreach { constrName =>
-      block.getConstraints(constrName).expr match {
-        case expr.ValueExpr.Expr.Connected(connected) =>
-
-        case expr.ValueExpr.Expr.Exported(exported) =>
-      }
-
-      connected.getBlockPort match {
-        case ValueExpr.RefAllocate(record.portName, suggestedName) =>
+      mapLeafConnectAllocate(block.getConstraints(constrName), record.portName) { suggestedName =>
+        suggestedName match {
+          case Some(suggestedName) =>
+            allocatedIndices.put(constrName, suggestedName)
+          case None =>
+            prevPortIndex += 1
+            allocatedIndices.put(constrName, prevPortIndex.toString)
+        }
+        ""  // don't need the map functionality, the result is discarded anyways
       }
     }
+    constProp.setValue(record.parent ++ record.portName + IndirectStep.Allocated,
+      ArrayValue(allocatedIndices.values.toSeq.map(TextValue(_))))
 
     val lowerAllocateTask = ElaborateRecord.LowerAllocateConnections(record.parent, record.portName,
       record.constraintNames, record.portIsLink)
