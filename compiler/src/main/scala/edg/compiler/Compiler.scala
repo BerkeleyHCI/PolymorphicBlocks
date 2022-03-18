@@ -47,7 +47,7 @@ object ElaborateRecord {
   // Only called for port arrays without defined elements (so excluding blocks that define their ports, including
   // generator-defined port arrays which are structurally similar).
   // Created but never run for abstract blocks with abstract port array).
-  case class ElaboratePortArray(parent: DesignPath, portName: Seq[String]) extends ElaborateTask
+  case class ElaboratePortArray(path: DesignPath) extends ElaborateTask
 
   // Lowers array-allocate connections to individual leaf-level allocate connections, once all array connections to
   // a port array are of known length.
@@ -299,8 +299,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Elaborates the port, mutating it in-place. Recursive.
-  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike,
-                              isLink: Boolean): Unit = {
+  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
     // Instantiate as needed
     val instantiated = port match {
       case port: wir.PortLibrary =>
@@ -330,26 +329,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort, isLink)
+          elaboratePort(path + childPortName, port, childPort)
         }
       case port: wir.PortArray =>
-        // only define port array elts for links; blocks are required to define array elts
-        if (isLink) {  // TODO can this be cleaned up?
-          val childPortNames = constProp.getArrayElts(path) match {
-            case Some(elts) => elts
-            case None => // TODO can the empty case be set with everything else?
-              constProp.setArrayElts(path, Seq())
-              constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(0))
-              Seq()
-          }
-          val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
-            childPortName -> wir.PortLibrary.apply(port.getType)
-          })
-          port.setPorts(childPortLibraries)
+        if (port.portsSet) {  // else, create dependency on ELEMENTS
+          constProp.setArrayElts(path, port.getUnelaboratedPorts.keys.toSeq)
+          constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getUnelaboratedPorts.size))
         }
-        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-          elaboratePort(path + childPortName, port, childPort, isLink)
-        }
+        elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(
+          ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
+        ))
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
     }
   }
@@ -421,7 +410,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports, generating equivalence constraints as needed
     processParamDeclarations(path, block)
     for ((portName, port) <- block.getUnelaboratedPorts) {
-      elaboratePort(path + portName, block, port, false)
+      elaboratePort(path + portName, block, port)
     }
 
     // Find allocate ports and generate the port array lowering compiler tasks
@@ -661,7 +650,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports, generating equivalence constraints as needed
     processParamDeclarations(path, link)
     for ((portName, port) <- link.getUnelaboratedPorts) {
-      elaboratePort(path + portName, link, port, true)
+      elaboratePort(path + portName, link, port)
     }
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
@@ -835,6 +824,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     ports.foreach { case (portName, port) =>
       processConnectedTop(connected.path + portName, port)
+    }
+  }
+
+  def elaboratePortArray(path: DesignPath): Unit = {
+    val port = resolvePort(path).asInstanceOf[wir.PortArray]
+    if (!port.portsSet) {
+      val childPortNames = ArrayValue.ExtractText(constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
+      val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
+        childPortName -> wir.PortLibrary.apply(port.getType)
+      })
+      port.setPorts(childPortLibraries)
+    }
+    for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
+      elaboratePort (path + childPortName, port, childPort)
     }
   }
 
@@ -1039,6 +1042,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaborateNotConnected(connected)
             elaboratePending.setValue(connected, None)
 
+          case elaborateRecord: ElaborateRecord.ElaboratePortArray =>
+            elaboratePortArray(elaborateRecord.path)
+            elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord: ElaborateRecord.LowerArrayAllocateConnections =>
             lowerArrayAllocateConnections(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
