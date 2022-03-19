@@ -462,7 +462,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
     }
     linkAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
-      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, true)
+      constProp.addDirectedEquality(path.asIndirect ++ portArrayPath + IndirectStep.Elements,
+        path.asIndirect ++ portArrayPath + IndirectStep.Allocated, path)
+      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
       elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
     }
 
