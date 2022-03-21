@@ -230,6 +230,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   //
   elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())
   require(root.getElaboratedPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
+  processParamDeclarations(DesignPath(), root)
 
   // Hook method to be overridden, eg for status
   //
@@ -457,7 +458,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val newBlock = new wir.Block(blockPb, unrefinedType)
 
-    for ((portName, port) <- newBlock.getUnelaboratedPorts) {
+    processParamDeclarations(path, newBlock)
+
+    newBlock.getUnelaboratedPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
       elaboratePort(path + portName, newBlock, port)
     }
 
@@ -478,7 +481,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val newLink = new wir.Link(linkPb)
 
-    for ((portName, port) <- newLink.getUnelaboratedPorts) {
+    // Elaborate ports and parameters
+    processParamDeclarations(path, newLink)
+
+    // For link-side port arrays: set ALLOCATED -> ELEMENTS and allow it to expand later
+    newLink.getUnelaboratedPorts.collect { case (portName, port: wir.PortArray) =>
+      require(!port.portsSet) // links can't have fixed array elts
+      constProp.addDirectedEquality(
+        path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated, path)
+    }
+
+    newLink.getUnelaboratedPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, newLink, port)
     }
 
@@ -495,11 +508,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val block = resolveBlock(path).asInstanceOf[wir.Block]
 
     // TODO HANDLE GENERATORS HERE
+    require(block.toPb.getHierarchy.generators.isEmpty)
 
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
-
-    // Elaborate ports, generating equivalence constraints as needed
-    processParamDeclarations(path, block)
 
     // Find allocate ports and generate the port array lowering compiler tasks
     val blockAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
@@ -550,8 +561,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
     }
     linkAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
-      constProp.addDirectedEquality(path.asIndirect ++ portArrayPath + IndirectStep.Elements,
-        path.asIndirect ++ portArrayPath + IndirectStep.Allocated, path)
       val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
       elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
     }
@@ -598,8 +607,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       block.elaborate(innerLinkName, innerLinkElaborated)
 
       debug(s"Push link to pending: ${path + innerLinkName}")
-      val linkTask = ElaborateRecord.Link(path + innerLinkName)
-      elaboratePending.addNode(linkTask, Seq())
+      elaboratePending.addNode(ElaborateRecord.Link(path + innerLinkName), Seq())
     }
   }
 
@@ -674,9 +682,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Set my parameters in the global data structure
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     linkParams.put(path, link.getParams.keys.toSeq.map(IndirectStep.Element(_)))
-
-    // Elaborate ports, generating equivalence constraints as needed
-    processParamDeclarations(path, link)
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
@@ -763,8 +768,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       link.elaborate(innerLinkName, innerLinkElaborated)
 
       debug(s"Push link to pending: ${path + innerLinkName}")
-      val linkTask = ElaborateRecord.Link(path + innerLinkName)
-      elaboratePending.addNode(linkTask, Seq())
+      elaboratePending.addNode(ElaborateRecord.Link(path + innerLinkName), Seq())
     }
   }
 
