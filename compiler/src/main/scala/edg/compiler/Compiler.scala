@@ -66,10 +66,6 @@ object ElaborateRecord {
   // If the portPath is an port array, this is set once all the constituent connections are set, if there are any.
   // For arrays with no connections, this will never be set.
   case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
-
-  // A task that marks ConnectedLink for a PortArray once all its element's ConnectedLinks are set.
-  // For PortArrays with no connections, this will never be set.
-  case class ArrayConnectedLink(portPath: DesignPath) extends ElaborateTask
 }
 
 
@@ -958,11 +954,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     allocatedNames.foreach { allocatedName =>
       portDirectlyConnected.put(record.parent ++ record.portName + allocatedName, true)
     }
-    // Set the dependencies for the array's ConnectedLink
-    elaboratePending.addNode(ElaborateRecord.ArrayConnectedLink(record.parent ++ record.portName),
-      allocatedNames.toSeq.map { allocatedName =>
-        ElaborateRecord.ConnectedLink(record.parent ++ record.portName + allocatedName) }
-    )
   }
 
   // Once a link-side port array has all its element widths available, this lowers the connect statements
@@ -1040,10 +1031,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord: ElaborateRecord.LowerAllocateConnections =>
             lowerAllocateConnections(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
-
-          case arrayConnectedLink: ElaborateRecord.ArrayConnectedLink =>
-            elaboratePending.setValue(ElaborateRecord.ConnectedLink(arrayConnectedLink.portPath), None)
-            elaboratePending.setValue(arrayConnectedLink, None)
 
           case _: ElaborateRecord.ElaborateDependency =>
             throw new IllegalArgumentException(s"can't elaborate dependency-only record $elaborateRecord")
