@@ -403,6 +403,63 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  // Give a block library at some path, expand it and return the instantiated block.
+  // Handles class type refinements and adds default parameters and class-based value refinements
+  // For the generator, this will be a skeleton block.
+  protected def expandBlock(path: DesignPath, block: wir.BlockLibrary): wir.Block = {
+    val libraryPath = block.target
+
+    val (refinedLibraryPath, unrefinedType) = refinements.instanceRefinements.get(path) match {
+      case Some(refinement) => (refinement, Some(libraryPath))
+      case None => refinements.classRefinements.get(libraryPath) match {
+        case Some(refinement) => (refinement, Some(libraryPath))
+        case None => (libraryPath, None)
+      }
+    }
+
+    val blockPb = library.getBlock(refinedLibraryPath) match {
+      case Errorable.Success(blockPb) =>
+        blockPb
+      case Errorable.Error(err) =>
+        import edgir.elem.elem
+        errors += CompilerError.LibraryError(path, refinedLibraryPath, err)
+        elem.HierarchyBlock()
+    }
+
+    // additional processing needed for the refinement case
+    if (unrefinedType.isDefined) {
+      if (!library.isSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
+        errors += CompilerError.RefinementSubclassError(path, refinedLibraryPath, libraryPath)
+      }
+
+      val unrefinedPb = library.getBlock(libraryPath) match {  // add subclass (refinement) default params
+        case Errorable.Success(unrefinedPb) =>
+          unrefinedPb
+        case Errorable.Error(err) =>  // this doesn't stop elaboration, but does raise an error
+          import edgir.elem.elem
+          errors += CompilerError.LibraryError(path, libraryPath, err)
+          elem.HierarchyBlock()
+      }
+      val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
+      refinedNewParams.foreach { refinedNewParam =>
+        blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
+          constProp.addAssignment(path.asIndirect + refinedNewParam, path, refinedDefault,
+            s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
+        }
+      }
+    }
+
+    // add class-based refinements
+    refinements.classValues.get(refinedLibraryPath).foreach { classValueRefinements =>
+      for ((subpath, value) <- classValueRefinements) {
+        constProp.setForcedValue(path.asIndirect ++ subpath, value,
+          s"${refinedLibraryPath.getTarget.getName} class refinement")
+      }
+    }
+
+    new wir.Block(blockPb, unrefinedType)
+  }
+
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
     import edg.ExprBuilder.ValueExpr
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
@@ -476,12 +533,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
-    for (blockName <- block.getUnelaboratedBlocks.keys) {
+    block.getUnelaboratedBlocks.foreach { case (blockName, block) =>
+      val blockPb = expandBlock(path + blockName, block.asInstanceOf[wir.BlockLibrary])
+
+      // TODO REFACTOR ME
       debug(s"Push block to pending: ${path + blockName}")
       elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
       elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + blockName), Seq(ElaborateRecord.BlockElaborated(path + blockName)))
     }
-    for (linkName <- block.getUnelaboratedLinks.keys) {
+
+    block.getUnelaboratedLinks.foreach { case (linkName, link) =>
+
+      // TODO REFACTOR ME
       debug(s"Push link to pending: ${path + linkName}")
       val linkTask = ElaborateRecord.Link(path + linkName)
       elaboratePending.addNode(linkTask, Seq())
@@ -501,56 +564,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Instantiate block from library element to wir.Block
     val libraryPath = resolveBlock(path).asInstanceOf[wir.BlockLibrary].target
 
-    val (refinedLibrary, unrefinedType) = refinements.instanceRefinements.get(path) match {
-      case Some(refinement) => (refinement, Some(libraryPath))
-      case None => refinements.classRefinements.get(libraryPath) match {
-        case Some(refinement) => (refinement, Some(libraryPath))
-        case None => (libraryPath, None)
-      }
-    }
-
-    val blockPb = library.getBlock(refinedLibrary) match {
-      case Errorable.Success(blockPb) =>
-        if (unrefinedType.isDefined) {  // check refinement validity and add default params
-          if (!library.isSubclassOf(refinedLibrary, libraryPath)) {
-            errors += CompilerError.RefinementSubclassError(path, refinedLibrary, libraryPath)
-          }
-          library.getBlock(libraryPath) match {
-            case Errorable.Success(unrefinedPb) =>
-              val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
-              refinedNewParams.foreach { refinedNewParam =>
-                blockPb.paramDefaults.get(refinedNewParam) match {
-                  case Some(refinedDefault) =>
-                    constProp.addAssignment(path.asIndirect + refinedNewParam, path, refinedDefault,
-                        s"(default)${refinedLibrary.toSimpleString}.$refinedNewParam")
-                  case None =>  // ignored
-                }
-              }
-            case Errorable.Error(err) =>  // TODO cleaner error handling
-              import edgir.elem.elem
-              errors += CompilerError.LibraryError(path, libraryPath, err)
-              elem.HierarchyBlock()
-          }
-          blockPb
-        } else {  // no default params
-          blockPb
-        }
-      case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.LibraryError(path, refinedLibrary, err)
-        elem.HierarchyBlock()
-    }
-
-    // Populate class-based value refinements
-    refinements.classValues.get(refinedLibrary) match {
-      case Some(classValueRefinements) => for ((subpath, value) <- classValueRefinements) {
-        constProp.setForcedValue(
-          path.asIndirect ++ subpath, value,
-          s"${refinedLibrary.getTarget.getName} class refinement")
-      }
-      case None =>
-    }
-
+    // TODO REFACTOR ME INTO PROCESS BLOCK
     if (blockPb.generators.isEmpty) {  // non-generators: directly instantiate the block
       val block = new wir.Block(blockPb, unrefinedType)
       processBlock(path, block)
