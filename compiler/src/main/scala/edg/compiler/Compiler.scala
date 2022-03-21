@@ -403,7 +403,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Give a block library at some path, expand it and return the instantiated block.
+  // Given a block library at some path, expand it and return the instantiated block.
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
   protected def expandBlock(path: DesignPath, block: wir.BlockLibrary): wir.Block = {
@@ -458,6 +458,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     new wir.Block(blockPb, unrefinedType)
+  }
+
+  // Given a link library at some path, expand it and return the instantiated block.
+  protected def expandLink(path: DesignPath, link: wir.LinkLibrary): wir.Link = {
+    val libraryPath = link.target
+
+    val linkPb = library.getLink(libraryPath) match {
+      case Errorable.Success(linkPb) => linkPb
+      case Errorable.Error(err) =>
+        import edgir.elem.elem
+        errors += CompilerError.LibraryError(path, libraryPath, err)
+        elem.Link()
+    }
+
+    new wir.Link(linkPb)
   }
 
   protected def processBlock(path: DesignPath, block: wir.Block): Unit = {
@@ -533,22 +548,24 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
-    block.getUnelaboratedBlocks.foreach { case (blockName, block) =>
-      val blockPb = expandBlock(path + blockName, block.asInstanceOf[wir.BlockLibrary])
+    block.getUnelaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
+      val innerBlockElaborated = expandBlock(path + innerBlockName, innerBlock.asInstanceOf[wir.BlockLibrary])
+      block.elaborate(innerBlockName, innerBlockElaborated)
 
       // TODO REFACTOR ME
-      debug(s"Push block to pending: ${path + blockName}")
-      elaboratePending.addNode(ElaborateRecord.Block(path + blockName), Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + blockName), Seq(ElaborateRecord.BlockElaborated(path + blockName)))
+      debug(s"Push block to pending: ${path + innerBlockName}")
+      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), Seq())
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + innerBlockName), Seq(ElaborateRecord.BlockElaborated(path + blockName)))
     }
 
-    block.getUnelaboratedLinks.foreach { case (linkName, link) =>
+    block.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+      val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
+      block.elaborate(innerLinkName, innerLinkElaborated)
 
-      // TODO REFACTOR ME
-      debug(s"Push link to pending: ${path + linkName}")
-      val linkTask = ElaborateRecord.Link(path + linkName)
+      debug(s"Push link to pending: ${path + innerLinkName}")
+      val linkTask = ElaborateRecord.Link(path + innerLinkName)
       elaboratePending.addNode(linkTask, Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + linkName), Seq(linkTask))
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + innerLinkName), Seq(linkTask))
     }
 
     // Mark this block as done
@@ -656,8 +673,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  protected def processLink(path: DesignPath, link: wir.Link): Unit = {
+  /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
+    * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
+    * Adds children to the pending queue, and adds constraints to constProp.
+    * Expands connects in the parent, as needed.
+    */
+  protected def elaborateLink(path: DesignPath): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
+    val link = resolveLink(path).asInstanceOf[wir.Link]
 
     // Set my parameters in the global data structure
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
@@ -748,42 +771,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       processConnectedConstraint(path, constrName, constr.expr, true)
     }
 
-    // Queue up sub-trees that need elaboration - needs to be post-generate for generators
-    for (linkName <- link.getUnelaboratedLinks.keys) {
-      debug(s"Push link to pending: ${path + linkName}")
-      val linkTask = ElaborateRecord.Link(path + linkName)
+    // Queue up sub-trees that need elaboration
+    link.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+      val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
+      link.elaborate(innerLinkName, innerLinkElaborated)
+
+      debug(s"Push link to pending: ${path + innerLinkName}")
+      val linkTask = ElaborateRecord.Link(path + innerLinkName)
       elaboratePending.addNode(linkTask, Seq())
-      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + linkName),
-        Seq(linkTask))
+      elaboratePending.addNode(ElaborateRecord.BlockPortNotConnected(path + innerLinkName), Seq(linkTask))
     }
-  }
-
-  /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
-    * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
-    * Adds children to the pending queue, and adds constraints to constProp.
-    * Expands connects in the parent, as needed.
-    */
-  protected def elaborateLink(path: DesignPath): Unit = {
-    val (parentPath, name) = path.split
-
-    // Instantiate block from library element to wir.Block
-    val parent = resolve(parentPath).asInstanceOf[wir.HasMutableLinks]
-    val libraryPath = parent.getUnelaboratedLinks(name).asInstanceOf[wir.LinkLibrary].target
-
-    val linkPb = library.getLink(libraryPath) match {
-      case Errorable.Success(linkPb) => linkPb
-      case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.LibraryError(path, libraryPath, err)
-        elem.Link()
-    }
-    val link = new wir.Link(linkPb)
-
-    // Process block
-    processLink(path, link)
-
-    // Link block in parent
-    parent.elaborate(name, link)
   }
 
   // Additional processing for ports that sets not-connected status (or connected status) recursively once
