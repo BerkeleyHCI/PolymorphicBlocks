@@ -158,8 +158,8 @@ object CompilerError {
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
   // TODO better debug toggle
-  protected def debug(msg: => String): Unit = println(msg)
-//  protected def debug(msg: => String): Unit = { }
+//  protected def debug(msg: => String): Unit = println(msg)
+  protected def debug(msg: => String): Unit = { }
 
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName
@@ -447,6 +447,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val newBlock = new wir.Block(blockPb, unrefinedType)
 
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newBlock)
 
     newBlock.getUnelaboratedPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
@@ -471,6 +472,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val newLink = new wir.Link(linkPb)
 
     // Elaborate ports and parameters
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newLink)
 
     // For link-side port arrays: set ALLOCATED -> ELEMENTS and allow it to expand later
@@ -493,64 +495,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     * Expands connects in the parent, as needed.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
-    import edg.ExprBuilder.ValueExpr
     val block = resolveBlock(path).asInstanceOf[wir.Block]
 
     // TODO HANDLE GENERATORS HERE
     require(block.toPb.getHierarchy.generators.isEmpty)
-
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
-
-    // Find allocate ports and generate the port array lowering compiler tasks
-    val blockAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
-    val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
-    val connectedPortArrays = mutable.Set[DesignPath]()
-
-    block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
-        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
-          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-
-          require(blockPortArray.length == 2)
-          connectedPortArrays.add(path ++ blockPortArray)
-        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.Ref(linkPort)) =>
-          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
-
-          require(blockPortArray.length == 2)
-          connectedPortArrays.add(path ++ blockPortArray)
-        case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray, _)) =>
-          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
-        case _ => throw new AssertionError("impossible connected format")
-      }
-      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (_, ValueExpr.RefAllocate(intPortArray, _)) =>
-          blockAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
-
-          require(intPortArray.length == 2)
-          connectedPortArrays.add(path ++ intPortArray)
-        case (_, ValueExpr.Ref(intPort)) =>
-
-        case _ => throw new AssertionError("impossible exported format")
-      }
-      case _ =>  // all other constraints ignored
-    }}
-
-    blockAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
-      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
-      elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
-    }
-    linkAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
-      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
-      elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
-    }
-
-    // Process all the process-able constraints: parameter constraints and non-allocate connected
-    block.getConstraints.foreach { case (constrName, constr) =>
-      processParamConstraint(path, constrName, constr, constr.expr)
-      processConnectedConstraint(path, constrName, constr.expr, false)
-    }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
@@ -583,6 +531,96 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
       debug(s"Push link to pending: ${path + innerLinkName}")
       elaboratePending.addNode(ElaborateRecord.Link(path + innerLinkName), Seq())
+    }
+
+    // Find allocate ports and generate the port array lowering compiler tasks
+    val blockAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
+    val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
+    val blockConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
+    val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
+    val connectedPortArrays = mutable.Set[DesignPath]()
+
+    import edg.ExprBuilder.ValueExpr
+    block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
+        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
+          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.Ref(linkPort)) =>
+          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+          linkConnectedConstraint.put(linkPort, constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray, _)) =>
+          blockConnectedConstraint.put(blockPort, constrName)
+          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+          blockConnectedConstraint.put(blockPort, constrName)
+          linkConnectedConstraint.getOrElseUpdate(linkPort, constrName)
+        case _ => throw new AssertionError("impossible connected format")
+      }
+      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (_, ValueExpr.RefAllocate(intPortArray, _)) =>
+          blockAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(intPortArray.length == 2)
+          connectedPortArrays.add(path ++ intPortArray)
+        case (_, ValueExpr.Ref(intPort)) =>
+          blockConnectedConstraint.put(intPort, constrName)
+
+        case _ => throw new AssertionError("impossible exported format")
+      }
+      case _ =>  // all other constraints ignored
+    }}
+
+    blockAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
+      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
+      elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
+    }
+    linkAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
+      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
+      elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
+    }
+
+    // Set IsConnected
+    block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
+      innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach {
+        case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
+          val connectedPath = path.asIndirect + innerBlockName + portName + IndirectStep.IsConnected
+          blockConnectedConstraint.get(Seq(innerBlockName, portName)).map(block.getConstraints(_).expr) match {
+            case Some(expr.ValueExpr.Expr.Connected(connected)) =>
+              constProp.setValue(connectedPath, BooleanValue(true))
+            case Some(expr.ValueExpr.Expr.Exported(exported)) =>
+              constProp.addDirectedEquality(connectedPath, path.asIndirect ++ exported.getExteriorPort.getRef, path)
+            case None =>
+              constProp.setValue(connectedPath, BooleanValue(false))
+          }
+        case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
+      }
+    }
+
+    block.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+      innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach {
+        case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
+          val connectedPath = path.asIndirect + innerLinkName + portName + IndirectStep.IsConnected
+          blockConnectedConstraint.get(Seq(innerLinkName, portName)) match {
+            case Some(_) =>
+              constProp.setValue(connectedPath, BooleanValue(true))
+            case None =>
+              constProp.setValue(connectedPath, BooleanValue(false))
+          }
+        case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
+      }
+    }
+
+    // Process all the process-able constraints: parameter constraints and non-allocate connected
+    block.getConstraints.foreach { case (constrName, constr) =>
+      processParamConstraint(path, constrName, constr, constr.expr)
+      processConnectedConstraint(path, constrName, constr.expr, false)
     }
   }
 
@@ -651,7 +689,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val link = resolveLink(path).asInstanceOf[wir.Link]
 
     // Set my parameters in the global data structure
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     linkParams.put(path, link.getParams.keys.toSeq.map(IndirectStep.Element(_)))
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
