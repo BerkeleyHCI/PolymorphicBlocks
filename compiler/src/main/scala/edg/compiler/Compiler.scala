@@ -482,6 +482,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports and parameters
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newLink)
+    linkParams.put(path, linkPb.params.keys.toSeq.map(IndirectStep.Element(_)))
 
     newLink.getUnelaboratedPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, newLink, port)
@@ -696,8 +697,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     val link = resolveLink(path).asInstanceOf[wir.Link]
 
-    // Set my parameters in the global data structure
-    linkParams.put(path, link.getParams.keys.toSeq.map(IndirectStep.Element(_)))
+    // Queue up sub-trees that need elaboration
+    link.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+      val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
+      link.elaborate(innerLinkName, innerLinkElaborated)
+    }
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
@@ -817,12 +821,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       processParamConstraint(path, constrName, constr, constr.expr)
       processConnectedConstraint(path, constrName, constr.expr, true)
     }
-
-    // Queue up sub-trees that need elaboration
-    link.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
-      val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
-      link.elaborate(innerLinkName, innerLinkElaborated)
-    }
   }
 
   def elaboratePortArray(path: DesignPath): Unit = {
@@ -882,7 +880,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
   // to lower the ALLOCATE connections to concrete indices once the port is known.
   protected def lowerArrayAllocateConnections(record: ElaborateRecord.LowerArrayAllocateConnections): Unit = {
-    val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
+    val block = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     // TODO actually lower array connect, once we have them
 
     // Build up the list of constraints
@@ -913,8 +911,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // by replacing ALLOCATEs with concrete indices.
   // This must also handle internal-side export statements.
   protected def lowerAllocateConnections(record: ElaborateRecord.LowerAllocateConnections): Unit = {
-    import edg.ExprBuilder.{Ref, ValueExpr}
-    val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
+    val block = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     val portElements = ArrayValue.ExtractText(
       constProp.getValue(record.parent.asIndirect ++ record.portName + IndirectStep.Elements).get)
 
