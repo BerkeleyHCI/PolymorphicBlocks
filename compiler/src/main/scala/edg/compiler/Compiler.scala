@@ -450,6 +450,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, newBlock, port)
     }
 
+    val deps = if (blockPb.generators.nonEmpty) {
+      require(blockPb.generators.size == 1)  // TODO proper single generator structure
+      val (generatorFnName, generator) = blockPb.generators.head
+      val generatorParams = generator.requiredParams.map { depPath =>
+        ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+      }
+      val generatorPorts = generator.requiredPorts.map { depPort =>  // TODO remove this with refactoring
+        ElaborateRecord.ConnectedLink(path ++ depPort)
+      }
+      generatorParams ++ generatorPorts
+    } else {
+      Seq()
+    }
+    elaboratePending.addNode(ElaborateRecord.Block(path), deps)
+
     newBlock
   }
 
@@ -482,6 +497,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, newLink, port)
     }
 
+    val arrayDeps = newLink.getMixedPorts.collect {
+      case (portName, arr: wir.PortArray) => ElaborateRecord.ElaboratePortArray(path + portName)
+    }.toSeq
+    elaboratePending.addNode(ElaborateRecord.Link(path), arrayDeps)
+
     newLink
   }
 
@@ -501,32 +521,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getUnelaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
       val innerBlockElaborated = expandBlock(path + innerBlockName, innerBlock.asInstanceOf[wir.BlockLibrary])
       block.elaborate(innerBlockName, innerBlockElaborated)
-
-      val blockPb = innerBlockElaborated.toPb.getHierarchy  // TODO this should be a wir.Block API?
-      val deps = if (blockPb.generators.nonEmpty) {
-        require(blockPb.generators.size == 1)  // TODO proper single generator structure
-        val (generatorFnName, generator) = blockPb.generators.head
-        val generatorParams = generator.requiredParams.map { depPath =>
-          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        }
-        val generatorPorts = generator.requiredPorts.map { depPort =>  // TODO remove this with refactoring
-          ElaborateRecord.ConnectedLink(path ++ depPort)
-        }
-        generatorParams ++ generatorPorts
-      } else {
-        Seq()
-      }
-
-      debug(s"Push block to pending: ${path + innerBlockName}")
-      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), deps)
     }
 
     block.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
       block.elaborate(innerLinkName, innerLinkElaborated)
-
-      debug(s"Push link to pending: ${path + innerLinkName}")
-      elaboratePending.addNode(ElaborateRecord.Link(path + innerLinkName), Seq())
     }
 
     // Find allocate ports and generate the port array lowering compiler tasks
@@ -707,6 +706,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((portName, port) <- link.getElaboratedPorts) {
       setConnectedLink(path + portName, port)
     }
+    require(link.getUnelaboratedPorts.isEmpty)  // make sure we set ConnectedLink on all ports
 
     // Aggregate by inner link ports
     val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
@@ -812,9 +812,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     link.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
       link.elaborate(innerLinkName, innerLinkElaborated)
-
-      debug(s"Push link to pending: ${path + innerLinkName}")
-      elaboratePending.addNode(ElaborateRecord.Link(path + innerLinkName), Seq())
     }
   }
 
