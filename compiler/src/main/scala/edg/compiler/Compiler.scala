@@ -9,7 +9,6 @@ import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLi
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
-import edg.compiler.ElaborateRecord.LowerArrayAllocateConnections
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -159,8 +158,8 @@ object CompilerError {
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
   // TODO better debug toggle
-//  protected def debug(msg: => String): Unit = println(msg)
-  protected def debug(msg: => String): Unit = { }
+  protected def debug(msg: => String): Unit = println(msg)
+//  protected def debug(msg: => String): Unit = { }
 
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName
@@ -193,12 +192,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   linkParams.put(DesignPath(), Seq())  // empty path means disconnected
   private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
-
-  // Set true when a connect involving the port is seen, or false when a port is known not-connected
-  // Not a recursive data structure
-  private val portDirectlyConnected = SingleWriteHashMap[DesignPath, Boolean]()
-  // Set true if this block-side port-array contains a connect to its element
-  private val portArrayConnected = SingleWriteHashMap[DesignPath, Boolean]()
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -524,15 +517,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.Ref(linkPort)) =>
           blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
 
-          portDirectlyConnected.put(path ++ linkPort, true)
           require(blockPortArray.length == 2)
           connectedPortArrays.add(path ++ blockPortArray)
         case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray, _)) =>
           linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
-          portDirectlyConnected.put(path ++ blockPort, true)
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
-          portDirectlyConnected.put(path ++ blockPort, true)
-          portDirectlyConnected.put(path ++ linkPort, true)
         case _ => throw new AssertionError("impossible connected format")
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
@@ -542,15 +531,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           require(intPortArray.length == 2)
           connectedPortArrays.add(path ++ intPortArray)
         case (_, ValueExpr.Ref(intPort)) =>
-          portDirectlyConnected.put(path ++ intPort, true)
+
         case _ => throw new AssertionError("impossible exported format")
       }
       case _ =>  // all other constraints ignored
     }}
-
-    connectedPortArrays.foreach { connectedPortArray =>  // aggregated write to SingleWriteHashMap here
-      portArrayConnected.put(connectedPortArray, true)
-    }
 
     blockAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
       val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
@@ -580,14 +565,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val generatorParams = generator.requiredParams.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
         }
-        val generatorPorts = generator.requiredPorts.flatMap { depPort =>  // TODO remove this with refactoring
-          if (portDirectlyConnected.contains(path ++ depPort)) {
-            Some(ElaborateRecord.ConnectedLink(path ++ depPort))
-          } else if (depPort.steps.length > 1 && portArrayConnected.contains(path + depPort.steps.head.getName)) {
-            Some(ElaborateRecord.ConnectedLink(path ++ depPort))
-          } else {  // don't block on non-connected ports
-            None
-          }
+        val generatorPorts = generator.requiredPorts.map { depPort =>  // TODO remove this with refactoring
+          ElaborateRecord.ConnectedLink(path ++ depPort)
         }
         generatorParams ++ generatorPorts
       } else {
@@ -616,19 +595,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         throw new IllegalArgumentException(s"missing param ${generator.blockPath.asIndirect ++ reqParam}"))
     }.toMap
 
-    val reqPortValues = generator.requiredPorts.flatMap { reqPort =>
+    val reqPortValues = generator.requiredPorts.flatMap { reqPort =>  // TODO refactor out
       val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      // TODO centralize not-connected logic
-      if (portDirectlyConnected.contains(generator.blockPath ++ reqPort)) {
-        val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
-        Map(
-          isConnectedSuffix -> BooleanValue(true),
-          connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix).getOrElse(
-            throw new IllegalArgumentException(s"missing port value ${generator.blockPath.asIndirect ++ connectedNameSuffix}"))
-        )
-      } else {
-        Map(isConnectedSuffix -> BooleanValue(false))
-      }
+      val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
+      Map(
+        isConnectedSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ reqPort + IndirectStep.IsConnected)
+            .get,
+        connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix)
+            .getOrElse(TextValue(""))
+      )
     }.map { case (param, value) =>
       param.asLocalPath() -> value
     }
@@ -681,10 +656,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
-        if (portDirectlyConnected.contains(portPath)) {
-          connectedLink.put(portPath, path)
-          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        }
+        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
       case port: wir.PortArray =>
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
           setConnectedLink(portPath + subPortName, subPort)
@@ -739,7 +711,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) => portDirectlyConnected.put(path ++ intPort, true)
+        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
         case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
       }
       case _ =>
@@ -948,11 +920,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     record.constraintNames foreach { constrName =>
       processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, record.portIsLink)
-    }
-
-    // Propagate to portDirectlyConnected
-    allocatedNames.foreach { allocatedName =>
-      portDirectlyConnected.put(record.parent ++ record.portName + allocatedName, true)
     }
   }
 
