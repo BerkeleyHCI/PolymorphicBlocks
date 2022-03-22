@@ -586,8 +586,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
       innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach {
         case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
-          val connectedPath = path.asIndirect + innerBlockName + portName + IndirectStep.IsConnected
-          blockConnectedConstraint.get(Seq(innerBlockName, portName)).map{ constrName =>
+          val portPath = path + innerBlockName + portName
+          val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
+          blockConnectedConstraint.get(Seq(innerBlockName, portName)).map { constrName =>
             (constrName, block.getConstraints(constrName).expr)
           } match {
             case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
@@ -597,15 +598,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 s"$path.$constrName (export)")
             case None =>
               constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
+              elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+            case Some((_, _)) => throw new IllegalArgumentException
           }
         case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
+        case (portName, _: wir.PortLibrary) => throw new IllegalArgumentException
       }
     }
 
     block.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach {
         case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
-          val connectedPath = path.asIndirect + innerLinkName + portName + IndirectStep.IsConnected
+          val portPath = path + innerLinkName + portName
+          val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
           linkConnectedConstraint.get(Seq(innerLinkName, portName)) match {
             case Some(constrName) =>
               constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName")
@@ -613,6 +618,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
           }
         case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
+        case (portName, _: wir.PortLibrary) => throw new IllegalArgumentException
       }
     }
 
@@ -702,62 +708,98 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       setConnectedLink(path + portName, port)
     }
 
-    // Find allocate ports and lower them before processing all constraints
-    // path to inner link port array -> list of array elements
-    // TODO refactor for consistency with block side array-connects
-    val intPortArrayEltss = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
-    link.getConstraints.view.mapValues(_.expr).collect {  // extract exported constraints only
-      case (constrName, expr.ValueExpr.Expr.Exported(exported)) =>
-        (constrName, exported.getExteriorPort, exported.getInternalBlockPort)
-    }.collect {  // extract array ones that need lowering, into (name, external ports, internal array)
-      case (constrName, ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
-      ValueExpr.RefAllocate(intPortArray, None)) =>  // array-array connect
-        // TODO HANDLE SUGGESTED NAME
-        val extPorts = constProp.getArrayElts(path ++ extPortArray).get.map { extArrayElt =>
-          (extPortArray :+ extArrayElt) ++ extPortInner }
-        (constrName, extPorts, intPortArray)
-      case (constrName, ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray, None)) =>  // element-array connect
-        // TODO HANDLE SUGGESTED NAME
-        val extPorts = Seq(extPort)
-        (constrName, extPorts, intPortArray)
-    }.foreach { case (constrName, extPorts, intPortArray) =>  // expand the connections
-      link.mapMultiConstraint(constrName) { constr =>
-        val intPortArrayElts = intPortArrayEltss.getOrElseUpdate(intPortArray, mutable.ListBuffer())
-        val startIndex = intPortArrayElts.length
-        extPorts.zipWithIndex.map { case (extPort, extPortIndex) =>
-          val intPortIndex = (startIndex + extPortIndex).toString
-          intPortArrayElts.append(intPortIndex)
-
-          val newConstrName = extPorts.length match {
-            case 1 => constrName // constraint doesn't expand
-            case _ => constrName + "." + extPortIndex // expands into multiple constraints, each needs a unique name
-          }
-          val newConstr = constr.update(
-            _.exported.exteriorPort.ref.steps := extPort.map { pathElt =>
-              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
-            },
-            _.exported.internalBlockPort.ref.steps := (intPortArray :+ intPortIndex).map { pathElt =>
-              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
-            },
-          )
-          newConstrName -> newConstr
-        }
-      }
-    }
+    // Aggregate by inner link ports
+    val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
+    val linkArrayDependencies = mutable.HashMap[Seq[String], mutable.ListBuffer[Seq[String]]]()  // port array path -> port arrays that must be expanded
+    val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
 
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-        case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
-      }
-      case _ =>
-    }}
+        case (_, ValueExpr.RefAllocate(intPortArray, _)) =>
+          linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+        case (_, ValueExpr.Ref(intPort)) =>
+          linkConnectedConstraint.put(intPort, constrName)
+        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(intPortArray, None)) => // TODO array-export stmt
+          linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+          linkArrayDependencies.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(extPortArray)
 
-    // Actually define arrays
-    intPortArrayEltss.foreach { case (intPortArray, intPortArrayElts) =>
-      debug(s"Array defined: ${path ++ intPortArray} = $intPortArrayElts")
-      constProp.setArrayElts(path ++ intPortArray, intPortArrayElts.toSeq)
-      constProp.setValue(path.asIndirect ++ intPortArray + IndirectStep.Length, IntValue(intPortArrayElts.length))
+        case _ => throw new AssertionError("impossible exported format")
+      }
+      case _ => // all other constraints ignored
+    } }
+
+    linkAllocateConstraints.foreach { case (portArrayPath, constrNames) =>
+      val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portArrayPath, constrNames.toSeq, false)
+      val arrayDependencies = linkArrayDependencies.getOrElse(portArrayPath, Seq()).toSeq.map { portArray =>
+        ElaborateRecord.ElaboratePortArray(path ++ portArray)
+      }
+      elaboratePending.addNode(lowerArrayTask, arrayDependencies)
+    }
+
+      //    // Find allocate ports and lower them before processing all constraints
+//    // path to inner link port array -> list of array elements
+//    // TODO refactor for consistency with block side array-connects
+//    val intPortArrayEltss = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()
+//    link.getConstraints.view.mapValues(_.expr).collect {  // extract exported constraints only
+//      case (constrName, expr.ValueExpr.Expr.Exported(exported)) =>
+//        (constrName, exported.getExteriorPort, exported.getInternalBlockPort)
+//    }.collect {  // extract array ones that need lowering, into (name, external ports, internal array)
+//      case (constrName, ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)),
+//      ValueExpr.RefAllocate(intPortArray, None)) =>  // array-array connect
+//        // TODO HANDLE SUGGESTED NAME
+//        val extPorts = constProp.getArrayElts(path ++ extPortArray).get.map { extArrayElt =>
+//          (extPortArray :+ extArrayElt) ++ extPortInner }
+//        (constrName, extPorts, intPortArray)
+//      case (constrName, ValueExpr.Ref(extPort), ValueExpr.RefAllocate(intPortArray, None)) =>  // element-array connect
+//        // TODO HANDLE SUGGESTED NAME
+//        val extPorts = Seq(extPort)
+//        (constrName, extPorts, intPortArray)
+//    }.foreach { case (constrName, extPorts, intPortArray) =>  // expand the connections
+//      link.mapMultiConstraint(constrName) { constr =>
+//        val intPortArrayElts = intPortArrayEltss.getOrElseUpdate(intPortArray, mutable.ListBuffer())
+//        val startIndex = intPortArrayElts.length
+//        extPorts.zipWithIndex.map { case (extPort, extPortIndex) =>
+//          val intPortIndex = (startIndex + extPortIndex).toString
+//          intPortArrayElts.append(intPortIndex)
+//
+//          val newConstrName = extPorts.length match {
+//            case 1 => constrName // constraint doesn't expand
+//            case _ => constrName + "." + extPortIndex // expands into multiple constraints, each needs a unique name
+//          }
+//          val newConstr = constr.update(
+//            _.exported.exteriorPort.ref.steps := extPort.map { pathElt =>
+//              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
+//            },
+//            _.exported.internalBlockPort.ref.steps := (intPortArray :+ intPortIndex).map { pathElt =>
+//              ref.LocalStep(ref.LocalStep.Step.Name(pathElt))
+//            },
+//          )
+//          newConstrName -> newConstr
+//        }
+//      }
+//    }
+//    link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+//      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+//        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+//        case _ => throw new IllegalConstraintException(s"unknown export in link $path: $constrName = $exported")
+//      }
+//      case _ =>
+//    }}
+
+    link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+      innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach {
+        case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
+          val portPath = path + innerLinkName + portName
+          val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
+          linkConnectedConstraint.get(Seq(innerLinkName, portName)) match {
+            case Some(constrName) =>
+              constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName")
+            case None =>
+              constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
+          }
+        case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
+        case (portName, _: wir.PortLibrary) => throw new IllegalArgumentException
+      }
     }
 
     // Process constraints, as in the block case
