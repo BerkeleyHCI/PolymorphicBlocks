@@ -277,10 +277,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   protected def resolvePortConnectivity(containerPath: DesignPath, portPostfix: Seq[String],
-                                        constraint: Option[(String, expr.ValueExpr.Expr)]): Unit = {
+                                        constraint: Option[(String, expr.ValueExpr)]): Unit = {
     val port = resolvePort(containerPath ++ portPostfix)
     val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
     val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints]  // block or link
+    val constraintExpr = constraint.map { case (constrName, constr) => (constrName, constr.expr) }
 
     def recursiveSetNotConnected(portPath: DesignPath, port: wir.PortLike): Unit = {
       constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
@@ -302,7 +303,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     port match {
-      case _: wir.Bundle | _: wir.Port => constraint match {
+      case _: wir.Bundle | _: wir.Port => constraintExpr match {
         case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
           require(container.isInstanceOf[wir.Block])
           constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
@@ -375,7 +376,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Attempts to process a parameter constraint, returning true if it is a matching constraint
   def processParamConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
-                             constrValue: expr.ValueExpr.Expr): Boolean = constrValue match {
+                             constrValue: expr.ValueExpr): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignment(
         blockPath.asIndirect ++ assign.dst.get,
@@ -395,10 +396,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Attempts to process a connected constraint, returning true if it is a matching constraint
-  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr.Expr,
+  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
                                  isLink: Boolean): Boolean = {
     import edg.ExprBuilder.ValueExpr
-    constr match {
+    constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           require(!isLink)
@@ -628,7 +629,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
             val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, block.getConstraints(constrName).expr)
+              (constrName, block.getConstraints(constrName))
             }
             resolvePortConnectivity(path, portPostfix, constraintOption)
         }
@@ -646,7 +647,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
             val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, block.getConstraints(constrName).expr)
+              (constrName, block.getConstraints(constrName))
             }
             resolvePortConnectivity(path, portPostfix, constraintOption)
         }
@@ -655,8 +656,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
-      processParamConstraint(path, constrName, constr, constr.expr)
-      processConnectedConstraint(path, constrName, constr.expr, false)
+      processParamConstraint(path, constrName, constr, constr)
+      processConnectedConstraint(path, constrName, constr, false)
     }
   }
 
@@ -827,7 +828,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
           case _ =>  // everything else generated
             val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, link.getConstraints(constrName).expr)
+              (constrName, link.getConstraints(constrName))
             }
             resolvePortConnectivity(path, portPostfix, constraintOption)
         }
@@ -836,8 +837,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
-      processParamConstraint(path, constrName, constr, constr.expr)
-      processConnectedConstraint(path, constrName, constr.expr, true)
+      processParamConstraint(path, constrName, constr, constr)
+      processConnectedConstraint(path, constrName, constr, true)
     }
   }
 
@@ -965,13 +966,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
     portArray.getMixedPorts.foreach { case (index, innerPort) =>
       val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
-        (constrName, parentBlock.getConstraints(constrName).expr)
+        (constrName, parentBlock.getConstraints(constrName))
       }
       resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
     }
 
     record.constraintNames foreach { constrName =>
-      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName).expr, record.portIsLink)
+      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
     }
   }
 
