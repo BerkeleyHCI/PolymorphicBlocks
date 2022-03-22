@@ -276,6 +276,39 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     elaboratePending.setValue(ElaborateRecord.ConnectedLink(connect.toBlockPortPath), None)
   }
 
+  protected def resolvePortConnectivity(containerPath: DesignPath, portPostfix: Seq[String],
+                                        constraint: Option[(String, expr.ValueExpr.Expr)]): Unit = {
+    val port = resolvePort(containerPath ++ portPostfix)
+    val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
+    val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints]  // block or link
+    port match {
+      case _: wir.Bundle | _: wir.Port => constraint match {
+        case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
+          require(container.isInstanceOf[wir.Block])
+          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            BooleanValue(true),
+            s"$containerPath.$constrName")
+        case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
+          constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+            containerPath, s"$containerPath.$constrName")
+        case None =>
+          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            BooleanValue(false),
+            s"$containerPath.(not connected)")
+          portBlock match {
+            case _: wir.Block =>
+              connectedLink.put(containerPath ++ portPostfix, DesignPath())
+              elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
+            case _: wir.Link =>  // do nothing
+          }
+        case Some((_, _)) => throw new IllegalArgumentException
+      }
+      case _: wir.PortLibrary => throw new IllegalArgumentException
+      case _: wir.PortArray => throw new IllegalArgumentException  // must be lowered before
+    }
+  }
+
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
@@ -576,30 +609,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
       innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerBlockName, portName)
-        val portPath = path + innerBlockName + portName
         port match {
-          case _: wir.Bundle | _: wir.Port =>  // port case: check if connected
-            val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
-            blockConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, block.getConstraints(constrName).expr)
-            } match {
-              case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
-                constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName (connect)")
-              case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-                constProp.addDirectedEquality(connectedPath,
-                  path.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
-                  path, s"$path.$constrName (export)")
-              case None =>
-                constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
-                connectedLink.put(portPath, DesignPath())
-                elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-              case Some((_, _)) => throw new IllegalArgumentException
-            }
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
             val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portPostfix, constrNames, false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
-          case _: wir.PortLibrary => throw new IllegalArgumentException
+          case _ =>
+            val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
+              (constrName, block.getConstraints(constrName).expr)
+            }
+            resolvePortConnectivity(path, portPostfix, constraintOption)
         }
       }
     }
@@ -607,22 +626,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
-        val portPath = path + innerLinkName + portName
         port match {
-          case _: wir.Bundle | _: wir.Port =>  // port case: check if connected
-            val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
-            linkConnectedConstraint.get(portPostfix) match {
-              case Some(constrName) =>
-                constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName")
-              case None =>
-                constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
-            }
-          case port: wir.PortArray =>  // array case: ignored, handled in lowering
+          case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constraints = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
             val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(
               path, portPostfix, constraints, false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
-          case _: wir.PortLibrary => throw new IllegalArgumentException
+          case _ =>
+            val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
+              (constrName, block.getConstraints(constrName).expr)
+            }
+            resolvePortConnectivity(path, portPostfix, constraintOption)
         }
       }
     }
@@ -791,21 +805,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
-        val portPath = path + innerLinkName + portName
         port match {
-          case _: wir.Bundle | _: wir.Port => // port case: check if connected
-            val connectedPath = portPath.asIndirect + IndirectStep.IsConnected
-            linkConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, link.getConstraints(constrName).expr)
-            } match {
-              case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-                constProp.addDirectedEquality(connectedPath,
-                  path.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
-                  path, s"$path.$constrName (export)")
-              case None =>
-                constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
-              case Some((_, _)) => throw new IllegalArgumentException
-            }
           case _: wir.PortArray => // array case: ignored, handled in lowering
             val constrNames = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
             val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portPostfix, constrNames, true)
@@ -813,7 +813,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.ElaboratePortArray(path ++ portArray)
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
-          case _: wir.PortLibrary => throw new IllegalArgumentException
+          case _ =>  // everything else generated
+            val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
+              (constrName, link.getConstraints(constrName).expr)
+            }
+            resolvePortConnectivity(path, portPostfix, constraintOption)
         }
       }
     }
@@ -948,29 +952,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
     portArray.getMixedPorts.foreach { case (index, innerPort) =>
-      val innerPortPath = record.parent ++ record.portPath + index
-      val connectedPath = innerPortPath.asIndirect + IndirectStep.IsConnected
-      innerPort match {
-        case _: wir.Bundle | _: wir.Port =>
-        allocatedIndexToConstraint.get(index).map { constrName =>
-          (constrName, parentBlock.getConstraints(constrName).expr)
-        } match {
-          case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
-            constProp.setValue(connectedPath, BooleanValue(true), s"$innerPortPath.(elt connect)")
-          case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-            constProp.addDirectedEquality(connectedPath,
-              record.parent.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
-              record.parent, s"${record.parent}.$constrName (export)")
-          case None =>
-            constProp.setValue(connectedPath, BooleanValue(false), s"$innerPortPath.(elt not connected)")
-            if (parentBlock.isInstanceOf[wir.Block]) {  // TODO can this be unified with the link case?
-              connectedLink.put(innerPortPath, DesignPath())
-              elaboratePending.setValue(ElaborateRecord.ConnectedLink(innerPortPath), None)
-            }
-          case Some((_, _)) => throw new IllegalArgumentException
-        }
-        case _: wir.PortLibrary | _: wir.PortArray => throw new IllegalArgumentException
+      val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
+        (constrName, parentBlock.getConstraints(constrName).expr)
       }
+      resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
     }
 
     record.constraintNames foreach { constrName =>
