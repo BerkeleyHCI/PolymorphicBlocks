@@ -9,7 +9,6 @@ import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLi
 import edg.{EdgirUtils, ExprBuilder, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
-import edg.wir.IndirectStep.IsConnected
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -246,17 +245,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       )
     }
 
-    connectedLink.get(connect.toLinkPortPath) match {
-      case Some(linkPath) =>  // Generate the CONNECTED_LINK equalities, if there is a connected link
-        connectedLink.put(connect.toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
-        val allParams = linkParams(linkPath) :+ IndirectStep.Name
-        for (linkParam <- allParams) {
-          constProp.addEquality(
-            connect.toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
-            linkPath.asIndirect + linkParam,
-          )
-        }
-      case None =>
+    val linkPath = connectedLink(connect.toLinkPortPath)  // must have ben set with ConnectedLink
+    connectedLink.put(connect.toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
+    val allParams = linkParams(linkPath) :+ IndirectStep.Name
+    for (linkParam <- allParams) {  // generate CONNECTED_LINK equalities
+      constProp.addEquality(
+        connect.toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
+        linkPath.asIndirect + linkParam,
+      )
     }
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
@@ -593,6 +589,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   s"$path.$constrName (export)")
               case None =>
                 constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
+                connectedLink.put(portPath, DesignPath())
                 elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
               case Some((_, _)) => throw new IllegalArgumentException
             }
@@ -706,6 +703,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+        connectedLink.put(portPath, path)
       case port: wir.PortArray =>
         port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
           setConnectedLink(portPath + subPortName, subPort)
@@ -822,63 +820,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       link.elaborate(innerLinkName, innerLinkElaborated)
     }
   }
-
-//  // Additional processing for ports that sets not-connected status (or connected status) recursively once
-//  // the connections are known (enclosing block elaborated, array / allocate connects lowered) and
-//  // ports are known (block elaborated).
-//  protected def elaborateNotConnected(connected: ElaborateRecord.BlockPortNotConnected): Unit = {
-//    val blockLike = resolve(connected.path)
-//
-//    def setPortDisconnected(portPath: DesignPath): Unit = {
-//      constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected, BooleanValue(false))
-//      if (blockLike.isInstanceOf[wir.Block]) {
-//        // only set fake connected-link on block-side disconnected ports, the link side
-//        connectedLink.put(portPath, DesignPath())
-//        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-//      }
-//    }
-//
-//    // For the top port, we take connectedness status (and infer disconnected-ness) from portDirectlyConnected
-//    def processConnectedTop(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
-//      case port: wir.Port =>
-//        if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
-//          setPortDisconnected(portPath)
-//        }
-//      case port: wir.Bundle =>
-//        if (!portDirectlyConnected.getOrElseUpdate(portPath, false)) {
-//          setPortDisconnected(portPath)
-//          port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-//            setNotConnectedRecursive(portPath + subPortName, subPort)
-//          }
-//        }
-//      case port: wir.PortArray =>
-//        portDirectlyConnected.put(portPath, false)  // array itself should never be set, this also prevents overwriting
-//        port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-//          processConnectedTop(portPath + subPortName, subPort)
-//        }
-//    }
-//
-//    // For inner ports, we take connectedness status from the top level
-//    def setNotConnectedRecursive(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
-//      case port: wir.Port =>
-//        portDirectlyConnected.put(portPath, false)  // result is not used, but prevents overwriting
-//        setPortDisconnected(portPath)
-//      case port: wir.Bundle =>
-//        portDirectlyConnected.put(portPath, false)  // result is not used, but prevents overwriting
-//        setPortDisconnected(portPath)
-//        port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
-//          setNotConnectedRecursive(portPath + subPortName, subPort)
-//        }
-//    }
-//
-//    val ports = (blockLike: @unchecked) match {
-//      case block: wir.Block => block.getElaboratedPorts
-//      case link: wir.Link => link.getElaboratedPorts
-//    }
-//    ports.foreach { case (portName, port) =>
-//      processConnectedTop(connected.path + portName, port)
-//    }
-//  }
 
   def elaboratePortArray(path: DesignPath): Unit = {
     val port = resolvePort(path).asInstanceOf[wir.PortArray]
@@ -1005,45 +946,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, record.portIsLink)
     }
   }
-
-  // Once a link-side port array has all its element widths available, this lowers the connect statements
-  // by replacing ALLOCATEs with concrete indices.
-//  protected def elaborateLinkPortArray(record: ElaborateRecord.LinkPortArray): Unit = {
-//    import edg.ExprBuilder.{Ref, ValueExpr}
-//    var prevPortIndex: Int = -1
-//    val arrayElts = mutable.ListBuffer[String]()
-//
-//    val portArraySteps = Ref.apply(record.portArray: _*).steps
-//    val block = resolveBlock(record.parent).asInstanceOf[wir.Block]
-//
-//    record.constraintNames foreach { constrName =>
-//      block.mapMultiConstraint(constrName) { constr => (constr.expr: @unchecked) match {
-//        case expr.ValueExpr.Expr.Connected(connected) =>
-//          val ValueExpr.RefAllocate(record.portArray, suggestedName) = constr.getConnected.getLinkPort
-//          val portIndex = suggestedName match {
-//            case None => prevPortIndex += 1; prevPortIndex.toString
-//            case Some(suggestedName) => suggestedName
-//          }
-//          val portIndexStep = ref.LocalStep(step=ref.LocalStep.Step.Name(portIndex))
-//          arrayElts.append(portIndex)
-//
-//          Seq(constrName -> constr.update(_.connected.linkPort.ref.steps := portArraySteps :+ portIndexStep))
-//      }}
-//    }
-//    debug(s"Link-side Port Array defined: ${record.parent ++ record.portArray} = $arrayElts")
-//    constProp.setArrayElts(record.parent ++ record.portArray, arrayElts.toSeq)
-//    constProp.setValue(record.parent.asIndirect ++ record.portArray + IndirectStep.Length, IntValue(arrayElts.length))
-//    // Try expanding the constraint
-//    // TODO this needs to be set based on whether the context is a block or link, currently this can't get called on
-//    // link side because lowering is done in the link
-//    record.constraintNames foreach { constrName =>
-//      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, false)
-//    }
-//    // Propagate to portDirectlyConnected
-//    arrayElts.foreach { elt =>
-//      portDirectlyConnected.put(record.parent ++ record.portArray + elt, true)
-//    }
-//  }
 
   /** Performs full compilation and returns the resulting design. Might take a while.
     */
