@@ -364,8 +364,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
-          constProp.setValue(blockPath.asIndirect ++ blockPort + IndirectStep.IsConnected, BooleanValue(true))
-          constProp.setValue(blockPath.asIndirect ++ linkPort + IndirectStep.IsConnected, BooleanValue(true))
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -382,8 +380,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
             )
           }
-          constProp.addEquality(blockPath.asIndirect ++ intPort + IndirectStep.IsConnected,
-            blockPath.asIndirect ++ extPort + IndirectStep.IsConnected)
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -591,13 +587,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach {
         case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
           val connectedPath = path.asIndirect + innerBlockName + portName + IndirectStep.IsConnected
-          blockConnectedConstraint.get(Seq(innerBlockName, portName)).map(block.getConstraints(_).expr) match {
-            case Some(expr.ValueExpr.Expr.Connected(connected)) =>
-              constProp.setValue(connectedPath, BooleanValue(true))
-            case Some(expr.ValueExpr.Expr.Exported(exported)) =>
-              constProp.addDirectedEquality(connectedPath, path.asIndirect ++ exported.getExteriorPort.getRef, path)
+          blockConnectedConstraint.get(Seq(innerBlockName, portName)).map{ constrName =>
+            (constrName, block.getConstraints(constrName).expr)
+          } match {
+            case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
+              constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName (connect)")
+            case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
+              constProp.addDirectedEquality(connectedPath, path.asIndirect ++ exported.getExteriorPort.getRef, path,
+                s"$path.$constrName (export)")
             case None =>
-              constProp.setValue(connectedPath, BooleanValue(false))
+              constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
           }
         case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
       }
@@ -607,11 +606,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach {
         case (portName, _: wir.Bundle | _: wir.Port) =>  // port case: check if connected
           val connectedPath = path.asIndirect + innerLinkName + portName + IndirectStep.IsConnected
-          blockConnectedConstraint.get(Seq(innerLinkName, portName)) match {
-            case Some(_) =>
-              constProp.setValue(connectedPath, BooleanValue(true))
+          linkConnectedConstraint.get(Seq(innerLinkName, portName)) match {
+            case Some(constrName) =>
+              constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName")
             case None =>
-              constProp.setValue(connectedPath, BooleanValue(false))
+              constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
           }
         case (portName, port: wir.PortArray) =>  // array case: ignored, handled in lowering
       }
