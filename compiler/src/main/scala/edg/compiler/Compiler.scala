@@ -281,6 +281,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val port = resolvePort(containerPath ++ portPostfix)
     val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
     val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints]  // block or link
+
+    def recursiveSetNotConnected(portPath: DesignPath, port: wir.PortLike): Unit = {
+      constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
+        BooleanValue(false),
+        s"${containerPath ++ portPostfix}.(not connected)")
+      portBlock match {
+        case _: wir.Block =>
+          connectedLink.put(portPath, DesignPath())
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+        case _: wir.Link =>  // do nothing
+      }
+      port match {
+        case port: wir.Bundle =>
+          port.getMixedPorts.foreach { case (innerIndex, innerPort) =>
+            recursiveSetNotConnected(portPath + innerIndex, innerPort)
+          }
+        case _ =>  // no recursion at leaf
+      }
+    }
+
     port match {
       case _: wir.Bundle | _: wir.Port => constraint match {
         case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
@@ -293,15 +313,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
         case None =>
-          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            BooleanValue(false),
-            s"$containerPath.(not connected)")
-          portBlock match {
-            case _: wir.Block =>
-              connectedLink.put(containerPath ++ portPostfix, DesignPath())
-              elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
-            case _: wir.Link =>  // do nothing
-          }
+          recursiveSetNotConnected(containerPath ++ portPostfix, port)
         case Some((_, _)) => throw new IllegalArgumentException
       }
       case _: wir.PortLibrary => throw new IllegalArgumentException
