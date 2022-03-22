@@ -100,6 +100,35 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "a2") should equal(Some(IntValue(2)))
   }
 
+  it should "handle directed equality assignments" in {
+    val constProp = new ConstProp()
+    constProp.addAssignment(IndirectDesignPath() + "a",
+      DesignPath(),
+      ValueExpr.Literal(2)
+    )
+    constProp.addDirectedEquality(IndirectDesignPath() + "b", IndirectDesignPath() + "a", DesignPath())
+    constProp.addDirectedEquality(IndirectDesignPath() + "c", IndirectDesignPath() + "b", DesignPath())
+
+    constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+  }
+
+  it should "handle directed equality assignments, delayed" in {
+    val constProp = new ConstProp()
+    constProp.addDirectedEquality(IndirectDesignPath() + "b", IndirectDesignPath() + "a", DesignPath())
+    constProp.addDirectedEquality(IndirectDesignPath() + "c", IndirectDesignPath() + "b", DesignPath())
+    constProp.getValue(IndirectDesignPath() + "b") should equal(None)
+    constProp.getValue(IndirectDesignPath() + "c") should equal(None)
+
+    constProp.addAssignment(IndirectDesignPath() + "a",
+      DesignPath(),
+      ValueExpr.Literal(2)
+    )
+
+    constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
+    constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+  }
+
   it should "handle evaluations on both side of assignments, delayed" in {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()

@@ -174,6 +174,8 @@ class ConstProp {
     params.setValue(target, value)
     paramSource.put(target, paramSourceRecord)
     onParamSolved(target, value)
+
+    update()
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
@@ -187,6 +189,8 @@ class ConstProp {
     paramSource.put(target, paramSourceRecord)
     forcedParams += target
     onParamSolved(target, value)
+
+    update()
   }
 
   /**
