@@ -47,14 +47,14 @@ object ElaborateRecord {
   // creates the task to lower the ALLOCATE steps..
   // Also created for port arrays that have no array-connects, to define the ALLOCATE parameter.
   // constraintNames includes all ALLOCATEs to the target port, whether array or not.
-  case class LowerArrayAllocateConnections(parent: DesignPath, portName: Seq[String], constraintNames: Seq[String],
+  case class LowerArrayAllocateConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
                                            portIsLink: Boolean)
       extends ElaborateTask with ElaborateDependency
 
   // Lowers leaf-level allocate connections by replacing the ALLOCATE with a port name.
   // Requires array-allocate connections have been already lowered to leaf-level allocate connections, and that
   // the port's ELEMENTS have been defined.
-  case class LowerAllocateConnections(parent: DesignPath, portName: Seq[String], constraintNames: Seq[String],
+  case class LowerAllocateConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
                                       portIsLink: Boolean) extends ElaborateTask
 
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
@@ -586,8 +586,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
                 constProp.setValue(connectedPath, BooleanValue(true), s"$path.$constrName (connect)")
               case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-                constProp.addDirectedEquality(connectedPath, path.asIndirect ++ exported.getExteriorPort.getRef, path,
-                  s"$path.$constrName (export)")
+                constProp.addDirectedEquality(connectedPath,
+                  path.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+                  path, s"$path.$constrName (export)")
               case None =>
                 constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
                 connectedLink.put(portPath, DesignPath())
@@ -798,8 +799,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               (constrName, link.getConstraints(constrName).expr)
             } match {
               case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-                constProp.addDirectedEquality(connectedPath, path.asIndirect ++ exported.getExteriorPort.getRef, path,
-                  s"$path.$constrName (export)")
+                constProp.addDirectedEquality(connectedPath,
+                  path.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+                  path, s"$path.$constrName (export)")
               case None =>
                 constProp.setValue(connectedPath, BooleanValue(false), s"$path.(not connected)")
               case Some((_, _)) => throw new IllegalArgumentException
@@ -880,14 +882,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
   // to lower the ALLOCATE connections to concrete indices once the port is known.
   protected def lowerArrayAllocateConnections(record: ElaborateRecord.LowerArrayAllocateConnections): Unit = {
-    val block = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     // TODO actually lower array connect, once we have them
 
     // Build up the list of constraints
     var prevPortIndex: Int = -1
     val allocatedIndices = mutable.SeqMap[String, String]()  // constraint name -> allocated name
     record.constraintNames foreach { constrName =>
-      mapLeafConnectAllocate(block.getConstraints(constrName), record.portName) {
+      mapLeafConnectAllocate(parentBlock.getConstraints(constrName), record.portPath) {
         case Some(suggestedName) =>
           allocatedIndices.put(constrName, suggestedName)
           ""  // don't need the map functionality, the result is discarded anyways
@@ -897,13 +899,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           ""  // don't need the map functionality, the result is discarded anyways
       }
     }
-    constProp.setValue(record.parent.asIndirect ++ record.portName + IndirectStep.Allocated,
+    constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.values.toSeq.map(TextValue(_))))
 
-    val lowerAllocateTask = ElaborateRecord.LowerAllocateConnections(record.parent, record.portName,
+    val lowerAllocateTask = ElaborateRecord.LowerAllocateConnections(record.parent, record.portPath,
       record.constraintNames, record.portIsLink)
     elaboratePending.addNode(lowerAllocateTask, Seq(
-      ElaborateRecord.ParamValue(record.parent.asIndirect ++ record.portName + IndirectStep.Elements)
+      ElaborateRecord.ParamValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements)
     ))
   }
 
@@ -911,14 +913,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // by replacing ALLOCATEs with concrete indices.
   // This must also handle internal-side export statements.
   protected def lowerAllocateConnections(record: ElaborateRecord.LowerAllocateConnections): Unit = {
-    val block = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     val portElements = ArrayValue.ExtractText(
-      constProp.getValue(record.parent.asIndirect ++ record.portName + IndirectStep.Elements).get)
+      constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
 
     val suggestedNames = mutable.Set[String]()
 
     record.constraintNames foreach { constrName =>
-      mapLeafConnectAllocate(block.getConstraints(constrName), record.portName) {
+      mapLeafConnectAllocate(parentBlock.getConstraints(constrName), record.portPath) {
         case Some(suggestedName) =>
           suggestedNames.add(suggestedName)
           ""  // don't need the map functionality, the result is discarded anyways
@@ -929,23 +931,50 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val allocatableNames = portElements.filter(!suggestedNames.contains(_)).to(mutable.ListBuffer)
     require(suggestedNames.subsetOf(portElements.toSet))
-    val allocatedNames = mutable.ListBuffer[String]()
+    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
 
     record.constraintNames foreach { constrName =>
-      block.mapConstraint(constrName) { constr =>
-        mapLeafConnectAllocate(constr, record.portName) { suggestedName =>
+      parentBlock.mapConstraint(constrName) { constr =>
+        mapLeafConnectAllocate(constr, record.portPath) { suggestedName =>
           val allocatedName = suggestedName match {
             case Some(suggestedName) => suggestedName
             case None => allocatableNames.remove(0)
           }
-          allocatedNames.addOne(allocatedName)
+          allocatedIndexToConstraint.put(allocatedName, constrName)
           allocatedName
         }
       }
     }
 
+    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
+    portArray.getMixedPorts.foreach { case (index, innerPort) =>
+      val innerPortPath = record.parent ++ record.portPath + index
+      val connectedPath = innerPortPath.asIndirect + IndirectStep.IsConnected
+      innerPort match {
+        case _: wir.Bundle | _: wir.Port =>
+        allocatedIndexToConstraint.get(index).map { constrName =>
+          (constrName, parentBlock.getConstraints(constrName).expr)
+        } match {
+          case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
+            constProp.setValue(connectedPath, BooleanValue(true), s"$innerPortPath.(elt connect)")
+          case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
+            constProp.addDirectedEquality(connectedPath,
+              record.parent.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+              record.parent, s"${record.parent}.$constrName (export)")
+          case None =>
+            constProp.setValue(connectedPath, BooleanValue(false), s"$innerPortPath.(elt not connected)")
+            if (parentBlock.isInstanceOf[wir.Block]) {  // TODO can this be unified with the link case?
+              connectedLink.put(innerPortPath, DesignPath())
+              elaboratePending.setValue(ElaborateRecord.ConnectedLink(innerPortPath), None)
+            }
+          case Some((_, _)) => throw new IllegalArgumentException
+        }
+        case _: wir.PortLibrary | _: wir.PortArray => throw new IllegalArgumentException
+      }
+    }
+
     record.constraintNames foreach { constrName =>
-      processConnectedConstraint(record.parent, constrName, block.getConstraints(constrName).expr, record.portIsLink)
+      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName).expr, record.portIsLink)
     }
   }
 
