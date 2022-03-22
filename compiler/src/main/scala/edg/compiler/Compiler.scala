@@ -317,11 +317,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           elaboratePort(path + childPortName, port, childPort)
         }
       case port: wir.PortArray =>
-        if (port.portsSet) {  // else, create dependency on ELEMENTS
-          constProp.setArrayElts(path, port.getUnelaboratedPorts.keys.toSeq)
-          constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getUnelaboratedPorts.size))
+        if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
+          constProp.setValue(path.asIndirect + IndirectStep.Elements,
+            ArrayValue(port.getUnelaboratedPorts.keys.toSeq.map(TextValue(_))))
         }
-        elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(
+        elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(  // does recursive elaboration + LENGTH
           ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
         ))
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
@@ -830,8 +830,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       })
       port.setPorts(childPortLibraries)
     }
+    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getUnelaboratedPorts.size))
     for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
-      elaboratePort (path + childPortName, port, childPort)
+      elaboratePort(path + childPortName, port, childPort)
     }
   }
 

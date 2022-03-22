@@ -3,7 +3,7 @@ package edg.compiler
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
-import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.ExprBuilder._
 
 
@@ -22,7 +22,8 @@ class ConstPropArrayTest extends AnyFlatSpec {
         IndirectDesignPath() ++ root ++ pathPrefix + i.toString ++ pathSuffix,
         DesignPath() ++ root, exprFn(i))
     }
-    constProp.setArrayElts(DesignPath() ++ root ++ pathPrefix, (0 until length).map(_.toString))
+    constProp.setValue(IndirectDesignPath() ++ root ++ pathPrefix + IndirectStep.Elements,
+      ArrayValue((0 until length).map(i => TextValue(i.toString))))
   }
 
   it should "read out elements" in {

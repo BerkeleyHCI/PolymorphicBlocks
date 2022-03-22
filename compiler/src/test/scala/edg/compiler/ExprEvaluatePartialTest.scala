@@ -119,7 +119,8 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "container" + IndirectStep.Elements)))
 
-    constProp.setArrayElts(DesignPath() + "container", Seq("0", "1", "2"))
+    constProp.setValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
+      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
     evalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(
@@ -141,7 +142,8 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
-    constProp.setArrayElts(DesignPath() + "container", Seq("0", "1", "2"))
+    constProp.setValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
+      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
     constProp.setValue(IndirectDesignPath() + "container" + "0" + "inner", IntValue(1))
     constProp.setValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(2))
     constProp.setValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))

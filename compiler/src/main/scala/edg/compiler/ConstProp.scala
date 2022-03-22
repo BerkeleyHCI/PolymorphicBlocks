@@ -75,7 +75,6 @@ class ConstProp {
   // Callbacks, to be overridden at instantiation site
   //
   def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
-  def onArraySolved(array: DesignPath, elts: Seq[String]): Unit = { }
 
 
   //
@@ -231,12 +230,6 @@ class ConstProp {
       case (None, None) => // nothing to be done
     }
 
-    update()
-  }
-
-  def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    setValue(target.asIndirect + IndirectStep.Elements, ArrayValue(elts.map(TextValue(_))))
-    onArraySolved(target, elts)
     update()
   }
 
