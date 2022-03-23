@@ -721,14 +721,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
 
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (_, ValueExpr.RefAllocate(intPortArray, _)) =>
-          linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
-        case (_, ValueExpr.Ref(intPort)) =>
-          linkConnectedConstraint.put(intPort, constrName)
+      case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(intPortArray, None)) => // TODO array-export stmt
           linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
           linkArrayDependencies.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(extPortArray)
+
+        case _ => throw new AssertionError("impossible exported format")
+      }
+      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(_), ValueExpr.RefAllocate(intPortArray, _)) =>
+          linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+        case (ValueExpr.Ref(_), ValueExpr.Ref(intPort)) =>
+          linkConnectedConstraint.put(intPort, constrName)
 
         case _ => throw new AssertionError("impossible exported format")
       }
@@ -784,7 +788,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // the specified portPath.
   protected def mapLeafConnectAllocate(constr: expr.ValueExpr, portPath: Seq[String])(fn: Option[String] => String):
       expr.ValueExpr = {
-    import edg.ExprBuilder.{Ref, ValueExpr}
+    import edg.ExprBuilder.ValueExpr
     val ExpectedPortPath = portPath
     constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
@@ -824,21 +828,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Lower array-allocate constraints
     // TODO support more array-type constraints
     import edg.ExprBuilder.{Ref, ValueExpr}
+    import edg.ElemBuilder
     val newConstrNames = record.constraintNames.flatMap { constrName => parentBlock.getConstraints(constrName).expr match {
-      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+      case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
           val extPortArrayElts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(constrName) { constr =>
             extPortArrayElts.map { index =>
               val extPortPostfix = (extPortArray :+ index) ++ extPortInner
-              s"$constrName.$index" -> constr.update(
-                _.exported.exteriorPort.ref := Ref(extPortPostfix: _*)
-              )
+              s"$constrName.$index" -> ElemBuilder.Constraint.Exported(
+                Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
             }
           }
           extPortArrayElts.map { index => s"$constrName.$index" }
-        case _ => Seq(constrName)  // ignored
+        case _ => throw new IllegalArgumentException("unsupported array export")
       }
       case _ => Seq(constrName)  // ignored
     } }

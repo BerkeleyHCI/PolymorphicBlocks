@@ -82,10 +82,10 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
         constraints = Map(
           "sourceAExport" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
           "sourceBExport" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
-          "sinkAExport" -> Constraint.Exported(ValueExpr.MapExtract(Ref("sinks"), "a"),
+          "sinkAExport" -> Constraint.ExportedArray(ValueExpr.MapExtract(Ref("sinks"), "a"),
             Ref.Allocate(Ref("a", "sinks"))
           ),
-          "sinkBExport" -> Constraint.Exported(ValueExpr.MapExtract(Ref("sinks"), "b"),
+          "sinkBExport" -> Constraint.ExportedArray(ValueExpr.MapExtract(Ref("sinks"), "b"),
             Ref.Allocate(Ref("b", "sinks"))
           ),
         )
