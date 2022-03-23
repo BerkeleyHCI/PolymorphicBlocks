@@ -185,7 +185,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   linkParams.put(DesignPath(), Seq())  // empty path means disconnected
   private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
-  private val expandedArrayConnectConstraints = mutable.HashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
+  private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -825,14 +825,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
   // to lower the ALLOCATE connections to concrete indices once the port is known.
-  protected def setPortArrayAllocated(record: ElaborateRecord.SetPortArrayAllocated): Unit = {
+  protected def lowerArrayConnections(record: ElaborateRecord.LowerArrayConnections): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Lower array-allocate constraints
     // TODO support more array-type constraints
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ElemBuilder
-    val newConstrNames = record.constraintNames.flatMap { constrName => parentBlock.getConstraints(constrName).expr match {
+    record.constraintNames foreach { constrName => parentBlock.getConstraints(constrName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
           val extPortArrayElts = ArrayValue.ExtractText(
@@ -844,11 +844,25 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
             }
           }
-          extPortArrayElts.map { index => s"$constrName.$index" }
+          expandedArrayConnectConstraints.put(record.parent ++ constrName,
+            extPortArrayElts.map { index => s"$constrName.$index" })
+
         case _ => throw new IllegalArgumentException("unsupported array export")
       }
-      case _ => Seq(constrName)  // ignored
+      case _ => throw new IllegalArgumentException("not a connected-array or exported-array constraint")
     } }
+
+  }
+
+  // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
+  // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
+  // to lower the ALLOCATE connections to concrete indices once the port is known.
+  protected def setPortArrayAllocated(record: ElaborateRecord.SetPortArrayAllocated): Unit = {
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+
+    // Update constraint names given expanded array constraints
+    val newConstrNames = record.constraintNames ++
+        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent ++ constrName))
 
     // Given leaf level constraints, create allocations
     var prevPortIndex: Int = -1
@@ -948,6 +962,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
           case elaborateRecord: ElaborateRecord.ElaboratePortArray =>
             elaboratePortArray(elaborateRecord.path)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord: ElaborateRecord.LowerArrayConnections =>
+            lowerArrayConnections(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord: ElaborateRecord.SetPortArrayAllocated =>
             setPortArrayAllocated(elaborateRecord)
