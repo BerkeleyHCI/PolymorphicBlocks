@@ -60,25 +60,20 @@ class GeneratorRequest(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["path",b"path","value",b"value"]) -> None: ...
 
     ELEMENT_FIELD_NUMBER: builtins.int
-    FN_FIELD_NUMBER: builtins.int
     VALUES_FIELD_NUMBER: builtins.int
     @property
     def element(self) -> edgir.ref_pb2.LibraryPath:
         """path of library element containing the generator"""
         pass
-    fn: typing.Text
-    """name of generator function"""
-
     @property
     def values(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GeneratorRequest.Value]: ...
     def __init__(self,
         *,
         element: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        fn: typing.Text = ...,
         values: typing.Optional[typing.Iterable[global___GeneratorRequest.Value]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["element",b"element"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["element",b"element","fn",b"fn","values",b"values"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["element",b"element","values",b"values"]) -> None: ...
 global___GeneratorRequest = GeneratorRequest
 
 class Refinements(google.protobuf.message.Message):

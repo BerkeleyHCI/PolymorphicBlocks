@@ -71,7 +71,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
 // some constraints
 class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath])
     extends Block(basePb, unrefinedType) {
-  require(basePb.generators.size == 1)
+  require(basePb.generator.isDefined)
 
   var generatedPb: Option[elem.HierarchyBlock] = None
 
@@ -82,7 +82,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   // Apply the generated block on top of the generator stub, and returns the ports that have arrays newly defined
   def applyGenerated(pb: elem.HierarchyBlock): Seq[String] = {
     require(generatedPb.isEmpty, "can't generate twice")
-    require(pb.generators.isEmpty, "generated can't define generators")
+    require(pb.generator.isEmpty, "generated can't define generators")
 
     // check that the generated block is consistent with the generator stub
     require(pb.getSelfClass == basePb.getSelfClass)
@@ -114,14 +114,11 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
 
   // returns a list of dependencies of this generator
   def getDependencies: Seq[ref.LocalPath] = {
-    basePb.generators.head._2.requiredParams
+    basePb.getGenerator.requiredParams
   }
 
   def getDependenciesPorts: Seq[ref.LocalPath] = {  // TODO remove me w/ refactoring
-    basePb.generators.head._2.requiredPorts
-  }
-  def getFnName: String = {  // TODO remove me w/ refactoring
-    basePb.generators.head._1
+    basePb.getGenerator.requiredPorts
   }
 
   override def toEltPb: elem.HierarchyBlock = {

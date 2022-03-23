@@ -91,7 +91,7 @@ message HierarchyBlock {
   edgir.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
   repeated edgir.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
   edgir.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
-  map<string, Generator> generators = 22;  // optional, and removed upon invocation
+  Generator                       generator = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
 
@@ -99,23 +99,14 @@ message HierarchyBlock {
 }
 
 message Generator {
-  string fn = 1;  // Python function name for the generator. TODO dupe of the key in the containing map?
-
   // Parameters that must be defined for the generator to fire.
   // These parameters are the only ones accessible to the generator.
-  // TODO: perhaps should be a more general ValueExpr?
   repeated edgir.ref.LocalPath required_params = 2;
 
   // Ports that must have defined connected-ness for the generator to fire.
   // This makes the port's IS_CONNECTED and CONNECTED_LINK.NAME available.
+  // TODO to be removed
   repeated edgir.ref.LocalPath required_ports = 3;
-
-  // Internal blocks that this generator can (but not necessarily) make connections to.
-  // TODO generalize to include all ports to allow appending connections?
-  repeated edgir.ref.LocalPath connected_blocks = 4;
-
-  // TODO: how to allow multiple generators based on different input combinations?
-  // Perhaps a way for generators to obliviate one another?
 }
 
 message BlockLike {

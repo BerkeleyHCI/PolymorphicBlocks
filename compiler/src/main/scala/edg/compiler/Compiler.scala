@@ -4,9 +4,8 @@ import scala.collection.{SeqMap, mutable}
 import edgir.schema.schema
 import edgir.expr.expr
 import edgir.ref.ref
-import edgir.ref.ref.{LibraryPath, LocalPath}
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
-import edg.{EdgirUtils, ExprBuilder, wir}
+import edg.{EdgirUtils, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
 
@@ -77,8 +76,8 @@ object CompilerError {
   case class LibraryError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError {
     override def toString: String = s"Library error ${target.toSimpleString} @ $path: $err"
   }
-  case class GeneratorError(path: DesignPath, target: ref.LibraryPath, fn: String, err: String) extends CompilerError {
-    override def toString: String = s"Generator error ${target.toSimpleString}.$fn @ $path: $err"
+  case class GeneratorError(path: DesignPath, target: ref.LibraryPath, err: String) extends CompilerError {
+    override def toString: String = s"Generator error ${target.toSimpleString} @ $path: $err"
   }
   case class RefinementSubclassError(path: DesignPath, refinedLibrary: ref.LibraryPath, designLibrary: ref.LibraryPath)
       extends CompilerError {
@@ -476,7 +475,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }
 
-    val newBlock = if (blockPb.generators.isEmpty) {
+    val newBlock = if (blockPb.generator.isEmpty) {
       new wir.Block(blockPb, unrefinedType)
     } else {
       new wir.Generator(blockPb, unrefinedType)
@@ -561,9 +560,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Run generator and plug in
-    library.runGenerator(generator.getBlockClass, generator.getFnName,
-      (reqParamValues ++ reqPortValues).toMap
-    ) match {
+    library.runGenerator(generator.getBlockClass, (reqParamValues ++ reqPortValues).toMap) match {
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
@@ -573,7 +570,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
-        errors += CompilerError.GeneratorError(path, generator.getBlockClass, generator.getFnName, err)
+        errors += CompilerError.GeneratorError(path, generator.getBlockClass, err)
     }
   }
 

@@ -22,13 +22,11 @@ message LibraryRequest {
 
 message GeneratorRequest {
   edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
-  string fn = 3;  // name of generator function
 
   message Value {
     edgir.ref.LocalPath path = 1;
     edgir.lit.ValueLit value = 2;
   }
-
   repeated Value values = 4;
 }
 

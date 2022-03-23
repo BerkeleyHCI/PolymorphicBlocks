@@ -121,8 +121,8 @@ class HdlInterface():  # type: ignore
       assert None not in generator_values
 
       response.generated.CopyFrom(builder.elaborate_toplevel(
-        generator_obj, f"in generate {request.fn} for {request.element}",
-        generate_fn_name=request.fn,
+        generator_obj, f"in generate for {request.element}",
+        is_generator=True,
         generate_values=cast(List[Tuple[edgir.LocalPath, edgir.LitTypes]], generator_values)))
     except BaseException as e:
       import traceback

@@ -30,7 +30,7 @@ class GeneratorBlock(Block):
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
-    fn_name: str
+    fn: Callable
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
@@ -174,9 +174,6 @@ class GeneratorBlock(Block):
     :param targets: list of ports and blocks the generator may connect to, to avoid generating initializers
     """
     assert callable(fn), f"fn {fn} must be a method (callable)"
-    fn_name = fn.__name__
-    assert hasattr(self, fn_name), f"{self} does not contain {fn_name}"
-    assert getattr(self, fn_name) == fn, f"{self}.{fn_name} did not equal fn {fn}"
     assert self._generator is None, f"redefinition of generator, multiple generators not allowed"
 
     for (i, req_param) in enumerate(reqs):
@@ -184,7 +181,7 @@ class GeneratorBlock(Block):
              (isinstance(req_param.binding, AllocatedBinding) and req_param.binding.src.parent is self), \
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
 
-    self._generator = GeneratorBlock.GeneratorRecord(fn_name, reqs, tuple(req_ports), reqs)
+    self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, tuple(req_ports), reqs)
 
   # Generator solved-parameter-access interface
   #
@@ -228,11 +225,11 @@ class GeneratorBlock(Block):
 
       pb = edgir.HierarchyBlock()
       ref_map = self._get_ref_map(edgir.LocalPath())
-      pb.generators[self._generator.fn_name]  # even if rest of the fields are empty, make sure to create a record
+      pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
       for req_param in self._generator.req_params:
-        pb.generators[self._generator.fn_name].required_params.add().CopyFrom(ref_map[req_param])
+        pb.generator.required_params.add().CopyFrom(ref_map[req_param])
       for req_port in self._generator.req_ports:
-        pb.generators[self._generator.fn_name].required_ports.add().CopyFrom(ref_map[req_port])
+        pb.generator.required_ports.add().CopyFrom(ref_map[req_port])
       pb = self._populate_def_proto_block_base(pb)
       return pb
     else:
@@ -248,7 +245,7 @@ class GeneratorBlock(Block):
       assert isinstance(path_expr, ConstraintExpr)
       self._param_values[path_expr] = value
 
-  def _generated_def_to_proto(self, generate_fn_name: str,
+  def _generated_def_to_proto(self,
                               generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> edgir.HierarchyBlock:
     assert self._generator is not None, f"{self} did not define a generator"
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
@@ -264,9 +261,8 @@ class GeneratorBlock(Block):
         port.link()  # lazy-initialize connected_link refs so it's ready for params
     self._parse_param_values(generate_values)
 
-    fn = getattr(self, generate_fn_name)
     fn_args = [self.get(arg_param) for arg_param in self._generator.fn_args]
-    fn(*fn_args)
+    self._generator.fn(*fn_args)
 
     self._elaboration_state = BlockElaborationState.post_generate
 

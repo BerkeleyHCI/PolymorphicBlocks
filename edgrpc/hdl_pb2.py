@@ -18,7 +18,7 @@ from edgir import elem_pb2 as edgir_dot_elem__pb2
 from edgir import lit_pb2 as edgir_dot_lit__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x65\x64grpc/hdl.proto\x12\nedgrpc.hdl\x1a\x12\x65\x64gir/schema.proto\x1a\x0f\x65\x64gir/ref.proto\x1a\x10\x65\x64gir/elem.proto\x1a\x0f\x65\x64gir/lit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"9\n\x0eLibraryRequest\x12\'\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\"\xcc\x01\n\x10GeneratorRequest\x12\'\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12\n\n\x02\x66n\x18\x03 \x01(\t\x12\x32\n\x06values\x18\x04 \x03(\x0b\x32\".edgrpc.hdl.GeneratorRequest.Value\x1aO\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPath\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edgir.lit.ValueLit\"\x85\x04\n\x0bRefinements\x12\x34\n\nsubclasses\x18\x01 \x03(\x0b\x32 .edgrpc.hdl.Refinements.Subclass\x12-\n\x06values\x18\x02 \x03(\x0b\x32\x1d.edgrpc.hdl.Refinements.Value\x1a\x8e\x01\n\x08Subclass\x12$\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPathH\x00\x12%\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12+\n\x0breplacement\x18\x03 \x01(\x0b\x32\x16.edgir.ref.LibraryPathB\x08\n\x06source\x1a\xff\x01\n\x05Value\x12$\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPathH\x00\x12\x41\n\tcls_param\x18\x02 \x01(\x0b\x32,.edgrpc.hdl.Refinements.Value.ClassParamPathH\x00\x12\"\n\x05value\x18\x03 \x01(\x0b\x32\x13.edgir.lit.ValueLit\x1a_\n\x0e\x43lassParamPath\x12#\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\nparam_path\x18\x02 \x01(\x0b\x32\x14.edgir.ref.LocalPathB\x08\n\x06source\"8\n\rIndexResponse\x12\'\n\x07indexed\x18\x01 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\"\x8b\x01\n\x0fLibraryResponse\x12/\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1c.edgir.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12,\n\x0brefinements\x18\x03 \x01(\x0b\x32\x17.edgrpc.hdl.RefinementsB\x08\n\x06result\"_\n\x11GeneratorResponse\x12/\n\tgenerated\x18\x01 \x01(\x0b\x32\x1a.edgir.elem.HierarchyBlockH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xbf\x01\n\nHdlRequest\x12.\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x16.edgrpc.hdl.ModuleNameH\x00\x12\x39\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1a.edgrpc.hdl.LibraryRequestH\x00\x12;\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1c.edgrpc.hdl.GeneratorRequestH\x00\x42\t\n\x07request\"\xc6\x01\n\x0bHdlResponse\x12\x31\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x19.edgrpc.hdl.IndexResponseH\x00\x12:\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1b.edgrpc.hdl.LibraryResponseH\x00\x12<\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1d.edgrpc.hdl.GeneratorResponseH\x00\x42\n\n\x08responseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x65\x64grpc/hdl.proto\x12\nedgrpc.hdl\x1a\x12\x65\x64gir/schema.proto\x1a\x0f\x65\x64gir/ref.proto\x1a\x10\x65\x64gir/elem.proto\x1a\x0f\x65\x64gir/lit.proto\"\x1a\n\nModuleName\x12\x0c\n\x04name\x18\x01 \x01(\t\"9\n\x0eLibraryRequest\x12\'\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\"\xc0\x01\n\x10GeneratorRequest\x12\'\n\x07\x65lement\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12\x32\n\x06values\x18\x04 \x03(\x0b\x32\".edgrpc.hdl.GeneratorRequest.Value\x1aO\n\x05Value\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPath\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edgir.lit.ValueLit\"\x85\x04\n\x0bRefinements\x12\x34\n\nsubclasses\x18\x01 \x03(\x0b\x32 .edgrpc.hdl.Refinements.Subclass\x12-\n\x06values\x18\x02 \x03(\x0b\x32\x1d.edgrpc.hdl.Refinements.Value\x1a\x8e\x01\n\x08Subclass\x12$\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPathH\x00\x12%\n\x03\x63ls\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12+\n\x0breplacement\x18\x03 \x01(\x0b\x32\x16.edgir.ref.LibraryPathB\x08\n\x06source\x1a\xff\x01\n\x05Value\x12$\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPathH\x00\x12\x41\n\tcls_param\x18\x02 \x01(\x0b\x32,.edgrpc.hdl.Refinements.Value.ClassParamPathH\x00\x12\"\n\x05value\x18\x03 \x01(\x0b\x32\x13.edgir.lit.ValueLit\x1a_\n\x0e\x43lassParamPath\x12#\n\x03\x63ls\x18\x01 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\nparam_path\x18\x02 \x01(\x0b\x32\x14.edgir.ref.LocalPathB\x08\n\x06source\"8\n\rIndexResponse\x12\'\n\x07indexed\x18\x01 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\"\x8b\x01\n\x0fLibraryResponse\x12/\n\x07\x65lement\x18\x01 \x01(\x0b\x32\x1c.edgir.schema.Library.NS.ValH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x12,\n\x0brefinements\x18\x03 \x01(\x0b\x32\x17.edgrpc.hdl.RefinementsB\x08\n\x06result\"_\n\x11GeneratorResponse\x12/\n\tgenerated\x18\x01 \x01(\x0b\x32\x1a.edgir.elem.HierarchyBlockH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xbf\x01\n\nHdlRequest\x12.\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x16.edgrpc.hdl.ModuleNameH\x00\x12\x39\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1a.edgrpc.hdl.LibraryRequestH\x00\x12;\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1c.edgrpc.hdl.GeneratorRequestH\x00\x42\t\n\x07request\"\xc6\x01\n\x0bHdlResponse\x12\x31\n\x0cindex_module\x18\x01 \x01(\x0b\x32\x19.edgrpc.hdl.IndexResponseH\x00\x12:\n\x13get_library_element\x18\x02 \x01(\x0b\x32\x1b.edgrpc.hdl.LibraryResponseH\x00\x12<\n\x13\x65laborate_generator\x18\x03 \x01(\x0b\x32\x1d.edgrpc.hdl.GeneratorResponseH\x00\x42\n\n\x08responseb\x06proto3')
 
 
 
@@ -138,25 +138,25 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _LIBRARYREQUEST._serialized_start=132
   _LIBRARYREQUEST._serialized_end=189
   _GENERATORREQUEST._serialized_start=192
-  _GENERATORREQUEST._serialized_end=396
-  _GENERATORREQUEST_VALUE._serialized_start=317
-  _GENERATORREQUEST_VALUE._serialized_end=396
-  _REFINEMENTS._serialized_start=399
-  _REFINEMENTS._serialized_end=916
-  _REFINEMENTS_SUBCLASS._serialized_start=516
-  _REFINEMENTS_SUBCLASS._serialized_end=658
-  _REFINEMENTS_VALUE._serialized_start=661
-  _REFINEMENTS_VALUE._serialized_end=916
-  _REFINEMENTS_VALUE_CLASSPARAMPATH._serialized_start=811
-  _REFINEMENTS_VALUE_CLASSPARAMPATH._serialized_end=906
-  _INDEXRESPONSE._serialized_start=918
-  _INDEXRESPONSE._serialized_end=974
-  _LIBRARYRESPONSE._serialized_start=977
-  _LIBRARYRESPONSE._serialized_end=1116
-  _GENERATORRESPONSE._serialized_start=1118
-  _GENERATORRESPONSE._serialized_end=1213
-  _HDLREQUEST._serialized_start=1216
-  _HDLREQUEST._serialized_end=1407
-  _HDLRESPONSE._serialized_start=1410
-  _HDLRESPONSE._serialized_end=1608
+  _GENERATORREQUEST._serialized_end=384
+  _GENERATORREQUEST_VALUE._serialized_start=305
+  _GENERATORREQUEST_VALUE._serialized_end=384
+  _REFINEMENTS._serialized_start=387
+  _REFINEMENTS._serialized_end=904
+  _REFINEMENTS_SUBCLASS._serialized_start=504
+  _REFINEMENTS_SUBCLASS._serialized_end=646
+  _REFINEMENTS_VALUE._serialized_start=649
+  _REFINEMENTS_VALUE._serialized_end=904
+  _REFINEMENTS_VALUE_CLASSPARAMPATH._serialized_start=799
+  _REFINEMENTS_VALUE_CLASSPARAMPATH._serialized_end=894
+  _INDEXRESPONSE._serialized_start=906
+  _INDEXRESPONSE._serialized_end=962
+  _LIBRARYRESPONSE._serialized_start=965
+  _LIBRARYRESPONSE._serialized_end=1104
+  _GENERATORRESPONSE._serialized_start=1106
+  _GENERATORRESPONSE._serialized_end=1201
+  _HDLREQUEST._serialized_start=1204
+  _HDLREQUEST._serialized_end=1395
+  _HDLRESPONSE._serialized_start=1398
+  _HDLRESPONSE._serialized_end=1596
 # @@protoc_insertion_point(module_scope)
