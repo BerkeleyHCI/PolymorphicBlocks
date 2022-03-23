@@ -79,7 +79,7 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   protected val paramDefs = mutable.Set[DesignPath]()
 
   def mapConstraint(containingPath: DesignPath, constrName: String, constr: expr.ValueExpr): Unit = {
-    val refs = CollectExprRefs.map(constr).map{ ref =>
+    val refs = CollectExprRefs.map(constr).map { ref =>
       (containingPath + constrName, containingPath.asIndirect ++ ref)
     }
     (constr.expr: @unchecked) match {
@@ -127,8 +127,11 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   def validate(design: schema.Design): Seq[CompilerError] = {
     map(design)
     connectRefs.collect {
-      case (constrPath, portRef) if !portDefs.contains(DesignPath.fromIndirectOption(portRef).get) =>
-        Some(CompilerError.BadRef(constrPath, portRef))
+      case (constrPath, portRef) =>
+        DesignPath.fromIndirectOption(portRef) match {
+          case Some(portRef) if portDefs.contains(portRef) => None
+          case _ => Some(CompilerError.BadRef(constrPath, portRef))
+        }
       case _ => None
     }.toSeq.flatten
   }

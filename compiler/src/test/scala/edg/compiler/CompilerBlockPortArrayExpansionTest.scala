@@ -72,19 +72,22 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     ))
     val referenceConstraints = Map(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
+      "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref("link0", "sinks", "0")),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-      "sink1Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
+      "sink1Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref("link1", "sinks", "0")),
       "source2Connect" -> Constraint.Connected(Ref("source2", "port"), Ref("link2", "source")),
-      "sink2Connect" -> Constraint.Connected(Ref("sinks", "port", "named"), Ref("link2", "sinks", "0")),
+      "sink2Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port"), Some("named")),
+        Ref("link2", "sinks", "0")),
     )
-    val (compiler, compiled) = testCompile(inputDesign, library)
+    // this will throw compiler errors, so we don't use the testCompile wrapper
+    val compiler = new Compiler(inputDesign, new edg.wir.EdgirLibrary(library))
+    val compiled = compiler.compile()
+
+    compiler.getErrors() should not be empty
 
     compiled.contents.get.constraints should equal(referenceConstraints)
 
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
-        equal(Some(IntValue(3)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Allocated) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("named")))))
 
     val dsv = new DesignStructuralValidate()
@@ -94,9 +97,9 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     val drv = new DesignRefsValidate()
     drv.validate(Design(compiled.contents.get)) should equal(Seq(
-      CompilerError.BadRef(DesignPath() + "sink0Connect", IndirectDesignPath() + "sinks" + "port" + "0"),
-      CompilerError.BadRef(DesignPath() + "sink1Connect", IndirectDesignPath() + "sinks" + "port" + "1"),
-      CompilerError.BadRef(DesignPath() + "sink2Connect", IndirectDesignPath() + "sinks" + "port" + "named")
+      CompilerError.BadRef(DesignPath() + "sink0Connect", IndirectDesignPath() + "sinks" + "port" + IndirectStep.Allocate()),
+      CompilerError.BadRef(DesignPath() + "sink1Connect", IndirectDesignPath() + "sinks" + "port" + IndirectStep.Allocate()),
+      CompilerError.BadRef(DesignPath() + "sink2Connect", IndirectDesignPath() + "sinks" + "port" + IndirectStep.Allocate(Some("named")))
     ))
   }
 
