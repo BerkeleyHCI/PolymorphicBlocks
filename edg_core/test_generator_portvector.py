@@ -11,7 +11,7 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.elements())
+    self.generator(self.generate, self.ports.allocated())
 
   def generate(self, elements: List[str]) -> None:
     assert(elements == ['0', 'named', '1'])
@@ -55,7 +55,7 @@ class GeneratorInnerBlockInvalid(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.elements())
+    self.generator(self.generate, self.ports.allocated())
 
   def generate(self, elements: List[str]) -> None:
     self.ports.append_elt(TestPortSink(), 'nope')

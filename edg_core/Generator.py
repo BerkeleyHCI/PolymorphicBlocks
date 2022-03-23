@@ -5,7 +5,7 @@ from typing import *
 
 import edgir
 from .Array import ArrayExpr
-from .Binding import InitParamBinding, ElementsBinding
+from .Binding import InitParamBinding, AllocatedBinding
 from .Blocks import BlockElaborationState
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import non_library
@@ -181,7 +181,7 @@ class GeneratorBlock(Block):
 
     for (i, req_param) in enumerate(reqs):
       assert isinstance(req_param.binding, InitParamBinding) or \
-             (isinstance(req_param.binding, ElementsBinding) and req_param.binding.src.parent is self), \
+             (isinstance(req_param.binding, AllocatedBinding) and req_param.binding.src.parent is self), \
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
 
     self._generator = GeneratorBlock.GeneratorRecord(fn_name, reqs, tuple(req_ports), reqs)

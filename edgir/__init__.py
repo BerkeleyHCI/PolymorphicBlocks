@@ -4,7 +4,7 @@ from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
 from .name_pb2 import *
 from .impl_pb2 import *
-from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, ELEMENTS, NAME
+from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATED, NAME
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \
@@ -312,7 +312,7 @@ def localpath_concat(*elts: Union[LocalPath, str, Allocate, 'Reserved.V']) -> Lo
       result.steps.add().name = elt
     elif isinstance(elt, Allocate):
       result.steps.add().allocate = elt.suggested_name
-    elif elt in (CONNECTED_LINK, IS_CONNECTED, LENGTH, ELEMENTS, NAME):
+    elif elt in (CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATED, NAME):
       result.steps.add().reserved_param = elt
     else:
       raise ValueError(f"unknown localpath elt {elt}")

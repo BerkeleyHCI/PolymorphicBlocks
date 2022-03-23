@@ -9,7 +9,7 @@ from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr
   UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
   FloatExpr, RangeExpr, StringExpr, \
   ParamBinding, IntExpr, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryOpBinding, ElementsBinding
+from .Binding import LengthBinding, BinaryOpBinding, AllocatedBinding
 from .Ports import BaseContainerPort, BasePort, Port
 from .Builder import builder
 
@@ -178,7 +178,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._elements = ArrayExpr(StringExpr())._bind(ElementsBinding(self))
+    self._allocated = ArrayExpr(StringExpr())._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -208,7 +208,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
     return super()._get_ref_map(prefix) + IdentityDict(
       [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
-       (self._elements, edgir.localpath_concat(prefix, edgir.ELEMENTS))],
+       (self._allocated, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
       *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
         for (suggested_name, elt) in self._allocates]
@@ -270,8 +270,8 @@ class Vector(BaseVector, Generic[VectorType]):
   def length(self) -> IntExpr:
     return self._length
 
-  def elements(self) -> ArrayExpr[StringExpr]:
-    return self._elements
+  def allocated(self) -> ArrayExpr[StringExpr]:
+    return self._allocated
 
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)

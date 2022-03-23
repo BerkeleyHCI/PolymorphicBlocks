@@ -41,8 +41,7 @@ object ElaborateRecord {
   // Also created for port arrays that have no array-connects, to define the ALLOCATE parameter.
   // constraintNames includes all ALLOCATEs to the target port, whether array or not.
   case class LowerArrayAllocateConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                           portIsLink: Boolean)
-      extends ElaborateTask with ElaborateDependency
+                                           portIsLink: Boolean) extends ElaborateTask
 
   // Lowers leaf-level allocate connections by replacing the ALLOCATE with a port name.
   // Requires array-allocate connections have been already lowered to leaf-level allocate connections, and that

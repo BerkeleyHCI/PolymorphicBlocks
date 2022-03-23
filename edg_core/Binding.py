@@ -422,9 +422,9 @@ class LengthBinding(Binding):
     return pb
 
 
-class ElementsBinding(Binding):
+class AllocatedBinding(Binding):
   def __repr__(self) -> str:
-    return f"Elements"
+    return f"Allocated"
 
   def __init__(self, src: Vector):
     super().__init__()
@@ -436,7 +436,7 @@ class ElementsBinding(Binding):
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
-    pb.ref.steps.add().reserved_param = edgir.ELEMENTS
+    pb.ref.steps.add().reserved_param = edgir.ALLOCATED
     return pb
 
 
