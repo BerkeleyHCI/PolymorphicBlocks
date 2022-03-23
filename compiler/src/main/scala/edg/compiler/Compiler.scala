@@ -28,13 +28,6 @@ object ElaborateRecord {
   case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath)
       extends ElaborateTask
 
-  case class Generator(blockPath: DesignPath, blockClass: LibraryPath, fnName: String,
-                       unrefinedClass: Option[LibraryPath],
-                       requiredParams: Seq[ref.LocalPath], requiredPorts: Seq[ref.LocalPath]
-                      ) extends ElaborateTask {
-    override def toString: String = s"Generator(${blockClass.toSimpleString}.$fnName @ $blockPath)"
-  }
-
   // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
   // Only called for port arrays without defined elements (so excluding blocks that define their ports, including
   // generator-defined port arrays which are structurally similar).
@@ -484,7 +477,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }
 
-    val newBlock = new wir.Block(blockPb, unrefinedType)
+    val newBlock = if (blockPb.generators.isEmpty) {
+      new wir.Block(blockPb, unrefinedType)
+    } else {
+      new wir.Generator(blockPb, unrefinedType)
+    }
 
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newBlock)
@@ -493,18 +490,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, newBlock, port)
     }
 
-    val deps = if (blockPb.generators.nonEmpty) {
-      require(blockPb.generators.size == 1)  // TODO proper single generator structure
-      val (generatorFnName, generator) = blockPb.generators.head
-      val generatorParams = generator.requiredParams.map { depPath =>
-        ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-      }
-      val generatorPorts = generator.requiredPorts.map { depPort =>  // TODO remove this with refactoring
-        ElaborateRecord.ConnectedLink(path ++ depPort)
-      }
-      generatorParams ++ generatorPorts
-    } else {
-      Seq()
+    val deps = newBlock match {
+      case newBlock: wir.Generator =>
+        val generatorParams = newBlock.getDependencies.map { depPath =>
+          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+        }
+        val generatorPorts = newBlock.getDependenciesPorts.map { depPort =>  // TODO remove this with refactoring
+          ElaborateRecord.ConnectedLink(path ++ depPort)
+        }
+        generatorParams ++ generatorPorts
+      case _ => Seq()
     }
     elaboratePending.addNode(ElaborateRecord.Block(path), deps)
 
@@ -551,6 +546,35 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     newLink
   }
 
+  protected def runGenerator(path: DesignPath, generator: wir.Generator): Unit = {
+    val reqParamValues = generator.getDependencies.map { reqParam =>
+      reqParam -> constProp.getValue(path.asIndirect ++ reqParam).get
+    }
+    val reqPortValues = generator.getDependenciesPorts.flatMap { reqPort =>
+      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
+      val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
+      Seq(
+        isConnectedSuffix -> constProp.getValue(path.asIndirect ++ isConnectedSuffix).get,
+        connectedNameSuffix -> constProp.getValue(path.asIndirect ++ connectedNameSuffix).getOrElse(TextValue("")),
+      )
+    }.map { case (param, value) =>
+      param.asLocalPath() -> value
+    }
+
+    // Run generator and plug in
+    val generatedPb = library.runGenerator(generator.getBlockClass, generator.getFnName,
+      (reqParamValues ++ reqPortValues).toMap
+    ) match {
+      case Errorable.Success(generatedPb) =>
+        val generatedPorts = generator.applyGenerated(generatedPb)
+        generatedPorts.foreach { portName =>
+          elaboratePort(path + portName, generator, generator.getUnelaboratedPorts(portName))
+        }
+      case Errorable.Error(err) =>
+        errors += CompilerError.GeneratorError(path, generator.getBlockClass, generator.getFnName, err)
+    }
+  }
+
   /** Elaborate the unelaborated block at path (but where the parent has been elaborated and is reachable from root),
     * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
     * Adds children to the pending queue, and adds constraints to constProp.
@@ -559,8 +583,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def elaborateBlock(path: DesignPath): Unit = {
     val block = resolveBlock(path).asInstanceOf[wir.Block]
 
-    // TODO HANDLE GENERATORS HERE
-    require(block.toPb.getHierarchy.generators.isEmpty)
+    block match {
+      case block: wir.Generator => runGenerator(path, block)
+      case _ =>  // ignored
+    }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     // subtree ports can't know connected state until own connected state known
@@ -658,61 +684,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getConstraints.foreach { case (constrName, constr) =>
       processParamConstraint(path, constrName, constr, constr)
       processConnectedConstraint(path, constrName, constr, false)
-    }
-  }
-
-  // Elaborates the generator, replacing the block stub with the generated implementation.
-  //
-  protected def elaborateGenerator(generator: ElaborateRecord.Generator): Unit = {
-    // Get required values for the generator
-    val reqParamValues = generator.requiredParams.map { reqParam =>
-      reqParam -> constProp.getValue(generator.blockPath.asIndirect ++ reqParam).getOrElse(
-        throw new IllegalArgumentException(s"missing param ${generator.blockPath.asIndirect ++ reqParam}"))
-    }.toMap
-
-    val reqPortValues = generator.requiredPorts.flatMap { reqPort =>  // TODO refactor out
-      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
-      Map(
-        isConnectedSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ reqPort + IndirectStep.IsConnected)
-            .get,
-        connectedNameSuffix -> constProp.getValue(generator.blockPath.asIndirect ++ connectedNameSuffix)
-            .getOrElse(TextValue(""))
-      )
-    }.map { case (param, value) =>
-      param.asLocalPath() -> value
-    }
-
-    // Run generator and plug in
-    val generatedPb = library.runGenerator(generator.blockClass, generator.fnName,
-      reqParamValues ++ reqPortValues
-    ) match {
-      case Errorable.Success(generatedPb) =>
-        if (generatedPb.getSelfClass != generator.blockClass) {
-          errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName,
-            s"Generated class ${generatedPb.getSelfClass.toSimpleString} not equal to " +
-                s"generator class ${generator.blockClass.toSimpleString}")
-        }
-        if (generatedPb.generators.nonEmpty) {
-          errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName,
-            s"Generated ${generatedPb.getSelfClass.toSimpleString} still contains generators")
-        }
-        generatedPb
-      case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.GeneratorError(generator.blockPath, generator.blockClass, generator.fnName, err)
-        elem.HierarchyBlock()
-    }
-    val block = new wir.Block(generatedPb, generator.unrefinedClass)
-//    processBlock(generator.blockPath, block)
-
-    // Link block in parent
-    if (generator.blockPath.steps.nonEmpty) {
-      val (parentPath, name) = generator.blockPath.split
-      val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
-      parent.elaborate(name, block)
-    } else {
-      root = block
     }
   }
 
@@ -969,11 +940,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             debug(s"Elaborate connect $connect")
             elaborateConnect(connect)
             elaboratePending.setValue(elaborateRecord, None)
-
-          case generator: ElaborateRecord.Generator =>
-            debug(s"Elaborate generator '${generator.fnName}' @ ${generator.blockPath}")
-            elaborateGenerator(generator)
-            elaboratePending.setValue(generator, None)
 
           case elaborateRecord: ElaborateRecord.ElaboratePortArray =>
             elaboratePortArray(elaborateRecord.path)
