@@ -764,7 +764,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
       case _ => // all other constraints ignored
     } }
-    
+
     link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
@@ -943,9 +943,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     record.constraintNames foreach { constrName =>
-      require(  // check to make sure it was lowered correctly
-        processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
-      )
+      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
     }
   }
 
