@@ -13,10 +13,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
   it should "handle single-hop directed assignments" in {
     val constProp = new ConstProp()
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
   }
 
@@ -28,20 +25,14 @@ class ConstPropAssignTest extends AnyFlatSpec {
       }
     }
     lastSolved should equal(None)
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
     lastSolved should equal(Some(IndirectDesignPath() + "a"))
   }
 
   it should "handle multi-hop directed assignments" in {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
     constProp.addAssignment(IndirectDesignPath() + "b",
       DesignPath(),
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a"))
@@ -62,10 +53,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5), ValueExpr.Ref("b"))
     )
 
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
+
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(10)))
@@ -73,10 +62,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
   it should "handle equality assignments" in {
     val constProp = new ConstProp()
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
+
     constProp.addEquality(IndirectDesignPath() + "a", IndirectDesignPath() + "b1")
     constProp.addEquality(IndirectDesignPath() + "b2", IndirectDesignPath() + "a")
 
@@ -91,10 +78,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "a1") should equal(None)
     constProp.getValue(IndirectDesignPath() + "a2") should equal(None)
 
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
 
     constProp.getValue(IndirectDesignPath() + "a1") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "a2") should equal(Some(IntValue(2)))
@@ -102,10 +86,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
   it should "handle directed equality assignments" in {
     val constProp = new ConstProp()
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
+
     constProp.addDirectedEquality(IndirectDesignPath() + "b", IndirectDesignPath() + "a", DesignPath())
     constProp.addDirectedEquality(IndirectDesignPath() + "c", IndirectDesignPath() + "b", DesignPath())
 
@@ -120,10 +102,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "b") should equal(None)
     constProp.getValue(IndirectDesignPath() + "c") should equal(None)
 
-    constProp.addAssignment(IndirectDesignPath() + "a",
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
@@ -163,10 +142,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
   it should "handle forced set and ignore subsequent assignments" in {
     val constProp = new ConstProp()
     constProp.setForcedValue(IndirectDesignPath() + "a", IntValue(3))
-    constProp.addAssignment(IndirectDesignPath() + "a",  // should be ignored because of above forced-set
-      DesignPath(),
-      ValueExpr.Literal(2)
-    )
+    constProp.setValue(IndirectDesignPath() + "a", IntValue(2))  // should be ignored from above forced-set
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
   }
 }
