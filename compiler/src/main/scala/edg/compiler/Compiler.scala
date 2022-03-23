@@ -35,12 +35,14 @@ object ElaborateRecord {
 
   // Lowers array-allocate connections to individual leaf-level allocate connections, once all array connections to
   // a port array are of known length.
-  // Also defines the ALLOCATED param of the port array (giving an arbitrary name to anonymous ALLOCATEs) and
-  // creates the task to lower the ALLOCATE steps..
-  // Also created for port arrays that have no array-connects, to define the ALLOCATE parameter.
-  // constraintNames includes all ALLOCATEs to the target port, whether array or not.
-  case class LowerArrayAllocateConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                           portIsLink: Boolean) extends ElaborateTask
+  case class LowerArrayConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String]) extends ElaborateTask
+
+  // Defines the ALLOCATED param of the port array (giving an arbitrary name to anonymous ALLOCATEs) and creates
+  // the task to lower the ALLOCATE steps (which gives a final name once the port array's elements are defined).
+  // constraintNames contains the original non-array connects, while arrayConstraintNAmes contains array connects
+  // that must be remapped to the expanded constraints.
+  case class SetPortArrayAllocated(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
+                                   arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
 
   // Lowers leaf-level allocate connections by replacing the ALLOCATE with a port name.
   // Requires array-allocate connections have been already lowered to leaf-level allocate connections, and that
@@ -183,6 +185,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   linkParams.put(DesignPath(), Seq())  // empty path means disconnected
   private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
+  private val expandedArrayConnectConstraints = mutable.HashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -650,7 +653,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portPostfix, constrNames, false)
+            val lowerArrayTask = ElaborateRecord.SetPortAllocated(path, portPostfix, constrNames, false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
             val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
@@ -667,7 +670,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constraints = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(
+            val lowerArrayTask = ElaborateRecord.SetPortAllocated(
               path, portPostfix, constraints, false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
@@ -745,7 +748,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray => // array case: ignored, handled in lowering
             val constrNames = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.LowerArrayAllocateConnections(path, portPostfix, constrNames, true)
+            val lowerArrayTask = ElaborateRecord.SetPortAllocated(path, portPostfix, constrNames, true)
             val arrayDependencies = linkArrayDependencies.getOrElse(portPostfix, Seq()).toSeq.map { portArray =>
               ElaborateRecord.ElaboratePortArray(path ++ portArray)
             }
@@ -822,7 +825,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
   // to lower the ALLOCATE connections to concrete indices once the port is known.
-  protected def lowerArrayAllocateConnections(record: ElaborateRecord.LowerArrayAllocateConnections): Unit = {
+  protected def setPortArrayAllocated(record: ElaborateRecord.SetPortArrayAllocated): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Lower array-allocate constraints
@@ -946,8 +949,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord: ElaborateRecord.ElaboratePortArray =>
             elaboratePortArray(elaborateRecord.path)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord: ElaborateRecord.LowerArrayAllocateConnections =>
-            lowerArrayAllocateConnections(elaborateRecord)
+          case elaborateRecord: ElaborateRecord.SetPortArrayAllocated =>
+            setPortArrayAllocated(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord: ElaborateRecord.LowerAllocateConnections =>
             lowerAllocateConnections(elaborateRecord)
