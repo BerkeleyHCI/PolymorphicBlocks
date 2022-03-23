@@ -567,7 +567,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
-          elaboratePort(path + portName, generator, generator.getUnelaboratedPorts(portName))
+          val portArray = generator.getUnelaboratedPorts(portName).asInstanceOf[wir.PortArray]
+          constProp.setValue(path.asIndirect + portName + IndirectStep.Elements,
+            ArrayValue(portArray.getUnelaboratedPorts.keys.toSeq.map(TextValue(_))))
+          // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
         errors += CompilerError.GeneratorError(path, generator.getBlockClass, generator.getFnName, err)
@@ -863,7 +866,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val lowerAllocateTask = ElaborateRecord.LowerAllocateConnections(record.parent, record.portPath,
       newConstrNames, record.portIsLink)
     elaboratePending.addNode(lowerAllocateTask, Seq(
-      ElaborateRecord.ParamValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements)
+      ElaborateRecord.ElaboratePortArray(record.parent ++ record.portPath)
     ))
   }
 
