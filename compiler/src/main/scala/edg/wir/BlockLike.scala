@@ -125,9 +125,9 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   }
 
   override def toEltPb: elem.HierarchyBlock = {
-    generatedPb.get.copy(
+    generatedPb.getOrElse(basePb).copy(  // if the block did not generate, return the base w/ the generator field
       prerefineClass=unrefinedType match {
-        case None => generatedPb.get.prerefineClass
+        case None => generatedPb.getOrElse(basePb).prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
       ports=ports.view.mapValues(_.toPb).toMap,

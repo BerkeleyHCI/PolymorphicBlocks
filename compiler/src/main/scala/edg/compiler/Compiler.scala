@@ -562,7 +562,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Run generator and plug in
-    val generatedPb = library.runGenerator(generator.getBlockClass, generator.getFnName,
+    library.runGenerator(generator.getBlockClass, generator.getFnName,
       (reqParamValues ++ reqPortValues).toMap
     ) match {
       case Errorable.Success(generatedPb) =>
