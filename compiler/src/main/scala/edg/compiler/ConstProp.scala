@@ -173,6 +173,9 @@ class ConstProp {
     params.setValue(target, value)
     paramSource.put(target, paramSourceRecord)
     onParamSolved(target, value)
+    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
+      propagateEquality(constrTargetEquals, target, value)
+    }
 
     update()
   }
@@ -188,6 +191,9 @@ class ConstProp {
     paramSource.put(target, paramSourceRecord)
     forcedParams += target
     onParamSolved(target, value)
+    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
+      propagateEquality(constrTargetEquals, target, value)
+    }
 
     update()
   }
