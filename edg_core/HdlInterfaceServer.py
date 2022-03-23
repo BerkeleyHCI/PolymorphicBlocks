@@ -8,7 +8,7 @@ import sys
 import edgir
 import edgrpc
 from .Core import builder, LibraryElement
-from .Blocks import Link
+from .Link import Link
 from .HierarchyBlock import Block
 from .Generator import GeneratorBlock
 from .DesignTop import DesignTop

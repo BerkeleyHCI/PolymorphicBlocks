@@ -54,11 +54,11 @@ class InnerLinkTestCase(unittest.TestCase):
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
-    expected_conn.exported.exterior_port.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_conn.exported.exterior_port.map_extract.path.steps.add().name = 'a'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'a_net'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sinks'
-    expected_conn.exported.internal_block_port.ref.steps.add().allocate = ''
+    expected_conn.exportedArray.exterior_port.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_conn.exportedArray.exterior_port.map_extract.path.steps.add().name = 'a'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().name = 'a_net'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().name = 'sinks'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -69,9 +69,9 @@ class InnerLinkTestCase(unittest.TestCase):
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
-    expected_conn.exported.exterior_port.map_extract.container.ref.steps.add().name = 'sinks'
-    expected_conn.exported.exterior_port.map_extract.path.steps.add().name = 'b'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'b_net'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = 'sinks'
-    expected_conn.exported.internal_block_port.ref.steps.add().allocate = ''
+    expected_conn.exportedArray.exterior_port.map_extract.container.ref.steps.add().name = 'sinks'
+    expected_conn.exportedArray.exterior_port.map_extract.path.steps.add().name = 'b'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().name = 'b_net'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().name = 'sinks'
+    expected_conn.exportedArray.internal_block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())

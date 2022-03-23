@@ -14,8 +14,8 @@ from .IdentityDict import IdentityDict
 from .StructuredMetadata import MetaNamespaceOrder
 
 if TYPE_CHECKING:
-  from .Blocks import Link
   from .Blocks import BaseBlock
+  from .Link import Link
   from .PortBlocks import PortBridge, PortAdapter
 
 
