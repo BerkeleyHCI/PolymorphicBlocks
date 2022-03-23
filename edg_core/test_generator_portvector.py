@@ -58,7 +58,7 @@ class GeneratorInnerBlockInvalid(GeneratorBlock):
     self.generator(self.generate, self.ports.allocated())
 
   def generate(self, elements: List[str]) -> None:
-    self.ports.append_elt(TestPortSink(), 'nope')
+    self.ports.append_elt(TestPortSink(), 'haha')
 
 
 class TestGeneratorElementsInvalid(Block):
@@ -67,7 +67,7 @@ class TestGeneratorElementsInvalid(Block):
     self.block = self.Block(GeneratorInnerBlockInvalid())
 
     self.source0 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate())
+    self.connect(self.source0.port, self.block.ports.allocate('nope'))
 
 
 class TestGeneratorPortVectorInvalid(unittest.TestCase):

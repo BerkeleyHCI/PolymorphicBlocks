@@ -891,14 +891,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     val allocatableNames = portElements.filter(!suggestedNames.contains(_)).to(mutable.ListBuffer)
-    require(suggestedNames.subsetOf(portElements.toSet))
     val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
 
     record.constraintNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr =>
         mapLeafConnectAllocate(constr, record.portPath) { suggestedName =>
           val allocatedName = suggestedName match {
-            case Some(suggestedName) => suggestedName
+            case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
             case None => allocatableNames.remove(0)
           }
           allocatedIndexToConstraint.put(allocatedName, constrName)
