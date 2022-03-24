@@ -35,7 +35,8 @@ object ElaborateRecord {
 
   // Lowers array-allocate connections to individual leaf-level allocate connections, once all array connections to
   // a port array are of known length.
-  case class LowerArrayConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String]) extends ElaborateTask
+  case class LowerArrayConnections(parent: DesignPath, constraintName: String) extends ElaborateTask
+      with ElaborateDependency
 
   // Defines the ALLOCATED param of the port array (giving an arbitrary name to anonymous ALLOCATEs) and creates
   // the task to lower the ALLOCATE steps (which gives a final name once the port array's elements are defined).
@@ -653,7 +654,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.SetPortAllocated(path, portPostfix, constrNames, false)
+            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, Seq(), false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
             val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
@@ -670,8 +671,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constraints = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.SetPortAllocated(
-              path, portPostfix, constraints, false)
+            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(
+              path, portPostfix, constraints, Seq(), false)
             elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
           case _ =>
             val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
@@ -720,16 +721,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Aggregate by inner link ports
     val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
-    val linkArrayDependencies = mutable.HashMap[Seq[String], mutable.ListBuffer[Seq[String]]]()  // port array path -> port arrays that must be expanded
+    val linkAllocateArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraints that need to be expanded
     val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
 
     link.getConstraints.foreach { case (constrName, constr) => constr.expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(intPortArray, None)) => // TODO array-export stmt
-          linkAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
-          linkArrayDependencies.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(extPortArray)
+          linkAllocateArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
 
-        case _ => throw new AssertionError("impossible exported format")
+          elaboratePending.addNode(ElaborateRecord.LowerArrayConnections(path, constrName),
+            Seq(ElaborateRecord.ParamValue(path.asIndirect ++ extPortArray + IndirectStep.Elements)))
+
+        case _ => throw new AssertionError("impossible exported-array format")
       }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(_), ValueExpr.RefAllocate(intPortArray, _)) =>
@@ -748,9 +751,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray => // array case: ignored, handled in lowering
             val constrNames = linkAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.SetPortAllocated(path, portPostfix, constrNames, true)
-            val arrayDependencies = linkArrayDependencies.getOrElse(portPostfix, Seq()).toSeq.map { portArray =>
-              ElaborateRecord.ElaboratePortArray(path ++ portArray)
+            val arrayConstrNames = linkAllocateArrayConstraints.getOrElse(portPostfix, Seq()).toSeq
+            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, arrayConstrNames, true)
+            val arrayDependencies = linkAllocateArrayConstraints.getOrElse(portPostfix, Seq()).toSeq.map { constrName =>
+              ElaborateRecord.LowerArrayConnections(path, constrName)
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
           case _ =>  // everything else generated
@@ -832,25 +836,25 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO support more array-type constraints
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ElemBuilder
-    record.constraintNames foreach { constrName => parentBlock.getConstraints(constrName).expr match {
+    parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
           val extPortArrayElts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
-          parentBlock.mapMultiConstraint(constrName) { constr =>
+          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
             extPortArrayElts.map { index =>
               val extPortPostfix = (extPortArray :+ index) ++ extPortInner
-              s"$constrName.$index" -> ElemBuilder.Constraint.Exported(
+              s"${record.constraintName}.$index" -> ElemBuilder.Constraint.Exported(
                 Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
             }
           }
-          expandedArrayConnectConstraints.put(record.parent ++ constrName,
-            extPortArrayElts.map { index => s"$constrName.$index" })
+          expandedArrayConnectConstraints.put(record.parent + record.constraintName,
+            extPortArrayElts.map { index => s"${record.constraintName}.$index" })
 
         case _ => throw new IllegalArgumentException("unsupported array export")
       }
       case _ => throw new IllegalArgumentException("not a connected-array or exported-array constraint")
-    } }
+    }
 
   }
 
@@ -862,7 +866,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Update constraint names given expanded array constraints
     val newConstrNames = record.constraintNames ++
-        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent ++ constrName))
+        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     // Given leaf level constraints, create allocations
     var prevPortIndex: Int = -1
