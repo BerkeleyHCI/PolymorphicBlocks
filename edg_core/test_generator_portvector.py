@@ -74,3 +74,36 @@ class TestGeneratorPortVectorInvalid(unittest.TestCase):
   def test_generator_error(self):
     with self.assertRaises(CompilerCheckError):
       ScalaCompiler.compile(TestGeneratorElementsInvalid)
+
+
+class GeneratorWrapperBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorInnerBlock())
+    self.ports = self.Export(self.block.ports)
+
+
+class GeneratorWrapperTest(Block):  # same as TestGeneratorElements, but creating a GeneratorInnerBlock
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorWrapperBlock())
+
+    self.source0 = self.Block(TestBlockSource(1.0))
+    self.source1 = self.Block(TestBlockSource(1.0))
+    self.source2 = self.Block(TestBlockSource(1.0))
+    self.connect(self.source0.port, self.block.ports.allocate())
+    self.connect(self.source1.port, self.block.ports.allocate('named'))
+    self.connect(self.source2.port, self.block.ports.allocate())
+
+
+class TestGeneratorWrapper(unittest.TestCase):
+  def test_generator(self):
+    ScalaCompiler.compile(GeneratorWrapperTest)
+
+  def test_exported_ports(self):
+    compiled = ScalaCompiler.compile(TestGeneratorElements)
+    pb = compiled.contents.blocks['block'].hierarchy
+    pb_ports = pb.ports['ports'].array.ports.ports
+    self.assertIn('0', pb_ports)
+    self.assertIn('named', pb_ports)
+    self.assertIn('1', pb_ports)
