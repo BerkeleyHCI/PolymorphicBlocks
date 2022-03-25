@@ -102,8 +102,14 @@ class TestGeneratorWrapper(unittest.TestCase):
 
   def test_exported_ports(self):
     compiled = ScalaCompiler.compile(GeneratorWrapperTest)
-    pb = compiled.contents.blocks['block'].hierarchy
-    pb_ports = pb.ports['ports'].array.ports.ports
+
+    # check the inner block too
+    pb_ports = compiled.contents.blocks['block'].hierarchy.blocks['block'].hierarchy.ports['ports'].array.ports.ports
+    self.assertIn('0', pb_ports)
+    self.assertIn('named', pb_ports)
+    self.assertIn('1', pb_ports)
+
+    pb_ports = compiled.contents.blocks['block'].hierarchy.ports['ports'].array.ports.ports
     self.assertIn('0', pb_ports)
     self.assertIn('named', pb_ports)
     self.assertIn('1', pb_ports)

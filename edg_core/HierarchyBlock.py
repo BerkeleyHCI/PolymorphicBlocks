@@ -235,8 +235,17 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       if connect_elts is None:  # single port net - effectively discard
         pass
       elif connect_elts.link_type is None:  # generate direct export
-        pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
-        pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
+        exterior_port = connect_elts.bridged_connects[0][0]
+        interior_port = connect_elts.direct_connects[0][0]
+        assert exterior_port._type_of() == interior_port._type_of()
+        if isinstance(exterior_port, Vector):  # TODO more principled port-array connection
+          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
+          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
+        elif isinstance(exterior_port, Port):
+          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
+          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
+        else:
+          raise NotImplementedError(f"unknown exported port type {exterior_port}")
         self._namespace_order.append(f"(conn){name}")
       else:  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
@@ -401,7 +410,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     self._port_tags[port] = set(tags)
     return port  # type: ignore
 
-  import edg_core
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
