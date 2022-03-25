@@ -37,7 +37,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
       ),
       Block.Block("concreteWrapperBlock",
         ports = Map(
-          "port" -> Port.Library("sourcePort"),
+          "port" -> Port.Array("sinkPort"),
         ),
         blocks = Map(
           "inner" -> Block.Library("concreteSinksBlock")

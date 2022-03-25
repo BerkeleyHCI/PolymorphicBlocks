@@ -604,6 +604,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Find allocate ports and generate the port array lowering compiler tasks
     val blockAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
+    val blockArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val blockAllocateArrayAllocatedDependencies = mutable.HashMap[Seq[String], mutable.ListBuffer[Seq[String]]]()  // port array path -> port array allocated dependencies
     val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val blockConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
@@ -618,11 +619,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             path.asIndirect ++ intPortArray + IndirectStep.Elements,
             path, constrName)
 
-          blockAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+          blockArrayConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
           blockAllocateArrayAllocatedDependencies.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(extPortArray)
 
           elaboratePending.addNode(ElaborateRecord.LowerArrayConnections(path, constrName), Seq(
-            ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Elements)
+            ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Elements),
+            // allocated must run first, it depends on constraints not being lowered
+            ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Allocated)
           ))
       }
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
@@ -667,7 +670,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         port match {
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, Seq(), false)
+            val arrayConstrNames = blockArrayConstraints.getOrElse(portPostfix, Seq()).toSeq
+            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, arrayConstrNames, false)
             val arrayDependencies = blockAllocateArrayAllocatedDependencies.getOrElse(portPostfix, Seq()).toSeq.map { allocatedDep =>
               ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
             }
@@ -919,15 +923,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     record.arrayConstraintNames foreach { constrName => parentBlock.getConstraints(constrName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
+          require(record.constraintNames.isEmpty && record.arrayConstraintNames.length == 1)  // non-allocating export only allowed once
+          val extPortArrayElts = ArrayValue.ExtractText(
+            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Allocated).get)
+          extPortArrayElts.foreach { i =>
+            allocatedIndices.put(s"$constrName.$i", i)
+          }
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(intPortArray, None)) =>
           val extPortArrayLength = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Allocated).get).length
-            // note since suggestedName is empty we just allocate names arbitrarily
-            (0 until extPortArrayLength).foreach { i =>
-              prevPortIndex += 1
-              allocatedIndices.put(s"$constrName.$i", prevPortIndex.toString)
-            }
-
+          // note since suggestedName is empty we just allocate names arbitrarily
+          (0 until extPortArrayLength).foreach { i =>
+            prevPortIndex += 1
+            allocatedIndices.put(s"$constrName.$i", prevPortIndex.toString)
+          }
         case _ => throw new AssertionError("impossible exported-array format")
       }
     } }
