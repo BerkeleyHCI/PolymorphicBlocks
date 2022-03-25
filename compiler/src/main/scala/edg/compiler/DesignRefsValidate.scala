@@ -58,6 +58,14 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
                            internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
+  override def mapConnectedArray(connected: expr.ConnectedExpr, blockPort: Seq[ref.LocalPath],
+                                 linkPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    blockPort ++ linkPort
+  }
+  override def mapExportedArray(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
+                                internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    exteriorPort ++ internalBlockPort
+  }
   override def mapAssign(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     assign.dst.toSeq ++ src
   }
