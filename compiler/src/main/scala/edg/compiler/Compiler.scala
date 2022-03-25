@@ -627,6 +627,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             // allocated must run first, it depends on constraints not being lowered
             ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Allocated)
           ))
+        case _ => throw new AssertionError("impossible exported-array format")
       }
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
@@ -940,6 +941,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           }
         case _ => throw new AssertionError("impossible exported-array format")
       }
+      case _ => throw new AssertionError("unexpected array connection constraint")
     } }
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.values.toSeq.map(TextValue(_))))
