@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import *
 
 import edgir
+from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, ConnectedPorts
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
@@ -387,7 +388,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False) -> T:
     """Registers a port for this Block"""
-    from .Array import Vector
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     if optional and tags:
@@ -402,7 +402,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return port  # type: ignore
 
   import edg_core
-  ExportType = TypeVar('ExportType', bound=edg_core.Port)  # Block.Port aliases edg_core.Port
+  ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
     port_parent = port._block_parent()
@@ -410,8 +410,16 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert port_parent._parent is self, "can only export ports of contained block"
     assert port._is_bound(), "can only export bound type"
 
-    new_port: BasePort = self.Port(type(port)(),  # TODO is dropping args safe in all cases?
-                                   tags, optional=optional)
+    if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
+      assert isinstance(port, Vector)
+      new_port: BasePort = self.Port(Vector(port._tpe),
+                                     tags, optional=optional)
+    elif isinstance(port, Port):
+      new_port = self.Port(type(port)(),  # TODO is dropping args safe in all cases?
+                           tags, optional=optional)
+    else:
+      raise NotImplementedError(f"unknown exported port type {port}")
+
     self.connect(new_port, port)
     return new_port  # type: ignore
 
@@ -427,13 +435,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     self._blocks.register(elt)
 
     return elt
-
-  def connect(self, *ports: BasePort) -> ConnectedPorts:
-    for port in ports:
-      if not isinstance(port, Port):
-        raise TypeError(f"param to connect(...) must be Port, got {port} of type {type(port)}")
-
-    return super().connect(*ports)
 
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])

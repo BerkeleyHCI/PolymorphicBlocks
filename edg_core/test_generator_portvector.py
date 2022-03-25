@@ -14,7 +14,7 @@ class GeneratorInnerBlock(GeneratorBlock):
     self.generator(self.generate, self.ports.allocated())
 
   def generate(self, elements: List[str]) -> None:
-    assert(elements == ['0', 'named', '1'])
+    assert elements == ['0', 'named', '1'], f"bad elements {elements}"
     self.ports.append_elt(TestPortSink((-1, 1)))
     self.ports.append_elt(TestPortSink((-5, 5)), 'named')
     self.ports.append_elt(TestPortSink((-2, 2)))
@@ -101,7 +101,7 @@ class TestGeneratorWrapper(unittest.TestCase):
     ScalaCompiler.compile(GeneratorWrapperTest)
 
   def test_exported_ports(self):
-    compiled = ScalaCompiler.compile(TestGeneratorElements)
+    compiled = ScalaCompiler.compile(GeneratorWrapperTest)
     pb = compiled.contents.blocks['block'].hierarchy
     pb_ports = pb.ports['ports'].array.ports.ports
     self.assertIn('0', pb_ports)
