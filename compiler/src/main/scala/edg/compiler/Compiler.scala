@@ -609,8 +609,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
     val connectedPortArrays = mutable.Set[DesignPath]()
 
-    import edg.ExprBuilder.ValueExpr
+    import edg.ExprBuilder.{Ref, ValueExpr}
     block.getConstraints.foreach { case (constrName, constr) => constr.expr match {
+      case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>  // direct export, forwarding ALLOCATE and ELEMENTS
+          constProp.addDirectedEquality(path.asIndirect ++ extPortArray + IndirectStep.Elements,
+            path.asIndirect ++ intPortArray + IndirectStep.Elements,
+            path, constrName)
+          constProp.addDirectedEquality(path.asIndirect ++ intPortArray + IndirectStep.Allocated,
+            path.asIndirect ++ extPortArray + IndirectStep.Allocated,
+            path, constrName)
+
+          elaboratePending.addNode(ElaborateRecord.LowerArrayConnections(path, constrName), Seq(
+            ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Elements)
+          ))
+      }
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
           blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
@@ -837,11 +850,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Lower array-allocate constraints
-    // TODO support more array-type constraints
     import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ElemBuilder
-    parentBlock.getConstraints(record.constraintName).expr match {
+    val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
+          val intPortArrayElts = ArrayValue.ExtractText(
+            constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
+          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+            intPortArrayElts.map { index =>
+              val extPortPostfix = extPortArray :+ index
+              val intPortPostfix = intPortArray :+ index
+              s"${record.constraintName}.$index" -> ElemBuilder.Constraint.Exported(
+                Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
+            }
+          }
+          intPortArrayElts.map { index => s"${record.constraintName}.$index" }
+
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
           val extPortArrayElts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
@@ -852,14 +877,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
             }
           }
-          expandedArrayConnectConstraints.put(record.parent + record.constraintName,
-            extPortArrayElts.map { index => s"${record.constraintName}.$index" })
+          extPortArrayElts.map { index => s"${record.constraintName}.$index" }
 
         case _ => throw new IllegalArgumentException("unsupported array export")
       }
       case _ => throw new IllegalArgumentException("not a connected-array or exported-array constraint")
     }
 
+    expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames)
+    newConstrNames foreach { constrName =>
+      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName),
+        parentBlock.isInstanceOf[wir.Link])
+    }
   }
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
