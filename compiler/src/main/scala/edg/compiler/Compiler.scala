@@ -604,6 +604,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Find allocate ports and generate the port array lowering compiler tasks
     val blockAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
+    val blockAllocateArrayAllocatedDependencies = mutable.HashMap[Seq[String], mutable.ListBuffer[Seq[String]]]()  // port array path -> port array allocated dependencies
     val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val blockConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
     val linkConnectedConstraint = SingleWriteHashMap[Seq[String], String]()  // port path -> constraint name
@@ -616,9 +617,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.addDirectedEquality(path.asIndirect ++ extPortArray + IndirectStep.Elements,
             path.asIndirect ++ intPortArray + IndirectStep.Elements,
             path, constrName)
-          constProp.addDirectedEquality(path.asIndirect ++ intPortArray + IndirectStep.Allocated,
-            path.asIndirect ++ extPortArray + IndirectStep.Allocated,
-            path, constrName)
+
+          blockAllocateConstraints.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(constrName)
+          blockAllocateArrayAllocatedDependencies.getOrElseUpdate(intPortArray, mutable.ListBuffer()).append(extPortArray)
 
           elaboratePending.addNode(ElaborateRecord.LowerArrayConnections(path, constrName), Seq(
             ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Elements)
@@ -667,7 +668,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _: wir.PortArray =>  // array case: ignored, handled in lowering
             val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
             val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, Seq(), false)
-            elaboratePending.addNode(lowerArrayTask, Seq())  // TODO add array-connect dependencies
+            val arrayDependencies = blockAllocateArrayAllocatedDependencies.getOrElse(portPostfix, Seq()).toSeq.map { allocatedDep =>
+              ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
+            }
+            elaboratePending.addNode(lowerArrayTask, arrayDependencies)
           case _ =>
             val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
               (constrName, block.getConstraints(constrName))
