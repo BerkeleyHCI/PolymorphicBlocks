@@ -1,5 +1,6 @@
 from electronics_model import *
 
+
 @abstract_block
 class IoController(Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
