@@ -787,6 +787,8 @@ class ValueExpr(google.protobuf.message.Message):
     MAP_EXTRACT_FIELD_NUMBER: builtins.int
     CONNECTED_FIELD_NUMBER: builtins.int
     EXPORTED_FIELD_NUMBER: builtins.int
+    CONNECTEDARRAY_FIELD_NUMBER: builtins.int
+    EXPORTEDARRAY_FIELD_NUMBER: builtins.int
     ASSIGN_FIELD_NUMBER: builtins.int
     REF_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
@@ -815,9 +817,21 @@ class ValueExpr(google.protobuf.message.Message):
     @property
     def map_extract(self) -> global___MapExtractExpr: ...
     @property
-    def connected(self) -> global___ConnectedExpr: ...
+    def connected(self) -> global___ConnectedExpr:
+        """single port to single port connect"""
+        pass
     @property
-    def exported(self) -> global___ExportedExpr: ...
+    def exported(self) -> global___ExportedExpr:
+        """single port to single port export"""
+        pass
+    @property
+    def connectedArray(self) -> global___ConnectedExpr:
+        """array to array connect, where allocate means allocate a subarray"""
+        pass
+    @property
+    def exportedArray(self) -> global___ExportedExpr:
+        """array to array export, where allocate means allocate a subarray"""
+        pass
     @property
     def assign(self) -> global___AssignExpr: ...
     @property
@@ -838,11 +852,13 @@ class ValueExpr(google.protobuf.message.Message):
         map_extract: typing.Optional[global___MapExtractExpr] = ...,
         connected: typing.Optional[global___ConnectedExpr] = ...,
         exported: typing.Optional[global___ExportedExpr] = ...,
+        connectedArray: typing.Optional[global___ConnectedExpr] = ...,
+        exportedArray: typing.Optional[global___ExportedExpr] = ...,
         assign: typing.Optional[global___AssignExpr] = ...,
         ref: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","exported",b"exported","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","exported",b"exported","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr",b"expr"]) -> typing.Optional[typing_extensions.Literal["literal","binary","binary_set","unary","unary_set","struct","range","ifThenElse","extract","map_extract","connected","exported","assign","ref"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr",b"expr"]) -> typing.Optional[typing_extensions.Literal["literal","binary","binary_set","unary","unary_set","struct","range","ifThenElse","extract","map_extract","connected","exported","connectedArray","exportedArray","assign","ref"]]: ...
 global___ValueExpr = ValueExpr

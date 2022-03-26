@@ -17,7 +17,7 @@ from edgir import common_pb2 as edgir_dot_common__pb2
 from edgir import name_pb2 as edgir_dot_name__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x65\x64gir/ref.proto\x12\tedgir.ref\x1a\x12\x65\x64gir/common.proto\x1a\x10\x65\x64gir/name.proto\"R\n\tLocalStep\x12-\n\x0ereserved_param\x18\x01 \x01(\x0e\x32\x13.edgir.ref.ReservedH\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x42\x06\n\x04step\"W\n\tLocalPath\x12#\n\x05steps\x18\x01 \x03(\x0b\x32\x14.edgir.ref.LocalStep\x12%\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x16.edgir.common.Metadata\"\xa8\x01\n\x0bLibraryPath\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.edgir.name.LibraryName\x12$\n\x05steps\x18\x02 \x03(\x0b\x32\x15.edgir.name.Namespace\x12$\n\x06target\x18\x03 \x01(\x0b\x32\x14.edgir.ref.LocalStep\x12%\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x16.edgir.common.Metadata*c\n\x08Reserved\x12\r\n\tUNDEFINED\x10\x00\x12\x12\n\x0e\x43ONNECTED_LINK\x10\x01\x12\x10\n\x0cIS_CONNECTED\x10(\x12\n\n\x06LENGTH\x10*\x12\x0c\n\x08\x41LLOCATE\x10+\x12\x08\n\x04NAME\x10,b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x65\x64gir/ref.proto\x12\tedgir.ref\x1a\x12\x65\x64gir/common.proto\x1a\x10\x65\x64gir/name.proto\"f\n\tLocalStep\x12-\n\x0ereserved_param\x18\x01 \x01(\x0e\x32\x13.edgir.ref.ReservedH\x00\x12\x12\n\x08\x61llocate\x18\x02 \x01(\tH\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x42\x06\n\x04step\"W\n\tLocalPath\x12#\n\x05steps\x18\x01 \x03(\x0b\x32\x14.edgir.ref.LocalStep\x12%\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x16.edgir.common.Metadata\"\xa8\x01\n\x0bLibraryPath\x12&\n\x05start\x18\x01 \x01(\x0b\x32\x17.edgir.name.LibraryName\x12$\n\x05steps\x18\x02 \x03(\x0b\x32\x15.edgir.name.Namespace\x12$\n\x06target\x18\x03 \x01(\x0b\x32\x14.edgir.ref.LocalStep\x12%\n\x04meta\x18\xff\x01 \x01(\x0b\x32\x16.edgir.common.Metadata*r\n\x08Reserved\x12\r\n\tUNDEFINED\x10\x00\x12\x12\n\x0e\x43ONNECTED_LINK\x10\x01\x12\x10\n\x0cIS_CONNECTED\x10(\x12\n\n\x06LENGTH\x10*\x12\x08\n\x04NAME\x10,\x12\x0c\n\x08\x45LEMENTS\x10-\x12\r\n\tALLOCATED\x10.b\x06proto3')
 
 _RESERVED = DESCRIPTOR.enum_types_by_name['Reserved']
 Reserved = enum_type_wrapper.EnumTypeWrapper(_RESERVED)
@@ -25,8 +25,9 @@ UNDEFINED = 0
 CONNECTED_LINK = 1
 IS_CONNECTED = 40
 LENGTH = 42
-ALLOCATE = 43
 NAME = 44
+ELEMENTS = 45
+ALLOCATED = 46
 
 
 _LOCALSTEP = DESCRIPTOR.message_types_by_name['LocalStep']
@@ -56,12 +57,12 @@ _sym_db.RegisterMessage(LibraryPath)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _RESERVED._serialized_start=412
-  _RESERVED._serialized_end=511
+  _RESERVED._serialized_start=432
+  _RESERVED._serialized_end=546
   _LOCALSTEP._serialized_start=68
-  _LOCALSTEP._serialized_end=150
-  _LOCALPATH._serialized_start=152
-  _LOCALPATH._serialized_end=239
-  _LIBRARYPATH._serialized_start=242
-  _LIBRARYPATH._serialized_end=410
+  _LOCALSTEP._serialized_end=170
+  _LOCALPATH._serialized_start=172
+  _LOCALPATH._serialized_end=259
+  _LIBRARYPATH._serialized_start=262
+  _LIBRARYPATH._serialized_end=430
 # @@protoc_insertion_point(module_scope)

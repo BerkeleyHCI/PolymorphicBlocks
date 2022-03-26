@@ -33,10 +33,15 @@ class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     available on PortArray and LinkArray
     """
 
-    ALLOCATE: _Reserved.ValueType  # 43
-    """available on PortArray"""
-
     NAME: _Reserved.ValueType  # 44
+    ELEMENTS: _Reserved.ValueType  # 45
+    """available on PortArray and LinkArray, returns a list of string of element names"""
+
+    ALLOCATED: _Reserved.ValueType  # 46
+    """cannot be used as a generator dependency
+    available on PortArray, returns a list of string of incoming connection names,
+    """
+
 class Reserved(_Reserved, metaclass=_ReservedEnumTypeWrapper):
     """* These are reserved terms that we'll end up using in various places.
     I'd rather have these in the block/link/bridges where they're going
@@ -58,10 +63,15 @@ LENGTH: Reserved.ValueType  # 42
 available on PortArray and LinkArray
 """
 
-ALLOCATE: Reserved.ValueType  # 43
-"""available on PortArray"""
-
 NAME: Reserved.ValueType  # 44
+ELEMENTS: Reserved.ValueType  # 45
+"""available on PortArray and LinkArray, returns a list of string of element names"""
+
+ALLOCATED: Reserved.ValueType  # 46
+"""cannot be used as a generator dependency
+available on PortArray, returns a list of string of incoming connection names,
+"""
+
 global___Reserved = Reserved
 
 
@@ -74,8 +84,14 @@ class LocalStep(google.protobuf.message.Message):
     """
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     RESERVED_PARAM_FIELD_NUMBER: builtins.int
+    ALLOCATE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     reserved_param: global___Reserved.ValueType
+    allocate: typing.Text
+    """Allocates a new element in an array, valid for arrays only.
+    Empty string means automatically allocated, while a non-empty string is a suggested name.
+    """
+
     name: typing.Text
     """*
     A local name is what something is called in the context of its parent,
@@ -95,11 +111,12 @@ class LocalStep(google.protobuf.message.Message):
     def __init__(self,
         *,
         reserved_param: global___Reserved.ValueType = ...,
+        allocate: typing.Text = ...,
         name: typing.Text = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["step",b"step"]) -> typing.Optional[typing_extensions.Literal["reserved_param","name"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["allocate",b"allocate","name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["allocate",b"allocate","name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["step",b"step"]) -> typing.Optional[typing_extensions.Literal["reserved_param","allocate","name"]]: ...
 global___LocalStep = LocalStep
 
 class LocalPath(google.protobuf.message.Message):

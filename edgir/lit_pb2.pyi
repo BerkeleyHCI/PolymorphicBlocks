@@ -103,6 +103,18 @@ class StructLit(google.protobuf.message.Message):
     def ClearField(self, field_name: typing_extensions.Literal["members",b"members"]) -> None: ...
 global___StructLit = StructLit
 
+class ArrayLit(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    ELTS_FIELD_NUMBER: builtins.int
+    @property
+    def elts(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueLit]: ...
+    def __init__(self,
+        *,
+        elts: typing.Optional[typing.Iterable[global___ValueLit]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elts",b"elts"]) -> None: ...
+global___ArrayLit = ArrayLit
+
 class ValueLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     FLOATING_FIELD_NUMBER: builtins.int
@@ -111,6 +123,7 @@ class ValueLit(google.protobuf.message.Message):
     TEXT_FIELD_NUMBER: builtins.int
     STRUCT_FIELD_NUMBER: builtins.int
     RANGE_FIELD_NUMBER: builtins.int
+    ARRAY_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
     def floating(self) -> global___FloatLit: ...
@@ -125,6 +138,8 @@ class ValueLit(google.protobuf.message.Message):
     @property
     def range(self) -> global___RangeLit: ...
     @property
+    def array(self) -> global___ArrayLit: ...
+    @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
@@ -134,9 +149,10 @@ class ValueLit(google.protobuf.message.Message):
         text: typing.Optional[global___TextLit] = ...,
         struct: typing.Optional[global___StructLit] = ...,
         range: typing.Optional[global___RangeLit] = ...,
+        array: typing.Optional[global___ArrayLit] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["type",b"type"]) -> typing.Optional[typing_extensions.Literal["floating","integer","boolean","text","struct","range"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["array",b"array","boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["array",b"array","boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["type",b"type"]) -> typing.Optional[typing_extensions.Literal["floating","integer","boolean","text","struct","range","array"]]: ...
 global___ValueLit = ValueLit
