@@ -258,12 +258,6 @@ class ConstProp {
     paramTypes.get(param)
   }
 
-  def getArrayElts(target: DesignPath): Option[Seq[String]] = {
-    params.getValue(target.asIndirect + IndirectStep.Elements).map { paramValue =>
-      ArrayValue.ExtractText(paramValue)
-    }
-  }
-
   /**
     * Returns all parameters with a definition (eg, ValInit) but missing a concrete assignment.
     * Ignores indirect references.
