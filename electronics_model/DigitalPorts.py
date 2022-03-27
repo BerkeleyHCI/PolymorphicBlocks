@@ -97,7 +97,7 @@ class DigitalBase(CircuitPort[DigitalLink]):
 
 class DigitalSink(DigitalBase):
   @staticmethod
-  def from_supply(neg: VoltageSink, pos: VoltageSink,
+  def from_supply(neg: VoltageSink, pos: VoltageSink, *,
                   voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
@@ -112,18 +112,15 @@ class DigitalSink(DigitalBase):
     else:
       raise ValueError("no input threshold specified")
 
-  def __init__(self, model: Optional[Union[DigitalSink, DigitalBidir]] = None,
-               voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO),
+  @staticmethod
+  def from_bidir(model: DigitalBidir) -> DigitalSink:
+    return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
+
+  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO), *,
                input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT)) -> None:
     super().__init__()
     self.bridge_type = DigitalSinkBridge
-
-    if model is not None:
-      # TODO check that both model and individual parameters aren't overdefined
-      voltage_limits = model.voltage_limits
-      current_draw = model.current_draw
-      input_thresholds = model.input_thresholds
 
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -210,19 +207,16 @@ class DigitalSource(DigitalBase):
       output_thresholds=output_threshold
     )
 
-  def __init__(self, model: Optional[Union[DigitalSource, DigitalBidir]] = None,
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL),
+  @staticmethod
+  def from_bidir(model: DigitalBidir) -> DigitalSource:
+    return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds)
+
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               current_limits: RangeLike = Default(RangeExpr.ALL), *,
                output_thresholds: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.bridge_type = DigitalSourceBridge
     self.adapter_types = [DigitalSourceAdapterVoltageSource]
-
-    if model is not None:
-      # TODO check that both model and individual parameters aren't overdefined
-      voltage_out = model.voltage_out
-      current_limits = model.current_limits
-      output_thresholds = model.output_thresholds
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
@@ -288,30 +282,17 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
                         input_thresholds=RangeExpr(), output_thresholds=RangeExpr(),
                         pullup_capable=BoolExpr(), pulldown_capable=BoolExpr())
 
-  def __init__(self, model: Optional[DigitalBidir] = None,
-               voltage_limits: RangeLike = Default(RangeExpr.ALL),
+  def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
                voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT),
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
-               *,
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.bridge_type = DigitalBidirBridge
     self.not_connected_type = DigitalBidirNotConnected
-
-    if model is not None:
-      # TODO check that both model and individual parameters aren't overdefined
-      voltage_limits = model.voltage_limits
-      current_draw = model.current_draw
-      voltage_out = model.voltage_out
-      current_limits = model.current_limits
-      input_thresholds = model.input_thresholds
-      output_thresholds = model.output_thresholds
-      pullup_capable = model.pullup_capable
-      pulldown_capable = model.pulldown_capable
 
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -351,8 +332,11 @@ class DigitalBidirBridge(CircuitPortBridge):
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
     # TODO this is a hacktastic in that it's not bidirectional, but it serves the use case for the USB PD CC case
-    self.assign(self.inner_link.pullup_capable, self.outer_port.link().pullup_capable)
-    self.assign(self.inner_link.pulldown_capable, self.outer_port.link().pulldown_capable)
+    # TODO this is a bit hacky, but allows a externally disconnected port
+    self.assign(self.inner_link.pullup_capable, self.outer_port.is_connected().then_else(
+      self.outer_port.link().pullup_capable, BoolExpr._to_expr_type(False)))
+    self.assign(self.inner_link.pulldown_capable, self.outer_port.is_connected().then_else(
+      self.outer_port.link().pulldown_capable, BoolExpr._to_expr_type(False)))
     # TODO see issue 58, how do we propagate this in both directions?
     # self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
     # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)

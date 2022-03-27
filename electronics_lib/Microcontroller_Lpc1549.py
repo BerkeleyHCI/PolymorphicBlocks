@@ -64,10 +64,10 @@ class Lpc1549Base_Device(DiscreteChip, FootprintBlock):
     #
     # System Ports
     #
-    self.swd_swdio = self.Port(DigitalBidir(dio_5v_model))
-    self.swd_swclk = self.Port(DigitalSink(dio_5v_model))
-    self.swd_swo = self.Port(DigitalSource(dio_5v_model))
-    self.swd_reset = self.Port(DigitalSink(dio_5v_model))
+    self.swd_swdio = self.Port(dio_5v_model)
+    self.swd_swclk = self.Port(DigitalSink.from_bidir(dio_5v_model))
+    self.swd_swo = self.Port(DigitalSource.from_bidir(dio_5v_model))
+    self.swd_reset = self.Port(DigitalSink.from_bidir(dio_5v_model))
 
     self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.vdd.link().voltage), optional=True)  # Table 15, 32, 33
     # TODO Table 32, model crystal load capacitance and series resistance ratings

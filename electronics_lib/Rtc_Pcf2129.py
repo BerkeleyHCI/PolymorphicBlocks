@@ -27,7 +27,7 @@ class Pcf2129_Device(DiscreteChip, FootprintBlock):
     )
 
     self.spi = self.Port(SpiSlave(dio_model), [Output])
-    self.cs = self.Port(DigitalSink(dio_model))
+    self.cs = self.Port(DigitalSink.from_bidir(dio_model))
 
     opendrain_model = DigitalSingleSource.low_from_supply(self.gnd)  # TODO -1 - 1 mAmp current limit?
     self.clkout = self.Port(opendrain_model, optional=True)

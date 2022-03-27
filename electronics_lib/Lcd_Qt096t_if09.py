@@ -20,11 +20,11 @@ class Qt096t_if09_Device(DiscreteChip, FootprintBlock):
       input_threshold_factor=(0.3, 0.7),
       output_threshold_factor=(0.2, 0.8)
     )
-    self.reset = self.Port(DigitalSink(io_model))
-    self.rs = self.Port(DigitalSink(io_model))
-    self.cs = self.Port(DigitalSink(io_model))
+    self.reset = self.Port(DigitalSink.from_bidir(io_model))
+    self.rs = self.Port(DigitalSink.from_bidir(io_model))
+    self.cs = self.Port(DigitalSink.from_bidir(io_model))
     self.sda = self.Port(io_model)
-    self.scl = self.Port(DigitalSink(io_model))
+    self.scl = self.Port(DigitalSink.from_bidir(io_model))
 
     self.leda = self.Port(Passive())  # TODO maybe something else?
 

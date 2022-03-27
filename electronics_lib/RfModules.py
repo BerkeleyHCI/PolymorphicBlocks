@@ -25,8 +25,8 @@ class Xbee_S3b_Device(DiscreteChip, FootprintBlock):
 
     self.data = self.Port(UartPort(digital_model), [Input])
 
-    self.rssi = self.Port(DigitalSource(digital_model), optional=True)
-    self.associate = self.Port(DigitalSource(digital_model), optional=True)
+    self.rssi = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
+    self.associate = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
   def contents(self):
     super().contents()
@@ -107,8 +107,8 @@ class BlueSmirf(IntegratedCircuit, FootprintBlock):
     )
 
     self.data = self.Port(UartPort(digital_model), [Input])
-    self.cts = self.Port(DigitalSink(digital_model), optional=True)
-    self.rts = self.Port(DigitalSource(digital_model), optional=True)
+    self.cts = self.Port(DigitalSink.from_bidir(digital_model), optional=True)
+    self.rts = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
   def contents(self):
     super().contents()

@@ -7,8 +7,8 @@ from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 class SpiLink(Link):
   def __init__(self) -> None:
     super().__init__()
-    self.master = self.Port(SpiMaster())
-    self.devices = self.Port(Vector(SpiSlave()))
+    self.master = self.Port(SpiMaster(DigitalBidir.empty()))
+    self.devices = self.Port(Vector(SpiSlave(DigitalBidir.empty())))
 
   def contents(self) -> None:
     super().contents()
@@ -23,9 +23,11 @@ class SpiMaster(Bundle[SpiLink]):
     super().__init__()
     self.link_type = SpiLink
 
-    self.sck = self.Port(DigitalSource(model))
-    self.mosi = self.Port(DigitalSource(model))
-    self.miso = self.Port(DigitalBidir(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.sck = self.Port(DigitalSource.from_bidir(model))
+    self.mosi = self.Port(DigitalSource.from_bidir(model))
+    self.miso = self.Port(model)
 
     self.frequency = self.Parameter(RangeExpr(frequency))
     self.mode = self.Parameter(RangeExpr())  # modes supported, in [0, 3]  TODO: what about sparse modes?
@@ -38,9 +40,11 @@ class SpiSlave(Bundle[SpiLink]):
     super().__init__()
     self.link_type = SpiLink
 
-    self.sck = self.Port(DigitalSink(model))
-    self.mosi = self.Port(DigitalSink(model))
-    self.miso = self.Port(DigitalBidir(model))
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.sck = self.Port(DigitalSink.from_bidir(model))
+    self.mosi = self.Port(DigitalSink.from_bidir(model))
+    self.miso = self.Port(model)
 
     self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))  # range of acceptable frequencies
     self.mode_limit = self.Parameter(RangeExpr())  # range of acceptable modes, in [0, 3]
