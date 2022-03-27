@@ -68,9 +68,3 @@ class Link(BaseBlock[edgir.Link]):
         self._namespace_order.append(f"(export){name}_{idx}")
 
     return pb
-
-  T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, **kwargs) -> T:  # for links only, ports can be the less restrictive BasePort type
-    # TODO better fix to get rid of type ignore
-    # TODO assert can't mix vector and non-vector types of port
-    return super().Port(tpe, **kwargs)  # type: ignore

@@ -22,14 +22,12 @@ class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
 class TestBlockPortVectorExport(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
-    self.vector.append_elt(TestPortSink())
-    self.vector.append_elt(TestPortSink())
-    vector_elts = list(self.vector.elts().values())
-    assert len(vector_elts) == 2
+    vector0 = self.vector.append_elt(TestPortSink())
+    vector1 = self.vector.append_elt(TestPortSink())
     self.block0 = self.Block(TestBlockSink())
-    self.exported0 = self.connect(self.block0.sink, vector_elts[0])
+    self.exported0 = self.connect(self.block0.sink, vector0)
     self.block1 = self.Block(TestBlockSink())
-    self.exported1 = self.connect(self.block1.sink, vector_elts[1])
+    self.exported1 = self.connect(self.block1.sink, vector1)
 
 
 class TestBlockPortVectorConnect(Block):

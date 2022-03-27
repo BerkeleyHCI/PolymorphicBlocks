@@ -91,7 +91,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
     // expand port arrays that may be defined by the generator
     require(pb.ports.keySet == basePb.ports.keySet)
     val expandedPorts = pb.ports.flatMap { case (portName, portPb) => portPb.is match {
-      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePb.ports(portName).is.isPort =>
+      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePb.ports(portName).getArray.contains.isPorts =>
         val port = ports(portName).asInstanceOf[PortArray]
         require(!port.isElaborated)
         ports.put(portName, PortLike.fromLibraryPb(portPb))

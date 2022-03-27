@@ -66,7 +66,7 @@ object IndirectStep {  // namespace
 
   def apply(pb: ref.LocalStep): IndirectStep = pb.step match {
     case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
-    case ref.LocalStep.Step.Allocate(suggestedName) if suggestedName.isEmpty => Allocate(None)
+    case ref.LocalStep.Step.Allocate("") => Allocate(None)
     case ref.LocalStep.Step.Allocate(suggestedName) => Allocate(Some(suggestedName))
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length

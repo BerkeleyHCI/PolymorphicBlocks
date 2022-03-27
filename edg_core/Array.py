@@ -238,12 +238,6 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elts[suggested_name] = tpe._bind(self)
     return self._elts[suggested_name]
 
-  def elts(self) -> Dict[str, VectorType]:
-    """Returns the items (as a list of (str, Port)) resulting from init_elts."""
-    assert self._elts is not None, "must init_elts before getting items"
-    assert builder.get_curr_block() is self._block_parent(), "can only get items in block parent of array"
-    return self._elts
-
   def allocate(self, suggested_name: Optional[str] = None) -> VectorType:
     """Returns a new port of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
