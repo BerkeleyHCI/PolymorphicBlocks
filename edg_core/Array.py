@@ -225,7 +225,7 @@ class Vector(BaseVector, Generic[VectorType]):
     Can only be called from the block defining this port (where this is a boundary port),
     and this port must be bound."""
     assert self._is_bound(), "not bound, can't create array elements"
-    assert builder.get_curr_block() is self._block_parent(), "can only create elts in block parent of array"
+    assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
     if self._elts is None:
@@ -248,7 +248,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
-    assert builder.get_curr_block() is block_parent.parent, "can only allocate ports of internal blocks"
+    assert builder.get_enclosing_block() is block_parent.parent, "can only allocate ports of internal blocks"
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = self._tpe._bind(self, ignore_context=True)
     self._allocates.append((suggested_name, allocated))
