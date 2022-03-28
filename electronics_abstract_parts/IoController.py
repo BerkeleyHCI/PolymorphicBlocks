@@ -13,10 +13,11 @@ class IoController(Block):
     self.gnd = self.Port(Ground(), [Common])
 
     self.gpio = self.Port(Vector(DigitalBidir()))
+    self.adc = self.Port(Vector(AnalogSink()))
+    self.dac = self.Port(Vector(AnalogSource()))
+
     self.spi = self.Port(Vector(SpiMaster()))
     self.i2c = self.Port(Vector(I2cMaster()))
     self.uart = self.Port(Vector(UartPort()))
     self.usb = self.Port(Vector(UsbDevicePort()))
     self.can = self.Port(Vector(CanControllerPort()))
-    self.adc = self.Port(Vector(AnalogSink()))
-    self.dac = self.Port(Vector(AnalogSource()))

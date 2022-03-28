@@ -37,6 +37,16 @@ class PinResource(BaseLeafPinMapResource):
     self.name_models = name_models
 
 
+class PeripheralFixedPin(BaseLeafPinMapResource):
+  """A resource for a peripheral as a Bundle port, where the internal ports can be mapped to pins based on a fixed
+  list of options (sort of a very limited switch matrix).
+  The internal port model must be fully defined here."""
+  def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: dict[str, List[str]]):
+    self.name = name
+    self.port_model = port_model
+    self.inner_allowed_pins = inner_allowed_pins
+
+
 class PeripheralAnyPinResource(BaseDelegatingPinMapResource):
   """A resource for a peripheral as a Bundle port, where the internal ports must be delegated to another resource,
   any resource of matching type. Used for chips with a full switch matrix.
@@ -105,6 +115,13 @@ class PinMapUtil:
   """
   def __init__(self, resources: List[BasePinMapResource]):
     self.resources = resources
+
+  def remap_pins(self, pinmap: dict[str, str]) -> 'PinMapUtil':
+    """Returns a new PinMapUtil with pin names remapped according to the argument dict. Useful for a chip series
+    to define a generic pin mapping using pin names, and then remap those to pin numbers for specific packages.
+
+    Pins that are not in the pinmap are discarded."""
+    pass
 
   def assign(self, ports_names: List[Tuple[Port, Optional[str]]], assignments: str) -> \
       Tuple[dict[str, CircuitPort], List[Tuple[Port, Port]]]:

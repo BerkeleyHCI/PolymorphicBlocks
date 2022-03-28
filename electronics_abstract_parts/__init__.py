@@ -36,7 +36,9 @@ from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 
-from .PinMappable import PinMappable, PinMapUtil, PinResource, PeripheralAnyPinResource, PeripheralFixedResource
+from .IoController import IoController
+from .PinMappable import PinMappable, PinMapUtil
+from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyPinResource, PeripheralFixedResource
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw
