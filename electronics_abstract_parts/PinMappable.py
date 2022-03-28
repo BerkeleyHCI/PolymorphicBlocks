@@ -18,11 +18,8 @@ class PinMappable(Block):
 
 
 class BasePinMapResource(metaclass=ABCMeta):
-  """Abstract base class for a resource definition for the pin mapping utility."""
-  @abstractmethod
-  def mappable_port_types(self) -> List[Type[Port]]:
-    """Returns all the port types that can map to this resource."""
-    ...
+  """Abstract base class for a resource definition for the pin mapping utility. Because these are so intertwined with
+  the actual pin mapper, these are just named data structures - the logic for handling these is in the pin mapper."""
 
 
 class BaseLeafPinMapResource(BasePinMapResource):
@@ -39,9 +36,6 @@ class PinResource(BaseLeafPinMapResource):
     self.pin = pin
     self.name_models = name_models
 
-  def mappable_port_types(self) -> List[Type[Port]]:
-    return [type(port_model) for name, port_model in self.name_models]
-
 
 class PeripheralAnyPinResource(BaseDelegatingPinMapResource):
   """A resource for a peripheral as a Bundle port, where the internal ports must be delegated to another resource,
@@ -51,9 +45,6 @@ class PeripheralAnyPinResource(BaseDelegatingPinMapResource):
   def __init__(self, name: str, port_model: Bundle):
     self.name = name
     self.port_model = port_model
-
-  def mappable_port_types(self) -> List[Type[Port]]:
-    return type(self.port_model)
 
 
 class PeripheralFixedResource(BaseDelegatingPinMapResource):
