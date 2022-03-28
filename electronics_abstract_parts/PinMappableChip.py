@@ -17,7 +17,26 @@ class PinMappableChip(Block):
     - Problem: no support for heterogeneous models in peripherals
     - use init_from support? esp in bundle elts?
 
-
+  Concept of hierarchical assignable resources?
+  Each incoming port can be assigned to a resource. Resources are hierarchical / recursive.
+  Each resource can only be claimed by one port (used once).
+  TODO: is it ever needed to uspport some kind of mutual exclusion between several resources?
+  Resources are first-order matched based on types.
+  Each resource, given a resource manager reference, can assess whether it can be assigned.
+  Bundle elements can be recursively delegated.
+  eg, LPC1549
+  [
+    # Pin "resource"
+    Pin_OneOf('1', 'PIO0_0', [analog_model, digital5v_model])  # ADC capable
+    Pin_OneOf('2', 'PIO0_1', [digital5v_model])  # not ADC capable
+    ...
+    # Peripheral "resource" - name only - switch matrix, IOs delegated
+    # Hierarchical? Automatically assign to compatible leaf type, optionally with assigned pins
+    Peripheral_SWM('SPI0', spimaster_model)
+    # Peripheral "resource" - fixed pins
+    Peripheral_Fixed('I2C0', {'sda': '44', 'scl': '45'}, i2c_model)
+    # TBD: how to handle
+  ]
 
   Mapping layer
   - Take in ports with suggested-names, returns two mappings:
