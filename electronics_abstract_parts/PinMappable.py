@@ -7,7 +7,7 @@ from electronics_model import *
 @abstract_block
 class PinMappable(Block):
   """Abstract base class for pin-mappable devices. Provides a named initializer argument for user-defined explicit
-  pin mapping refinements.
+  pin mapping refinements. Actual pin mapping functionality must be implemented by the subclass.
   This may simply delegate the pin mapping to an inner block, for example for a microcontroller application circuit
   to delegate the pin mapping to the microcontroller chip block.
   """
