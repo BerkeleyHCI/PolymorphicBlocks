@@ -25,8 +25,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.6, 0.6)*Volt,
       current_draw=(0, 0),  # leakage current not modeled
-      input_threshold_factor=(0.3, 0.7),
-      output_threshold_factor=(0, 1)
+      input_threshold_factor=(0.3, 0.7)
     )
     # Datasheet section 6.2, minimum clock speed
     self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(10, 1600)*kHertz))

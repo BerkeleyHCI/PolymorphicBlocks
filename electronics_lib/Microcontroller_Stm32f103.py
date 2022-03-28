@@ -36,7 +36,6 @@ class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO
       current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # TODO relaxed VOL, VOH, o/w +- 8 mAmps, except PC13-15 at +/- 3 mAmp
       input_threshold_factor=(0.45, 0.65),  # TODO stricter (but more complex) bounds available
-      output_threshold_factor=(0, 1),
       pullup_capable=True, pulldown_capable=True)
 
     self.swd = self.Port(SwdTargetPort(standard_dio_model))  # TODO maybe make optional?

@@ -236,13 +236,24 @@ class DigitalBidirNotConnected(NotConnectableBlock['DigitalBidir']):
 class DigitalBidir(DigitalBase, NotConnectablePort):
   @staticmethod
   def from_supply(neg: VoltageSink, pos: VoltageSink,
-                  voltage_limit_tolerance: RangeLike = (0, 0)*Volt,
+                  voltage_limit_abs: Optional[RangeLike] = None,
+                  voltage_limit_tolerance: Optional[RangeLike] = None,
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
                   current_limits: RangeLike = Default(RangeExpr.ALL), *,
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None,
                   output_threshold_factor: Optional[RangeLike] = None,
                   pullup_capable: BoolLike = False, pulldown_capable: BoolLike = False) -> DigitalBidir:
+    voltage_limit: RangeLike
+    if voltage_limit_abs is not None:
+      assert voltage_limit_tolerance is None
+      voltage_limit = voltage_limit_abs
+    elif voltage_limit_tolerance is not None:
+      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
+                      RangeExpr._to_expr_type(voltage_limit_tolerance)
+    else:
+      raise ValueError("no voltage limit specified")
+
     input_threshold: RangeLike
     if input_threshold_factor is not None:
       assert input_threshold_abs is None, "can only specify one input threshold type"
@@ -259,12 +270,11 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
       output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
       output_threshold = (output_threshold_factor.lower() * pos.link().voltage.upper(),
                           output_threshold_factor.upper() * pos.link().voltage.lower())
-    else:
-      raise ValueError("no output threshold specified")
+    else:  # assumed ideal
+      output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
 
     return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
-                     RangeExpr._to_expr_type(voltage_limit_tolerance),
+      voltage_limits=voltage_limit,
       current_draw=current_draw,
       voltage_out=(neg.link().voltage.upper(), pos.link().voltage.lower()),
       current_limits=current_limits,

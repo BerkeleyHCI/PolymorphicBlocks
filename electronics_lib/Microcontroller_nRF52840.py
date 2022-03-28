@@ -29,7 +29,6 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
       current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.3, 0.7),
-      output_threshold_factor=(0, 1),
       pullup_capable=True, pulldown_capable=True,
     )
 

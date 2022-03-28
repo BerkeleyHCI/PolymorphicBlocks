@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Type
+from typing import List, Type, Tuple, Optional
 
 from electronics_model import *
 
@@ -12,7 +12,7 @@ class PinMappable(Block):
   to delegate the pin mapping to the microcontroller chip block.
   """
   @init_in_parent
-  def __init__(self, pin_mapping: StringLike) -> None:
+  def __init__(self, pin_mapping: StringLike = "") -> None:
     super().__init__()
     self.pin_mapping = pin_mapping
 
@@ -57,9 +57,6 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
-
-  def mappable_port_types(self) -> List[Type[Port]]:
-    return type(self.port_model)
 
 
 class PinMapUtil:
@@ -108,3 +105,13 @@ class PinMapUtil:
   """
   def __init__(self, resources: List[BasePinMapResource]):
     self.resources = resources
+
+  def assign(self, ports_names: List[Tuple[Port, Optional[str]]], assignments: str) -> \
+      Tuple[dict[str, CircuitPort], List[Tuple[Port, Port]]]:
+    """Performs port assignment given a list of ports and their (optional) user-defined names, and optional
+    user-defined explicit assignments. Names (except where part of preassigns) may be duplicated.
+    Returns a list of pin mappings to leaf-level ports (CircuitPort) and a mapping of ports to models.
+    For the ports-to-model references, it is guaranteed that a container port and model will appear earlier than
+    a contained port, allowing recursive initialization in the order returned.
+    """
+    pass
