@@ -10,18 +10,14 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
   def __init__(self) -> None:
     super().__init__()
 
-    #
-    # Common Ports
-    #
+    # Ports with shared references
     self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
       current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    #
-    # Port Models
-    #
+    # Port models
     dio_5v_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_abs=(0, 5) * Volt,
@@ -30,7 +26,6 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True
     )
-
     dio_non5v_model = DigitalBidir.from_supply(  # only used when overlapped w/ DAC PIO0_12
       self.vss, self.vdd,  # up to VddA
       voltage_limit_tolerance=(0, 0) * Volt,
@@ -39,7 +34,6 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True
     )
-
     dio_highcurrrent_model = DigitalBidir.from_supply(  # only used for PIO0_24
       self.vss, self.vdd,
       voltage_limit_abs=(0, 5) * Volt,
@@ -54,7 +48,6 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       current_draw=(0, 0) * Amp,
       impedance=(100, float('inf')) * kOhm
     )
-
     dac_model = AnalogSource(
       voltage_out=(0, self.vdd.link().voltage.upper() - 0.3),
       current_limits=Default(RangeExpr.ALL),  # not given by spec
@@ -64,9 +57,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty())
 
-    #
     # Fixed-function ports
-    #
     # Crystals from table 15, 32, 33
     # TODO Table 32, model crystal load capacitance and series resistance ratings
     self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.vdd.link().voltage),
@@ -75,10 +66,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.vdd.link().voltage),
                               optional=True)
 
-    #
-    # Remappable ports
-    #
-    # from Table 3
+    # Pin/peripheral resource definitions (table 3)
     self.abstract_pinmaps = PinMapUtil([
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
       PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
