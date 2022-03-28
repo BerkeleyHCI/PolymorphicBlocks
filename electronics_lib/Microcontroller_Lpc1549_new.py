@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Lpc1549BaseNew_Device(IoController, DiscreteChip, FootprintBlock, PinMappable):
+class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, FootprintBlock, PinMappable):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
