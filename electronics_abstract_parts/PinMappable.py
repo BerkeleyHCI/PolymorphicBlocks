@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional, Union, Any
+from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple
 
 from electronics_model import *
 
@@ -67,6 +67,13 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
+
+
+class AssignedResource(NamedTuple):
+  port_model: Port  # port model (including defined elements, for bundles)
+  name: str  # name given by the user, bundles will have automatic postfixes
+  resource: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
+  pin: Union[str, dict[str, 'AssignedResource']]  # pin number if port is leaf, or recursive definition for bundles
 
 
 class PinMapUtil:
@@ -153,9 +160,8 @@ class PinMapUtil:
     """
     pass
 
-  AssignedPinType = Union[str, dict[str, Union[str, dict[str, Any]]]]  # the Any should be a recursive type
   def assign_types(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments: str = "") -> \
-      List[Tuple[Port, str, AssignedPinType]]:
+      List[AssignedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
     (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple
     records will show up accordingly in the output data structure.

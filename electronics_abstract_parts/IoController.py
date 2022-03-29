@@ -2,6 +2,8 @@ from typing import List, Tuple, Optional
 
 from electronics_model import *
 
+from .PinMappable import AssignedResource
+
 
 @abstract_block
 class IoController(Block):
@@ -35,3 +37,8 @@ class IoController(Block):
       for io_allocate in io_allocates:
         ports_list.append(io_vector.append_elt(io_vector._get_elt_sample(), io_allocate))
     return ports_list
+
+  def _instantiate_from(self, ios: List[Vector], assigned: List[AssignedResource]):
+    """Given the list of IO vectors and assigned resources from PinMapUtil, instantiate vector elements for the
+    assigned resources using their data model and top-level (user-defined) names."""
+    
