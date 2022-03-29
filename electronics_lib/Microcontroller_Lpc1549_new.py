@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
@@ -142,22 +143,25 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       }),
     ])
 
-    self.generator(self.generate, self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
+    self.generator(self.generate, self.pin_mapping,
+                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
                    self.usb.allocated(), self.can.allocated())
 
   @abstractmethod
-  def generate(self, gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str]) -> None: ...
 
 
 @abstract_block
 class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
-  def generate(self, gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str]):
-    self.system_pins: Dict[str, CircuitPort] = {
+    system_pins: Dict[str, CircuitPort] = {
       '16': self.vdd,  # VddA
       '17': self.vss,  # VssA
       '10': self.vdd,  # VrefP_ADC
@@ -177,7 +181,10 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
       '32': self.xtal_rtc.xtal_out,
     }
 
-    self.pinmap = self.abstract_pinmaps.remap_pins({
+    ios = self._instantiate_ios([(self.gpio, gpio_allocates), (self.adc, adc_allocates), (self.dac, dac_allocates),
+                                 (self.spi, spi_allocates), (self.i2c, i2c_allocates), (self.uart, uart_allocates),
+                                 (self.usb, usb_allocates), (self.can, can_allocates)])
+    (io_pins, port_models) = self.abstract_pinmaps.remap_pins({
       'PIO0_0': '1',
       'PIO0_1': '2',
       'PIO0_2': '3',
@@ -214,15 +221,23 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
 
       'USB_DP': '35',
       'USB_DM': '36',
-    })
+    }).assign(ios, assignments)
+
+    self.footprint(
+      'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='NXP', part='LPC1549JBD48',
+      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
+    )
 
 
 @abstract_block
 class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
-  def generate(self, gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str]):
-    self.system_pins: Dict[str, CircuitPort] = {
+    system_pins: Dict[str, CircuitPort] = {
       '20': self.vdd,  # VddA
       '21': self.vss,  # VssA
       '13': self.vdd,  # VrefP_ADC
@@ -244,7 +259,10 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       '43': self.xtal_rtc.xtal_out,
     }
 
-    self.pinmap = self.abstract_pinmaps.remap_pins({
+    ios = self._instantiate_ios([(self.gpio, gpio_allocates), (self.adc, adc_allocates), (self.dac, dac_allocates),
+                                 (self.spi, spi_allocates), (self.i2c, i2c_allocates), (self.uart, uart_allocates),
+                                 (self.usb, usb_allocates), (self.can, can_allocates)])
+    (io_pins, port_models) = self.abstract_pinmaps.remap_pins({
       'PIO0_0': '2',
       'PIO0_1': '5',
       'PIO0_2': '6',
@@ -281,4 +299,11 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
 
       'USB_DP': '47',
       'USB_DM': '48',
-    })
+    }).assign(ios, assignments)
+
+    self.footprint(
+      'U', 'Package_QFP:LQFP-64_10x10mm_P0.5mm',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='NXP', part='LPC1549JBD64',
+      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
+    )

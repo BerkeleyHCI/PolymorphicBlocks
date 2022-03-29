@@ -144,5 +144,9 @@ class PinMapUtil:
     Returns a list of pin mappings to leaf-level ports (CircuitPort) and a mapping of ports to models.
     For the ports-to-model references, it is guaranteed that a container port and model will appear earlier than
     a contained port, allowing recursive initialization in the order returned.
+
+    TBD: assign by type only?
+    can asisgn be called several times?
+
     """
     pass
