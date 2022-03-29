@@ -119,9 +119,23 @@ class PinMapUtil:
   def remap_pins(self, pinmap: dict[str, str]) -> 'PinMapUtil':
     """Returns a new PinMapUtil with pin names remapped according to the argument dict. Useful for a chip series
     to define a generic pin mapping using pin names, and then remap those to pin numbers for specific packages.
-
     Pins that are not in the pinmap are discarded."""
-    pass
+    def remap_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
+      if isinstance(resource, PinResource):
+        if resource.pin in pinmap:
+          return PinResource(pinmap[resource.pin], resource.name_models)
+        else:
+          return None
+      elif isinstance(resource, PeripheralFixedPin):
+        remapped_pins = {[pinmap[elt_pin] for elt_pin in elt_pins if elt_pin in pinmap]
+                         for elt_name, elt_pins in resource.inner_allowed_pins}
+        return PeripheralFixedPin(resource.name, resource.port_model, remapped_pins)
+      elif isinstance(resource, BaseDelegatingPinMapResource):
+        return resource
+      else:
+        raise NotImplementedError(f"unknown resource {resource}")
+
+    return PinMapUtil([remap_resource(resource) for resource in self.resources])
 
   def assign(self, ports_names: List[Tuple[Port, Optional[str]]], assignments: str) -> \
       Tuple[dict[str, CircuitPort], List[Tuple[Port, Port]]]:
