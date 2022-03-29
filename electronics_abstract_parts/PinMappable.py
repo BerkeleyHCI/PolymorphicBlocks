@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional
+from typing import List, Type, Tuple, Optional, Union, Any
 
 from electronics_model import *
 
@@ -127,15 +127,17 @@ class PinMapUtil:
         else:
           return None
       elif isinstance(resource, PeripheralFixedPin):
-        remapped_pins = {[pinmap[elt_pin] for elt_pin in elt_pins if elt_pin in pinmap]
-                         for elt_name, elt_pins in resource.inner_allowed_pins}
+        remapped_pins = {elt_name: [pinmap[elt_pin] for elt_pin in elt_pins if elt_pin in pinmap]
+                         for elt_name, elt_pins in resource.inner_allowed_pins.items()}
         return PeripheralFixedPin(resource.name, resource.port_model, remapped_pins)
       elif isinstance(resource, BaseDelegatingPinMapResource):
         return resource
       else:
         raise NotImplementedError(f"unknown resource {resource}")
 
-    return PinMapUtil([remap_resource(resource) for resource in self.resources])
+    remapped_resources_raw = [remap_resource(resource) for resource in self.resources]
+    remapped_resources = [resource for resource in remapped_resources_raw if resource is not None]
+    return PinMapUtil(remapped_resources)
 
   def assign(self, ports_names: List[Tuple[Port, Optional[str]]], assignments: str) -> \
       Tuple[dict[str, CircuitPort], List[Tuple[Port, Port]]]:
@@ -149,4 +151,14 @@ class PinMapUtil:
     can asisgn be called several times?
 
     """
+    pass
+
+  AssignedPinType = Union[str, dict[str, Union[str, dict[str, Any]]]]  # the Any should be a recursive type
+  def assign_types(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments: str = "") -> \
+      List[Tuple[Port, str, AssignedPinType]]:
+    """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
+    (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple
+    records will show up accordingly in the output data structure.
+    Returns a list of assigned ports, structured as a port model (set recursively for bundle ports), the input name,
+    and pin assignment as a pin string for leaf ports, or a dict (possibly recursive) for bundles."""
     pass
