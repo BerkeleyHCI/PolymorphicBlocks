@@ -26,19 +26,7 @@ class IoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort()))
     self.can = self.Port(Vector(CanControllerPort(DigitalBidir.empty())))
 
-  def _instantiate_ios(self, ios: List[Tuple[Vector, List[str]]]) -> List[Tuple[Port, Optional[str]]]:
-    """Given a list of allocated IOs (as a list of the port vector and list of allocates), return all the
-    allocated ports and their allocated names. Allocated names may overlap, in particular where it might
-    have been auto-generated.
-    Vector elements are initialized with their sample element.
-    TODO: Optional[str] return needed to interop w/ PinMapUtil.assign"""
-    ports_list = []
-    for (io_vector, io_allocates) in ios:
-      for io_allocate in io_allocates:
-        ports_list.append(io_vector.append_elt(io_vector._get_elt_sample(), io_allocate))
-    return ports_list
-
   def _instantiate_from(self, ios: List[Vector], assigned: List[AssignedResource]):
     """Given the list of IO vectors and assigned resources from PinMapUtil, instantiate vector elements for the
     assigned resources using their data model and top-level (user-defined) names."""
-    
+
