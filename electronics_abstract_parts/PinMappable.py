@@ -73,7 +73,8 @@ class AssignedResource(NamedTuple):
   port_model: Port  # port model (including defined elements, for bundles)
   name: str  # name given by the user, bundles will have automatic postfixes
   resource: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
-  pin: Union[str, dict[str, 'AssignedResource']]  # pin number if port is leaf, or recursive definition for bundles
+  pin: Union[str, dict[str, Any]]  # pin number if port is leaf, or recursive definition for bundles
+                                   # Any is used instead of AssignedResource to avoid a cyclic definition
 
 
 class PinMapUtil:
