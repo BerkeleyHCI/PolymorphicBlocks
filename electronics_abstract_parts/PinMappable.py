@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple
+from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable
 
 from electronics_model import *
 
@@ -77,13 +77,35 @@ class AssignedResource(NamedTuple):
                                    # Any is used instead of AssignedResource to avoid a cyclic definition
 
 
+# Defines a way to convert port models into related types for use in bundles, for example from the
+# DigitalBidir in pin definitions to the DigitalSource/Sink used by the Uart bundle.
+# Specified as entries of target port type: (source port type, conversion function)
+PortTransformsType = dict[Type, Tuple[Type, Callable]]
+DefaultPortTransforms: PortTransformsType = {
+  DigitalSource: (DigitalBidir, DigitalSource.from_bidir),
+  DigitalSink: (DigitalBidir, DigitalSink.from_bidir),
+}
+
+
+class BadUserAssignError(RuntimeError):
+  """Indicates an error with an user-specified assignment."""
+  pass
+
+
+class AutomaticAssignError(RuntimeError):
+  """If automatic assignment was unable to complete, for example if there were more assigns than resources.
+  Not a fundamental error, could simply be because the simplistic assignment algorithm wasn't able to complete."""
+  pass
+
+
 class PinMapUtil:
   """
   Pin mapping utility, that takes in a definition of resources (pins and peripherals on a chip) and assigns them
   automatically, optionally with user-defined explicit assignments.
   """
-  def __init__(self, resources: List[BasePinMapResource]):
+  def __init__(self, resources: List[BasePinMapResource], transforms: Optional[PortTransformsType] = None):
     self.resources = resources
+    self.transforms = DefaultPortTransforms if transforms is None else transforms
 
   def remap_pins(self, pinmap: dict[str, str]) -> 'PinMapUtil':
     """Returns a new PinMapUtil with pin names remapped according to the argument dict. Useful for a chip series
@@ -106,9 +128,9 @@ class PinMapUtil:
 
     remapped_resources_raw = [remap_resource(resource) for resource in self.resources]
     remapped_resources = [resource for resource in remapped_resources_raw if resource is not None]
-    return PinMapUtil(remapped_resources)
+    return PinMapUtil(remapped_resources, self.transforms)
 
-  def assign_types(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments: str = "") -> \
+  def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments: str = "") -> \
       List[AssignedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
     (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple
