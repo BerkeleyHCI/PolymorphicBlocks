@@ -150,11 +150,11 @@ class PinMapUtil:
 
   @staticmethod
   def _group_assignment_spec(assignments_spec_parsed: List[Tuple[List[str], str]]) -> \
-      dict[str, List[Tuple[List[str]], str]]:
+      dict[str, List[Tuple[List[str], str]]]:
     """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
     path as the dict key, and remaps each entry to only contain the path postfix.
     No entries in the input may have an empty named path."""
-    dict_out = {}
+    dict_out: dict[str, List[Tuple[List[str], str]]] = {}
     for (named_path, pin) in assignments_spec_parsed:
       dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
     return dict_out
@@ -181,8 +181,15 @@ class PinMapUtil:
     def assign_port_type(port_type: Type[Port], assignment_spec: List[Tuple[List[str], str]]) -> None:
       pass
 
+    # process the ports with user-specified assignments first
+    unassigned_port_types_names: List[Tuple[Type[Port], str]] = []  # unpacked version of port_type_names
     for (port_type, port_names) in port_types_names:
       for port_name in port_names:
-        assign_port_type(port_type, user_assignments.get(port_name, []))
+        if port_name in user_assignments:
+          assign_port_type(port_type, user_assignments[port_name])
+        else:
+          unassigned_port_types_names.append((port_type, port_name))
+
+    # then automatically assign anything that wasn't user-specified
 
     return assigned_resources
