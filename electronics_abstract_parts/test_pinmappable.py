@@ -83,7 +83,6 @@ class PinMapUtilTest(unittest.TestCase):
                 "AIO=1")
 
   def test_assign_duplicated(self):  # duplicated (over-assigned resources) user-specified assignments
-
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     with self.assertRaises(BadUserAssignError):

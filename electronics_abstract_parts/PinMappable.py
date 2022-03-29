@@ -130,11 +130,59 @@ class PinMapUtil:
     remapped_resources = [resource for resource in remapped_resources_raw if resource is not None]
     return PinMapUtil(remapped_resources, self.transforms)
 
-  def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments: str = "") -> \
+  @staticmethod
+  def _resource_port_types(resource: BasePinMapResource) -> List[Type[Port]]:
+    if isinstance(resource, PinResource):
+      return [type(model) for resource_name, model in resource.name_models.items()]
+    elif isinstance(resource, (PeripheralFixedPin, PeripheralAnyPinResource, PeripheralFixedResource)):
+      return [type(resource.port_model)]
+    else:
+      raise NotImplementedError(f"unsupported resource type {resource}")
+
+  @staticmethod
+  def _parse_assignment_spec(assignments_spec: str) -> List[Tuple[List[str], str]]:
+    """Parses a user-specified assignment string into structured data as a list of ([named path], resource/pin)."""
+    def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
+      assignment_split = assignment_spec.split('=')
+      assert len(assignment_split) == 2
+      return (assignment_split[0].split('.'), assignment_split[1])
+    return [parse_elt(assignment) for assignment in assignments_spec.split(';')]
+
+  @staticmethod
+  def _group_assignment_spec(assignments_spec_parsed: List[Tuple[List[str], str]]) -> \
+      dict[str, List[Tuple[List[str]], str]]:
+    """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
+    path as the dict key, and remaps each entry to only contain the path postfix.
+    No entries in the input may have an empty named path."""
+    dict_out = {}
+    for (named_path, pin) in assignments_spec_parsed:
+      dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
+    return dict_out
+
+  def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
       List[AssignedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
     (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple
     records will show up accordingly in the output data structure.
     Returns a list of assigned ports, structured as a port model (set recursively for bundle ports), the input name,
     and pin assignment as a pin string for leaf ports, or a dict (possibly recursive) for bundles."""
-    pass
+    # mutable data structure, assignments removed as they are processed
+    user_assignments = self._group_assignment_spec(self._parse_assignment_spec(assignments_spec))
+
+    # mutable data structure, resources will be removed as they are assigned
+    assignable_resources_by_type: dict[Type[Port], List[BasePinMapResource]] = {}
+    for resource in self.resources:
+      for supported_type in self._resource_port_types(resource):
+        assignable_resources_by_type.setdefault(supported_type, []).append(resource)
+
+    assigned_resources: List[AssignedResource] = []
+
+    # mutates the above structures
+    def assign_port_type(port_type: Type[Port], assignment_spec: List[Tuple[List[str], str]]) -> None:
+      pass
+
+    for (port_type, port_names) in port_types_names:
+      for port_name in port_names:
+        assign_port_type(port_type, user_assignments.get(port_name, []))
+
+    return assigned_resources
