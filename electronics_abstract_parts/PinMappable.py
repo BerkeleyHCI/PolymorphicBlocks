@@ -140,6 +140,15 @@ class PinMapUtil:
       raise NotImplementedError(f"unsupported resource type {resource}")
 
   @staticmethod
+  def _resource_names(resource: BasePinMapResource) -> List[str]:
+    if isinstance(resource, PinResource):
+      return [resource.pin] + [resource_name for resource_name, model in resource.name_models.items()]
+    elif isinstance(resource, (PeripheralFixedPin, PeripheralAnyPinResource, PeripheralFixedResource)):
+      return [resource.name]
+    else:
+      raise NotImplementedError(f"unsupported resource type {resource}")
+
+  @staticmethod
   def _parse_assignment_spec(assignments_spec: str) -> List[Tuple[List[str], str]]:
     """Parses a user-specified assignment string into structured data as a list of ([named path], resource/pin)."""
     def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
@@ -153,10 +162,13 @@ class PinMapUtil:
       dict[str, List[Tuple[List[str], str]]]:
     """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
     path as the dict key, and remaps each entry to only contain the path postfix.
-    No entries in the input may have an empty named path."""
+    If the path is empty, it gets mapped to the empty-string key, preserving the empty path."""
     dict_out: dict[str, List[Tuple[List[str], str]]] = {}
     for (named_path, pin) in assignments_spec_parsed:
-      dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
+      if not named_path:
+        dict_out.setdefault('', []).append(([], pin))
+      else:
+        dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
     return dict_out
 
   def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
@@ -175,13 +187,24 @@ class PinMapUtil:
       for supported_type in self._resource_port_types(resource):
         assignable_resources_by_type.setdefault(supported_type, []).append(resource)
 
+    # unlike the above, resources are not deleted from this
+    assignable_resources_by_name: dict[str, List[BasePinMapResource]] = {}
+    for resource in self.resources:
+      for resource_name in self._resource_names(resource):
+        assignable_resources_by_name.setdefault(resource_name, []).append(resource)
+
     assigned_resources: List[AssignedResource] = []
 
     # mutates the above structures
     def assign_port_type(port_type: Type[Port], assignment_spec: List[Tuple[List[str], str]]) -> None:
+      grouped_assignment_spec = self._group_assignment_spec(assignment_spec)
+      if '' in grouped_assignment_spec:
+
+      else:
+
       pass
 
-    # process the ports with user-specified assignments first
+    # process the ports with user-specified assignments first, to avoid potentially conflicting assigns
     unassigned_port_types_names: List[Tuple[Type[Port], str]] = []  # unpacked version of port_type_names
     for (port_type, port_names) in port_types_names:
       for port_name in port_names:
@@ -190,6 +213,11 @@ class PinMapUtil:
         else:
           unassigned_port_types_names.append((port_type, port_name))
 
+    if len(user_assignments) > 0:
+      raise BadUserAssignError(f"unprocessed assignments: {user_assignments}")
+
     # then automatically assign anything that wasn't user-specified
+    for (port_type, port_name) in unassigned_port_types_names:
+      assign_port_type(port_type, [])
 
     return assigned_resources
