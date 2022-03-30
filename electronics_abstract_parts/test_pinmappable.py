@@ -33,13 +33,6 @@ class PinMapUtilTest(unittest.TestCase):
 
     self.assertTrue(remapped.resources[2] is mapper.resources[3])  # simple passthrough
 
-  @staticmethod
-  def assigned_resource_equal(res1: AssignedResource, res2: AssignedResource):
-    """Equality check between AssignedResource that avoids triggering Port.__eq__"""
-    return res1.port_model is res2.port_model and\
-      res1.name == res2.name and res1.resource == res2.resource and res1.pin == res2.pin
-
-
   def test_assign_assigned(self):  # fully user-specified
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
@@ -51,10 +44,10 @@ class PinMapUtilTest(unittest.TestCase):
       PinResource('5', {'AIn5': ain_model}),
     ]).assign([(DigitalBidir, ['DIO3', 'DIO2']), (AnalogSink, ['AIO4', 'AIO5'])],
               "DIO3=3;DIO2=2;AIO4=4;AIO5=5")
-    self.assertTrue(self.assigned_resource_equal(mapped[0], AssignedResource(dio_model, 'DIO3', 'PIO3', '3')))
-    self.assertTrue(self.assigned_resource_equal(mapped[1], AssignedResource(dio_model, 'DIO2', 'PIO2', '2')))
-    self.assertTrue(self.assigned_resource_equal(mapped[2], AssignedResource(ain_model, 'AIO4', 'AIn4', '4')))
-    self.assertTrue(self.assigned_resource_equal(mapped[3], AssignedResource(ain_model, 'AIO5', 'AIn5', '5')))
+    self.assertIn(AssignedResource(dio_model, 'DIO3', 'PIO3', '3'), mapped)
+    self.assertIn(AssignedResource(dio_model, 'DIO2', 'PIO2', '2'), mapped)
+    self.assertIn(AssignedResource(ain_model, 'AIO4', 'AIn4', '4'), mapped)
+    self.assertIn(AssignedResource(ain_model, 'AIO5', 'AIn5', '5'), mapped)
 
   def test_assign_mixed(self):  # mix of user-specified and automatic assignments, assuming greedy algo
     dio_model = DigitalBidir()
@@ -65,12 +58,12 @@ class PinMapUtilTest(unittest.TestCase):
       PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
       PinResource('4', {'PIO4': dio_model, 'AIn4': ain_model}),
       PinResource('5', {'AIn5': ain_model}),
-    ]).assign([(DigitalBidir, ['DIO3', 'DIO1']), (AnalogSink, ['AIO3', 'AIO4'])],
+    ]).assign([(DigitalBidir, ['DIO3', 'DIO1']), (AnalogSink, ['AIO5', 'AIO4'])],
               "DIO3=3;AIO4=4")
-    self.assertTrue(self.assigned_resource_equal(mapped[0], AssignedResource(dio_model, 'DIO3', 'PIO3', '3')))
-    self.assertTrue(self.assigned_resource_equal(mapped[1], AssignedResource(dio_model, 'DIO1', 'PIO1', '1')))
-    self.assertTrue(self.assigned_resource_equal(mapped[2], AssignedResource(ain_model, 'AIO4', 'AIn4', '4')))
-    self.assertTrue(self.assigned_resource_equal(mapped[3], AssignedResource(ain_model, 'AIO5', 'AIn5', '5')))
+    self.assertIn(AssignedResource(dio_model, 'DIO3', 'PIO3', '3'), mapped)
+    self.assertIn(AssignedResource(dio_model, 'DIO1', 'PIO1', '1'), mapped)
+    self.assertIn(AssignedResource(ain_model, 'AIO4', 'AIn4', '4'), mapped)
+    self.assertIn(AssignedResource(ain_model, 'AIO5', 'AIn5', '5'), mapped)
 
   def test_assign_bad(self):  # bad user-specified assignments
     dio_model = DigitalBidir()
@@ -103,4 +96,3 @@ class PinMapUtilTest(unittest.TestCase):
 
   def test_assign_bundle(self):  # more requested ports than available resources
     self.assertEqual(True, False)
-
