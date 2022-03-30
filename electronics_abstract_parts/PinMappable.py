@@ -229,8 +229,19 @@ class PinMapUtil:
 
     assigned_resources: List[AssignedResource] = []
 
-    # def recursive_assign_port(...) -> None:
-    #   ...
+    def try_assign_resource(port_type: Type[Port], port_name: str, resource: BasePinMapResource,
+                            assignment_spec: dict[str, List[Tuple[List[str], str]]]) -> \
+        Optional[Tuple[AssignedResource, List[BasePinMapResource]]]:
+      """Try to assign a port to the specified resource,
+       returning any resources used by this mapping and the pin mapping, or None if
+      there are no satisfying mappings starting with this resource."""
+      if isinstance(resource, PinResource):
+        assert not assignment_spec, f"non-empty assignments {assignment_spec} for PinResource"
+        resource_name, resource_model = resource.get_name_model_for_type(port_type)
+        assigned_resource = AssignedResource(resource_model, port_name, resource_name, resource.pin)
+        return (assigned_resource, [resource])
+      else:
+        raise NotImplementedError(f"unsupported resource type {resource}")
 
     # mutates the above structures
     def assign_port_type(port_type: Type[Port], port_name: str, assignment_spec: List[Tuple[List[str], str]]) -> \
@@ -249,13 +260,12 @@ class PinMapUtil:
 
       assigned_resource: Optional[AssignedResource] = None
       for resource in available_resources:  # given the available resources, assign the first one possible
-        if isinstance(resource, PinResource):
-          resource_name, resource_model = resource.get_name_model_for_type(port_type)
-          assigned_resource = AssignedResource(resource_model, port_name, resource_name, resource.pin)
-          mark_resource_used(resource)
+        assigned = try_assign_resource(port_type, port_name, resource, grouped_assignment_spec)
+        if assigned is not None:
+          assigned_resource, used_resources = assigned
+          for used_resource in used_resources:
+            mark_resource_used(used_resource)
           break
-        else:
-          raise NotImplementedError(f"unsupported resource type {resource}")
 
       if len(grouped_assignment_spec) > 0:
         raise BadUserAssignError(f"unprocessed assignments in {port_name}: {user_assignments}")
