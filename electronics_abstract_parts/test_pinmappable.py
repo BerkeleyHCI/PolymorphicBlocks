@@ -117,6 +117,11 @@ class PinMapUtilTest(unittest.TestCase):
         PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['3', '4']}),
       ]).assign([(UsbDevicePort, ['usb'])],
                 "usb.dm=2;usb.dp=5")
+    with self.assertRaises(BadUserAssignError):
+      PinMapUtil([
+        PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['3', '4']}),
+      ]).assign([(UsbDevicePort, ['usb'])],
+                "usb.quack=1")
 
   def test_assign_bundle_delegating(self):
     dio_model = DigitalBidir()
@@ -159,3 +164,12 @@ class PinMapUtilTest(unittest.TestCase):
         PeripheralAnyPinResource('UART0', UartPort()),
       ]).assign([(UartPort, ['uart'])],
                 "uart.tx=1;uart.rx=5")
+    with self.assertRaises(BadUserAssignError):
+      PinMapUtil([
+        PinResource('1', {'PIO1': dio_model}),
+        PinResource('2', {'PIO2': dio_model}),
+        PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
+        PinResource('5', {'AIn5': ain_model}),  # not assignable
+        PeripheralAnyPinResource('UART0', UartPort()),
+      ]).assign([(UartPort, ['uart'])],
+                "uart.quack=1")
