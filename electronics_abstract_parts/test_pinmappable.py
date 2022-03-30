@@ -97,18 +97,17 @@ class PinMapUtilTest(unittest.TestCase):
   def test_assign_bundle_fixed(self):
     usb_model = UsbDevicePort()
     mapped = PinMapUtil([
-      PeripheralFixedPin('USB0', UsbDevicePort(), {'dm': ['1', '2'], 'dp': ['3', '4']}),
+      PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['3', '4']}),
     ]).assign([(UsbDevicePort, ['usb'])],
               "usb.dm=2;usb.dp=3")
-    self.assertIn(AssignedResource(usb_model, 'USB0', 'USB0', {'dm': '2', 'dp': '3'}), mapped)
+    self.assertIn(AssignedResource(usb_model, 'usb', 'USB0', {'dm': '2', 'dp': '3'}), mapped)
 
   def test_assign_bundle_fixed_auto(self):
     usb_model = UsbDevicePort()
     mapped = PinMapUtil([
-      PeripheralFixedPin('USB0', UsbDevicePort(), {'dm': ['1', '2'], 'dp': ['3', '4']}),
-    ]).assign([(UsbDevicePort, ['usb'])],
-              "usb.dm=2;usb.dp=3")
-    self.assertIn(AssignedResource(usb_model, 'USB0', 'USB0', {'dm': '1', 'dp': '3'}), mapped)
+      PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['3', '4']}),
+    ]).assign([(UsbDevicePort, ['usb'])])
+    self.assertIn(AssignedResource(usb_model, 'usb', 'USB0', {'dm': '1', 'dp': '3'}), mapped)
 
   def test_assign_bundle_delegating(self):
     dio_model = DigitalBidir()

@@ -240,6 +240,27 @@ class PinMapUtil:
         resource_name, resource_model = resource.get_name_model_for_type(port_type)
         assigned_resource = AssignedResource(resource_model, port_name, resource_name, resource.pin)
         return (assigned_resource, [resource])
+      elif isinstance(resource, PeripheralFixedPin):
+        inner_map = {}
+        for (inner_name, inner_pins) in resource.inner_allowed_pins.items():  # TODO should this be recursive?
+          if inner_name in assignment_spec:
+            inner_assignment_spec = self._group_assignment_spec(assignment_spec[inner_name])
+            del assignment_spec[inner_name]
+          else:
+            inner_assignment_spec = {}
+
+          if '' in inner_assignment_spec:
+            assert len(inner_assignment_spec['']) == 1
+            assigned_pin = inner_assignment_spec[''][0][1]
+            del inner_assignment_spec['']
+            assert assigned_pin in inner_pins
+            inner_map[inner_name] = assigned_pin
+          else:
+            inner_map[inner_name] = inner_pins[0]
+          assert not inner_assignment_spec, f"unused assignments {inner_assignment_spec} at {port_name}.{inner_name}"
+        assert not assignment_spec, f"unused assignments {assignment_spec} at {port_name}"
+        assigned_resources = AssignedResource(resource.port_model, port_name, resource.name, inner_map)
+        return (assigned_resources, [resource])
       else:
         raise NotImplementedError(f"unsupported resource type {resource}")
 
