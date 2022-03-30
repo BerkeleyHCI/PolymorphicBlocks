@@ -1,5 +1,6 @@
 import unittest
 
+from electronics_model import UartPort
 from .PinMappable import PinMapUtil, PinResource, Passive, PeripheralFixedPin, UsbDevicePort, PeripheralAnyPinResource, \
   DigitalBidir, AnalogSink, AssignedResource, AutomaticAssignError, BadUserAssignError
 
@@ -109,12 +110,52 @@ class PinMapUtilTest(unittest.TestCase):
     ]).assign([(UsbDevicePort, ['usb'])])
     self.assertIn(AssignedResource(usb_model, 'usb', 'USB0', {'dm': '1', 'dp': '3'}), mapped)
 
+  def test_assign_bundle_fixed_badspec(self):
+    usb_model = UsbDevicePort()
+    with self.assertRaises(BadUserAssignError):
+      PinMapUtil([
+        PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['3', '4']}),
+      ]).assign([(UsbDevicePort, ['usb'])],
+                "usb.dm=2;usb.dp=5")
+
   def test_assign_bundle_delegating(self):
     dio_model = DigitalBidir()
+    ain_model = AnalogSink()
     mapped = PinMapUtil([
       PinResource('1', {'PIO1': dio_model}),
       PinResource('2', {'PIO2': dio_model}),
-    ]).assign([(DigitalBidir, ['DIO3', 'DIO1']), (AnalogSink, ['AIO5', 'AIO4'])],
-              "DIO3=3;AIO4=4")
-    self.assertIn(AssignedResource(dio_model, 'DIO3', 'PIO3', '3'), mapped)
-    self.assertIn(AssignedResource(dio_model, 'DIO1', 'PIO1', '1'), mapped)
+      PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
+      PinResource('5', {'AIn5': ain_model}),  # not assignable
+      PeripheralAnyPinResource('UART0', UartPort()),
+    ]).assign([(UartPort, ['uart'])],
+              "uart.tx=1;uart.rx=3")
+    self.assertEqual(mapped[0].name, 'uart')
+    self.assertEqual(mapped[0].resource, 'UART0')
+    self.assertEqual(mapped[0].pin, {'tx': '1', 'rx': '3'})
+
+  def test_assign_bundle_delegating_auto(self):
+    dio_model = DigitalBidir()
+    ain_model = AnalogSink()
+    mapped = PinMapUtil([
+      PinResource('1', {'PIO1': dio_model}),
+      PinResource('2', {'PIO2': dio_model}),
+      PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
+      PinResource('5', {'AIn5': ain_model}),  # not assignable
+      PeripheralAnyPinResource('UART0', UartPort()),
+    ]).assign([(UartPort, ['uart'])])
+    self.assertEqual(mapped[0].name, 'uart')
+    self.assertEqual(mapped[0].resource, 'UART0')
+    self.assertEqual(mapped[0].pin, {'tx': '1', 'rx': '2'})
+
+  def test_assign_bundle_delegating_badspec(self):
+    dio_model = DigitalBidir()
+    ain_model = AnalogSink()
+    with self.assertRaises(BadUserAssignError):
+      PinMapUtil([
+        PinResource('1', {'PIO1': dio_model}),
+        PinResource('2', {'PIO2': dio_model}),
+        PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
+        PinResource('5', {'AIn5': ain_model}),  # not assignable
+        PeripheralAnyPinResource('UART0', UartPort()),
+      ]).assign([(UartPort, ['uart'])],
+                "uart.tx=1;uart.rx=5")

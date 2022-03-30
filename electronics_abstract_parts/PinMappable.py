@@ -253,12 +253,15 @@ class PinMapUtil:
             assert len(inner_assignment_spec['']) == 1
             assigned_pin = inner_assignment_spec[''][0][1]
             del inner_assignment_spec['']
-            assert assigned_pin in inner_pins
+            if assigned_pin not in inner_pins:
+              raise BadUserAssignError(f"unprocessed assignments in {port_name}: {user_assignments}")
             inner_map[inner_name] = assigned_pin
           else:
             inner_map[inner_name] = inner_pins[0]
-          assert not inner_assignment_spec, f"unused assignments {inner_assignment_spec} at {port_name}.{inner_name}"
-        assert not assignment_spec, f"unused assignments {assignment_spec} at {port_name}"
+          if inner_assignment_spec:
+            raise BadUserAssignError(f"unprocessed assignments in {port_name}.{inner_name}: {inner_assignment_spec}")
+        if assignment_spec:
+          raise BadUserAssignError(f"unprocessed assignments in {port_name}: {assignment_spec}")
         assigned_resources = AssignedResource(resource.port_model, port_name, resource.name, inner_map)
         return (assigned_resources, [resource])
       else:
