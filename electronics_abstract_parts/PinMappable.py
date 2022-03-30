@@ -128,6 +128,66 @@ class AutomaticAssignError(RuntimeError):
   pass
 
 
+class UserAssignmentDict:
+  """A recursive dict mapping for user assignment strings, structured as a dict keyed by the top-level prefix of the
+  assignment name. Contains a root (that is string-valued) and recursive-valued elements."""
+  @staticmethod
+  def from_string(assignments_spec: str) -> 'UserAssignmentDict':
+    def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
+      assignment_split = assignment_spec.split('=')
+      assert len(assignment_split) == 2, f"bad assignment spec {assignments_spec}"
+      return (assignment_split[0].split('.'), assignment_split[1])
+    assignment_spec_list = [parse_elt(assignment) for assignment in assignments_spec.split(';') if assignment]
+    return UserAssignmentDict._from_list(assignment_spec_list, [])
+
+  @staticmethod
+  def _from_list(assignment_spec_list: List[Tuple[List[str], str]], name: List[str]) -> 'UserAssignmentDict':
+    """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
+    path as the dict key, and remaps each entry to only contain the path postfix.
+    If the path is empty, it gets mapped to the empty-string key, preserving the empty path."""
+    dict_out: dict[str, List[Tuple[List[str], str]]] = {}
+    for (named_path, pin) in assignment_spec_list:
+      if not named_path:
+        dict_out.setdefault('', []).append(([], pin))
+      else:
+        dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
+    return UserAssignmentDict(dict_out, name)
+
+  def __init__(self, elts: dict[str, List[Tuple[List[str], str]]], name: List[str]):
+    self.elts = elts
+    self.name = name
+    self.marked = set[str]()
+
+  def get_root(self) -> Optional[str]:
+    """Returns a root assignment, if it exists. Marks the element as read."""
+    self.marked.add('')
+    if '' in self.elts:
+      if len(self.elts['']) != 1:
+        raise BadUserAssignError(f"multiple assignments to {'.'.join(self.name)}: {self.elts['']}")
+      (postfix, assignment) = self.elts[''][0]
+      assert postfix == []
+      return assignment
+    else:
+      return None
+
+  def contains_elt(self, elt: str) -> bool:
+    """Returns whether an element is still in the dict, without marking the element as read."""
+    return elt in self.elts
+
+  def get_elt(self, elt: str) -> 'UserAssignmentDict':
+    """Returns a sub-dict assignment, or an empty UserAssignmentDict if no entry present. Marks the element as read."""
+    if elt in self.elts:
+      self.marked.add(elt)
+      return self._from_list(self.elts[elt], self.name + [elt])
+    else:
+      return UserAssignmentDict({}, self.name + [elt])
+
+  def check_empty(self) -> None:
+    """Checks that all assignments have been processed, otherwise raises a BadUserAssignError."""
+    unprocessed = set(self.elts.keys()).difference(self.marked)
+    if unprocessed:
+      raise BadUserAssignError(f"unprocessed assignments in {'.'.join(self.name)}: {unprocessed}")
+
 class PinMapUtil:
   """
   Pin mapping utility, that takes in a definition of resources (pins and peripherals on a chip) and assigns them
@@ -178,29 +238,6 @@ class PinMapUtil:
     else:
       raise NotImplementedError(f"unsupported resource type {resource}")
 
-  @staticmethod
-  def _parse_assignment_spec(assignments_spec: str) -> List[Tuple[List[str], str]]:
-    """Parses a user-specified assignment string into structured data as a list of ([named path], resource/pin)."""
-    def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
-      assignment_split = assignment_spec.split('=')
-      assert len(assignment_split) == 2, f"bad assignment spec {assignments_spec}"
-      return (assignment_split[0].split('.'), assignment_split[1])
-    return [parse_elt(assignment) for assignment in assignments_spec.split(';') if assignment]
-
-  @staticmethod
-  def _group_assignment_spec(assignments_spec_parsed: List[Tuple[List[str], str]]) -> \
-      dict[str, List[Tuple[List[str], str]]]:
-    """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
-    path as the dict key, and remaps each entry to only contain the path postfix.
-    If the path is empty, it gets mapped to the empty-string key, preserving the empty path."""
-    dict_out: dict[str, List[Tuple[List[str], str]]] = {}
-    for (named_path, pin) in assignments_spec_parsed:
-      if not named_path:
-        dict_out.setdefault('', []).append(([], pin))
-      else:
-        dict_out.setdefault(named_path[0], []).append((named_path[1:], pin))
-    return dict_out
-
   def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
       List[AssignedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
@@ -209,7 +246,7 @@ class PinMapUtil:
     Returns a list of assigned ports, structured as a port model (set recursively for bundle ports), the input name,
     and pin assignment as a pin string for leaf ports, or a dict (possibly recursive) for bundles."""
     # mutable data structure, assignments removed as they are processed
-    user_assignments = self._group_assignment_spec(self._parse_assignment_spec(assignments_spec))
+    user_assignments = UserAssignmentDict.from_string(assignments_spec)
 
     # mutable data structure, resources will be removed as they are assigned
     assignable_resources_by_type: dict[Type[Port], List[BasePinMapResource]] = {}
@@ -230,71 +267,60 @@ class PinMapUtil:
     assigned_resources: List[AssignedResource] = []
 
     def try_assign_resource(port_type: Type[Port], port_name: str, resource: BasePinMapResource,
-                            assignment_spec: dict[str, List[Tuple[List[str], str]]]) -> \
+                            user_assignments: UserAssignmentDict) -> \
         Optional[Tuple[AssignedResource, List[BasePinMapResource]]]:
-      """Try to assign a port to the specified resource,
-       returning any resources used by this mapping and the pin mapping, or None if
-      there are no satisfying mappings starting with this resource."""
+      """Try to assign a port to the specified resource, returning any resources used by this mapping and the
+      pin mapping, or None if there are no satisfying mappings starting with this resource."""
       if isinstance(resource, PinResource):
-        assert not assignment_spec, f"non-empty assignments {assignment_spec} for PinResource"
+        user_assignments.check_empty()
         resource_name, resource_model = resource.get_name_model_for_type(port_type)
         assigned_resource = AssignedResource(resource_model, port_name, resource_name, resource.pin)
         return (assigned_resource, [resource])
       elif isinstance(resource, PeripheralFixedPin):
         inner_map = {}
         for (inner_name, inner_pins) in resource.inner_allowed_pins.items():  # TODO should this be recursive?
-          if inner_name in assignment_spec:
-            inner_assignment_spec = self._group_assignment_spec(assignment_spec[inner_name])
-            del assignment_spec[inner_name]
-          else:
-            inner_assignment_spec = {}
+          inner_assignments = user_assignments.get_elt(inner_name)
+          inner_assignment = inner_assignments.get_root()
 
-          if '' in inner_assignment_spec:
-            assert len(inner_assignment_spec['']) == 1
-            assigned_pin = inner_assignment_spec[''][0][1]
-            del inner_assignment_spec['']
-            if assigned_pin not in inner_pins:
+          if inner_assignment is not None:
+            if inner_assignment not in inner_pins:
               raise BadUserAssignError(f"unprocessed assignments in {port_name}: {user_assignments}")
-            inner_map[inner_name] = assigned_pin
+            inner_map[inner_name] = inner_assignment
           else:
             inner_map[inner_name] = inner_pins[0]
-          if inner_assignment_spec:
-            raise BadUserAssignError(f"unprocessed assignments in {port_name}.{inner_name}: {inner_assignment_spec}")
-        if assignment_spec:
-          raise BadUserAssignError(f"unprocessed assignments in {port_name}: {assignment_spec}")
+          inner_assignments.check_empty()
+
+        user_assignments.check_empty()
         assigned_resources = AssignedResource(resource.port_model, port_name, resource.name, inner_map)
         return (assigned_resources, [resource])
       else:
         raise NotImplementedError(f"unsupported resource type {resource}")
 
     # mutates the above structures
-    def assign_port_type(port_type: Type[Port], port_name: str, assignment_spec: List[Tuple[List[str], str]]) -> \
+    def assign_port_type(port_type: Type[Port], port_name: str, user_assignments: UserAssignmentDict) -> \
         AssignedResource:
-      grouped_assignment_spec = self._group_assignment_spec(assignment_spec)  # mutable, deleted as allocated
       available_resources = assignable_resources_by_type[port_type]
+      user_assignment = user_assignments.get_root()
 
-      if '' in grouped_assignment_spec:  # filter the available resources to the assigned ones
-        assert len(grouped_assignment_spec['']) == 1, f"multiple assignments to {port_type} {port_name}: {grouped_assignment_spec['']}"
-        assigned_resources = assignable_resources_by_name.get(grouped_assignment_spec[''][0][1], [])
+      if user_assignment is not None:  # filter the available resources to the assigned ones
+        assigned_resources = assignable_resources_by_name.get(user_assignment, [])
         available_resources = [resource for resource in available_resources if resource in assigned_resources]
-        del grouped_assignment_spec['']
 
         if not available_resources:
           raise BadUserAssignError(f"no available assign to {port_name}: {user_assignments}")
 
       assigned_resource: Optional[AssignedResource] = None
       for resource in available_resources:  # given the available resources, assign the first one possible
-        assigned = try_assign_resource(port_type, port_name, resource, grouped_assignment_spec)
+        assigned = try_assign_resource(port_type, port_name, resource, user_assignments)
         if assigned is not None:
           assigned_resource, used_resources = assigned
           for used_resource in used_resources:
             mark_resource_used(used_resource)
           break
-
-      if len(grouped_assignment_spec) > 0:
-        raise BadUserAssignError(f"unprocessed assignments in {port_name}: {user_assignments}")
       if assigned_resource is None:
         raise AutomaticAssignError(f"no available assign to {port_name}: {user_assignments}")
+
+      user_assignments.check_empty()
 
       return assigned_resource
 
@@ -302,17 +328,15 @@ class PinMapUtil:
     unassigned_port_types_names: List[Tuple[Type[Port], str]] = []  # unpacked version of port_type_names
     for (port_type, port_names) in port_types_names:
       for port_name in port_names:
-        if port_name in user_assignments:
-          assigned_resources.append(assign_port_type(port_type, port_name, user_assignments[port_name]))
-          del user_assignments[port_name]
+        if user_assignments.contains_elt(port_name):
+          assigned_resources.append(assign_port_type(port_type, port_name, user_assignments.get_elt(port_name)))
         else:
           unassigned_port_types_names.append((port_type, port_name))
 
-    if len(user_assignments) > 0:
-      raise BadUserAssignError(f"unprocessed assignments: {user_assignments}")
+    user_assignments.check_empty()
 
     # then automatically assign anything that wasn't user-specified
     for (port_type, port_name) in unassigned_port_types_names:
-      assigned_resources.append(assign_port_type(port_type, port_name, []))
+      assigned_resources.append(assign_port_type(port_type, port_name, user_assignments.get_elt(port_name)))
 
     return assigned_resources
