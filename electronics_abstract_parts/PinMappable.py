@@ -195,21 +195,34 @@ class PinMapUtil:
 
     assigned_resources: List[AssignedResource] = []
 
+    def recursive_assign_port(...) -> None:
+      ...
+
     # mutates the above structures
-    def assign_port_type(port_type: Type[Port], assignment_spec: List[Tuple[List[str], str]]) -> None:
-      grouped_assignment_spec = self._group_assignment_spec(assignment_spec)
-      if '' in grouped_assignment_spec:
+    def assign_port_type(port_type: Type[Port], port_name: str, assignment_spec: List[Tuple[List[str], str]]) -> \
+        AssignedResource:
+      grouped_assignment_spec = self._group_assignment_spec(assignment_spec)  # mutable, deleted as allocated
+      available_resources = assignable_resources_by_type[port_type]
 
-      else:
+      if '' in grouped_assignment_spec:  # filter the available resources to the assigned ones
+        assert len(grouped_assignment_spec['']) == 1, f"multiple assignments to {port_name}: {grouped_assignment_spec['']}"
+        assigned_resources = assignable_resources_by_name.get(grouped_assignment_spec[''][0][1], [])
+        available_resources = [resource for resource in available_resources if resource in assigned_resources]
+        del grouped_assignment_spec['']
 
-      pass
+      for resource in available_resources:  # given the available resources, assign the first one possible
+        if isinstance(resource, PinResource):
+
+        else:
+          raise NotImplementedError(f"unsupported resource type {resource}")
+
 
     # process the ports with user-specified assignments first, to avoid potentially conflicting assigns
     unassigned_port_types_names: List[Tuple[Type[Port], str]] = []  # unpacked version of port_type_names
     for (port_type, port_names) in port_types_names:
       for port_name in port_names:
         if port_name in user_assignments:
-          assign_port_type(port_type, user_assignments[port_name])
+          assign_port_type(port_type, port_name, user_assignments[port_name])
         else:
           unassigned_port_types_names.append((port_type, port_name))
 
