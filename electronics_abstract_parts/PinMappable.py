@@ -1,3 +1,4 @@
+import itertools
 from abc import ABCMeta, abstractmethod
 from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable
 
@@ -305,8 +306,15 @@ class PinMapUtil:
           else:
             inner_type = type(inner_model)
           inner_user_assignment, inner_user_assignments = user_assignments.get_elt(inner_name)
+
           resource_pool = assignable_resources_by_type[inner_type]
           resource_pool = [resource for resource in resource_pool if resource not in pin_resources]
+          if isinstance(resource, PeripheralFixedResource):  # filter further by allowed pins for this peripheral
+            peripheral_allowed_names = resource.inner_allowed_names.get(inner_name, [])
+            peripheral_allowed = list(itertools.chain(*[assignable_resources_by_name.get(name, [])
+                                                        for name in peripheral_allowed_names]))
+            resource_pool = [resource for resource in resource_pool if resource in peripheral_allowed]
+
           recursive_assignment = assign_port_type(resource_pool, inner_type, f'{port_name}.{inner_name}',
                                                   inner_user_assignment, inner_user_assignments)
           if recursive_assignment is None:

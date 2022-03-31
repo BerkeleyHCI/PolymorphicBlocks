@@ -2,7 +2,7 @@ import unittest
 
 from electronics_model import UartPort
 from .PinMappable import PinMapUtil, PinResource, Passive, PeripheralFixedPin, UsbDevicePort, PeripheralAnyPinResource, \
-  DigitalBidir, AnalogSink, AssignedResource, AutomaticAssignError, BadUserAssignError
+  DigitalBidir, AnalogSink, AssignedResource, AutomaticAssignError, BadUserAssignError, PeripheralFixedResource
 
 
 class PinMapUtilTest(unittest.TestCase):
@@ -173,3 +173,20 @@ class PinMapUtilTest(unittest.TestCase):
         PeripheralAnyPinResource('UART0', UartPort()),
       ]).assign([(UartPort, ['uart'])],
                 "uart.quack=1")
+
+  def test_assign_bundle_delegating_fixed(self):
+    dio_model = DigitalBidir()
+    ain_model = AnalogSink()
+    mapped = PinMapUtil([
+      PinResource('1', {'PIO1': dio_model}),
+      PinResource('2', {'PIO2': dio_model}),
+      PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
+      PinResource('5', {'AIn5': ain_model}),  # not assignable
+      PeripheralFixedResource('UART0', UartPort(), {
+        'tx': ['PIO3'], 'rx': ['PIO1']
+      }),
+    ]).assign([(UartPort, ['uart'])])
+    self.assertEqual(mapped[0].name, 'uart')
+    self.assertEqual(mapped[0].resource, 'UART0')
+    self.assertEqual(mapped[0].pin, {'tx': '3', 'rx': '1'})
+
