@@ -298,7 +298,9 @@ class PinMapUtil:
         return (assigned_resource, [resource])
       elif isinstance(resource, (PeripheralAnyPinResource, PeripheralFixedResource)):  # any-pin: delegate allocation
         inner_map = {}
-        full_model = resource.port_model
+        full_model = resource.port_model  # typer gets confused if this is put directly where it is used
+        inner_models = {}
+        resource_name = resource.name  # typer gets confused if this is put directly where it is used
         pin_resources: List[BasePinMapResource] = [resource]
         for (inner_name, inner_model) in resource.port_model._ports.items():
           if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
@@ -324,13 +326,11 @@ class PinMapUtil:
           assert isinstance(inner_resource.pin, str)
           inner_map[inner_name] = inner_resource.pin
           if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
-            recursive_inner_model = self.transforms[type(inner_model)][1](inner_resource.port_model)
+            inner_models[inner_name] = self.transforms[type(inner_model)][1](inner_resource.port_model)
           else:
-            recursive_inner_model = inner_resource.port_model
-          # TODO assign to outer model
-
+            inner_models[inner_name] = inner_resource.port_model
         user_assignments.check_empty()
-        assigned_resource = AssignedResource(full_model, port_name, resource.name, inner_map)
+        assigned_resource = AssignedResource(full_model, port_name, resource_name, inner_map)
         return (assigned_resource, pin_resources)
       else:
         raise NotImplementedError(f"unsupported resource type {resource}")
