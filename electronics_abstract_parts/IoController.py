@@ -2,7 +2,7 @@ from typing import List, Tuple, Optional
 
 from electronics_model import *
 
-from .PinMappable import AssignedResource
+from .PinMappable import AllocatedResource
 
 
 @abstract_block
@@ -26,7 +26,7 @@ class IoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort()))
     self.can = self.Port(Vector(CanControllerPort(DigitalBidir.empty())))
 
-  def _instantiate_from(self, ios: List[Vector], assigned: List[AssignedResource]):
+  def _instantiate_from(self, ios: List[Vector], assigned: List[AllocatedResource]):
     """Given the list of IO vectors and assigned resources from PinMapUtil, instantiate vector elements for the
     assigned resources using their data model and top-level (user-defined) names."""
 

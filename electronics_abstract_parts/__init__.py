@@ -38,7 +38,7 @@ from .I2cPullup import I2cPullup
 
 from .IoController import IoController
 from .PinMappable import PinMappable, PinMapUtil
-from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyPinResource, PeripheralFixedResource
+from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw

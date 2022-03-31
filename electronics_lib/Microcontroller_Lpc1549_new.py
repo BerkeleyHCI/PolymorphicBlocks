@@ -121,12 +121,12 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
 
       # 100-pin version ignored, since that isn't used
 
-      PeripheralAnyPinResource('UART0', uart_model),
-      PeripheralAnyPinResource('UART1', uart_model),
-      PeripheralAnyPinResource('UART2', uart_model),
-      PeripheralAnyPinResource('SPI0', spi_model),
-      PeripheralAnyPinResource('SPI1', spi_model),
-      PeripheralAnyPinResource('CAN0', CanControllerPort(DigitalBidir.empty())),
+      PeripheralAnyResource('UART0', uart_model),
+      PeripheralAnyResource('UART1', uart_model),
+      PeripheralAnyResource('UART2', uart_model),
+      PeripheralAnyResource('SPI0', spi_model),
+      PeripheralAnyResource('SPI1', spi_model),
+      PeripheralAnyResource('CAN0', CanControllerPort(DigitalBidir.empty())),
 
       PeripheralFixedResource('I2C0', I2cMaster(DigitalBidir.empty()), {
         'scl': ['PIO0_22'], 'sda': ['PIO0_23']
