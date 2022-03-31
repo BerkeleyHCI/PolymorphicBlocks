@@ -90,7 +90,8 @@ def init_in_parent(fn: InitType) -> InitType:
               arg_val = None
           elif not isinstance(arg_val, ConstraintExpr) and arg_val is not None:
             arg_val = param_model._to_expr_type(arg_val)
-          assert arg_val is None or type(param_model) == type(arg_val)
+          assert arg_val is None or type(param_model) == type(arg_val), \
+            f"type mismatch for {arg_name}: argument type {type(param_model)}, argument value {type(arg_val)}"
 
           self._init_params_value[arg_name] = (param_bound, arg_val)
 

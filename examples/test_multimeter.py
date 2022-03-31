@@ -37,7 +37,7 @@ class MultimeterAnalog(Block):
     self.connect(self.res.b.as_analog_source(
       voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
       current_limits=(-10, 10)*mAmp,
-      impedance=1*mOhm
+      impedance=1*mOhm(tol=0)
     ), self.range.input, self.output)
     self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
     self.connect(self.rdiv.a.as_analog_sink(), self.range.out0)
