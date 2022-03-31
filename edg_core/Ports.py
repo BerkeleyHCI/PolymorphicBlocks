@@ -209,6 +209,12 @@ class Port(BasePort, Generic[PortLinkType]):
     self._parameters.register(elt)
     return elt
 
+  PortSelfType = TypeVar('PortSelfType', bound='Port')
+  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
+    """INTERNAL API - IN PLACE MODIFICATION.
+    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
+    ...
+
 
 @non_library
 class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
@@ -256,3 +262,12 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     self._ports.register(elt)
 
     return elt
+
+  PortSelfType = TypeVar('PortSelfType', bound='Port')
+  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
+    ...
+
+  def model_with_elt_initializers(self: PortSelfType, initializers: dict[str, Port]) -> PortSelfType:
+    """Clones model-typed self, except adding initializers to elements from the input dict."""
+    pass
+
