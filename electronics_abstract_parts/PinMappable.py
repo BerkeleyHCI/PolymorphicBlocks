@@ -295,7 +295,7 @@ class PinMapUtil:
         user_assignments.check_empty()
         assigned_resource = AssignedResource(resource.port_model, port_name, resource.name, inner_map)
         return (assigned_resource, [resource])
-      elif isinstance(resource, PeripheralAnyPinResource):  # any-pin: delegate allocation
+      elif isinstance(resource, (PeripheralAnyPinResource, PeripheralFixedResource)):  # any-pin: delegate allocation
         inner_map = {}
         full_model = resource.port_model
         pin_resources: List[BasePinMapResource] = [resource]
@@ -304,8 +304,10 @@ class PinMapUtil:
           if inner_type in self.transforms:  # apply transform to search for the resource type, if needed
             inner_type = self.transforms[inner_type][0]
           inner_user_assignment, inner_user_assignments = user_assignments.get_elt(inner_name)
-          recursive_assignment = assign_port_type(inner_type, f'{port_name}.{inner_name}', inner_user_assignment,
-                                                  inner_user_assignments)
+          resource_pool = assignable_resources_by_type[inner_type]
+          resource_pool = [resource for resource in resource_pool if resource not in pin_resources]
+          recursive_assignment = assign_port_type(resource_pool, inner_type, f'{port_name}.{inner_name}',
+                                                  inner_user_assignment, inner_user_assignments)
           if recursive_assignment is None:
             return None
           inner_resource, inner_pin_resources = recursive_assignment
@@ -313,23 +315,24 @@ class PinMapUtil:
           assert isinstance(inner_resource.pin, str)
           inner_map[inner_name] = inner_resource.pin
           # TODO consolidate full model
+
+        user_assignments.check_empty()
         assigned_resource = AssignedResource(full_model, port_name, resource.name, inner_map)
         return (assigned_resource, pin_resources)
       else:
         raise NotImplementedError(f"unsupported resource type {resource}")
 
-    def assign_port_type(port_type: Type[Port], port_name: str, user_assignment: Optional[str],
+    def assign_port_type(resource_pool: List[BasePinMapResource],
+                         port_type: Type[Port], port_name: str, user_assignment: Optional[str],
                          inner_assignments: UserAssignmentDict) -> \
                         Optional[Tuple[AssignedResource, List[BasePinMapResource]]]:
-      available_resources = assignable_resources_by_type[port_type]
-
       if user_assignment is not None:  # filter the available resources to the assigned ones
         assigned_resources = assignable_resources_by_name.get(user_assignment, [])
-        available_resources = [resource for resource in available_resources if resource in assigned_resources]
-        if not available_resources:
+        resource_pool = [resource for resource in resource_pool if resource in assigned_resources]
+        if not resource_pool:
           raise BadUserAssignError(f"no available assign to {port_name}: {user_assignment}")
 
-      for resource in available_resources:  # given the available resources, assign the first one possible
+      for resource in resource_pool:  # given the available resources, assign the first one possible
         assignment = try_assign_resource(port_type, port_name, resource, inner_assignments)
         if assignment is not None:
           return assignment
@@ -342,9 +345,11 @@ class PinMapUtil:
       for port_name in port_names:
         if user_assignments.contains_elt(port_name):
           user_assignment, inner_assignments = user_assignments.get_elt(port_name)
-          assignment = assign_port_type(port_type, port_name, user_assignment, inner_assignments)
+          resource_pool = assignable_resources_by_type[port_type]
+          assignment = assign_port_type(resource_pool, port_type, port_name, user_assignment, inner_assignments)
           if assignment is None:
             raise AutomaticAssignError(f"no assigns to {port_name}")
+
           assigned_resource, pin_resources = assignment
           mark_resources_used(pin_resources)
           assigned_resources.append(assigned_resource)
@@ -355,9 +360,11 @@ class PinMapUtil:
 
     # then automatically assign anything that wasn't user-specified
     for (port_type, port_name) in unassigned_port_types_names:
-      assignment = assign_port_type(port_type, port_name, None, user_assignments.get_elt(port_name)[1])
+      resource_pool = assignable_resources_by_type[port_type]
+      assignment = assign_port_type(resource_pool, port_type, port_name, None, user_assignments.get_elt(port_name)[1])
       if assignment is None:
         raise AutomaticAssignError(f"no assigns to {port_name}")
+
       assigned_resource, pin_resources = assignment
       mark_resources_used(pin_resources)
       assigned_resources.append(assigned_resource)
