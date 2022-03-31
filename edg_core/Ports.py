@@ -246,6 +246,14 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       *[field._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, field) in self._ports.items()]
     )
 
+  PortSelfType = TypeVar('PortSelfType', bound='Port')
+  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
+    ...
+
+  def model_with_elt_initializers(self: PortSelfType, initializers: dict[str, Port]) -> PortSelfType:
+    """Clones model-typed self, except adding initializers to elements from the input dict."""
+    pass
+
   T = TypeVar('T', bound=Port)
   def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
     """Registers a field for this Bundle"""
