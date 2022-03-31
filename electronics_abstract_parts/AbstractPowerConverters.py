@@ -13,15 +13,9 @@ class DcDcConverter(PowerConditioner):
 
     self.output_voltage = self.ArgParameter(output_voltage)
 
-    self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=RangeExpr(),
-      current_draw=RangeExpr()
-    ), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource(
-      voltage_out=RangeExpr(),
-      current_limits=RangeExpr()
-    ), [Output])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.require(self.pwr_out.voltage_out.within(self.output_voltage),
                  "Output voltage must be within spec")

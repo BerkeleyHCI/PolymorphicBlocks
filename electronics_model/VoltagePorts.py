@@ -96,16 +96,14 @@ class VoltageBase(CircuitPort[VoltageLink]):
 
 
 class VoltageSink(VoltageBase):
-  def __init__(self, model: Optional[VoltageSink] = None,
-               voltage_limits: RangeLike = Default(RangeExpr.ALL),
+  @staticmethod
+  def empty():
+    return VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr())
+
+  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.bridge_type = VoltageSinkBridge
-
-    if model is not None:
-      # TODO check that both model and individual parameters aren't overdefined
-      voltage_limits = model.voltage_limits
-      current_draw = model.current_draw
 
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -150,17 +148,15 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
 
 class VoltageSource(VoltageBase):
-  def __init__(self, model: Optional[VoltageSource] = None,
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  @staticmethod
+  def empty():
+    return VoltageSource(voltage_out=RangeExpr(), current_limits=RangeExpr())
+
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.bridge_type = VoltageSourceBridge
     self.adapter_types = [VoltageSinkAdapterDigitalSource, VoltageSinkAdapterAnalogSource]
-
-    if model is not None:
-      # TODO check that both model and individual parameters aren't overdefined
-      voltage_out = model.voltage_out
-      current_limits = model.current_limits
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
@@ -172,16 +168,8 @@ class VoltageSource(VoltageBase):
     return self._convert(VoltageSinkAdapterAnalogSource())
 
 
-def Ground(current_draw: RangeLike = RangeExpr.ZERO * Amp) -> VoltageSink:
-  return VoltageSink(voltage_limits=RangeExpr.ZERO * Volt, current_draw=current_draw)
-
-def GroundSource() -> VoltageSource:
-  return VoltageSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ZERO * Amp)
-
-# Standard port tags for implicit connection scopes / auto-connecting power supplies
-Common = PortTag(VoltageSink)  # Common ground (0v) port
-
 Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below
+
 
 # Note: in the current model, no explicit "power tag" is equivalent to digital / noisy supply
 # TODO bring these back, on an optional basis
