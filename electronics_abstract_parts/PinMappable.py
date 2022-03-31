@@ -300,9 +300,10 @@ class PinMapUtil:
         full_model = resource.port_model
         pin_resources: List[BasePinMapResource] = [resource]
         for (inner_name, inner_model) in resource.port_model._ports.items():
-          inner_type = type(inner_model)
-          if inner_type in self.transforms:  # apply transform to search for the resource type, if needed
-            inner_type = self.transforms[inner_type][0]
+          if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
+            inner_type = self.transforms[type(inner_model)][0]
+          else:
+            inner_type = type(inner_model)
           inner_user_assignment, inner_user_assignments = user_assignments.get_elt(inner_name)
           resource_pool = assignable_resources_by_type[inner_type]
           resource_pool = [resource for resource in resource_pool if resource not in pin_resources]
@@ -314,7 +315,11 @@ class PinMapUtil:
           pin_resources.extend(inner_pin_resources)
           assert isinstance(inner_resource.pin, str)
           inner_map[inner_name] = inner_resource.pin
-          # TODO consolidate full model
+          if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
+            recursive_inner_model = self.transforms[type(inner_model)][1](inner_resource.port_model)
+          else:
+            recursive_inner_model = inner_resource.port_model
+          # TODO assign to outer model
 
         user_assignments.check_empty()
         assigned_resource = AssignedResource(full_model, port_name, resource.name, inner_map)
