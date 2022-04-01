@@ -1,7 +1,6 @@
-from typing import List, Tuple, Optional, Dict, Type
+from typing import List, Dict
 
 from electronics_model import *
-
 from .PinMappable import AllocatedResource
 
 

@@ -315,7 +315,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
 
 @abstract_block
 class Lpc1549BaseNew(Microcontroller, IoController):
-  DEVICE: Type[Lpc1549BaseNew_Device] = Lpc1549BaseNew_Device
+  DEVICE: Type[Lpc1549BaseNew_Device] = Lpc1549BaseNew_Device  # type: ignore
 
   def __init__(self):
     super().__init__()
