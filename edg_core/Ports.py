@@ -240,11 +240,6 @@ class Port(BasePort, Generic[PortLinkType]):
     return [(param, path_prefix + [name], param.initializer) for (name, param) in self._parameters.items()
             if param.initializer is not None]
 
-  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
-    """INTERNAL API - IN PLACE MODIFICATION.
-    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
-    ...
-
   def is_connected(self) -> BoolExpr:
     return self._is_connected
 
@@ -328,13 +323,6 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       self_initializers,
       *[port._get_initializers(path_prefix + [name]) for (name, port) in self._ports.items()]
     ))
-
-  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
-    ...
-
-  def model_with_elt_initializers(self: SelfType, initializers: dict[str, Port]) -> SelfType:
-    """Clones model-typed self, except adding initializers to elements from the input dict."""
-    ...
 
   T = TypeVar('T', bound=Port)
   def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
