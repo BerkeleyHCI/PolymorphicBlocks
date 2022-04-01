@@ -96,10 +96,6 @@ class VoltageBase(CircuitPort[VoltageLink]):
 
 
 class VoltageSink(VoltageBase):
-  @staticmethod
-  def empty():
-    return VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr())
-
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
@@ -148,10 +144,6 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
 
 class VoltageSource(VoltageBase):
-  @staticmethod
-  def empty():
-    return VoltageSource(voltage_out=RangeExpr(), current_limits=RangeExpr())
-
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()

@@ -11,12 +11,8 @@ class Fuse(DiscreteComponent, DiscreteApplication):
 
     self.trip_current = self.ArgParameter(trip_current)
 
-    self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr(),
-                                        voltage_limits=RangeExpr.ALL),
-                            [Input])  # TODO also allow Power tag?
-    self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr(),
-                                           current_limits=RangeExpr.ALL),
-                             [Output])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])  # TODO also allow Power tag?
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     # TODO: GND port for voltage rating?
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)  # TODO dedup w/ bridge?

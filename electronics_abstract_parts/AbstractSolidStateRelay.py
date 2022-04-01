@@ -12,11 +12,11 @@ class SolidStateRelay(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.leda = self.Port(Passive())
-    self.ledk = self.Port(Passive())
+    self.leda = self.Port(Passive.empty())
+    self.ledk = self.Port(Passive.empty())
 
-    self.feta = self.Port(Passive())
-    self.fetb = self.Port(Passive())
+    self.feta = self.Port(Passive.empty())
+    self.fetb = self.Port(Passive.empty())
 
     # TODO: this is a different way of modeling parts - parameters in the part itself
     # instead of on the ports (because this doesn't have typed ports)
@@ -38,12 +38,12 @@ class DigitalAnalogIsolatedSwitch(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.signal = self.Port(DigitalSink())
-    self.gnd = self.Port(Ground(), [Common])
+    self.signal = self.Port(DigitalSink.empty())
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.apull = self.Port(AnalogSink())
-    self.ain = self.Port(AnalogSink())
-    self.aout = self.Port(AnalogSource())
+    self.apull = self.Port(AnalogSink.empty())
+    self.ain = self.Port(AnalogSink.empty())
+    self.aout = self.Port(AnalogSource.empty())
 
     self.ic = self.Block(SolidStateRelay())
     self.res = self.Block(Resistor(

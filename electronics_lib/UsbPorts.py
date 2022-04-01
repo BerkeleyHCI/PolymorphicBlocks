@@ -89,13 +89,10 @@ class UsbDeviceConnector(UsbConnector):
   """Abstract base class for a USB 2.0 device-side port connector"""
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(VoltageSource(
-      voltage_out=self.USB2_VOLTAGE_RANGE,
-      current_limits=self.USB2_CURRENT_LIMITS
-    ), optional=True)
-    self.gnd = self.Port(GroundSource())
+    self.pwr = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd = self.Port(GroundSource.empty())
 
-    self.usb = self.Port(UsbHostPort(), optional=True)
+    self.usb = self.Port(UsbHostPort.empty(), optional=True)
 
 
 class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
@@ -104,6 +101,9 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
 
   def contents(self):
     super().contents()
+    self.assign(self.pwr.voltage_out, self.USB2_VOLTAGE_RANGE)
+    self.assign(self.pwr.current_limits, self.USB2_CURRENT_LIMITS)
+    # TODO set GND and USB port initializers
     self.footprint(
       'J', 'Connector_USB:USB_Micro-B_Molex-105017-0001',
       {
@@ -144,8 +144,8 @@ class UsbCcPulldownResistor(Block):
   without needing a USB PD IC."""
   def __init__(self) -> None:
     super().__init__()
-    self.cc = self.Port(UsbCcPort(), [Input])
-    self.gnd = self.Port(Ground(), [Common])
+    self.cc = self.Port(UsbCcPort.empty(), [Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
   def contents(self) -> None:
     super().contents()

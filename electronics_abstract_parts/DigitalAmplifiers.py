@@ -9,8 +9,8 @@ class HighSideSwitch(Block):
                frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])  # amplifier voltage
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.control = self.Port(DigitalSink(  # logic voltage
       current_draw=(0, 0) * Amp  # TODO model pullup resistor current
@@ -78,11 +78,11 @@ class HalfBridgeNFet(Block):
   @init_in_parent
   def __init__(self, max_rds: FloatLike = Default(1*Ohm), frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()  # TODO MODEL ALL THESE
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.gate_high = self.Port(DigitalSink())
-    self.gate_low = self.Port(DigitalSink())
+    self.gate_high = self.Port(DigitalSink.empty())
+    self.gate_low = self.Port(DigitalSink.empty())
 
     self.output = self.Port(DigitalSource.from_supply(self.gnd, self.pwr))  # current limits from supply
 
