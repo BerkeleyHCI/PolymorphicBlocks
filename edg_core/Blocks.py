@@ -274,41 +274,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType,
                                     ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> BaseBlockEdgirType:
-    # TODO this is structurally ugly!
-    # TODO TODO: for non-generated exported initializers, check and assert default-ness
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
-
-    def check_recursive_no_initializer(port: BasePort, path: List[str]) -> None:
-      if isinstance(port, (Port, Bundle)):
-        for (name, subparam) in port._parameters.items():
-          assert subparam.initializer is None, f"unexpected initializer in {port} at {path}"
-
-      if isinstance(port, Bundle):
-        for (name, subport) in port._ports.items():
-          check_recursive_no_initializer(subport, path + [name])
-      elif isinstance(port, Vector):
-        check_recursive_no_initializer(port._get_elt_sample(), path)
-      # TODO needs to be something like sealed types for match comprehensiveness
-
-    def process_port_inits(port: BasePort, path: List[str]) -> None:
-      if port in ignore_ports:
-        return
-
-      if isinstance(port, (Port, Bundle)):
-        for (name, subparam) in port._parameters.items():
-          if subparam.initializer is not None:
-            pb.constraints[f"(init){'.'.join(path + [name])}"].CopyFrom(
-              AssignBinding.make_assign(subparam,
-                                        subparam._to_expr_type(subparam.initializer), ref_map)
-            )
-            self._namespace_order.append(f"(init){'.'.join(path + [name])}")
-
-      if isinstance(port, Bundle):
-        for (name, subport) in port._ports.items():
-          process_port_inits(subport, path + [name])
-      elif isinstance(port, Vector):
-        check_recursive_no_initializer(port._get_elt_sample(), path)
-      # TODO needs to be something like sealed types for match comprehensiveness
 
     for (name, port) in self._ports.items():
       if port not in ignore_ports:
@@ -320,11 +286,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType,
-                                    ignore_params: IdentitySet[ConstraintExpr] = IdentitySet()) -> BaseBlockEdgirType:
+  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
     for (name, param) in self._parameters.items():
-      if param.initializer is not None and param not in ignore_params:
+      if param.initializer is not None:
         pb.constraints[f'(init){name}'].CopyFrom(
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
