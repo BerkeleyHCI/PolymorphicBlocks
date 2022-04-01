@@ -158,11 +158,6 @@ class Port(BasePort, Generic[PortLinkType]):
       assert isinstance(other_param, type(param))
       param.initializer = other_param.initializer
 
-  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
-    """INTERNAL API - IN PLACE MODIFICATION.
-    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
-    ...
-
   def init_from(self: SelfType, other: SelfType):
     assert self.parent is not None, "may only init_from on an bound port"
     assert not self._get_initializers([]), "may only init_from an empty model"
@@ -292,12 +287,18 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       assert isinstance(other_port, type(port))
       port._cloned_from(other_port)
 
-  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
-    ...
-
-  def model_with_elt_initializers(self: SelfType, initializers: dict[str, Port]) -> SelfType:
-    """Clones model-typed self, except adding initializers to elements from the input dict."""
-    pass
+  def with_elt_initializers(self: SelfType, replace_elts: dict[str, Port]) -> SelfType:
+    """Clones model-typed self, except adding initializers to elements from the input dict.
+    Those elements must be empty."""
+    assert self.parent is None, "self must not be bound"
+    cloned = self._clone()
+    for (name, replace_port) in replace_elts.items():
+      assert replace_port.parent is None, "replace_elts must not be bound"
+      cloned_port = cloned._ports[name]
+      assert isinstance(replace_port, type(cloned_port))
+      assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"
+      cloned_port._cloned_from(replace_port)
+    return cloned
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()
