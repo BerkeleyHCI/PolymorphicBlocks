@@ -12,15 +12,8 @@ class HighSideSwitch(Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.control = self.Port(DigitalSink(  # logic voltage
-      current_draw=(0, 0) * Amp  # TODO model pullup resistor current
-      # no voltage limits or threshold, those are constraints to pass into the FETs
-    ), [Input])
-    self.output = self.Port(DigitalSource(
-      voltage_out=(0, self.pwr.link().voltage.upper()),
-      # no current limits, current draw is set by the connected load
-      output_thresholds=(0, self.pwr.link().voltage.upper()),
-    ), [Output])
+    self.control = self.Port(DigitalSink.empty(), [Input])
+    self.output = self.Port(DigitalSource.empty(), [Output])
 
     self.pull_resistance = self.ArgParameter(pull_resistance)
     self.max_rds = self.ArgParameter(max_rds)
@@ -48,7 +41,10 @@ class HighSideSwitch(Block):
       drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
     ))
     self.connect(self.pre.source.as_ground(), self.gnd)
-    self.connect(self.pre.gate.as_digital_sink(), self.control)
+    self.connect(self.pre.gate.as_digital_sink(
+      current_draw=(0, 0) * Amp  # TODO model pullup resistor current
+      # no voltage limits or threshold, those are constraints to pass into the FETs
+    ), self.control)
 
     self.pull = self.Block(Resistor(
       resistance=pull_resistance,
@@ -70,7 +66,11 @@ class HighSideSwitch(Block):
     self.connect(self.drv.source.as_voltage_sink(
       current_draw=self.output.link().current_drawn
     ), self.pwr)
-    self.connect(self.drv.drain.as_digital_source(), self.output)
+    self.connect(self.drv.drain.as_digital_source(
+      voltage_out=(0, self.pwr.link().voltage.upper()),
+      # no current limits, current draw is set by the connected load
+      output_thresholds=(0, self.pwr.link().voltage.upper()),
+    ), self.output)
     self.connect(self.pre.drain.as_digital_source(), self.drv.gate.as_digital_sink(), self.pull.b.as_digital_bidir())
 
 

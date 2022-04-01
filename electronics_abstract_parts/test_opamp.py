@@ -25,7 +25,12 @@ class VoltageDummy(Block):
 
 
 class TestOpamp(Opamp):
-  pass
+  def contents(self):
+    self.pwr.init_from(VoltageSink())
+    self.gnd.init_from(Ground())
+    self.inp.init_from(AnalogSink())
+    self.inn.init_from(AnalogSink())
+    self.out.init_from(AnalogSource())
 
 
 class TestResistor(Resistor):

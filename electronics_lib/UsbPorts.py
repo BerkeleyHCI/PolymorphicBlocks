@@ -101,9 +101,13 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
 
   def contents(self):
     super().contents()
-    self.assign(self.pwr.voltage_out, self.USB2_VOLTAGE_RANGE)
-    self.assign(self.pwr.current_limits, self.USB2_CURRENT_LIMITS)
-    # TODO set GND and USB port initializers
+    self.pwr.init_from(VoltageSource(
+      voltage_out=self.USB2_VOLTAGE_RANGE,
+      current_limits=self.USB2_CURRENT_LIMITS
+    ))
+    self.gnd.init_from(Ground())
+    self.usb.init_from(UsbHostPort())
+
     self.footprint(
       'J', 'Connector_USB:USB_Micro-B_Molex-105017-0001',
       {

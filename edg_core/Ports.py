@@ -158,6 +158,11 @@ class Port(BasePort, Generic[PortLinkType]):
       assert isinstance(other_param, type(param))
       param.initializer = other_param.initializer
 
+  def init_from(self: SelfType, other: SelfType):
+    assert self.parent is not None, "may only init_from on an bound port"
+    assert not self._get_initializers([]), "may only init_from an empty model"
+    self._cloned_from(other)
+
   def _bridge(self) -> Optional[PortBridge]:
     """Creates a (unbound) bridge and returns it."""
     if self.bridge_type is None:

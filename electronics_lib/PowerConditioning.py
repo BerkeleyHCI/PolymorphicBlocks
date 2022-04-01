@@ -35,13 +35,13 @@ class BufferedSupply(PowerConditioner):
     self.sense_resistance = self.ArgParameter(sense_resistance)
     self.voltage_drop = self.ArgParameter(voltage_drop)
 
-    self.pwr = self.Port(VoltageSink(), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource(), [Output])
+    self.pwr = self.Port(VoltageSink.empty(), [Power, Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.require(self.pwr.current_draw.within(self.pwr_out.link().current_drawn +
                                               (0, self.charging_current.upper()) +
                                               (0, 0.05)))  # TODO nonhacky bounds on opamp/sense resistor current draw
-    self.sc_out = self.Port(VoltageSource(), optional=True)
-    self.gnd = self.Port(Ground(), [Common])
+    self.sc_out = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     max_in_voltage = self.pwr.link().voltage.upper()
     max_charge_current = self.charging_current.upper()
@@ -113,9 +113,9 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
   def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink())  # high-priority source
-    self.pwr_in_diode = self.Port(VoltageSink())  # low-priority source
-    self.pwr_out = self.Port(VoltageSource())
+    self.pwr_in = self.Port(VoltageSink.empty())  # high-priority source
+    self.pwr_in_diode = self.Port(VoltageSink.empty())  # low-priority source
+    self.pwr_out = self.Port(VoltageSource.empty())
 
     self.diode = self.Block(Diode(
       reverse_voltage=(0, self.pwr_in.link().voltage.upper() - self.pwr_in_diode.link().voltage.lower()),
@@ -148,9 +148,9 @@ class DiodePowerMerge(PowerConditioner, Block):
   def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = Default((0, float('inf')))) -> None:
     super().__init__()
 
-    self.pwr_in1 = self.Port(VoltageSink())
-    self.pwr_in2 = self.Port(VoltageSink())
-    self.pwr_out = self.Port(VoltageSource())
+    self.pwr_in1 = self.Port(VoltageSink.empty())
+    self.pwr_in2 = self.Port(VoltageSink.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
 
     output_lower = self.pwr_in1.link().voltage.lower().min(self.pwr_in2.link().voltage.lower()) - RangeExpr._to_expr_type(voltage_drop).upper()
     self.diode1 = self.Block(Diode(

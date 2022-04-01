@@ -10,6 +10,7 @@ class Fuse(DiscreteComponent, DiscreteApplication):
     super().__init__()
 
     self.trip_current = self.ArgParameter(trip_current)
+    self.actual_trip_current = self.Parameter(RangeExpr())
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Input])  # TODO also allow Power tag?
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])

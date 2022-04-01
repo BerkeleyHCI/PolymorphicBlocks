@@ -15,9 +15,9 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
     self.voltage = self.ArgParameter(voltage)
 
-    self.input = self.Port(Passive())
-    self.output = self.Port(Passive())
-    self.gnd = self.Port(Passive())
+    self.input = self.Port(Passive.empty())
+    self.output = self.Port(Passive.empty())
+    self.gnd = self.Port(Passive.empty())
 
     self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
 
@@ -39,8 +39,8 @@ class DigitalLowPassRc(DigitalFilter, Block):
   @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
-    self.input = self.Port(DigitalSink(), [Input])
-    self.output = self.Port(DigitalSource(), [Output])
+    self.input = self.Port(DigitalSink.empty(), [Input])
+    self.output = self.Port(DigitalSource.empty(), [Output])
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
                                    voltage=self.input.link().voltage))
@@ -67,8 +67,8 @@ class LowPassRcDac(AnalogFilter, Block):
   @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
-    self.input = self.Port(DigitalSink(), [Input])
-    self.output = self.Port(AnalogSource(), [Output])
+    self.input = self.Port(DigitalSink.empty(), [Input])
+    self.output = self.Port(AnalogSource.empty(), [Output])
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
                                    voltage=self.input.link().voltage))
