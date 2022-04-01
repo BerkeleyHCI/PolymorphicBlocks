@@ -314,33 +314,33 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
     )
 
 @abstract_block
-class Lpc1549Base(Microcontroller, IoController):
-  DEVICE: Type[Lpc1549BaseNew_Device] = NotImplemented
+class Lpc1549BaseNew(Microcontroller, IoController):
+  DEVICE: Type[Lpc1549BaseNew_Device] = Lpc1549BaseNew_Device
 
   def __init__(self):
     super().__init__()
     self.ic = self.Block(self.DEVICE())
-    self.pwr = self.Export(self.ic.pwr, [Power])
-    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
 
-    self.gpio = self.Export(self.ic.gpio)
-    self.adc = self.Export(self.ic.adc)
-    self.dac = self.Export(self.ic.dac)
+    self.connect(self.gpio, self.ic.gpio)
+    self.connect(self.adc, self.ic.adc)
+    self.connect(self.dac, self.ic.dac)
 
-    self.spi = self.Export(self.ic.spi)
-    self.i2c = self.Export(self.ic.i2c)
-    self.uart = self.Export(self.ic.uart)
-    self.usb = self.Export(self.ic.usb)
-    self.can = self.Export(self.ic.can)
+    self.connect(self.spi, self.ic.spi)
+    self.connect(self.i2c, self.ic.i2c)
+    self.connect(self.uart, self.ic.uart)
+    self.connect(self.usb, self.ic.usb)
+    self.connect(self.can, self.ic.can)
 
   def contents(self):
     # TODO: add caps and stuff, add crystal generator, add programming port generator
     pass
 
 
-class Lpc1549_48(Lpc1549Base):
+class Lpc1549_48New(Lpc1549BaseNew):
   DEVICE = Lpc1549_48New_Device
 
 
-class Lpc1549_64(Lpc1549Base):
+class Lpc1549_64New(Lpc1549BaseNew):
   DEVICE = Lpc1549_64New_Device

@@ -13,18 +13,18 @@ class IoController(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.gpio = self.Port(Vector(DigitalBidir.empty()))
     self.adc = self.Port(Vector(AnalogSink.empty()))
     self.dac = self.Port(Vector(AnalogSource.empty()))
 
-    self.spi = self.Port(Vector(SpiMaster(DigitalBidir.empty())))
-    self.i2c = self.Port(Vector(I2cMaster(DigitalBidir.empty())))
-    self.uart = self.Port(Vector(UartPort(DigitalBidir.empty())))
-    self.usb = self.Port(Vector(UsbDevicePort()))
-    self.can = self.Port(Vector(CanControllerPort(DigitalBidir.empty())))
+    self.spi = self.Port(Vector(SpiMaster.empty()))
+    self.i2c = self.Port(Vector(I2cMaster.empty()))
+    self.uart = self.Port(Vector(UartPort.empty()))
+    self.usb = self.Port(Vector(UsbDevicePort.empty()))
+    self.can = self.Port(Vector(CanControllerPort.empty()))
 
   def _instantiate_from(self, ios: List[Vector], allocations: List[AllocatedResource]) -> \
       Dict[str, CircuitPort]:

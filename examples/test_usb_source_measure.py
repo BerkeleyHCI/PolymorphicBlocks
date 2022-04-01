@@ -400,6 +400,7 @@ class UsbSourceMeasureTest(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48New),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),
