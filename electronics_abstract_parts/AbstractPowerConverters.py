@@ -13,15 +13,9 @@ class DcDcConverter(PowerConditioner):
 
     self.output_voltage = self.ArgParameter(output_voltage)
 
-    self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=RangeExpr(),
-      current_draw=RangeExpr()
-    ), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource(
-      voltage_out=RangeExpr(),
-      current_limits=RangeExpr()
-    ), [Output])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.require(self.pwr_out.voltage_out.within(self.output_voltage),
                  "Output voltage must be within spec")
@@ -138,10 +132,10 @@ class BuckConverterPowerPath(GeneratorBlock):
                dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink(), [Power])  # models the input cap only
-    self.pwr_out = self.Port(VoltageSource())  # models the output cap and inductor power source
-    self.switch = self.Port(VoltageSink())  # current draw defined as average
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
+    self.pwr_out = self.Port(VoltageSource.empty())  # models the output cap and inductor power source
+    self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.output_voltage = output_voltage
     self.current_limits = current_limits
@@ -241,11 +235,11 @@ class BoostConverterPowerPath(GeneratorBlock):
                dutycycle_limit: RangeLike = Default((0.2, 0.85))):  # arbitrary
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink(), [Power])  # models input cap and inductor power draw
-    self.pwr_out = self.Port(VoltageSink())  # only used for the output cap
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input cap and inductor power draw
+    self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
     # TODO switch is a sink as far as dataflow directionality, but it's a voltage and current source
-    self.switch = self.Port(VoltageSink())  # current draw defined as average
-    self.gnd = self.Port(Ground(), [Common])
+    self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.output_voltage = output_voltage
     self.current_limits = current_limits

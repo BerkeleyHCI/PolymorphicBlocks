@@ -13,12 +13,12 @@ class Opamp(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.inp = self.Port(AnalogSink())
-    self.inn = self.Port(AnalogSink())
-    self.out = self.Port(AnalogSource())
+    self.inp = self.Port(AnalogSink.empty())
+    self.inn = self.Port(AnalogSink.empty())
+    self.out = self.Port(AnalogSource.empty())
 
 
 class OpampFollower(AnalogFilter):
@@ -86,8 +86,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
 
     self.input = self.Export(self.amp.inp, [Input])
     # self.output = self.Export(self.amp.out, [Output])
-    self.output = self.Port(AnalogSource(), [Output])
-    self.reference = self.Port(AnalogSink())
+    self.output = self.Port(AnalogSource.empty(), [Output])
+    self.reference = self.Port(AnalogSink.empty())
 
     self.generator(self.generate_resistors, amplification, impedance, series, tolerance)
 
@@ -172,10 +172,10 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
-    self.input_positive = self.Port(AnalogSink())
-    self.input_negative = self.Port(AnalogSink())
-    self.output_reference = self.Port(AnalogSink())
-    self.output = self.Port(AnalogSource())
+    self.input_positive = self.Port(AnalogSink.empty())
+    self.input_negative = self.Port(AnalogSink.empty())
+    self.output_reference = self.Port(AnalogSink.empty())
+    self.output = self.Port(AnalogSource.empty())
 
     self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance)
 
@@ -279,9 +279,9 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
-    self.input = self.Port(AnalogSink())
-    self.output = self.Port(AnalogSource())
-    self.reference = self.Port(AnalogSink())  # negative reference for the input and output signals
+    self.input = self.Port(AnalogSink.empty())
+    self.output = self.Port(AnalogSource.empty())
+    self.reference = self.Port(AnalogSink.empty())  # negative reference for the input and output signals
 
     self.generator(self.generate_components, factor, capacitance, series, tolerance)
 

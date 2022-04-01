@@ -62,18 +62,18 @@ class Qt096t_if09(Lcd, Block):
     self.reset = self.Export(self.device.reset)
     self.rs = self.Export(self.device.rs)
     self.cs = self.Export(self.device.cs)
-    self.spi = self.Port(SpiSlave())
-    self.led = self.Port(DigitalSink(
-      # no voltage limits, since the resistor is autogen'd
-      input_thresholds=(3, 3),  # TODO more accurate model
-      current_draw=(16, 20) * mAmp  # TODO user-configurable?
-    ))
+    self.spi = self.Port(SpiSlave(DigitalBidir.empty()))
+    self.led = self.Port(DigitalSink().empty())
 
   def contents(self):
     super().contents()
 
     self.led_res = self.Block(Resistor(resistance=100*Ohm(tol=0.05)))  # TODO dynamic sizing, power
-    self.connect(self.led_res.a.as_digital_sink(), self.led)
+    self.connect(self.led_res.a.as_digital_sink(
+      # no voltage limits, since the resistor is autogen'd
+      input_thresholds=(3, 3),  # TODO more accurate model
+      current_draw=(16, 20) * mAmp  # TODO user-configurable?
+    ), self.led)
     self.connect(self.led_res.b, self.device.leda)
     self.connect(self.spi.sck, self.device.scl)
     self.connect(self.spi.mosi, self.device.sda)

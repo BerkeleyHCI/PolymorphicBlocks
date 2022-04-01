@@ -7,7 +7,7 @@ class BananaJack(Connector):
   """Base class for a single terminal 4mm banana jack, such as used on test equipment."""
   def __init__(self) -> None:
     super().__init__()
-    self.port = self.Port(Passive())
+    self.port = self.Port(Passive.empty())
 
 
 @abstract_block

@@ -137,8 +137,8 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Stm32f103_48_Device())
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
     self.swd = self.Export(self.ic.swd)
     # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
 
@@ -147,24 +147,24 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
 
     self.digital = ElementDict[DigitalBidir]()
     for i in range(len(self.ic.io_pins)):
-      self.digital[i] = self.Port(DigitalBidir(), optional=True)
+      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
       self._add_assignable_io(self.digital[i])
 
     self.adc = ElementDict[AnalogSink]()
     for i in range(10):
-      self.adc[i] = self.Port(AnalogSink(), optional=True)
+      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
       self._add_assignable_io(self.adc[i])
 
-    self.uart_0 = self.Port(UartPort(), optional=True)
+    self.uart_0 = self.Port(UartPort.empty(), optional=True)
     self._add_assignable_io(self.uart_0)
 
-    self.spi_0 = self.Port(SpiMaster(), optional=True)
+    self.spi_0 = self.Port(SpiMaster.empty(), optional=True)
     self._add_assignable_io(self.spi_0)
 
-    self.can_0 = self.Port(CanControllerPort(), optional=True)
+    self.can_0 = self.Port(CanControllerPort.empty(), optional=True)
     self._add_assignable_io(self.can_0)
 
-    self.usb_0 = self.Port(UsbDevicePort(), optional=True)
+    self.usb_0 = self.Port(UsbDevicePort.empty(), optional=True)
     # self._add_assignable_io(self.usb_0)  # TODO incompatible with builtin USB circuit
 
     self.generator(self.pin_assign, self.pin_assigns,

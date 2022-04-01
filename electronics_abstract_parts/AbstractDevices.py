@@ -10,9 +10,8 @@ class Battery(DiscreteApplication):
                capacity: FloatLike = Default(0.0)):
     super().__init__()
 
-    self.pwr = self.Port(VoltageSource(
-      voltage_out=RangeExpr(), current_limits=RangeExpr()))  # set by subclasses
-    self.gnd = self.Port(GroundSource())
+    self.pwr = self.Port(VoltageSource.empty())  # set by subclasses
+    self.gnd = self.Port(GroundSource.empty())
 
     self.voltage = self.ArgParameter(voltage)
     self.capacity = self.ArgParameter(capacity)

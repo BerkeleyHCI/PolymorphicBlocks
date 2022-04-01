@@ -11,6 +11,5 @@ class Crystal(DiscreteComponent):
 
     self.frequency = self.ArgParameter(frequency)
 
-    # actual frequency to be fulled in by subclass
-    self.crystal = self.Port(CrystalPort(frequency=RangeExpr()), [InOut])
-    self.gnd = self.Port(Ground(), [Common])
+    self.crystal = self.Port(CrystalPort.empty(), [InOut])  # set by subclass
+    self.gnd = self.Port(Ground.empty(), [Common])

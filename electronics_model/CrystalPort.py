@@ -1,8 +1,5 @@
-from typing import *
-
 from edg_core import *
 from .PassivePort import Passive
-from .VoltagePorts import VoltageSink, VoltageSource
 
 
 class CrystalLink(Link):
