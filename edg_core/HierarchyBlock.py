@@ -134,7 +134,7 @@ class ImplicitScope:
 
     block = self.parent.Block(tpe)
 
-    already_connected_ports = IdentitySet[Port]()
+    already_connected_ports = IdentitySet[BasePort]()
     for implicit in self.implicits:
       # for all ports, only the first connectable implicit should connect
       for tag in implicit.tags:
@@ -187,10 +187,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
 
-  def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[Port]:
+  def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
     out = []
     for block_port_name, block_port in self._ports.items():
-      assert isinstance(block_port, Port)
+      assert isinstance(block_port, BasePort)
       port_tags: Set[PortTag[Any]] = self._port_tags.get(block_port, set())
       if port_tags.issuperset(tags):
         out.append(block_port)
