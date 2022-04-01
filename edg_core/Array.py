@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from typing import *
 
 import edgir
@@ -146,6 +147,9 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     assert base.parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
     self._bind_in_place(base.parent)
 
+  def _type_of(self) -> Hashable:
+    return (self.target._type_of(),)
+
   def _get_elt_sample(self) -> BasePort:
     return self.target
 
@@ -155,8 +159,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
-  def _type_of(self) -> Hashable:
-    return (self.target._type_of(),)
+  def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
+    raise RuntimeError()  # should never happen
 
 
 # An 'elastic' array of ports type, with unspecified length at declaration time, and length

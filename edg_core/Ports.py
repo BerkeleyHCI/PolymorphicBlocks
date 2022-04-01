@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from abc import abstractmethod
 from itertools import chain
 from typing import *
@@ -52,9 +53,9 @@ class BasePort(HasMetadata):
   @abstractmethod
   def _type_of(self) -> Hashable: ...
 
-  """Returns the proto of an instance of this object"""
   @abstractmethod
   def _instance_to_proto(self) -> edgir.PortLike:
+    """Returns the proto of an instance of this object"""
     raise NotImplementedError
 
   def _bind_in_place(self, parent: PortParentTypes):
@@ -78,6 +79,13 @@ class BasePort(HasMetadata):
       else:
         return True
     return impl(self.parent)
+
+  @abstractmethod
+  def _get_initializers(self, path_prefix: List[str]) -> \
+      List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
+    """Returns all the initializers of contained parameters, as tuples of (parameter, path, initializer value).
+    Parameters without initializers are skipped."""
+    raise NotImplementedError
 
 
 @non_library
@@ -171,6 +179,9 @@ class Port(BasePort, Generic[PortLinkType]):
 
     return pb
 
+  def _type_of(self) -> Hashable:
+    return type(self)
+
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     if self._link_instance is not None:
       link_refs = self._link_instance._get_ref_map(edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
@@ -182,8 +193,16 @@ class Port(BasePort, Generic[PortLinkType]):
       *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for name, param in self._parameters.items()]
     ) + link_refs
 
-  def _type_of(self) -> Hashable:
-    return type(self)
+  def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
+    self._parameters.finalize()
+    return [(param, path_prefix + [name], param.initializer) for (name, param) in self._parameters.items()
+            if param.initializer is not None]
+
+  PortSelfType = TypeVar('PortSelfType', bound='Port')
+  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
+    """INTERNAL API - IN PLACE MODIFICATION.
+    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
+    ...
 
   def is_connected(self) -> BoolExpr:
     return self._is_connected
@@ -245,6 +264,14 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     return super()._get_ref_map(prefix) + IdentityDict(
       *[field._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, field) in self._ports.items()]
     )
+
+  def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
+    self_initializers = super()._get_initializers(path_prefix)
+    self._ports.finalize()
+    return list(itertools.chain(
+      self_initializers,
+      *[port._get_initializers(path_prefix + [name]) for (name, port) in self._ports.items()]
+    ))
 
   PortSelfType = TypeVar('PortSelfType', bound='Port')
   def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:

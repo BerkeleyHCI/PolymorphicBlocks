@@ -311,7 +311,12 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       # TODO needs to be something like sealed types for match comprehensiveness
 
     for (name, port) in self._ports.items():
-      process_port_inits(port, [name])
+      if port not in ignore_ports:
+        for (param, path, initializer) in port._get_initializers([name]):
+          pb.constraints[f"(init){'.'.join(path)}"].CopyFrom(
+            AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
+          )
+          self._namespace_order.append(f"(init){'.'.join(path)}")
 
     return pb
 
