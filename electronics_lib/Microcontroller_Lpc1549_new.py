@@ -143,7 +143,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       }),
     ])
 
-    self.generator(self.generate, self.pin_mapping,
+    self.generator(self.generate, self.pin_assigns,
                    self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
                    self.usb.allocated(), self.can.allocated())
@@ -155,7 +155,6 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
                usb_allocates: List[str], can_allocates: List[str]) -> None: ...
 
 
-@abstract_block
 class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
@@ -235,7 +234,6 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
     )
 
 
-@abstract_block
 class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
@@ -314,3 +312,35 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       mfr='NXP', part='LPC1549JBD64',
       datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
     )
+
+@abstract_block
+class Lpc1549Base(Microcontroller, IoController):
+  DEVICE: Type[Lpc1549BaseNew_Device] = NotImplemented
+
+  def __init__(self):
+    super().__init__()
+    self.ic = self.Block(self.DEVICE())
+    self.pwr = self.Export(self.ic.pwr, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
+
+    self.gpio = self.Export(self.ic.gpio)
+    self.adc = self.Export(self.ic.adc)
+    self.dac = self.Export(self.ic.dac)
+
+    self.spi = self.Export(self.ic.spi)
+    self.i2c = self.Export(self.ic.i2c)
+    self.uart = self.Export(self.ic.uart)
+    self.usb = self.Export(self.ic.usb)
+    self.can = self.Export(self.ic.can)
+
+  def contents(self):
+    # TODO: add caps and stuff, add crystal generator, add programming port generator
+    pass
+
+
+class Lpc1549_48(Lpc1549Base):
+  DEVICE = Lpc1549_48New_Device
+
+
+class Lpc1549_64(Lpc1549Base):
+  DEVICE = Lpc1549_64New_Device

@@ -15,7 +15,7 @@ class PinMappable(Block):
   @init_in_parent
   def __init__(self, pin_mapping: StringLike = "") -> None:
     super().__init__()
-    self.pin_mapping = pin_mapping
+    self.pin_assigns = pin_mapping
 
 
 class BasePinMapResource(metaclass=ABCMeta):
