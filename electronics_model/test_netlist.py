@@ -107,8 +107,8 @@ class TestFakeSinkHierarchy(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(VoltageSink())
-    self.neg = self.Port(VoltageSink())
+    self.pos = self.Port(VoltageSink.empty())
+    self.neg = self.Port(VoltageSink.empty())
 
   def contents(self) -> None:
     super().contents()
@@ -134,8 +134,8 @@ class TestFakeDualSinkHierarchy(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(VoltageSink())
-    self.neg = self.Port(VoltageSink())
+    self.pos = self.Port(VoltageSink.empty())
+    self.neg = self.Port(VoltageSink.empty())
 
   def contents(self) -> None:
     super().contents()

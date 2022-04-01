@@ -10,14 +10,14 @@ class AnalogSwitch(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.control = self.Port(DigitalSink())
+    self.control = self.Port(DigitalSink.empty())
 
-    self.com = self.Port(Passive())
-    self.no = self.Port(Passive())
-    self.nc = self.Port(Passive())
+    self.com = self.Port(Passive.empty())
+    self.no = self.Port(Passive.empty())
+    self.nc = self.Port(Passive.empty())
 
     # TODO: this is a different way of modeling parts - parameters in the part itself
     # instead of on the ports (because this doesn't have typed ports)

@@ -273,15 +273,6 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable
     )
 
-  @staticmethod
-  def empty() -> DigitalBidir:
-    """Returns a new port with no parameters defined (instead of unmodeled defaults),
-     such as if the port is to be exported, including as part of a bundle"""
-    return DigitalBidir(voltage_limits=RangeExpr(), current_draw=RangeExpr(),
-                        voltage_out=RangeExpr(), current_limits=RangeExpr(),
-                        input_thresholds=RangeExpr(), output_thresholds=RangeExpr(),
-                        pullup_capable=BoolExpr(), pulldown_capable=BoolExpr())
-
   def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
                voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),

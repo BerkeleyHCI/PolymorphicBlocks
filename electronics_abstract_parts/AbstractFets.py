@@ -21,9 +21,9 @@ class Fet(DiscreteSemiconductor):
                gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0))) -> None:
     super().__init__()
 
-    self.source = self.Port(Passive())
-    self.drain = self.Port(Passive())
-    self.gate = self.Port(Passive())
+    self.source = self.Port(Passive.empty())
+    self.drain = self.Port(Passive.empty())
+    self.gate = self.Port(Passive.empty())
 
     self.drain_voltage = self.ArgParameter(drain_voltage)
     self.drain_current = self.ArgParameter(drain_current)

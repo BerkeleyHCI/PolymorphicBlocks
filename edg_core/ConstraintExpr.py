@@ -75,13 +75,6 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _is_bound(self) -> bool:
     return self.binding is not None and self.binding.is_bound()
 
-  def _initializer_to(self, target: ConstraintExpr) -> BoolExpr:
-    assert type(self) == type(target), "target must be of same type"
-    if self.initializer is None:
-      return BoolExpr._to_expr_type(True)
-    else:
-      return target == self.initializer
-
   @abstractmethod
   def _decl_to_proto(self) -> edgir.ValInit:
     """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
@@ -159,25 +152,6 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
         f"if-then-else results must be of same type, got then={then_val}, else={else_val}"
     assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
     return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))
-
-  def _is_true_lit(self) -> bool:
-    assert self._is_bound()
-    return isinstance(self.binding, BoolLiteralBinding) and self.binding.value == True
-
-  def _is_lit(self) -> bool:
-    assert self._is_bound()
-    return isinstance(self.binding, BoolLiteralBinding)
-
-  @classmethod
-  def _combine_and(cls, sub_exprs: Iterable[BoolExpr]) -> BoolExpr:
-    def combine_exprs(expr1: BoolExpr, expr2: BoolExpr) -> BoolExpr:
-      return expr1 & expr2
-
-    sub_exprs = [sub_expr for sub_expr in sub_exprs if not sub_expr._is_true_lit()]
-    if len(sub_exprs) == 0:
-      return cls._to_expr_type(True)
-    else:
-      return reduce(combine_exprs, sub_exprs)
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')

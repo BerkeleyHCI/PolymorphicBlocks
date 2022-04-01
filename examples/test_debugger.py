@@ -6,13 +6,13 @@ from edg import *
 class SwdSourceBitBang(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.reset_in = self.Port(DigitalSink())
-    self.swclk_in = self.Port(DigitalSink())
-    self.swdio_in = self.Port(DigitalSink())
-    self.swdio_out = self.Port(DigitalSource())
-    self.swo_out = self.Port(DigitalSource())  # TODO is this directionality coreect?
+    self.reset_in = self.Port(DigitalSink.empty())
+    self.swclk_in = self.Port(DigitalSink.empty())
+    self.swdio_in = self.Port(DigitalSink.empty())
+    self.swdio_out = self.Port(DigitalSource.empty())
+    self.swo_out = self.Port(DigitalSource.empty())  # TODO is this directionality coreect?
 
-    self.swd = self.Port(SwdHostPort(), [Output])
+    self.swd = self.Port(SwdHostPort.empty(), [Output])
 
   def contents(self) -> None:
     super().contents()

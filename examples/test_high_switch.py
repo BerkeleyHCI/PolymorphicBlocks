@@ -8,7 +8,7 @@ class LightsConnector(Connector, FootprintBlock):
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
+    self.pwr = self.Port(VoltageSink(), [Power])  # unused, doesn't draw anything
     self.gnd = self.Port(Ground(), [Common])
     self.out = ElementDict[DigitalSink]()
     for i in range(2):
@@ -36,13 +36,13 @@ class LightsDriver(Block):
 
     self.current_draw = current_draw
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.control = ElementDict[DigitalSink]()
 
     for i in range(2):
-      self.control[i] = self.Port(DigitalSink())
+      self.control[i] = self.Port(DigitalSink.empty())
 
   def contents(self) -> None:
     super().contents()

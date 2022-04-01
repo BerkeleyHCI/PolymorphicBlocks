@@ -8,8 +8,8 @@ class Resistor(PassiveComponent):
   def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
-    self.a = self.Port(Passive())
-    self.b = self.Port(Passive())
+    self.a = self.Port(Passive.empty())
+    self.b = self.Port(Passive.empty())
 
     self.resistance = self.ArgParameter(resistance)
     self.power = self.ArgParameter(power)  # operating power range
@@ -77,8 +77,8 @@ class CurrentSenseResistor(DiscreteApplication):
     self.pwr_in = self.Export(self.res.pwr_in, [Input])
     self.pwr_out = self.Export(self.res.pwr_out, [Output])
 
-    self.sense_in = self.Port(AnalogSource())
-    self.sense_out = self.Port(AnalogSource())
+    self.sense_in = self.Port(AnalogSource.empty())
+    self.sense_out = self.Port(AnalogSource.empty())
 
   def contents(self):
     super().contents()
@@ -108,8 +108,8 @@ class Capacitor(UnpolarizedCapacitor):
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
-    self.pos = self.Port(Passive())
-    self.neg = self.Port(Passive())
+    self.pos = self.Port(Passive.empty())
+    self.neg = self.Port(Passive.empty())
 
 
 class DecouplingCapacitor(DiscreteApplication):
@@ -134,8 +134,8 @@ class Inductor(PassiveComponent):
                frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
     super().__init__()
 
-    self.a = self.Port(Passive())
-    self.b = self.Port(Passive())
+    self.a = self.Port(Passive.empty())
+    self.b = self.Port(Passive.empty())
 
     self.inductance = self.ArgParameter(inductance)
     self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned

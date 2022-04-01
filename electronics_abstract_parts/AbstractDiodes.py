@@ -15,8 +15,8 @@ class Diode(DiscreteSemiconductor):
                reverse_recovery_time: RangeLike = Default(Range.all())) -> None:
     super().__init__()
 
-    self.anode = self.Port(Passive())
-    self.cathode = self.Port(Passive())
+    self.anode = self.Port(Passive.empty())
+    self.cathode = self.Port(Passive.empty())
 
     self.reverse_voltage = self.ArgParameter(reverse_voltage)
     self.current = self.ArgParameter(current)
@@ -36,8 +36,8 @@ class ZenerDiode(DiscreteSemiconductor):
                forward_voltage_drop: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
-    self.anode = self.Port(Passive())
-    self.cathode = self.Port(Passive())
+    self.anode = self.Port(Passive.empty())
+    self.cathode = self.Port(Passive.empty())
 
     self.zener_voltage = self.ArgParameter(zener_voltage)
     self.forward_voltage_drop = self.ArgParameter(forward_voltage_drop)
@@ -50,8 +50,8 @@ class ProtectionZenerDiode(DiscreteApplication):
   def __init__(self, voltage: RangeLike):
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power, Input])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power, Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.voltage = self.ArgParameter(voltage)
 
