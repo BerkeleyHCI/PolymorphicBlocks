@@ -12,15 +12,15 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     super().__init__()
 
     # Ports with shared references
-    self.vdd = self.Port(VoltageSink(
+    self.pwr.init_from(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
       current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
-    ), [Power])
-    self.vss = self.Port(Ground(), [Common])
+    ))
+    self.gnd.init_from(Ground())
 
     # Port models
     dio_5v_model = DigitalBidir.from_supply(
-      self.vss, self.vdd,
+      self.gnd, self.pwr,
       voltage_limit_abs=(0, 5) * Volt,
       current_draw=(0, 0) * Amp,
       current_limits=(-50, 45) * mAmp,
@@ -28,7 +28,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       pullup_capable=True, pulldown_capable=True
     )
     dio_non5v_model = DigitalBidir.from_supply(  # only used when overlapped w/ DAC PIO0_12
-      self.vss, self.vdd,  # up to VddA
+      self.gnd, self.pwr,  # up to VddA
       voltage_limit_tolerance=(0, 0) * Volt,
       current_draw=(0, 0) * Amp,
       current_limits=(-50, 45) * mAmp,
@@ -36,7 +36,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       pullup_capable=True, pulldown_capable=True
     )
     dio_highcurrrent_model = DigitalBidir.from_supply(  # only used for PIO0_24
-      self.vss, self.vdd,
+      self.gnd, self.pwr,
       voltage_limit_abs=(0, 5) * Volt,
       current_draw=(0, 0) * Amp,
       current_limits=(-50, 20) * mAmp,  # TODO: 12mA when Vdd < 2.7V
@@ -45,12 +45,12 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     )
 
     adc_model = AnalogSink(
-      voltage_limits=(0, self.vdd.link().voltage.upper()),
+      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
       current_draw=(0, 0) * Amp,
       impedance=(100, float('inf')) * kOhm
     )
     dac_model = AnalogSource(
-      voltage_out=(0, self.vdd.link().voltage.upper() - 0.3),
+      voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper() - 0.3),
       current_limits=Default(RangeExpr.ALL),  # not given by spec
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
@@ -61,10 +61,10 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     # Fixed-function ports
     # Crystals from table 15, 32, 33
     # TODO Table 32, model crystal load capacitance and series resistance ratings
-    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.vdd.link().voltage),
+    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
                           optional=True)
     # Assumed from "32kHz crystal" in 14.5
-    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.vdd.link().voltage),
+    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
                               optional=True)
 
     # Pin/peripheral resource definitions (table 3)
@@ -161,18 +161,18 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str]):
     system_pins: Dict[str, CircuitPort] = {
-      '16': self.vdd,  # VddA
-      '17': self.vss,  # VssA
-      '10': self.vdd,  # VrefP_ADC
-      '14': self.vdd,  # VrefP_DAC
-      '11': self.vss,  # VrefN
-      '30': self.vdd,  # TODO support optional Vbat
-      '20': self.vss,
-      '27': self.vdd,
-      '39': self.vdd,
-      '40': self.vss,
-      '41': self.vss,
-      '42': self.vdd,
+      '16': self.pwr,  # VddA
+      '17': self.gnd,  # VssA
+      '10': self.pwr,  # VrefP_ADC
+      '14': self.pwr,  # VrefP_DAC
+      '11': self.gnd,  # VrefN
+      '30': self.pwr,  # TODO support optional Vbat
+      '20': self.gnd,
+      '27': self.pwr,
+      '39': self.pwr,
+      '40': self.gnd,
+      '41': self.gnd,
+      '42': self.pwr,
 
       '26': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
       '25': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
@@ -240,20 +240,20 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str]):
     system_pins: Dict[str, CircuitPort] = {
-      '20': self.vdd,  # VddA
-      '21': self.vss,  # VssA
-      '13': self.vdd,  # VrefP_ADC
-      '18': self.vdd,  # VrefP_DAC
-      '14': self.vss,  # VrefN
-      '41': self.vdd,  # TODO support optional Vbat
-      '22': self.vdd,
-      '26': self.vss,
-      '27': self.vss,
-      '37': self.vdd,
-      '52': self.vdd,
-      '55': self.vss,
-      '56': self.vss,
-      '57': self.vdd,
+      '20': self.pwr,  # VddA
+      '21': self.gnd,  # VssA
+      '13': self.pwr,  # VrefP_ADC
+      '18': self.pwr,  # VrefP_DAC
+      '14': self.gnd,  # VrefN
+      '41': self.pwr,  # TODO support optional Vbat
+      '22': self.pwr,
+      '26': self.gnd,
+      '27': self.gnd,
+      '37': self.pwr,
+      '52': self.pwr,
+      '55': self.gnd,
+      '56': self.gnd,
+      '57': self.pwr,
 
       '36': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
       '35': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used

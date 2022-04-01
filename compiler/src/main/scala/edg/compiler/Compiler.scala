@@ -566,7 +566,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
-          val portArray = generator.getUnelaboratedPorts(portName).asInstanceOf[wir.PortArray]
+          // getMixedPorts needed here because an empty (but defined) port array is treated as elaborated
+          val portArray = generator.getMixedPorts(portName).asInstanceOf[wir.PortArray]
           constProp.setValue(path.asIndirect + portName + IndirectStep.Elements,
             ArrayValue(portArray.getUnelaboratedPorts.keys.toSeq.map(TextValue(_))))
           // the rest was already handled when elaboratePorts on the generator stub
