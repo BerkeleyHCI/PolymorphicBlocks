@@ -51,12 +51,8 @@ class Lm4871(IntegratedCircuit):
     self.pwr = self.Export(self.ic.pwr, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
 
-    self.sig = self.Port(AnalogSink(  # TODO these aren't actually documented
-      # voltage_limits= ,
-      # current_draw=(0, 0) * Amp,
-      # impedance=,
-    ), [Input])
-    self.spk = self.Port(SpeakerDriverPort(), [Output])
+    self.sig = self.Port(AnalogSink.empty(), [Input])
+    self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
 
   def contents(self):
@@ -99,7 +95,7 @@ class Speaker(DiscreteApplication, FootprintBlock):
     super().__init__()
 
     self.input = self.Port(SpeakerPort(
-      impedance=8*Ohm(tol=0)
+      AnalogSink(impedance=8*Ohm(tol=0))
     ), [Input])
 
   def contents(self):

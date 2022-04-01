@@ -329,7 +329,7 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
 
     self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.vss, [Common])
-    self.swd = self.Port(SwdTargetPort())  # TODO
+    self.swd = self.Port(SwdTargetPort(DigitalBidir.empty()))
 
     self.xtal = self.Export(self.ic.xtal, optional=True)
     self.xtal_rtc = self.Export(self.ic.xtal_rtc, optional=True)
@@ -338,37 +338,37 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
     # TODO model current flows from digital ports
     self.digital = ElementDict[DigitalBidir]()
     for i in range(20):
-      self.digital[i] = self.Port(DigitalBidir(), optional=True)
+      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
       self._add_assignable_io(self.digital[i])
 
     self.adc = ElementDict[AnalogSink]()
     for i in range(10):
-      self.adc[i] = self.Port(AnalogSink(), optional=True)
+      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
       self._add_assignable_io(self.adc[i])
 
     self.dac = ElementDict[AnalogSource]()
     for i in range(1):
-      self.dac[i] = self.Port(AnalogSource(), optional=True)
+      self.dac[i] = self.Port(AnalogSource.empty(), optional=True)
       self._add_assignable_io(self.dac[i])
 
     self.uart = ElementDict[UartPort]()
     for i in range(3):
-      self.uart[i] = self.Port(UartPort(), optional=True)
+      self.uart[i] = self.Port(UartPort.empty(), optional=True)
       self._add_assignable_io(self.uart[i])
 
     self.spi = ElementDict[SpiMaster]()
     for i in range(2):
-      self.spi[i] = self.Port(SpiMaster(), optional=True)
+      self.spi[i] = self.Port(SpiMaster.empty(), optional=True)
       self._add_assignable_io(self.spi[i])
 
-    self.can_0 = self.Port(CanControllerPort(), optional=True)
+    self.can_0 = self.Port(CanControllerPort.empty(), optional=True)
     self._add_assignable_io(self.can_0)
 
-    self.i2c_0 = self.Port(I2cMaster(), optional=True)
+    self.i2c_0 = self.Port(I2cMaster.empty(), optional=True)
     self.connect(self.i2c_0, self.ic.i2c_0)
     # self._add_assignable_io(self.i2c_0)  # TODO conflicts with pin assign
 
-    self.usb_0 = self.Port(UsbDevicePort(), optional=True)
+    self.usb_0 = self.Port(UsbDevicePort.empty(), optional=True)
     self.connect(self.usb_0, self.ic.usb_0)
     # self._add_assignable_io(self.usb_0)  # TODO conflicts with pin assign
 

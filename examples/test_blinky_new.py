@@ -80,7 +80,7 @@ class Ref_Lf21215tmr_Device(FootprintBlock):
       [Power])
 
     self.gnd = self.Port(
-      VoltageSink(model=None, voltage_limits=Default(RangeExpr.ALL), current_draw=Default(RangeExpr.ZERO)),
+      VoltageSink(voltage_limits=Default(RangeExpr.ALL), current_draw=Default(RangeExpr.ZERO)),
       [Common])
 
     self.vout = self.Port(DigitalSource.from_supply(

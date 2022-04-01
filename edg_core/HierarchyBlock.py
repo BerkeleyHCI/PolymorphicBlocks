@@ -40,8 +40,8 @@ def init_in_parent(fn: InitType) -> InitType:
     builder_prev = builder.get_curr_context()
     builder.push_element(self)
     try:
-      if not hasattr(self, '_init_params'):
-        self._init_params = {}
+      if not hasattr(self, '_init_params_value'):
+        self._init_params_value = {}
 
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(fn).parameters.items())[1:]):  # discard 0=self
         if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
@@ -56,9 +56,9 @@ def init_in_parent(fn: InitType) -> InitType:
         else:
           arg_val = None
 
-        if arg_name in self._init_params:  # if previously declared, check it is the prev param and keep as-is
-          prev_val = self._init_params[arg_name]
-          assert prev_val is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} over prior {prev_val}"
+        if arg_name in self._init_params_value:  # if previously declared, check it is the prev param and keep as-is
+          (prev_param, prev_val) = self._init_params_value[arg_name]
+          assert prev_param is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} over prior {prev_val}"
         else:  # not previously declared, create a new constructor parameter
           if isinstance(arg_val, ConstraintExpr):
             assert arg_val._is_bound() or arg_val.initializer is None,\
@@ -68,21 +68,32 @@ def init_in_parent(fn: InitType) -> InitType:
 
           param_model: ConstraintExpr
           if arg_param.annotation in (BoolLike, "BoolLike", BoolExpr, "BoolExpr"):
-            param_model = BoolExpr(arg_val)
+            param_model = BoolExpr()
           elif arg_param.annotation in (IntLike, "IntLike", IntExpr, "IntExpr"):
-            param_model = IntExpr(arg_val)
+            param_model = IntExpr()
           elif arg_param.annotation in (FloatLike, "FloatLike", FloatExpr, "FloatExpr"):
-            param_model = FloatExpr(arg_val)
+            param_model = FloatExpr()
           elif arg_param.annotation in (RangeLike, "RangeLike", RangeExpr, "RangeExpr"):
-            param_model = RangeExpr(arg_val)
+            param_model = RangeExpr()
           elif arg_param.annotation in (StringLike, "StringLike", StringExpr, "StringExpr"):
-            param_model = StringExpr(arg_val)
+            param_model = StringExpr()
           else:
             raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
 
           # Create new parameter in self, and pass through this one instead of the original
           param_bound = param_model._bind(InitParamBinding(self))
-          self._init_params[arg_name] = param_bound
+
+          # transform value to standaradize form to ConstraintExpr or None as needed
+          if isinstance(arg_val, ConstraintExpr):
+            if not arg_val._is_bound():  # TODO: perhaps deprecate the FloatExpr() form as an empty param?
+              assert arg_val.initializer is None, f"models may not be passed into __init__ {arg_name}={arg_val}"
+              arg_val = None
+          elif not isinstance(arg_val, ConstraintExpr) and arg_val is not None:
+            arg_val = param_model._to_expr_type(arg_val)
+          assert arg_val is None or type(param_model) == type(arg_val), \
+            f"type mismatch for {arg_name}: argument type {type(param_model)}, argument value {type(arg_val)}"
+
+          self._init_params_value[arg_name] = (param_bound, arg_val)
 
           if arg_name in kwargs:
             kwargs[arg_name] = param_bound
@@ -164,13 +175,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def __init__(self) -> None:
     super().__init__()
 
-    self._init_params: Dict[str, ConstraintExpr]  # name -> bound param (with initializer set), set in @init_in_parent
-    if hasattr(self, '_init_params'):
-      for param_name, self_param in self._init_params.items():
-        self._parameters.register(self_param)
-        self.manager.add_element(param_name, self_param)
-    else:
-      self._init_params = {}
+    # name -> (empty param, default argument (if any)), set in @init_in_parent
+    self._init_params_value: Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]
+    if not hasattr(self, '_init_params_value'):
+      self._init_params_value = {}
+    for param_name, (param, param_value) in self._init_params_value.items():
+      self._parameters.register(param)
+      self.manager.add_element(param_name, param)
 
     self.parent = None
 
@@ -196,10 +207,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
-    for param_name, self_param in self._init_params.items():
-      if self_param.initializer is not None:
+    for param_name, (param, param_value) in self._init_params_value.items():
+      if param_value is not None:
         # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(self_param.initializer._expr_to_proto(IdentityDict()))
+        pb.param_defaults[param_name].CopyFrom(param_value._expr_to_proto(IdentityDict()))
 
     return pb
 
@@ -270,10 +281,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
-      for (block_param_name, block_param) in block._init_params.items():
-        if block_param.initializer is not None:
+      for (block_param_name, (block_param, block_param_value)) in block._init_params_value.items():
+        if block_param_value is not None:
           pb.constraints[f'(init){block_name}.{block_param_name}'].CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param.initializer), ref_map)
+            AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
           )
           self._namespace_order.append(f'(init){block_name}.{block_param_name}')
 
@@ -300,8 +311,14 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_param_init(pb, IdentitySet(*self._init_params.values()))
-    pb = self._populate_def_proto_port_init(pb, self._connected_ports())
+    for (name, (param, param_value)) in self._init_params_value.items():
+      assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
+    pb = self._populate_def_proto_param_init(pb)
+    for (port) in self._connected_ports():
+      if port._block_parent() is self:
+        port_name = self.manager._name_of(port) or "unk"
+        assert not port._get_initializers([port_name]), f"connected boundary port {name} has unexpected initializer"
+    pb = self._populate_def_proto_port_init(pb)
 
     return pb
 
@@ -412,8 +429,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert port_parent._parent is self, "can only export ports of contained block"
     assert port._is_bound(), "can only export bound type"
 
-    new_port: BasePort = self.Port(type(port)(),  # TODO is dropping args safe in all cases?
-                                   tags, optional=optional)
+    new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
+                         tags, optional=optional)
+
     self.connect(new_port, port)
     return new_port  # type: ignore
 

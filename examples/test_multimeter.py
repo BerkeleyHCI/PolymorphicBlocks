@@ -15,13 +15,13 @@ class MultimeterAnalog(Block):
     super().__init__()
 
     # TODO: separate Vref?
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.input_positive = self.Port(AnalogSink())
-    self.output = self.Port(AnalogSource())
+    self.input_positive = self.Port(AnalogSink.empty())
+    self.output = self.Port(AnalogSource.empty())
 
-    self.select = self.Port(DigitalSink())  # divider or not
+    self.select = self.Port(DigitalSink.empty())  # divider or not
 
   def contents(self):
     super().contents()
@@ -37,7 +37,7 @@ class MultimeterAnalog(Block):
     self.connect(self.res.b.as_analog_source(
       voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
       current_limits=(-10, 10)*mAmp,
-      impedance=1*mOhm
+      impedance=1*mOhm(tol=0)
     ), self.range.input, self.output)
     self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
     self.connect(self.rdiv.a.as_analog_sink(), self.range.out0)
@@ -59,13 +59,13 @@ class MultimeterCurrentDriver(Block):
     super().__init__()
 
     # TODO: separate Vref?
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.output = self.Port(AnalogSink())  # TBD this should be some kind of AnalogBidirectional
+    self.output = self.Port(AnalogSink.empty())  # TBD this should be some kind of AnalogBidirectional
 
-    self.control = self.Port(AnalogSink())
-    self.enable = self.Port(DigitalSink())
+    self.control = self.Port(AnalogSink.empty())
+    self.enable = self.Port(DigitalSink.empty())
 
     self.resistance = self.ArgParameter(resistance)
     self.voltage_rating = self.ArgParameter(voltage_rating)
@@ -122,20 +122,14 @@ class FetPowerGate(Block):
   """
   def __init__(self):
     super().__init__()
-    self.pwr_in = self.Port(VoltageSink(
-      current_draw=RangeExpr(),
-      voltage_limits=RangeExpr.ALL
-    ), [Input])
-    self.pwr_out = self.Port(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage,
-      current_limits=RangeExpr.ALL
-    ), [Output])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
-    self.btn_out = self.Port(DigitalSingleSource())
-    self.control = self.Port(DigitalSink())  # digital level control - gnd-referenced NFET gate
+    self.btn_out = self.Port(DigitalSingleSource.empty())
+    self.control = self.Port(DigitalSink.empty())  # digital level control - gnd-referenced NFET gate
 
   def contents(self):
     super().contents()

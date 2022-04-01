@@ -66,7 +66,7 @@ class Pcf2129(RealtimeClock, Block):
     super().__init__()
 
     self.ic = self.Block(Pcf2129_Device())
-    self.pwr = self.Port(VoltageSink(), [Power])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.pwr_bat = self.Export(self.ic.pwr_bat)
     self.gnd = self.Export(self.ic.gnd, [Common])
 

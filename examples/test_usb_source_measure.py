@@ -18,13 +18,13 @@ class GatedEmitterFollower(Block):
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
-    self.out = self.Port(VoltageSource())
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.out = self.Port(VoltageSource.empty())
 
-    self.control = self.Port(AnalogSink())
-    self.high_en = self.Port(DigitalSink())
-    self.low_en = self.Port(DigitalSink())
+    self.control = self.Port(AnalogSink.empty())
+    self.high_en = self.Port(DigitalSink.empty())
+    self.low_en = self.Port(DigitalSink.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
@@ -104,9 +104,9 @@ class ErrorAmplifier(GeneratorBlock):
     self.pwr = self.Export(self.amp.pwr, [Power])
     self.gnd = self.Export(self.amp.gnd, [Common])
 
-    self.target = self.Port(AnalogSink())
-    self.actual = self.Port(AnalogSink())
-    self.output = self.Port(AnalogSource())
+    self.target = self.Port(AnalogSink.empty())
+    self.actual = self.Port(AnalogSink.empty())
+    self.output = self.Port(AnalogSource.empty())
 
     self.generator(self.generate_amp, output_resistance, input_resistance, diode_spec,
                    series, tolerance)
@@ -177,15 +177,15 @@ class SourceMeasureControl(Block):
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.pwr_logic = self.Port(VoltageSink())
-    self.gnd = self.Port(Ground(), [Common])
-    self.ref_center = self.Port(AnalogSink())
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.pwr_logic = self.Port(VoltageSink.empty())
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.ref_center = self.Port(AnalogSink.empty())
 
-    self.out = self.Port(VoltageSource())
+    self.out = self.Port(VoltageSource.empty())
 
-    self.measured_voltage = self.Port(AnalogSource())
-    self.measured_current = self.Port(AnalogSource())
+    self.measured_voltage = self.Port(AnalogSource.empty())
+    self.measured_current = self.Port(AnalogSource.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)

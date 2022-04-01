@@ -12,14 +12,14 @@ class CalSolCanBlock(CalSolSubcircuit):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.can_pwr = self.Port(VoltageSource(), optional=True)
-    self.can_gnd = self.Port(GroundSource(), optional=True)
+    self.can_pwr = self.Port(VoltageSource.empty(), optional=True)
+    self.can_gnd = self.Port(GroundSource.empty(), optional=True)
 
-    self.controller = self.Port(CanTransceiverPort(), [Input])
-    self.can = self.Port(CanDiffPort(), optional=True)
+    self.controller = self.Port(CanTransceiverPort.empty(), [Input])
+    self.can = self.Port(CanDiffPort.empty(), optional=True)
 
   def contents(self):
     super().contents()
@@ -52,8 +52,9 @@ class CalSolCanBlock(CalSolSubcircuit):
 
 
 class CanFuse(PptcFuse, FootprintBlock):
-  def __init__(self):
-    super().__init__(trip_current=150*mAmp(tol=0))
+  def __init__(self, trip_current=(100, 200)*mAmp):
+    super().__init__(trip_current=trip_current)
+    self.assign(self.actual_trip_current, 150*mAmp(tol=0))
 
   def contents(self):
     super().contents()

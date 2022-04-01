@@ -42,8 +42,8 @@ class IndicatorLed(Light):
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.signal = self.Port(DigitalSink(), [InOut])
-    self.gnd = self.Port(Ground(), [Common])
+    self.signal = self.Port(DigitalSink.empty(), [InOut])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.require(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
@@ -72,8 +72,8 @@ class VoltageIndicatorLed(Light):
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-    self.signal = self.Port(VoltageSink(), [Power, InOut])
-    self.gnd = self.Port(Ground(), [Common])
+    self.signal = self.Port(VoltageSink.empty(), [Power, InOut])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.require(self.signal.current_draw.within(current_draw))
 
@@ -129,10 +129,10 @@ class IndicatorSinkRgbLed(Light):
     # TODO: support brightness
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.red = self.Port(DigitalSink())
-    self.green = self.Port(DigitalSink())
-    self.blue = self.Port(DigitalSink())
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.red = self.Port(DigitalSink.empty())
+    self.green = self.Port(DigitalSink.empty())
+    self.blue = self.Port(DigitalSink.empty())
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
     self.require(self.red.current_draw.within((-1 * self.target_current_draw.upper(), 0)))

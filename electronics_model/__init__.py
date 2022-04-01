@@ -10,8 +10,8 @@ from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
 from .PassivePort import Passive
-from .VoltagePorts import VoltageSource, VoltageSink, GroundSource, Ground, Common
-from .VoltagePorts import Power, Ground
+from .VoltagePorts import VoltageSource, VoltageSink, Power
+from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
 from .AnalogPort import AnalogSource, AnalogSink
 from .UartPort import UartPort

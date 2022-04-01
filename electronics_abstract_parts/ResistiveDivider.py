@@ -70,9 +70,9 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.actual_impedance = self.Parameter(RangeExpr())
     self.actual_series_impedance = self.Parameter(RangeExpr())
 
-    self.top = self.Port(Passive())
-    self.center = self.Port(Passive())
-    self.bottom = self.Port(Passive())
+    self.top = self.Port(Passive.empty())
+    self.center = self.Port(Passive.empty())
+    self.bottom = self.Port(Passive.empty())
 
     self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
