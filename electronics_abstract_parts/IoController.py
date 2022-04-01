@@ -16,15 +16,15 @@ class IoController(Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.gpio = self.Port(Vector(DigitalBidir.empty()))
-    self.adc = self.Port(Vector(AnalogSink.empty()))
-    self.dac = self.Port(Vector(AnalogSource.empty()))
+    self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
+    self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
+    self.dac = self.Port(Vector(AnalogSource.empty()), optional=True)
 
-    self.spi = self.Port(Vector(SpiMaster.empty()))
-    self.i2c = self.Port(Vector(I2cMaster.empty()))
-    self.uart = self.Port(Vector(UartPort.empty()))
-    self.usb = self.Port(Vector(UsbDevicePort.empty()))
-    self.can = self.Port(Vector(CanControllerPort.empty()))
+    self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
+    self.i2c = self.Port(Vector(I2cMaster.empty()), optional=True)
+    self.uart = self.Port(Vector(UartPort.empty()), optional=True)
+    self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
+    self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
   def _instantiate_from(self, ios: List[Vector], allocations: List[AllocatedResource]) -> \
       Dict[str, CircuitPort]:
@@ -40,7 +40,7 @@ class IoController(Block):
         pinmap[allocation.pin] = io_port
       elif isinstance(allocation.pin, dict):
         assert isinstance(io_port, Bundle)
-        for (pin_name, subport_name) in allocation.pin.items():
+        for (subport_name, pin_name) in allocation.pin.items():
           subport = getattr(io_port, subport_name)
           assert isinstance(subport, CircuitPort), f"bad sub-port {pin_name} {subport}"
           pinmap[pin_name] = subport
