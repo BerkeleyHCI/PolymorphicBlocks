@@ -84,7 +84,7 @@ class HalfBridgeNFet(Block):
     self.gate_high = self.Port(DigitalSink.empty())
     self.gate_low = self.Port(DigitalSink.empty())
 
-    self.output = self.Port(DigitalSource.from_supply(self.gnd, self.pwr))  # current limits from supply
+    self.output = self.Port(DigitalSource.empty())  # current limits from supply
 
     self.max_rds = self.ArgParameter(max_rds)
     self.frequency = self.ArgParameter(frequency)

@@ -60,7 +60,9 @@ class SmdCrystal(Crystal, FootprintBlock, GeneratorBlock):
     )).first(f"no crystal matching f={frequency} Hz")
 
     self.assign(self.actual_capacitance, part[CrystalTable.CAPACITANCE])
-    self.assign(self.crystal.frequency, part[CrystalTable.FREQUENCY])
+
+    self.crystal.init_from(CrystalPort(part[CrystalTable.FREQUENCY]))
+    self.gnd.init_from(Ground())
 
     self.footprint(
       'X', 'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm',
