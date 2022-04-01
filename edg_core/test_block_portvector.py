@@ -19,6 +19,12 @@ class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
     self.vector.append_elt(TestPortSink())
 
 
+class TestBlockPortVectorEmpty(TestBlockPortVectorBase):
+  def __init__(self) -> None:
+    super().__init__()
+    self.vector.defined()
+
+
 class TestBlockPortVectorExport(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
@@ -70,6 +76,18 @@ class BlockVectorProtoTestCase(unittest.TestCase):
     self.assertEqual(len(array_ports), 2)
     self.assertEqual(array_ports['0'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
     self.assertEqual(array_ports['1'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+
+
+class BlockVectorEmptyProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockPortVectorEmpty()._elaborated_def_to_proto()
+
+  def test_port_def(self) -> None:
+    self.assertEqual(len(self.pb.ports), 1)
+    self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertTrue(self.pb.ports['vector'].array.HasField('ports'))
+    array_ports = self.pb.ports['vector'].array.ports.ports
+    self.assertEqual(len(array_ports), 0)
 
 
 class VectorExportProtoTestCase(unittest.TestCase):

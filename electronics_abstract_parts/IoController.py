@@ -32,6 +32,10 @@ class IoController(Block):
     instantiate vector elements for the allocated resources using their data model and return the pin mapping."""
     ios_by_type = {io.elt_type(): io for io in ios}
     pinmap: Dict[str, CircuitPort] = {}
+
+    for io in ios:
+      io.defined()  # mark all vectors as defined - even if they will be empty
+
     for allocation in allocations:
       io = ios_by_type[type(allocation.port_model)]
       io_port = io.append_elt(allocation.port_model, allocation.name)

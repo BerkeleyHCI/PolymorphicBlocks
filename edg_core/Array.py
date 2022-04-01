@@ -128,7 +128,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', bound='BasePort')
+VectorType = TypeVar('VectorType', bound='Port')
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -199,9 +199,9 @@ class Vector(BaseVector, Generic[VectorType]):
     pb = edgir.PortLike()
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
     if self._elts is not None:
-      array_ports = pb.array.ports.ports
+      pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        array_ports[name].CopyFrom(elt._instance_to_proto())
+        pb.array.ports.ports[name].CopyFrom(elt._instance_to_proto())
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -227,6 +227,17 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self._elt_sample._get_ref_map(edgir.LocalPath())
+
+  def defined(self) -> None:
+    """Marks this vector as defined, even if it is empty. Can be called multiple times, and append_elt can continue
+    to be used.
+    Can only be called from the block defining this port (where this is a boundary port),
+    and this port must be bound."""
+    assert self._is_bound(), "not bound, can't create array elements"
+    assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+
+    if self._elts is None:
+      self._elts = {}
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -261,7 +272,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
     assert builder.get_enclosing_block() is block_parent.parent, "can only allocate ports of internal blocks"
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
-    allocated = self._tpe._bind(self, ignore_context=True)
+    allocated = type(self._tpe).empty()._bind(self)
     self._allocates.append((suggested_name, allocated))
     return allocated
 
@@ -286,7 +297,7 @@ class Vector(BaseVector, Generic[VectorType]):
     return type(self._elt_sample)
 
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
-  ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
+  ExtractPortType = TypeVar('ExtractPortType', bound=Port)
   @overload
   def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
   @overload
