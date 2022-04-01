@@ -158,6 +158,11 @@ class Port(BasePort, Generic[PortLinkType]):
       assert isinstance(other_param, type(param))
       param.initializer = other_param.initializer
 
+  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
+    """INTERNAL API - IN PLACE MODIFICATION.
+    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
+    ...
+
   def init_from(self: SelfType, other: SelfType):
     assert self.parent is not None, "may only init_from on an bound port"
     assert not self._get_initializers([]), "may only init_from an empty model"
@@ -264,12 +269,6 @@ class Port(BasePort, Generic[PortLinkType]):
     self._parameters.register(elt)
     return elt
 
-  PortSelfType = TypeVar('PortSelfType', bound='Port')
-  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
-    """INTERNAL API - IN PLACE MODIFICATION.
-    Asserts this is a model type with all initializers, then updates my initializers (in-place) with the input."""
-    ...
-
 
 @non_library
 class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
@@ -292,6 +291,13 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       other_port = other._ports[name]
       assert isinstance(other_port, type(port))
       port._cloned_from(other_port)
+
+  def _model_update_initializers(self: SelfType, initializers: SelfType) -> None:
+    ...
+
+  def model_with_elt_initializers(self: SelfType, initializers: dict[str, Port]) -> SelfType:
+    """Clones model-typed self, except adding initializers to elements from the input dict."""
+    pass
 
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()
@@ -340,12 +346,4 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     self._ports.register(elt)
 
     return elt
-
-  PortSelfType = TypeVar('PortSelfType', bound='Port')
-  def _model_update_initializers(self: PortSelfType, initializers: PortSelfType) -> None:
-    ...
-
-  def model_with_elt_initializers(self: PortSelfType, initializers: dict[str, Port]) -> PortSelfType:
-    """Clones model-typed self, except adding initializers to elements from the input dict."""
-    pass
 
