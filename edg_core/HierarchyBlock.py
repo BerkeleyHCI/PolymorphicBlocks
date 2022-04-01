@@ -314,14 +314,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     for (name, (param, param_value)) in self._init_params_value.items():
       assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
-    bad_params = []
     for (port) in self._connected_ports():
       if port._block_parent() is self:
         port_name = self.manager._name_of(port)
-        # assert not port._get_initializers([port_name]), f"connected boundary port {name} has unexpected initializer"
-        for (param, path, init) in port._get_initializers([port_name or "unk"]):
-          bad_params.append('.'.join(path))
-    assert not bad_params, f"unexpected initializers in {type(self)}: {bad_params}"
+        assert not port._get_initializers([port_name]), f"connected boundary port {name} has unexpected initializer"
     pb = self._populate_def_proto_port_init(pb, self._connected_ports())
 
     return pb
@@ -433,16 +429,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert port_parent._parent is self, "can only export ports of contained block"
     assert port._is_bound(), "can only export bound type"
 
-    if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
-      assert isinstance(port, Vector)
-      assert isinstance(port._tpe, Port)
-      new_port: BasePort = self.Port(Vector(port._tpe.empty()),
-                                     tags, optional=optional)
-    elif isinstance(port, Port):
-      new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
-                           tags, optional=optional)
-    else:
-      raise NotImplementedError(f"unknown exported port type {port}")
+    assert isinstance(port, Port)
+    new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
+                         tags, optional=optional)
 
     self.connect(new_port, port)
     return new_port  # type: ignore

@@ -199,6 +199,9 @@ class Vector(BaseVector, Generic[VectorType]):
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
+    raise RuntimeError()  # should never happen
+
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self.elt_sample._get_ref_map(edgir.LocalPath())
 
