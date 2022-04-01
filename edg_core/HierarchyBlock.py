@@ -176,7 +176,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     super().__init__()
 
     # name -> (empty param, default argument (if any)), set in @init_in_parent
-    self._init_params_value: Dict[str, Tuple[ConstraintExpr, ConstraintExpr]]
+    self._init_params_value: Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]
     if not hasattr(self, '_init_params_value'):
       self._init_params_value = {}
     for param_name, (param, param_value) in self._init_params_value.items():
