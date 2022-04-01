@@ -105,7 +105,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
       voltage_out=self.USB2_VOLTAGE_RANGE,
       current_limits=self.USB2_CURRENT_LIMITS
     ))
-    self.gnd.init_from(Ground())
+    self.gnd.init_from(GroundSource())
     self.usb.init_from(UsbHostPort())
 
     self.footprint(
