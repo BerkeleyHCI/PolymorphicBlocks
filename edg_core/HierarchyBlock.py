@@ -318,7 +318,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       if port._block_parent() is self:
         port_name = self.manager._name_of(port)
         assert not port._get_initializers([port_name]), f"connected boundary port {name} has unexpected initializer"
-    pb = self._populate_def_proto_port_init(pb, self._connected_ports())
+    pb = self._populate_def_proto_port_init(pb)
 
     return pb
 
@@ -429,7 +429,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert port_parent._parent is self, "can only export ports of contained block"
     assert port._is_bound(), "can only export bound type"
 
-    assert isinstance(port, Port)
     new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
                          tags, optional=optional)
 

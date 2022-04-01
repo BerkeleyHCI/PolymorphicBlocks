@@ -272,17 +272,15 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType,
-                                    ignore_ports: IdentitySet[BasePort] = IdentitySet()) -> BaseBlockEdgirType:
+  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
 
     for (name, port) in self._ports.items():
-      if port not in ignore_ports:
-        for (param, path, initializer) in port._get_initializers([name]):
-          pb.constraints[f"(init){'.'.join(path)}"].CopyFrom(
-            AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
-          )
-          self._namespace_order.append(f"(init){'.'.join(path)}")
+      for (param, path, initializer) in port._get_initializers([name]):
+        pb.constraints[f"(init){'.'.join(path)}"].CopyFrom(
+          AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
+        )
+        self._namespace_order.append(f"(init){'.'.join(path)}")
 
     return pb
 
