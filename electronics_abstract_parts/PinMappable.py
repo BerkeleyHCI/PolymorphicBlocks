@@ -99,8 +99,7 @@ class AllocatedResource(NamedTuple):
   port_model: Port  # port model (including defined elements, for bundles)
   name: str  # name given by the user, bundles will have automatic postfixes
   resource_name: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
-  pin: Union[str, dict[str, Any]]  # pin number if port is leaf, or recursive definition for bundles
-                                   # Any is used instead of AssignedResource to avoid a cyclic definition
+  pin: Union[str, dict[str, str]]  # pin number if port is leaf, or recursive definition for bundles
 
   def __eq__(self, other):
     # TODO better port model check, perhaps by initializer
@@ -238,7 +237,7 @@ class PinMapUtil:
     else:
       raise NotImplementedError(f"unsupported resource type {resource}")
 
-  def assign(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
+  def allocate(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
       List[AllocatedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
     (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple

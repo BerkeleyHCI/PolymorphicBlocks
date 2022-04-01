@@ -281,6 +281,10 @@ class Vector(BaseVector, Generic[VectorType]):
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
 
+  def elt_type(self) -> Type[VectorType]:
+    """Returns the type of the element."""
+    return type(self._elt_sample)
+
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
   @overload

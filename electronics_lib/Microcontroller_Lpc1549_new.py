@@ -181,10 +181,7 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
       '32': self.xtal_rtc.xtal_out,
     }
 
-    ios = self._instantiate_ios([(self.gpio, gpio_allocates), (self.adc, adc_allocates), (self.dac, dac_allocates),
-                                 (self.spi, spi_allocates), (self.i2c, i2c_allocates), (self.uart, uart_allocates),
-                                 (self.usb, usb_allocates), (self.can, can_allocates)])
-    (io_pins, port_models) = self.abstract_pinmaps.remap_pins({
+    allocated = self.abstract_pinmaps.remap_pins({
       'PIO0_0': '1',
       'PIO0_1': '2',
       'PIO0_2': '3',
@@ -221,7 +218,14 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
 
       'USB_DP': '35',
       'USB_DM': '36',
-    }).assign(ios, assignments)
+    }).allocate([
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates)
+    ], assignments)
+
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can],
+                                     allocated)
 
     self.footprint(
       'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
@@ -259,10 +263,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       '43': self.xtal_rtc.xtal_out,
     }
 
-    ios = self._instantiate_ios([(self.gpio, gpio_allocates), (self.adc, adc_allocates), (self.dac, dac_allocates),
-                                 (self.spi, spi_allocates), (self.i2c, i2c_allocates), (self.uart, uart_allocates),
-                                 (self.usb, usb_allocates), (self.can, can_allocates)])
-    (io_pins, port_models) = self.abstract_pinmaps.remap_pins({
+    allocated = self.abstract_pinmaps.remap_pins({
       'PIO0_0': '2',
       'PIO0_1': '5',
       'PIO0_2': '6',
@@ -299,8 +300,14 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
 
       'USB_DP': '47',
       'USB_DM': '48',
-    }).assign(ios, assignments)
+    }).allocate([
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates)
+    ], assignments)
 
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can],
+                                     allocated)
     self.footprint(
       'U', 'Package_QFP:LQFP-64_10x10mm_P0.5mm',
       dict(chain(system_pins.items(), io_pins.items())),

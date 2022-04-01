@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Type
 
 from electronics_model import *
 
@@ -26,7 +26,24 @@ class IoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort()))
     self.can = self.Port(Vector(CanControllerPort(DigitalBidir.empty())))
 
-  def _instantiate_from(self, ios: List[Vector], assigned: List[AllocatedResource]):
-    """Given the list of IO vectors and assigned resources from PinMapUtil, instantiate vector elements for the
-    assigned resources using their data model and top-level (user-defined) names."""
-
+  def _instantiate_from(self, ios: List[Vector], allocations: List[AllocatedResource]) -> \
+      Dict[str, CircuitPort]:
+    """Given a mapping of port types to IO vectors and allocated resources from PinMapUtil,
+    instantiate vector elements for the allocated resources using their data model and return the pin mapping."""
+    ios_by_type = {io.elt_type(): io for io in ios}
+    pinmap: Dict[str, CircuitPort] = {}
+    for allocation in allocations:
+      io = ios_by_type[type(allocation.port_model)]
+      io_port = io.append_elt(allocation.port_model, allocation.name)
+      if isinstance(allocation.pin, str):
+        assert isinstance(io_port, CircuitPort)
+        pinmap[allocation.pin] = io_port
+      elif isinstance(allocation.pin, dict):
+        assert isinstance(io_port, Bundle)
+        for (pin_name, subport_name) in allocation.pin.items():
+          subport = getattr(io_port, subport_name)
+          assert isinstance(subport, CircuitPort), f"bad sub-port {pin_name} {subport}"
+          pinmap[pin_name] = subport
+      else:
+        raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
+    return pinmap
