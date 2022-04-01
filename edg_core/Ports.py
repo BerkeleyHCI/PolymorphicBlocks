@@ -7,7 +7,7 @@ from itertools import chain
 from typing import *
 
 import edgir
-from .Binding import ParamBinding, IsConnectedBinding, ParamVariableBinding, NameBinding
+from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
@@ -16,8 +16,8 @@ from .IdentityDict import IdentityDict
 from .StructuredMetadata import MetaNamespaceOrder
 
 if TYPE_CHECKING:
-  from .Blocks import Link
   from .Blocks import BaseBlock
+  from .Link import Link
   from .PortBlocks import PortBridge, PortAdapter
 
 

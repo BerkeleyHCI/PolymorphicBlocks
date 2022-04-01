@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Optional, Set, Dict, Type, cast, List
+from typing import Optional, Set, Dict, Type, cast, List, Tuple
 
 import importlib
 import inspect
@@ -8,8 +8,9 @@ import sys
 import edgir
 import edgrpc
 from .Core import builder, LibraryElement
-from .Blocks import Link
-from .HierarchyBlock import Block, GeneratorBlock
+from .Link import Link
+from .HierarchyBlock import Block
+from .Generator import GeneratorBlock
 from .DesignTop import DesignTop
 from .Ports import Port, Bundle
 
@@ -115,14 +116,14 @@ class HdlInterface():  # type: ignore
       assert generator_type is not None, f"no generator {request.element}"
       assert issubclass(generator_type, GeneratorBlock)
       generator_obj = generator_type()
-      generator_values_raw = [(value.path, edgir.valuelit_to_lit(value.value))
-                              for value in request.values]
-      generator_values = [(path, value)  # purge None from values to make the typer happy
-                          for (path, value) in generator_values_raw
-                          if value is not None]
+
+      generator_values = [(value.path, edgir.valuelit_to_lit(value.value)) for value in request.values]
+      assert None not in generator_values
+
       response.generated.CopyFrom(builder.elaborate_toplevel(
-        generator_obj, f"in generate {request.fn} for {request.element}",
-        generate_fn_name=request.fn, generate_values=generator_values))
+        generator_obj, f"in generate for {request.element}",
+        is_generator=True,
+        generate_values=cast(List[Tuple[edgir.LocalPath, edgir.LitTypes]], generator_values)))
     except BaseException as e:
       import traceback
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st

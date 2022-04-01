@@ -79,10 +79,10 @@ object ExprBuilder {
     }
 
     object RefAllocate {
-      def unapply(that: expr.ValueExpr): Option[Seq[String]] = that.expr match {
+      def unapply(that: expr.ValueExpr): Option[(Seq[String], Option[String])] = that.expr match {
         case expr.ValueExpr.Expr.Ref(that) => that.steps match {
-          case init :+ ExprBuilder.Ref.AllocateStep =>
-            localPathStepsNameOption(init)
+          case init :+ ExprBuilder.Ref.AllocateStep(suggestedName) =>
+            localPathStepsNameOption(init).map((_, suggestedName))
           case _ => None
         }
         case _ => None
@@ -109,6 +109,12 @@ object ExprBuilder {
       lit.ValueLit(`type` = lit.ValueLit.Type.Range(lit.RangeLit(
         minimum = Some(Floating(valueMin)), maximum = Some(Floating(valueMax)))))
     }
+
+    def Array(values: Seq[lit.ValueLit]): lit.ValueLit = {
+      lit.ValueLit(`type` = lit.ValueLit.Type.Array(lit.ArrayLit(
+        elts = values
+      )))
+    }
   }
 
   private def localPathStepsNameOption(steps: Seq[ref.LocalStep]): Option[Seq[String]] = {
@@ -123,7 +129,19 @@ object ExprBuilder {
   }
 
   object Ref {
-    val AllocateStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE))
+    object AllocateStep {
+      def apply(suggestedName: Option[String] = None) =
+        ref.LocalStep(step=ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
+      def unapply(that: ref.LocalStep): Option[Option[String]] = that.step match {
+        case that: ref.LocalStep.Step.Allocate => that.allocate match {
+          case None => Some(None)  // shouldn't happen
+          case Some("") => Some(None)  // empty string treated as allocate without suggested name
+          case Some(suggestedName) => Some(Some(suggestedName))
+        }
+        case _ => None
+      }
+    }
+
     val IsConnectedStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
 
     def apply(path: String*): ref.LocalPath = {
@@ -137,11 +155,11 @@ object ExprBuilder {
     }
 
     object Allocate {
-      def apply(prefix: ref.LocalPath): ref.LocalPath = {
-        ref.LocalPath(steps = prefix.steps :+ AllocateStep)
+      def apply(prefix: ref.LocalPath, suggestedName: Option[String] = None): ref.LocalPath = {
+        ref.LocalPath(steps = prefix.steps :+ AllocateStep(suggestedName))
       }
-      def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
-        case init :+ ExprBuilder.Ref.AllocateStep => Some(ref.LocalPath(steps=init))
+      def unapply(that: ref.LocalPath): Option[(ref.LocalPath, Option[String])] = that.steps match {
+        case init :+ AllocateStep(suggestedName) => Some(ref.LocalPath(steps=init), suggestedName)
         case _ => None
       }
     }

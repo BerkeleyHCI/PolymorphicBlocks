@@ -25,6 +25,8 @@ trait ValueExprMap[OutputType] {
       case expr.ValueExpr.Expr.MapExtract(valueExpr) => wrapMapExtract(valueExpr)
       case expr.ValueExpr.Expr.Connected(valueExpr) => wrapConnected(valueExpr)
       case expr.ValueExpr.Expr.Exported(valueExpr) => wrapExported(valueExpr)
+      case expr.ValueExpr.Expr.ConnectedArray(valueExpr) => wrapConnectedArray(valueExpr)
+      case expr.ValueExpr.Expr.ExportedArray(valueExpr) => wrapExportedArray(valueExpr)
       case expr.ValueExpr.Expr.Assign(valueExpr) => wrapAssign(valueExpr)
       case expr.ValueExpr.Expr.Ref(valueExpr) => mapRef(valueExpr)
       case _ => throw new NotImplementedError(s"Unknown valueExpr $valueExpr")
@@ -57,6 +59,10 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapConnected for $connected")
   def mapExported(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapExported for $exported")
+  def mapConnectedArray(connected: expr.ConnectedExpr, blockPort: OutputType, linkPort: OutputType): OutputType =
+    throw new NotImplementedError(s"Undefined mapConnectedArray for $connected")
+  def mapExportedArray(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+    throw new NotImplementedError(s"Undefined mapExportedArray for $exported")
   def mapAssign(assign: expr.AssignExpr, src: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapAssign for $assign")
   def mapRef(path: ref.LocalPath): OutputType =
@@ -95,6 +101,12 @@ trait ValueExprMap[OutputType] {
   }
   def wrapExported(exported: expr.ExportedExpr): OutputType = {
     mapExported(exported, map(exported.exteriorPort.get), map(exported.internalBlockPort.get))
+  }
+  def wrapConnectedArray(connected: expr.ConnectedExpr): OutputType = {
+    mapConnectedArray(connected, map(connected.blockPort.get), map(connected.linkPort.get))
+  }
+  def wrapExportedArray(exported: expr.ExportedExpr): OutputType = {
+    mapExportedArray(exported, map(exported.exteriorPort.get), map(exported.internalBlockPort.get))
   }
   def wrapAssign(assign: expr.AssignExpr): OutputType = {
     mapAssign(assign, map(assign.src.get))

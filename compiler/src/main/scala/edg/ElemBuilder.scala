@@ -26,9 +26,13 @@ object ElemBuilder {
       expr=expr.ValueExpr.Expr.Exported(expr.ExportedExpr(
         exteriorPort=Some(ValueExpr.Ref(external)), internalBlockPort=Some(ValueExpr.Ref(internal))))
     )
+    def ExportedArray(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+      expr=expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
+        exteriorPort=Some(ValueExpr.Ref(external)), internalBlockPort=Some(ValueExpr.Ref(internal))))
+    )
     // variation for map_extract
-    def Exported(external: expr.ValueExpr, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
-      expr=expr.ValueExpr.Expr.Exported(expr.ExportedExpr(
+    def ExportedArray(external: expr.ValueExpr, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+      expr=expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
         exteriorPort=Some(external), internalBlockPort=Some(ValueExpr.Ref(internal))))
     )
     def Assign(dst: ref.LocalPath, assignExpr: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
@@ -134,9 +138,11 @@ object ElemBuilder {
     def Array(selfClass: String, count: Int, port: elem.PortLike): elem.PortLike =
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
         selfClass=Some(LibraryPath(selfClass)),
-        ports=(0 until count).map { i =>
-          i.toString -> port
-        }.toMap
+        contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
+          (0 until count).map { i =>
+            i.toString -> port
+          }.toMap
+        ))
       )))
   }
 

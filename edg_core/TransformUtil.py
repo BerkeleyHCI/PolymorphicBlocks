@@ -80,10 +80,14 @@ class Path(NamedTuple):  # internal helper type
           isinstance(curr, edgir.HierarchyBlock) or isinstance(curr, edgir.Link)) \
           and name in curr.params:
         return self.append_param(name)._follow_partial_steps(steps[1:], curr.params[name])
-      elif (isinstance(curr, edgir.Bundle) or isinstance(curr, edgir.PortArray) or isinstance(curr, edgir.Link) or
+      elif (isinstance(curr, edgir.Bundle) or isinstance(curr, edgir.Link) or
             isinstance(curr, edgir.HierarchyBlock)) and name in curr.ports:
         path = self.append_port(name)
         port = edgir.resolve_portlike(curr.ports[name])
+        return path._follow_partial_steps(steps[1:], port)
+      elif isinstance(curr, edgir.PortArray) and curr.HasField('ports') and name in curr.ports.ports:
+        path = self.append_port(name)
+        port = edgir.resolve_portlike(curr.ports.ports[name])
         return path._follow_partial_steps(steps[1:], port)
       elif isinstance(curr, edgir.HierarchyBlock) and name in curr.blocks:
         return self.append_block(name)._follow_partial_steps(steps[1:], edgir.resolve_blocklike(curr.blocks[name]))
@@ -175,8 +179,8 @@ class Transform():
     elif elt.HasField('bundle'):
       for name, port in edgir.ordered_ports(elt.bundle):
         self._traverse_portlike(context.append_port(name), port)
-    elif elt.HasField('array'):
-      for idx, port in [(k, v) for k, v in sorted(elt.array.ports.items(), key=lambda item: int(item[0]))]:  # TODO non-numeric idx?
+    elif elt.HasField('array') and elt.array.HasField('ports'):
+      for idx, port in elt.array.ports.ports.items():
         self._traverse_portlike(context.append_port(idx), port)
     else:
       raise ValueError(f"_traverse_portlike encountered unknown type {elt} at {context}")

@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import *
 from abc import abstractmethod
+from enum import Enum
 from itertools import chain
+from typing import *
 
 import edgir
-from .Exceptions import *
-from .Array import BaseVector, DerivedVector, Vector
+from .Array import BaseVector, Vector
+from .Binding import AssignBinding, NameBinding
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
+from .Exceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .Binding import AssignBinding, NameBinding
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, ParamVariableBinding, AssignExpr, StringExpr
 from .Ports import BasePort, Port, Bundle
 from .StructuredMetadata import MetaNamespaceOrder
+
+if TYPE_CHECKING:
+  from .Link import Link
 
 
 class ConnectedPorts():
@@ -51,18 +54,20 @@ class ConnectedPorts():
     raise NotImplementedError("net joining not implemented, connect statements should be additive")
 
   def _validate_connect(self, port: BasePort) -> None:
-    port_parent = port._block_parent()
-    if port_parent is None:
+    block_parent = port._block_parent()
+    if block_parent is None:
       raise UnconnectableError(f"In {self.parent}, can't connect port model {port}, "
                                "need to assign it to a block using self.Port(...)")
-    elif port_parent is not self.parent:
-      if port_parent.parent is None:
+    elif block_parent is not self.parent:
+      if block_parent.parent is None:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block not assigned to parent with self.Block(...)")
-      elif port_parent.parent is not self.parent:
+      elif block_parent.parent is not self.parent:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block at level above or nested more than one level deep")
-    if port_parent is not self.parent and port.parent is not port_parent:
+    if block_parent is not self.parent and not (
+        (port.parent is block_parent) or (isinstance(port.parent, Vector) and port.parent.parent is block_parent)):
+      # TODO the one-level-deep vector check is a bit of a hack - this should be a bit more principled
       # note: connecting to sub-ports of parent block's exterior ports are allowed,
       # provided there is no overlap of connectionss
       raise UnconnectableError(f"In {self.parent}, can't connect port sub-element {port}, "
@@ -207,7 +212,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
-    self._name = StringExpr()._bind(ParamVariableBinding(NameBinding(self)))
+    self._name = StringExpr()._bind(NameBinding(self))
 
     self._namespace_order = self.Metadata(MetaNamespaceOrder())
 
@@ -345,7 +350,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
-      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, (ParamVariableBinding, ParamBinding)):
+      if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, ParamBinding):
         if isinstance(expr.parent, BaseBlock):
           block_parent = expr.parent
         elif isinstance(expr.parent, BasePort):
@@ -370,6 +375,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
                                           "Only own ports, or immediate contained blocks' ports can be accessed. "
                                           "To pass in parameters from constructors, don't forget @init_in_parent")
+
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)
 
@@ -465,66 +471,3 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def ref_to_proto(self) -> str:
     return self.__class__.__module__ + "." + self.__class__.__name__
-
-
-@non_library
-class Link(BaseBlock[edgir.Link]):
-  def __init__(self) -> None:
-    super().__init__()
-    self.parent: Optional[Port] = None
-
-  # Returns the ref_map, but with a trailing ALLOCATE for BaseVector ports
-  def _get_ref_map_allocate(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    def map_port_allocate(ref: Refable, path: edgir.LocalPath) -> edgir.LocalPath:
-      if isinstance(ref, BaseVector):
-        new_path = edgir.LocalPath()
-        new_path.CopyFrom(path)
-        new_path.steps.append(edgir.LocalStep(reserved_param=edgir.ALLOCATE))
-        return new_path
-      else:
-        return path
-
-    return IdentityDict([(port, map_port_allocate(port, path))
-                         for port, path in self._get_ref_map(prefix).items()])
-
-  def _def_to_proto(self) -> edgir.Link:
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, Link)
-
-    pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_param_init(pb)
-    # specifically ignore the port initializers
-
-    # actually generate the links and connects
-    ref_map = self._get_ref_map(edgir.LocalPath())
-    self._connects.finalize()
-    self._links_order: Dict[str, str] = self.Metadata({})
-    for name, connect in self._connects.items_ordered():
-      self._links_order[str(len(self._links_order))] = f"{name}"
-
-      connect_elts = connect.generate_connections()
-      assert connect_elts is not None and connect_elts.link_type is not None, "bad connect definition in link"
-
-      link_path = edgir.localpath_concat(edgir.LocalPath(), name)
-      pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
-
-      for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
-        # TODO handle Vector types
-        if isinstance(self_port, DerivedVector):  # TODO unify once we get rid of ref_map, especially to be more robust
-          pb.constraints[f"(export){name}_{idx}"].exported.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
-          pb.constraints[f"(export){name}_{idx}"].exported.exterior_port.map_extract.path.steps.add().name = self_port.base._get_elt_sample()._name_of(self_port.target)
-        else:
-          pb.constraints[f"(export){name}_{idx}"].exported.exterior_port.ref.CopyFrom(ref_map[self_port])
-        pb.constraints[f"(export){name}_{idx}"].exported.internal_block_port.ref.CopyFrom(
-          edgir.localpath_concat(link_path, link_port_path)
-        )
-        self._namespace_order.append(f"(export){name}_{idx}")
-
-    return pb
-
-  T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, **kwargs) -> T:  # for links only, ports can be the less restrictive BasePort type
-    # TODO better fix to get rid of type ignore
-    # TODO assert can't mix vector and non-vector types of port
-    return super().Port(tpe, **kwargs)  # type: ignore

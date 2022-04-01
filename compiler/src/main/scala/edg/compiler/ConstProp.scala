@@ -7,15 +7,7 @@ import edgir.init.init
 import edg.wir._
 import edg.util.{DependencyGraph, MutableBiMap}
 import edg.ExprBuilder
-import edg.compiler.ExprRef
-
-
-sealed trait DepValue  // TODO better name - dependency graph value
-
-object DepValue {
-  case class Param(value: ExprValue) extends DepValue
-  case class Array(elts: Seq[String]) extends DepValue
-}
+import edgir.ref.ref.LocalPath
 
 
 /** Utilities for graphs structured as adjacency matrices (typed Map[T, Iterable[T]]),
@@ -63,7 +55,7 @@ class ConstProp {
 
   // Assign statements are added to the dependency graph only when arrays are ready
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
-  val params = DependencyGraph[ExprRef, DepValue]()
+  val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
 
   // Params that have a forced/override value, which must be set before any assign statements are parsed
@@ -83,7 +75,6 @@ class ConstProp {
   // Callbacks, to be overridden at instantiation site
   //
   def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
-  def onArraySolved(array: DesignPath, elts: Seq[String]): Unit = { }
 
 
   //
@@ -105,29 +96,29 @@ class ConstProp {
   // Repeated does propagations as long as there is work to do, including both array available and param available.
   protected def update(): Unit = {
     while (params.getReady.nonEmpty) {
-      val constrTarget = params.getReady.head.asInstanceOf[ExprRef.Param].path
+      val constrTarget = params.getReady.head
       val assign = paramAssign(constrTarget)
       new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
         case ExprResult.Result(result) =>
-          params.setValue(ExprRef.Param(constrTarget), DepValue.Param(result))
+          params.setValue(constrTarget, result)
           onParamSolved(constrTarget, result)
           for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
             propagateEquality(constrTargetEquals, constrTarget, result)
           }
         case ExprResult.Missing(missing) =>
-          params.addNode(ExprRef.Param(constrTarget), missing.toSeq, update=true)
+          params.addNode(constrTarget, missing.toSeq, update=true)
       }
     }
   }
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
-    if (params.getValue(ExprRef.Param(dst)).isDefined) {
+    if (params.getValue(dst).isDefined) {
       val record = discardOverassigns.getOrElseUpdate(dst, OverassignRecord())
       record.equals.add(src)
       return  // first set "wins"
     }
 
-    params.setValue(ExprRef.Param(dst), DepValue.Param(value))
+    params.setValue(dst, value)
     onParamSolved(dst, value)
     for (dstEquals <- equality.getOrElse(dst, mutable.Buffer())) {
       if (dstEquals != src) {  // ignore the backedge for propagation
@@ -146,7 +137,7 @@ class ConstProp {
       return  // ignore forced params
     }
     val paramSourceRecord = (root, constrName, targetExpr)
-    if (params.nodeDefinedAt(ExprRef.Param(target))) {
+    if (params.nodeDefinedAt(target)) {
       val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
       record.assigns.add(paramSourceRecord)
       return  // first set "wins"
@@ -158,13 +149,13 @@ class ConstProp {
 
     new ExprEvaluatePartial(this, root).map(targetExpr) match {
       case ExprResult.Result(result) =>
-        params.setValue(ExprRef.Param(target), DepValue.Param(result))
+        params.setValue(target, result)
         onParamSolved(target, result)
         for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
           propagateEquality(constrTargetEquals, target, result)
         }
       case ExprResult.Missing(missing) =>
-        params.addNode(ExprRef.Param(target), missing.toSeq)  // explicitly not an update
+        params.addNode(target, missing.toSeq)  // explicitly not an update
     }
 
     update()
@@ -174,14 +165,19 @@ class ConstProp {
     */
   def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    if (params.nodeDefinedAt(ExprRef.Param(target))) {
+    if (params.nodeDefinedAt(target)) {
       val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
       record.assigns.add(paramSourceRecord)
       return  // first set "wins"
     }
-    params.setValue(ExprRef.Param(target), DepValue.Param(value))
+    params.setValue(target, value)
     paramSource.put(target, paramSourceRecord)
     onParamSolved(target, value)
+    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
+      propagateEquality(constrTargetEquals, target, value)
+    }
+
+    update()
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
@@ -189,12 +185,29 @@ class ConstProp {
     */
   def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    require(!params.nodeDefinedAt(ExprRef.Param(target)), "forced value must be set before assigns")
+    require(!params.nodeDefinedAt(target), "forced value must be set before assigns")
 
-    params.setValue(ExprRef.Param(target), DepValue.Param(value))
+    params.setValue(target, value)
     paramSource.put(target, paramSourceRecord)
     forcedParams += target
     onParamSolved(target, value)
+    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
+      propagateEquality(constrTargetEquals, target, value)
+    }
+
+    update()
+  }
+
+  /**
+    * Adds a directed equality (param1 <- param2) and propagates as needed
+    */
+  def addDirectedEquality(target: IndirectDesignPath, source: IndirectDesignPath, root: DesignPath,
+                          constrName: String = ""): Unit = {
+    val pathPrefix = root.asIndirect.toLocalPath.steps
+    val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
+    require(sourcePrefix == pathPrefix)
+    val sourceExpr = ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix))
+    addAssignment(target, root, sourceExpr, constrName=constrName)
   }
 
   /**
@@ -208,7 +221,7 @@ class ConstProp {
 
     // the initial propagation (if applicable) is tricky
     // we assume that propagations between param1 and its equal nodes, and param2 and its equal nodes, are done prior
-    (params.getValue(ExprRef.Param(param1)), params.getValue(ExprRef.Param(param2))) match {
+    (params.getValue(param1), params.getValue(param2)) match {
       case (Some(param1Value), Some(param2Value)) if param1Value == param2Value =>  // nop, already propagated
         // TODO: are these good semantics?
         // TODO: should this be recorded for debugging purposes / w/e?
@@ -218,19 +231,11 @@ class ConstProp {
         val record2 = discardOverassigns.getOrElseUpdate(param2, OverassignRecord())
         record2.equals.add(param1)
         // the equality is ignored otherwise
-      case (Some(param1Value), None) => propagateEquality(param2, param1,
-                                                          param1Value.asInstanceOf[DepValue.Param].value)
-      case (None, Some(param2Value)) => propagateEquality(param1, param2,
-                                                          param2Value.asInstanceOf[DepValue.Param].value)
+      case (Some(param1Value), None) => propagateEquality(param2, param1, param1Value)
+      case (None, Some(param2Value)) => propagateEquality(param1, param2, param2Value)
       case (None, None) => // nothing to be done
     }
 
-    update()
-  }
-
-  def setArrayElts(target: DesignPath, elts: Seq[String]): Unit = {
-    params.setValue(ExprRef.Array(target), DepValue.Array(elts))
-    onArraySolved(target, elts)
     update()
   }
 
@@ -239,7 +244,7 @@ class ConstProp {
     * Can be used to check if parameters are resolved yet by testing against None.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
-    params.getValue(ExprRef.Param(param)).map(_.asInstanceOf[DepValue.Param].value)
+    params.getValue(param)
   }
   def getValue(param: DesignPath): Option[ExprValue] = {
     // TODO should this be an implicit conversion?
@@ -253,23 +258,15 @@ class ConstProp {
     paramTypes.get(param)
   }
 
-  def getArrayElts(target: DesignPath): Option[Seq[String]] = {
-    params.getValue(ExprRef.Array(target)).map(_.asInstanceOf[DepValue.Array].elts)
-  }
-
   /**
     * Returns all parameters with a definition (eg, ValInit) but missing a concrete assignment.
     * Ignores indirect references.
     */
   def getUnsolved: Set[DesignPath] = {
-    paramTypes.keySet.toSet -- params.knownValueKeys.collect {
-      case ExprRef.Param(param) => param
-    }.flatMap(DesignPath.fromIndirectOption)
+    paramTypes.keySet.toSet -- params.knownValueKeys.flatMap(DesignPath.fromIndirectOption)
   }
 
-  def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap.collect {
-    case (ExprRef.Param(param), value) => param -> value.asInstanceOf[DepValue.Param].value
-  }
+  def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
 
   def getErrors: Seq[CompilerError] = {
     // For all the overassigns, return the top-level "first" canonicalized path (merging the equalities)
@@ -326,7 +323,7 @@ class ConstProp {
 
     // Also get all empty range assignments
     val emptyRangeErrors = params.toMap.collect {
-      case (ExprRef.Param(targetPath), DepValue.Param(RangeEmpty)) =>
+      case (targetPath, RangeEmpty) =>
         paramSource.get(targetPath).map { case (root, constrName, value) =>
           CompilerError.EmptyRange(targetPath, root, constrName, value)
         }

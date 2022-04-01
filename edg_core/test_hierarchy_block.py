@@ -45,7 +45,7 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
@@ -53,7 +53,7 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
@@ -88,7 +88,7 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
@@ -96,7 +96,7 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
@@ -197,7 +197,7 @@ class PortBridgeHierarchyBlockTestCase(unittest.TestCase):
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -205,5 +205,5 @@ class PortBridgeHierarchyBlockTestCase(unittest.TestCase):
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().reserved_param = edgir.ALLOCATE
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())

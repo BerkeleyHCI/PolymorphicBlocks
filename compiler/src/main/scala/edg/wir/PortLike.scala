@@ -1,7 +1,6 @@
 package edg.wir
 
-import scala.collection.mutable
-
+import scala.collection.{SeqMap, mutable}
 import edgir.init.init
 import edgir.elem.elem
 import edgir.ref.ref
@@ -17,6 +16,12 @@ object PortLike {
     case IrPort.Port(port) => new Port(port)
     case IrPort.Bundle(bundle) => new Bundle(bundle)
     case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
+  }
+
+  def fromLibraryPb(portLike: elem.PortLike): PortLike = portLike.`is` match {
+    case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
+    case elem.PortLike.Is.Array(like) => new PortArray(like)
+    case like => throw new NotImplementedError(s"Non-library sub-port $like")
   }
 }
 
@@ -71,10 +76,17 @@ class Bundle(pb: elem.Bundle) extends PortLike
 }
 
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
+  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
 
-  override def isElaborated: Boolean = portsSet
+  pb.contains match {
+    case elem.PortArray.Contains.Ports(ports) =>
+      setPorts(SeqMap.from(parsePorts(ports.ports, nameOrder)))
+    case _ =>
+  }
+
+  override def isElaborated: Boolean = portsSet && ports.values.forall(_.isElaborated)
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -88,16 +100,22 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 
   def getType: ref.LibraryPath = pb.getSelfClass
 
-  def setPorts(newPorts: Map[String, PortLike]): Unit = {
-    require(ports.isEmpty)
+  def setPorts(newPorts: SeqMap[String, PortLike]): Unit = {
+    require(!portsSet)
     ports ++= newPorts
     portsSet = true
   }
 
   def toEltPb: elem.PortArray = {
-    pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-    )
+    if (!portsSet) {
+      pb
+    } else {
+      pb.copy(
+        contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
+          ports.view.mapValues(_.toPb).toMap
+        ))
+      )
+    }
   }
 
   override def toPb: elem.PortLike = {

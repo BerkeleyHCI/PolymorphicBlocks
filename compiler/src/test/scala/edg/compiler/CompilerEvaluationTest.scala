@@ -311,6 +311,19 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
       Some(BooleanValue(false)))
   }
 
+  "Compiler on design with disconnected link ports" should "indicate disconnected" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      links = Map(
+        "link" -> Link.Library("link")
+      ),
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    // check link reductions
+    compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.IsConnected) should equal(
+      Some(BooleanValue(false)))
+  }
+
   "Compiler on design with disconnected exported ports" should "indicate disconnected" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(

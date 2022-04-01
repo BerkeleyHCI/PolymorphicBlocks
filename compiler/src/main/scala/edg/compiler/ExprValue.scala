@@ -168,11 +168,15 @@ object ArrayValue {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[String]] = seqMapOption(vals.values) {
       case TextValue(elt) => elt
     }
+    def apply(vals: ExprValue): Seq[String] = vals match {
+      case ArrayValue.ExtractText(values) => values
+      case _ => throw new ClassCastException("expr was not array of text")
+    }
   }
 }
 
 case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
-  override def toLit: lit.ValueLit = throw new NotImplementedError("Can't toLit on Array")
+  override def toLit: lit.ValueLit = Literal.Array(values.map(_.toLit))
   override def toStringValue: String = {
     val valuesString = values.map{_.toStringValue}.mkString(", ")
     s"[$valuesString]"

@@ -162,20 +162,31 @@ global___Bundle = Bundle
 
 class PortArray(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    class PortsEntry(google.protobuf.message.Message):
+    class Ports(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        class PortsEntry(google.protobuf.message.Message):
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor
+            KEY_FIELD_NUMBER: builtins.int
+            VALUE_FIELD_NUMBER: builtins.int
+            key: typing.Text
+            @property
+            def value(self) -> global___PortLike: ...
+            def __init__(self,
+                *,
+                key: typing.Text = ...,
+                value: typing.Optional[global___PortLike] = ...,
+                ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+        PORTS_FIELD_NUMBER: builtins.int
         @property
-        def value(self) -> global___PortLike: ...
+        def ports(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___PortLike]: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___PortLike] = ...,
+            ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
             ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["ports",b"ports"]) -> None: ...
 
     SELF_CLASS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
@@ -187,19 +198,18 @@ class PortArray(google.protobuf.message.Message):
         """
         pass
     @property
-    def ports(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___PortLike]:
-        """Only designs should contain actual ports here"""
-        pass
+    def ports(self) -> global___PortArray.Ports: ...
     @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
         self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+        ports: typing.Optional[global___PortArray.Ports] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["contains",b"contains","meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["contains",b"contains","meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["contains",b"contains"]) -> typing.Optional[typing_extensions.Literal["ports"]]: ...
 global___PortArray = PortArray
 
 class PortLike(google.protobuf.message.Message):
@@ -329,21 +339,6 @@ class HierarchyBlock(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class GeneratorsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
-        @property
-        def value(self) -> global___Generator: ...
-        def __init__(self,
-            *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___Generator] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     PARAMS_FIELD_NUMBER: builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
@@ -353,7 +348,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
     PREREFINE_CLASS_FIELD_NUMBER: builtins.int
-    GENERATORS_FIELD_NUMBER: builtins.int
+    GENERATOR_FIELD_NUMBER: builtins.int
     IS_ABSTRACT_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
@@ -394,7 +389,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         """if refined: the class pre-refinement; otherwise equal to class"""
         pass
     @property
-    def generators(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Generator]:
+    def generator(self) -> global___Generator:
         """optional, and removed upon invocation"""
         pass
     is_abstract: builtins.bool
@@ -413,50 +408,37 @@ class HierarchyBlock(google.protobuf.message.Message):
         self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
         superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
         prerefine_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        generators: typing.Optional[typing.Mapping[typing.Text, global___Generator]] = ...,
+        generator: typing.Optional[global___Generator] = ...,
         is_abstract: builtins.bool = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","prerefine_class",b"prerefine_class","self_class",b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","generators",b"generators","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["generator",b"generator","meta",b"meta","prerefine_class",b"prerefine_class","self_class",b"self_class"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","generator",b"generator","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___HierarchyBlock = HierarchyBlock
 
 class Generator(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    FN_FIELD_NUMBER: builtins.int
     REQUIRED_PARAMS_FIELD_NUMBER: builtins.int
     REQUIRED_PORTS_FIELD_NUMBER: builtins.int
-    CONNECTED_BLOCKS_FIELD_NUMBER: builtins.int
-    fn: typing.Text
-    """Python function name for the generator. TODO dupe of the key in the containing map?"""
-
     @property
     def required_params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
         """Parameters that must be defined for the generator to fire.
         These parameters are the only ones accessible to the generator.
-        TODO: perhaps should be a more general ValueExpr?
         """
         pass
     @property
     def required_ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
         """Ports that must have defined connected-ness for the generator to fire.
         This makes the port's IS_CONNECTED and CONNECTED_LINK.NAME available.
-        """
-        pass
-    @property
-    def connected_blocks(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
-        """Internal blocks that this generator can (but not necessarily) make connections to.
-        TODO generalize to include all ports to allow appending connections?
+        TODO to be removed
         """
         pass
     def __init__(self,
         *,
-        fn: typing.Text = ...,
         required_params: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
         required_ports: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
-        connected_blocks: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["connected_blocks",b"connected_blocks","fn",b"fn","required_params",b"required_params","required_ports",b"required_ports"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["required_params",b"required_params","required_ports",b"required_ports"]) -> None: ...
 global___Generator = Generator
 
 class BlockLike(google.protobuf.message.Message):

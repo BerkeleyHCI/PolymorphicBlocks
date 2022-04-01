@@ -3,9 +3,10 @@ from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike,
 from .ConstraintExpr import Default
 from .Ports import Port, Bundle
 from .NotConnectablePort import NotConnectableBlock, NotConnectablePort
-from .Blocks import Link
+from .Link import Link
 from .DesignTop import DesignTop
-from .HierarchyBlock import Block, GeneratorBlock, ImplicitConnect, init_in_parent, abstract_block
+from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block
+from .Generator import GeneratorBlock
 from .PortBlocks import PortBridge, PortAdapter
 from .Array import Vector
 from .PortTag import PortTag, Input, Output, InOut

@@ -37,7 +37,12 @@ message StructLit {
   map<string, ValueLit> members = 1;
 }
 
+message ArrayLit {
+  repeated ValueLit elts = 1;
+}
+
 message ValueLit {
+
   oneof type {
     FloatLit  floating = 1;
     IntLit    integer  = 2;
@@ -45,6 +50,7 @@ message ValueLit {
     TextLit   text     = 4;
     StructLit struct   = 9;
     RangeLit  range    = 10;
+    ArrayLit  array    = 11;
   }
 
   edgir.common.Metadata meta = 127;

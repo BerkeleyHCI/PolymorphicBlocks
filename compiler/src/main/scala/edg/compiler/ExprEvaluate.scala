@@ -3,7 +3,7 @@ package edg.compiler
 import edgir.expr.expr
 import edgir.lit.lit
 import edgir.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 
 
 class ExprEvaluateException(msg: String) extends Exception(msg)
@@ -384,9 +384,7 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract")
     )
     val containerPath = root ++ container
-    val elts = refs.getArrayElts(containerPath).getOrElse(
-      throw new ExprEvaluateException(s"Array elts not known for $container from $mapExtract")
-    )
+    val elts = ArrayValue.ExtractText(refs.getValue(containerPath.asIndirect + IndirectStep.Elements).get)
     val values = elts.toSeq.map { elt =>  // TODO should delegate to mapRef? - but needs path concat
       val refPath = containerPath + elt ++ mapExtract.path.get
       refs.getValue(refPath).getOrElse(
@@ -404,5 +402,4 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
       throw new MissingValueException(root.asIndirect ++ path)
     )
   }
-
 }

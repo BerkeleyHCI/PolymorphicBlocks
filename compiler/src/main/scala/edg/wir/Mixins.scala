@@ -13,6 +13,7 @@ trait HasMutablePorts {
 
   def getUnelaboratedPorts: Map[String, PortLike] = ports.toMap.filter(!_._2.isElaborated)
   def getElaboratedPorts: Map[String, PortLike] = ports.toMap.filter(_._2.isElaborated)
+  def getMixedPorts: Map[String, PortLike] = ports.toMap
   def elaborate(name: String, port: PortLike): Unit = {
     require(!ports(name).isElaborated && port.isElaborated)
     ports.update(name, port)
@@ -21,11 +22,7 @@ trait HasMutablePorts {
 
   protected def parsePorts(pb: Map[String, elem.PortLike], nameOrder: Seq[String]):
       mutable.SeqMap[String, PortLike] = {
-    pb.view.mapValues { _.`is` match {
-      case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
-      case elem.PortLike.Is.Array(like) if like.ports.isEmpty => new PortArray(like)
-      case like => throw new NotImplementedError(s"Non-library sub-port $like")
-    }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
+    pb.view.mapValues { PortLike.fromLibraryPb(_) }.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
   }
 }
 
@@ -33,6 +30,7 @@ trait HasMutableBlocks {
   protected val blocks: mutable.SeqMap[String, BlockLike]
 
   def getUnelaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(!_._2.isElaborated)
+  def getElaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(_._2.isElaborated)
   def elaborate(name: String, block: BlockLike): Unit = {
     require(!blocks(name).isElaborated && block.isElaborated)
     blocks.update(name, block)
@@ -51,6 +49,7 @@ trait HasMutableLinks {
   protected val links: mutable.SeqMap[String, LinkLike]
 
   def getUnelaboratedLinks: Map[String, LinkLike] = links.toMap.filter(!_._2.isElaborated)
+  def getElaboratedLinks: Map[String, LinkLike] = links.toMap.filter(_._2.isElaborated)
   def elaborate(name: String, link: LinkLike): Unit = {
     require(!links(name).isElaborated && link.isElaborated)
     links.update(name, link)

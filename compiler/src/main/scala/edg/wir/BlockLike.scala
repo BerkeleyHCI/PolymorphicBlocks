@@ -67,6 +67,74 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   }
 }
 
+// A generator version of the base block that can expand the block internals from a generator, subject to
+// some constraints
+class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath])
+    extends Block(basePb, unrefinedType) {
+  require(basePb.generator.isDefined)
+
+  var generatedPb: Option[elem.HierarchyBlock] = None
+
+  blocks.clear()
+  links.clear()
+  constraints.clear()
+
+  // Apply the generated block on top of the generator stub, and returns the ports that have arrays newly defined
+  def applyGenerated(pb: elem.HierarchyBlock): Seq[String] = {
+    require(generatedPb.isEmpty, "can't generate twice")
+    require(pb.generator.isEmpty, "generated can't define generators")
+
+    // check that the generated block is consistent with the generator stub
+    require(pb.getSelfClass == basePb.getSelfClass)
+    require(pb.params == basePb.params)
+
+    // expand port arrays that may be defined by the generator
+    require(pb.ports.keySet == basePb.ports.keySet)
+    val expandedPorts = pb.ports.flatMap { case (portName, portPb) => portPb.is match {
+      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePb.ports(portName).getArray.contains.isPorts =>
+        val port = ports(portName).asInstanceOf[PortArray]
+        require(!port.isElaborated)
+        ports.put(portName, PortLike.fromLibraryPb(portPb))
+        Some(portName)
+      case _ => None
+    } }
+
+    val nameOrder = ProtoUtil.getNameOrder(pb.meta)
+    require(blocks.isEmpty)
+    require(links.isEmpty)
+    require(constraints.isEmpty)
+    blocks.addAll(parseBlocks(pb.blocks, nameOrder))
+    links.addAll(parseLinks(pb.links, nameOrder))
+    constraints.addAll(parseConstraints(pb.constraints, nameOrder))
+
+    generatedPb = Some(pb)
+
+    expandedPorts.toSeq
+  }
+
+  // returns a list of dependencies of this generator
+  def getDependencies: Seq[ref.LocalPath] = {
+    basePb.getGenerator.requiredParams
+  }
+
+  def getDependenciesPorts: Seq[ref.LocalPath] = {  // TODO remove me w/ refactoring
+    basePb.getGenerator.requiredPorts
+  }
+
+  override def toEltPb: elem.HierarchyBlock = {
+    generatedPb.getOrElse(basePb).copy(  // if the block did not generate, return the base w/ the generator field
+      prerefineClass=unrefinedType match {
+        case None => generatedPb.getOrElse(basePb).prerefineClass
+        case Some(prerefineClass) => Some(prerefineClass)
+      },
+      ports=ports.view.mapValues(_.toPb).toMap,
+      blocks=blocks.view.mapValues(_.toPb).toMap,
+      links=links.view.mapValues(_.toPb).toMap,
+      constraints=constraints.toMap,
+    )
+  }
+}
+
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

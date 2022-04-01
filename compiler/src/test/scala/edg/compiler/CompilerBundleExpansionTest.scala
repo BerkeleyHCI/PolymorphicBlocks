@@ -212,6 +212,16 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "outerParam") should equal(Some(IntValue(42)))
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerParam") should equal(Some(IntValue(7)))
 
+    // Check IS_CONNECTED, including recursively
+    compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+
     // Check the CONNECTED_LINK propagation
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + "outerParam") should
         equal(Some(IntValue(42)))
@@ -221,5 +231,26 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(IntValue(7)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + IndirectStep.Name) should
         equal(Some(TextValue("link.inner")))
+  }
+
+  "Compiler on design with disconnected inner links" should "propagate is-connected" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Library("outerLink")
+      ),
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(false)))
   }
 }

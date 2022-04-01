@@ -30,7 +30,11 @@ class ExprToString() extends ValueExprMap[String] {
     case lit.ValueLit.Type.Boolean(literal) => literal.`val`.toString
     case lit.ValueLit.Type.Text(literal) => literal.`val`
     case lit.ValueLit.Type.Range(literal) => s"(${mapLiteral(literal.getMinimum)}, ${mapLiteral(literal.getMaximum)})"
-    case literal => throw new ExprEvaluateException(s"(unknown literal $literal)")
+    case lit.ValueLit.Type.Array(array) =>
+      val arrayElts = array.elts.map(mapLiteral)
+      s"[${arrayElts.mkString(", ")}]"
+    case lit.ValueLit.Type.Struct(value) => "unsupported struct"
+    case lit.ValueLit.Type.Empty => "(empty)"
   }
 
   private object BinaryExprOp {
@@ -183,13 +187,16 @@ class ExprToString() extends ValueExprMap[String] {
   override def mapRef(path: ref.LocalPath): String = {
     path.steps.map { _.step match {
       case ref.LocalStep.Step.Name(name) => name
+      case ref.LocalStep.Step.Allocate("") => "(allocate)"
+      case ref.LocalStep.Step.Allocate(suggestedName) => s"(allocate: $suggestedName)"
       case ref.LocalStep.Step.Empty => "(empty)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.UNDEFINED) => "(undefined)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "(connectedLink)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "(isConnected)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "(length)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => "(elements)"
+      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => "(allocated)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => "(name)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) => "(allocate)"
       case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"(unrecognized[$op])"
     } }.mkString(".")
   }

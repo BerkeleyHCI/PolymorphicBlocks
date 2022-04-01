@@ -85,11 +85,10 @@ class PythonInterface(serverFile: File) {
     }
   }
 
-  def elaborateGeneratorRequest(element: ref.LibraryPath,
-                                fnName: String, values: Map[ref.LocalPath, ExprValue]):
+  def elaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]):
       Errorable[elem.HierarchyBlock] = process.flatMap { process =>
     val request = edgrpc.GeneratorRequest(
-      element=Some(element), fn=fnName,
+      element=Some(element),
       values=values.map { case (valuePath, valueValue) =>
         edgrpc.GeneratorRequest.Value(
           path=Some(valuePath),
@@ -103,7 +102,7 @@ class PythonInterface(serverFile: File) {
       val reply = process.read()
       reply.getElaborateGenerator
     }
-    debug(s"PyIf:generatorRequest ${element.getTarget.getName} $fnName (${reqTime} ms)")
+    debug(s"PyIf:generatorRequest ${element.getTarget.getName} (${reqTime} ms)")
     reply.result match {
       case edgrpc.GeneratorResponse.Result.Generated(elem) => Errorable.Success(elem)
       case edgrpc.GeneratorResponse.Result.Error(err) => Errorable.Error(err)
@@ -116,7 +115,7 @@ class PythonInterface(serverFile: File) {
 class PythonInterfaceLibrary() extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
   private val eltsRefinements = mutable.HashMap[ref.LibraryPath, edgrpc.Refinements]()
-  private val generatorCache = mutable.HashMap[(ref.LibraryPath, String, Map[ref.LocalPath, ExprValue]),
+  private val generatorCache = mutable.HashMap[(ref.LibraryPath, Map[ref.LocalPath, ExprValue]),
       elem.HierarchyBlock]()
 
   protected var py: Option[PythonInterface] = None
@@ -150,7 +149,7 @@ class PythonInterfaceLibrary() extends Library {
     elts -= discardType
     eltsRefinements -= discardType
     generatorCache.filterInPlace {
-      case (key @ (path, fn, values), data) if path == discardType => false
+      case (key @ (path, values), data) if path == discardType => false
       case _ => true
     }
 
@@ -228,13 +227,13 @@ class PythonInterfaceLibrary() extends Library {
     }
   }
 
-  override def runGenerator(path: ref.LibraryPath, fnName: String,
+  override def runGenerator(path: ref.LibraryPath,
                             values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock] = {
-    generatorCache.get((path, fnName, values)) match {
+    generatorCache.get((path, values)) match {
       case Some(generated) => Errorable.Success(generated)
       case None =>
-        val result = py.get.elaborateGeneratorRequest(path, fnName, values)
-        result.map { generatorCache.put((path, fnName, values), _) }
+        val result = py.get.elaborateGeneratorRequest(path, values)
+        result.map { generatorCache.put((path, values), _) }
         result
     }
   }

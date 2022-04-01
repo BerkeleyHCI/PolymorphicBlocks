@@ -17,8 +17,12 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
   }
   override def mapPortArray(path: DesignPath, port: elem.PortArray,
                    ports: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
-    // TODO there needs to be a way of distinguishing unelaborated/elaborated PortArray
-    ports.values.flatten.toSeq
+    val undefinedError = if (!port.contains.isPorts) {
+      Seq(CompilerError.UndefinedPortArray(path, port.getSelfClass))
+    } else {
+      Seq()
+    }
+    undefinedError ++ ports.values.flatten.toSeq
   }
   override def mapBundle(path: DesignPath, port: elem.Bundle,
                 ports: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {

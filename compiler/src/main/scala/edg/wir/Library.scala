@@ -32,8 +32,7 @@ trait Library {
   def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock]
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
-  def runGenerator(path: ref.LibraryPath, fnName: String,
-                   values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
+  def runGenerator(path: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
 }
 
 
@@ -85,7 +84,7 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case None => Errorable.Error(s"Library does not contain $path")
   }
 
-  override def runGenerator(path: ref.LibraryPath, fnName: String,
+  override def runGenerator(path: ref.LibraryPath,
                             values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock] = {
     throw new IllegalArgumentException("Can't run generators in static library")
   }

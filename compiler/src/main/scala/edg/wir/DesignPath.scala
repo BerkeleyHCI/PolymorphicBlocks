@@ -33,6 +33,24 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH))
     }
   }
+  object Elements extends IndirectStep {
+    override def toString: String = "ELEMENTS"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS))
+    }
+  }
+  case class Allocate(suggestedName: Option[String] = None) extends IndirectStep {
+    override def toString: String = s"ALLOCATE($suggestedName)"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
+    }
+  }
+  object Allocated extends IndirectStep {
+    override def toString: String = "ALLOCATED"
+    override def asLocalStep: ref.LocalStep = {
+      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED))
+    }
+  }
   object Name extends IndirectStep {
     override def toString: String = "NAME"
     override def asLocalStep: ref.LocalStep = {
@@ -48,12 +66,14 @@ object IndirectStep {  // namespace
 
   def apply(pb: ref.LocalStep): IndirectStep = pb.step match {
     case ref.LocalStep.Step.Name(name) => IndirectStep.Element(name)
+    case ref.LocalStep.Step.Allocate("") => Allocate(None)
+    case ref.LocalStep.Step.Allocate(suggestedName) => Allocate(Some(suggestedName))
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => IndirectStep.IsConnected
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => IndirectStep.Length
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => IndirectStep.Elements
+    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => IndirectStep.Allocated
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
-    case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATE) =>
-      throw new IllegalArgumentException(s"Can't resolve ALLOCATE into IndirectStep")
     case ref.LocalStep.Step.ReservedParam(step @
         (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
     ) =>

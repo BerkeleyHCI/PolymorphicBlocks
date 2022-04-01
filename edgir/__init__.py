@@ -1,10 +1,10 @@
-from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING
+from typing import Union, Tuple, Optional, Iterable, TYPE_CHECKING, List, cast
 
 from .common_pb2 import Empty, Metadata
 from .init_pb2 import ValInit
 from .name_pb2 import *
 from .impl_pb2 import *
-from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, ALLOCATE, LENGTH, NAME
+from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATED, NAME
 from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \
@@ -49,7 +49,8 @@ def resolve_portlike(port: PortLike) -> PortTypes:
     raise ValueError(f"bad portlike {port}")
 
 
-LitTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this prevents a circular import
+LitLeafTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this prevents a circular import
+LitTypes = Union[LitLeafTypes, List[LitLeafTypes]]
 
 
 def lit_assignment_from_expr(expr: ValueExpr) -> Optional[Tuple[LocalPath, LitTypes]]:
@@ -84,6 +85,12 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
     return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
     return expr.text.val
+  elif expr.HasField('array'):
+    elts = [valuelit_to_lit(elt) for elt in expr.array.elts]
+    if None in elts:
+      return None
+    else:
+      return cast(List[LitLeafTypes], elts)
   else:
     return None
 
@@ -286,7 +293,16 @@ def expr_to_string(expr: ValueExpr) -> str:
     raise ValueError(f"no format rule for {expr}")
 
 
-def localpath_concat(*elts: Union[LocalPath, str, 'Reserved.V']) -> LocalPath:  # TODO workaround for broken enum typing
+class Allocate:
+  """Wrapper around the Allocate LocalPath, for internal use"""
+  def __init__(self, suggested_name: Optional[str] = None):
+    if suggested_name is None:
+      self.suggested_name = ""  # for now, no suggested name is represented as empty-string
+    else:
+      self.suggested_name = suggested_name
+
+
+def localpath_concat(*elts: Union[LocalPath, str, Allocate, 'Reserved.V']) -> LocalPath:  # TODO workaround for broken enum typing
   result = LocalPath()
   for elt in elts:
     if isinstance(elt, LocalPath):
@@ -294,7 +310,9 @@ def localpath_concat(*elts: Union[LocalPath, str, 'Reserved.V']) -> LocalPath:  
         result.steps.add().CopyFrom(elt_elt)
     elif isinstance(elt, str):
       result.steps.add().name = elt
-    elif elt in (CONNECTED_LINK, IS_CONNECTED, LENGTH, NAME):
+    elif isinstance(elt, Allocate):
+      result.steps.add().allocate = elt.suggested_name
+    elif elt in (CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATED, NAME):
       result.steps.add().reserved_param = elt
     else:
       raise ValueError(f"unknown localpath elt {elt}")
@@ -316,12 +334,14 @@ def libpath(name: str) -> LibraryPath:
   return pb
 
 
-def LocalPathList(path: Iterable[Union[str, 'Reserved.V']]) -> LocalPath:
+def LocalPathList(path: Iterable[Union[str, Allocate, 'Reserved.V']]) -> LocalPath:
   pb = LocalPath()
   for step in path:
     if isinstance(step, str):
       pb.steps.add().name = step
-    elif step in (CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATE):
+    elif isinstance(step, Allocate):
+      pb.steps.add().allocate = step.suggested_name
+    elif step in (CONNECTED_LINK, IS_CONNECTED, LENGTH):
       pb.steps.add().reserved_param = step
   return pb
 
