@@ -135,7 +135,7 @@ class UserAssignmentDict:
   def from_string(assignments_spec: str) -> 'UserAssignmentDict':
     def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
       assignment_split = assignment_spec.split('=')
-      assert len(assignment_split) == 2, f"bad assignment spec {assignments_spec}"
+      assert len(assignment_split) == 2, f"bad assignment spec {assignment_spec}"
       return (assignment_split[0].split('.'), assignment_split[1])
     assignment_spec_list = [parse_elt(assignment) for assignment in assignments_spec.split(';') if assignment]
     root, assignments = UserAssignmentDict._from_list(assignment_spec_list, [])
