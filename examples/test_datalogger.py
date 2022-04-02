@@ -143,7 +143,7 @@ class TestDatalogger(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_64New),
+        (['mcu'], Lpc1549_64),
         (['pwr_5v'], Tps561201),
         (['pwr_3v3'], Ldl1117),
         (['buffer', 'amp'], Mcp6001),

@@ -79,7 +79,7 @@ class CanAdapter(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48New),
+        (['mcu'], Lpc1549_48),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),

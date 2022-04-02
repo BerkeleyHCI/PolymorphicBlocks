@@ -144,7 +144,7 @@ class TestHighSwitch(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48New),
+        (['mcu'], Lpc1549_48),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([

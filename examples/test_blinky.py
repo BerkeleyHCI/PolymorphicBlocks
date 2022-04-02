@@ -69,7 +69,7 @@ class TestBlinkyBroken(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48New),
+        (['mcu'], Lpc1549_48),
       ]
     )
 
@@ -102,7 +102,7 @@ class TestBlinkyFlattened(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48New),
+        (['mcu'], Lpc1549_48),
         (['usb_reg'], Tps561201),
       ],
     )
@@ -185,7 +185,7 @@ class TestBlinkyComplete(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48New),
+        (['mcu'], Lpc1549_48),
         (['usb_reg'], Tps561201),
       ],
     )

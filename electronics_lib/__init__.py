@@ -28,7 +28,6 @@ from .BoostConverters_DiodesInc import Ap3012
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
-from .Microcontroller_Lpc1549_new import Lpc1549_48New, Lpc1549_64New
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Nucleo32 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010_Nrf52840

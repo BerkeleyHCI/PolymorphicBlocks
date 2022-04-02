@@ -1,404 +1,382 @@
-from typing import *
+from abc import abstractmethod
 from itertools import chain
+from typing import *
 
 from electronics_abstract_parts import *
+from electronics_lib import OscillatorCrystal, SwdCortexTargetHeader
 
 
 @abstract_block
-class Lpc1549Base_Device(DiscreteChip, FootprintBlock):
-  IRC_FREQUENCY = 12*MHertz(tol=0.01)
+class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
 
-  # TODO remove these once there is a unified pin capability specification
-  DIO0_PINS: List[int]
-  DIO1_PINS: List[int]
-  ADC0_PINS: List[int]
-  ADC1_PINS: List[int]
-  DAC_PINS: List[int]
+    # Additional ports (on top of IoController)
+    # Crystals from table 15, 32, 33
+    # TODO Table 32, model crystal load capacitance and series resistance ratings
+    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
+                          optional=True)
+    # Assumed from "32kHz crystal" in 14.5
+    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
+                              optional=True)
 
-  @init_in_parent
-  def __init__(self) -> None:
-    super().__init__()
+    self.swd = self.Port(SwdTargetPort().empty())
 
-    #
-    # Common Ports
-    #
-    self.vdd = self.Port(VoltageSink(
+    self.generator(self.generate, self.pin_assigns,
+                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
+                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
+                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
+
+  def contents(self) -> None:
+    super().contents()
+
+    # Ports with shared references
+    self.pwr.init_from(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
       current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
-    ), [Power])
-    self.vss = self.Port(Ground(), [Common])
+      # TODO propagate current consumption from IO ports
+    ))
+    self.gnd.init_from(Ground())
 
-    #
-    # Port Models
-    #
-    # TODO use all these models once there is a strategy for Analog/Digital capable IOs
-    self.dio_5v_model = (DigitalBidir(
-      voltage_limits=(0, 5) * Volt,
+    # Port models
+    dio_5v_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_abs=(0, 5) * Volt,
       current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, self.vdd.link().voltage.upper()),
-      current_limits=(-50, 45) * mAmp,  # TODO this uses short circuit current, which might not be useful, better to model as resistance?
-      input_thresholds=(0.3 * self.vdd.link().voltage.lower(),
-                        0.7 * self.vdd.link().voltage.upper()),
-      output_thresholds=(0 * Volt, self.vdd.link().voltage.lower()),
+      current_limits=(-50, 45) * mAmp,
+      input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True
-    ), )  # TODO hax tuple wrapper to prevent unbound error
-    dio_5v_model = self.dio_5v_model[0]
-
-    self.i2c_model = (DigitalBidir(  # TODO this isn't true bidir, this is an open-drain port
-      voltage_limits=(0 * Volt, self.vdd.link().voltage.upper()),  # no value defined for I2C, use defaults
+    )
+    dio_non5v_model = DigitalBidir.from_supply(  # only used when overlapped w/ DAC PIO0_12
+      self.gnd, self.pwr,  # up to VddA
+      voltage_limit_tolerance=(0, 0) * Volt,
       current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, self.vdd.link().voltage.upper()),
-      current_limits=(-20, 0) * mAmp,  # I2C is sink-only
-      input_thresholds=(0.3 * self.vdd.link().voltage.lower(),
-                        0.7 * self.vdd.link().voltage.upper()),
-      output_thresholds=(0 * Volt, self.vdd.link().voltage.lower())  # TODO can't source voltage
-    ), )  # TODO hax tuple wrapper to prevent unbound error
+      current_limits=(-50, 45) * mAmp,
+      input_threshold_factor=(0.3, 0.7),
+      pullup_capable=True, pulldown_capable=True
+    )
+    dio_highcurrrent_model = DigitalBidir.from_supply(  # only used for PIO0_24
+      self.gnd, self.pwr,
+      voltage_limit_abs=(0, 5) * Volt,
+      current_draw=(0, 0) * Amp,
+      current_limits=(-50, 20) * mAmp,  # TODO: 12mA when Vdd < 2.7V
+      input_threshold_factor=(0.3, 0.7),
+      pullup_capable=True, pulldown_capable=True
+    )
 
-    self.analog_model = (AnalogSink(
-      voltage_limits=(0, self.vdd.link().voltage.upper()),
+    adc_model = AnalogSink(
+      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
       current_draw=(0, 0) * Amp,
       impedance=(100, float('inf')) * kOhm
-    ), )  # TODO hax tuple wrapper to prevent unbound error
-    analog_model = self.analog_model[0]
+    )
+    dac_model = AnalogSource(
+      voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper() - 0.3),
+      current_limits=Default(RangeExpr.ALL),  # not given by spec
+      impedance=(300, 300) * Ohm  # Table 25, "typical" rating
+    )
 
-    #
-    # System Ports
-    #
-    self.swd_swdio = self.Port(dio_5v_model)
-    self.swd_swclk = self.Port(DigitalSink.from_bidir(dio_5v_model))
-    self.swd_swo = self.Port(DigitalSource.from_bidir(dio_5v_model))
-    self.swd_reset = self.Port(DigitalSink.from_bidir(dio_5v_model))
+    uart_model = UartPort(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty())
 
-    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.vdd.link().voltage), optional=True)  # Table 15, 32, 33
-    # TODO Table 32, model crystal load capacitance and series resistance ratings
-    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.vdd.link().voltage), optional=True)  # Assumed from "32kHz crystal" in 14.5
+    # Pin/peripheral resource definitions (table 3)
+    self.system_pinmaps = VariantPinRemapper({
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'VrefP_ADC': self.pwr,
+      'VrefP_DAC': self.pwr,
+      'VrefN': self.gnd,
+      'Vbat': self.pwr,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
 
-    #
-    # User IOs
-    #
-    self.system_pins: Dict[str, CircuitPort]
-    self.io_pins: Dict[str, Passive]
+      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
+      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
+      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
+      'RTCXOUT': self.xtal_rtc.xtal_out,
+    })
 
-    self.pio0 = ElementDict[Passive]()
-    self.pio1 = ElementDict[Passive]()
+    self.abstract_pinmaps = PinMapUtil([
+      PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
+      PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
+      PinResource('PIO0_2', {'PIO0_2': dio_5v_model, 'ADC0_6': adc_model}),
+      PinResource('PIO0_3', {'PIO0_3': dio_5v_model, 'ADC0_5': adc_model}),
+      PinResource('PIO0_4', {'PIO0_4': dio_5v_model, 'ADC0_4': adc_model}),
+      PinResource('PIO0_5', {'PIO0_5': dio_5v_model, 'ADC0_3': adc_model}),
+      PinResource('PIO0_6', {'PIO0_6': dio_5v_model, 'ADC0_2': adc_model}),
+      PinResource('PIO0_7', {'PIO0_7': dio_5v_model, 'ADC0_1': adc_model}),
 
-    self.usb_0 = self.Port(UsbDevicePort(), optional=True)
-    self.i2c_0 = self.Port(I2cMaster(self.i2c_model[0]), optional=True)
+      PinResource('PIO0_8', {'PIO0_8': dio_5v_model, 'ADC0_0': adc_model}),
+      PinResource('PIO0_9', {'PIO0_9': dio_5v_model, 'ADC1_1': adc_model}),
+      PinResource('PIO0_10', {'PIO0_10': dio_5v_model, 'ADC1_2': adc_model}),
+      PinResource('PIO0_11', {'PIO0_11': dio_5v_model, 'ADC1_3': adc_model}),
+      PinResource('PIO0_12', {'PIO0_12': dio_non5v_model, 'DAC_OUT': dac_model}),
+      PinResource('PIO0_13', {'PIO0_13': dio_5v_model, 'ADC1_6': adc_model}),
+      PinResource('PIO0_14', {'PIO0_14': dio_5v_model, 'ADC1_7': adc_model}),
+      PinResource('PIO0_15', {'PIO0_15': dio_5v_model, 'ADC1_8': adc_model}),
+      PinResource('PIO0_16', {'PIO0_16': dio_5v_model, 'ADC1_9': adc_model}),
+      PinResource('PIO0_17', {'PIO0_17': dio_5v_model}),
+
+      PinResource('PIO0_18', {'PIO0_18': dio_5v_model}),
+      PinResource('PIO0_19', {'PIO0_19': dio_5v_model}),
+      PinResource('PIO0_20', {'PIO0_20': dio_5v_model}),
+      PinResource('PIO0_21', {'PIO0_21': dio_5v_model}),  # also RESET
+      PinResource('PIO0_22', {'PIO0_22': dio_5v_model}),
+      PinResource('PIO0_23', {'PIO0_23': dio_5v_model}),
+      PinResource('PIO0_24', {'PIO0_24': dio_highcurrrent_model}),
+      PinResource('PIO0_25', {'PIO0_25': dio_5v_model}),
+      PinResource('PIO0_26', {'PIO0_26': dio_5v_model}),
+
+      PinResource('PIO0_27', {'PIO0_27': dio_5v_model}),
+      PinResource('PIO0_28', {'PIO0_28': dio_5v_model}),
+      PinResource('PIO0_29', {'PIO0_29': dio_5v_model}),
+      PinResource('PIO0_30', {'PIO0_30': dio_5v_model, 'ADC0_11': adc_model}),
+      PinResource('PIO0_31', {'PIO0_31': dio_5v_model, 'ADC0_9': adc_model}),
+      PinResource('PIO1_0', {'PIO1_0': dio_5v_model, 'ADC0_8': adc_model}),
+      PinResource('PIO1_1', {'PIO1_1': dio_5v_model, 'ADC1_0': adc_model}),
+      PinResource('PIO1_2', {'PIO1_2': dio_5v_model, 'ADC1_4': adc_model}),
+      PinResource('PIO1_3', {'PIO1_3': dio_5v_model, 'ADC1_5': adc_model}),
+      PinResource('PIO1_4', {'PIO1_4': dio_5v_model, 'ADC1_10': adc_model}),
+      PinResource('PIO1_5', {'PIO1_5': dio_5v_model, 'ADC1_11': adc_model}),
+
+
+      PinResource('PIO1_6', {'PIO1_6': dio_5v_model}),
+      PinResource('PIO1_7', {'PIO1_7': dio_5v_model}),
+      PinResource('PIO1_8', {'PIO1_8': dio_5v_model}),
+      PinResource('PIO1_9', {'PIO1_9': dio_5v_model}),
+      PinResource('PIO1_10', {'PIO1_10': dio_5v_model}),
+      PinResource('PIO1_11', {'PIO1_11': dio_5v_model}),
+
+      # 100-pin version ignored, since that isn't used
+
+      PeripheralAnyResource('UART0', uart_model),
+      PeripheralAnyResource('UART1', uart_model),
+      PeripheralAnyResource('UART2', uart_model),
+      PeripheralAnyResource('SPI0', spi_model),
+      PeripheralAnyResource('SPI1', spi_model),
+      PeripheralAnyResource('CAN0', CanControllerPort(DigitalBidir.empty())),
+
+      PeripheralFixedResource('I2C0', I2cMaster(DigitalBidir.empty()), {
+        'scl': ['PIO0_22'], 'sda': ['PIO0_23']
+      }),
+      PeripheralFixedPin('USB', UsbDevicePort(), {
+        'dp': ['USB_DP'], 'dm': ['USB_DM']
+      }),
+
+      # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
+      # Reset has an internal pull-up (or can be configured as unused), except when deep power down is needed
+      # TODO: SWO is arbitrary and can also be NC, current mapped to TDO - should support AnyPin for swo
+      PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
+        'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'], 'swo': ['PIO0_8'],
+      }),
+    ])
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+
+  @abstractmethod
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
+      (SwdTargetPort, ['swd'] if swd_connected else []),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    ], assignments)
+
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
+                                      self.usb, self.can, self.swd],
+                                     allocated)
+
+    self.footprint(
+      'U', self.PACKAGE,
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='NXP', part=self.PART,
+      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
+    )
 
 
 class Lpc1549_48_Device(Lpc1549Base_Device):
-  DIO0_PINS = [
-    1, 2, 3, 4, 6, 7, 8, 12,  # pin 5 ISP_0 not assigned, 9 reserved for SWD
-    13, 15, 18, 21, 22, 23,  # pin 24 ISP_1 not assigned, TODO not assigning 19 - not 5v tolerant
-    28,  # pin 29, 33, 34 reserved for SWD
-    43, 44, 45, 46, 47, 48  # not assigning 37, 38 - not 5v tolerant and IIC reserved
-  ]
-  DIO1_PINS: List[int] = []
-  ADC0_PINS = [
-    1, 2, 3, 4, 6, 7, 8  # pin 5 ISP_0 not assigned, 9 reserved for SWD
-  ]
-  ADC1_PINS = [
-    12, 15, 18, 21, 22, 23, # pin 24 ISP_1 not assigned
-  ]
-  DAC_PINS = [
-    19
-  ]
+  SYSTEM_PIN_REMAP = {
+    'VddA': '16',
+    'VssA': '17',
+    'VrefP_ADC': '10',
+    'VrefP_DAC': '14',
+    'VrefN': '11',
+    'Vbat': '30',
+    'Vdd': ['27', '39', '42'],
+    'Vss': ['20', '40', '41'],
+    'XTALIN': '26',
+    'XTALOUT': '25',
+    'RTCXIN': '31',
+    'RTCXOUT': '32',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PIO0_0': '1',
+    'PIO0_1': '2',
+    'PIO0_2': '3',
+    'PIO0_3': '4',
+    # 'PIO0_4': '5',  # ISP_0
+    'PIO0_5': '6',
+    'PIO0_6': '7',
+    'PIO0_7': '8',
 
-  @init_in_parent
-  def __init__(self):
-    super().__init__()
+    'PIO0_8': '9',
+    'PIO0_9': '12',
+    'PIO0_10': '15',
+    'PIO0_11': '18',
+    'PIO0_12': '19',
+    'PIO0_13': '21',
+    'PIO0_14': '22',
+    'PIO0_15': '23',
+    # 'PIO0_16': '24',  # ISP_1
+    'PIO0_17': '28',
 
-    for i in chain(range(4), range(5, 8), range(9, 16), [17, 18], range(24, 30)):
-      self.pio0[i] = self.Port(Passive(), optional=True)
+    'PIO0_18': '13',
+    'PIO0_19': '29',
+    'PIO0_20': '33',
+    'PIO0_21': '34',
+    'PIO0_22': '37',
+    'PIO0_23': '38',
+    'PIO0_24': '43',
+    'PIO0_25': '44',
+    'PIO0_26': '45',
 
-    self.system_pins: Dict[str, CircuitPort] = {
-      '16': self.vdd,  # VddA
-      '17': self.vss,  # VssA
-      '10': self.vdd,  # VrefP_ADC
-      '14': self.vdd,  # VrefP_DAC
-      '11': self.vss,  # VrefN
-      '30': self.vdd,  # TODO support optional Vbat
-      '20': self.vss,
-      '27': self.vdd,
-      '39': self.vdd,
-      '40': self.vss,
-      '41': self.vss,
-      '42': self.vdd,
+    'PIO0_27': '46',
+    'PIO0_28': '47',
+    'PIO0_29': '48',
 
-      '26': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      '25': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      '31': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      '32': self.xtal_rtc.xtal_out,
-
-      '34': self.swd_reset,
-      '33': self.swd_swdio,  # also TMS
-      '29': self.swd_swclk,  # also TCK
-      '9': self.swd_swo,  # also TDO
-      # 12: JTAG TDI
-
-      '35': self.usb_0.dp,
-      '36': self.usb_0.dm,
-
-      '37': self.i2c_0.scl,  # I2C_SCL, not 5v tolerant
-      '38': self.i2c_0.sda,  # I2C_SDA, not 5v tolerant
-    }
-
-    self.io_pins = {
-      '1': self.pio0[0],
-      '2': self.pio0[1],
-      '3': self.pio0[2],
-      '4': self.pio0[3],
-      # '5': self.pio0[4],  # not connected, reserved for ISP_0, note datasheet indicates reset state is pull-up
-      '6': self.pio0[5],
-      '7': self.pio0[6],
-      '8': self.pio0[7],
-      # '9': self.pio0[8],  # reserved for SWD
-      '12': self.pio0[9],
-
-      '13': self.pio0[18],
-      '15': self.pio0[10],
-      '18': self.pio0[11],
-      '19': self.pio0[12],  # DAC_OUT, not 5v tolerant
-      '21': self.pio0[13],
-      '22': self.pio0[14],
-      '23': self.pio0[15],
-      # '24': self.pio0[16],  # not connected, reserved for ISP_1, note datasheet indicates reset state is pull-up
-
-      '28': self.pio0[17],
-      # '29': self.pio0[19],  # reserved for SWCLK
-      # '33': self.pio0[20],  # reserved for SWDIO
-      # '34': self.pio0[21],  # reserved for /RESET
-
-      '43': self.pio0[24],
-      '44': self.pio0[25],
-      '45': self.pio0[26],
-      '46': self.pio0[27],
-      '47': self.pio0[28],
-      '48': self.pio0[29],
-    }
-
-  def contents(self) -> None:
-    super().contents()
-    self.footprint(
-      'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
-      dict(chain(self.system_pins.items(), self.io_pins.items())),
-      mfr='NXP', part='LPC1549JBD48',
-      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
-    )
+    'USB_DP': '35',
+    'USB_DM': '36',
+  }
+  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
+  PART = 'LPC1549JBD48'
 
 
 class Lpc1549_64_Device(Lpc1549Base_Device):
-  DIO0_PINS = [  # pin 38 ISP_1, 54 ISP_0 not assigned, pin 12 reserved for SWD,
-    1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 16,
-    17, 19, 23, 29, 30, 31, 32,  # TODO pin 24 DAC not 5v tolerant
-    39,
-    58, 60, 61, 62, 63, 64
-  ]
-  DIO1_PINS = [
-    4, 15,
-    25, 28,
-    33, 34, 38, 46,
-    51, 53, 54, 59,
-  ]
-  ADC0_PINS = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  ]
-  ADC1_PINS = [
-    15, 16, 19, 23, 25, 28, 29, 30, 31, 32, 33, 34
-  ]
-  DAC_PINS = [
-    24
-  ]
+  SYSTEM_PIN_REMAP = {
+    'VddA': '20',
+    'VssA': '21',
+    'VrefP_ADC': '13',
+    'VrefP_DAC': '18',
+    'VrefN': '14',
+    'Vbat': '41',
+    'Vdd': ['22', '37', '52', '57'],
+    'Vss': ['26', '27', '55', '56'],
+    'XTALIN': '36',
+    'XTALOUT': '35',
+    'RTCXIN': '42',
+    'RTCXOUT': '43',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PIO0_0': '2',
+    'PIO0_1': '5',
+    'PIO0_2': '6',
+    'PIO0_3': '7',
+    'PIO0_4': '8',
+    'PIO0_5': '9',
+    'PIO0_6': '10',
+    'PIO0_7': '11',
 
-  @init_in_parent
+    'PIO0_8': '12',
+    'PIO0_9': '16',
+    'PIO0_10': '19',
+    'PIO0_11': '23',
+    'PIO0_12': '24',
+    'PIO0_13': '29',
+    'PIO0_14': '30',
+    'PIO0_15': '31',
+    'PIO0_16': '32',
+    'PIO0_17': '39',
+
+    'PIO0_18': '17',
+    'PIO0_19': '40',
+    'PIO0_20': '44',
+    'PIO0_21': '45',
+    'PIO0_22': '49',
+    'PIO0_23': '50',
+    'PIO0_24': '58',
+    'PIO0_25': '60',
+    'PIO0_26': '61',
+
+    'PIO0_27': '62',
+    'PIO0_28': '63',
+    'PIO0_29': '64',
+    'PIO0_30': '1',
+    'PIO0_31': '3',
+    'PIO1_0': '4',
+    'PIO1_1': '15',
+    'PIO1_2': '25',
+    'PIO1_3': '28',
+    'PIO1_4': '33',
+    'PIO1_5': '34',
+    'PIO1_6': '46',
+    'PIO1_7': '51',
+    'PIO1_8': '53',
+    # 'PIO1_9': '54',  # ISP_0
+    'PIO1_10': '59',
+    # 'PIO1_11': '38',  # ISP_1
+
+    'USB_DP': '47',
+    'USB_DM': '48',
+  }
+  PACKAGE = 'Package_QFP:LQFP-64_10x10mm_P0.5mm'
+  PART = 'LPC1549JBD64'
+
+
+class Lpc1549SwdPull(Block):
   def __init__(self):
     super().__init__()
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.swd = self.Port(SwdPullPort(DigitalSingleSource.empty()), [InOut])
 
-    for i in chain(range(8), range(9, 19), range(24, 32)):
-      self.pio0[i] = self.Port(Passive(), optional=True)
-
-    for i in chain(range(12)):
-      self.pio1[i] = self.Port(Passive(), optional=True)
-
-    self.system_pins: Dict[str, CircuitPort] = {
-      '20': self.vdd,  # VddA
-      '21': self.vss,  # VssA
-      '13': self.vdd,  # VrefP_ADC
-      '18': self.vdd,  # VrefP_DAC
-      '14': self.vss,  # VrefN
-      '41': self.vdd,  # TODO support optional Vbat
-      '22': self.vdd,
-      '26': self.vss,
-      '27': self.vss,
-      '37': self.vdd,
-      '52': self.vdd,
-      '55': self.vss,
-      '56': self.vss,
-      '57': self.vdd,
-
-      '36': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      '35': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      '42': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      '43': self.xtal_rtc.xtal_out,
-
-      '45': self.swd_reset,
-      '44': self.swd_swdio,  # also TMS
-      '40': self.swd_swclk,  # also TCK
-      '12': self.swd_swo,  # also TDO
-
-      '47': self.usb_0.dp,
-      '48': self.usb_0.dm,
-
-      '49': self.i2c_0.scl,  # TODO: should these be handled by PinAssignUtil?
-      '50': self.i2c_0.sda,
-      # '16': JTAG TDI
-    }
-
-    self.io_pins = {
-      '1': self.pio0[30],
-      '2': self.pio0[0],
-      '3': self.pio0[31],
-      '4': self.pio1[0],
-      '5': self.pio0[1],
-      '6': self.pio0[2],
-      '7': self.pio0[3],
-      '8': self.pio0[4],
-      '9': self.pio0[5],
-      '10': self.pio0[6],
-      '11': self.pio0[7],
-      # '12': self.pio0[8],  # reserved for SWDIO
-      '15': self.pio1[1],
-      '16': self.pio0[9],
-
-      '17': self.pio0[18],
-      '19': self.pio0[10],
-      '23': self.pio0[11],
-      '24': self.pio0[12],  # DAC, not 5v tolerant
-      '25': self.pio1[2],
-      '28': self.pio1[3],
-      '29': self.pio0[13],
-      '30': self.pio0[14],
-      '31': self.pio0[15],
-      '32': self.pio0[16],
-
-      '33': self.pio1[4],
-      '34': self.pio1[5],
-      '38': self.pio1[11],
-      '39': self.pio0[17],
-      # '40': self.pio0[19],  # reserved for SWCLK
-      # '44': self.pio0[20],  # reserved for SWDIO
-      # '45': self.pio0[21],  # reserved for /RESET
-      '46': self.pio1[6],
-
-      # '49': self.pio0[22],  # I2C_SCL, not 5v tolerant
-      # '50': self.pio0[23],  # I2C_SDA, not 5v tolerant
-      '51': self.pio1[7],
-      '53': self.pio1[8],
-      '54': self.pio1[9],
-      '58': self.pio0[24],
-      '59': self.pio1[10],
-      '60': self.pio0[25],
-      '61': self.pio0[26],
-      '62': self.pio0[27],
-      '63': self.pio0[28],
-      '64': self.pio0[29],
-    }
-
-  def contents(self) -> None:
+  def contents(self):
     super().contents()
-    self.footprint(
-      'U', 'Package_QFP:LQFP-64_10x10mm_P0.5mm',
-      dict(chain(self.system_pins.items(), self.io_pins.items())),
-      mfr='NXP', part='LPC1549JBD64',
-      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
-    )
+    self.swd.swo.init_from(DigitalSingleSource())
+    self.swd.reset.init_from(DigitalSingleSource())
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.swdio = imp.Block(PullupResistor((10, 100) * kOhm(tol=0.05)))
+      self.connect(self.swdio.io, self.swd.swdio)
+      self.swclk = imp.Block(PulldownResistor((10, 100) * kOhm(tol=0.05)))
+      self.connect(self.swclk.io, self.swd.swclk)
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _Device
-  """
-  LPC1549JBD48 (QFP-48) microcontroller, Cortex-M3
-  https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf
-  """
-  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device
+class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
+  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
 
-  @init_in_parent
-  def __init__(self, frequency: RangeExpr = Lpc1549Base_Device.IRC_FREQUENCY) -> None:
-    super().__init__()
-    self.ic = self.Block(self.DEVICE())
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
 
-    self.pwr = self.Export(self.ic.vdd, [Power])
-    self.gnd = self.Export(self.ic.vss, [Common])
-    self.swd = self.Port(SwdTargetPort(DigitalBidir.empty()))
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
 
-    self.xtal = self.Export(self.ic.xtal, optional=True)
-    self.xtal_rtc = self.Export(self.ic.xtal_rtc, optional=True)
+    self.connect(self.gpio, self.ic.gpio)
+    self.connect(self.adc, self.ic.adc)
+    self.connect(self.dac, self.ic.dac)
 
-    # TODO these should be array types?
-    # TODO model current flows from digital ports
-    self.digital = ElementDict[DigitalBidir]()
-    for i in range(20):
-      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
-      self._add_assignable_io(self.digital[i])
+    self.connect(self.spi, self.ic.spi)
+    self.connect(self.i2c, self.ic.i2c)
+    self.connect(self.uart, self.ic.uart)
+    self.connect(self.usb, self.ic.usb)
+    self.connect(self.can, self.ic.can)
 
-    self.adc = ElementDict[AnalogSink]()
-    for i in range(10):
-      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
-      self._add_assignable_io(self.adc[i])
-
-    self.dac = ElementDict[AnalogSource]()
-    for i in range(1):
-      self.dac[i] = self.Port(AnalogSource.empty(), optional=True)
-      self._add_assignable_io(self.dac[i])
-
-    self.uart = ElementDict[UartPort]()
-    for i in range(3):
-      self.uart[i] = self.Port(UartPort.empty(), optional=True)
-      self._add_assignable_io(self.uart[i])
-
-    self.spi = ElementDict[SpiMaster]()
-    for i in range(2):
-      self.spi[i] = self.Port(SpiMaster.empty(), optional=True)
-      self._add_assignable_io(self.spi[i])
-
-    self.can_0 = self.Port(CanControllerPort.empty(), optional=True)
-    self._add_assignable_io(self.can_0)
-
-    self.i2c_0 = self.Port(I2cMaster.empty(), optional=True)
-    self.connect(self.i2c_0, self.ic.i2c_0)
-    # self._add_assignable_io(self.i2c_0)  # TODO conflicts with pin assign
-
-    self.usb_0 = self.Port(UsbDevicePort.empty(), optional=True)
-    self.connect(self.usb_0, self.ic.usb_0)
-    # self._add_assignable_io(self.usb_0)  # TODO conflicts with pin assign
-
-    io_draw_expr = (0, 0)*mAmp
-    for _, io in self.digital.items():
-      io_draw_expr = io_draw_expr + io.is_connected().then_else(
-        io.link().current_drawn.intersect((0, float('inf'))*Amp),  # only count sourced current
-        (0, 0)*Amp)
-    self._io_draw = self.Parameter(RangeExpr(io_draw_expr))
-    self.io_draw = self.Block(VoltageLoad(
-      voltage_limit=(-float('inf'), float('inf')),
-      current_draw=self._io_draw
-    ))
-    self.connect(self.pwr, self.io_draw.pwr)
-    self.require(self.pwr.current_draw.within(self._io_draw + (0, 19)*mAmp))
-
-    self.generator(self.pin_assign, self.pin_assigns,
-                   req_ports=chain(self.digital.values(),
-                                   self.adc.values(), self.dac.values(),
-                                   self.uart.values(), self.spi.values(),
-                                   [self.can_0, self.i2c_0, self.usb_0]))
-
-    #
-    # Reference Circuit Block
-    #
-    self.require(self.ic.IRC_FREQUENCY.within(frequency) | self.xtal.is_connected(),
-                 "requested frequency out of internal RC range")  # TODO configure clock dividers?
-
-    # TODO associate capacitors with a particular Vdd, Vss pin
     self.pwr_cap = ElementDict[DecouplingCapacitor]()
+    self.pwra_cap = ElementDict[DecouplingCapacitor]()
+    self.vref_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
@@ -409,12 +387,6 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
         self.pwr_cap[i*2+1] = imp.Block(DecouplingCapacitor(0.01 * uFarad(tol=0.2)))
       self.vbat_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
-    self.pwra_cap = ElementDict[DecouplingCapacitor]()
-    self.vref_cap = ElementDict[DecouplingCapacitor]()
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
       # one set of 0.1, 10uF caps for each VddA, VssA pin, per reference schematic
       self.pwra_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.pwra_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
@@ -423,71 +395,15 @@ class Lpc1549Base(Microcontroller, AssignablePinBlock):  # TODO refactor with _D
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.swdio_pull = imp.Block(PullupResistor((10, 100) * kOhm(tol=0.05)))
-      self.connect(self.swdio_pull.io, self.swd.swdio, self.ic.swd_swdio)
-      self.swclk_pull = imp.Block(PulldownResistor((10, 100) * kOhm(tol=0.05)))
-      self.connect(self.swclk_pull.io, self.swd.swclk, self.ic.swd_swclk)
-      self.reset_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05)))
-      self.connect(self.reset_pull.io, self.swd.reset, self.ic.swd_reset)
-      self.connect(self.swd.swo, self.ic.swd_swo)
+      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetHeader()),
+                                                imp.Block(Lpc1549SwdPull()),
+                                                self.ic.swd)
 
-    # TODO capacitive divider in CLKIN mode; in XO mode see external load capacitors table, see LPC15XX 14.3
-
-
-  def pin_assign(self, pin_assigns_str: str) -> None:
-    #
-    # Pin Assignment Block
-    #
-    assigned_pins = PinAssignmentUtil(
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
-                   self.ic.ADC0_PINS + self.ic.ADC1_PINS),
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSource)],
-                   self.ic.DAC_PINS),
-      AnyPinAssign([port for port in self._all_assignable_ios if not isinstance(port, (AnalogSink, AnalogSource))],
-                   self.ic.DIO0_PINS + self.ic.DIO1_PINS),
-    ).assign(
-      [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps(pin_assigns_str))
-
-    #
-    # IO models
-    #
-    # TODO models should be in the _Device block, but need to figure how to handle Analog/Digital capable pins first
-    # TODO dedup w/ models in the _Device block
-    for pin_num, self_port in assigned_pins.assigned_pins.items():
-      if isinstance(self_port, (DigitalSource, DigitalSink, DigitalBidir)):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_digital_bidir(
-          voltage_limits=(0, 5) * Volt,
-          current_draw=(0, 0) * Amp,
-          voltage_out=(0 * Volt, self.pwr.link().voltage.upper()),
-          current_limits=(-50, 45) * mAmp,  # TODO this uses short circuit current, which might not be useful, better to model as resistance?
-          input_thresholds=(0.3 * self.pwr.link().voltage.lower(),
-                            0.7 * self.pwr.link().voltage.upper()),
-          output_thresholds=(0 * Volt, self.pwr.link().voltage.lower()),
-          pullup_capable=True, pulldown_capable=True
-        ))
-      elif isinstance(self_port, AnalogSink):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_sink(
-          voltage_limits=(0, self.pwr.link().voltage.upper()),
-          current_draw=(0, 0) * Amp,
-          impedance=(100, float('inf')) * kOhm
-        ))
-      elif isinstance(self_port, AnalogSource):
-        self.connect(self_port, self.ic.io_pins[str(pin_num)].as_analog_source(
-          voltage_out=(0, self.pwr.link().voltage.upper() - 0.3),
-          current_limits=(0, 0) * Amp,  # TODO not given by spec
-          impedance=(300, 300) * Ohm  # Table 25, "typical" rating
-        ))
-      else:
-        raise ValueError(f"unknown pin type {self_port}")
-
-    for self_port in assigned_pins.not_connected:
-      assert isinstance(self_port, NotConnectablePort), f"non-NotConnectablePort {self_port.name()} marked NC"
-      self_port.not_connected()
+  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
+    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
+      self.connect(self.crystal.gnd, self.gnd)
+      self.connect(self.crystal.crystal, self.ic.xtal)
 
 
 class Lpc1549_48(Lpc1549Base):
