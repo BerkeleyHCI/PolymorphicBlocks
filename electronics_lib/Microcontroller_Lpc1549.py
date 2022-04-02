@@ -3,7 +3,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal, SwdCortexTargetHeader
+from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
 
 
 @abstract_block
@@ -395,7 +395,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetHeader()),
+      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                                 imp.Block(Lpc1549SwdPull()),
                                                 self.ic.swd)
 

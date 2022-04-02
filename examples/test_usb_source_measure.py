@@ -401,6 +401,7 @@ class UsbSourceMeasureTest(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
+        (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),

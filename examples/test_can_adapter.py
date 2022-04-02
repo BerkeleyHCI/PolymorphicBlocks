@@ -80,6 +80,7 @@ class CanAdapter(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
+        (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),

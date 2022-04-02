@@ -13,17 +13,17 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
 
     # Additional ports (on top of IoController)
     self.nrst = self.Port(DigitalSink.from_supply(
-      self.vss, self.vdd,
+      self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
       current_draw=(0, 0)*Amp,
       input_threshold_abs=(0.8, 2)*Volt
     ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
 
     self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-                                         voltage_out=self.vdd.link().voltage),
+                                         voltage_out=self.pwr.link().voltage),
                            optional=True)  # TODO other specs from Table 23
     self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz,
-                                       voltage_out=self.vdd.link().voltage),
+                                       voltage_out=self.pwr.link().voltage),
                          optional=True)  # Table 22
 
     self.swd = self.Port(SwdTargetPort().empty())
@@ -86,7 +86,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       'BOOT0': self.gnd,
       'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
       'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
-      # 'NRST':  # TODO how to handle dedicated reset pin for SWD
     })
 
     self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table fo 48-pin only
@@ -130,6 +129,8 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PB8', {'PB8': dio_ft_model}),
       PinResource('PB9', {'PB9': dio_ft_model}),
 
+      PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
+
       PeripheralFixedResource('USART2', uart_model, {
         'tx': ['PA2', 'PD5'], 'rx': ['PA3', 'PD6']
       }),
@@ -151,7 +152,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
         'tx': ['PA12', 'PD1', 'PB9'], 'rx': ['PA11', 'PD0', 'PB8']
       }),
-      PeripheralFixedPin('USB', UsbDevicePort(), {
+      PeripheralFixedResource('USB', UsbDevicePort(), {
         'dm': ['PA11'], 'dp': ['PA12']
       }),
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
@@ -188,6 +189,123 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     self.footprint(
       'U', self.PACKAGE,
       dict(chain(system_pins.items(), io_pins.items())),
-      mfr='NXP', part=self.PART,
-      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
+      mfr='STMicroelectronics', part=self.PART,
+      datasheet='https://www.st.com/resource/en/datasheet/stm32f103c8.pdf'
     )
+
+
+class Stm32f103_48_Device(Stm32f103Base_Device):
+  SYSTEM_PIN_REMAP = {
+    'Vbat': '1',
+    'VddA': '9',
+    'VssA': '8',
+    'Vss': ['23', '35', '47'],
+    'Vdd': ['24', '36', '48'],
+    'BOOT0': '44',
+    'OSC_IN': '5',
+    'OSC_OUT': '6',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PC13': '2',
+    'PC14': '3',
+    'PC15': '4',
+    'NRST': '7',
+
+    'PA0': '10',
+    'PA1': '11',
+    'PA2': '12',
+    'PA3': '13',
+    'PA4': '14',
+    'PA5': '15',
+    'PA6': '16',
+    'PA7': '17',
+    'PB0': '18',
+    'PB1': '19',
+
+    'PB2': '20',
+    'PB10': '21',
+    'PB11': '22',
+    'PB12': '25',
+    'PB13': '26',
+    'PB14': '27',
+    'PB15': '28',
+
+    'PA8': '29',
+    'PA9': '30',
+    'PA10': '31',
+    'PA11': '32',
+    'PA12': '33',
+    'PA13': '34',
+
+    'PA14': '37',
+    'PA15': '38',
+    'PB3': '39',
+    'PB4': '40',
+    'PB5': '41',
+    'PB6': '42',
+    'PB7': '43',
+
+    'PB8': '45',
+    'PB9': '46',
+  }
+  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
+  PART = 'STM32F103xxT6'
+
+
+@abstract_block
+class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
+  DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
+
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
+
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
+
+    self.connect(self.gpio, self.ic.gpio)
+    self.connect(self.adc, self.ic.adc)
+    self.connect(self.dac, self.ic.dac)
+
+    self.connect(self.spi, self.ic.spi)
+    self.connect(self.i2c, self.ic.i2c)
+    self.connect(self.uart, self.ic.uart)
+    self.connect(self.usb, self.ic.usb)
+    self.connect(self.can, self.ic.can)
+
+    self.pwr_cap = ElementDict[DecouplingCapacitor]()
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
+      self.pwr_cap[0] = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
+      for i in range(1, 4):
+        self.pwr_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+      # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
+      self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
+      self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
+
+      # TODO add the reset stabilizing capacitor
+
+  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
+    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
+      self.connect(self.crystal.gnd, self.gnd)
+      self.connect(self.crystal.crystal, self.ic.osc)
+
+    if usb_allocated:
+      assert len(usb_allocated) == 1
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated[0])
+
+      self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
+      self.connect(self.usb_pull.pwr, self.pwr)
+      self.connect(usb_port.dp, self.usb_pull.io)
+
+
+class Stm32f103_48_new(Stm32f103Base):
+  DEVICE = Stm32f103_48_Device
