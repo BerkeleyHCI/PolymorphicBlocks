@@ -85,11 +85,9 @@ class TestHighSwitch(BoardTop):
       ImplicitConnect(self.pwr.pwr_out, [Power]),
       ImplicitConnect(self.pwr.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48(frequency=12 * MHertz(tol=0.005)))
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
-      (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
+      self.mcu = imp.Block(IoController())
 
-      (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
+      (self.can, ), self.can_chain = self.chain(self.mcu.can.allocate('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())
@@ -97,20 +95,20 @@ class TestHighSwitch(BoardTop):
       self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
-      (self.vsense, ), self.vsense_chain = self.chain(
+      (self.vsense, ), _ = self.chain(
         self.pwr_conn.pwr,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
-        self.mcu.new_io(AnalogSink))
+        self.mcu.adc.allocate('vsense'))
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # CAN RGB
-      self.rgb1_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.red)
-      self.rgb1_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.green)
-      self.rgb1_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.blue)
+      self.connect(self.mcu.gpio.allocate('rgb1_red'), self.rgb1.red)
+      self.connect(self.mcu.gpio.allocate('rgb1_grn'), self.rgb1.green)
+      self.connect(self.mcu.gpio.allocate('rgb1_blue'), self.rgb1.blue)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # system RGB 2
-      self.rgb2_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.red)
-      self.rgb2_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.green)
-      self.rgb2_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.blue)
+      self.connect(self.mcu.gpio.allocate('rgb2_red'), self.rgb2.red)
+      self.connect(self.mcu.gpio.allocate('rgb2_grn'), self.rgb2.green)
+      self.connect(self.mcu.gpio.allocate('rgb2_blue'), self.rgb2.blue)
 
     self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
     self.connect(self.pwr_conn.pwr, self.limit_light_current.pwr_in)
@@ -122,22 +120,22 @@ class TestHighSwitch(BoardTop):
       for i in range(4):
         light = self.light[i] = imp.Block(LightsDriver((0, 0.5) * Amp))
 
-      self.light_00_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[0].control[0])
-      self.light_01_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[0].control[1])
-      self.light_10_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[1].control[0])
-      self.light_11_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[1].control[1])
-      self.light_20_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[2].control[0])
-      self.light_21_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[2].control[1])
-      self.light_30_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[3].control[0])
-      self.light_31_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[3].control[1])
+      self.connect(self.mcu.gpio.allocate('light_00'), self.light[0].control[0])
+      self.connect(self.mcu.gpio.allocate('light_01'), self.light[0].control[1])
+      self.connect(self.mcu.gpio.allocate('light_10'), self.light[1].control[0])
+      self.connect(self.mcu.gpio.allocate('light_11'), self.light[1].control[1])
+      self.connect(self.mcu.gpio.allocate('light_20'), self.light[2].control[0])
+      self.connect(self.mcu.gpio.allocate('light_21'), self.light[2].control[1])
+      self.connect(self.mcu.gpio.allocate('light_30'), self.light[3].control[0])
+      self.connect(self.mcu.gpio.allocate('light_31'), self.light[3].control[1])
 
       for i in range(2):
         light = self.light[4+i] = imp.Block(LightsDriver((0, 3) * Amp))
 
-      self.light_40_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[4].control[0])
-      self.light_41_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[4].control[1])
-      self.light_50_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[5].control[0])
-      self.light_51_net = self.connect(self.mcu.new_io(DigitalBidir), self.light[5].control[1])
+      self.connect(self.mcu.gpio.allocate('light_40'), self.light[4].control[0])
+      self.connect(self.mcu.gpio.allocate('light_41'), self.light[4].control[1])
+      self.connect(self.mcu.gpio.allocate('light_50'), self.light[5].control[0])
+      self.connect(self.mcu.gpio.allocate('light_51'), self.light[5].control[1])
 
     self.hole = ElementDict[MountingHole]()
     for i in range(4):
@@ -145,6 +143,9 @@ class TestHighSwitch(BoardTop):
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
+      instance_refinements=[
+        (['mcu'], Lpc1549_48New),
+      ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
           'can_chain_0.txd=43',
@@ -168,6 +169,7 @@ class TestHighSwitch(BoardTop):
           'light_41_net=47',
           'light_50_net=46',
           'light_51_net=45',
+          'swd.swo=PIO0_8',
         ]))
       ]
     )

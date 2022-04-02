@@ -27,34 +27,32 @@ class CanAdapter(BoardTop):
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48(frequency=12 * MHertz(tol=0.005)))
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetTc2050Nl()), self.mcu.swd)
-      (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
+      self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
-      (self.xcvr, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(Iso1050dub()))
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.allocate('can'), imp.Block(Iso1050dub()))
 
-      (self.sw_usb, ), self.sw_usb_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.sw_can, ), self.sw_can_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw_usb'))
+      (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw_can'))
 
       self.lcd = imp.Block(Qt096t_if09())
 
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_can = imp.Block(IndicatorSinkRgbLed())
 
-    self.lcd_led_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.led)
-    self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
-    self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
-    self.lcd_spi_net = self.connect(self.mcu.new_io(SpiMaster), self.lcd.spi)  # MISO unused
-    self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
+    self.connect(self.mcu.gpio.allocate('lcd_led'), self.lcd.led)
+    self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
+    self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
+    self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
+    self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
-    self.rgb_usb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.red)
-    self.rgb_usb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.green)
-    self.rgb_usb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.blue)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_red'), self.rgb_usb.red)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_grn'), self.rgb_usb.green)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_blue'), self.rgb_usb.blue)
 
-    self.rgb_can_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.red)
-    self.rgb_can_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.green)
-    self.rgb_can_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_can.blue)
+    self.connect(self.mcu.gpio.allocate('rgb_can_red'), self.rgb_can.red)
+    self.connect(self.mcu.gpio.allocate('rgb_can_grn'), self.rgb_can.green)
+    self.connect(self.mcu.gpio.allocate('rgb_can_blue'), self.rgb_can.blue)
 
     # Isolated CAN Domain
     # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
@@ -81,6 +79,7 @@ class CanAdapter(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48New),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),
@@ -88,23 +87,24 @@ class CanAdapter(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'can_chain_0.txd=8',
-          'can_chain_0.rxd=12',
-          'sw_usb_chain_0=28',
-          'sw_can_chain_0=48',
-          'lcd_led_net=23',
-          'lcd_reset_net=13',
-          'lcd_rs_net=15',
-          'lcd_spi_net.sck=21',
-          'lcd_spi_net.mosi=18',
-          'lcd_spi_net.miso=NC',
-          'lcd_cs_net=22',
-          'rgb_usb_red_net=2',
-          'rgb_usb_grn_net=1',
-          'rgb_usb_blue_net=3',
-          'rgb_can_red_net=6',
-          'rgb_can_grn_net=4',
-          'rgb_can_blue_net=7',
+          'can.txd=8',
+          'can.rxd=12',
+          'sw_usb=28',
+          'sw_can=48',
+          'lcd_led=23',
+          'lcd_reset=13',
+          'lcd_rs=15',
+          'lcd_spi.sck=21',
+          'lcd_spi.mosi=18',
+          'lcd_spi.miso=NC',
+          'lcd_cs=22',
+          'rgb_usb_red=2',
+          'rgb_usb_grn=1',
+          'rgb_usb_blue=3',
+          'rgb_can_red=6',
+          'rgb_can_grn=4',
+          'rgb_can_blue=7',
+          'swd.swo=PIO0_8',
         ]))
       ]
     )
