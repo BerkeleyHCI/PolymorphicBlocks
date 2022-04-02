@@ -10,15 +10,16 @@ class SwdLink(Link):
 
     self.host: SwdHostPort = self.Port(SwdHostPort(DigitalBidir.empty()))
     self.device: SwdTargetPort = self.Port(SwdTargetPort(DigitalBidir.empty()))
-    self.pull: SwdPullPort = self.Port(SwdPullPort(DigitalSingleSource.empty()))
+    self.pull: SwdPullPort = self.Port(SwdPullPort(DigitalSingleSource.empty()),
+                                       optional=True)
 
   def contents(self) -> None:
     super().contents()
     
-    self.swdio = self.connect(self.host.swdio, self.device.swdio)
-    self.swclk = self.connect(self.host.swclk, self.device.swclk)
-    self.swo = self.connect(self.host.swo, self.device.swo)
-    self.reset = self.connect(self.host.reset, self.device.reset)
+    self.swdio = self.connect(self.host.swdio, self.device.swdio, self.pull.swdio)
+    self.swclk = self.connect(self.host.swclk, self.device.swclk, self.pull.swclk)
+    self.swo = self.connect(self.host.swo, self.device.swo, self.pull.swo)
+    self.reset = self.connect(self.host.reset, self.device.reset, self.pull.reset)
 
 
 class SwdHostPort(Bundle[SwdLink]):
