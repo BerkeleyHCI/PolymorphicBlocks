@@ -47,21 +47,21 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     dio_ft_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_abs=(-0.3, 5.2) * Volt,  # Table 5.3.1, general operating conditions, TODO relaxed for Vdd>2v
-      current_draw=(0, 0)*Amp, current_limits=(-8, 8)*mAmp,  # Section 5.1.13 Output driving current, TODO relaxed specs with relaxed VOL/VOH
+      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True
     )
     dio_std_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-      current_draw=(0, 0)*Amp, current_limits=(-8, 8)*mAmp,  # Section 5.1.13 Output driving current, TODO relaxed specs with relaxed VOL/VOH
+      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True,
     )
     dio_pc_13_14_15_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-      current_draw=(0, 0)*Amp, current_limits=(-3, 3)*mAmp,  # Section 5.1.13 Output driving current
+      current_draw=(0, 0)*Amp, current_limits=(-3, 3)*mAmp,  # Section 5.3.13 Output driving current
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True,
     )
@@ -290,9 +290,8 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-      # TODO add the reset stabilizing capacitor
+      # TODO add the reset stabilizing capacitor?
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
-                                                # imp.Block(Lpc1549SwdPull()),
                                                 self.ic.swd)
 
   def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
