@@ -34,6 +34,7 @@ class Lpc1549BaseNew_Device(PinMappable, IoController, DiscreteChip, GeneratorBl
     self.pwr.init_from(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
       current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
+      # TODO propagate current consumption from IO ports
     ))
     self.gnd.init_from(Ground())
 
@@ -147,82 +148,41 @@ class Lpc1549BaseNew_Device(PinMappable, IoController, DiscreteChip, GeneratorBl
 
       # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
       # Reset has an internal pull-up (or can be configured as unused), except when deep power down is needed
-      # TODO: SWO is arbitrary and can also be NC, current mapped to TDO
+      # TODO: SWO is arbitrary and can also be NC, current mapped to TDO - should support AnyPin for swo
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
         'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'], 'swo': ['PIO0_8'],
       }),
     ])
 
+    self.system_pinmaps = VariantPinRemapper({
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'VrefP_ADC': self.pwr,
+      'VrefP_DAC': self.pwr,
+      'VrefN': self.gnd,
+      'Vbat': self.pwr,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
+
+      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
+      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
+      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
+      'RTCXOUT': self.xtal_rtc.xtal_out,
+    })
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+
   @abstractmethod
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None: ...
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
-
-class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
-  def generate(self, assignments: str,
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool):
-    system_pins: Dict[str, CircuitPort] = {
-      '16': self.pwr,  # VddA
-      '17': self.gnd,  # VssA
-      '10': self.pwr,  # VrefP_ADC
-      '14': self.pwr,  # VrefP_DAC
-      '11': self.gnd,  # VrefN
-      '30': self.pwr,  # TODO support optional Vbat
-      '20': self.gnd,
-      '27': self.pwr,
-      '39': self.pwr,
-      '40': self.gnd,
-      '41': self.gnd,
-      '42': self.pwr,
-
-      '26': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      '25': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      '31': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      '32': self.xtal_rtc.xtal_out,
-    }
-
-    allocated = self.abstract_pinmaps.remap_pins({
-      'PIO0_0': '1',
-      'PIO0_1': '2',
-      'PIO0_2': '3',
-      'PIO0_3': '4',
-      # 'PIO0_4': '5',  # ISP_0
-      'PIO0_5': '6',
-      'PIO0_6': '7',
-      'PIO0_7': '8',
-
-      'PIO0_8': '9',
-      'PIO0_9': '12',
-      'PIO0_10': '15',
-      'PIO0_11': '18',
-      'PIO0_12': '19',
-      'PIO0_13': '21',
-      'PIO0_14': '22',
-      'PIO0_15': '23',
-      # 'PIO0_16': '24',  # ISP_1
-      'PIO0_17': '28',
-
-      'PIO0_18': '13',
-      'PIO0_19': '29',
-      'PIO0_20': '33',
-      'PIO0_21': '34',
-      'PIO0_22': '37',
-      'PIO0_23': '38',
-      'PIO0_24': '43',
-      'PIO0_25': '44',
-      'PIO0_26': '45',
-
-      'PIO0_27': '46',
-      'PIO0_28': '47',
-      'PIO0_29': '48',
-
-      'USB_DP': '35',
-      'USB_DM': '36',
-    }).allocate([
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
@@ -234,107 +194,139 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
                                      allocated)
 
     self.footprint(
-      'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
+      'U', self.PACKAGE,
       dict(chain(system_pins.items(), io_pins.items())),
-      mfr='NXP', part='LPC1549JBD48',
+      mfr='NXP', part=self.PART,
       datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
     )
+
+
+class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
+  SYSTEM_PIN_REMAP = {
+    'VddA': '16',
+    'VssA': '17',
+    'VrefP_ADC': '10',
+    'VrefP_DAC': '14',
+    'VrefN': '11',
+    'Vbat': '30',
+    'Vdd': ['27', '39', '42'],
+    'Vss': ['20', '40', '41'],
+    'XTALIN': '26',
+    'XTALOUT': '25',
+    'RTCXIN': '31',
+    'RTCXOUT': '32',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PIO0_0': '1',
+    'PIO0_1': '2',
+    'PIO0_2': '3',
+    'PIO0_3': '4',
+    # 'PIO0_4': '5',  # ISP_0
+    'PIO0_5': '6',
+    'PIO0_6': '7',
+    'PIO0_7': '8',
+
+    'PIO0_8': '9',
+    'PIO0_9': '12',
+    'PIO0_10': '15',
+    'PIO0_11': '18',
+    'PIO0_12': '19',
+    'PIO0_13': '21',
+    'PIO0_14': '22',
+    'PIO0_15': '23',
+    # 'PIO0_16': '24',  # ISP_1
+    'PIO0_17': '28',
+
+    'PIO0_18': '13',
+    'PIO0_19': '29',
+    'PIO0_20': '33',
+    'PIO0_21': '34',
+    'PIO0_22': '37',
+    'PIO0_23': '38',
+    'PIO0_24': '43',
+    'PIO0_25': '44',
+    'PIO0_26': '45',
+
+    'PIO0_27': '46',
+    'PIO0_28': '47',
+    'PIO0_29': '48',
+
+    'USB_DP': '35',
+    'USB_DM': '36',
+  }
+  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
+  PART = 'LPC1549JBD48'
 
 
 class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
-  def generate(self, assignments: str,
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool):
-    system_pins: Dict[str, CircuitPort] = {
-      '20': self.pwr,  # VddA
-      '21': self.gnd,  # VssA
-      '13': self.pwr,  # VrefP_ADC
-      '18': self.pwr,  # VrefP_DAC
-      '14': self.gnd,  # VrefN
-      '41': self.pwr,  # TODO support optional Vbat
-      '22': self.pwr,
-      '26': self.gnd,
-      '27': self.gnd,
-      '37': self.pwr,
-      '52': self.pwr,
-      '55': self.gnd,
-      '56': self.gnd,
-      '57': self.pwr,
+  SYSTEM_PIN_REMAP = {
+    'VddA': '20',
+    'VssA': '21',
+    'VrefP_ADC': '13',
+    'VrefP_DAC': '18',
+    'VrefN': '14',
+    'Vbat': '41',
+    'Vdd': ['22', '37', '52', '57'],
+    'Vss': ['26', '27', '55', '56'],
+    'XTALIN': '36',
+    'XTALOUT': '35',
+    'RTCXIN': '42',
+    'RTCXOUT': '43',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PIO0_0': '2',
+    'PIO0_1': '5',
+    'PIO0_2': '6',
+    'PIO0_3': '7',
+    'PIO0_4': '8',
+    'PIO0_5': '9',
+    'PIO0_6': '10',
+    'PIO0_7': '11',
 
-      '36': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      '35': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      '42': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      '43': self.xtal_rtc.xtal_out,
-    }
+    'PIO0_8': '12',
+    'PIO0_9': '16',
+    'PIO0_10': '19',
+    'PIO0_11': '23',
+    'PIO0_12': '24',
+    'PIO0_13': '29',
+    # 'PIO0_14': '30',  # ISP_1
+    'PIO0_15': '31',
+    'PIO0_16': '32',
+    'PIO0_17': '39',
 
-    allocated = self.abstract_pinmaps.remap_pins({
-      'PIO0_0': '2',
-      'PIO0_1': '5',
-      'PIO0_2': '6',
-      'PIO0_3': '7',
-      'PIO0_4': '8',
-      'PIO0_5': '9',
-      'PIO0_6': '10',
-      'PIO0_7': '11',
+    'PIO0_18': '17',
+    'PIO0_19': '40',
+    'PIO0_20': '44',
+    'PIO0_21': '45',
+    'PIO0_22': '49',
+    'PIO0_23': '50',
+    'PIO0_24': '58',
+    'PIO0_25': '60',
+    'PIO0_26': '61',
 
-      'PIO0_8': '12',
-      'PIO0_9': '16',
-      'PIO0_10': '19',
-      'PIO0_11': '23',
-      'PIO0_12': '24',
-      'PIO0_13': '29',
-      # 'PIO0_14': '30',  # ISP_1
-      'PIO0_15': '31',
-      'PIO0_16': '32',
-      'PIO0_17': '39',
+    'PIO0_27': '62',
+    'PIO0_28': '63',
+    'PIO0_29': '64',
+    'PIO0_30': '1',
+    'PIO0_31': '3',
+    'PIO1_0': '4',
+    'PIO1_1': '15',
+    'PIO1_2': '25',
+    'PIO1_3': '28',
+    'PIO1_4': '33',
+    'PIO1_5': '34',
+    'PIO1_6': '46',
+    'PIO1_7': '51',
+    'PIO1_8': '53',
+    # 'PIO1_9': '54',  # ISP_0
+    'PIO1_10': '59',
+    'PIO1_11': '38',
 
-      'PIO0_18': '17',
-      'PIO0_19': '40',
-      'PIO0_20': '44',
-      'PIO0_21': '45',
-      'PIO0_22': '49',
-      'PIO0_23': '50',
-      'PIO0_24': '58',
-      'PIO0_25': '60',
-      'PIO0_26': '61',
-
-      'PIO0_27': '62',
-      'PIO0_28': '63',
-      'PIO0_29': '64',
-      'PIO0_30': '1',
-      'PIO0_31': '3',
-      'PIO1_0': '4',
-      'PIO1_1': '15',
-      'PIO1_2': '25',
-      'PIO1_3': '28',
-      'PIO1_4': '33',
-      'PIO1_5': '34',
-      'PIO1_6': '46',
-      'PIO1_7': '51',
-      'PIO1_8': '53',
-      # 'PIO1_9': '54',  # ISP_0
-      'PIO1_10': '59',
-      'PIO1_11': '38',
-
-      'USB_DP': '47',
-      'USB_DM': '48',
-    }).allocate([
-      (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
-    ], assignments)
-
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
-                                      self.usb, self.can, self.swd],
-                                     allocated)
-    self.footprint(
-      'U', 'Package_QFP:LQFP-64_10x10mm_P0.5mm',
-      dict(chain(system_pins.items(), io_pins.items())),
-      mfr='NXP', part='LPC1549JBD64',
-      datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
-    )
+    'USB_DP': '47',
+    'USB_DM': '48',
+  }
+  PACKAGE = 'Package_QFP:LQFP-64_10x10mm_P0.5mm'
+  PART = 'LPC1549JBD64'
 
 
 class Lpc1549SwdPull(Block):
