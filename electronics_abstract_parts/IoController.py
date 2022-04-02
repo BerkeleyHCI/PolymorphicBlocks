@@ -55,6 +55,8 @@ class IoController(Block):
       if isinstance(allocation.pin, str):
         assert isinstance(io_port, CircuitPort)
         pinmap[allocation.pin] = io_port
+      elif allocation.pin is None:
+        assert isinstance(io_port, CircuitPort)  # otherwise discarded
       elif isinstance(allocation.pin, dict):
         assert isinstance(io_port, Bundle)
         for (subport_name, pin_name) in allocation.pin.items():

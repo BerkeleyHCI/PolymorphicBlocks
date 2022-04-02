@@ -201,3 +201,14 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertTrue(allocated[0].port_model.tx.voltage_out.initializer is dio_model_tx.voltage_out.initializer)
     self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is not None)
     self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is dio_model_rx.current_draw.initializer)
+
+  def test_assign_bundle_delegating_notconnected(self):
+    dio_model = DigitalBidir()
+    allocated = PinMapUtil([
+      PinResource('1', {'PIO1': dio_model}),
+      PeripheralAnyResource('UART0', UartPort(DigitalBidir.empty())),
+    ]).allocate([(UartPort, ['uart'])],
+                'uart.tx=NC')
+    self.assertEqual(allocated[0].name, 'uart')
+    self.assertEqual(allocated[0].resource_name, 'UART0')
+    self.assertEqual(allocated[0].pin, {'rx': '1'})

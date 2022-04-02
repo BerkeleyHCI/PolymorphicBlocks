@@ -99,7 +99,7 @@ class AllocatedResource(NamedTuple):
   port_model: Port  # port model (including defined elements, for bundles)
   name: str  # name given by the user, bundles will have automatic postfixes
   resource_name: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
-  pin: Union[str, dict[str, str]]  # pin number if port is leaf, or recursive definition for bundles
+  pin: Union[str, None, dict[str, str]]  # pin number if port is leaf, or recursive definition for bundles
 
   def __eq__(self, other):
     # TODO better port model check, perhaps by initializer
@@ -310,8 +310,9 @@ class PinMapUtil:
 
           inner_allocation = allocate_port_type(resource_pool, inner_type, f'{port_name}.{inner_name}',
                                                 inner_assignment, inner_sub_assignments)
-          assert isinstance(inner_allocation.pin, str)
-          inner_pin_map[inner_name] = inner_allocation.pin
+          if inner_allocation.pin is not None:
+            assert isinstance(inner_allocation.pin, str)
+            inner_pin_map[inner_name] = inner_allocation.pin
           if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
             inner_models[inner_name] = self.transforms[type(inner_model)][1](inner_allocation.port_model)
           else:
@@ -326,6 +327,9 @@ class PinMapUtil:
     # allocates a resource greedily (or errors out), and consumes the relevant resource
     def allocate_port_type(resource_pool: List[BasePinMapResource], port_type: Type[Port], port_name: str,
                            assignment: Optional[str], sub_assignments: UserAssignmentDict) -> AllocatedResource:
+      if assignment == 'NC':  # not connected, create ideal port
+        return AllocatedResource(port_type(), port_name, 'NC', None)
+
       if assignment is not None:  # filter the available resources to the assigned ones
         allowed_resourrces = resources_by_name.get(assignment, [])
         resource_pool = [resource for resource in resource_pool if resource in allowed_resourrces]

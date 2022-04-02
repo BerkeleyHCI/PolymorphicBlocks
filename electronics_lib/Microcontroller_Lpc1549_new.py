@@ -289,7 +289,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
     'PIO0_11': '23',
     'PIO0_12': '24',
     'PIO0_13': '29',
-    # 'PIO0_14': '30',  # ISP_1
+    'PIO0_14': '30',
     'PIO0_15': '31',
     'PIO0_16': '32',
     'PIO0_17': '39',
@@ -320,7 +320,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
     'PIO1_8': '53',
     # 'PIO1_9': '54',  # ISP_0
     'PIO1_10': '59',
-    'PIO1_11': '38',
+    # 'PIO1_11': '38',  # ISP_1
 
     'USB_DP': '47',
     'USB_DM': '48',

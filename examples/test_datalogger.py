@@ -158,7 +158,7 @@ class TestDatalogger(BoardTop):
           'sd_cs=11',
           'sd_cd_pull=16',
           'xbee_uart.tx=58',
-          'xbee_uart.rx=54',
+          'xbee_uart.rx=50',  # used to be 54, which is ISP_0
           'aux_spi.sck=5',
           'aux_spi.mosi=6',
           'aux_spi.miso=7',
@@ -180,7 +180,7 @@ class TestDatalogger(BoardTop):
           'rgb2_blue=25',
           'rgb3_red=46',
           'rgb3_grn=39',
-          'rgb3_blue=38',
+          'rgb3_blue=34',  # used to be 38, which is ISP_1
           'sw1=33',
           'sw2=23',
           'v12sense=10',
