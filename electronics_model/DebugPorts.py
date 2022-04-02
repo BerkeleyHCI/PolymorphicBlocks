@@ -8,10 +8,9 @@ class SwdLink(Link):
   def __init__(self) -> None:
     super().__init__()
 
-    self.host: SwdHostPort = self.Port(SwdHostPort.empty())
-    self.device: SwdTargetPort = self.Port(SwdTargetPort.empty())
-    self.pull: SwdPullPort = self.Port(Vector(SwdPullPort.empty()),
-                                       optional=True)
+    self.host = self.Port(SwdHostPort.empty())
+    self.device = self.Port(SwdTargetPort.empty())
+    self.pull = self.Port(Vector(SwdPullPort.empty()), optional=True)
 
   def contents(self) -> None:
     super().contents()
