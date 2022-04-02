@@ -8,18 +8,22 @@ class SwdLink(Link):
   def __init__(self) -> None:
     super().__init__()
 
-    self.host: SwdHostPort = self.Port(SwdHostPort(DigitalBidir.empty()))
-    self.device: SwdTargetPort = self.Port(SwdTargetPort(DigitalBidir.empty()))
-    self.pull: SwdPullPort = self.Port(SwdPullPort(DigitalSingleSource.empty()),
+    self.host: SwdHostPort = self.Port(SwdHostPort.empty())
+    self.device: SwdTargetPort = self.Port(SwdTargetPort.empty())
+    self.pull: SwdPullPort = self.Port(Vector(SwdPullPort.empty()),
                                        optional=True)
 
   def contents(self) -> None:
     super().contents()
     
-    self.swdio = self.connect(self.host.swdio, self.device.swdio, self.pull.swdio)
-    self.swclk = self.connect(self.host.swclk, self.device.swclk, self.pull.swclk)
-    self.swo = self.connect(self.host.swo, self.device.swo, self.pull.swo)
-    self.reset = self.connect(self.host.reset, self.device.reset, self.pull.reset)
+    self.swdio = self.connect(self.host.swdio, self.device.swdio,
+                              self.pull.map_extract(lambda port: port.swdio))
+    self.swclk = self.connect(self.host.swclk, self.device.swclk,
+                              self.pull.map_extract(lambda port: port.swclk))
+    self.swo = self.connect(self.host.swo, self.device.swo,
+                            self.pull.map_extract(lambda port: port.swo))
+    self.reset = self.connect(self.host.reset, self.device.reset,
+                              self.pull.map_extract(lambda port: port.reset))
 
 
 class SwdHostPort(Bundle[SwdLink]):

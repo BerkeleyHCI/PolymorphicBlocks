@@ -16,9 +16,9 @@ class UsbLink(Link):
     # TODO write protocol-level signal constraints?
 
     self.d_P = self.connect(self.host.dp, self.device.dp,
-                           self.passive.map_extract(lambda port: port.dp))
+                            self.passive.map_extract(lambda port: port.dp))
     self.d_N = self.connect(self.host.dm, self.device.dm,
-                           self.passive.map_extract(lambda port: port.dm))
+                            self.passive.map_extract(lambda port: port.dm))
 
 
 class UsbHostPort(Bundle[UsbLink]):
