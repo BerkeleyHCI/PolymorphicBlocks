@@ -3,7 +3,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal, SwdCortexTargetHeader
+from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
 
 
 @abstract_block
@@ -119,7 +119,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PA12', {'PA12': dio_ft_model}),
       PinResource('PA13', {'PA13': dio_ft_model}),  # default is JTMS/SWO
 
-      PinResource('PA14', {'PA13': dio_ft_model}),  # default is JTCK/SWCLK
+      PinResource('PA14', {'PA14': dio_ft_model}),  # default is JTCK/SWCLK
       PinResource('PA15', {'PA15': dio_ft_model}),  # default is JTDI
       PinResource('PB3', {'PB3': dio_ft_model}),  # default is JTDO
       PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
@@ -176,9 +176,9 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (SwdTargetPort, ['swd'] if swd_connected else []),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
@@ -291,6 +291,9 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
       # TODO add the reset stabilizing capacitor
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+                                                # imp.Block(Lpc1549SwdPull()),
+                                                self.ic.swd)
 
   def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
     if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal

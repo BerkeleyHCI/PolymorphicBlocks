@@ -183,9 +183,9 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (SwdTargetPort, ['swd'] if swd_connected else []),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
