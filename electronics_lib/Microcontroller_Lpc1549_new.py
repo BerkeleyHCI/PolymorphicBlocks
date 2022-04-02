@@ -3,13 +3,32 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
+from electronics_lib import OscillatorCrystal, SwdCortexTargetHeader
 
 
 @abstract_block
-class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, FootprintBlock, PinMappable):
-  @init_in_parent
-  def __init__(self) -> None:
-    super().__init__()
+class Lpc1549BaseNew_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
+
+    # Additional ports (on top of IoController)
+    # Crystals from table 15, 32, 33
+    # TODO Table 32, model crystal load capacitance and series resistance ratings
+    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
+                          optional=True)
+    # Assumed from "32kHz crystal" in 14.5
+    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
+                              optional=True)
+
+    self.swd = self.Port(SwdTargetPort().empty())
+
+    self.generator(self.generate, self.pin_assigns,
+                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
+                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
+                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
+
+  def contents(self) -> None:
+    super().contents()
 
     # Ports with shared references
     self.pwr.init_from(VoltageSink(
@@ -58,15 +77,6 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty())
 
-    # Fixed-function ports
-    # Crystals from table 15, 32, 33
-    # TODO Table 32, model crystal load capacitance and series resistance ratings
-    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
-                          optional=True)
-    # Assumed from "32kHz crystal" in 14.5
-    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
-                              optional=True)
-
     # Pin/peripheral resource definitions (table 3)
     self.abstract_pinmaps = PinMapUtil([
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
@@ -92,7 +102,7 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       PinResource('PIO0_18', {'PIO0_18': dio_5v_model}),
       PinResource('PIO0_19', {'PIO0_19': dio_5v_model}),
       PinResource('PIO0_20', {'PIO0_20': dio_5v_model}),
-      PinResource('PIO0_21', {'PIO0_21': dio_5v_model}),
+      PinResource('PIO0_21', {'PIO0_21': dio_5v_model}),  # also RESET
       PinResource('PIO0_22', {'PIO0_22': dio_5v_model}),
       PinResource('PIO0_23', {'PIO0_23': dio_5v_model}),
       PinResource('PIO0_24', {'PIO0_24': dio_highcurrrent_model}),
@@ -143,23 +153,18 @@ class Lpc1549BaseNew_Device(IoController, DiscreteChip, GeneratorBlock, Footprin
       }),
     ])
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated(), self.can.allocated())
-
   @abstractmethod
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str]) -> None: ...
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None: ...
 
 
 class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str]):
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool):
     system_pins: Dict[str, CircuitPort] = {
       '16': self.pwr,  # VddA
       '17': self.gnd,  # VssA
@@ -185,7 +190,7 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
       'PIO0_1': '2',
       'PIO0_2': '3',
       'PIO0_3': '4',
-      'PIO0_4': '5',
+      # 'PIO0_4': '5',  # ISP_0
       'PIO0_5': '6',
       'PIO0_6': '7',
       'PIO0_7': '8',
@@ -198,7 +203,7 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
       'PIO0_13': '21',
       'PIO0_14': '22',
       'PIO0_15': '23',
-      'PIO0_16': '24',
+      # 'PIO0_16': '24',  # ISP_1
       'PIO0_17': '28',
 
       'PIO0_18': '13',
@@ -220,10 +225,12 @@ class Lpc1549_48New_Device(Lpc1549BaseNew_Device):
     }).allocate([
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates)
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (SwdTargetPort, ['swd'] if swd_connected else [])
     ], assignments)
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can],
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
+                                      self.usb, self.can, self.swd],
                                      allocated)
 
     self.footprint(
@@ -238,7 +245,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str]):
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool):
     system_pins: Dict[str, CircuitPort] = {
       '20': self.pwr,  # VddA
       '21': self.gnd,  # VssA
@@ -277,7 +284,7 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       'PIO0_11': '23',
       'PIO0_12': '24',
       'PIO0_13': '29',
-      'PIO0_14': '30',
+      # 'PIO0_14': '30',  # ISP_1
       'PIO0_15': '31',
       'PIO0_16': '32',
       'PIO0_17': '39',
@@ -295,16 +302,32 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       'PIO0_27': '62',
       'PIO0_28': '63',
       'PIO0_29': '64',
+      'PIO0_30': '1',
+      'PIO0_31': '3',
+      'PIO1_0': '4',
+      'PIO1_1': '15',
+      'PIO1_2': '25',
+      'PIO1_3': '28',
+      'PIO1_4': '33',
+      'PIO1_5': '34',
+      'PIO1_6': '46',
+      'PIO1_7': '51',
+      'PIO1_8': '53',
+      # 'PIO1_9': '54',  # ISP_0
+      'PIO1_10': '59',
+      'PIO1_11': '38',
 
       'USB_DP': '47',
       'USB_DM': '48',
     }).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates)
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can],
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
+                                      self.usb, self.can, self.swd],
                                      allocated)
     self.footprint(
       'U', 'Package_QFP:LQFP-64_10x10mm_P0.5mm',
@@ -313,13 +336,39 @@ class Lpc1549_64New_Device(Lpc1549BaseNew_Device):
       datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
     )
 
-@abstract_block
-class Lpc1549BaseNew(Microcontroller, IoController):
-  DEVICE: Type[Lpc1549BaseNew_Device] = Lpc1549BaseNew_Device  # type: ignore
 
+class Lpc1549SwdPull(Block):
   def __init__(self):
     super().__init__()
-    self.ic = self.Block(self.DEVICE())
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.swd = self.Port(SwdPullPort(DigitalSingleSource.empty()), [InOut])
+
+  def contents(self):
+    super().contents()
+    self.swd.swo.init_from(DigitalSingleSource())
+    self.swd.reset.init_from(DigitalSingleSource())
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.swdio = imp.Block(PullupResistor((10, 100) * kOhm(tol=0.05)))
+      self.connect(self.swdio.io, self.swd.swdio)
+      self.swclk = imp.Block(PulldownResistor((10, 100) * kOhm(tol=0.05)))
+      self.connect(self.swclk.io, self.swd.swclk)
+
+
+@abstract_block
+class Lpc1549BaseNew(PinMappable, Microcontroller, IoController, GeneratorBlock):
+  DEVICE: Type[Lpc1549BaseNew_Device] = Lpc1549BaseNew_Device  # type: ignore
+
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
+
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
 
@@ -333,9 +382,36 @@ class Lpc1549BaseNew(Microcontroller, IoController):
     self.connect(self.usb, self.ic.usb)
     self.connect(self.can, self.ic.can)
 
-  def contents(self):
-    # TODO: add caps and stuff, add crystal generator, add programming port generator
-    pass
+    self.pwr_cap = ElementDict[DecouplingCapacitor]()
+    self.pwra_cap = ElementDict[DecouplingCapacitor]()
+    self.vref_cap = ElementDict[DecouplingCapacitor]()
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
+      for i in range(3):
+        self.pwr_cap[i*2] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+        self.pwr_cap[i*2+1] = imp.Block(DecouplingCapacitor(0.01 * uFarad(tol=0.2)))
+      self.vbat_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+      # one set of 0.1, 10uF caps for each VddA, VssA pin, per reference schematic
+      self.pwra_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.pwra_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+      self.vref_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetHeader()),
+                                                imp.Block(Lpc1549SwdPull()),
+                                                self.ic.swd)
+
+  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
+    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
+      self.connect(self.crystal.gnd, self.gnd)
+      self.connect(self.crystal.crystal, self.ic.xtal)
 
 
 class Lpc1549_48New(Lpc1549BaseNew):

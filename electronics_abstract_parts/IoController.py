@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Set, Type
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
@@ -25,19 +25,33 @@ class IoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
     self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
-  def _instantiate_from(self, ios: List[Vector], allocations: List[AllocatedResource]) -> \
+  def _instantiate_from(self, ios: List[BasePort], allocations: List[AllocatedResource]) -> \
       Dict[str, CircuitPort]:
-    """Given a mapping of port types to IO vectors and allocated resources from PinMapUtil,
-    instantiate vector elements for the allocated resources using their data model and return the pin mapping."""
-    ios_by_type = {io.elt_type(): io for io in ios}
+    """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
+    instantiate vector elements (if a vector) or init the port model (if a port)
+    for the allocated resources using their data model and return the pin mapping."""
+    ios_by_type = {io.elt_type() if isinstance(io, Vector) else type(io): io for io in ios}
     pinmap: Dict[str, CircuitPort] = {}
 
+    ports_assigned = IdentitySet[Port]()
+
     for io in ios:
-      io.defined()  # mark all vectors as defined - even if they will be empty
+      if isinstance(io, Vector):
+        io.defined()  # mark all vectors as defined - even if they will be empty
 
     for allocation in allocations:
       io = ios_by_type[type(allocation.port_model)]
-      io_port = io.append_elt(allocation.port_model, allocation.name)
+
+      if isinstance(io, Vector):
+        io_port = io.append_elt(allocation.port_model, allocation.name)
+      elif isinstance(io, Port):
+        io_port = io
+        assert io not in ports_assigned, f"double assignment to {io}"
+        ports_assigned.add(io)
+        io.init_from(allocation.port_model)
+      else:
+        raise NotImplementedError(f"unknown port type {io}")
+
       if isinstance(allocation.pin, str):
         assert isinstance(io_port, CircuitPort)
         pinmap[allocation.pin] = io_port

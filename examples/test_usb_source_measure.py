@@ -350,7 +350,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
       self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
-      self.connect(self.mcu.gpio.allocate('lcd_s'), self.lcd.rs)
+      self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
       self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
@@ -436,6 +436,8 @@ class UsbSourceMeasureTest(BoardTop):
 
           'low_en=22',
           'high_en=23',
+
+          'swd.swo=PIO0_8',
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),

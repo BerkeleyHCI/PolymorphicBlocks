@@ -1,7 +1,7 @@
 from typing import *
 
 from edg_core import *
-from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource
 
 
 class SwdLink(Link):
@@ -10,6 +10,7 @@ class SwdLink(Link):
 
     self.host: SwdHostPort = self.Port(SwdHostPort(DigitalBidir.empty()))
     self.device: SwdTargetPort = self.Port(SwdTargetPort(DigitalBidir.empty()))
+    self.pull: SwdPullPort = self.Port(SwdPullPort(DigitalSingleSource.empty()))
 
   def contents(self) -> None:
     super().contents()
@@ -44,3 +45,16 @@ class SwdTargetPort(Bundle[SwdLink]):
     self.swclk = self.Port(DigitalSink.from_bidir(model))
     self.swo = self.Port(DigitalSource.from_bidir(model))
     self.reset = self.Port(DigitalSink.from_bidir(model))
+
+
+class SwdPullPort(Bundle[SwdLink]):
+  def __init__(self, model: Optional[DigitalSingleSource] = None) -> None:
+    super().__init__()
+    self.link_type = SwdLink
+
+    if model is None:
+      model = DigitalSingleSource()  # ideal by default
+    self.swdio = self.Port(model)
+    self.swclk = self.Port(model)
+    self.swo = self.Port(model)
+    self.reset = self.Port(model)

@@ -13,9 +13,9 @@ class PinMappable(Block):
   to delegate the pin mapping to the microcontroller chip block.
   """
   @init_in_parent
-  def __init__(self, pin_mapping: StringLike = "") -> None:
+  def __init__(self, pin_assigns: StringLike = "") -> None:
     super().__init__()
-    self.pin_assigns = pin_mapping
+    self.pin_assigns = pin_assigns
 
 
 class BasePinMapResource(metaclass=ABCMeta):
