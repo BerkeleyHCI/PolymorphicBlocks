@@ -67,11 +67,7 @@ class Debugger(BoardTop):
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Stm32f103_48())
-      self.swd = imp.Block(SwdCortexTargetTc2050Nl())
-      self.connect(self.mcu.swd, self.swd.swd)
-      self.crystal = imp.Block(OscillatorCrystal(frequency=8 * MHertz(tol=0.0025)))  # tolerance needed for USB  # TODO infer from presence of SB?
-      self.connect(self.mcu.xtal, self.crystal.crystal)
+      self.mcu = imp.Block(IoController())
 
       self.target_drv = imp.Block(SwdSourceBitBang())
       self.tdi_res = imp.Block(Resistor(22*Ohm(tol=0.05)))
@@ -86,33 +82,32 @@ class Debugger(BoardTop):
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_tgt = imp.Block(IndicatorSinkRgbLed())
 
-    # self.connect(self.mcu.new_io(UsbDevicePort, pin=[33, 32]), self.usb.usb)  # TODO once works in MCU def
-    self.connect(self.mcu.usb_0, self.usb.usb)
+    self.connect(self.mcu.usb.allocate(), self.usb.usb)
 
-    self.target_reg_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_reg.en)
+    self.connect(self.mcu.gpio.allocate('target_reg_en'), self.target_reg.en)
 
-    self.target_swclk_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swclk_in)  # TODO BMP uses pin 15
-    self.target_swdio_out_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swdio_out)
-    self.target_swdio_in_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swdio_in)
-    self.target_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.reset_in)
-    self.target_swo_net = self.connect(self.mcu.new_io(DigitalBidir), self.target_drv.swo_out)
-    self.target_tdi_net = self.connect(self.mcu.new_io(DigitalBidir), self.tdi_res.a.as_digital_source())
+    self.connect(self.mcu.gpio.allocate('target_swclk'), self.target_drv.swclk_in)  # TODO BMP uses pin 15
+    self.connect(self.mcu.gpio.allocate('target_swdio_out'), self.target_drv.swdio_out)
+    self.connect(self.mcu.gpio.allocate('target_swdio_in'), self.target_drv.swdio_in)
+    self.connect(self.mcu.gpio.allocate('target_reset'), self.target_drv.reset_in)
+    self.connect(self.mcu.gpio.allocate('target_swo'), self.target_drv.swo_out)
+    self.connect(self.mcu.gpio.allocate('target_tdi'), self.tdi_res.a.as_digital_source())
 
-    self.lcd_led_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.led)
-    self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
-    self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
-    self.lcd_spi_net = self.connect(self.mcu.new_io(SpiMaster), self.lcd.spi)  # MISO unused
-    self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
+    self.connect(self.mcu.gpio.allocate('lcd_led'), self.lcd.led)
+    self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
+    self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
+    self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
+    self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
-    self.rgb_usb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.red)
-    self.rgb_usb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.green)
-    self.rgb_usb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_usb.blue)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_red'), self.rgb_usb.red)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_grn'), self.rgb_usb.green)
+    self.connect(self.mcu.gpio.allocate('rgb_usb_blue'), self.rgb_usb.blue)
 
-    self.rgb_tgt_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.red)
-    self.rgb_tgt_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.green)  # pinning on stock ST-Link
-    self.rgb_tgt_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb_tgt.blue)
+    self.connect(self.mcu.gpio.allocate('rgb_tgt_red'), self.rgb_tgt.red)
+    self.connect(self.mcu.gpio.allocate('rgb_tgt_grn'), self.rgb_tgt.green)  # pinning on stock ST-Link
+    self.connect(self.mcu.gpio.allocate('rgb_tgt_blue'), self.rgb_tgt.blue)
 
-    self.sw_usb_net = self.connect(self.mcu.new_io(DigitalBidir), self.sw_usb.out)
+    self.connect(self.mcu.gpio.allocate('sw_usb'), self.sw_usb.out)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -129,28 +124,29 @@ class Debugger(BoardTop):
         (['usb_reg'], Ap2204k),
       ],
       instance_values=[
+        (['mcu', 'crystal', 'frequency'], Range.from_tolerance(8000000, 0.005)),
         (['mcu', 'pin_assigns'], ';'.join([
-          'target_reg_en_net=16',
-          'target_swclk_net=26',
-          'target_swdio_out_net=27',
-          'target_swdio_in_net=25',
-          'target_reset_net=18',
-          'target_swo_net=31',
-          'target_tdi_net=21',
-          'lcd_led_net=29',
-          'lcd_reset_net=20',
-          'lcd_rs_net=22',
-          'lcd_spi_net.sck=15',
-          'lcd_spi_net.mosi=17',
-          'lcd_spi_net.miso=NC',
-          'lcd_cs_net=28',
-          'rgb_usb_red_net=14',
-          'rgb_usb_grn_net=12',
-          'rgb_usb_blue_net=11',
-          'rgb_tgt_red_net=13',
-          'rgb_tgt_grn_net=30',
-          'rgb_tgt_blue_net=10',
-          'sw_usb_net=38',
+          'target_reg_en=16',
+          'target_swclk=26',
+          'target_swdio_out=27',
+          'target_swdio_in=25',
+          'target_reset=18',
+          'target_swo=31',
+          'target_tdi=21',
+          'lcd_led=29',
+          'lcd_reset=20',
+          'lcd_rs=22',
+          'lcd_spi.sck=15',
+          'lcd_spi.mosi=17',
+          'lcd_spi.miso=NC',
+          'lcd_cs=28',
+          'rgb_usb_red=14',
+          'rgb_usb_grn=12',
+          'rgb_usb_blue=11',
+          'rgb_tgt_red=13',
+          'rgb_tgt_grn=30',
+          'rgb_tgt_blue=10',
+          'sw_usb=38',
         ]))
       ]
     )

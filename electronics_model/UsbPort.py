@@ -31,12 +31,14 @@ class UsbHostPort(Bundle[UsbLink]):
 
 
 class UsbDevicePort(Bundle[UsbLink]):
-  def __init__(self) -> None:
+  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
     self.link_type = UsbLink
 
-    self.dp = self.Port(DigitalBidir())
-    self.dm = self.Port(DigitalBidir())
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.dp = self.Port(model)
+    self.dm = self.Port(model)
 
 
 class UsbPassivePort(Bundle[UsbLink]):

@@ -152,7 +152,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
         'tx': ['PA12', 'PD1', 'PB9'], 'rx': ['PA11', 'PD0', 'PB8']
       }),
-      PeripheralFixedResource('USB', UsbDevicePort(), {
+      PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
         'dm': ['PA11'], 'dp': ['PA12']
       }),
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
@@ -298,13 +298,14 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.osc)
 
-    if usb_allocated:
-      assert len(usb_allocated) == 1
-      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated[0])
-
-      self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
-      self.connect(self.usb_pull.pwr, self.pwr)
-      self.connect(usb_port.dp, self.usb_pull.io)
+    # TODO FIX ME
+    # if usb_allocated:
+    #   assert len(usb_allocated) == 1
+    #   usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated[0])
+    #
+    #   self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
+    #   self.connect(self.usb_pull.pwr, self.pwr)
+    #   self.connect(usb_port.dp, self.usb_pull.io)
 
 
 class Stm32f103_48_new(Stm32f103Base):
