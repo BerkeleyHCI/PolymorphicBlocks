@@ -79,6 +79,22 @@ class Lpc1549BaseNew_Device(PinMappable, IoController, DiscreteChip, GeneratorBl
     spi_model = SpiMaster(DigitalBidir.empty())
 
     # Pin/peripheral resource definitions (table 3)
+    self.system_pinmaps = VariantPinRemapper({
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'VrefP_ADC': self.pwr,
+      'VrefP_DAC': self.pwr,
+      'VrefN': self.gnd,
+      'Vbat': self.pwr,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
+
+      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
+      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
+      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
+      'RTCXOUT': self.xtal_rtc.xtal_out,
+    })
+
     self.abstract_pinmaps = PinMapUtil([
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
       PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
@@ -153,22 +169,6 @@ class Lpc1549BaseNew_Device(PinMappable, IoController, DiscreteChip, GeneratorBl
         'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'], 'swo': ['PIO0_8'],
       }),
     ])
-
-    self.system_pinmaps = VariantPinRemapper({
-      'VddA': self.pwr,
-      'VssA': self.gnd,
-      'VrefP_ADC': self.pwr,
-      'VrefP_DAC': self.pwr,
-      'VrefN': self.gnd,
-      'Vbat': self.pwr,
-      'Vss': self.gnd,
-      'Vdd': self.pwr,
-
-      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      'RTCXOUT': self.xtal_rtc.xtal_out,
-    })
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
