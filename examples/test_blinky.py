@@ -14,9 +14,6 @@ class TestBlinkyBasic(BoardTop):
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
-      ]
     )
 
 
@@ -36,9 +33,6 @@ class TestBlinkySimple(BoardTop):
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
-      ]
     )
 
 
@@ -55,9 +49,6 @@ class TestBlinkySimpleChain(BoardTop):
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
-      ]
     )
 
 
@@ -73,13 +64,12 @@ class TestBlinkyBroken(BoardTop):
         ImplicitConnect(self.usb.pwr, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
+      self.mcu = imp.Block(IoController())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
+      instance_refinements=[
+        (['mcu'], Lpc1549_48New),
       ]
     )
 
@@ -104,20 +94,17 @@ class TestBlinkyFlattened(BoardTop):
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
+      self.mcu = imp.Block(IoController())
 
-      (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.led, ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48New),
         (['usb_reg'], Tps561201),
       ],
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
-      ]
     )
 
 
@@ -186,24 +173,21 @@ class TestBlinkyComplete(BoardTop):
         ImplicitConnect(self.usb_reg.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
+      self.mcu = imp.Block(IoController())
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(8):
-        (self.led[i], ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
 
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.new_io(AnalogSink))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
+      (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.adc.allocate())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48New),
         (['usb_reg'], Tps561201),
       ],
-      instance_values=[
-        (['mcu', 'pin_assigns'], "")
-      ]
     )
 
 
