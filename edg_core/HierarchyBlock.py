@@ -181,8 +181,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       self._parameters.register(param)
       self.manager.add_element(param_name, param)
 
-    self.parent = None
-
     self._blocks = self.manager.new_dict(Block)  # type: ignore
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
@@ -268,7 +266,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert isinstance(self_port, Port)
           assert self_port.bridge_type is not None
 
-          port_name = self_port._name_to(self)
+          port_name = self_port._name_from(self)
           pb.blocks[f"(bridge){port_name}"].lib_elem.target.name = self_port.bridge_type._static_def_name()
           self._namespace_order.append(f"(bridge){port_name}")
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
@@ -433,7 +431,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
     assert isinstance(port_parent, Block)
-    assert port_parent.parent is self, "can only export ports of contained block"
+    assert port_parent._parent is self, "can only export ports of contained block"
 
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)

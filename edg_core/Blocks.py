@@ -59,14 +59,14 @@ class ConnectedPorts():
       raise UnconnectableError(f"In {self.parent}, can't connect port model {port}, "
                                "need to assign it to a block using self.Port(...)")
     elif block_parent is not self.parent:
-      if block_parent.parent is None:
+      if block_parent._parent is None:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block not assigned to parent with self.Block(...)")
-      elif block_parent.parent is not self.parent:
+      elif block_parent._parent is not self.parent:
         raise UnconnectableError(f"In {self.parent}, can't connect port {port}, "
                                  "belonging to a block at level above or nested more than one level deep")
     if block_parent is not self.parent and not (
-        (port.parent is block_parent) or (isinstance(port.parent, Vector) and port.parent.parent is block_parent)):
+        (port._parent is block_parent) or (isinstance(port._parent, Vector) and port._parent._parent is block_parent)):
       # TODO the one-level-deep vector check is a bit of a hack - this should be a bit more principled
       # note: connecting to sub-ports of parent block's exterior ports are allowed,
       # provided there is no overlap of connectionss
@@ -198,10 +198,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   # __init__ should initialize the object with structural information (parameters, fields)
   # as well as optionally initialization (parameter defaults)
   def __init__(self) -> None:
-    super().__init__()
+    self._parent: Optional[Union[BaseBlock, Port]]  # refined from Optional[Refable] in base LibraryElement
 
-    self.parent: Optional[Union[BaseBlock, Port]]  # actual field definition left to subclass
-    self.manager_ignored.add('parent')
+    super().__init__()
 
     self._elaboration_state = BlockElaborationState.init
 
@@ -335,12 +334,12 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     )
 
   def _bind_in_place(self, parent: Union[BaseBlock, Port]):
-    self.parent = parent
+    self._parent = parent
 
   SelfType = TypeVar('SelfType', bound='BaseBlock')
   def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
-    assert self.parent is None, "can't clone bound block"
+    assert self._parent is None, "can't clone bound block"
     assert builder.get_curr_context() is self._lexical_parent, "can't clone to different context"
     clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
     clone._bind_in_place(parent)
@@ -357,10 +356,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         else:
           raise ValueError(f"unknown parent {expr.parent} of {expr}")
 
-        if isinstance(block_parent.parent, BasePort):
-          block_parent_parent: Any = block_parent.parent._block_parent()
+        if isinstance(block_parent._parent, BasePort):
+          block_parent_parent: Any = block_parent._parent._block_parent()
         else:
-          block_parent_parent = block_parent.parent
+          block_parent_parent = block_parent._parent
 
         if not (block_parent is self or block_parent_parent is self):
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable parameter {expr}. "
@@ -369,7 +368,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       elif isinstance(expr, BasePort):
         block_parent = cast(BaseBlock, expr._block_parent())
         assert block_parent is not None
-        if not block_parent is self or block_parent.parent is self:
+        if not block_parent is self or block_parent._parent is self:
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
                                           "Only own ports, or immediate contained blocks' ports can be accessed. "
                                           "To pass in parameters from constructors, don't forget @init_in_parent")

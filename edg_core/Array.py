@@ -144,8 +144,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     assert target._is_bound()  # TODO check target in base, TODO check is elt sample type
     self.base = base
     self.target = target
-    assert base.parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
-    self._bind_in_place(base.parent)
+    assert base._parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
+    self._bind_in_place(base._parent)
 
   def _type_of(self) -> Hashable:
     return (self.target._type_of(),)
@@ -176,7 +176,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
     assert not tpe._is_bound()
     self._tpe = tpe
-    self._elt_sample = tpe._bind(self, ignore_context=True)
+    self._elt_sample = tpe._bind(self)
     self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
@@ -270,7 +270,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
-    assert builder.get_enclosing_block() is block_parent.parent, "can only allocate ports of internal blocks"
+    assert builder.get_enclosing_block() is block_parent._parent, "can only allocate ports of internal blocks"
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = type(self._tpe).empty()._bind(self)
     self._allocates.append((suggested_name, allocated))

@@ -28,24 +28,22 @@ class BasePort(HasMetadata):
 
   def __init__(self) -> None:
     """Abstract Base Class for ports"""
-    self._parent: Optional[Refable]  # set by metaclass, as lexical scope available pre-binding
+    self._parent: Optional[PortParentTypes]  # refined from Optional[Refable] in base LibraryElement
     self._block_context: Optional[BaseBlock]  # set by metaclass, as lexical scope available pre-binding
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     super().__init__()
 
-    self.parent: Optional[PortParentTypes] = None  # set during binding
-
   def _block_parent(self) -> Optional[BaseBlock]:
     from .Blocks import BaseBlock
-    if isinstance(self.parent, BasePort):
-      return self.parent._block_parent()
-    elif isinstance(self.parent, BaseBlock):
-      return self.parent
-    elif self.parent is None:
+    if isinstance(self._parent, BasePort):
+      return self._parent._block_parent()
+    elif isinstance(self._parent, BaseBlock):
+      return self._parent
+    elif self._parent is None:
       return None
     else:
-      raise ValueError(f"Unknown parent type {self.parent}")
+      raise ValueError(f"Unknown parent type {self._parent}")
 
   @abstractmethod
   def _def_to_proto(self) -> edgir.PortTypes:  # TODO: this might not be valid for Vector types?
@@ -60,12 +58,12 @@ class BasePort(HasMetadata):
     raise NotImplementedError
 
   def _bind_in_place(self, parent: PortParentTypes):
-    self.parent = parent
+    self._parent = parent
 
   def _clone(self: SelfType) -> SelfType:
     """Returns a fresh clone of this object, with fresh references but preserving user-specified state like
     parameter initializers."""
-    assert self.parent is None, "can't clone bound block"
+    assert self._parent is None, "can't clone bound block"
     # TODO: this might be more efficient (but trickier) with copy.copy
     cloned = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
     cloned._cloned_from(self)
@@ -75,10 +73,9 @@ class BasePort(HasMetadata):
     """Copies user-specified initializers from other."""
     pass
 
-  def _bind(self: SelfType, parent: PortParentTypes, *, ignore_context=False) -> SelfType:
+  def _bind(self: SelfType, parent: PortParentTypes) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
-    if not ignore_context:
-      assert builder.get_enclosing_block() is self._block_context, f"can't clone to different context, {builder.get_enclosing_block()} -> {self._block_context}"
+    assert builder.get_enclosing_block() is self._block_context, f"can't clone to different context, {builder.get_enclosing_block()} -> {self._block_context}"
     clone = self._clone()
     clone._bind_in_place(parent)
     return clone
@@ -88,10 +85,10 @@ class BasePort(HasMetadata):
       if elt is None:
         return False
       elif isinstance(elt, BasePort):
-        return impl(elt.parent)
+        return impl(elt._parent)
       else:
         return True
-    return impl(self.parent)
+    return impl(self._parent)
 
   @abstractmethod
   def _get_initializers(self, path_prefix: List[str]) -> \
@@ -159,7 +156,7 @@ class Port(BasePort, Generic[PortLinkType]):
       param.initializer = other_param.initializer
 
   def init_from(self: SelfType, other: SelfType):
-    assert self.parent is not None, "may only init_from on an bound port"
+    assert self._parent is not None, "may only init_from on an bound port"
     assert not self._get_initializers([]), "may only init_from an empty model"
     self._cloned_from(other)
 
@@ -180,17 +177,17 @@ class Port(BasePort, Generic[PortLinkType]):
     from .HierarchyBlock import Block
 
     block_parent = self._block_parent()
-    if block_parent is None or block_parent.parent is None:
+    if block_parent is None or block_parent._parent is None:
       raise UnconnectableError(f"{self} must be bound to instantiate an adapter")
 
-    enclosing_block = block_parent.parent
+    enclosing_block = block_parent._parent
     if enclosing_block is not builder.get_enclosing_block():
       raise UnconnectableError(f"can only create adapters on ports of subblocks")
     assert isinstance(enclosing_block, Block)
 
     adapter_inst = enclosing_block.Block(adapter)
     enclosing_block.manager.add_element(
-      f"(adapter){block_parent._name_to(enclosing_block)}.{self._name_to(block_parent)}",
+      f"(adapter){block_parent._name_from(enclosing_block)}.{self._name_from(block_parent)}",
       adapter_inst)
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     return adapter_inst.dst
@@ -290,10 +287,10 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
   def with_elt_initializers(self: SelfType, replace_elts: dict[str, Port]) -> SelfType:
     """Clones model-typed self, except adding initializers to elements from the input dict.
     Those elements must be empty."""
-    assert self.parent is None, "self must not be bound"
+    assert self._parent is None, "self must not be bound"
     cloned = self._clone()
     for (name, replace_port) in replace_elts.items():
-      assert replace_port.parent is None, "replace_elts must not be bound"
+      assert replace_port._parent is None, "replace_elts must not be bound"
       cloned_port = cloned._ports[name]
       assert isinstance(replace_port, type(cloned_port))
       assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"

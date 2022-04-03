@@ -57,7 +57,7 @@ class Link(BaseBlock[edgir.Link]):
         if isinstance(self_port, DerivedVector):
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.path.steps.add().name = \
-            self_port.target._name_to(self_port.base._get_elt_sample())
+            self_port.target._name_from(self_port.base._get_elt_sample())
           pb.constraints[f"(export){name}_{idx}"].exportedArray.internal_block_port.ref.CopyFrom(
             edgir.localpath_concat(link_path, link_port_path)
           )
