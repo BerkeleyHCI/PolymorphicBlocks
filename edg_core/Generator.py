@@ -199,23 +199,23 @@ class GeneratorBlock(Block):
       if default is not None:
         return default
       else:
-        raise NotImplementedError(f"get({self._name_of(param)}) did not find a value, either the variable is inaccessible or an internal error")
+        raise NotImplementedError(f"get({self._name_of_child(param)}) did not find a value, either the variable is inaccessible or an internal error")
 
     value = cast(Any, self._param_values[param])
     if isinstance(param, FloatExpr):
-      assert isinstance(value, Number), f"get({self._name_of(param)}) expected float, got {value}"
+      assert isinstance(value, Number), f"get({self._name_of_child(param)}) expected float, got {value}"
     elif isinstance(param, IntExpr):
-      assert isinstance(value, int), f"get({self._name_of(param)}) expected int, got {value}"
+      assert isinstance(value, int), f"get({self._name_of_child(param)}) expected int, got {value}"
     elif isinstance(param, RangeExpr):
-      assert isinstance(value, Range), f"get({self._name_of(param)}) expected range, got {value}"
+      assert isinstance(value, Range), f"get({self._name_of_child(param)}) expected range, got {value}"
     elif isinstance(param, BoolExpr):
-      assert isinstance(value, bool), f"get({self._name_of(param)}) expected bool, got {value}"
+      assert isinstance(value, bool), f"get({self._name_of_child(param)}) expected bool, got {value}"
     elif isinstance(param, StringExpr):
-      assert isinstance(value, str), f"get({self._name_of(param)}) expected str, got {value}"
+      assert isinstance(value, str), f"get({self._name_of_child(param)}) expected str, got {value}"
     elif isinstance(param, ArrayExpr):
-      assert isinstance(value, list), f"get({self._name_of(param)}) expected list, got {value}"
+      assert isinstance(value, list), f"get({self._name_of_child(param)}) expected list, got {value}"
     else:
-      raise NotImplementedError(f"get({self._name_of(param)}) on unknown type, got {value}")
+      raise NotImplementedError(f"get({self._name_of_child(param)}) on unknown type, got {value}")
     return value  # type: ignore
 
   # Generator serialization and parsing

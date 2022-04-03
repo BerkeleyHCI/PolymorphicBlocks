@@ -268,7 +268,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert isinstance(self_port, Port)
           assert self_port.bridge_type is not None
 
-          port_name = self._name_of(self_port)
+          port_name = self_port._name_to(self)
           pb.blocks[f"(bridge){port_name}"].lib_elem.target.name = self_port.bridge_type._static_def_name()
           self._namespace_order.append(f"(bridge){port_name}")
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
@@ -323,7 +323,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_param_init(pb)
     for (port) in self._connected_ports():
       if port._block_parent() is self:
-        port_name = self.manager._name_of(port) or "unk"
+        port_name = self.manager.name_of(port) or "unk"
         assert not port._get_initializers([port_name]), f"connected boundary port {port_name} has unexpected initializer"
     pb = self._populate_def_proto_port_init(pb)
 

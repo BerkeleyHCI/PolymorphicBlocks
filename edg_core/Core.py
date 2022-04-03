@@ -98,7 +98,7 @@ class SubElementManager:
           assigned.append(dict)
       assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
-  def _name_of(self, item: Any) -> Optional[str]:
+  def name_of(self, item: Any) -> Optional[str]:
     name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
     name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
     assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
@@ -200,14 +200,12 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
-  def _name_of(self, subelt: Any) -> str:
-    self_name = self.manager._name_of(subelt)
+  def _name_of_child(self, subelt: Any) -> str:
+    self_name = self.manager.name_of(subelt)
     if self_name is not None:
       return self_name
-    elif isinstance(subelt, LibraryElement):
-      return subelt._name_to(self)
     else:
-      raise NotImplementedError(f"no name for {subelt}")
+      raise ValueError(f"no name for {subelt}")
 
   def _name_to(self, base: LibraryElement) -> str:
     # TODO requires self._parent is set properly, when we really need self.parent (binding)
@@ -217,8 +215,10 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     else:
       if not isinstance(self._parent, LibraryElement):
         return "???"
-      else:  # TODO refactor to avoid potential infinite recursion w/ _name_of
-        return self._parent._name_to(base) + "." + self._parent._name_of(self)  # TODO this adds extra leading dot
+      elif self._parent is base:
+        return self._parent._name_of_child(self)
+      else:
+        return self._parent._name_to(base) + "." + self._parent._name_of_child(self)
 
   @classmethod
   def _static_def_name(cls) -> str:

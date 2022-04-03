@@ -190,7 +190,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
     adapter_inst = enclosing_block.Block(adapter)
     enclosing_block.manager.add_element(
-      f"(adapter){enclosing_block._name_of(block_parent)}.{block_parent._name_of(self)}",
+      f"(adapter){block_parent._name_to(enclosing_block)}.{self._name_to(block_parent)}",
       adapter_inst)
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     return adapter_inst.dst

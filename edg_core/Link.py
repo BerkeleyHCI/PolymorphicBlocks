@@ -56,7 +56,8 @@ class Link(BaseBlock[edgir.Link]):
       for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
         if isinstance(self_port, DerivedVector):
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
-          pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.path.steps.add().name = self_port.base._get_elt_sample()._name_of(self_port.target)
+          pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.path.steps.add().name = \
+            self_port.target._name_to(self_port.base._get_elt_sample())
           pb.constraints[f"(export){name}_{idx}"].exportedArray.internal_block_port.ref.CopyFrom(
             edgir.localpath_concat(link_path, link_port_path)
           )

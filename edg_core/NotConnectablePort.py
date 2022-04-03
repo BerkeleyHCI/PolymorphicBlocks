@@ -32,7 +32,7 @@ class NotConnectablePort(Port):
     nc_block = context_block.Block(self.not_connected_type())
     if context_block is self._block_parent():
       context_block.manager.add_element(
-        f"(not_connected){context_block._name_of(self)}",
+        f"(not_connected){self._name_to(context_block)}",
         nc_block)
     else:
       raise UnconnectableError(f"can only mark not-connected on ports of the current block")
