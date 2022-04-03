@@ -4,15 +4,14 @@ import itertools
 from typing import *
 
 import edgir
-from .IdentityDict import IdentityDict
-from .Core import Refable, non_library
-from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
-  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
-  FloatExpr, RangeExpr, StringExpr, \
-  ParamBinding, IntExpr, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryOpBinding, AllocatedBinding
-from .Ports import BaseContainerPort, BasePort, Port
+from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
+from .ConstraintExpr import NumericOp, BoolOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
+  UnarySetOpBinding, BinarySetOpBinding, ParamBinding, \
+  FloatExpr, RangeExpr, StringExpr, IntExpr, RangeLike
+from .Core import Refable, non_library
+from .IdentityDict import IdentityDict
+from .Ports import BaseContainerPort, BasePort, Port
 
 
 class MapExtractBinding(Binding):
@@ -188,6 +187,13 @@ class Vector(BaseVector, Generic[VectorType]):
     # TODO dedup w/ Core.__repr__
     # but this can't depend on get_def_name since that crashes
     return "Array[%s]@%02x" % (self._elt_sample, (id(self) // 4) & 0xff)
+
+  # unlike most other LibraryElement types, the names are stored in _elts and _allocates
+  def _name_of_child(self, subelt: Any) -> str:
+    for (name, elt) in self._elts.items():
+      if subelt is elt:
+        return name
+    raise ValueError(f"no name for {subelt}")
 
   def _get_elt_sample(self) -> BasePort:
     return self._elt_sample

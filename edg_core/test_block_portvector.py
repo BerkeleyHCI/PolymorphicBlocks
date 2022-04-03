@@ -131,12 +131,12 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
     expected_conn.exported.exterior_port.ref.steps.add().name = '0'
-    expected_conn.exported.internal_block_port.ref.steps.add().name = '(bridge)vector[0]'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = '(bridge)vector.0'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'outer_port'
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
-    expected_conn.connected.block_port.ref.steps.add().name = '(bridge)vector[0]'
+    expected_conn.connected.block_port.ref.steps.add().name = '(bridge)vector.0'
     expected_conn.connected.block_port.ref.steps.add().name = 'inner_link'
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
@@ -145,7 +145,6 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'block0'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    expected_conn.connected.block_port.ref.steps.add().allocate = ''
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
@@ -154,7 +153,6 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'block1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    expected_conn.connected.block_port.ref.steps.add().allocate = ''
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
