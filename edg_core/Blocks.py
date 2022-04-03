@@ -338,12 +338,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self.parent = parent
 
   SelfType = TypeVar('SelfType', bound='BaseBlock')
-  def _bind(self: SelfType, parent: Union[BaseBlock, Port], ignore_context: bool = False) -> SelfType:
+  def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
     assert self.parent is None, "can't clone bound block"
-    if not ignore_context:
-      # TODO get rid of this hack, needed in Driver
-      assert builder.get_curr_context() is self._parent, "can't clone to different context"
+    assert builder.get_curr_context() is self._lexical_parent, "can't clone to different context"
     clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
     clone._bind_in_place(parent)
     return clone

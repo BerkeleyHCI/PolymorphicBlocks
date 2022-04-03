@@ -430,10 +430,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
+    assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
     assert isinstance(port_parent, Block)
-    assert port_parent._parent is self, "can only export ports of contained block"
-    assert port._is_bound(), "can only export bound type"
+    assert port_parent.parent is self, "can only export ports of contained block"
 
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)

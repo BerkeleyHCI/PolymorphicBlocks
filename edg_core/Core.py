@@ -140,7 +140,7 @@ class ElementMeta(type):
     try:
       obj = type.__call__(cls, *args, **kwargs)
       obj._initializer_args = (args, kwargs)
-      obj._parent = parent
+      obj._lexical_parent = parent
       obj._block_context = block_context
       obj._post_init()
     finally:
@@ -183,7 +183,7 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._parent: Optional[Refable]  # set by metaclass
+    self._lexical_parent: Optional[Refable]  # set by metaclass
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     builder.push_element(self)
@@ -200,6 +200,22 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
+  # @abstractmethod
+  # def _bound_name_of_child(self, child: Any) -> str:
+  #   """For a bound this, return the name of the child."""
+  #   ...
+  #
+  # def _bound_path_from(self, base: LibraryElement) -> List[str]:
+  #   """Returns the path from some base, as a list of path elements."""
+  #   if base is self:
+  #     return []
+  #   else:
+  #     return self._lexical_parent._bound_path_from(base) + self._lexical_parent._bound_name_of_child(self)
+  #
+  # def _bound_name_from(self, base: LibraryElement) -> str:
+  #   """Return the path from some base, as a string. Wrapper around _bound_path_from."""
+  #   return '.'.join(self._bound_path_from(base))
+
   def _name_of_child(self, subelt: Any) -> str:
     self_name = self.manager.name_of(subelt)
     if self_name is not None:
@@ -213,12 +229,12 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     if base is self:
       return ""
     else:
-      if not isinstance(self._parent, LibraryElement):
+      if not isinstance(self._lexical_parent, LibraryElement):
         return "???"
-      elif self._parent is base:
-        return self._parent._name_of_child(self)
+      elif self._lexical_parent is base:
+        return self._lexical_parent._name_of_child(self)
       else:
-        return self._parent._name_to(base) + "." + self._parent._name_of_child(self)
+        return self._lexical_parent._name_to(base) + "." + self._lexical_parent._name_of_child(self)
 
   @classmethod
   def _static_def_name(cls) -> str:
