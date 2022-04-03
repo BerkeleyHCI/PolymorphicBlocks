@@ -273,8 +273,8 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
     self.connect(self.spi, self.ic.spi)
     self.connect(self.i2c, self.ic.i2c)
     self.connect(self.uart, self.ic.uart)
-    self.connect(self.usb, self.ic.usb)
     self.connect(self.can, self.ic.can)
+    # explicitly don't forward USB here, since we need to tack things to it
 
     self.pwr_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
@@ -292,7 +292,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
       # TODO add the reset stabilizing capacitor?
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
-                                                self.ic.swd)
+                                   self.ic.swd)
 
   def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
     if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
@@ -300,14 +300,15 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.osc)
 
-    # TODO FIX ME
-    # if usb_allocated:
-    #   assert len(usb_allocated) == 1
-    #   usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated[0])
-    #
-    #   self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
-    #   self.connect(self.usb_pull.pwr, self.pwr)
-    #   self.connect(usb_port.dp, self.usb_pull.io)
+    if usb_allocated:
+      assert len(usb_allocated) == 1
+      usb_allocated_name = usb_allocated[0]
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated_name)
+      self.connect(usb_port, self.ic.usb.allocate(usb_allocated_name))
+
+      self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
+      self.connect(self.usb_pull.pwr, self.pwr)
+      self.connect(usb_port.dp, self.usb_pull.io)
 
 
 class Stm32f103_48_new(Stm32f103Base):
