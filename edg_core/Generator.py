@@ -32,7 +32,6 @@ class GeneratorBlock(Block):
   class GeneratorRecord(NamedTuple):
     fn: Callable
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
-    req_ports: Tuple[BasePort, ...]  # all required ports for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
   ConstrType1 = TypeVar('ConstrType1', bound=Any)
@@ -170,7 +169,7 @@ class GeneratorBlock(Block):
               and req_param.binding.src._parent is self), \
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
 
-    self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, (), reqs)
+    self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
   # Generator solved-parameter-access interface
   #
@@ -217,8 +216,6 @@ class GeneratorBlock(Block):
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
       for req_param in self._generator.req_params:
         pb.generator.required_params.add().CopyFrom(ref_map[req_param])
-      for req_port in self._generator.req_ports:
-        pb.generator.required_ports.add().CopyFrom(ref_map[req_port])
       pb = self._populate_def_proto_block_base(pb)
       return pb
     else:
