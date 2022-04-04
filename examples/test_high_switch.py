@@ -119,23 +119,13 @@ class TestHighSwitch(BoardTop):
       self.light = ElementDict[LightsDriver]()
       for i in range(4):
         light = self.light[i] = imp.Block(LightsDriver((0, 0.5) * Amp))
+        self.connect(self.mcu.gpio.allocate(f'light_{i}0'), light.control[0])
+        self.connect(self.mcu.gpio.allocate(f'light_{i}1'), light.control[1])
 
-      self.connect(self.mcu.gpio.allocate('light_00'), self.light[0].control[0])
-      self.connect(self.mcu.gpio.allocate('light_01'), self.light[0].control[1])
-      self.connect(self.mcu.gpio.allocate('light_10'), self.light[1].control[0])
-      self.connect(self.mcu.gpio.allocate('light_11'), self.light[1].control[1])
-      self.connect(self.mcu.gpio.allocate('light_20'), self.light[2].control[0])
-      self.connect(self.mcu.gpio.allocate('light_21'), self.light[2].control[1])
-      self.connect(self.mcu.gpio.allocate('light_30'), self.light[3].control[0])
-      self.connect(self.mcu.gpio.allocate('light_31'), self.light[3].control[1])
-
-      for i in range(2):
-        light = self.light[4+i] = imp.Block(LightsDriver((0, 3) * Amp))
-
-      self.connect(self.mcu.gpio.allocate('light_40'), self.light[4].control[0])
-      self.connect(self.mcu.gpio.allocate('light_41'), self.light[4].control[1])
-      self.connect(self.mcu.gpio.allocate('light_50'), self.light[5].control[0])
-      self.connect(self.mcu.gpio.allocate('light_51'), self.light[5].control[1])
+      for i in range(4, 6):
+        light = self.light[i] = imp.Block(LightsDriver((0, 3) * Amp))
+        self.connect(self.mcu.gpio.allocate(f'light_{i}0'), light.control[0])
+        self.connect(self.mcu.gpio.allocate(f'light_{i}1'), light.control[1])
 
     self.hole = ElementDict[MountingHole]()
     for i in range(4):
