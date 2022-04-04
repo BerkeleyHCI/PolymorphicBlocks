@@ -117,11 +117,11 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PA10', {'PA10': dio_ft_model}),
       PinResource('PA11', {'PA11': dio_ft_model}),
       PinResource('PA12', {'PA12': dio_ft_model}),
-      PinResource('PA13', {'PA13': dio_ft_model}),  # default is JTMS/SWO
+      # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
 
-      PinResource('PA14', {'PA14': dio_ft_model}),  # default is JTCK/SWCLK
+      # PinResource('PA14', {'PA14': dio_ft_model}),  # sforced SWCLK, default is JTCK/SWCLK
       PinResource('PA15', {'PA15': dio_ft_model}),  # default is JTDI
-      PinResource('PB3', {'PB3': dio_ft_model}),  # default is JTDO
+      # PinResource('PB3', {'PB3': dio_ft_model}),  # forced SWO, default is JTDO
       PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
       PinResource('PB5', {'PB5': dio_std_model}),
       PinResource('PB6', {'PB6': dio_ft_model}),
@@ -129,7 +129,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PB8', {'PB8': dio_ft_model}),
       PinResource('PB9', {'PB9': dio_ft_model}),
 
-      PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
+      # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
 
       PeripheralFixedResource('USART2', uart_model, {
         'tx': ['PA2', 'PD5'], 'rx': ['PA3', 'PD6']
@@ -155,7 +155,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
         'dm': ['PA11'], 'dp': ['PA12']
       }),
-      PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
+      PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
         'swdio': ['PA13'], 'swclk': ['PA14'], 'reset': ['NRST'], 'swo': ['PB3'],
       }),
       PeripheralFixedResource('I2C1', i2c_model, {
