@@ -20,6 +20,7 @@ from .MultiBiDict import MultiBiDict
 # Features for library builders
 from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_library
 from .Blocks import BasePort, BaseBlock
+from .Builder import builder
 from . import TransformUtil
 
 from .HdlInterfaceServer import HdlInterface

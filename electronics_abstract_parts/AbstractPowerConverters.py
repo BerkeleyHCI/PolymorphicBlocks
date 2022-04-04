@@ -185,16 +185,13 @@ class BuckConverterPowerPath(GeneratorBlock):
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
-    ))
+    )).connected(self.gnd, self.pwr_in)
     # TODO size based on transient response, add to voltage tolerance stackups
     output_capacitance = Range.from_lower(inductor_current_ripple.upper /
                                           (8 * frequency.lower * output_voltage_ripple))
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=output_capacitance*Farad,
-    ))
-    self.connect(self.pwr_in, self.in_cap.pwr)
-    self.connect(self.pwr_out, self.out_cap.pwr)
-    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+    )).connected(self.gnd, self.pwr_out)
 
 
 @abstract_block
@@ -288,15 +285,12 @@ class BoostConverterPowerPath(GeneratorBlock):
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
-    ))
+    )).connected(self.gnd, self.pwr_in)
     output_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper /
                                           (frequency.lower * output_voltage_ripple))
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=output_capacitance*Farad,
-    ))
-    self.connect(self.pwr_in, self.in_cap.pwr)
-    self.connect(self.pwr_out, self.out_cap.pwr)
-    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
+    )).connected(self.gnd, self.pwr_out)
 
 
 @abstract_block

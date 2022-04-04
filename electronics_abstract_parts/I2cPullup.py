@@ -16,9 +16,5 @@ class I2cPullup(DiscreteApplication):
     super().contents()
 
     res_model = PullupResistor(4.7 * kOhm(tol=0.05))
-    self.scl_res = self.Block(res_model)
-    self.sda_res = self.Block(res_model)
-
-    self.connect(self.scl_res.pwr, self.sda_res.pwr, self.pwr)
-    self.connect(self.scl_res.io, self.i2c.scl)
-    self.connect(self.sda_res.io, self.i2c.sda)
+    self.scl_res = self.Block(res_model).connected(self.pwr, self.i2c.scl)
+    self.sda_res = self.Block(res_model).connected(self.pwr, self.i2c.sda)

@@ -51,10 +51,6 @@ class Mcp6001(Opamp):
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.vss)
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap0 = imp.Block(DecouplingCapacitor(
-        capacitance=0.1*uFarad(tol=0.2),
-      ))
+    self.vdd_cap0 = self.Block(DecouplingCapacitor(
+      capacitance=0.1*uFarad(tol=0.2)
+    )).connected(self.gnd, self.pwr)

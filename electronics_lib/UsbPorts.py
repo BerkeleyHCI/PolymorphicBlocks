@@ -154,9 +154,8 @@ class UsbCcPulldownResistor(Block):
   def contents(self) -> None:
     super().contents()
     pdr_model = PulldownResistor(resistance=5.1*kOhm(tol=0.01))
-    (self.cc1, ), _ = self.chain(self.Block(pdr_model), self.cc.cc1)
-    (self.cc2, ), _ = self.chain(self.Block(pdr_model), self.cc.cc2)
-    self.connect(self.gnd, self.cc1.gnd, self.cc2.gnd)
+    self.cc1 = self.Block(pdr_model).connected(self.gnd, self.cc.cc1)
+    self.cc2 = self.Block(pdr_model).connected(self.gnd, self.cc.cc2)
 
 
 class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a superclass?

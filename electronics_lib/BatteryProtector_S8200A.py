@@ -64,16 +64,15 @@ class BatteryProtector_S8200A(Block):
   def contents(self) -> None:
     super().contents()
 
-    (self.vdd_res, ), _ = self.chain(
-      self.pwr_in,
-      self.Block(SeriesPowerResistor(330 * Ohm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))), # while 330 is preferred, the actual acceptable range is 150-1k
-      self.ic.vdd)
+    self.vdd_res = self.Block(
+      SeriesPowerResistor(330 * Ohm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))  # while 330 is preferred, the actual acceptable range is 150-1k
+    ).connected(self.pwr_in, self.ic.vdd)
 
     self.connect(self.pwr_in, self.pwr_out)
 
-    self.vdd_vss_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.10)))
-    self.connect(self.ic.vdd, self.vdd_vss_cap.pwr)
-    self.connect(self.ic.vss, self.vdd_vss_cap.gnd)
+    self.vdd_vss_cap = self.Block(
+      DecouplingCapacitor(0.1 * uFarad(tol=0.10))
+    ).connected(self.ic.vss, self.ic.vdd)
 
     # do fet
     self.connect(self.ic.vss, self.do_fet.source.as_ground())
@@ -86,8 +85,6 @@ class BatteryProtector_S8200A(Block):
     self.connect(self.gnd_out, self.co_fet.source.as_ground_source())
     self.connect(self.ic.co, self.co_fet.gate)
 
-    (self.vm_res, ), _ = self.chain(
-      self.gnd_out,
-      self.Block(SeriesPowerResistor(2 * kOhm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))),
-      self.ic.vm.as_voltage_sink()
-    )
+    self.vm_res = self.Block(
+      SeriesPowerResistor(2 * kOhm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))
+    ).connected(self.gnd_out, self.ic.vm.as_voltage_sink())

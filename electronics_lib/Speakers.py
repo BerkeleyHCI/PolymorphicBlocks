@@ -61,9 +61,7 @@ class Lm4871(IntegratedCircuit):
 
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=1.0*uFarad(tol=0.2),
-    ))
-    self.connect(self.pwr, self.in_cap.pwr)
-    self.connect(self.gnd, self.in_cap.gnd)
+    )).connected(self.gnd, self.pwr)
 
     self.byp_cap = self.Block(Capacitor(  # TODO bypass should be a pseudo source pin, this can be a DecouplingCap
       capacitance=1.0*uFarad(tol=0.2),

@@ -1,3 +1,5 @@
+from typing import Optional, cast
+
 from electronics_model import *
 from .Categories import *
 
@@ -27,6 +29,15 @@ class PullupResistor(DiscreteApplication):
     self.pwr = self.Export(self.res.a.as_voltage_sink(), [Power])
     self.io = self.Export(self.res.b.as_digital_pull_high_from_supply(self.pwr), [InOut])
 
+  def connected(self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
+      'PullupResistor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if pwr is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+    if io is not None:
+      cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
 
 class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
@@ -38,6 +49,15 @@ class PulldownResistor(DiscreteApplication):
 
     self.gnd = self.Export(self.res.a.as_ground(), [Common])
     self.io = self.Export(self.res.b.as_digital_pull_low_from_supply(self.gnd), [InOut])
+
+  def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
+      'PulldownResistor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if io is not None:
+      cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
 
 
 class SeriesPowerResistor(DiscreteApplication):
@@ -64,6 +84,15 @@ class SeriesPowerResistor(DiscreteApplication):
       current_limits=self.current_limits
     ), [Output])
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+  def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
+      'SeriesPowerResistor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if pwr_in is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+    if pwr_out is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+    return self
 
 
 from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
@@ -120,10 +149,19 @@ class DecouplingCapacitor(DiscreteApplication):
     super().__init__()
 
     self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
-    self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
     self.gnd = self.Export(self.cap.neg.as_voltage_sink(), [Common])
+    self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
+
+  def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
+      'DecouplingCapacitor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if pwr is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+    return self
 
 
 @abstract_block

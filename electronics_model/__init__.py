@@ -9,10 +9,10 @@ from .Units import Second, nSecond, Hertz, kHertz, MHertz
 from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
-from .PassivePort import Passive
-from .VoltagePorts import VoltageSource, VoltageSink, Power
+from .PassivePort import Passive, PassiveLink
+from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .Ground import Ground, GroundSource, Common
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
 from .AnalogPort import AnalogSource, AnalogSink
 from .UartPort import UartPort
 from .SpiPort import SpiMaster, SpiSlave
