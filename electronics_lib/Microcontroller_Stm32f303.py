@@ -2,7 +2,6 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_abstract_parts.PinMappable import AllocatedResource
 
 
 class Stm32f303Base_Device():

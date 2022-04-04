@@ -32,8 +32,7 @@ class MultimeterAnalog(Block):
     self.connect(self.range.pwr, self.pwr)
     self.connect(self.range.gnd, self.gnd)
     self.connect(self.select, self.range.control)
-    # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch
-    # to drop the voltage to safe limits
+    # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
     self.connect(self.res.b.as_analog_source(
       voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
       current_limits=(-10, 10)*mAmp,
@@ -239,6 +238,7 @@ class MultimeterTest(BoardTop):
       self.mcu = imp.Block(Holyiot_18010())
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
 
       self.chain(self.gate.btn_out, self.mcu.gpio.allocate('sw0'))
       self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)

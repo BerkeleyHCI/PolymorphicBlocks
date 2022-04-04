@@ -53,6 +53,8 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
 
     self.abstract_pinmaps = self.mappable_ios(self.gnd, self.pwr)
 
+    self.require((self.usb.length() > 0).implies(self.pwr_usb.is_connected()), "USB require Vbus connected")
+
   @staticmethod
   def mappable_ios(gnd: Union[VoltageSource, VoltageSink], vdd: Union[VoltageSource, VoltageSink]) -> PinMapUtil:
     """Returns the mappable for given the input power and ground references.
@@ -128,7 +130,7 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       PinResource('P0.20', {'P0.20': dio_model}),
       PinResource('P0.22', {'P0.22': dio_model}),
       PinResource('P0.24', {'P0.24': dio_model}),
-      # PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO
+      # PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
         'swclk': ['SWCLK'], 'swdio': ['SWDIO'], 'reset': ['P0.18'], 'swo': ['P1.00'],
@@ -211,7 +213,6 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
       (UartPort, uart_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
-    self.can.defined()  # no CAN support
 
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
