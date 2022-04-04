@@ -7,6 +7,8 @@ class TestBlinkyBasic(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
+    self.dummy = self.Block(VoltageLoad())
+    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
 
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gnd, self.led.gnd)
@@ -21,6 +23,8 @@ class TestBlinkySimple(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
+    self.dummy = self.Block(VoltageLoad())
+    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
 
     with self.implicit_connect(
         ImplicitConnect(self.mcu.gnd, [Common]),
@@ -40,6 +44,8 @@ class TestBlinkySimpleChain(BoardTop):
   def contents(self):
     super().contents()
     self.mcu = self.Block(Nucleo_F303k8())
+    self.dummy = self.Block(VoltageLoad())
+    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
 
     with self.implicit_connect(
         ImplicitConnect(self.mcu.gnd, [Common]),
