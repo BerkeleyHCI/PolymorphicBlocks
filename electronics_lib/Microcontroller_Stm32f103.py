@@ -119,7 +119,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PA12', {'PA12': dio_ft_model}),
       # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
 
-      # PinResource('PA14', {'PA14': dio_ft_model}),  # sforced SWCLK, default is JTCK/SWCLK
+      # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
       PinResource('PA15', {'PA15': dio_ft_model}),  # default is JTDI
       # PinResource('PB3', {'PB3': dio_ft_model}),  # forced SWO, default is JTDO
       PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
