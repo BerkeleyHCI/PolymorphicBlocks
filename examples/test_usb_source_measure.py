@@ -272,15 +272,14 @@ class UsbSourceMeasureTest(BoardTop):
 
     # TODO next revision: add a USB data port switch so the PD port can also take data
 
-    self.gnd_merge = self.Block(MergedVoltageSource())
-    self.connect(self.pwr_usb.gnd, self.gnd_merge.sink1)
-    self.connect(self.data_usb.gnd, self.gnd_merge.sink2)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.pwr_usb.gnd, self.data_usb.gnd)
 
-    self.gnd = self.connect(self.gnd_merge.source)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
     self.vusb = self.connect(self.pwr_usb.pwr)
 
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.pwr_usb.pwr,
@@ -307,7 +306,7 @@ class UsbSourceMeasureTest(BoardTop):
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
-        ImplicitConnect(self.gnd_merge.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
         current=(0, 3)*Amp,
@@ -382,7 +381,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
+    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.pwr_out)
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.as_voltage_sink(), self.control.out)
 

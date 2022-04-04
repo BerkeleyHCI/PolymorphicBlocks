@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 from electronics_model import *
 from .AbstractPassives import *
@@ -51,21 +51,30 @@ class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
     ), [Output])
 
 
-class MergedVoltageSource(DummyDevice, NetBlock):
+class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(VoltageSource(
+    self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
+    self.pwr_out = self.Port(VoltageSource(
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL
     ))
-    self.sink1 = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
-                                       current_draw=self.source.link().current_drawn))
-    self.sink2 = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
-                                       current_draw=self.source.link().current_drawn))
+    self.generator(self.generate, self.pwr_ins.allocated())
 
-    self.assign(self.source.voltage_out,
-                self.sink1.link().voltage.hull(self.sink2.link().voltage))
+  def generate(self, in_allocates: List[str]):
+    self.pwr_ins.defined()
+    for in_allocate in in_allocates:
+      self.pwr_ins.append_elt(VoltageSink(
+        voltage_limits=RangeExpr.ALL,
+        current_draw=self.pwr_out.link().current_drawn), in_allocate)
+    self.assign(self.pwr_out.voltage_out,
+                self.pwr_ins.hull(lambda pwr_in: pwr_in.link().voltage))
+
+  def connected_from(self, *pwr_ins: Port[VoltageLink]) -> 'MergedVoltageSource':
+    for pwr_in in pwr_ins:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_ins.allocate())
+    return self
 
 
 class MergedAnalogSource(DummyDevice, NetBlock):
