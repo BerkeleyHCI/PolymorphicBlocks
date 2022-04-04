@@ -238,7 +238,7 @@ class MultimeterTest(BoardTop):
 
       self.mcu = imp.Block(Holyiot_18010())
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
+      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
       self.chain(self.gate.btn_out, self.mcu.gpio.allocate('sw0'))
       self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)
@@ -266,7 +266,7 @@ class MultimeterTest(BoardTop):
         ImplicitConnect(self.reg_5v.gnd, [Common]),
     ) as imp:
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.gpio.allocate(''),
+        self.mcu.gpio.allocate('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
@@ -355,7 +355,7 @@ class MultimeterTest(BoardTop):
           'rgb_g=3',
 
           'spi.miso=28',
-          'adc_cs=27',
+          'adc_cs=5',
           'lcd_cs=26',
 
           'spi.sck=20',
@@ -376,7 +376,6 @@ class MultimeterTest(BoardTop):
           'sw2=6',
 
           'inn_control=4',
-          'swd.swo=5',
         ])),
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor

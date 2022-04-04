@@ -3,9 +3,11 @@ from typing import *
 from itertools import chain
 
 from electronics_abstract_parts import *
+from electronics_lib import SwdCortexTargetWithTdiConnector
 
 
-class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+@abstract_block
+class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
 
@@ -149,17 +151,16 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  @abstractmethod
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None: ...
 
 
-class Holyiot_18010(Nrf52840Base_Device):
-  SYSTEM_PIN_REMAP = {
-    'Vss': ['1', '25', '37'],
+class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '14',
+    'Vss': ['1', '25', '37'],
     'Vbus': '22',
   }
   RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
@@ -225,118 +226,32 @@ class Holyiot_18010(Nrf52840Base_Device):
     )
 
 
+class Holyiot_18010(PinMappable, Microcontroller, IoController):
+  """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
+    self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
+  def contents(self):
+    super().contents()
 
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
 
+    self.connect(self.gpio, self.ic.gpio)
+    self.connect(self.adc, self.ic.adc)
+    self.connect(self.dac, self.ic.dac)
 
+    self.connect(self.spi, self.ic.spi)
+    self.connect(self.i2c, self.ic.i2c)
+    self.connect(self.uart, self.ic.uart)
+    self.connect(self.usb, self.ic.usb)
+    self.connect(self.can, self.ic.can)
 
-
-
-class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock):
-  """
-  Holyiot 18010, nRF52840-based BLE module with castellated edge pads
-  """
-
-  @init_in_parent
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.pwr_3v = self.Port(VoltageSink(
-      voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
-      current_draw=(0, 212 / 64 + 4.8) * mAmp  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
-    ), [Power])  # TODO propagate IO pin currents
-    self.pwr_usb = self.Port(VoltageSink(
-      voltage_limits=(4.35, 5.5)*Volt,
-      current_draw=(0.262, 7.73) * mAmp  # CPU/USB sleeping to everything active
-    ), optional=True)
-    self.gnd = self.Port(Ground(), [Common])
-
-    io_model = DigitalBidir.from_supply(
-      self.gnd, self.pwr_3v,
-      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-      current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
-      current_draw=(0, 0)*Amp,
-      input_threshold_factor=(0.3, 0.7),
-      pullup_capable=True, pulldown_capable=True,
-    )
-
-    adc_model = AnalogSink(
-      voltage_limits=(self.gnd.link().voltage.upper(), self.pwr_3v.link().voltage.lower()) +
-                     (-0.3, 0.3) * Volt,
-      current_draw=(0, 0) * Amp,
-      impedance=Range.from_lower(1)*MOhm
-    )
-
-
-
-
-
-
-
-
-    self.digital = ElementDict[DigitalBidir]()
-    for i in range(28):
-      self.digital[i] = self.Port(io_model, optional=True)
-      self._add_assignable_io(self.digital[i])
-
-    self.adc = ElementDict[AnalogSink]()
-    for i in range(8):
-      self.adc[i] = self.Port(adc_model, optional=True)
-      self._add_assignable_io(self.adc[i])
-
-    self.uart_0 = self.Port(UartPort(io_model), optional=True)
-    self._add_assignable_io(self.uart_0)
-
-    self.spi_0 = self.Port(SpiMaster(io_model), optional=True)
-    self._add_assignable_io(self.spi_0)
-
-    self.usb_0 = self.Port(UsbDevicePort(), optional=True)
-
-    self.swd = self.Port(SwdTargetPort(io_model), optional=True)
-    self._add_assignable_io(self.swd)
-
-    self.generator(self.pin_assign, self.pin_assigns,
-                   req_ports=list(chain(self.digital.values(), self.adc.values(),
-                                        [self.uart_0, self.spi_0, self.swd])))
-
-  def pin_assign(self, pin_assigns_str: str) -> None:
-    system_pins: Dict[str, CircuitPort] = {
-      '1': self.gnd,
-      '14': self.pwr_3v,
-      '21': self.swd.reset,
-      '22': self.pwr_usb,
-      '23': self.usb_0.dm,
-      '24': self.usb_0.dp,
-      '25': self.gnd,
-      '31': self.swd.swclk,
-      '32': self.swd.swdio,
-      '37': self.gnd,
-    }
-
-    digital_ports = [port for port in self._all_assignable_ios if not isinstance(port, AnalogSink)]
-    assigned_pins = PinAssignmentUtil(
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
-                   range(6, 14)),
-      AnyPinAssign(digital_ports,
-                   chain(range(2, 14), range(15, 21), range(26, 31), range(33, 37))),
-    ).assign(
-      [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps(pin_assigns_str))
-
-    overassigned_pins = set(assigned_pins.assigned_pins.keys()).intersection(set(system_pins.keys()))
-    assert not overassigned_pins, f"over-assigned pins {overassigned_pins}"
-
-    # TODO REMOVE THIS NASTY HACK - needed to partially assign the SWD pins since SWCLK, SWDIO, reset are fixed
-    # but "SWO" is not a dedicated pin
-    all_pins = {
-      **{str(pin): port for pin, port in assigned_pins.assigned_pins.items()
-         if port is not self.swd.reset and port is not self.swd.swclk and port is not self.swd.swdio},
-      **{str(pin): port for pin, port in system_pins.items()}
-    }
-
-    self.footprint(
-      'U', 'edg:Holyiot-18010-NRF52840',
-      all_pins,
-      mfr='Holyiot', part='18010',
-      datasheet='https://learn.adafruit.com/adafruit-itsybitsy-nrf52840-express',
-    )
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+                                   self.ic.swd)
