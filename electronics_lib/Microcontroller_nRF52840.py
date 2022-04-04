@@ -131,8 +131,8 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       PeripheralAnyResource('SPI1', spi_model),
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI3', spi_model),
-      PeripheralAnyResource('I2C0', spi_model),
-      PeripheralAnyResource('I2C1', spi_model),
+      PeripheralAnyResource('I2C0', i2c_model),
+      PeripheralAnyResource('I2C1', i2c_model),
       PeripheralAnyResource('UART0', uart_model),
       PeripheralAnyResource('UART1', uart_model),
     ])
