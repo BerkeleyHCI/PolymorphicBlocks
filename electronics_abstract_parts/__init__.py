@@ -36,7 +36,7 @@ from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 
-from .IoController import IoController
+from .IoController import BaseIoController, IoController
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper

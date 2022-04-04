@@ -2,6 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
+from electronics_abstract_parts.PinMappable import AllocatedResource
 
 
 class Stm32f303Base_Device():
@@ -36,7 +37,7 @@ class Stm32f303Base_Device():
     )
     dio_tta_model = DigitalBidir.from_supply(
       gnd, vdd,
-      voltage_limit_abs=(-0.3, vdda.link().voltage.lower() + 0.3) * Volt,  # Table 19
+      voltage_limit_abs=(-0.3 * Volt, vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
@@ -141,9 +142,9 @@ class Stm32f303Base_Device():
     ])
 
 
-class Nucleo_F303k8_new(PinMappable, GeneratorBlock, FootprintBlock):
-  """Nucleo32 F303K8 configured as power source from USB.
-  TODO: this should be IoController, but this has a power output (instead of input) pin"""
+class Nucleo_F303k8_new(PinMappable, BaseIoController, GeneratorBlock, FootprintBlock):
+  """Nucleo32 F303K8 configured as power source from USB."""
+
   RESOURCE_PIN_REMAP = {
     'PA9': '1',  # CN3.1, D1
     'PA10': '2',  # CN3.2, D0
@@ -175,14 +176,14 @@ class Nucleo_F303k8_new(PinMappable, GeneratorBlock, FootprintBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
 
+    self.pwr_5v = self.Port(VoltageSource(
+      voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
+      current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
+    ), optional=True)
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
       # TODO can be lower if don't need 5.0v out
       current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
-    ), optional=True)
-    self.pwr_5v = self.Port(VoltageSource(
-      voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
-      current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
     ), optional=True)
     self.pwr_3v3 = self.Port(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
@@ -190,14 +191,7 @@ class Nucleo_F303k8_new(PinMappable, GeneratorBlock, FootprintBlock):
     ), optional=True)
     self.gnd = self.Port(GroundSource(), optional=True)
 
-    self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
-    self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
-    self.dac = self.Port(Vector(AnalogSource.empty()), optional=True)
-
-    self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
-    self.i2c = self.Port(Vector(I2cMaster.empty()), optional=True)
-    self.uart = self.Port(Vector(UartPort.empty()), optional=True)
-    self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
+    self.usb.defined()  # no USB support
 
     self.generator(self.generate, self.pin_assigns,
                    self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
@@ -216,14 +210,14 @@ class Nucleo_F303k8_new(PinMappable, GeneratorBlock, FootprintBlock):
       '17': self.gnd,
     }
 
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    allocated = Stm32f303Base_Device.mappable_ios(self.gnd, self.pwr_3v3, self.pwr_3v3)\
+      .remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+        (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+        (UartPort, uart_allocates), (CanControllerPort, can_allocates),
+        (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
-                                      self.usb, self.can, self.swd],
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,self.can],
                                      allocated)
     self.footprint(
       'U', 'edg:Nucleo32',

@@ -5,15 +5,12 @@ from .PinMappable import AllocatedResource
 
 
 @abstract_block
-class IoController(Block):
+class BaseIoController(Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
   Pin assignments are handled via refinements and can be assigned to pins' allocated names."""
   def __init__(self) -> None:
     super().__init__()
-
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
@@ -25,7 +22,8 @@ class IoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
     self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
-  def _instantiate_from(self, ios: List[BasePort], allocations: List[AllocatedResource]) -> \
+  @staticmethod
+  def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
       Dict[str, CircuitPort]:
     """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
     instantiate vector elements (if a vector) or init the port model (if a port)
@@ -66,3 +64,13 @@ class IoController(Block):
       else:
         raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
     return pinmap
+
+
+@abstract_block
+class IoController(BaseIoController):
+  """An IO controller that takes input power."""
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])

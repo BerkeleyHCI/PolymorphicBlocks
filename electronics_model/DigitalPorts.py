@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, Union, Tuple
 from edg_core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .VoltagePorts import CircuitPort, VoltageSink, VoltageSource
+from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
 from .Units import Volt
 
 
@@ -97,7 +97,7 @@ class DigitalBase(CircuitPort[DigitalLink]):
 
 class DigitalSink(DigitalBase):
   @staticmethod
-  def from_supply(neg: VoltageSink, pos: VoltageSink, *,
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
                   voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
@@ -190,7 +190,7 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
 
 class DigitalSource(DigitalBase):
   @staticmethod
-  def from_supply(neg: VoltageSink, pos: VoltageSink,
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   current_limits: RangeLike = Default(RangeExpr.ALL), *,
                   output_threshold_offset: Optional[Tuple[FloatLike, FloatLike]] = None) -> DigitalSource:
     if output_threshold_offset is not None:
@@ -235,7 +235,7 @@ class DigitalBidirNotConnected(NotConnectableBlock['DigitalBidir']):
 
 class DigitalBidir(DigitalBase, NotConnectablePort):
   @staticmethod
-  def from_supply(neg: VoltageSink, pos: VoltageSink,
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   voltage_limit_abs: Optional[RangeLike] = None,
                   voltage_limit_tolerance: Optional[RangeLike] = None,
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
@@ -345,7 +345,7 @@ class DigitalBidirBridge(CircuitPortBridge):
 
 class DigitalSingleSource(DigitalBase):
   @staticmethod
-  def low_from_supply(neg: VoltageSink) -> DigitalSingleSource:
+  def low_from_supply(neg: Port[VoltageLink]) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
@@ -354,7 +354,7 @@ class DigitalSingleSource(DigitalBase):
     )
 
   @staticmethod
-  def high_from_supply(pos: VoltageSink) -> DigitalSingleSource:
+  def high_from_supply(pos: Port[VoltageLink]) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
