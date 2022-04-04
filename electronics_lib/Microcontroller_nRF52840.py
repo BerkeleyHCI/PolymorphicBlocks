@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import *
 from itertools import chain
 
@@ -30,7 +31,7 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
     self.generator(self.generate, self.pin_assigns,
                    self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
+                   self.usb.allocated(), self.swd.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -42,6 +43,14 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       # TODO propagate current consumption from IO ports
     ))
     self.gnd.init_from(Ground())
+
+    self.system_pinmaps = VariantPinRemapper({
+      'Vdd': self.pwr,
+      'Vss': self.gnd,
+      'Vbus': self.pwr_usb,
+    })
+
+    self.abstract_pinmaps = self.mappable_ios(self.gnd, self.pwr)
 
   @staticmethod
   def mappable_ios(gnd: Union[VoltageSource, VoltageSink], vdd: Union[VoltageSource, VoltageSink]) -> PinMapUtil:
@@ -137,6 +146,16 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       PeripheralAnyResource('UART1', uart_model),
     ])
 
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+
+  @abstractmethod
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], swd_connected: bool) -> None: ...
+
+
 class Holyiot_18010(Nrf52840Base_Device):
   SYSTEM_PIN_REMAP = {
     'Vss': ['1', '25', '37'],
@@ -180,8 +199,30 @@ class Holyiot_18010(Nrf52840Base_Device):
     'P0.10': '36',
   }
 
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    ], assignments)
+    self.can.defined()  # no CAN support
 
+    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
+                                      self.usb, self.can, self.swd],
+                                     allocated)
+
+    self.footprint(
+      'U', 'edg:Holyiot-18010-NRF52840',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='Holyiot', part='18010',
+      datasheet='http://www.holyiot.com/tp/2019042516322180424.pdf',
+    )
 
 
 

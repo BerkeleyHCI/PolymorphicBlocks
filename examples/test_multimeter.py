@@ -236,39 +236,37 @@ class MultimeterTest(BoardTop):
     ) as imp:
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
-      self.mcu = imp.Block(Holyiot_18010_Nrf52840())
-      (self.swd, ), self.swd_chain = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()), self.mcu.swd)
+      self.mcu = imp.Block(Holyiot_18010())
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
 
-      self.sw0_net = self.chain(self.gate.btn_out, self.mcu.new_io(DigitalBidir))
-      self.gate_control_net = self.chain(self.mcu.new_io(DigitalBidir), self.gate.control)
+      self.chain(self.gate.btn_out, self.mcu.gpio.allocate('sw0'))
+      self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.rgb_r_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
-      self.rgb_g_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
-      self.rgb_b_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
+      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
+      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
 
-      (self.sw1, ), self.sw1_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.sw2, ), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
       # TODO next revision: proper navigation switch
 
-      shared_spi = self.mcu.new_io(SpiMaster)
-      self.spi_net = self.connect(shared_spi)
+      shared_spi = self.mcu.spi.allocate('spi')
 
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
-      self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
+      self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
+      self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
-      self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
+      self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
     # SPEAKER DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.reg_5v.gnd, [Common]),
     ) as imp:
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.new_io(DigitalBidir),
+        self.mcu.gpio.allocate(''),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
@@ -298,7 +296,7 @@ class MultimeterTest(BoardTop):
       self.connect(self.gnd_src.src, self.gnd_merge.source)
       self.connect(self.inn_mux.input0, self.gnd_src.dst)
       self.connect(self.inn_mux.input1, self.ref_buf.output)
-      self.inn_control_net = self.connect(self.mcu.new_io(DigitalBidir), self.inn_mux.control)
+      self.connect(self.mcu.gpio.allocate('inn_control'), self.inn_mux.control)
 
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())
@@ -316,10 +314,10 @@ class MultimeterTest(BoardTop):
         imp.Block(OpampFollower()),
         imp.Block(Mcp3201()),
         shared_spi)
-      self.measure_select_net = self.connect(self.mcu.new_io(DigitalBidir), self.measure.select)
+      self.connect(self.mcu.gpio.allocate('measure_select'), self.measure.select)
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
-      self.adc_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc.cs)
+      self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
       self.connect(self.reg_3v3.pwr_out, self.adc.ref)
 
       # DRIVER CIRCUITS
@@ -328,11 +326,11 @@ class MultimeterTest(BoardTop):
         voltage_rating=(0, 300)*Volt
       ))
       self.connect(self.driver.output, inp_port)
-      (self.driver_dac, ), self.driver_control_chain = self.chain(
-        self.mcu.new_io(DigitalBidir),
+      (self.driver_dac, ), _ = self.chain(
+        self.mcu.gpio.allocate('driver_control'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 1*kHertz(tol=0.5))),
         self.driver.control)
-      self.driver_enable_net = self.connect(self.mcu.new_io(DigitalBidir), self.driver.enable)
+      self.connect(self.mcu.gpio.allocate('driver_enable'), self.driver.enable)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -352,33 +350,33 @@ class MultimeterTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'rgb_r_net=36',
-          'rgb_b_net=2',
-          'rgb_g_net=3',
+          'rgb_r=36',
+          'rgb_b=2',
+          'rgb_g=3',
 
-          'spi_net.miso=28',
-          'adc_cs_net=27',
-          'lcd_cs_net=26',
+          'spi.miso=28',
+          'adc_cs=27',
+          'lcd_cs=26',
 
-          'spi_net.sck=20',
-          'spi_net.mosi=19',
-          'lcd_rs_net=18',
-          'lcd_reset_net=17',
+          'spi.sck=20',
+          'spi.mosi=19',
+          'lcd_rs=18',
+          'lcd_reset=17',
 
-          'spk_chain_0=15',
+          'spk=15',
 
-          'measure_select_net=30',
-          'gate_control_net_0=29',
+          'measure_select=30',
+          'gate_control=29',
 
-          'sw0_net_0=13',
-          'driver_control_chain_0=12',
-          'driver_enable_net=11',
+          'sw0=13',
+          'driver_control=12',
+          'driver_enable=11',
 
-          'sw1_chain_0=33',
-          'sw2_chain_0=6',
+          'sw1=33',
+          'sw2=6',
 
-          'inn_control_net=4',
-          'swd_chain_0.swo=5',
+          'inn_control=4',
+          'swd.swo=5',
         ])),
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor

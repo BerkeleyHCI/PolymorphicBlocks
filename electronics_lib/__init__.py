@@ -30,7 +30,7 @@ from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
-from .Microcontroller_nRF52840 import Holyiot_18010_Nrf52840
+from .Microcontroller_nRF52840 import Holyiot_18010
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
