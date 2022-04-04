@@ -419,26 +419,17 @@ global___HierarchyBlock = HierarchyBlock
 class Generator(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     REQUIRED_PARAMS_FIELD_NUMBER: builtins.int
-    REQUIRED_PORTS_FIELD_NUMBER: builtins.int
     @property
     def required_params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
         """Parameters that must be defined for the generator to fire.
         These parameters are the only ones accessible to the generator.
         """
         pass
-    @property
-    def required_ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
-        """Ports that must have defined connected-ness for the generator to fire.
-        This makes the port's IS_CONNECTED and CONNECTED_LINK.NAME available.
-        TODO to be removed
-        """
-        pass
     def __init__(self,
         *,
         required_params: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
-        required_ports: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["required_params",b"required_params","required_ports",b"required_ports"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["required_params",b"required_params"]) -> None: ...
 global___Generator = Generator
 
 class BlockLike(google.protobuf.message.Message):

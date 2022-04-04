@@ -492,13 +492,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val deps = newBlock match {
       case newBlock: wir.Generator =>
-        val generatorParams = newBlock.getDependencies.map { depPath =>
+        newBlock.getDependencies.map { depPath =>
           ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
         }
-        val generatorPorts = newBlock.getDependenciesPorts.map { depPort =>  // TODO remove this with refactoring
-          ElaborateRecord.ConnectedLink(path ++ depPort)
-        }
-        generatorParams ++ generatorPorts
       case _ => Seq()
     }
     elaboratePending.addNode(ElaborateRecord.Block(path), deps)
@@ -550,19 +546,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val reqParamValues = generator.getDependencies.map { reqParam =>
       reqParam -> constProp.getValue(path.asIndirect ++ reqParam).get
     }
-    val reqPortValues = generator.getDependenciesPorts.flatMap { reqPort =>  // TODO remove when refactored out
-      val isConnectedSuffix = PathSuffix() ++ reqPort + IndirectStep.IsConnected
-      val connectedNameSuffix = PathSuffix() ++ reqPort + IndirectStep.ConnectedLink + IndirectStep.Name
-      Seq(
-        isConnectedSuffix -> constProp.getValue(path.asIndirect ++ isConnectedSuffix).get,
-        connectedNameSuffix -> constProp.getValue(path.asIndirect ++ connectedNameSuffix).getOrElse(TextValue("")),
-      )
-    }.map { case (param, value) =>
-      param.asLocalPath() -> value
-    }
 
     // Run generator and plug in
-    library.runGenerator(generator.getBlockClass, (reqParamValues ++ reqPortValues).toMap) match {
+    library.runGenerator(generator.getBlockClass, reqParamValues.toMap) match {
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>

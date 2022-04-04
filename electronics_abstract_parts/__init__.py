@@ -1,8 +1,6 @@
 from edg_core import *
 from electronics_model import *
 
-from .AssignablePin import AssignablePinBlock
-
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
