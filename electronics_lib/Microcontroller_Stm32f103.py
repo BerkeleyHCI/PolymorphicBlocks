@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from itertools import chain
 from typing import *
 
@@ -19,9 +18,10 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       input_threshold_abs=(0.8, 2)*Volt
     ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
 
-    self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-                                         voltage_out=self.pwr.link().voltage),
-                           optional=True)  # TODO other specs from Table 23
+    # TODO need to pass through to pin mapper
+    # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
+    #                                      voltage_out=self.pwr.link().voltage),
+    #                        optional=True)  # TODO other specs from Table 23
     self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz,
                                        voltage_out=self.pwr.link().voltage),
                          optional=True)  # Table 22
@@ -88,7 +88,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
     })
 
-    self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table fo 48-pin only
+    self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
       PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
       PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
       PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
@@ -168,7 +168,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
 
-  @abstractmethod
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],

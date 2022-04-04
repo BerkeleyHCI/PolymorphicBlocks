@@ -95,7 +95,7 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
       'RTCXOUT': self.xtal_rtc.xtal_out,
     })
 
-    self.abstract_pinmaps = PinMapUtil([
+    self.abstract_pinmaps = PinMapUtil([  # partial table for 48- and 64-pin only
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
       PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
       PinResource('PIO0_2', {'PIO0_2': dio_5v_model, 'ADC0_6': adc_model}),
@@ -146,8 +146,6 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
       PinResource('PIO1_10', {'PIO1_10': dio_5v_model}),
       PinResource('PIO1_11', {'PIO1_11': dio_5v_model}),
 
-      # 100-pin version ignored, since that isn't used
-
       PeripheralAnyResource('UART0', uart_model),
       PeripheralAnyResource('UART1', uart_model),
       PeripheralAnyResource('UART2', uart_model),
@@ -175,7 +173,6 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
 
-  @abstractmethod
   def generate(self, assignments: str,
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
