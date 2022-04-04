@@ -137,7 +137,48 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       PeripheralAnyResource('UART1', uart_model),
     ])
 
+class Holyiot_18010(Nrf52840Base_Device):
+  SYSTEM_PIN_REMAP = {
+    'Vss': ['1', '25', '37'],
+    'Vdd': '14',
+    'Vbus': '22',
+  }
+  RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    'P1.11': '2',
+    'P1.10': '3',
+    'P1.13': '4',
+    'P1.15': '5',
+    'P0.03': '6',
+    'P0.02': '7',
+    'P0.28': '8',
+    'P0.29': '9',
+    'P0.30': '10',
+    'P0.31': '11',
+    'P0.04': '12',
+    'P0.05': '13',
 
+    'P0.07': '15',
+    'P1.09': '16',
+    'P0.12': '17',
+    'P0.23': '18',
+    'P0.21': '19',
+    'P0.19': '20',
+    'P0.18': '21',
+    'D-': '23',
+    'D+': '24',
+
+    'P0.22': '26',
+    'P1.00': '27',
+    'P1.03': '28',
+    'P1.01': '29',
+    'P1.02': '30',
+    'SWCLK': '31',
+    'SWDIO': '32',
+    'P1.04': '33',
+    'P1.06': '34',
+    'P0.09': '35',
+    'P0.10': '36',
+  }
 
 
 
@@ -184,97 +225,6 @@ class Holyiot_18010_Nrf52840(Microcontroller, FootprintBlock, AssignablePinBlock
       current_draw=(0, 0) * Amp,
       impedance=Range.from_lower(1)*MOhm
     )
-
-
-    # Pin/peripheral resource definitions (table 3)
-    self.system_pinmaps = VariantPinRemapper({
-      'VddA': self.pwr,
-      'VssA': self.gnd,
-      'VrefP_ADC': self.pwr,
-      'VrefP_DAC': self.pwr,
-      'VrefN': self.gnd,
-      'Vbat': self.pwr,
-      'Vss': self.gnd,
-      'Vdd': self.pwr,
-
-      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      'RTCXOUT': self.xtal_rtc.xtal_out,
-    })
-
-    self.abstract_pinmaps = PinMapUtil([  # partial table for 48- and 64-pin only
-      PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
-      PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
-      PinResource('PIO0_2', {'PIO0_2': dio_5v_model, 'ADC0_6': adc_model}),
-      PinResource('PIO0_3', {'PIO0_3': dio_5v_model, 'ADC0_5': adc_model}),
-      PinResource('PIO0_4', {'PIO0_4': dio_5v_model, 'ADC0_4': adc_model}),
-      PinResource('PIO0_5', {'PIO0_5': dio_5v_model, 'ADC0_3': adc_model}),
-      PinResource('PIO0_6', {'PIO0_6': dio_5v_model, 'ADC0_2': adc_model}),
-      PinResource('PIO0_7', {'PIO0_7': dio_5v_model, 'ADC0_1': adc_model}),
-
-      PinResource('PIO0_8', {'PIO0_8': dio_5v_model, 'ADC0_0': adc_model}),
-      PinResource('PIO0_9', {'PIO0_9': dio_5v_model, 'ADC1_1': adc_model}),
-      PinResource('PIO0_10', {'PIO0_10': dio_5v_model, 'ADC1_2': adc_model}),
-      PinResource('PIO0_11', {'PIO0_11': dio_5v_model, 'ADC1_3': adc_model}),
-      PinResource('PIO0_12', {'PIO0_12': dio_non5v_model, 'DAC_OUT': dac_model}),
-      PinResource('PIO0_13', {'PIO0_13': dio_5v_model, 'ADC1_6': adc_model}),
-      PinResource('PIO0_14', {'PIO0_14': dio_5v_model, 'ADC1_7': adc_model}),
-      PinResource('PIO0_15', {'PIO0_15': dio_5v_model, 'ADC1_8': adc_model}),
-      PinResource('PIO0_16', {'PIO0_16': dio_5v_model, 'ADC1_9': adc_model}),
-      PinResource('PIO0_17', {'PIO0_17': dio_5v_model}),
-
-      PinResource('PIO0_18', {'PIO0_18': dio_5v_model}),
-      PinResource('PIO0_19', {'PIO0_19': dio_5v_model}),
-      PinResource('PIO0_20', {'PIO0_20': dio_5v_model}),
-      PinResource('PIO0_21', {'PIO0_21': dio_5v_model}),  # also RESET
-      PinResource('PIO0_22', {'PIO0_22': dio_5v_model}),
-      PinResource('PIO0_23', {'PIO0_23': dio_5v_model}),
-      PinResource('PIO0_24', {'PIO0_24': dio_highcurrrent_model}),
-      PinResource('PIO0_25', {'PIO0_25': dio_5v_model}),
-      PinResource('PIO0_26', {'PIO0_26': dio_5v_model}),
-
-      PinResource('PIO0_27', {'PIO0_27': dio_5v_model}),
-      PinResource('PIO0_28', {'PIO0_28': dio_5v_model}),
-      PinResource('PIO0_29', {'PIO0_29': dio_5v_model}),
-      PinResource('PIO0_30', {'PIO0_30': dio_5v_model, 'ADC0_11': adc_model}),
-      PinResource('PIO0_31', {'PIO0_31': dio_5v_model, 'ADC0_9': adc_model}),
-      PinResource('PIO1_0', {'PIO1_0': dio_5v_model, 'ADC0_8': adc_model}),
-      PinResource('PIO1_1', {'PIO1_1': dio_5v_model, 'ADC1_0': adc_model}),
-      PinResource('PIO1_2', {'PIO1_2': dio_5v_model, 'ADC1_4': adc_model}),
-      PinResource('PIO1_3', {'PIO1_3': dio_5v_model, 'ADC1_5': adc_model}),
-      PinResource('PIO1_4', {'PIO1_4': dio_5v_model, 'ADC1_10': adc_model}),
-      PinResource('PIO1_5', {'PIO1_5': dio_5v_model, 'ADC1_11': adc_model}),
-
-
-      PinResource('PIO1_6', {'PIO1_6': dio_5v_model}),
-      PinResource('PIO1_7', {'PIO1_7': dio_5v_model}),
-      PinResource('PIO1_8', {'PIO1_8': dio_5v_model}),
-      PinResource('PIO1_9', {'PIO1_9': dio_5v_model}),
-      PinResource('PIO1_10', {'PIO1_10': dio_5v_model}),
-      PinResource('PIO1_11', {'PIO1_11': dio_5v_model}),
-
-      PeripheralAnyResource('UART0', uart_model),
-      PeripheralAnyResource('UART1', uart_model),
-      PeripheralAnyResource('UART2', uart_model),
-      PeripheralAnyResource('SPI0', spi_model),
-      PeripheralAnyResource('SPI1', spi_model),
-      PeripheralAnyResource('CAN0', CanControllerPort(DigitalBidir.empty())),
-
-      PeripheralFixedResource('I2C0', I2cMaster(DigitalBidir.empty()), {
-        'scl': ['PIO0_22'], 'sda': ['PIO0_23']
-      }),
-      PeripheralFixedPin('USB', UsbDevicePort(), {
-        'dp': ['USB_DP'], 'dm': ['USB_DM']
-      }),
-
-      # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
-      # Reset has an internal pull-up (or can be configured as unused), except when deep power down is needed
-      # TODO: SWO is arbitrary and can also be NC, current mapped to TDO - should support AnyPin for swo
-      PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
-        'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'], 'swo': ['PIO0_8'],
-      }),
-    ])
 
 
 
