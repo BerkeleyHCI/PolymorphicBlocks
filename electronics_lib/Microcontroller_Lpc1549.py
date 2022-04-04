@@ -186,9 +186,7 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
-                                      self.usb, self.can, self.swd],
-                                     allocated)
+    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
     self.footprint(
       'U', self.PACKAGE,
@@ -360,16 +358,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
     self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-
-    self.connect(self.gpio, self.ic.gpio)
-    self.connect(self.adc, self.ic.adc)
-    self.connect(self.dac, self.ic.dac)
-
-    self.connect(self.spi, self.ic.spi)
-    self.connect(self.i2c, self.ic.i2c)
-    self.connect(self.uart, self.ic.uart)
-    self.connect(self.usb, self.ic.usb)
-    self.connect(self.can, self.ic.can)
+    self._export_ios_from(self.ic)
 
     self.pwr_cap = ElementDict[DecouplingCapacitor]()
     self.pwra_cap = ElementDict[DecouplingCapacitor]()

@@ -22,6 +22,24 @@ class BaseIoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
     self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
+    self._io_ports: List[BasePort] = [
+      self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can]
+
+  def _get_io_ports(self) -> List[BasePort]:
+    """Returns all the IO ports of this BaseIoController as a list"""
+    return self._io_ports
+
+  def _export_ios_from(self, inner: 'BaseIoController', excludes: List[BasePort] = []) -> None:
+    """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
+    Optional exclude list, for example if a more complex connection is needed."""
+    assert isinstance(inner, BaseIoController), "can only export from inner block of type BaseIoController"
+    assert len(self._io_ports) == len(inner._io_ports), "self and inner must have same IO ports"
+    exclude_set = IdentitySet(*excludes)
+    for (self_io, inner_io) in zip(self._io_ports, inner._io_ports):
+      assert self_io._type_of() == inner_io._type_of(), "IO ports must be of same type"
+      if self_io not in exclude_set:
+        self.connect(self_io, inner_io)
+
   @staticmethod
   def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
       Dict[str, CircuitPort]:

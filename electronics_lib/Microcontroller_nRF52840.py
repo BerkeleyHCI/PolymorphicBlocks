@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import *
 from itertools import chain
 
@@ -214,9 +213,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
     ], assignments)
     self.can.defined()  # no CAN support
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,
-                                      self.usb, self.can, self.swd],
-                                     allocated)
+    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
     self.footprint(
       'U', 'edg:Holyiot-18010-NRF52840',
@@ -235,19 +232,9 @@ class Holyiot_18010(PinMappable, Microcontroller, IoController):
 
   def contents(self):
     super().contents()
-
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-
-    self.connect(self.gpio, self.ic.gpio)
-    self.connect(self.adc, self.ic.adc)
-    self.connect(self.dac, self.ic.dac)
-
-    self.connect(self.spi, self.ic.spi)
-    self.connect(self.i2c, self.ic.i2c)
-    self.connect(self.uart, self.ic.uart)
-    self.connect(self.usb, self.ic.usb)
-    self.connect(self.can, self.ic.can)
+    self._export_ios_from(self.ic)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),

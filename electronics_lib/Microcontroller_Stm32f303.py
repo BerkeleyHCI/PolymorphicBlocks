@@ -215,9 +215,7 @@ class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBloc
         (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
 
-    io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,self.can],
-                                     allocated)
-    self.usb.defined()  # no USB support
+    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
     self.footprint(
       'U', 'edg:Nucleo32',
