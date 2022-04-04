@@ -10,7 +10,7 @@ class TestBlinkyBasic(BoardTop):
 
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gnd, self.led.gnd)
-    self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
+    self.connect(self.mcu.gpio.allocate(), self.led.signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -28,8 +28,8 @@ class TestBlinkySimple(BoardTop):
       self.led = imp.Block(IndicatorLed())
       self.sw = imp.Block(DigitalSwitch())
 
-    self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
-    self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
+    self.connect(self.mcu.gpio.allocate(), self.led.signal)
+    self.connect(self.sw.out, self.mcu.gpio.allocate())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -44,8 +44,8 @@ class TestBlinkySimpleChain(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
-      (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.led, ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

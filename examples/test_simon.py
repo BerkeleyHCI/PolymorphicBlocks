@@ -35,7 +35,7 @@ class TestSimon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Nucleo_F303k8_new())
+    self.mcu = self.Block(Nucleo_F303k8())
 
     with self.implicit_connect(
         ImplicitConnect(self.mcu.pwr_5v, [Power]),
