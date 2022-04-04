@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import itertools
 from abc import abstractmethod
 from itertools import chain

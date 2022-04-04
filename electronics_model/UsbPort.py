@@ -34,11 +34,32 @@ class UsbDevicePort(Bundle[UsbLink]):
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
     self.link_type = UsbLink
+    self.bridge_type = UsbDeviceBridge
 
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.dp = self.Port(model)
     self.dm = self.Port(model)
+
+
+class UsbDeviceBridge(PortBridge):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.outer_port = self.Port(UsbDevicePort.empty())
+    self.inner_link = self.Port(UsbHostPort.empty())
+
+  def contents(self) -> None:
+    from .DigitalPorts import DigitalBidirBridge
+    super().contents()
+
+    self.dm_bridge = self.Block(DigitalBidirBridge())
+    self.connect(self.outer_port.dm, self.dm_bridge.outer_port)
+    self.connect(self.dm_bridge.inner_link, self.inner_link.dm)
+
+    self.dp_bridge = self.Block(DigitalBidirBridge())
+    self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
+    self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
 
 class UsbPassivePort(Bundle[UsbLink]):

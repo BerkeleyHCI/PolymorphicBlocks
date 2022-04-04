@@ -117,7 +117,7 @@ class Debugger(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Stm32f103_48_new),
+        (['mcu'], Stm32f103_48),
         (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_tgt', 'package'], SmtSwitchRa),

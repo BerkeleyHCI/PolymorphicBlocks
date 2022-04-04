@@ -190,6 +190,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
   def _name_of_child(self, subelt: Any) -> str:
+    assert self._elts is not None, "can't get name on undefined vector"
     for (name, elt) in self._elts.items():
       if subelt is elt:
         return name
