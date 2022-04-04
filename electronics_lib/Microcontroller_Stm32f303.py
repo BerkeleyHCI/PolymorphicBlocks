@@ -191,8 +191,6 @@ class Nucleo_F303k8_new(PinMappable, BaseIoController, GeneratorBlock, Footprint
     ), optional=True)
     self.gnd = self.Port(GroundSource(), optional=True)
 
-    self.usb.defined()  # no USB support
-
     self.generator(self.generate, self.pin_assigns,
                    self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
@@ -219,6 +217,8 @@ class Nucleo_F303k8_new(PinMappable, BaseIoController, GeneratorBlock, Footprint
 
     io_pins = self._instantiate_from([self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart,self.can],
                                      allocated)
+    self.usb.defined()  # no USB support
+
     self.footprint(
       'U', 'edg:Nucleo32',
       dict(chain(system_pins.items(), io_pins.items())),
