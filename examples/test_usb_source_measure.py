@@ -206,13 +206,13 @@ class SourceMeasureControl(Block):
                                                input_resistance=(10, 100)*kOhm,
                                                diode_spec='sink'))
       self.control_current_sink = self.Export(self.err_sink.target)
-      self.err_curr_merge = MergedAnalogSource.merge(self, self.err_source.output, self.err_sink.output)
-      self.err_merge = MergedAnalogSource.merge(self, self.err_volt.output, self.err_curr_merge.source)
+      self.err_merge = self.Block(MergedAnalogSource()).connected_from(
+        self.err_volt.output, self.err_source.output, self.err_sink.output)
 
       self.int = imp.Block(IntegratorInverting(
         factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
         capacitance=1*nFarad(tol=0.15)))
-      self.int_link = self.connect(self.err_merge.source, self.int.input)  # name it to support impedance check waive
+      self.int_link = self.connect(self.err_merge.output, self.int.input)  # name it to support impedance check waive
       self.connect(self.ref_center, self.int.reference)
 
     with self.implicit_connect(

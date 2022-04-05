@@ -13,7 +13,7 @@ from .PassivePort import Passive, PassiveLink
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
-from .AnalogPort import AnalogSource, AnalogSink
+from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .UartPort import UartPort
 from .SpiPort import SpiMaster, SpiSlave
 from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave

@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import List
 
 from electronics_model import *
 from .AbstractPassives import *
@@ -67,9 +67,11 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
     for in_allocate in in_allocates:
       self.pwr_ins.append_elt(VoltageSink(
         voltage_limits=RangeExpr.ALL,
-        current_draw=self.pwr_out.link().current_drawn), in_allocate)
+        current_draw=self.pwr_out.link().current_drawn
+      ), in_allocate)
+
     self.assign(self.pwr_out.voltage_out,
-                self.pwr_ins.hull(lambda pwr_in: pwr_in.link().voltage))
+                self.pwr_ins.hull(lambda x: x.link().voltage))
 
   def connected_from(self, *pwr_ins: Port[VoltageLink]) -> 'MergedVoltageSource':
     for pwr_in in pwr_ins:
@@ -77,48 +79,37 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
     return self
 
 
-class MergedAnalogSource(DummyDevice, NetBlock):
-  @classmethod
-  def merge(cls, parent: Block, sink1: Union[AnalogSink, AnalogSource],
-            sink2: Union[AnalogSink, AnalogSource]) -> 'MergedAnalogSource':
-    """Creates and return a merge block with the two sinks connected.
-    The result should be assigned to a name in the parent, and the output source port
-    can be accessed by the source member.
-
-    The Union in the type signature accounts for bridges.
-    Connect type errors will be handled by the connect function.
-    """
-    block = parent.Block(MergedAnalogSource())
-    parent.connect(block.sink1, sink1)
-    parent.connect(block.sink2, sink2)
-    return block
-
+class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(AnalogSource(
+    self.output = self.Port(AnalogSource(
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL,  # limits checked in the link, this port is ideal
       impedance=RangeExpr()
     ))
-    self.sink1 = self.Port(AnalogSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=self.source.link().current_drawn,
-      impedance=self.source.link().sink_impedance
-    ))
-    self.sink2 = self.Port(AnalogSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=self.source.link().current_drawn,
-      impedance=self.source.link().sink_impedance
-    ))
+    self.inputs = self.Port(Vector(AnalogSink.empty()))
 
-    self.assign(self.source.voltage_out,
-                self.sink1.link().voltage.hull(self.sink2.link().voltage))
-    self.assign(self.source.impedance,  # worst case, including when both sources are driving or just one is
-                self.sink1.link().source_impedance.hull(
-                  self.sink2.link().source_impedance.hull(
-                    1 / (1 / self.sink1.link().source_impedance + 1 / self.sink2.link().source_impedance))
-                ))
+    self.generator(self.generate, self.inputs.allocated())
+
+  def generate(self, inputs_allocates: List[str]):
+    self.inputs.defined()
+    for input_allocate in inputs_allocates:
+      self.inputs.append_elt(AnalogSink(
+        voltage_limits=RangeExpr.ALL,
+        current_draw=self.output.link().current_drawn,
+        impedance=self.output.link().sink_impedance
+      ), input_allocate)
+
+    self.assign(self.output.voltage_out,
+                self.inputs.hull(lambda pwr_in: pwr_in.link().voltage))
+    self.assign(self.output.impedance,
+                1 / (1 / self.inputs.map_extract(lambda x: x.impedance)).sum())
+
+  def connected_from(self, *inputs: Port[AnalogLink]) -> 'MergedAnalogSource':
+    for input in inputs:
+      cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.allocate())
+    return self
 
 
 class DummyAnalogSink(DummyDevice):
