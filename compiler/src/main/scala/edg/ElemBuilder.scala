@@ -22,6 +22,10 @@ object ElemBuilder {
       expr=expr.ValueExpr.Expr.Connected(expr.ConnectedExpr(
         blockPort=Some(ValueExpr.Ref(block)), linkPort=Some(ValueExpr.Ref(link))))
     )
+    def ConnectedArray(block: ref.LocalPath, link: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+      expr=expr.ValueExpr.Expr.ConnectedArray(expr.ConnectedExpr(
+        blockPort=Some(ValueExpr.Ref(block)), linkPort=Some(ValueExpr.Ref(link))))
+    )
     def Exported(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
       expr=expr.ValueExpr.Expr.Exported(expr.ExportedExpr(
         exteriorPort=Some(ValueExpr.Ref(external)), internalBlockPort=Some(ValueExpr.Ref(internal))))
@@ -88,6 +92,18 @@ object ElemBuilder {
              constraints: Map[String, expr.ValueExpr] = Map(),
             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Link(elem.Link(
       params=params, ports=ports, links=links,
+      constraints=constraints,
+      selfClass=selfClass match {
+        case "" => None
+        case superclass => Some(LibraryPath(superclass))
+      }
+    )))
+    def Array(selfClass: String,
+              ports: Map[String, elem.PortLike] = Map(),
+              links: Map[String, elem.LinkLike] = Map(),
+              constraints: Map[String, expr.ValueExpr] = Map(),
+             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Array(elem.LinkArray(
+      ports=ports, links=links,
       constraints=constraints,
       selfClass=selfClass match {
         case "" => None
