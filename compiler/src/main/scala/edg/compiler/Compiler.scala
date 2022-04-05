@@ -4,7 +4,7 @@ import scala.collection.{SeqMap, mutable}
 import edgir.schema.schema
 import edgir.expr.expr
 import edgir.ref.ref
-import edg.wir.{ConnectedConstraintManager, DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
+import edg.wir.{ConnectedConstraintManager, DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortConnections, PortLike, Refinements}
 import edg.{EdgirUtils, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
@@ -699,13 +699,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
-          case _ =>
-            val constraintOption = connectedConstraints.getByBlockPort(portPostfix) match {
-              case Seq((constrName, ref, constrExpr)) => Some((constrName, constrExpr))
-              case Seq() => None
-              case _ => throw new IllegalArgumentException("multiple connections to port")
+          case _ =>  // leaf only, no array support
+            connectedConstraints.connectionsByBlockPort(portPostfix) match {
+              case PortConnections.SingleConnect(constrName, constr) =>
+                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+              case PortConnections.NotConnected =>
+                resolvePortConnectivity(path, portPostfix, None)
+              case connects => throw new IllegalArgumentException(s"invalid connection to element $connects")
             }
-            resolvePortConnectivity(path, portPostfix, constraintOption)
         }
       }
     }

@@ -2,6 +2,39 @@ package edg.wir
 import edgir.expr.expr
 import edgir.ref.ref
 
+
+sealed trait PortConnections
+
+object PortConnections {
+  case object NotConnected extends PortConnections
+  case class SingleConnect(constrName: String, constr: expr.ValueExpr) extends PortConnections  // single direct connection, fully resolved
+  case class ArrayConnect(constrName: String, constr: expr.ValueExpr) extends PortConnections  // array direct connection (without allocate)
+  case class AllocatedConnect(pairs: Seq[(String, expr.ValueExpr)]) extends PortConnections  // all allocated connections, including single and array
+
+  // Returns the PortConnections from the output of ConnectedConstraintManager.getBy(Block|Link)Port
+  def apply(portPath: Seq[String], constrs: Seq[(String, expr.ValueExpr, expr.ValueExpr)]): PortConnections = {
+    import edg.ExprBuilder.ValueExpr
+    val constrsWithExprs = constrs.map {
+      case (constrName, ref, constr) => (constrName, ref, constr, constr.expr)
+    }
+    constrsWithExprs match {
+      case Seq() => NotConnected
+      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.Connected(_))) =>
+        SingleConnect(constrName, constr)
+      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.Exported(_))) =>
+        SingleConnect(constrName, constr)
+      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.ConnectedArray(_))) =>
+        ArrayConnect(constrName, constr)
+      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.ExportedArray(_))) =>
+        ArrayConnect(constrName, constr)
+      case seq if seq.forall(elt => elt._2.expr.isRef && elt._2.getRef.steps.last.step.isAllocate) =>
+        AllocatedConnect(Seq())  // TODO implement me
+      case seq => throw new NotImplementedError(s"unknown connections $seq")
+    }
+  }
+}
+
+
 /** Manager for connected constraints, that provides an efficient way of getting constraints by block prefixes.
   * Contains references to and mutates the underlying block / link, which remains the single source of truth.
   * All mutation ops to these connected constraints must go through this object, since this maintains a sorted
@@ -59,4 +92,10 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
       case _ => None
     } }.toSeq
   }
+
+  def connectionsByBlockPort(path: Seq[String]): PortConnections =
+    PortConnections(path, getByBlockPort(path))
+
+  def connectionsByLinkPort(path: Seq[String], includeExports: Boolean): PortConnections =
+    PortConnections(path, getByLinkPort(path, includeExports))
 }
