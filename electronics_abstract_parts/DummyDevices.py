@@ -102,9 +102,10 @@ class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
       ), input_allocate)
 
     self.assign(self.output.voltage_out,
-                self.inputs.hull(lambda pwr_in: pwr_in.link().voltage))
-    self.assign(self.output.impedance,
-                1 / (1 / self.inputs.map_extract(lambda x: x.impedance)).sum())
+                self.inputs.hull(lambda x: x.link().voltage))
+    self.assign(self.output.impedance,  # covering cases of any or all sources driving
+                self.inputs.hull(lambda x: x.link().source_impedance).hull(
+                1 / (1 / self.inputs.map_extract(lambda x: x.link().source_impedance)).sum()))
 
   def connected_from(self, *inputs: Port[AnalogLink]) -> 'MergedAnalogSource':
     for input in inputs:

@@ -166,6 +166,7 @@ class ErrorAmplifier(GeneratorBlock):
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     self.connect(resistor_output_port, self.rout.a.as_analog_sink())
     self.connect(self.output, self.rout.b.as_analog_source(
+      voltage_out=self.amp.out.link().voltage,
       impedance=self.rout.actual_resistance
     ), self.amp.inn)
 
