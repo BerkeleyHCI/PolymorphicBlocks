@@ -4,7 +4,7 @@ import scala.collection.{SeqMap, mutable}
 import edgir.schema.schema
 import edgir.expr.expr
 import edgir.ref.ref
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
+import edg.wir.{DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
@@ -593,9 +593,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       block.elaborate(innerBlockName, innerBlockElaborated)
     }
 
-    block.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
-      val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
-      block.elaborate(innerLinkName, innerLinkElaborated)
+    block.getUnelaboratedLinks.foreach {
+      case (innerLinkName, innerLink: wir.LinkLibrary) =>
+        block.elaborate(innerLinkName, expandLink(path + innerLinkName, innerLink))
+      case (_, innerLink: wir.LinkArray) => // ignored - expanded in place
+      case _ => throw new NotImplementedError()
     }
 
     // Find allocate ports and generate the port array lowering compiler tasks
@@ -625,6 +627,27 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.ParamValue(path.asIndirect ++ intPortArray + IndirectStep.Allocated)
           ))
         case _ => throw new AssertionError("impossible exported-array format")
+      }
+      case expr.ValueExpr.Expr.ConnectedArray(connected) => (connected.getBlockPort, connected.getLinkPort) match {
+        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
+          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.Ref(linkPort)) =>
+          blockAllocateConstraints.getOrElseUpdate(blockPortArray, mutable.ListBuffer()).append(constrName)
+          linkConnectedConstraint.put(linkPort, constrName)
+
+          require(blockPortArray.length == 2)
+          connectedPortArrays.add(path ++ blockPortArray)
+        case (ValueExpr.Ref(blockPort), ValueExpr.RefAllocate(linkPortArray, _)) =>
+          blockConnectedConstraint.put(blockPort, constrName)
+          linkAllocateConstraints.getOrElseUpdate(linkPortArray, mutable.ListBuffer()).append(constrName)
+        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+          blockConnectedConstraint.put(blockPort, constrName)
+          linkConnectedConstraint.getOrElseUpdate(linkPort, constrName)
+        case _ => throw new AssertionError("impossible connected array format")
       }
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (ValueExpr.RefAllocate(blockPortArray, _), ValueExpr.RefAllocate(linkPortArray, _)) =>
