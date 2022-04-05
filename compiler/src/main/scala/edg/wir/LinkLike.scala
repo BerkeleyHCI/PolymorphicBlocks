@@ -38,7 +38,6 @@ class Link(pb: elem.Link) extends LinkLike
       }
   }
 
-  // Serializes this to protobuf
   def toEltPb: elem.Link = {
     pb.copy(
       ports=ports.view.mapValues(_.toPb).toMap,
@@ -49,6 +48,42 @@ class Link(pb: elem.Link) extends LinkLike
 
   override def toPb: elem.LinkLike = {
     elem.LinkLike(`type`=elem.LinkLike.Type.Link(toEltPb))
+  }
+}
+
+class LinkArray(pb: elem.LinkArray) extends LinkLike
+    with HasMutablePorts with HasMutableLinks with HasMutableConstraints {
+  require(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty, "link array may not start elaborated")
+  override protected val ports = mutable.SeqMap[String, PortLike]()
+  override protected val links = mutable.SeqMap[String, LinkLike]()
+  override protected val constraints = mutable.SeqMap[String, expr.ValueExpr]()
+
+
+  // TODO explicit isElaborated flag? instead of inferring?
+  override def isElaborated: Boolean = !(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty)
+
+  override def resolve(suffix: Seq[String]): Pathable = suffix match {
+    case Seq() => this
+    case Seq(subname, tail@_*) =>
+      if (ports.contains(subname)) {
+        ports(subname).resolve(tail)
+      } else if (links.contains(subname)) {
+        links(subname).resolve(tail)
+      } else {
+        throw new InvalidPathException(s"No element $subname in Link")
+      }
+  }
+
+  def toEltPb: elem.LinkArray = {
+    pb.copy(
+      ports=ports.view.mapValues(_.toPb).toMap,
+      links=links.view.mapValues(_.toPb).toMap,
+      constraints=constraints.toMap
+    )
+  }
+
+  override def toPb: elem.LinkLike = {
+    elem.LinkLike(`type`=elem.LinkLike.Type.Array(toEltPb))
   }
 }
 

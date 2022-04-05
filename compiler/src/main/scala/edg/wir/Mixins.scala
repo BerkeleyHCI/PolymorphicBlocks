@@ -60,6 +60,7 @@ trait HasMutableLinks {
       mutable.SeqMap[String, LinkLike] =
     pb.view.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
+      case elem.LinkLike.Type.Array(like) => new LinkArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
     }}.toMap.sortKeysFrom(nameOrder).to(mutable.SeqMap)
 }
