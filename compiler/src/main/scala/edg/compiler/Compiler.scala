@@ -4,7 +4,7 @@ import scala.collection.{SeqMap, mutable}
 import edgir.schema.schema
 import edgir.expr.expr
 import edgir.ref.ref
-import edg.wir.{DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
+import edg.wir.{ConnectedConstraintManager, DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortLike, Refinements}
 import edg.{EdgirUtils, wir}
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import EdgirUtils._
@@ -684,6 +684,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _ =>  // all other constraints ignored
     }}
 
+    val connectedConstraints = new ConnectedConstraintManager(block)
+
     // Set IsConnected
     block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
       innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach { case (portName, port) =>
@@ -698,8 +700,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
           case _ =>
-            val constraintOption = blockConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, block.getConstraints(constrName))
+            val constraintOption = connectedConstraints.getByBlockPort(portPostfix) match {
+              case Seq((constrName, ref, constrExpr)) => Some((constrName, constrExpr))
+              case Seq() => None
+              case _ => throw new IllegalArgumentException("multiple connections to port")
             }
             resolvePortConnectivity(path, portPostfix, constraintOption)
         }

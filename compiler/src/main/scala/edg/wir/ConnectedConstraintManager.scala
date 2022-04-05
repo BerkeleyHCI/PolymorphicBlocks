@@ -8,10 +8,6 @@ import edgir.ref.ref
   * reference to the underlying constraints.
   */
 class ConnectedConstraintManager(container: HasMutableConstraints) {
-  container.getConstraints.foreach { case (constrName, constr) => constr.expr match {
-
-  } }
-
   // Returns true if the ref is considered a prefix of the path
   protected def refPrefixMatches(path: Seq[String], constrRef: expr.ValueExpr): Boolean = {
     val pathAsLocalSteps = path.map { step =>
@@ -27,18 +23,18 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
   // returning the constraint name, block-side reference, and entire constraint expression.
   // This includes all exported constraints, matching by the internal port.
   // TODO this can be optimized by pre-building an index of references involved in constraints
-  def getByBlockPort(path: Seq[String]): Seq[(String, expr.ValueExpr, expr.ValueExpr.Expr)] = {
+  def getByBlockPort(path: Seq[String]): Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
     container.getConstraints.map {  // extract expr
-      case (constrName, constr) => (constrName, constr.expr)
-    }.flatMap { case (constrName, constrExpr) => constrExpr match {
+      case (constrName, constr) => (constrName, constr, constr.expr)
+    }.flatMap { case (constrName, constr, constrExpr) => constrExpr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constrExpr))
+        Some((constrName, exported.getInternalBlockPort, constr))
       case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getBlockPort) =>
-        Some((constrName, connected.getBlockPort, constrExpr))
+        Some((constrName, connected.getBlockPort, constr))
       case expr.ValueExpr.Expr.Exported(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constrExpr))
+        Some((constrName, exported.getInternalBlockPort, constr))
       case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getBlockPort) =>
-        Some((constrName, connected.getBlockPort, constrExpr))
+        Some((constrName, connected.getBlockPort, constr))
       case _ => None
     } }.toSeq
   }
@@ -46,20 +42,20 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
   // returning the same format as getByBlockPort.
   // If includeExports=true, this also includes exported constraints matched by the internal port
   // (useful within a link context)
-  def getByLinkPort(path: Seq[String], includeExports: Boolean):  Seq[(String, expr.ValueExpr, expr.ValueExpr.Expr)] = {
+  def getByLinkPort(path: Seq[String], includeExports: Boolean):  Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
     container.getConstraints.map {  // extract expr
-      case (constrName, constr) => (constrName, constr.expr)
-    }.flatMap { case (constrName, constrExpr) => constrExpr match {
+      case (constrName, constr) => (constrName, constr, constr.expr)
+    }.flatMap { case (constrName, constr, constrExpr) => constrExpr match {
       case expr.ValueExpr.Expr.ExportedArray(exported)
           if includeExports && refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constrExpr))
+        Some((constrName, exported.getInternalBlockPort, constr))
       case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getLinkPort) =>
-        Some((constrName, connected.getLinkPort, constrExpr))
+        Some((constrName, connected.getLinkPort, constr))
       case expr.ValueExpr.Expr.Exported(exported)
           if includeExports && refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constrExpr))
+        Some((constrName, exported.getInternalBlockPort, constr))
       case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getLinkPort) =>
-        Some((constrName, connected.getLinkPort, constrExpr))
+        Some((constrName, connected.getLinkPort, constr))
       case _ => None
     } }.toSeq
   }
