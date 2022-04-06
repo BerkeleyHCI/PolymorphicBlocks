@@ -699,13 +699,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
+
+            connectedConstraints.connectionsByBlockPort(portPostfix) match {
+              case PortConnections.ArrayConnect(constrName, constr) =>
+              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+              case PortConnections.NotConnected =>
+              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+            }
+
           case _ =>  // leaf only, no array support
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
               case PortConnections.SingleConnect(constrName, constr) =>
                 resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
               case PortConnections.NotConnected =>
                 resolvePortConnectivity(path, portPostfix, None)
-              case connects => throw new IllegalArgumentException(s"invalid connection to element $connects")
+              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
         }
       }

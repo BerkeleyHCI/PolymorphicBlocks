@@ -9,7 +9,9 @@ object PortConnections {
   case object NotConnected extends PortConnections
   case class SingleConnect(constrName: String, constr: expr.ValueExpr) extends PortConnections  // single direct connection, fully resolved
   case class ArrayConnect(constrName: String, constr: expr.ValueExpr) extends PortConnections  // array direct connection (without allocate)
-  case class AllocatedConnect(pairs: Seq[(String, expr.ValueExpr)]) extends PortConnections  // all allocated connections, including single and array
+  case class AllocatedConnect(singleConnects: Seq[(Option[String], String, expr.ValueExpr)],
+                              arrayConnects: Seq[(Option[String], String, expr.ValueExpr)]
+                             ) extends PortConnections  // all allocated connections, including single and array, as (allocated, constrName, constr)
 
   // Returns the PortConnections from the output of ConnectedConstraintManager.getBy(Block|Link)Port
   def apply(portPath: Seq[String], constrs: Seq[(String, expr.ValueExpr, expr.ValueExpr)]): PortConnections = {
@@ -17,18 +19,21 @@ object PortConnections {
     val constrsWithExprs = constrs.map {
       case (constrName, ref, constr) => (constrName, ref, constr, constr.expr)
     }
+    val PortRef = ValueExpr.Ref(portPath: _*)
+
     constrsWithExprs match {
       case Seq() => NotConnected
-      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.Connected(_))) =>
+      case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.Connected(_))) =>
         SingleConnect(constrName, constr)
-      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.Exported(_))) =>
+      case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.Exported(_))) =>
         SingleConnect(constrName, constr)
-      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.ConnectedArray(_))) =>
+      case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.ConnectedArray(_))) =>
         ArrayConnect(constrName, constr)
-      case Seq((constrName, ValueExpr.Ref(portPath), constr, expr.ValueExpr.Expr.ExportedArray(_))) =>
+      case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.ExportedArray(_))) =>
         ArrayConnect(constrName, constr)
-      case seq if seq.forall(elt => elt._2.expr.isRef && elt._2.getRef.steps.last.step.isAllocate) =>
-        AllocatedConnect(Seq())  // TODO implement me
+      case seq if seq.forall(elt => elt._2.expr.isRef && elt._2.getRef.steps.init == PortRef.getRef.steps &&
+          elt._2.getRef.steps.last.step.isAllocate) =>
+        AllocatedConnect(Seq(), Seq())  // TODO implement me
       case seq => throw new NotImplementedError(s"unknown connections $seq")
     }
   }
