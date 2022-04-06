@@ -692,17 +692,37 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val portPostfix = Seq(innerBlockName, portName)
         port match {
           case _: wir.PortArray =>  // array case: connectivity delayed to lowering
-            val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val arrayConstrNames = blockArrayConstraints.getOrElse(portPostfix, Seq()).toSeq
-            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, arrayConstrNames, false)
-            val arrayDependencies = blockAllocateArrayAllocatedDependencies.getOrElse(portPostfix, Seq()).toSeq.map { allocatedDep =>
-              ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
-            }
-            elaboratePending.addNode(lowerArrayTask, arrayDependencies)
+//            val constrNames = blockAllocateConstraints.getOrElse(portPostfix, Seq()).toSeq
+//            val arrayConstrNames = blockArrayConstraints.getOrElse(portPostfix, Seq()).toSeq
+//            val lowerArrayTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, constrNames, arrayConstrNames, false)
+//            val arrayDependencies = blockAllocateArrayAllocatedDependencies.getOrElse(portPostfix, Seq()).toSeq.map { allocatedDep =>
+//              ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
+//            }
+//            elaboratePending.addNode(lowerArrayTask, arrayDependencies)
 
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
-              case PortConnections.ArrayConnect(constrName, constr) =>
+              case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
+                case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+                  // TODO add dependency to link - this case has no precedent yet
+                  throw new NotImplementedError()
+                case expr.ValueExpr.Expr.ExportedArray(exported) =>
+                  // TODO add dependency
+                  val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
+                  elaboratePending.addNode(
+                    ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(constrName), false),
+                    Seq(ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Allocated))
+                  )
+                case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
+              }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                // TODO constraint names and array constraint names, future add dependencies for array connects
+              require(arrayConnects.isEmpty)
+                elaboratePending.addNode(
+                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
+//                  Seq(ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Allocated))
+                  Seq()
+                )
+
               case PortConnections.NotConnected =>
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
