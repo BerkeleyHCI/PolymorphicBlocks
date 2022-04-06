@@ -2,6 +2,8 @@ package edg.wir
 import edgir.expr.expr
 import edgir.ref.ref
 
+import collection.mutable
+
 
 sealed trait PortConnections
 
@@ -33,7 +35,24 @@ object PortConnections {
         ArrayConnect(constrName, constr)
       case seq if seq.forall(elt => elt._2.expr.isRef && elt._2.getRef.steps.init == PortRef.getRef.steps &&
           elt._2.getRef.steps.last.step.isAllocate) =>
-        AllocatedConnect(Seq(), Seq())  // TODO implement me
+        val singleConnects = mutable.ListBuffer[(Option[String], String, expr.ValueExpr)]()
+        val arrayConnects = mutable.ListBuffer[(Option[String], String, expr.ValueExpr)]()
+        seq foreach { case (constrName, ref, constr, constrExpr) =>
+          val allocateOption = if (ref.getRef.steps.last.getAllocate.isEmpty) None else Some(ref.getRef.steps.last.getAllocate)
+          constrExpr match {
+            case expr.ValueExpr.Expr.Connected(_) =>
+              singleConnects.addOne((allocateOption, constrName, constr))
+            case expr.ValueExpr.Expr.Exported(_) =>
+              singleConnects.addOne((allocateOption, constrName, constr))
+            case expr.ValueExpr.Expr.ConnectedArray(_) =>
+              arrayConnects.addOne((allocateOption, constrName, constr))
+            case expr.ValueExpr.Expr.ExportedArray(_) =>
+              arrayConnects.addOne((allocateOption, constrName, constr))
+            case _ =>
+              throw new NotImplementedError(s"unknown connected form $constr")
+          }
+        }
+        AllocatedConnect(singleConnects.toSeq, arrayConnects.toSeq)
       case seq => throw new NotImplementedError(s"unknown connections $seq")
     }
   }
