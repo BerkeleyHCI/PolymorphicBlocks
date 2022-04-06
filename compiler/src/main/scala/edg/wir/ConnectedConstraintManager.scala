@@ -80,6 +80,7 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
   // returning the constraint name, block-side reference, and entire constraint expression.
   // This includes all exported constraints, matching by the internal port.
   // TODO this can be optimized by pre-building an index of references involved in constraints
+  // though by empirical testing, this has a negligible performance impact, and isn't implemented for simplicity
   def getByBlockPort(path: Seq[String]): Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
     container.getConstraints.map {  // extract expr
       case (constrName, constr) => (constrName, constr, constr.expr)
