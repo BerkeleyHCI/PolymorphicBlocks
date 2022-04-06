@@ -614,7 +614,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   // TODO add dependency to link - this case has no precedent yet
                   throw new NotImplementedError()
                 case expr.ValueExpr.Expr.ExportedArray(exported) =>
-                  // TODO add dependency
                   val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
                   val ValueExpr.Ref(intPostfix) = exported.getInternalBlockPort
                   constProp.addDirectedEquality(path.asIndirect ++ extPostfix + IndirectStep.Elements,
@@ -634,11 +633,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                // TODO constraint names and array constraint names, future add dependencies for array connects
               require(arrayConnects.isEmpty)
                 elaboratePending.addNode(
                   ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
-//                  Seq(ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Allocated))
                   Seq()
                 )
 
@@ -667,7 +664,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case PortConnections.ArrayConnect(constrName, constr) =>
                 throw new NotImplementedError()
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                // TODO constraint names and array constraint names, future add dependencies for array connects
                 require(arrayConnects.isEmpty)
                 elaboratePending.addNode(
                   ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
