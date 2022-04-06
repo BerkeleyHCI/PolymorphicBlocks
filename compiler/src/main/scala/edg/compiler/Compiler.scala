@@ -725,6 +725,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     require(link.getUnelaboratedPorts.isEmpty)  // make sure we set ConnectedLink on all ports
 
+
+
+
     // Aggregate by inner link ports
     val linkAllocateConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
     val linkAllocateArrayConstraints = mutable.HashMap[Seq[String], mutable.ListBuffer[String]]()  // port array path -> constraint names
@@ -756,6 +759,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _ => // all other constraints ignored
     } }
 
+
+
+
+
+    val connectedConstraints = new ConnectedConstraintManager(link)
+
     link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
@@ -768,11 +777,30 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.ParamValue(path.asIndirect ++ allocatedDep + IndirectStep.Allocated)
             }
             elaboratePending.addNode(lowerArrayTask, arrayDependencies)
-          case _ =>  // everything else generated
-            val constraintOption = linkConnectedConstraint.get(portPostfix).map { constrName =>
-              (constrName, link.getConstraints(constrName))
+
+
+
+
+            connectedConstraints.connectionsByLinkPort(portPostfix, true) match {
+              case PortConnections.ArrayConnect(constrName, constr) =>
+                require(constr.expr.isExportedArray)
+              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                
+              case PortConnections.NotConnected =>
+              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
-            resolvePortConnectivity(path, portPostfix, constraintOption)
+
+
+
+
+          case _ =>  // everything else generated
+            connectedConstraints.connectionsByLinkPort(portPostfix, true) match {
+              case PortConnections.SingleConnect(constrName, constr) =>
+                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+              case PortConnections.NotConnected =>
+                resolvePortConnectivity(path, portPostfix, None)
+              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+            }
         }
       }
     }
