@@ -78,28 +78,24 @@ class Pcf2129(RealtimeClock, Block):
   def contents(self):
     super().contents()
 
-    (self.vdd_res, ), _ = self.chain(
-      self.pwr,
-      self.Block(SeriesPowerResistor(330*Ohm(tol=0.05), (0, 800)*uAmp)),
-      self.ic.pwr)
+    self.vdd_res = self.Block(SeriesPowerResistor(
+      330*Ohm(tol=0.05), (0, 800)*uAmp
+    )).connected(self.pwr, self.ic.pwr)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.vdd_cap_0 = imp.Block(DecouplingCapacitor(
         capacitance=0.1*uFarad(tol=0.2),
-      ))
+      )).connected(pwr=self.ic.pwr)
       self.vdd_cap_1 = imp.Block(DecouplingCapacitor(
         capacitance=4.7*uFarad(tol=0.2),  # TODO actually 6.8 on the datasheet
-      ))
-      self.connect(self.ic.pwr, self.vdd_cap_0.pwr, self.vdd_cap_1.pwr)
+      )).connected(pwr=self.ic.pwr)
 
       self.vbat_cap = imp.Block(DecouplingCapacitor(
         capacitance=0.1*uFarad(tol=0.2),
-      ))
-      self.connect(self.pwr_bat, self.vbat_cap.pwr)
+      )).connected(pwr=self.pwr_bat)
 
       self.bbs_cap = imp.Block(DecouplingCapacitor(
         capacitance=0.1*uFarad(tol=0.2),  # TODO actually 1-100nF
-      ))
-      self.connect(self.ic.bbs, self.bbs_cap.pwr)
+      )).connected(pwr=self.ic.bbs)

@@ -65,8 +65,6 @@ class TestSimon(BoardTop):
       self.btn_zeroed_current = ElementDict[HighSideSwitch]()  # TODO move to 12v
       for i in range(4):
         conn = self.btn[i] = imp.Block(DomeButtonConnector())
-        pull = self.btn_pull[i] = imp.Block(PullupResistor(10 * kOhm(tol=0.05)))
-        self.connect(pull.io, conn.sw1)
 
     self.pwr = self.Block(Ap3012(output_voltage=12*Volt(tol=0.1)))
 

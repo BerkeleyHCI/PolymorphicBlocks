@@ -166,6 +166,7 @@ class ErrorAmplifier(GeneratorBlock):
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     self.connect(resistor_output_port, self.rout.a.as_analog_sink())
     self.connect(self.output, self.rout.b.as_analog_source(
+      voltage_out=self.amp.out.link().voltage,
       impedance=self.rout.actual_resistance
     ), self.amp.inn)
 
@@ -206,13 +207,13 @@ class SourceMeasureControl(Block):
                                                input_resistance=(10, 100)*kOhm,
                                                diode_spec='sink'))
       self.control_current_sink = self.Export(self.err_sink.target)
-      self.err_curr_merge = MergedAnalogSource.merge(self, self.err_source.output, self.err_sink.output)
-      self.err_merge = MergedAnalogSource.merge(self, self.err_volt.output, self.err_curr_merge.source)
+      self.err_merge = self.Block(MergedAnalogSource()).connected_from(
+        self.err_volt.output, self.err_source.output, self.err_sink.output)
 
       self.int = imp.Block(IntegratorInverting(
         factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
         capacitance=1*nFarad(tol=0.15)))
-      self.int_link = self.connect(self.err_merge.source, self.int.input)  # name it to support impedance check waive
+      self.int_link = self.connect(self.err_merge.output, self.int.input)  # name it to support impedance check waive
       self.connect(self.ref_center, self.int.reference)
 
     with self.implicit_connect(
@@ -272,15 +273,14 @@ class UsbSourceMeasureTest(BoardTop):
 
     # TODO next revision: add a USB data port switch so the PD port can also take data
 
-    self.gnd_merge = self.Block(MergedVoltageSource())
-    self.connect(self.pwr_usb.gnd, self.gnd_merge.sink1)
-    self.connect(self.data_usb.gnd, self.gnd_merge.sink2)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.pwr_usb.gnd, self.data_usb.gnd)
 
-    self.gnd = self.connect(self.gnd_merge.source)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
     self.vusb = self.connect(self.pwr_usb.pwr)
 
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.pwr_usb.pwr,
@@ -307,7 +307,7 @@ class UsbSourceMeasureTest(BoardTop):
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_usb.pwr, [Power]),
-        ImplicitConnect(self.gnd_merge.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
         current=(0, 3)*Amp,
@@ -382,7 +382,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
+    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.pwr_out)
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.as_voltage_sink(), self.control.out)
 

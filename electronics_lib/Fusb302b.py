@@ -70,11 +70,7 @@ class Fusb302b(Block):
     # minus the I2C pullups and interrupt pullups, which should be checked to be elsewhere
     # and the bulk capacitor, which we hope will be elsewhere
     self.vdd_cap = ElementDict[DecouplingCapacitor]()
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
-      self.vdd_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+    self.vdd_cap[0] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+    self.vdd_cap[1] = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
     # Crecv is specified in the reference schematic, but doesn't show up on open-source example designs

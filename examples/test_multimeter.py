@@ -200,16 +200,15 @@ class MultimeterTest(BoardTop):
     # so the PD port can be connected to a dedicated power brick.
     self.data_usb = self.Block(UsbCReceptacle())
 
-    self.gnd_merge = self.Block(MergedVoltageSource())
-    self.connect(self.bat.gnd, self.gnd_merge.sink1)
-    self.connect(self.data_usb.gnd, self.gnd_merge.sink2)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.bat.gnd, self.data_usb.gnd)
 
-    self.gnd = self.connect(self.gnd_merge.source)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
     self.vbat = self.connect(self.bat.pwr)
 
     # POWER
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.bat.pwr,
@@ -293,7 +292,7 @@ class MultimeterTest(BoardTop):
       # TODO remove this with proper bridging adapters
       from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
       self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.gnd_src.src, self.gnd_merge.source)
+      self.connect(self.gnd_src.src, self.gnd_merge.pwr_out)
       self.connect(self.inn_mux.input0, self.gnd_src.dst)
       self.connect(self.inn_mux.input1, self.ref_buf.output)
       self.connect(self.mcu.gpio.allocate('inn_control'), self.inn_mux.control)

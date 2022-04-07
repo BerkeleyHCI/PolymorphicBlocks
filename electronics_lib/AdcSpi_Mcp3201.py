@@ -74,10 +74,6 @@ class Mcp3201(Block):
     super().contents()
 
     # Datasheet Section 6.4: 1uF cap recommended
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap = imp.Block(DecouplingCapacitor(
-        capacitance=1*uFarad(tol=0.2),
-      ))
+    self.vdd_cap = self.Block(DecouplingCapacitor(
+      capacitance=1*uFarad(tol=0.2),
+    )).connected(self.gnd, self.pwr)

@@ -41,7 +41,7 @@ class NetlistCollect(TransformUtil.Transform):
 
     # TODO handle mixed net/connect operations
     if isinstance(block, edgir.Link) and 'nets' in block.meta.members.node:
-      # Conslidate single-net link ports into just the link
+      # Consolidate single-net link ports into just the link
       for name, _ in block.ports.items():
         self.short_paths[path.append_port(name)] = short_path
     else:
