@@ -26,13 +26,13 @@ class NotConnectablePort(Port):
     # TODO dedup w/ Port._convert
     context_block = builder.get_enclosing_block()
     assert isinstance(context_block, Block)
-    if self._parent is None:
+    if not self._is_bound():
       raise UnconnectableError(f"{self} must be bound to mark not-connected")
 
     nc_block = context_block.Block(self.not_connected_type())
     if context_block is self._block_parent():
       context_block.manager.add_element(
-        f"(not_connected){context_block._name_of(self)}",
+        f"(not_connected){self._name_from(context_block)}",
         nc_block)
     else:
       raise UnconnectableError(f"can only mark not-connected on ports of the current block")

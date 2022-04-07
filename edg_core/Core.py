@@ -98,7 +98,7 @@ class SubElementManager:
           assigned.append(dict)
       assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
-  def _name_of(self, item: Any) -> Optional[str]:
+  def name_of(self, item: Any) -> Optional[str]:
     name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
     name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
     assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
@@ -140,7 +140,7 @@ class ElementMeta(type):
     try:
       obj = type.__call__(cls, *args, **kwargs)
       obj._initializer_args = (args, kwargs)
-      obj._parent = parent
+      obj._lexical_parent = parent
       obj._block_context = block_context
       obj._post_init()
     finally:
@@ -183,7 +183,8 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._parent: Optional[Refable]  # set by metaclass
+    self._lexical_parent: Optional[LibraryElement]  # set by metaclass
+    self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     builder.push_element(self)
@@ -200,25 +201,22 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
-  def _name_of(self, subelt: Any) -> str:
-    self_name = self.manager._name_of(subelt)
+  def _name_of_child(self, subelt: Any) -> str:
+    self_name = self.manager.name_of(subelt)
     if self_name is not None:
       return self_name
-    elif isinstance(subelt, LibraryElement):
-      return subelt._name_to(self)
     else:
-      raise NotImplementedError(f"no name for {subelt}")
+      raise ValueError(f"no name for {subelt}")
 
-  def _name_to(self, base: LibraryElement) -> str:
-    # TODO requires self._parent is set properly, when we really need self.parent (binding)
-    # TODO this algorithm could probably be better
+  def _path_from(self, base: LibraryElement) -> List[str]:
     if base is self:
-      return ""
+      return []
     else:
-      if not isinstance(self._parent, LibraryElement):
-        return "???"
-      else:  # TODO refactor to avoid potential infinite recursion w/ _name_of
-        return self._parent._name_to(base) + "." + self._parent._name_of(self)  # TODO this adds extra leading dot
+      assert self._parent is not None, "can't get path / name for non-bound element"
+      return self._parent._path_from(base) + [self._parent._name_of_child(self)]
+
+  def _name_from(self, base: LibraryElement) -> str:
+    return '.'.join(self._path_from(base))
 
   @classmethod
   def _static_def_name(cls) -> str:

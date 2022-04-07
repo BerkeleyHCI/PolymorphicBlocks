@@ -4,15 +4,14 @@ import itertools
 from typing import *
 
 import edgir
-from .IdentityDict import IdentityDict
-from .Core import Refable, non_library
-from .ConstraintExpr import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
-  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, \
-  FloatExpr, RangeExpr, StringExpr, \
-  ParamBinding, IntExpr, NumLikeExpr, RangeLike
-from .Binding import LengthBinding, BinaryOpBinding, AllocatedBinding
-from .Ports import BaseContainerPort, BasePort, Port
+from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
+from .ConstraintExpr import NumericOp, BoolOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
+  UnarySetOpBinding, BinarySetOpBinding, ParamBinding, \
+  FloatExpr, RangeExpr, StringExpr, IntExpr, RangeLike
+from .Core import Refable, non_library
+from .IdentityDict import IdentityDict
+from .Ports import BaseContainerPort, BasePort, Port
 
 
 class MapExtractBinding(Binding):
@@ -128,7 +127,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', bound='BasePort')
+VectorType = TypeVar('VectorType', bound='Port')
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -144,8 +143,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     assert target._is_bound()  # TODO check target in base, TODO check is elt sample type
     self.base = base
     self.target = target
-    assert base.parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
-    self._bind_in_place(base.parent)
+    assert base._parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
+    self._bind_in_place(base._parent)
 
   def _type_of(self) -> Hashable:
     return (self.target._type_of(),)
@@ -176,7 +175,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
     assert not tpe._is_bound()
     self._tpe = tpe
-    self._elt_sample = tpe._bind(self, ignore_context=True)
+    self._elt_sample = tpe._bind(self)
     self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
@@ -189,6 +188,14 @@ class Vector(BaseVector, Generic[VectorType]):
     # but this can't depend on get_def_name since that crashes
     return "Array[%s]@%02x" % (self._elt_sample, (id(self) // 4) & 0xff)
 
+  # unlike most other LibraryElement types, the names are stored in _elts and _allocates
+  def _name_of_child(self, subelt: Any) -> str:
+    assert self._elts is not None, "can't get name on undefined vector"
+    for (name, elt) in self._elts.items():
+      if subelt is elt:
+        return name
+    raise ValueError(f"no name for {subelt}")
+
   def _get_elt_sample(self) -> BasePort:
     return self._elt_sample
 
@@ -199,9 +206,9 @@ class Vector(BaseVector, Generic[VectorType]):
     pb = edgir.PortLike()
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
     if self._elts is not None:
-      array_ports = pb.array.ports.ports
+      pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        array_ports[name].CopyFrom(elt._instance_to_proto())
+        pb.array.ports.ports[name].CopyFrom(elt._instance_to_proto())
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -227,6 +234,17 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
     return self._elt_sample._get_ref_map(edgir.LocalPath())
+
+  def defined(self) -> None:
+    """Marks this vector as defined, even if it is empty. Can be called multiple times, and append_elt can continue
+    to be used.
+    Can only be called from the block defining this port (where this is a boundary port),
+    and this port must be bound."""
+    assert self._is_bound(), "not bound, can't create array elements"
+    assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+
+    if self._elts is None:
+      self._elts = {}
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -259,9 +277,9 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
-    assert builder.get_enclosing_block() is block_parent.parent, "can only allocate ports of internal blocks"
+    assert builder.get_enclosing_block() is block_parent._parent, "can only allocate ports of internal blocks"
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
-    allocated = self._tpe._bind(self, ignore_context=True)
+    allocated = type(self._tpe).empty()._bind(self)
     self._allocates.append((suggested_name, allocated))
     return allocated
 
@@ -281,8 +299,12 @@ class Vector(BaseVector, Generic[VectorType]):
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
 
+  def elt_type(self) -> Type[VectorType]:
+    """Returns the type of the element."""
+    return type(self._elt_sample)
+
   ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
-  ExtractPortType = TypeVar('ExtractPortType', bound=BasePort)
+  ExtractPortType = TypeVar('ExtractPortType', bound=Port)
   @overload
   def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
   @overload

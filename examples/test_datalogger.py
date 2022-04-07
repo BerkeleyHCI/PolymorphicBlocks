@@ -52,13 +52,11 @@ class TestDatalogger(BoardTop):
       ImplicitConnect(self.pwr_3v3.pwr_out, [Power]),
       ImplicitConnect(self.pwr_3v3.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_64(frequency=12 * MHertz(tol=0.005)))
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
-      (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
+      self.mcu = imp.Block(IoController())
 
-      self.connect(self.mcu.usb_0, self.usb_conn.usb)
+      self.connect(self.mcu.usb.allocate(), self.usb_conn.usb)
 
-      (self.can, ), self.can_chain = self.chain(self.mcu.new_io(CanControllerPort), imp.Block(CalSolCanBlock()))
+      (self.can, ), _ = self.chain(self.mcu.can.allocate('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())
@@ -66,76 +64,74 @@ class TestDatalogger(BoardTop):
       self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
-      # mcu_i2c = self.mcu.new_io(I2cMaster)  # no devices, ignored for now
+      # mcu_i2c = self.mcu.i2c.allocate()  # no devices, ignored for now
       # self.i2c_pullup = imp.Block(I2cPullup())
       # self.connect(self.i2c_pullup.i2c, mcu_i2c)
 
-      sd_spi = self.mcu.new_io(SpiMaster)
       self.sd = imp.Block(SdSocket())
-      self.sd_spi_net = self.connect(sd_spi, self.sd.spi)
-      self.sd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.sd.cs)
-      (self.cd_pull, ), self.sd_cd_pull_chain = self.chain(
-        self.mcu.new_io(DigitalBidir),
+      self.connect(self.mcu.spi.allocate('sd_spi'), self.sd.spi)
+      self.connect(self.mcu.gpio.allocate('sd_cs'), self.sd.cs)
+      (self.cd_pull, ), _ = self.chain(
+        self.mcu.gpio.allocate('sd_cd_pull'),
         imp.Block(PullupResistor(4.7 * kOhm(tol=0.05))),
         self.sd.cd)
 
-      xbee_uart = self.mcu.new_io(UartPort)
       self.xbee = imp.Block(Xbee_S3b())
-      self.xbee_uart_net = self.connect(xbee_uart, self.xbee.data)
+      self.connect(self.mcu.uart.allocate('xbee_uart'), self.xbee.data)
       (self.xbee_assoc, ), _ = self.chain(
         self.xbee.associate,
         imp.Block(IndicatorLed(current_draw=(0.5, 2)*mAmp)))  # XBee DIO current is -2 -> 2 mA
 
-      aux_spi = self.mcu.new_io(SpiMaster)
+      aux_spi = self.mcu.spi.allocate('aux_spi')
       self.rtc = imp.Block(Pcf2129())
-      self.aux_spi_net = self.connect(aux_spi, self.rtc.spi)
-      self.rtc_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.rtc.cs)
+      self.connect(aux_spi, self.rtc.spi)
+      self.connect(self.mcu.gpio.allocate('rtc_cs'), self.rtc.cs)
       self.bat = imp.Block(Cr2032())
       self.connect(self.bat.pwr, self.rtc.pwr_bat)
       self.connect(self.bat.gnd, self.gnd_merge2.sink2)
 
       self.eink = imp.Block(E2154fs091())
       self.connect(aux_spi, self.eink.spi)
-      self.eink_busy_net = self.connect(self.mcu.new_io(DigitalBidir), self.eink.busy)
-      self.eink_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.eink.reset)
-      self.eink_dc_net = self.connect(self.mcu.new_io(DigitalBidir), self.eink.dc)
-      self.eink_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.eink.cs)
+      self.connect(self.mcu.gpio.allocate('eink_busy'), self.eink.busy)
+      self.connect(self.mcu.gpio.allocate('eink_reset'), self.eink.reset)
+      self.connect(self.mcu.gpio.allocate('eink_dc'), self.eink.dc)
+      self.connect(self.mcu.gpio.allocate('eink_cs'), self.eink.cs)
 
       self.ext = imp.Block(BlueSmirf())
-      self.ext_uart_net = self.connect(self.mcu.new_io(UartPort), self.ext.data)
-      self.ext_cts_net = self.connect(self.mcu.new_io(DigitalBidir), self.ext.cts)
-      self.ext_rts_net = self.connect(self.mcu.new_io(DigitalBidir), self.ext.rts)
+      self.connect(self.mcu.uart.allocate('ext_uart'), self.ext.data)
+      self.connect(self.mcu.gpio.allocate('ext_cts'), self.ext.cts)
+      self.connect(self.mcu.gpio.allocate('ext_rts'), self.ext.rts)
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # system RGB 1
-      self.rgb1_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.red)
-      self.rgb1_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.green)
-      self.rgb1_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb1.blue)
+      self.connect(self.mcu.gpio.allocate('rgb1_red'), self.rgb1.red)
+      self.connect(self.mcu.gpio.allocate('rgb1_grn'), self.rgb1.green)
+      self.connect(self.mcu.gpio.allocate('rgb1_blue'), self.rgb1.blue)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # sd card RGB
-      self.rgb2_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.red)
-      self.rgb2_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.green)
-      self.rgb2_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb2.blue)
+      self.connect(self.mcu.gpio.allocate('rgb2_red'), self.rgb2.red)
+      self.connect(self.mcu.gpio.allocate('rgb2_grn'), self.rgb2.green)
+      self.connect(self.mcu.gpio.allocate('rgb2_blue'), self.rgb2.blue)
 
       self.rgb3 = imp.Block(IndicatorSinkRgbLed())
-      self.rgb3_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb3.red)
-      self.rgb3_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb3.green)
-      self.rgb3_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb3.blue)
+      self.connect(self.mcu.gpio.allocate('rgb3_red'), self.rgb3.red)
+      self.connect(self.mcu.gpio.allocate('rgb3_grn'), self.rgb3.green)
+      self.connect(self.mcu.gpio.allocate('rgb3_blue'), self.rgb3.blue)
 
       sw_pull_model = PullupResistor(4.7 * kOhm(tol=0.05))
-      (self.sw1, self.sw1_pull), self.sw1_chain = self.chain(imp.Block(DigitalSwitch()),
-                                                             imp.Block(sw_pull_model),
-                                                             self.mcu.new_io(DigitalBidir))
-      (self.sw2, self.sw2_pull), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()),
-                                                             imp.Block(sw_pull_model),
-                                                             self.mcu.new_io(DigitalBidir))
+      (self.sw1, self.sw1_pull), _ = self.chain(imp.Block(DigitalSwitch()),
+                                                imp.Block(sw_pull_model),
+                                                self.mcu.gpio.allocate('sw1'))
+      (self.sw2, self.sw2_pull), _ = self.chain(imp.Block(DigitalSwitch()),
+                                                imp.Block(sw_pull_model),
+                                                self.mcu.gpio.allocate('sw2'))
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_3v3.gnd, [Common]),
     ) as imp:
       div_model = VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)
-      (self.v12sense, ), self.v12sense_chain = self.chain(self.pwr_conn.pwr, imp.Block(div_model), self.mcu.new_io(AnalogSink))
-      (self.v5sense, ), self.v5sense_chain = self.chain(self.pwr_5v.pwr_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
-      (self.vscsense, ), self.vscsense_chain = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.new_io(AnalogSink))
+      (self.v12sense, ), _ = self.chain(self.pwr_conn.pwr, imp.Block(div_model), self.mcu.adc.allocate('v12sense'))
+      (self.v5sense, ), _ = self.chain(self.pwr_5v.pwr_out, imp.Block(div_model), self.mcu.adc.allocate('v5sense'))
+      (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.allocate('vscsense'))
 
     self.hole = ElementDict[MountingHole]()
     for i in range(3):
@@ -147,48 +143,50 @@ class TestDatalogger(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_64),
         (['pwr_5v'], Tps561201),
         (['pwr_3v3'], Ldl1117),
         (['buffer', 'amp'], Mcp6001),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'can_chain_0.txd=51',
-          'can_chain_0.rxd=53',
-          'sd_spi_net.sck=17',
-          'sd_spi_net.mosi=15',
-          'sd_spi_net.miso=19',
-          'sd_cs_net=11',
-          'sd_cd_pull_chain_0=16',
-          'xbee_uart_net.tx=58',
-          'xbee_uart_net.rx=54',
-          'aux_spi_net.sck=5',
-          'aux_spi_net.mosi=6',
-          'aux_spi_net.miso=7',
-          'rtc_cs_net=64',
-          'eink_busy_net=1',
-          'eink_reset_net=2',
-          'eink_dc_net=3',
-          'eink_cs_net=4',
-          'eink_busy_net=1',
-          'ext_uart_net.tx=60',
-          'ext_uart_net.rx=61',
-          'ext_cts_net=62',
-          'ext_rts_net=59',
-          'rgb1_red_net=31',
-          'rgb1_grn_net=32',
-          'rgb1_blue_net=30',
-          'rgb2_red_net=28',
-          'rgb2_grn_net=29',
-          'rgb2_blue_net=25',
-          'rgb3_red_net=46',
-          'rgb3_grn_net=39',
-          'rgb3_blue_net=38',
-          'sw1_chain_0=33',
-          'sw2_chain_0=23',
-          'v12sense_chain_1=10',
-          'v5sense_chain_1=9',
-          'vscsense_chain_1=8',
+          'can.txd=51',
+          'can.rxd=53',
+          'sd_spi.sck=17',
+          'sd_spi.mosi=15',
+          'sd_spi.miso=19',
+          'sd_cs=11',
+          'sd_cd_pull=16',
+          'xbee_uart.tx=58',
+          'xbee_uart.rx=50',  # used to be 54, which is ISP_0
+          'aux_spi.sck=5',
+          'aux_spi.mosi=6',
+          'aux_spi.miso=7',
+          'rtc_cs=64',
+          'eink_busy=1',
+          'eink_reset=2',
+          'eink_dc=3',
+          'eink_cs=4',
+          'eink_busy=1',
+          'ext_uart.tx=60',
+          'ext_uart.rx=61',
+          'ext_cts=62',
+          'ext_rts=59',
+          'rgb1_red=31',
+          'rgb1_grn=32',
+          'rgb1_blue=30',
+          'rgb2_red=28',
+          'rgb2_grn=29',
+          'rgb2_blue=25',
+          'rgb3_red=46',
+          'rgb3_grn=39',
+          'rgb3_blue=34',  # used to be 38, which is ISP_1
+          'sw1=33',
+          'sw2=23',
+          'v12sense=10',
+          'v5sense=9',
+          'vscsense=8',
+          'swd.swo=PIO0_8',
         ]))
       ]
     )

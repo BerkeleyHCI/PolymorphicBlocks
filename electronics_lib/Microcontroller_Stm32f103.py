@@ -1,200 +1,282 @@
-from typing import *
 from itertools import chain
+from typing import *
 
 from electronics_abstract_parts import *
+from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
 
 
-class Stm32f103_48_Device(DiscreteChip, FootprintBlock):
-  """
-  STM32F103C8 (QFP-48) microcontroller, Cortex-M3
-  https://www.st.com/resource/en/datasheet/stm32f103c8.pdf
-  """
-  def __init__(self) -> None:
-    super().__init__()
+@abstract_block
+class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
 
-    # TODO separate VddA and VssA, but both must operate at same potential
-    self.vdd = self.Port(VoltageSink(
-      voltage_limits=(3.0, 3.6)*Volt,
-      current_draw=(0, 50.3)*mAmp  # Table 13
-    ), [Power])  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
-    self.vss = self.Port(Ground(), [Common])
-
+    # Additional ports (on top of IoController)
     self.nrst = self.Port(DigitalSink.from_supply(
-      self.vss, self.vdd,
+      self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
       current_draw=(0, 0)*Amp,
       input_threshold_abs=(0.8, 2)*Volt
     ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
 
-    # self.boot0 = self.Port(DigitalSink(
-    #   voltage_limits=(0, 5.5)*Volt, current_draw=(0, 0)*mAmp,
-    #   input_thresholds=(0, 5.5)*Volt  # TODO not actually specified in datasheet!
-    # ))
-
-    standard_dio_model = DigitalBidir.from_supply(
-      self.vss, self.vdd,
-      voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO
-      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # TODO relaxed VOL, VOH, o/w +- 8 mAmps, except PC13-15 at +/- 3 mAmp
-      input_threshold_factor=(0.45, 0.65),  # TODO stricter (but more complex) bounds available
-      output_threshold_factor=(0, 1),
-      pullup_capable=True, pulldown_capable=True)
-
-    self.swd = self.Port(SwdTargetPort(standard_dio_model))  # TODO maybe make optional?
-
-    self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-                                         voltage_out=self.vdd.link().voltage),
-                           optional=True)  # TODO other specs from Table 23
+    # TODO need to pass through to pin mapper
+    # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
+    #                                      voltage_out=self.pwr.link().voltage),
+    #                        optional=True)  # TODO other specs from Table 23
     self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz,
-                                       voltage_out=self.vdd.link().voltage),
+                                       voltage_out=self.pwr.link().voltage),
                          optional=True)  # Table 22
 
-    self.pa = ElementDict[DigitalBidir]()
-    for i in chain(range(13), [15]):
-      self.pa[i] = self.Port(standard_dio_model, optional=True)
+    self.swd = self.Port(SwdTargetPort().empty())
 
-    self.pb = ElementDict[DigitalBidir]()
-    for i in chain(range(3), range(4, 10), range(10, 16)):
-      self.pb[i] = self.Port(standard_dio_model, optional=True)
+    self.generator(self.generate, self.pin_assigns,
+                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
+                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
+                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
 
-    self.pc = ElementDict[DigitalBidir]()
-    for i in chain(range(13, 14)):
-      self.pc[i] = self.Port(standard_dio_model, optional=True)
-
-    self.system_pins: Dict[str, CircuitPort] = {
-      '1': self.vdd,  # actually Vbat
-      '3': self.osc32.xtal_in,  # also PC14
-      '4': self.osc32.xtal_out,  # also PC15
-      '5': self.osc.xtal_in,  # also PD0
-      '6': self.osc.xtal_out,  # also PD1
-      '7': self.swd.reset,  # TODO actually NRST
-      '8': self.vss,  # actually VssA
-      '9': self.vdd,  # actually VddA
-
-      '23': self.vss,
-      '24': self.vdd,
-
-      '34': self.swd.swdio,  # self.pa[13],
-      '35': self.vss,
-      '36': self.vdd,
-
-      '37': self.swd.swclk,  # self.pa[14],
-      '39': self.swd.swo,  # self.pb[3],  # also, JTDO
-      '44': self.vss,  # self.boot0,  TODO re-enable boot0 option
-      '47': self.vss,
-      '48': self.vdd,
-    }
-    self.io_pins = {
-      '2': self.pc[13],
-      '10': self.pa[0],  # also, ADC12_IN0
-      '11': self.pa[1],  # also, ADC12_IN1
-      '12': self.pa[2],  # also, ADC12_IN2
-
-      '13': self.pa[3],  # also, ADC12_IN3
-      '14': self.pa[4],  # also, ADC12_IN4
-      '15': self.pa[5],  # also, ADC12_IN5
-      '16': self.pa[6],  # also, ADC12_IN6
-      '17': self.pa[7],  # also, ADC12_IN7
-      '18': self.pb[0],  # also, ADC12_IN8
-      '19': self.pb[1],  # also, ADC12_IN9
-      '20': self.pb[2],  # also, BOOT1
-      '21': self.pb[10],
-      '22': self.pb[11],
-
-      '25': self.pb[12],
-      '26': self.pb[13],
-      '27': self.pb[14],
-      '28': self.pb[15],
-      '29': self.pa[8],
-      '30': self.pa[9],
-      '31': self.pa[10],
-      '32': self.pa[11],
-      '33': self.pa[12],
-
-      '38': self.pa[15],  # also, JTDI
-      '40': self.pb[4],  # also, JNTRST
-      '41': self.pb[5],
-      '42': self.pb[6],
-      '43': self.pb[7],
-      '45': self.pb[8],
-      '46': self.pb[9],
-    }
-
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
+
+    # Ports with shared references
+    self.pwr.init_from(VoltageSink(
+      voltage_limits=(3.0, 3.6)*Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
+      current_draw=(0, 50.3)*mAmp  # Table 13, TODO propagate current consumption from IO ports
+    ))
+    self.gnd.init_from(Ground())
+
+    # Port models
+    dio_ft_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_abs=(-0.3, 5.2) * Volt,  # Table 5.3.1, general operating conditions, TODO relaxed for Vdd>2v
+      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
+      input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
+      pullup_capable=True, pulldown_capable=True
+    )
+    dio_std_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
+      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
+      input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
+      pullup_capable=True, pulldown_capable=True,
+    )
+    dio_pc_13_14_15_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
+      current_draw=(0, 0)*Amp, current_limits=(-3, 3)*mAmp,  # Section 5.3.13 Output driving current
+      input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
+      pullup_capable=True, pulldown_capable=True,
+    )
+
+    adc_model = AnalogSink(
+      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+      current_draw=(0, 0) * Amp,
+      impedance=(100, float('inf')) * kOhm
+    )
+
+    uart_model = UartPort(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty())
+    i2c_model = I2cMaster(DigitalBidir.empty())
+
+    # Pin/peripheral resource definitions (table 3)
+    self.system_pinmaps = VariantPinRemapper({
+      'Vbat': self.pwr,
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
+      'BOOT0': self.gnd,
+      'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
+      'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
+    })
+
+    self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
+      PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
+      PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
+      PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
+
+      PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),
+      PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),
+      PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),
+      PinResource('PA3', {'PA3': dio_std_model, 'ADC12_IN3': adc_model}),
+      PinResource('PA4', {'PA4': dio_std_model, 'ADC12_IN4': adc_model}),
+      PinResource('PA5', {'PA5': dio_std_model, 'ADC12_IN5': adc_model}),
+      PinResource('PA6', {'PA6': dio_std_model, 'ADC12_IN6': adc_model}),
+      PinResource('PA7', {'PA7': dio_std_model, 'ADC12_IN7': adc_model}),
+      PinResource('PB0', {'PB0': dio_std_model, 'ADC12_IN8': adc_model}),
+      PinResource('PB1', {'PB1': dio_std_model, 'ADC12_IN9': adc_model}),
+
+      PinResource('PB2', {'PB2': dio_ft_model}),  # BOOT1
+      PinResource('PB10', {'PB10': dio_ft_model}),
+      PinResource('PB11', {'PB11': dio_ft_model}),
+      PinResource('PB12', {'PB12': dio_ft_model}),
+      PinResource('PB13', {'PB13': dio_ft_model}),
+      PinResource('PB14', {'PB14': dio_ft_model}),
+      PinResource('PB15', {'PB15': dio_ft_model}),
+
+      PinResource('PA8', {'PA8': dio_ft_model}),
+      PinResource('PA9', {'PA9': dio_ft_model}),
+      PinResource('PA10', {'PA10': dio_ft_model}),
+      PinResource('PA11', {'PA11': dio_ft_model}),
+      PinResource('PA12', {'PA12': dio_ft_model}),
+      # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
+
+      # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
+      PinResource('PA15', {'PA15': dio_ft_model}),  # default is JTDI
+      # PinResource('PB3', {'PB3': dio_ft_model}),  # forced SWO, default is JTDO
+      PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
+      PinResource('PB5', {'PB5': dio_std_model}),
+      PinResource('PB6', {'PB6': dio_ft_model}),
+      PinResource('PB7', {'PB7': dio_ft_model}),
+      PinResource('PB8', {'PB8': dio_ft_model}),
+      PinResource('PB9', {'PB9': dio_ft_model}),
+
+      # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
+
+      PeripheralFixedResource('USART2', uart_model, {
+        'tx': ['PA2', 'PD5'], 'rx': ['PA3', 'PD6']
+      }),
+      PeripheralFixedResource('SPI1', spi_model, {
+        'sck': ['PA5', 'PB3'], 'miso': ['PA6', 'PB4'], 'mosi': ['PA7', 'PB5']
+      }),
+      PeripheralFixedResource('USART3', uart_model, {
+        'tx': ['PB10', 'PD8', 'PC10'], 'rx': ['PB11', 'PD9', 'PC11']
+      }),
+      PeripheralFixedResource('I2C2', i2c_model, {
+        'scl': ['PB10'], 'sda': ['PB11']
+      }),
+      PeripheralFixedResource('SPI2', spi_model, {
+        'sck': ['PB13'], 'miso': ['PB14'], 'mosi': ['PB15']
+      }),
+      PeripheralFixedResource('USART1', uart_model, {
+        'tx': ['PA9', 'PB6'], 'rx': ['PA10', 'PB7']
+      }),
+      PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
+        'tx': ['PA12', 'PD1', 'PB9'], 'rx': ['PA11', 'PD0', 'PB8']
+      }),
+      PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
+        'dm': ['PA11'], 'dp': ['PA12']
+      }),
+      PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
+        'swdio': ['PA13'], 'swclk': ['PA14'], 'reset': ['NRST'], 'swo': ['PB3'],
+      }),
+      PeripheralFixedResource('I2C1', i2c_model, {
+        'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
+      }),
+    ])
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+
+  def generate(self, assignments: str,
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    ], assignments)
+
+    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+
     self.footprint(
-      'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
-      dict(chain(self.system_pins.items(), self.io_pins.items())),
-      mfr='STMicroelectronics', part='STM32F103xxT6',
+      'U', self.PACKAGE,
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='STMicroelectronics', part=self.PART,
       datasheet='https://www.st.com/resource/en/datasheet/stm32f103c8.pdf'
     )
 
 
-class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
-  """
-  STM32F103C8 (QFP-48) microcontroller, Cortex-M3
-  https://www.st.com/resource/en/datasheet/stm32f103c8.pdf
-  """
-  def __init__(self) -> None:
+class Stm32f103_48_Device(Stm32f103Base_Device):
+  SYSTEM_PIN_REMAP = {
+    'Vbat': '1',
+    'VddA': '9',
+    'VssA': '8',
+    'Vss': ['23', '35', '47'],
+    'Vdd': ['24', '36', '48'],
+    'BOOT0': '44',
+    'OSC_IN': '5',
+    'OSC_OUT': '6',
+  }
+  RESOURCE_PIN_REMAP = {
+    'PC13': '2',
+    'PC14': '3',
+    'PC15': '4',
+    'NRST': '7',
+
+    'PA0': '10',
+    'PA1': '11',
+    'PA2': '12',
+    'PA3': '13',
+    'PA4': '14',
+    'PA5': '15',
+    'PA6': '16',
+    'PA7': '17',
+    'PB0': '18',
+    'PB1': '19',
+
+    'PB2': '20',
+    'PB10': '21',
+    'PB11': '22',
+    'PB12': '25',
+    'PB13': '26',
+    'PB14': '27',
+    'PB15': '28',
+
+    'PA8': '29',
+    'PA9': '30',
+    'PA10': '31',
+    'PA11': '32',
+    'PA12': '33',
+    'PA13': '34',
+
+    'PA14': '37',
+    'PA15': '38',
+    'PB3': '39',
+    'PB4': '40',
+    'PB5': '41',
+    'PB6': '42',
+    'PB7': '43',
+
+    'PB8': '45',
+    'PB9': '46',
+  }
+  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
+  PART = 'STM32F103xxT6'
+
+
+class UsbDpPullUp(Block):
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
     super().__init__()
-    self.ic = self.Block(Stm32f103_48_Device())
-
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.swd = self.Export(self.ic.swd)
-    # self.rst = self.Export(self.ic.nrst)  # TODO separate from SWD
+    self.usb = self.Port(UsbPassivePort.empty(), [InOut])
 
-    self.xtal = self.Export(self.ic.osc, optional=True)  # TODO standardize naming across all MCUs
-    self.xtal_rtc = self.Export(self.ic.osc32, optional=True)  # TODO standardize naming across all MCUs
-
-    self.digital = ElementDict[DigitalBidir]()
-    for i in range(len(self.ic.io_pins)):
-      self.digital[i] = self.Port(DigitalBidir.empty(), optional=True)
-      self._add_assignable_io(self.digital[i])
-
-    self.adc = ElementDict[AnalogSink]()
-    for i in range(10):
-      self.adc[i] = self.Port(AnalogSink.empty(), optional=True)
-      self._add_assignable_io(self.adc[i])
-
-    self.uart_0 = self.Port(UartPort.empty(), optional=True)
-    self._add_assignable_io(self.uart_0)
-
-    self.spi_0 = self.Port(SpiMaster.empty(), optional=True)
-    self._add_assignable_io(self.spi_0)
-
-    self.can_0 = self.Port(CanControllerPort.empty(), optional=True)
-    self._add_assignable_io(self.can_0)
-
-    self.usb_0 = self.Port(UsbDevicePort.empty(), optional=True)
-    # self._add_assignable_io(self.usb_0)  # TODO incompatible with builtin USB circuit
-
-    self.generator(self.pin_assign, self.pin_assigns,
-                   req_ports=chain(self.digital.values(),
-                                   self.adc.values(),
-                                   [self.uart_0, self.spi_0, self.can_0, self.usb_0]))
+    self.dp = self.Block(Resistor(resistance))
+    self.connect(self.dp.a.as_voltage_sink(), self.pwr)
+    self.connect(self.usb.dp, self.dp.b.as_digital_bidir())  # ideal
+    self.usb.dm.init_from(DigitalBidir())  # ideal
 
 
-  def pin_assign(self, pin_assigns_str: str) -> None:
-    # These are here because we can't split the power with the USB.
-    # TODO support for split nets between generatorrs
-    self.connect(self.pwr, self.ic.vdd)
-    self.connect(self.gnd, self.ic.vss)
+@abstract_block
+class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
+  DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
 
-    io_draw_expr = (0, 0)*mAmp
-    for _, io in self.digital.items():
-      io_draw_expr = io_draw_expr + io.is_connected().then_else(
-        io.link().current_drawn.intersect((0, float('inf'))*Amp),  # only count sourced current
-        (0, 0)*Amp)
-    self.io_draw = self.Block(VoltageLoad(
-      voltage_limit=(-float('inf'), float('inf')),
-      current_draw=io_draw_expr
-    ))
-    self.connect(self.pwr, self.io_draw.pwr)
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
 
-    #
-    # Reference Circuit Block
-    #
-    # TODO associate capacitors with a particular Vdd, Vss pin
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
+    self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
+
     self.pwr_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
@@ -205,46 +287,30 @@ class Stm32f103_48(Microcontroller, AssignablePinBlock, GeneratorBlock):
       for i in range(1, 4):
         self.pwr_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
-      # one 10nF and 1uF cap for VddA
-      # TODO generate the same cap if a different Vref is used
+      # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-    #
-    # Pin assignment block
-    #
-    assigned_pins = PinAssignmentUtil(
-      # TODO assign fixed-pin digital peripherals here
-      # TODO
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, AnalogSink)],
-                   [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]),
-      AnyPinAssign([port for port in self._all_assignable_ios if isinstance(port, DigitalBidir)],
-                   [int(pinnum) for pinnum in self.ic.io_pins.keys()]),  # TODO ducktype in pin-assign infrastructure
-      PeripheralPinAssign([port for port in self._all_assignable_ios if isinstance(port, SpiMaster)],
-                          [[39, 15], [17, 41], [16, 40]],  # SPI1 - sck, mosi, miso
-                          [26, 28, 27]),  # SPI2
-      PeripheralPinAssign([port for port in self._all_assignable_ios if isinstance(port, UartPort)],
-                          [[30, 42], [31, 43]],  # USART1 - tx, rx
-                          [12, 13],  # USART2
-                          [21, 22]),  # USART3
-      PeripheralPinAssign([port for port in self._all_assignable_ios if isinstance(port, CanControllerPort)],
-                          [[33, 46], [32, 45]]),  # CAN - txd, rxd
-      PeripheralPinAssign([port for port in self._all_assignable_ios if isinstance(port, UsbDevicePort)],
-                          [33, 32]),  # USB - dp, dm
-    ).assign(
-      [port for port in self._all_assignable_ios if self.get(port.is_connected())],
-      self._get_suggested_pin_maps(pin_assigns_str))
+      # TODO add the reset stabilizing capacitor?
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+                                   self.ic.swd)
 
-    for pin_num, self_port in assigned_pins.assigned_pins.items():
-      self.connect(self_port, self.ic.io_pins[str(pin_num)])
+  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
+    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
+      self.connect(self.crystal.gnd, self.gnd)
+      self.connect(self.crystal.crystal, self.ic.osc)
 
-    for self_port in assigned_pins.not_connected:
-      assert isinstance(self_port, NotConnectablePort), f"non-NotConnectablePort {self_port.name()} marked NC"
-      self_port.not_connected()
+    if usb_allocated:
+      assert len(usb_allocated) == 1
+      usb_allocated_name = usb_allocated[0]
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated_name)
+      self.connect(usb_port, self.ic.usb.allocate(usb_allocated_name))
 
-    if self.get(self.usb_0.is_connected()):
-      self.usb_pull = self.Block(PullupResistor(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
+      self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
       self.connect(self.usb_pull.pwr, self.pwr)
+      self.connect(usb_port, self.usb_pull.usb)
 
-      self.connect(self.usb_0.dm, self.ic.pa[11])
-      self.connect(self.usb_0.dp, self.usb_pull.io, self.ic.pa[12])
+
+class Stm32f103_48(Stm32f103Base):
+  DEVICE = Stm32f103_48_Device

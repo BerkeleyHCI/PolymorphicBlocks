@@ -117,10 +117,6 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
     basePb.getGenerator.requiredParams
   }
 
-  def getDependenciesPorts: Seq[ref.LocalPath] = {  // TODO remove me w/ refactoring
-    basePb.getGenerator.requiredPorts
-  }
-
   override def toEltPb: elem.HierarchyBlock = {
     generatedPb.getOrElse(basePb).copy(  // if the block did not generate, return the base w/ the generator field
       prerefineClass=unrefinedType match {

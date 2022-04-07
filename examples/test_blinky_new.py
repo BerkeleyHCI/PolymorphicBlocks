@@ -7,30 +7,31 @@ class NewBlinkyOvervolt(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Lpc1549_48())
+    self.mcu = self.Block(IoController())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.digital[0], self.led.signal)
+    self.connect(self.mcu.gpio.allocate(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
     self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
-    self.swd = self.Block(SwdCortexTargetHeader())
-    self.connect(self.jack.pwr, self.mcu.pwr, self.swd.pwr)
-    self.connect(self.swd.swd, self.mcu.swd)
-    self.connect(self.mcu.gnd, self.swd.gnd, self.jack.gnd)
+    self.connect(self.jack.pwr, self.mcu.pwr)
+    self.connect(self.mcu.gnd, self.jack.gnd)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['mcu'], Lpc1549_48),
+      ])
 
 
 class NewBlinkyBuck(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Lpc1549_48())
+    self.mcu = self.Block(IoController())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.digital[0], self.led.signal)
+    self.connect(self.mcu.gpio.allocate(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
     self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
-    self.swd = self.Block(SwdCortexTargetHeader())
-    self.connect(self.mcu.pwr, self.swd.pwr)
-    self.connect(self.swd.swd, self.mcu.swd)
-    self.connect(self.mcu.gnd, self.swd.gnd, self.jack.gnd)
+    self.connect(self.mcu.gnd, self.jack.gnd)
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
     self.connect(self.jack.pwr, self.buck.pwr_in)
     self.connect(self.jack.gnd, self.buck.gnd)
@@ -39,6 +40,7 @@ class NewBlinkyBuck(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
       ])
 
@@ -56,18 +58,17 @@ class NewBlinkyRefactored(BoardTop):
         ImplicitConnect(self.buck.pwr_out, [Power]),
         ImplicitConnect(self.jack.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
-      self.swd = imp.Block(SwdCortexTargetHeader())
-      self.connect(self.swd.swd, self.mcu.swd)
+      self.mcu = imp.Block(IoController())
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.digital[i], self.led[i].signal)
+        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
       ])
 
@@ -148,21 +149,20 @@ class NewBlinkyMagsense(BoardTop):
         ImplicitConnect(self.buck.pwr_out, [Power]),
         ImplicitConnect(self.jack.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
-      self.swd = imp.Block(SwdCortexTargetHeader())
-      self.connect(self.swd.swd, self.mcu.swd)
+      self.mcu = imp.Block(IoController())
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.digital[i], self.led[i].signal)
+        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
 
       self.sens = imp.Block(Ref_Lf21215tmr())
-      self.connect(self.mcu.digital[4], self.sens.out)
+      self.connect(self.mcu.gpio.allocate(), self.sens.out)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
       ])
 
@@ -181,32 +181,31 @@ class NewBlinkyLightsense(BoardTop):
         ImplicitConnect(self.buck.pwr_out, [Power]),
         ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Lpc1549_48())
+      self.mcu = imp.Block(IoController())
       self.esd = imp.Block(UsbEsdDiode())
-      self.connect(self.usb.usb, self.mcu.usb_0, self.esd.usb)
-      self.swd = imp.Block(SwdCortexTargetHeader())
-      self.connect(self.swd.swd, self.mcu.swd)
+      self.connect(self.usb.usb, self.mcu.usb.allocate(), self.esd.usb)
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.digital[i], self.led[i].signal)
+        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
 
       self.als = imp.Block(Ref_Bh1620fvc(20000, (2.7, 3.0)*Volt))
       self.amp = imp.Block(OpampFollower())  # "optional", output impedance is "only" 2x larger than MCU's input
       self.connect(self.als.vout, self.amp.input)
-      self.connect(self.amp.output, self.mcu.adc[0])
+      self.connect(self.amp.output, self.mcu.adc.allocate())
 
       self.lcd = imp.Block(Qt096t_if09())
-      self.connect(self.mcu.spi[0], self.lcd.spi)
-      self.connect(self.mcu.digital[4], self.lcd.cs)
-      self.connect(self.mcu.digital[5], self.lcd.rs)
-      self.connect(self.mcu.digital[6], self.lcd.reset)
-      self.connect(self.mcu.digital[7], self.lcd.led)
+      self.connect(self.mcu.spi.allocate(), self.lcd.spi)
+      self.connect(self.mcu.gpio.allocate(), self.lcd.cs)
+      self.connect(self.mcu.gpio.allocate(), self.lcd.rs)
+      self.connect(self.mcu.gpio.allocate(), self.lcd.reset)
+      self.connect(self.mcu.gpio.allocate(), self.lcd.led)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
       ], class_refinements=[
         (Opamp, Mcp6001),

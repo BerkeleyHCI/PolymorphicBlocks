@@ -17,6 +17,8 @@ class BoardTop(DesignTop):
         (NFet, SmtNFet),
         (PFet, SmtPFet),
         (SwitchNFet, SmtSwitchNFet),
-        (SwitchPFet, SmtSwitchPFet)
+        (SwitchPFet, SmtSwitchPFet),
+
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
       ]
     )

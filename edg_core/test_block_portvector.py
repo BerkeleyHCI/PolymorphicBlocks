@@ -19,6 +19,12 @@ class TestBlockPortVectorConcrete(TestBlockPortVectorBase):
     self.vector.append_elt(TestPortSink())
 
 
+class TestBlockPortVectorEmpty(TestBlockPortVectorBase):
+  def __init__(self) -> None:
+    super().__init__()
+    self.vector.defined()
+
+
 class TestBlockPortVectorExport(TestBlockPortVectorBase):
   def __init__(self) -> None:
     super().__init__()
@@ -28,6 +34,15 @@ class TestBlockPortVectorExport(TestBlockPortVectorBase):
     self.exported0 = self.connect(self.block0.sink, vector0)
     self.block1 = self.Block(TestBlockSink())
     self.exported1 = self.connect(self.block1.sink, vector1)
+
+
+class TestBlockPortVectorBridged(TestBlockPortVectorBase):
+  def __init__(self) -> None:
+    super().__init__()
+    vector_port = self.vector.append_elt(TestPortSink())
+    self.block0 = self.Block(TestBlockSink())
+    self.block1 = self.Block(TestBlockSink())
+    self.conn = self.connect(self.block0.sink, self.block1.sink, vector_port)
 
 
 class TestBlockPortVectorConnect(Block):
@@ -72,6 +87,18 @@ class BlockVectorProtoTestCase(unittest.TestCase):
     self.assertEqual(array_ports['1'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
 
+class BlockVectorEmptyProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockPortVectorEmpty()._elaborated_def_to_proto()
+
+  def test_port_def(self) -> None:
+    self.assertEqual(len(self.pb.ports), 1)
+    self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertTrue(self.pb.ports['vector'].array.HasField('ports'))
+    array_ports = self.pb.ports['vector'].array.ports.ports
+    self.assertEqual(len(array_ports), 0)
+
+
 class VectorExportProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorExport()._elaborated_def_to_proto()
@@ -91,6 +118,44 @@ class VectorExportProtoTestCase(unittest.TestCase):
     expected_conn.exported.exterior_port.ref.steps.add().name = '1'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'block1'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+
+class VectorBridgedProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockPortVectorBridged()._elaborated_def_to_proto()
+
+  def test_bridged(self) -> None:
+    self.assertEqual(len(self.pb.constraints), 4)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
+    expected_conn.exported.exterior_port.ref.steps.add().name = '0'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = '(bridge)vector.0'
+    expected_conn.exported.internal_block_port.ref.steps.add().name = 'outer_port'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = '(bridge)vector.0'
+    expected_conn.connected.block_port.ref.steps.add().name = 'inner_link'
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn'
+    expected_conn.connected.link_port.ref.steps.add().name = 'source'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'block0'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.block_port.ref.steps.add().name = 'block1'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connected.link_port.ref.steps.add().name = 'conn'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
 

@@ -134,7 +134,7 @@ class ImplicitScope:
 
     block = self.parent.Block(tpe)
 
-    already_connected_ports = IdentitySet[Port]()
+    already_connected_ports = IdentitySet[BasePort]()
     for implicit in self.implicits:
       # for all ports, only the first connectable implicit should connect
       for tag in implicit.tags:
@@ -181,16 +181,14 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       self._parameters.register(param)
       self.manager.add_element(param_name, param)
 
-    self.parent = None
-
     self._blocks = self.manager.new_dict(Block)  # type: ignore
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
 
-  def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[Port]:
+  def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
     out = []
     for block_port_name, block_port in self._ports.items():
-      assert isinstance(block_port, Port)
+      assert isinstance(block_port, BasePort)
       port_tags: Set[PortTag[Any]] = self._port_tags.get(block_port, set())
       if port_tags.issuperset(tags):
         out.append(block_port)
@@ -268,7 +266,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert isinstance(self_port, Port)
           assert self_port.bridge_type is not None
 
-          port_name = self._name_of(self_port)
+          port_name = self_port._name_from(self)
           pb.blocks[f"(bridge){port_name}"].lib_elem.target.name = self_port.bridge_type._static_def_name()
           self._namespace_order.append(f"(bridge){port_name}")
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
@@ -323,8 +321,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_param_init(pb)
     for (port) in self._connected_ports():
       if port._block_parent() is self:
-        port_name = self.manager._name_of(port) or "unk"
-        assert not port._get_initializers([port_name]), f"connected boundary port {name} has unexpected initializer"
+        port_name = self.manager.name_of(port) or "unk"
+        assert not port._get_initializers([port_name]), f"connected boundary port {port_name} has unexpected initializer"
     pb = self._populate_def_proto_port_init(pb)
 
     return pb
@@ -430,10 +428,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
+    assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
     assert isinstance(port_parent, Block)
     assert port_parent._parent is self, "can only export ports of contained block"
-    assert port._is_bound(), "can only export bound type"
 
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)

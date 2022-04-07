@@ -178,8 +178,7 @@ class NetlistCollect(TransformUtil.Transform):
       for name, _ in port.bundle.ports.items():
         self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
     elif port.HasField('array') and port.array.HasField('ports'):
-      for index in range(len(port.array.ports.ports)):
-        name = str(index)
+      for name in port.array.ports.ports.keys():
         self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
