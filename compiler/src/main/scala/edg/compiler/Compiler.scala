@@ -622,16 +622,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
-                  Seq()
-                )
+                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                elaboratePending.addNode(setAllocatedTask, Seq())
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
 
               case PortConnections.NotConnected =>
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(), false),
-                  Seq()
-                )
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                // TODO this is just to resolve IsConnected
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
@@ -658,15 +659,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 throw new NotImplementedError()
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
-                  Seq()
-                )
+                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                elaboratePending.addNode(setAllocatedTask, Seq())
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+
               case PortConnections.NotConnected =>
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(), false),
-                  Seq()
-                )
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                // TODO this is just to resolve IsConnected
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
 
@@ -747,15 +751,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                     ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
                 }
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true),
-                  deps
-                )
+
+                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
+                elaboratePending.addNode(setAllocatedTask, deps)
+
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
+                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+
               case PortConnections.NotConnected =>
-                elaboratePending.addNode(
-                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(), false),
-                  Seq()
-                )
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                // TODO this is just to resolve IsConnected
+                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
           case _ =>  // everything else generated
@@ -927,15 +935,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     } }
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.values.toSeq.map(TextValue(_))))
-
-    val lowerAllocateTask = ElaborateRecord.LowerAllocateConnections(record.parent, record.portPath,
-      record.constraintNames, record.arrayConstraintNames, record.portIsLink)
-    val lowerArrayDependencies = record.arrayConstraintNames.map { constrName =>
-      ElaborateRecord.LowerArrayConnections(record.parent, constrName)
-    }
-    elaboratePending.addNode(lowerAllocateTask, Seq(
-      ElaborateRecord.ElaboratePortArray(record.parent ++ record.portPath),
-    ) ++ lowerArrayDependencies)
   }
 
   // Once a block-side port array has all its element widths available, this lowers the connect statements
