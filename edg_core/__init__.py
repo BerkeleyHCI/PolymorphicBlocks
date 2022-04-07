@@ -14,6 +14,7 @@ from .PortTag import PortTag, Input, Output, InOut
 from .Range import Range
 
 from .IdentityDict import IdentityDict
+from .IdentitySet import IdentitySet
 from .MultiBiDict import MultiBiDict
 
 # Features for library builders

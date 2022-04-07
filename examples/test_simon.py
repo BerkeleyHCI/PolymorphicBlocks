@@ -41,8 +41,8 @@ class TestSimon(BoardTop):
         ImplicitConnect(self.mcu.pwr_5v, [Power]),
         ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
-      (self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.new_io(AnalogSource),
+      (self.spk_drv, self.spk), _ = self.chain(
+        self.mcu.dac.allocate('spk'),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
 
@@ -51,13 +51,13 @@ class TestSimon(BoardTop):
       ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
       self.rgb = imp.Block(IndicatorSinkRgbLed())  # status RGB
-      self.rgb_red_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
-      self.rgb_grn_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
-      self.rgb_blue_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate('rgb_red'), self.rgb.red)
+      self.connect(self.mcu.gpio.allocate('rgb_grn'), self.rgb.green)
+      self.connect(self.mcu.gpio.allocate('rgb_blue'), self.rgb.blue)
 
-      (self.sw, self.sw_pull), self.sw_chain = self.chain(
+      (self.sw, self.sw_pull), _ = self.chain(
         imp.Block(DigitalSwitch()), imp.Block(PullupResistor(10 * kOhm(tol=0.05))),
-        self.mcu.new_io(DigitalBidir))
+        self.mcu.gpio.allocate('sw'))
 
       self.btn = ElementDict[DomeButtonConnector]()
       self.btn_pull = ElementDict[PullupResistor]()
@@ -88,14 +88,14 @@ class TestSimon(BoardTop):
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
 
-    self.btn_drv0_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[0].control)
-    self.btn_sw0_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[0].sw1)
-    self.btn_drv1_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[1].control)
-    self.btn_sw1_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[1].sw1)
-    self.btn_drv2_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[2].control)
-    self.btn_sw2_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[2].sw1)
-    self.btn_drv3_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn_drv[3].control)
-    self.btn_sw3_net = self.connect(self.mcu.new_io(DigitalBidir), self.btn[3].sw1)
+    self.connect(self.mcu.gpio.allocate('btn_drv0'), self.btn_drv[0].control)
+    self.connect(self.mcu.gpio.allocate('btn_sw0'), self.btn[0].sw1)
+    self.connect(self.mcu.gpio.allocate('btn_drv1'), self.btn_drv[1].control)
+    self.connect(self.mcu.gpio.allocate('btn_sw1'), self.btn[1].sw1)
+    self.connect(self.mcu.gpio.allocate('btn_drv2'), self.btn_drv[2].control)
+    self.connect(self.mcu.gpio.allocate('btn_sw2'), self.btn[2].sw1)
+    self.connect(self.mcu.gpio.allocate('btn_drv3'), self.btn_drv[3].control)
+    self.connect(self.mcu.gpio.allocate('btn_sw3'), self.btn[3].sw1)
 
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
@@ -105,19 +105,19 @@ class TestSimon(BoardTop):
     return super().refinements() + Refinements(
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'spk_chain_0=24',
-          'rgb_red_net=15',
-          'rgb_grn_net=14',
-          'rgb_blue_net=13',
-          'sw_chain_0=27',
-          'btn_drv0_net=5',
-          'btn_sw0_net=6',
-          'btn_drv1_net=7',
-          'btn_sw1_net=8',
-          'btn_drv2_net=9',
-          'btn_sw2_net=10',
-          'btn_drv3_net=11',
-          'btn_sw3_net=12',
+          'spk=24',
+          'rgb_red=15',
+          'rgb_grn=14',
+          'rgb_blue=13',
+          'sw=27',
+          'btn_drv0=5',
+          'btn_sw0=6',
+          'btn_drv1=7',
+          'btn_sw1=8',
+          'btn_drv2=9',
+          'btn_sw2=10',
+          'btn_drv3=11',
+          'btn_sw3=12',
         ]))
       ]
     )

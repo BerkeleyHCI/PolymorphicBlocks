@@ -116,11 +116,11 @@ class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
-    self.generator(self.generate_assign, req_ports=[self.port])
+    self.generator(self.generate_assign, self.port.is_connected())
     self.connected = self.Parameter(BoolExpr())
 
-  def generate_assign(self) -> None:
-    if self.get(self.port.is_connected()):
+  def generate_assign(self, connected: bool) -> None:
+    if connected:
       self.assign(self.connected, True)
     else:
       self.assign(self.connected, False)

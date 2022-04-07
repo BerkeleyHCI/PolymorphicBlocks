@@ -102,8 +102,7 @@ class BlueSmirf(IntegratedCircuit, FootprintBlock):
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # TODO actually an unspecified default
       # TODO other parameters given the logic conversion circuit
       current_draw=(0, 0),  # TODO actually an unspecified default
-      input_threshold_factor=(0.5, 0.5),  # TODO completely wild relaxed unrealistic guess
-      output_threshold_factor=(0, 1)  # TODO completely wild relaxed unrealistic guess
+      input_threshold_factor=(0.5, 0.5)  # TODO completely wild relaxed unrealistic guess
     )
 
     self.data = self.Port(UartPort(digital_model), [Input])

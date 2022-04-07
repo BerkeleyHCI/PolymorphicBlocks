@@ -26,8 +26,7 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       current_draw=(0, 0),  # leakage current not modeled
       current_limits=(-25, 25)*mAmp,
-      input_threshold_factor=(0.2, 0.7),
-      output_threshold_factor=(0, 1)
+      input_threshold_factor=(0.2, 0.7)
     )
     self.ldac = self.Port(dio_model)
     self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(0, 20)*MHertz))

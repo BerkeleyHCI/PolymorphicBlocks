@@ -1,8 +1,6 @@
 from edg_core import *
 from electronics_model import *
 
-from .AssignablePin import AssignablePinBlock
-
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
@@ -35,6 +33,11 @@ from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
+
+from .IoController import BaseIoController, IoController
+from .PinMappable import PinMappable, PinMapUtil
+from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
+from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw

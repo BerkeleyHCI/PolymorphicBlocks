@@ -327,35 +327,32 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.pd.vbus, self.pwr_usb.pwr)
       self.connect(self.pwr_usb.cc, self.pd.cc)
 
-      self.mcu = imp.Block(Lpc1549_48(frequency=12 * MHertz(tol=0.005)))
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()), self.mcu.swd)
-      (self.crystal, ), _ = self.chain(self.mcu.xtal, imp.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005))))  # TODO can we not specify this and instead infer from MCU specs?
+      self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb_0)
+      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
-      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c_0, imp.Block(I2cPullup()), self.pd.i2c)
-      self.pd_int_net = self.connect(self.mcu.new_io(DigitalBidir), self.pd.int)
+      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.allocate(), imp.Block(I2cPullup()), self.pd.i2c)
+      self.connect(self.mcu.gpio.allocate('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.rgb_r_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.red)
-      self.rgb_g_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.green)
-      self.rgb_b_net = self.connect(self.mcu.new_io(DigitalBidir), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
+      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
+      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
 
-      (self.sw1, ), self.sw1_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.sw2, ), self.sw2_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-      (self.sw3, ), self.sw3_chain = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
+      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw3'))
 
       # TODO next revision: Blackberry trackball UI, speakers?
 
-      shared_spi = self.mcu.new_io(SpiMaster)
-      self.spi_net = self.connect(shared_spi)
+      shared_spi = self.mcu.spi.allocate('spi')
 
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.lcd_reset_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.reset)
-      self.lcd_rs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.rs)
+      self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
+      self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
-      self.lcd_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.lcd.cs)
+      self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
       (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
                                      self.control.control_voltage)
@@ -373,16 +370,16 @@ class UsbSourceMeasureTest(BoardTop):
                    self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
                    self.adc_v.ref, self.adc_i.ref)
 
-      self.dac_v_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_v.cs)
-      self.dac_ip_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_ip.cs)
-      self.dac_in_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.dac_in.cs)
-      self.adc_v_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc_v.cs)
-      self.adc_i_cs_net = self.connect(self.mcu.new_io(DigitalBidir), self.adc_i.cs)
-      self.dac_ldac_net = self.connect(self.mcu.new_io(DigitalBidir),
+      self.connect(self.mcu.gpio.allocate('dac_v_cs'), self.dac_v.cs)
+      self.connect(self.mcu.gpio.allocate('dac_ip_cs'), self.dac_ip.cs)
+      self.connect(self.mcu.gpio.allocate('dac_in_cs'), self.dac_in.cs)
+      self.connect(self.mcu.gpio.allocate('adc_v_cs'), self.adc_v.cs)
+      self.connect(self.mcu.gpio.allocate('adc_i_cs'), self.adc_i.cs)
+      self.connect(self.mcu.gpio.allocate('dac_ldac'),
                    self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
 
-      self.high_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.high_en)
-      self.low_en_net = self.connect(self.mcu.new_io(DigitalBidir), self.control.low_en)
+      self.connect(self.mcu.gpio.allocate('high_en'), self.control.high_en)
+      self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.source)
@@ -403,6 +400,7 @@ class UsbSourceMeasureTest(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Lpc1549_48),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),
@@ -414,30 +412,32 @@ class UsbSourceMeasureTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'pd_int_net=28',
-          'sw1_chain_0=43',
-          'sw2_chain_0=44',
-          'sw3_chain_0=45',
-          'rgb_b_net=46',
-          'rgb_g_net=47',
-          'rgb_r_net=48',
+          'pd_int=28',
+          'sw1=43',
+          'sw2=44',
+          'sw3=45',
+          'rgb_b=46',
+          'rgb_g=47',
+          'rgb_r=48',
 
-          'dac_ldac_net=1',
-          'dac_in_cs_net=2',
-          'dac_ip_cs_net=3',
-          'spi_net.mosi=4',
-          'spi_net.miso=6',
-          'spi_net.sck=7',
-          'adc_v_cs_net=8',
-          'adc_i_cs_net=12',
-          'dac_v_cs_net=13',
+          'dac_ldac=1',
+          'dac_in_cs=2',
+          'dac_ip_cs=3',
+          'spi.mosi=4',
+          'spi.miso=6',
+          'spi.sck=7',
+          'adc_v_cs=8',
+          'adc_i_cs=12',
+          'dac_v_cs=13',
 
-          'lcd_reset_net=15',
-          'lcd_rs_net=18',
-          'lcd_cs_net=21',
+          'lcd_reset=15',
+          'lcd_rs=18',
+          'lcd_cs=21',
 
-          'low_en_net=22',
-          'high_en_net=23',
+          'low_en=22',
+          'high_en=23',
+
+          'swd.swo=PIO0_8',
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),

@@ -102,11 +102,6 @@ message Generator {
   // Parameters that must be defined for the generator to fire.
   // These parameters are the only ones accessible to the generator.
   repeated edgir.ref.LocalPath required_params = 2;
-
-  // Ports that must have defined connected-ness for the generator to fire.
-  // This makes the port's IS_CONNECTED and CONNECTED_LINK.NAME available.
-  // TODO to be removed
-  repeated edgir.ref.LocalPath required_ports = 3;
 }
 
 message BlockLike {
