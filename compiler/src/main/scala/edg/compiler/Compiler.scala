@@ -619,21 +619,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   constProp.addDirectedEquality(path.asIndirect ++ extPostfix + IndirectStep.Elements,
                     path.asIndirect ++ intPostfix + IndirectStep.Elements,
                     path, constrName)
+                  constProp.addDirectedEquality(path.asIndirect ++ intPostfix + IndirectStep.Allocated,
+                    path.asIndirect ++ extPostfix + IndirectStep.Allocated,
+                    path, constrName)
                   elaboratePending.addNode(
                     ElaborateRecord.LowerArrayConnections(path, constrName),
                     Seq(
+                      ElaborateRecord.ElaboratePortArray(path ++ intPostfix),  // port must be defined
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Elements),
                       // allocated must run first, it depends on constraints not being lowered
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
-                  elaboratePending.addNode(
-                    ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(constrName), false),
-                    Seq(ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Allocated))
-                  )
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-              require(arrayConnects.isEmpty)
+                require(arrayConnects.isEmpty)
                 elaboratePending.addNode(
                   ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false),
                   Seq()
@@ -838,8 +838,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
-  // with single leaf-level connections. This also defines ALLOCATED for the relevant port and creates the task
-  // to lower the ALLOCATE connections to concrete indices once the port is known.
+  // with single leaf-level connections.
   protected def lowerArrayConnections(record: ElaborateRecord.LowerArrayConnections): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
@@ -848,15 +847,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ElemBuilder
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        // exported must be a block
         case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
           val intPortArrayElts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
             intPortArrayElts.map { index =>
               s"${record.constraintName}.$index" -> ElemBuilder.Constraint.Exported(
-                Ref((extPortArray :+ index): _*), Ref.Allocate(Ref(intPortArray: _*), Some(index)))
+                Ref((extPortArray :+ index): _*), Ref((intPortArray :+ index): _*))
             }
           }
+
+          intPortArrayElts.foreach { index =>  // TODO REFACTOR THIS ITS UGGGGGLY
+            resolvePortConnectivity(record.parent, intPortArray :+ index,
+              Some(s"${record.constraintName}.$index", parentBlock.getConstraints(s"${record.constraintName}.$index")))
+          }
+
+
           intPortArrayElts.map { index => s"${record.constraintName}.$index" }
 
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
