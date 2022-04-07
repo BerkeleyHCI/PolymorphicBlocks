@@ -35,12 +35,29 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
           "port" -> Port.Array("sinkPort", 2, Port.Library("sinkPort")),
         )
       ),
+      Block.Block("emptySinksBlock",
+        superclasses = Seq("baseSinksBlock"),
+        ports = Map(
+          "port" -> Port.Array("sinkPort", 0, Port.Library("sinkPort")),
+        )
+      ),
       Block.Block("concreteWrapperBlock",
         ports = Map(
           "port" -> Port.Array("sinkPort"),
         ),
         blocks = Map(
           "inner" -> Block.Library("concreteSinksBlock")
+        ),
+        constraints = Map(
+          "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
+        )
+      ),
+      Block.Block("emptyWrapperBlock",
+        ports = Map(
+          "port" -> Port.Array("sinkPort"),
+        ),
+        blocks = Map(
+          "inner" -> Block.Library("emptySinksBlock")
         ),
         constraints = Map(
           "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
@@ -197,5 +214,24 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         equal(Some(IntValue(2)))
     compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+  }
+
+  "Compiler on design with empty nested sink" should "not fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "sinks" -> Block.Library("emptyWrapperBlock"),
+      ),
+      links = Map(),
+      constraints = Map()
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    val dsv = new DesignStructuralValidate()
+    dsv.map(Design(compiled.contents.get)) should equal(Seq())
+
+    val drv = new DesignRefsValidate()
+    drv.validate(Design(compiled.contents.get)) should equal(Seq())
+
+    compiled.contents.get.constraints shouldBe empty
   }
 }

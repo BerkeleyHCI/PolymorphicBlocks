@@ -486,7 +486,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newBlock)
 
-    newBlock.getUnelaboratedPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
+    // TODO this should be getUnelaboratedPorts, but empty ports are considered elaborated
+    newBlock.getMixedPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
       elaboratePort(path + portName, newBlock, port)
     }
 
@@ -627,6 +628,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 )
 
               case PortConnections.NotConnected =>
+                elaboratePending.addNode(
+                  ElaborateRecord.SetPortArrayAllocated(path, portPostfix, Seq(), Seq(), false),
+                  Seq()
+                )
+
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
 
