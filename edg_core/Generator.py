@@ -24,7 +24,6 @@ class GeneratorBlock(Block):
   """
   def __init__(self):
     super().__init__()
-    self._param_values: Optional[IdentityDict[ConstraintExpr, edgir.LitTypes]] = None
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
 
   # Generator dependency data
@@ -171,40 +170,6 @@ class GeneratorBlock(Block):
 
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
-  # Generator solved-parameter-access interface
-  #
-  ConstrType = TypeVar('ConstrType')
-  def get(self, param: ConstraintExpr[ConstrType, Any], default: Optional[ConstrType] = None) -> ConstrType:
-    if self._elaboration_state != BlockElaborationState.generate:
-      raise BlockDefinitionError(self, "can't call get(... outside generate",
-                                 "call get(...) inside generate only, and remember to call super().generate()")
-    if not isinstance(param, ConstraintExpr):
-      raise TypeError(f"param to get(...) must be ConstraintExpr, got {param} of type {type(param)}")
-    assert self._param_values is not None
-
-    if param not in self._param_values:  # TODO disambiguate between inaccessible and failed const prop
-      if default is not None:
-        return default
-      else:
-        raise NotImplementedError(f"get({self._name_of_child(param)}) did not find a value, either the variable is inaccessible or an internal error")
-
-    value = cast(Any, self._param_values[param])
-    if isinstance(param, FloatExpr):
-      assert isinstance(value, Number), f"get({self._name_of_child(param)}) expected float, got {value}"
-    elif isinstance(param, IntExpr):
-      assert isinstance(value, int), f"get({self._name_of_child(param)}) expected int, got {value}"
-    elif isinstance(param, RangeExpr):
-      assert isinstance(value, Range), f"get({self._name_of_child(param)}) expected range, got {value}"
-    elif isinstance(param, BoolExpr):
-      assert isinstance(value, bool), f"get({self._name_of_child(param)}) expected bool, got {value}"
-    elif isinstance(param, StringExpr):
-      assert isinstance(value, str), f"get({self._name_of_child(param)}) expected str, got {value}"
-    elif isinstance(param, ArrayExpr):
-      assert isinstance(value, list), f"get({self._name_of_child(param)}) expected list, got {value}"
-    else:
-      raise NotImplementedError(f"get({self._name_of_child(param)}) on unknown type, got {value}")
-    return value  # type: ignore
-
   # Generator serialization and parsing
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
@@ -221,18 +186,8 @@ class GeneratorBlock(Block):
     else:
       return super()._def_to_proto()
 
-  def _parse_param_values(self, values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> None:
-    ref_map = self._get_ref_map(edgir.LocalPath())
-    reverse_ref_map = { path.SerializeToString(): refable
-                        for refable, path in ref_map.items() }
-    self._param_values = IdentityDict()
-    for (path, value) in values:
-      path_expr = reverse_ref_map[path.SerializeToString()]
-      assert isinstance(path_expr, ConstraintExpr)
-      self._param_values[path_expr] = value
-
-  def _generated_def_to_proto(self,
-                              generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> edgir.HierarchyBlock:
+  def _generated_def_to_proto(self, generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> \
+      edgir.HierarchyBlock:
     assert self._generator is not None, f"{self} did not define a generator"
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
@@ -241,13 +196,34 @@ class GeneratorBlock(Block):
 
     self._elaboration_state = BlockElaborationState.generate
 
+    # Translate parameter values to function arguments
     for (name, port) in self._ports.items():
       # TODO cleaner, oddly-stateful, detection of connected_link
       if isinstance(port, Port):
         port.link()  # lazy-initialize connected_link refs so it's ready for params
-    self._parse_param_values(generate_values)
 
-    fn_args = [self.get(arg_param) for arg_param in self._generator.fn_args]
+    def validate_value(param: ConstraintExpr, value: edgir.LitTypes) -> edgir.LitTypes:
+      if isinstance(param, FloatExpr):
+        assert isinstance(value, Number), f"type mismatch for value for {param}, got {value}"
+      elif isinstance(param, IntExpr):
+        assert isinstance(value, int), f"type mismatch for value for {param}, got {value}"
+      elif isinstance(param, RangeExpr):
+        assert isinstance(value, Range), f"type mismatch for value for {param}, got {value}"
+      elif isinstance(param, BoolExpr):
+        assert isinstance(value, bool), f"type mismatch for value for {param}, got {value}"
+      elif isinstance(param, StringExpr):
+        assert isinstance(value, str), f"type mismatch for value for {param}, got {value}"
+      elif isinstance(param, ArrayExpr):
+        assert isinstance(value, list), f"type mismatch for value for {param}, got {value}"
+      else:
+        raise NotImplementedError(f"unknown type of {param}, got {value}")
+      return value
+
+    ref_map = self._get_ref_map(edgir.LocalPath())
+    generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
+    fn_args = [validate_value(arg_param, generate_values_map[ref_map[arg_param].SerializeToString()])
+               for arg_param in self._generator.fn_args]
+
     self._generator.fn(*fn_args)
 
     self._elaboration_state = BlockElaborationState.post_generate
