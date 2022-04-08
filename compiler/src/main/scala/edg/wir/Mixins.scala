@@ -11,9 +11,7 @@ import scala.collection.{SeqMap, mutable}
 trait HasMutablePorts {
   protected val ports: mutable.SeqMap[String, PortLike]
 
-  def getUnelaboratedPorts: Map[String, PortLike] = ports.toMap.filter(!_._2.isElaborated)
-  def getElaboratedPorts: Map[String, PortLike] = ports.toMap.filter(_._2.isElaborated)
-  def getMixedPorts: Map[String, PortLike] = ports.toMap
+  def getPorts: Map[String, PortLike] = ports.toMap
   def elaborate(name: String, port: PortLike): Unit = {
     require(!ports(name).isElaborated && port.isElaborated)
     ports.update(name, port)

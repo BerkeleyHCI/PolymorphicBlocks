@@ -225,7 +225,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Seed the elaboration record with the root design
   //
   elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())
-  require(root.getElaboratedPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
+  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
   processParamDeclarations(DesignPath(), root)
 
   // Hook method to be overridden, eg for status
@@ -265,7 +265,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Add sub-ports to the elaboration dependency graph, as appropriate
     toLinkPort match {
       case toLinkPort: wir.Bundle =>
-        for (portName <- toLinkPort.getElaboratedPorts.keys) {
+        for (portName <- toLinkPort.getPorts.keys) {
           constProp.addEquality(connect.toLinkPortPath.asIndirect + IndirectStep.IsConnected,
             connect.toLinkPortPath.asIndirect + portName + IndirectStep.IsConnected)
           constProp.addEquality(connect.toBlockPortPath.asIndirect + IndirectStep.IsConnected,
@@ -302,7 +302,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
       port match {
         case port: wir.Bundle =>
-          port.getMixedPorts.foreach { case (innerIndex, innerPort) =>
+          port.getPorts.foreach { case (innerIndex, innerPort) =>
             recursiveSetNotConnected(portPath + innerIndex, innerPort)
           }
         case _ =>  // no recursion at leaf
@@ -367,13 +367,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.Bundle =>
         constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
         processParamDeclarations(path, port)
-        for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
+        for ((childPortName, childPort) <- port.getPorts) {
           elaboratePort(path + childPortName, port, childPort)
         }
       case port: wir.PortArray =>
         if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
           constProp.setValue(path.asIndirect + IndirectStep.Elements,
-            ArrayValue(port.getUnelaboratedPorts.keys.toSeq.map(TextValue(_))))
+            ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))))
         }
         elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(  // does recursive elaboration + LENGTH
           ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
@@ -501,8 +501,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newBlock)
 
-    // TODO this should be getUnelaboratedPorts, but empty ports are considered elaborated
-    newBlock.getMixedPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
+    newBlock.getPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
       elaboratePort(path + portName, newBlock, port)
     }
 
@@ -537,12 +536,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     processParamDeclarations(path, newLink)
     linkParams.put(path, linkPb.params.keys.toSeq.map(IndirectStep.Element(_)))
 
-    newLink.getUnelaboratedPorts.foreach { case (portName, port) =>
+    newLink.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, newLink, port)
     }
 
     // For link-side port arrays: set ALLOCATED -> ELEMENTS and allow it to expand later
-    newLink.getMixedPorts.collect { case (portName, port: wir.PortArray) =>
+    newLink.getPorts.collect { case (portName, port: wir.PortArray) =>
       require(!port.portsSet) // links can't have fixed array elts
       constProp.addDirectedEquality(
         path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
@@ -550,7 +549,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Links can only elaborate when their port arrays are ready
-    val arrayDeps = newLink.getMixedPorts.collect {
+    val arrayDeps = newLink.getPorts.collect {
       case (portName, arr: wir.PortArray) => ElaborateRecord.ElaboratePortArray(path + portName)
     }.toSeq
     elaboratePending.addNode(ElaborateRecord.Link(path), arrayDeps)
@@ -568,10 +567,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
-          // getMixedPorts needed here because an empty (but defined) port array is treated as elaborated
-          val portArray = generator.getMixedPorts(portName).asInstanceOf[wir.PortArray]
+          val portArray = generator.getPorts(portName).asInstanceOf[wir.PortArray]
           constProp.setValue(path.asIndirect + portName + IndirectStep.Elements,
-            ArrayValue(portArray.getUnelaboratedPorts.keys.toSeq.map(TextValue(_))))
+            ArrayValue(portArray.getPorts.keys.toSeq.map(TextValue(_))))
           // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
@@ -607,7 +605,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Set IsConnected and generate constraint expansion records
     import edg.ExprBuilder.ValueExpr
     block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
-      innerBlock.asInstanceOf[wir.Block].getMixedPorts.foreach { case (portName, port) =>
+      innerBlock.asInstanceOf[wir.Block].getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerBlockName, portName)
         port match {
           case _: wir.PortArray =>  // array case: connectivity delayed to lowering
@@ -684,7 +682,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     block.getElaboratedLinks.foreach {
-      case (innerLinkName, innerLink: wir.Link) => innerLink.getMixedPorts.foreach { case (portName, port) =>
+      case (innerLinkName, innerLink: wir.Link) => innerLink.getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
           case _: wir.PortArray =>  // array case: connectivity delayed to lowering
@@ -720,7 +718,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             }
         }
       }
-      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getMixedPorts.foreach { case (portName, port) =>
+      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
           case _: wir.PortArray => // array case: connectivity delayed to lowering
@@ -764,20 +762,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
         connectedLink.put(portPath, path)
       case port: wir.PortArray =>
-        port.getElaboratedPorts.foreach { case (subPortName, subPort) =>
+        port.getPorts.foreach { case (subPortName, subPort) =>
           setConnectedLink(portPath + subPortName, subPort)
         }
     }
-    for ((portName, port) <- link.getElaboratedPorts) {
+    for ((portName, port) <- link.getPorts) {
       setConnectedLink(path + portName, port)
     }
-    require(link.getUnelaboratedPorts.isEmpty)  // make sure we set ConnectedLink on all ports
 
     // Aggregate by inner link ports
     val connectedConstraints = new ConnectedConstraintManager(link)
 
     link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
-      innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
+      innerLink.asInstanceOf[wir.Link].getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
           case _: wir.PortArray => // array case: ignored, handled in lowering
@@ -847,10 +844,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       })
       port.setPorts(childPortLibraries)
     }
-    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getUnelaboratedPorts.size))
-    for ((childPortName, childPort) <- port.getUnelaboratedPorts) {
+    for ((childPortName, childPort) <- port.getPorts) {
       elaboratePort(path + childPortName, port, childPort)
     }
+    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size))
   }
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
@@ -1004,7 +1001,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
-    portArray.getMixedPorts.foreach { case (index, innerPort) =>
+    portArray.getPorts.foreach { case (index, innerPort) =>
       val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
         (constrName, parentBlock.getConstraints(constrName))
       }
