@@ -817,44 +817,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Given a leaf connect constraint (connect or export) that contains an allocate to the specified portPath (on either
-  // the link, exported, or block ref), returns the same constraint with the allocate with a fixed step named by the
-  // input function (which is provided the option suggested name).
-  // Raises an exception if this is not a leaf connect, or if there is not exactly one connected ref that matches
-  // the specified portPath.
-  protected def mapLeafConnectAllocate(constr: expr.ValueExpr, portPath: Seq[String])(fn: Option[String] => String):
-      expr.ValueExpr = {
-    import edg.ExprBuilder.ValueExpr
-    val ExpectedPortPath = portPath
-    constr.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
-        case (ValueExpr.RefAllocate(ExpectedPortPath, _), ValueExpr.RefAllocate(ExpectedPortPath, _)) =>
-          throw new AssertionError("both block and link ref matches port")
-        case (ValueExpr.RefAllocate(ExpectedPortPath, suggestedName), _) =>
-          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
-          constr.update(_.connected.blockPort.ref.steps.last := newStep)
-        case (_, ValueExpr.RefAllocate(ExpectedPortPath, suggestedName)) =>
-          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
-          constr.update(_.connected.linkPort.ref.steps.last := newStep)
-        case _ =>
-          throw new AssertionError("neither block nor link ref matches port")
-      }
-      case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.RefAllocate(ExpectedPortPath, _), ValueExpr.RefAllocate(ExpectedPortPath, _)) =>
-          throw new AssertionError("both external and internal ref matches port")
-        case (ValueExpr.RefAllocate(ExpectedPortPath, suggestedName), _) =>
-          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
-          constr.update(_.exported.exteriorPort.ref.steps.last := newStep)
-        case (_, ValueExpr.RefAllocate(ExpectedPortPath, suggestedName)) =>
-          val newStep = ref.LocalStep(step=ref.LocalStep.Step.Name(fn(suggestedName)))
-          constr.update(_.exported.internalBlockPort.ref.steps.last := newStep)
-        case _ =>
-          throw new AssertionError("neither external nor internal ref matches port")
-      }
-      case _ => throw new AssertionError("not a connected or exported constraint")
-    }
-  }
-
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections.
   protected def expandArrayConnections(record: ElaborateRecord.ExpandArrayConnections): Unit = {
@@ -927,10 +889,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     import edg.ExprBuilder.{ValueExpr, Ref}
-    val connectedIndices = record.constraintNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).extractConnectRefs
-    }.collect {
-      case ValueExpr.RefAllocate(record.portPath, index) => index
+    val connectedIndices = record.constraintNames.map { constrName =>
+      parentBlock.getConstraints(constrName).connectMapRef {
+        case ValueExpr.RefAllocate(record.portPath, index) => index
+      }
     }
     val arrayIndices = record.arrayConstraintNames.map { constrName =>
       parentBlock.getConstraints(constrName).expr
@@ -968,20 +930,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     import edg.ExprBuilder.{ValueExpr, Ref}
     val suggestedNames = combinedConstrNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).extractConnectRefs
-    }.collect {
-      case ValueExpr.RefAllocate(record.portPath, index) => index
-    }.flatten.toSet
+      parentBlock.getConstraints(constrName).connectMapRef {
+        case ValueExpr.RefAllocate(record.portPath, index) => index
+      }
+    }.toSet
 
     val freeNames = portElements.filter(!suggestedNames.contains(_))
     val freeNamesIterator = freeNames.iterator
     combinedConstrNames foreach { constrName =>
-      parentBlock.mapConstraint(constrName) { constr =>
-        mapLeafConnectAllocate(constr, record.portPath) {
-          case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
-          case None => freeNamesIterator.next()
-        }
-      }
+      parentBlock.mapConstraint(constrName) { constr => constr.connectUpdateRef {
+        case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
+          ValueExpr.Ref((record.portPath :+ suggestedName):_*)
+        case ValueExpr.RefAllocate(record.portPath, None) =>
+          ValueExpr.Ref((record.portPath :+ freeNamesIterator.next()):_*)
+      } }
     }
 
     combinedConstrNames foreach { constrName =>
@@ -996,10 +958,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     import edg.ExprBuilder.ValueExpr
-    val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).extractConnectRefs.map { (constrName, _) }  // map w/ constraint name
-    }.collect {
-      case (constrName, ValueExpr.Ref(record.portPath :+ index)) => (index, constrName)
+    val allocatedIndexToConstraint = combinedConstrNames.map { constrName =>
+      parentBlock.getConstraints(constrName).connectMapRef {
+        case ValueExpr.Ref(record.portPath :+ index) => (index, constrName)
+      }
     }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]

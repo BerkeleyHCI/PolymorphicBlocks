@@ -22,25 +22,35 @@ object EdgirUtils {
 
   // Provides a standardized way to access connection-type exprs (Array/Connected/Export)
   implicit class ConnectionExprUtils(connection: expr.ValueExpr) {
-    // Extracts both endpoints from a single (non-array) connection expr as a list of ValueExpr.
-    def extractConnectRefs: Seq[expr.ValueExpr] = connection.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) => Seq(connected.getBlockPort, connected.getLinkPort)
-      case expr.ValueExpr.Expr.Exported(exported) => Seq(exported.getExteriorPort, exported.getInternalBlockPort)
-      case _ => throw new IllegalArgumentException
-    }
-
-    // Returns a new connection with the find endpoint replaced with replace. For single connects only.
-    def connectWithReplacedRef(find: expr.ValueExpr, replace: expr.ValueExpr): expr.ValueExpr = connection.expr match {
+    // Returns the mapped port reference, where the function is defined at exactly one port reference
+    def connectMapRef[T](fn: PartialFunction[expr.ValueExpr, T]): T = connection.expr match {
       case expr.ValueExpr.Expr.Connected(connected) =>
-        (connected.getBlockPort == find, connected.getLinkPort == find) match {
-          case (true, false) => connection.update(_.connected.blockPort := replace)
-          case (false, true) => connection.update(_.connected.linkPort := replace)
+        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
+          case (true, false) => fn(connected.getBlockPort)
+          case (false, true) => fn(connected.getLinkPort)
           case _ => throw new IllegalArgumentException("block xor link did not match")
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
-        (exported.getExteriorPort == find, exported.getInternalBlockPort == find) match {
-          case (true, false) => connection.update(_.exported.exteriorPort := replace)
-          case (false, true) => connection.update(_.exported.internalBlockPort := replace)
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => fn(exported.getExteriorPort)
+          case (false, true) => fn(exported.getInternalBlockPort)
+          case _ => throw new IllegalArgumentException("exterior xor interior did not match")
+        }
+      case _ => throw new IllegalArgumentException
+    }
+
+    // Returns a new connection with exactly one port reference replaced with the partial function
+    def connectUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
+      case expr.ValueExpr.Expr.Connected(connected) =>
+        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
+          case (true, false) => connection.update(_.connected.blockPort := fn(connected.getBlockPort))
+          case (false, true) => connection.update(_.connected.linkPort := fn(connected.getLinkPort))
+          case _ => throw new IllegalArgumentException("block xor link did not match")
+        }
+      case expr.ValueExpr.Expr.Exported(exported) =>
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => connection.update(_.exported.exteriorPort := fn(exported.getExteriorPort))
+          case (false, true) => connection.update(_.exported.internalBlockPort := fn(exported.getInternalBlockPort))
           case _ => throw new IllegalArgumentException("exterior xor interior did not match")
         }
       case _ => throw new IllegalArgumentException
