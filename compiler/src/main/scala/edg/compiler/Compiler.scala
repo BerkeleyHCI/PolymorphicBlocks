@@ -33,23 +33,6 @@ object ElaborateRecord {
   // Created but never run for abstract blocks with abstract port array.
   case class ElaboratePortArray(path: DesignPath) extends ElaborateTask
 
-  // Defines the ALLOCATED param of the port array (giving an arbitrary name to anonymous ALLOCATEs) and creates
-  // the task to lower the ALLOCATE steps (which gives a final name once the port array's elements are defined).
-  // For array-export operations, the incoming ALLOCATED ports must be resolved.
-  case class SetPortArrayAllocated(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                   arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
-
-  // Lowers array-allocate connections to individual leaf-level allocate connections, once all array connections to
-  // a port array are of known length.
-  case class LowerArrayConnections(parent: DesignPath, constraintName: String) extends ElaborateTask
-      with ElaborateDependency
-
-  // Lowers leaf-level allocate connections by replacing the ALLOCATE with a port name.
-  // Requires array-allocate connections have been already lowered to leaf-level allocate connections, and that
-  // the port's ELEMENTS have been defined.
-  case class LowerAllocateConnections(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                      arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
-
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
   // Set when the connection from the link's port to portPath have been elaborated, or for link ports
@@ -57,6 +40,36 @@ object ElaborateRecord {
   // When this is completed, connectedLink for the port and linkParams for the link will be set.
   // Never set for port arrays.
   case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
+
+  // The next tasks are a series for array connection
+
+  // Defines the ALLOCATED for the port array, by aggregating all the connected ports.
+  // Requires: ELEMENTS of all incoming connections defined.
+  case class ResolveArrayAllocated(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
+                                   arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+
+  // For array connections (to link arrays) only, rewrites constraints to replace the ALLOCATE with a concrete
+  // port name, automatically allocated.
+  // Requires: array-connections expanded, port's ELEMENTS defined.
+  case class RewriteArrayAllocate(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
+                                  arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+
+  // Expands ArrayConnect and ArrayExport connections to individual Connect and Export operations.
+  // ALLOCATEs are preserved as-is, meaning those will be allocated on an individual (instead of array) basis.
+  // Requires: port's ELEMENTS defined.
+  case class ExpandArrayConnections(parent: DesignPath, constraintName: String) extends ElaborateTask
+      with ElaborateDependency
+
+  // Once lowered to single connects, rewrites constraints to replace the ALLOCATE with a concrete port name,
+  // allocated from the port's ELEMENTS.
+  // Requires: array-connections expanded, port's ELEMENTS defined.
+  case class RewriteConnectAllocate(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
+                                    arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+
+  // Sets a PortArray's IS_CONNECTED based off all the connected constraints.
+  // Requires: array-connections expanded, ALLOCATE replaced with concrete indices
+  case class ResolveArrayIsConnected(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
+                                     arrayConstraintNames: Seq[String]) extends ElaborateTask
 }
 
 
@@ -611,7 +624,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                     path.asIndirect ++ extPostfix + IndirectStep.Allocated,
                     path, constrName)
                   elaboratePending.addNode(
-                    ElaborateRecord.LowerArrayConnections(path, constrName),
+                    ElaborateRecord.ExpandArrayConnections(path, constrName),
                     Seq(
                       ElaborateRecord.ElaboratePortArray(path ++ intPostfix),  // port must be defined
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Elements),
@@ -622,16 +635,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
-                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(setAllocatedTask, Seq())
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
@@ -659,16 +672,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 throw new NotImplementedError()
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
-                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(setAllocatedTask, Seq())
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
@@ -745,23 +758,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                     case extPort => throw new IllegalArgumentException(s"unknown exported exterior $extPort")
                   }
                   val ValueExpr.RefAllocate(intPostfix, _) = constr.getExportedArray.getInternalBlockPort
-                  elaboratePending.addNode(ElaborateRecord.LowerArrayConnections(path, constrName), Seq(
+                  elaboratePending.addNode(ElaborateRecord.ExpandArrayConnections(path, constrName), Seq(
                     ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Elements),
                     // allocated must run first, it depends on constraints not being lowered
                     ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
                 }
 
-                val setAllocatedTask = ElaborateRecord.SetPortArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
                 elaboratePending.addNode(setAllocatedTask, deps)
 
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.LowerAllocateConnections(path, portPostfix, Seq(), Seq(), false)
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
@@ -840,7 +853,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections.
-  protected def lowerArrayConnections(record: ElaborateRecord.LowerArrayConnections): Unit = {
+  protected def expandArrayConnections(record: ElaborateRecord.ExpandArrayConnections): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Lower array-allocate constraints
@@ -894,7 +907,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Sets the ALLOCATED on a port array, once all connections are of known length.
   // Array-connects must not have been lowered.
-  protected def setPortArrayAllocated(record: ElaborateRecord.SetPortArrayAllocated): Unit = {
+  protected def resolveArrayAllocated(record: ElaborateRecord.ResolveArrayAllocated): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Given leaf level constraints, create allocations
@@ -940,7 +953,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Once a block-side port array has all its element widths available, this lowers the connect statements
   // by replacing ALLOCATEs with concrete indices.
   // This must also handle internal-side export statements.
-  protected def lowerAllocateConnections(record: ElaborateRecord.LowerAllocateConnections): Unit = {
+  protected def rewriteConnectAllocate(record: ElaborateRecord.RewriteConnectAllocate): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     val portElements = ArrayValue.ExtractText(
       constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
@@ -1016,14 +1029,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord: ElaborateRecord.ElaboratePortArray =>
             elaboratePortArray(elaborateRecord.path)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord: ElaborateRecord.LowerArrayConnections =>
-            lowerArrayConnections(elaborateRecord)
+
+          case elaborateRecord: ElaborateRecord.ExpandArrayConnections =>
+            expandArrayConnections(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord: ElaborateRecord.SetPortArrayAllocated =>
-            setPortArrayAllocated(elaborateRecord)
+          case elaborateRecord: ElaborateRecord.ResolveArrayAllocated =>
+            resolveArrayAllocated(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
-          case elaborateRecord: ElaborateRecord.LowerAllocateConnections =>
-            lowerAllocateConnections(elaborateRecord)
+          case elaborateRecord: ElaborateRecord.RewriteConnectAllocate =>
+            rewriteConnectAllocate(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
 
           case _: ElaborateRecord.ElaborateDependency =>
