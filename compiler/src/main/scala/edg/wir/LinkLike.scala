@@ -58,6 +58,17 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
   override protected val links = mutable.SeqMap[String, LinkLike]()
   override protected val constraints = mutable.SeqMap[String, expr.ValueExpr]()
 
+  var model: Option[Link] = None
+
+  def getModelLibrary: ref.LibraryPath = pb.getSelfClass
+
+  def createFrom(linkDef: Link): Unit = {
+    require(model.isEmpty)
+    model = Some(linkDef)
+  }
+
+  def getModelPorts: Map[String, PortLike] = model.get.getPorts
+
 
   // TODO explicit isElaborated flag? instead of inferring?
   override def isElaborated: Boolean = !(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty)

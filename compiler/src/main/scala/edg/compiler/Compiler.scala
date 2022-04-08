@@ -557,6 +557,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     newLink
   }
 
+  // Expands an link array in-place.
+  protected def expandLinkArray(path: DesignPath, array: wir.LinkArray): Unit = {
+    val libraryPath = array.getModelLibrary
+
+    library.getLink(libraryPath) match {
+      case Errorable.Success(linkPb) =>
+        val model = new wir.Link(linkPb)
+        model.getPorts.foreach { case (portName, port) =>
+          elaboratePort(path + portName, model, port)
+        }
+        array.createFrom(model)
+      case Errorable.Error(err) =>
+        import edgir.elem.elem
+        errors += CompilerError.LibraryError(path, libraryPath, err)
+    }
+  }
+
   protected def runGenerator(path: DesignPath, generator: wir.Generator): Unit = {
     val reqParamValues = generator.getDependencies.map { reqParam =>
       reqParam -> constProp.getValue(path.asIndirect ++ reqParam).get
@@ -597,7 +614,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block.getLinks.foreach {
       case (innerLinkName, innerLink: wir.LinkLibrary) =>
         block.elaborate(innerLinkName, expandLink(path + innerLinkName, innerLink))
-      case (_, innerLink: wir.LinkArray) => // ignored - expanded in place
+      case (innerLinkName, innerLink: wir.LinkArray) =>
+        expandLinkArray(path + innerLinkName, innerLink)
       case _ => throw new NotImplementedError()
     }
 
@@ -705,7 +723,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
-              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
 
           case _ =>
@@ -718,15 +736,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             }
         }
       }
-      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getPorts.foreach { case (portName, port) =>
+      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getModelPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
           case _: wir.PortArray => // array case: connectivity delayed to lowering
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.ArrayConnect(constrName, constr) =>
+              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 throw new NotImplementedError()
 
-              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+            }
+          case _ =>
+            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+              case PortConnections.ArrayConnect(constrName, constr) =>
                 throw new NotImplementedError()
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")

@@ -39,7 +39,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     )
   )
 
-  "Compiler on design with abstract source and array sink" should "expand blocks" ignore {
+  "Compiler on design with abstract source and array sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
