@@ -640,12 +640,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
-                // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
@@ -677,12 +679,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
-                // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
@@ -771,11 +775,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
+
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
-                // TODO this is just to resolve IsConnected
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
@@ -994,9 +1001,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val combinedConstrNames = record.constraintNames ++
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
-    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
-    // TODO fill out that data structure
+    val arraySteps = record.portPath.map { elt =>
+      ref.LocalStep(ref.LocalStep.Step.Name(elt))
+    }
 
+    val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
+      parentBlock.getConstraints(constrName).extractRefs.map{ (constrName, _) }  // map w/ constraint name
+    }.collect {
+      case (constrName, connectExpr) if connectExpr.expr.isRef => (constrName, connectExpr.getRef.steps)
+    }.collect {
+      case (constrName, steps) if steps.startsWith(arraySteps) =>
+        require(steps.length == arraySteps.length + 1)
+        (steps.last.getName, constrName)
+    }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
     portArray.getMixedPorts.foreach { case (index, innerPort) =>
@@ -1046,6 +1063,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord: ElaborateRecord.RewriteConnectAllocate =>
             rewriteConnectAllocate(elaborateRecord)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord: ElaborateRecord.ResolveArrayIsConnected =>
+            resolveArrayIsConnected(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
 
           case _: ElaborateRecord.ElaborateDependency =>
