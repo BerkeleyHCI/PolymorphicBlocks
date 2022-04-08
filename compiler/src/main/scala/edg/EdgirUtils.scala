@@ -34,15 +34,35 @@ object EdgirUtils {
 
     // Returns a new connection with the find endpoint replaced with replace. For single connects only.
     def connectWithReplacedRef(find: expr.ValueExpr, replace: expr.ValueExpr): expr.ValueExpr = connection.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) => Seq(connected.getBlockPort, connected.getLinkPort)
-      case expr.ValueExpr.Expr.Exported(exported) => Seq(exported.getExteriorPort, exported.getInternalBlockPort)
+      case expr.ValueExpr.Expr.Connected(connected) =>
+        (connected.getBlockPort == find, connected.getLinkPort == find) match {
+          case (true, false) => connection.update(_.connected.blockPort := replace)
+          case (false, true) => connection.update(_.connected.linkPort := replace)
+          case _ => throw new IllegalArgumentException("block xor link did not match")
+        }
+      case expr.ValueExpr.Expr.Exported(exported) =>
+        (exported.getExteriorPort == find, exported.getInternalBlockPort == find) match {
+          case (true, false) => connection.update(_.exported.exteriorPort := replace)
+          case (false, true) => connection.update(_.exported.internalBlockPort := replace)
+          case _ => throw new IllegalArgumentException("exterior xor interior did not match")
+        }
       case _ => throw new IllegalArgumentException
     }
 
     // Returns a new connection with the find endpoint replaced with replace. For array connects only.
     def arrayWithReplacedRef(find: expr.ValueExpr, replace: expr.ValueExpr): expr.ValueExpr = connection.expr match {
-      case expr.ValueExpr.Expr.ConnectedArray(connected) => Seq(connected.getBlockPort, connected.getLinkPort)
-      case expr.ValueExpr.Expr.ExportedArray(exported) => Seq(exported.getExteriorPort, exported.getInternalBlockPort)
+      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+        (connected.getBlockPort == find, connected.getLinkPort == find) match {
+          case (true, false) => connection.update(_.connectedArray.blockPort := replace)
+          case (false, true) => connection.update(_.connectedArray.linkPort := replace)
+          case _ => throw new IllegalArgumentException("array block xor link did not match")
+        }
+      case expr.ValueExpr.Expr.ExportedArray(exported) =>
+        (exported.getExteriorPort == find, exported.getInternalBlockPort == find) match {
+          case (true, false) => connection.update(_.exportedArray.exteriorPort := replace)
+          case (false, true) => connection.update(_.exportedArray.internalBlockPort := replace)
+          case _ => throw new IllegalArgumentException("array exterior xor interior did not match")
+        }
       case _ => throw new IllegalArgumentException
     }
 
