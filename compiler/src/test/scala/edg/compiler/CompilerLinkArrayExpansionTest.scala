@@ -51,27 +51,27 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       constraints = Map(
         "sourceConnect" -> Constraint.ConnectedArray(Ref("source", "port"), Ref("link", "source")),
-        "sink0Connect" -> Constraint.ConnectedArray(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
-        "sink1Connect" -> Constraint.ConnectedArray(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
+//        "sink0Connect" -> Constraint.ConnectedArray(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
+//        "sink1Connect" -> Constraint.ConnectedArray(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
     val referenceConstraints = Map(  // expected constraints in the top-level design
       "sourceConnect.0" -> Constraint.Connected(Ref("source", "port", "0"), Ref("link", "source", "0")),
       "sourceConnect.1" -> Constraint.Connected(Ref("source", "port", "1"), Ref("link", "source", "1")),
 
-      "sink0Connect.0" -> Constraint.Connected(Ref("sink0", "port", "0"), Ref("link", "sinks", "0", "0")),
-      "sink0Connect.1" -> Constraint.Connected(Ref("sink0", "port", "1"), Ref("link", "sinks", "0", "1")),
-      "sink1Connect.0" -> Constraint.Connected(Ref("sink1", "port", "0"), Ref("link", "sinks", "1", "0")),
-      "sink1Connect.1" -> Constraint.Connected(Ref("sink1", "port", "1"), Ref("link", "sinks", "1", "1")),
+//      "sink0Connect.0" -> Constraint.Connected(Ref("sink0", "port", "0"), Ref("link", "sinks", "0", "0")),
+//      "sink0Connect.1" -> Constraint.Connected(Ref("sink0", "port", "1"), Ref("link", "sinks", "0", "1")),
+//      "sink1Connect.0" -> Constraint.Connected(Ref("sink1", "port", "0"), Ref("link", "sinks", "1", "0")),
+//      "sink1Connect.1" -> Constraint.Connected(Ref("sink1", "port", "1"), Ref("link", "sinks", "1", "1")),
     )
     val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
       "source.0" -> Constraint.Exported(Ref("source", "0"), Ref("0", "source")),
       "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
 
-      "sink.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
-      "sink.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
-      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
-      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
+//      "sink.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
+//      "sink.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
+//      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
+//      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)

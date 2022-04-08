@@ -644,7 +644,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                   // Note: actual expansion task set on the link side
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, blockPortPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask, Seq(expandArrayTask))
+                  elaboratePending.addNode(resolveConnectedTask, Seq(
+                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
+                    expandArrayTask
+                  ))
 
                 case expr.ValueExpr.Expr.ExportedArray(exported) =>
                   val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
@@ -744,12 +747,38 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 throw new NotImplementedError()
 
+              case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
           case _ =>
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.ArrayConnect(constrName, constr) =>
-                throw new NotImplementedError()
+              case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
+                case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+                  val ValueExpr.Ref(blockPortPostfix) = connected.getBlockPort
+                  val linkPortPostfix = connected.getLinkPort match {
+                    case ValueExpr.Ref(linkPortPostfix) => linkPortPostfix
+                    case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
+                  }
+
+                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                  elaboratePending.addNode(expandArrayTask, Seq(
+                    ElaborateRecord.ParamValue(path.asIndirect + linkPortPostfix.head + IndirectStep.Elements)
+                  ))
+                  // Note: actual expansion task set on the link side
+                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, linkPortPostfix, Seq(), Seq(constrName), false)
+                  elaboratePending.addNode(resolveConnectedTask, Seq(
+                    ElaborateRecord.ElaboratePortArray(path ++ linkPortPostfix),
+                    expandArrayTask))
+
+                case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+              }
+
+              case PortConnections.NotConnected =>  // TODO what are NC semantics for link arrray?
+                resolvePortConnectivity(path, portPostfix, None)
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
