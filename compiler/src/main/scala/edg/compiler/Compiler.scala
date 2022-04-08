@@ -1,13 +1,14 @@
 package edg.compiler
 
-import scala.collection.{SeqMap, mutable}
-import edgir.schema.schema
+import edg.EdgirUtils._
+import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
+import edg.wir._
+import edg.{EdgirUtils, wir}
 import edgir.expr.expr
 import edgir.ref.ref
-import edg.wir.{ConnectedConstraintManager, DesignPath, HasMutableConstraints, IndirectDesignPath, IndirectStep, PathSuffix, PortConnections, PortLike, Refinements}
-import edg.{EdgirUtils, wir}
-import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
-import EdgirUtils._
+import edgir.schema.schema
+
+import scala.collection.{SeqMap, mutable}
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
@@ -346,7 +347,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
           case Errorable.Error(err) =>
-            import edgir.elem.elem, edg.IrPort
+            import edg.IrPort
+            import edgir.elem.elem
             errors += CompilerError.LibraryError(path, libraryPath, err)
             IrPort.Port(elem.Port())
         }
@@ -823,8 +825,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
     // Lower array-allocate constraints
-    import edg.ExprBuilder.{Ref, ValueExpr}
     import edg.ElemBuilder
+    import edg.ExprBuilder.{Ref, ValueExpr}
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         // exported must be a block
@@ -871,24 +873,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Given a Seq[Option[String]], extracts the Some(...) and picks a name from the free iterator otherwise.
-  protected def autoSuggestedName(suggestedNames: Seq[Option[String]], freeNames: Iterable[String]): Seq[String] = {
-    // TODO this could be smarter about not assigning conflicting names, but is just a check for now
-    val freeNamesIterator = freeNames.iterator
-    val newNames = suggestedNames.map {
-      case Some(suggestedName) => suggestedName
-      case None => freeNamesIterator.next
-    }
-    require(newNames.toSet.size == newNames.size, "duplicate names")
-    newNames
-  }
-
   // Sets the ALLOCATED on a port array, once all connections are of known length.
   // Array-connects must not have been lowered.
   protected def resolveArrayAllocated(record: ElaborateRecord.ResolveArrayAllocated): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
-    import edg.ExprBuilder.{ValueExpr, Ref}
+    import edg.ExprBuilder.{Ref, ValueExpr}
     val connectedIndices = record.constraintNames.map { constrName =>
       parentBlock.getConstraints(constrName).connectMapRef {
         case ValueExpr.RefAllocate(record.portPath, index) => index
@@ -912,7 +902,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _ => throw new IllegalArgumentException
     }
 
-    val allocatedIndices = autoSuggestedName(connectedIndices ++ arrayIndices, LazyList.from(0).map(_.toString))
+    val freeIndices = LazyList.from(0).iterator
+    val allocatedIndices = (connectedIndices ++ arrayIndices).map {
+      case Some(suggestedName) => suggestedName
+      case None => freeIndices.next().toString
+    }
+
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.map(TextValue(_))))
   }
@@ -928,21 +923,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val combinedConstrNames = record.constraintNames ++
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
-    import edg.ExprBuilder.{ValueExpr, Ref}
+    import edg.ExprBuilder.ValueExpr
     val suggestedNames = combinedConstrNames.flatMap { constrName =>
       parentBlock.getConstraints(constrName).connectMapRef {
         case ValueExpr.RefAllocate(record.portPath, index) => index
       }
     }.toSet
 
-    val freeNames = portElements.filter(!suggestedNames.contains(_))
-    val freeNamesIterator = freeNames.iterator
+    val freeNames = portElements.filter(!suggestedNames.contains(_)).iterator
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr => constr.connectUpdateRef {
         case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
           ValueExpr.Ref((record.portPath :+ suggestedName):_*)
         case ValueExpr.RefAllocate(record.portPath, None) =>
-          ValueExpr.Ref((record.portPath :+ freeNamesIterator.next()):_*)
+          ValueExpr.Ref((record.portPath :+ freeNames.next()):_*)
       } }
     }
 
