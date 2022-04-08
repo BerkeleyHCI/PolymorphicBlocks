@@ -5,7 +5,7 @@ import edgir.expr.expr
 import edgir.init.init
 import edg.util.SeqMapSortableFrom._
 
-import scala.collection.mutable
+import scala.collection.{SeqMap, mutable}
 
 
 trait HasMutablePorts {
@@ -76,8 +76,13 @@ trait HasMutableConstraints {
     constraints.update(name, fn(constraints(name)))
   }
 
-  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)]): Unit = {
-    SeqMapUtils.replaceInPlace(constraints, name, fn(constraints(name)))
+  // Replaces the constraint by name with the results of the map. Can be replaced with none, one, or several
+  // new constraints. Returns a SeqMap of the new constraints.
+  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)]):
+      SeqMap[String, expr.ValueExpr] = {
+    val newValues = fn(constraints(name))
+    SeqMapUtils.replaceInPlace(constraints, name, newValues)
+    newValues.to(SeqMap)
   }
 
   protected def parseConstraints(pb: Map[String, expr.ValueExpr], nameOrder: Seq[String]):

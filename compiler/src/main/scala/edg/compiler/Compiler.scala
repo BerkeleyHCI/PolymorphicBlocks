@@ -633,6 +633,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                       // allocated must run first, it depends on constraints not being lowered
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
+                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                  elaboratePending.addNode(resolveConnectedTask, Seq(expandArrayTask))
+
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
@@ -824,48 +827,44 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def expandArrayConnections(record: ElaborateRecord.ExpandArrayConnections): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
-    // Lower array-allocate constraints
-    import edg.ElemBuilder
     import edg.ExprBuilder.{Ref, ValueExpr}
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        // exported must be a block
         case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
-          val intPortArrayElts = ArrayValue.ExtractText(
+          val intPortArrayElts = ArrayValue.ExtractText(  // propagates inner to outer
             constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+              println(constr)
             intPortArrayElts.map { index =>
-              s"${record.constraintName}.$index" -> ElemBuilder.Constraint.Exported(
-                Ref((extPortArray :+ index): _*), Ref((intPortArray :+ index): _*))
+              val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+                case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
+              }.connectUpdateRef {
+                case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
+              }
+              s"${record.constraintName}.$index" -> newConstr
             }
-          }
+          }.keys
 
-          intPortArrayElts.foreach { index =>  // TODO REFACTOR THIS ITS UGGGGGLY
-            resolvePortConnectivity(record.parent, intPortArray :+ index,
-              Some(s"${record.constraintName}.$index", parentBlock.getConstraints(s"${record.constraintName}.$index")))
-          }
-
-
-          intPortArrayElts.map { index => s"${record.constraintName}.$index" }
-
-        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)), ValueExpr.RefAllocate(intPortArray, None)) =>
-          val extPortArrayElts = ArrayValue.ExtractText(
+        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
+          val extPortArrayElts = ArrayValue.ExtractText(  // propagates outer to inner
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
             extPortArrayElts.map { index =>
-              val extPortPostfix = (extPortArray :+ index) ++ extPortInner
-              s"${record.constraintName}.$index" -> ElemBuilder.Constraint.Exported(
-                Ref(extPortPostfix: _*), Ref.Allocate(Ref(intPortArray: _*), None))
+              val newConstr = constr.asSingleConnection.connectUpdateRef {
+                case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
+                  ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
+                // inner side remains an allocate
+              }
+              s"${record.constraintName}.$index" -> newConstr
             }
-          }
-          extPortArrayElts.map { index => s"${record.constraintName}.$index" }
+          }.keys
 
         case _ => throw new IllegalArgumentException("unsupported array export")
       }
       case _ => throw new IllegalArgumentException("not a connected-array or exported-array constraint")
     }
 
-    expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames)
+    expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)
     newConstrNames foreach { constrName =>
       // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
       processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName),
