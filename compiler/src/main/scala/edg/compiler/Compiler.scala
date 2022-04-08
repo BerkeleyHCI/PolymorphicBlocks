@@ -69,7 +69,7 @@ object ElaborateRecord {
   // Sets a PortArray's IS_CONNECTED based off all the connected constraints.
   // Requires: array-connections expanded, ALLOCATE replaced with concrete indices
   case class ResolveArrayIsConnected(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                     arrayConstraintNames: Seq[String]) extends ElaborateTask
+                                     arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
 }
 
 
@@ -975,7 +975,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     val allocatableNames = portElements.filter(!suggestedNames.contains(_)).to(mutable.ListBuffer)
-    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
 
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr =>
@@ -984,11 +983,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
             case None => allocatableNames.remove(0)
           }
-          allocatedIndexToConstraint.put(allocatedName, constrName)
           allocatedName
         }
       }
     }
+  }
+
+  protected def resolveArrayIsConnected(record: ElaborateRecord.ResolveArrayIsConnected): Unit = {
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val combinedConstrNames = record.constraintNames ++
+        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
+
+    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
+    // TODO fill out that data structure
+
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
     portArray.getMixedPorts.foreach { case (index, innerPort) =>
