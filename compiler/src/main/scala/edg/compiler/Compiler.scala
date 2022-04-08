@@ -589,12 +589,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
-    block.getUnelaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
+    block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       val innerBlockElaborated = expandBlock(path + innerBlockName, innerBlock.asInstanceOf[wir.BlockLibrary])
       block.elaborate(innerBlockName, innerBlockElaborated)
     }
 
-    block.getUnelaboratedLinks.foreach {
+    block.getLinks.foreach {
       case (innerLinkName, innerLink: wir.LinkLibrary) =>
         block.elaborate(innerLinkName, expandLink(path + innerLinkName, innerLink))
       case (_, innerLink: wir.LinkArray) => // ignored - expanded in place
@@ -604,7 +604,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val connectedConstraints = new ConnectedConstraintManager(block)
     // Set IsConnected and generate constraint expansion records
     import edg.ExprBuilder.ValueExpr
-    block.getElaboratedBlocks.foreach { case (innerBlockName, innerBlock) =>
+    block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       innerBlock.asInstanceOf[wir.Block].getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerBlockName, portName)
         port match {
@@ -681,7 +681,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }
 
-    block.getElaboratedLinks.foreach {
+    block.getLinks.foreach {
       case (innerLinkName, innerLink: wir.Link) => innerLink.getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
@@ -752,7 +752,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val link = resolveLink(path).asInstanceOf[wir.Link]
 
     // Queue up sub-trees that need elaboration
-    link.getUnelaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+    link.getLinks.foreach { case (innerLinkName, innerLink) =>
       val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
       link.elaborate(innerLinkName, innerLinkElaborated)
     }
@@ -773,7 +773,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Aggregate by inner link ports
     val connectedConstraints = new ConnectedConstraintManager(link)
 
-    link.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
+    link.getLinks.foreach { case (innerLinkName, innerLink) =>
       innerLink.asInstanceOf[wir.Link].getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {

@@ -27,8 +27,7 @@ trait HasMutablePorts {
 trait HasMutableBlocks {
   protected val blocks: mutable.SeqMap[String, BlockLike]
 
-  def getUnelaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(!_._2.isElaborated)
-  def getElaboratedBlocks: Map[String, BlockLike] = blocks.toMap.filter(_._2.isElaborated)
+  def getBlocks: Map[String, BlockLike] = blocks.toMap
   def elaborate(name: String, block: BlockLike): Unit = {
     require(!blocks(name).isElaborated && block.isElaborated)
     blocks.update(name, block)
@@ -46,8 +45,7 @@ trait HasMutableBlocks {
 trait HasMutableLinks {
   protected val links: mutable.SeqMap[String, LinkLike]
 
-  def getUnelaboratedLinks: Map[String, LinkLike] = links.toMap.filter(!_._2.isElaborated)
-  def getElaboratedLinks: Map[String, LinkLike] = links.toMap.filter(_._2.isElaborated)
+  def getLinks: Map[String, LinkLike] = links.toMap
   def elaborate(name: String, link: LinkLike): Unit = {
     require(!links(name).isElaborated && link.isElaborated)
     links.update(name, link)
