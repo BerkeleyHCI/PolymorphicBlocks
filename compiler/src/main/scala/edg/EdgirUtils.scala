@@ -22,13 +22,10 @@ object EdgirUtils {
 
   // Provides a standardized way to access connection-type exprs (Array/Connected/Export)
   implicit class ConnectionExprUtils(connection: expr.ValueExpr) {
-    // Extracts both endpoints from a connection expr as a list of ValueExpr.
-    // May contain complex endpoints, eg MapExtract.
-    def extractRefs: Seq[expr.ValueExpr] = connection.expr match {
+    // Extracts both endpoints from a single (non-array) connection expr as a list of ValueExpr.
+    def extractConnectRefs: Seq[expr.ValueExpr] = connection.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => Seq(connected.getBlockPort, connected.getLinkPort)
       case expr.ValueExpr.Expr.Exported(exported) => Seq(exported.getExteriorPort, exported.getInternalBlockPort)
-      case expr.ValueExpr.Expr.ConnectedArray(connected) => Seq(connected.getBlockPort, connected.getLinkPort)
-      case expr.ValueExpr.Expr.ExportedArray(exported) => Seq(exported.getExteriorPort, exported.getInternalBlockPort)
       case _ => throw new IllegalArgumentException
     }
 

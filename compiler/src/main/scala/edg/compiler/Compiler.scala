@@ -909,49 +909,50 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  // Given a Seq[Option[String]], extracts the Some(...) and picks a name from the free iterator otherwise.
+  protected def autoSuggestedName(suggestedNames: Seq[Option[String]], freeNames: Iterable[String]): Seq[String] = {
+    // TODO this could be smarter about not assigning conflicting names, but is just a check for now
+    val freeNamesIterator = freeNames.iterator
+    val newNames = suggestedNames.map {
+      case Some(suggestedName) => suggestedName
+      case None => freeNamesIterator.next
+    }
+    require(newNames.toSet.size == newNames.size, "duplicate names")
+    newNames
+  }
+
   // Sets the ALLOCATED on a port array, once all connections are of known length.
   // Array-connects must not have been lowered.
   protected def resolveArrayAllocated(record: ElaborateRecord.ResolveArrayAllocated): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
 
-    // Given leaf level constraints, create allocations
-    var prevPortIndex: Int = -1
-    val allocatedIndices = mutable.SeqMap[String, String]()  // constraint name -> allocated name
-    record.constraintNames foreach { constrName =>
-      mapLeafConnectAllocate(parentBlock.getConstraints(constrName), record.portPath) {
-        case Some(suggestedName) =>
-          allocatedIndices.put(constrName, suggestedName)
-          ""  // don't need the map functionality, the result is discarded anyways
-        case None =>
-          prevPortIndex += 1
-          allocatedIndices.put(constrName, prevPortIndex.toString)
-          ""  // don't need the map functionality, the result is discarded anyways
-      }
+    import edg.ExprBuilder.{ValueExpr, Ref}
+    val connectedIndices = record.constraintNames.flatMap { constrName =>
+      parentBlock.getConstraints(constrName).extractConnectRefs
+    }.collect {
+      case ValueExpr.RefAllocate(record.portPath, index) => index
     }
-    import edg.ExprBuilder.{Ref, ValueExpr}
-    record.arrayConstraintNames foreach { constrName => parentBlock.getConstraints(constrName).expr match {
+    val arrayIndices = record.arrayConstraintNames.map { constrName =>
+      parentBlock.getConstraints(constrName).expr
+    }.flatMap {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
+        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(record.portPath)) =>  // direct export, return external contents
           require(record.constraintNames.isEmpty && record.arrayConstraintNames.length == 1)  // non-allocating export only allowed once
-          val extPortArrayElts = ArrayValue.ExtractText(
+          val elts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Allocated).get)
-          extPortArrayElts.foreach { i =>
-            allocatedIndices.put(s"$constrName.$i", i)
-          }
-        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(intPortArray, None)) =>
-          val extPortArrayLength = ArrayValue.ExtractText(
-            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Allocated).get).length
-          // note since suggestedName is empty we just allocate names arbitrarily
-          (0 until extPortArrayLength).foreach { i =>
-            prevPortIndex += 1
-            allocatedIndices.put(s"$constrName.$i", prevPortIndex.toString)
-          }
-        case _ => throw new AssertionError("impossible exported-array format")
+          elts.map(Some(_))
+        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(_)), ValueExpr.RefAllocate(record.portPath, None)) =>
+          val elts = ArrayValue.ExtractText(
+            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Allocated).get)
+          Seq.fill(elts.length)(None)
+        case _ => throw new IllegalArgumentException
       }
-      case _ => throw new AssertionError("unexpected array connection constraint")
-    } }
+      case _ => throw new IllegalArgumentException
+    }
+
+    val allocatedIndices = autoSuggestedName(connectedIndices ++ arrayIndices, LazyList.from(0).map(_.toString))
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
-      ArrayValue(allocatedIndices.values.toSeq.map(TextValue(_))))
+      ArrayValue(allocatedIndices.map(TextValue(_))))
   }
 
   // Once a block-side port array has all its element widths available, this lowers the connect statements
@@ -961,34 +962,24 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
     val portElements = ArrayValue.ExtractText(
       constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
-
-    val suggestedNames = mutable.Set[String]()
-
     // Update constraint names given expanded array constraints
     val combinedConstrNames = record.constraintNames ++
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
-    combinedConstrNames foreach { constrName =>
-      mapLeafConnectAllocate(parentBlock.getConstraints(constrName), record.portPath) {
-        case Some(suggestedName) =>
-          suggestedNames.add(suggestedName)
-          ""  // don't need the map functionality, the result is discarded anyways
-        case None =>
-          ""  // don't need the map functionality, the result is discarded anyways
-      }
-    }
+    import edg.ExprBuilder.{ValueExpr, Ref}
+    val suggestedNames = combinedConstrNames.flatMap { constrName =>
+      parentBlock.getConstraints(constrName).extractConnectRefs
+    }.collect {
+      case ValueExpr.RefAllocate(record.portPath, index) => index
+    }.flatten.toSet
 
-    val allocatableNames = portElements.filter(!suggestedNames.contains(_)).to(mutable.ListBuffer)
-    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
+    val freeNames = portElements.filter(!suggestedNames.contains(_))
+    val freeNamesIterator = freeNames.iterator
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr =>
-        mapLeafConnectAllocate(constr, record.portPath) { suggestedName =>
-          val allocatedName = suggestedName match {
-            case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
-            case None => allocatableNames.remove(0)
-          }
-          allocatedIndexToConstraint.put(allocatedName, constrName)
-          allocatedName
+        mapLeafConnectAllocate(constr, record.portPath) {
+          case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
+          case None => freeNamesIterator.next()
         }
       }
     }
@@ -1004,18 +995,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val combinedConstrNames = record.constraintNames ++
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
-    val arraySteps = record.portPath.map { elt =>
-      ref.LocalStep(ref.LocalStep.Step.Name(elt))
-    }
-
+    import edg.ExprBuilder.ValueExpr
     val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).extractRefs.map{ (constrName, _) }  // map w/ constraint name
+      parentBlock.getConstraints(constrName).extractConnectRefs.map { (constrName, _) }  // map w/ constraint name
     }.collect {
-      case (constrName, connectExpr) if connectExpr.expr.isRef => (constrName, connectExpr.getRef.steps)
-    }.collect {
-      case (constrName, steps) if steps.startsWith(arraySteps) =>
-        require(steps.length == arraySteps.length + 1)
-        (steps.last.getName, constrName)
+      case (constrName, ValueExpr.Ref(record.portPath :+ index)) => (index, constrName)
     }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
