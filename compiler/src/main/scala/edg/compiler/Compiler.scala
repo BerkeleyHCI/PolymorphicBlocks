@@ -623,14 +623,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   constProp.addDirectedEquality(path.asIndirect ++ intPostfix + IndirectStep.Allocated,
                     path.asIndirect ++ extPostfix + IndirectStep.Allocated,
                     path, constrName)
-                  elaboratePending.addNode(
-                    ElaborateRecord.ExpandArrayConnections(path, constrName),
+                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                  elaboratePending.addNode(expandArrayTask,
                     Seq(
                       ElaborateRecord.ElaboratePortArray(path ++ intPostfix),  // port must be defined
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Elements),
                       // allocated must run first, it depends on constraints not being lowered
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
+                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                  elaboratePending.addNode(resolveConnectedTask,
+                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ expandArrayTask)
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
@@ -640,7 +643,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
 
@@ -775,7 +778,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
 
