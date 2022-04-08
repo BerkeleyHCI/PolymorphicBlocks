@@ -631,9 +631,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                       // allocated must run first, it depends on constraints not being lowered
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
-                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask,
-                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ expandArrayTask)
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
@@ -682,7 +679,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ resolveAllocateTask)
 
@@ -985,7 +982,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     val allocatableNames = portElements.filter(!suggestedNames.contains(_)).to(mutable.ListBuffer)
-
+    val allocatedIndexToConstraint = SingleWriteHashMap[String, String]()
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr =>
         mapLeafConnectAllocate(constr, record.portPath) { suggestedName =>
@@ -993,9 +990,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             case Some(suggestedName) => suggestedName  // will later check as a bad ref if this doesn't exist
             case None => allocatableNames.remove(0)
           }
+          allocatedIndexToConstraint.put(allocatedName, constrName)
           allocatedName
         }
       }
+    }
+
+    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
+    portArray.getMixedPorts.foreach { case (index, innerPort) =>
+      val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
+        (constrName, parentBlock.getConstraints(constrName))
+      }
+      resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
+    }
+
+    combinedConstrNames foreach { constrName =>
+      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
     }
   }
 
@@ -1018,18 +1029,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         (steps.last.getName, constrName)
     }.toMap
 
-    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
-    portArray.getMixedPorts.foreach { case (index, innerPort) =>
-      val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
-        (constrName, parentBlock.getConstraints(constrName))
-      }
-      resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
-    }
-
-    combinedConstrNames foreach { constrName =>
-      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
-    }
+//    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
+//    portArray.getMixedPorts.foreach { case (index, innerPort) =>
+//      val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
+//        (constrName, parentBlock.getConstraints(constrName))
+//      }
+//      resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
+//    }
   }
 
   /** Performs full compilation and returns the resulting design. Might take a while.
