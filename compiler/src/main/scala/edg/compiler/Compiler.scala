@@ -614,8 +614,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
               case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
                 case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-                  // TODO add dependency to link - this case has no precedent yet
-                  throw new NotImplementedError()
+                  val ValueExpr.Ref(blockPortPostfix) = connected.getBlockPort
+                  val linkPortPostfix = connected.getLinkPort match {
+                    case ValueExpr.Ref(linkPortPostfix) => linkPortPostfix
+                    case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
+                  }
+
+                  constProp.addEquality(path.asIndirect ++ blockPortPostfix + IndirectStep.Elements,
+                    path.asIndirect + linkPortPostfix.head + IndirectStep.Elements)  // use link's ELEMENTS
+                  constProp.addEquality(path.asIndirect ++ blockPortPostfix + IndirectStep.Allocated,
+                    path.asIndirect ++ blockPortPostfix + IndirectStep.Elements)  // TODO can this be directed?
+
+                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                  // Note: actual expansion task set on the link side
+                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, blockPortPostfix, Seq(), Seq(constrName), false)
+                  elaboratePending.addNode(resolveConnectedTask, Seq(expandArrayTask))
+
                 case expr.ValueExpr.Expr.ExportedArray(exported) =>
                   val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
                   val ValueExpr.Ref(intPostfix) = exported.getInternalBlockPort
@@ -638,6 +652,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
+
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
                 val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
@@ -668,14 +683,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }
 
-    block.getElaboratedLinks.foreach { case (innerLinkName, innerLink) =>
-      innerLink.asInstanceOf[wir.Link].getMixedPorts.foreach { case (portName, port) =>
+    block.getElaboratedLinks.foreach {
+      case (innerLinkName, innerLink: wir.Link) => innerLink.getMixedPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerLinkName, portName)
         port match {
           case _: wir.PortArray =>  // array case: connectivity delayed to lowering
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
               case PortConnections.ArrayConnect(constrName, constr) =>
                 throw new NotImplementedError()
+
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)
                 val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
@@ -700,6 +716,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
               case PortConnections.NotConnected =>
                 resolvePortConnectivity(path, portPostfix, None)
+              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+            }
+        }
+      }
+      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getMixedPorts.foreach { case (portName, port) =>
+        val portPostfix = Seq(innerLinkName, portName)
+        port match {
+          case _: wir.PortArray => // array case: connectivity delayed to lowering
+            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+              case PortConnections.ArrayConnect(constrName, constr) =>
+                throw new NotImplementedError()
+
+              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                throw new NotImplementedError()
+
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
         }
@@ -860,7 +891,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
         case _ => throw new IllegalArgumentException("unsupported array export")
       }
-      case _ => throw new IllegalArgumentException("not a connected-array or exported-array constraint")
+      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+        // in all cases, the expansion is by link's elements, and any link-side allocations must be resolved
+        val linkArrayName = connected.getLinkPort.getRef.steps.head.getName
+        val linkArrayElts = ArrayValue.ExtractText( // propagates inner to outer
+          constProp.getValue(record.parent.asIndirect + linkArrayName + IndirectStep.Elements).get)
+        parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+          linkArrayElts.map { index =>
+            val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+              case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayName) => ValueExpr.Ref((ref :+ index): _*)
+              case ValueExpr.RefAllocate(ref, suggestedName) if !ref.startsWith(linkArrayName) =>
+                ValueExpr.RefAllocate(ref :+ index, suggestedName)
+            }.connectUpdateRef {
+              case ValueExpr.Ref(ref) if ref.startsWith(linkArrayName) => ValueExpr.Ref((ref :+ index): _*)
+            }
+            s"${record.constraintName}.$index" -> newConstr
+          }
+        }.keys
     }
 
     expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)
