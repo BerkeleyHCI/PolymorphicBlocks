@@ -952,7 +952,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path ++ createdPortPostfix), None)
     }
 
-//    elaborateLink(path)
+    // Create internal links
+
+    // Create internal connects
+
+    // Resolve connections
   }
 
   def elaboratePortArray(path: DesignPath): Unit = {
