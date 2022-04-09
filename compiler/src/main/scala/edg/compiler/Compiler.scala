@@ -546,7 +546,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       require(!port.portsSet) // links can't have fixed array elts
       constProp.addDirectedEquality(
         path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
-          path, s"$path.$portName (link array-from-connects)")
+          path, s"$portName (link array-from-connects)")
     }
 
     // Links can only elaborate when their port arrays are ready
@@ -577,7 +577,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     model.getPorts.collect { case (portName, port: wir.PortArray) =>
       constProp.addDirectedEquality(
         path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
-        path, s"$path.$portName (link array-from-connects)")
+        path, s"$portName (link-array array-from-connects)")
     }
 
     val arrayPortDeps = model.getPorts.collect { case (portName, port: wir.PortArray) =>
@@ -920,7 +920,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val link = resolve(path).asInstanceOf[wir.LinkArray]
 
     // Expand port arrays based on ELEMENTS
-
     // Propagate ELEMENTS
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
@@ -929,14 +928,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         portElements.foreach { index =>
           constProp.addDirectedEquality(
             path.asIndirect + portName + index + IndirectStep.Elements,
-            path.asIndirect + IndirectStep.Allocated,
-            path, s"$path.$portName (link array-from-connects)")
+            path.asIndirect + IndirectStep.Elements,
+            path, s"$portName.$index (link-array ports-from-elts)")
         }
       case (portName, port) =>
         constProp.addDirectedEquality(
           path.asIndirect + portName + IndirectStep.Elements,
           path.asIndirect + IndirectStep.Elements,
-          path, s"$path.$portName (link array")
+          path, s"$portName (link-array ports-from-elts)")
     }
 
 //    elaborateLink(path)
@@ -1051,11 +1050,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case _ => throw new IllegalArgumentException
       }
 
-      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-        val linkArray = connected.getLinkPort.getRef.steps.head.getName
-        val elts = ArrayValue.ExtractText(
-          constProp.getValue(record.parent.asIndirect + linkArray + IndirectStep.Elements).get)
-        elts.map(Some(_))
+      case expr.ValueExpr.Expr.ConnectedArray(connected) => (connected.getBlockPort, connected.getLinkPort) match {
+        case (_, ValueExpr.RefAllocate(record.portPath, None)) =>  // link-side of array-connect treated as a unit
+          Seq(None)
+        case _ => throw new IllegalArgumentException
+      }
       case _ => throw new IllegalArgumentException
     }
 
