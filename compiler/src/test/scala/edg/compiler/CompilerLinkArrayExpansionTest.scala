@@ -92,7 +92,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 //    val drv = new DesignRefsValidate()
 //    drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
-    compiled.contents.get.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
@@ -114,6 +114,9 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Length) should
         equal(Some(IntValue(3)))
+
+    compiled.getContents.links("link").getArray.constraints should equal(referenceLinkArrayConstraints)
+
 
 
         // TEMPORARILY HERE TO MAKE A INCOMPLETE TEST FAILURE
