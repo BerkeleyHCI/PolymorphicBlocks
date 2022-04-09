@@ -93,14 +93,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
         equal(Some(IntValue(2)))
-    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
-    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Length) should
-        equal(Some(IntValue(3)))
-    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
-    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Length) should
-        equal(Some(IntValue(3)))
+    (0 until 2).foreach { sinkIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Elements) should
+          equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Length) should
+          equal(Some(IntValue(3)))
+    }
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
@@ -112,6 +110,13 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
 
     linkPb.constraints should equal(referenceLinkArrayConstraints)
+
+    (0 until 3).foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
+          equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
+          equal(Some(IntValue(2)))
+    }
   }
 
   "Compiler on design with partially-connected link-arrays" should "work" in {
@@ -161,5 +166,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
 
     linkPb.constraints should equal(referenceLinkArrayConstraints)
+
+    (0 until 3).foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
+          equal(Some(ArrayValue(Seq())))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
+          equal(Some(IntValue(0)))
+    }
   }
 }
