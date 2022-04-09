@@ -1077,8 +1077,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     import edg.ExprBuilder.ValueExpr
     val allocatedIndexToConstraint = combinedConstrNames.map { constrName =>
+        println(parentBlock.getConstraints(constrName))
       parentBlock.getConstraints(constrName).connectMapRef {
         case ValueExpr.Ref(record.portPath :+ index) => (index, constrName)
+        case ValueExpr.Ref(record.portPath :+ index :+ interior) => (index, constrName)  // for link arrays
       }
     }.toMap
 
