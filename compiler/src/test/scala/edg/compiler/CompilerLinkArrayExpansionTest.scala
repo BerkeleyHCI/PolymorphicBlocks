@@ -80,17 +80,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "sinks.1.2" -> Constraint.Exported(Ref("sinks", "1", "2"), Ref("2", "sinks", "1")),
     )
 
-//    val (compiler, compiled) = testCompile(inputDesign, library)
-    // TODO remove with above once things fully work
-    import edg.wir.{EdgirLibrary, Refinements}
-    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
-    val compiled = compiler.compile()
-
-//    val dsv = new DesignStructuralValidate()
-//    dsv.map(Design(compiled.contents.get)) should equal(Seq())
-//
-//    val drv = new DesignRefsValidate()
-//    drv.validate(Design(compiled.contents.get)) should equal(Seq())
+    val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiled.getContents.constraints should equal(referenceConstraints)
 
@@ -122,12 +112,5 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
 
     linkPb.constraints should equal(referenceLinkArrayConstraints)
-
-        // TEMPORARILY HERE TO MAKE A INCOMPLETE TEST FAILURE
-        val dsv = new DesignStructuralValidate()
-        dsv.map(Design(compiled.contents.get)) should equal(Seq())
-
-        val drv = new DesignRefsValidate()
-        drv.validate(Design(compiled.contents.get)) should equal(Seq())
   }
 }

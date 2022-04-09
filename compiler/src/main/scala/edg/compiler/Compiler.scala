@@ -932,7 +932,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         portName -> portElements
     }
 
-    // Expand port arrays based on ELEMENTS - first propagate ELEMENTS
+    // Propagate link-wide ELEMENTS to port ELEMENTS and inner-link ALLOCATED
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
         linkPortArrayElements(portName).foreach { index =>
@@ -940,6 +940,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             path.asIndirect + portName + index + IndirectStep.Elements,
             path.asIndirect + IndirectStep.Elements,
             path, s"$portName.$index (link-array ports-from-elts)")
+        }
+        linkElements.foreach { elementIndex =>
+          constProp.addDirectedEquality(
+            path.asIndirect + elementIndex + portName + IndirectStep.Allocated,
+            path.asIndirect + portName + IndirectStep.Elements,
+            path, s"$elementIndex.$portName (link-array inner-port-array from outer-elts)")
         }
       case (portName, port) =>
         constProp.addDirectedEquality(
