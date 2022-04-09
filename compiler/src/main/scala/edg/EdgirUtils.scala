@@ -61,18 +61,20 @@ object EdgirUtils {
     }
 
     // Returns a new connection with the find endpoint replaced with replace. For array connects only.
-    def arrayWithReplacedRef(find: expr.ValueExpr, replace: expr.ValueExpr): expr.ValueExpr = connection.expr match {
+    def arrayUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
       case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-        (connected.getBlockPort == find, connected.getLinkPort == find) match {
-          case (true, false) => connection.update(_.connectedArray.blockPort := replace)
-          case (false, true) => connection.update(_.connectedArray.linkPort := replace)
-          case _ => throw new IllegalArgumentException("array block xor link did not match")
+        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
+          case (true, false) => connection.update(_.connectedArray.blockPort := fn(connected.getBlockPort))
+          case (false, true) => connection.update(_.connectedArray.linkPort := fn(connected.getLinkPort))
+          case (true, true) => throw new IllegalArgumentException("block and link both matched")
+          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
         }
       case expr.ValueExpr.Expr.ExportedArray(exported) =>
-        (exported.getExteriorPort == find, exported.getInternalBlockPort == find) match {
-          case (true, false) => connection.update(_.exportedArray.exteriorPort := replace)
-          case (false, true) => connection.update(_.exportedArray.internalBlockPort := replace)
-          case _ => throw new IllegalArgumentException("array exterior xor interior did not match")
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => connection.update(_.exportedArray.exteriorPort := fn(exported.getExteriorPort))
+          case (false, true) => connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
       case _ => throw new IllegalArgumentException
     }

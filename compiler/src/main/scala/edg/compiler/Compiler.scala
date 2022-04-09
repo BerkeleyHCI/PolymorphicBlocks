@@ -747,7 +747,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(singleConnects.isEmpty)
                 val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(setAllocatedTask, Seq())
+                elaboratePending.addNode(setAllocatedTask, Seq(
+                  ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)))
                 val resolveAllocateTask = ElaborateRecord.RewriteArrayAllocate(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveAllocateTask, Seq())
                 val expandArrayTasks = arrayConnects.map { arrayConnect =>
@@ -955,8 +956,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           linkArrayElts.map { index =>
             val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
               case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
-              case ValueExpr.RefAllocate(ref, suggestedName) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref :+ index, suggestedName)
+              case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
+                ValueExpr.RefAllocate(ref, None)  // allocate stays intact
+              case ValueExpr.RefAllocate(ref, Some(suggestedName)) if !ref.startsWith(linkArrayPostfix) =>
+                ValueExpr.RefAllocate(ref, Some(s"$suggestedName.$index"))  // index tacked onto suggested name
             }.connectUpdateRef {
               case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
             }
@@ -999,6 +1002,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           Seq.fill(elts.length)(None)
         case _ => throw new IllegalArgumentException
       }
+
+      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+        val linkArray = connected.getLinkPort.getRef.steps.head.getName
+        val elts = ArrayValue.ExtractText(
+          constProp.getValue(record.parent.asIndirect + linkArray + IndirectStep.Elements).get)
+        elts.map(Some(_))
       case _ => throw new IllegalArgumentException
     }
 
@@ -1010,6 +1019,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.map(TextValue(_))))
+  }
+
+  // Once all connects to a link-array port are aggregated, rewrite the ALLOCATEs with concrete indices.
+  protected def rewriteArrayAllocate(record: ElaborateRecord.RewriteArrayAllocate): Unit = {
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.Block]
+    require(record.constraintNames.isEmpty)
+
+    import edg.ExprBuilder.ValueExpr
+    val freeNames = LazyList.from(0).iterator
+    record.arrayConstraintNames.foreach { constrName =>
+      parentBlock.mapConstraint(constrName) { constr => constr.arrayUpdateRef {
+        case ValueExpr.RefAllocate(record.portPath, None) =>
+          ValueExpr.Ref((record.portPath :+ freeNames.next().toString):_*)
+      } }
+    }
   }
 
   // Once a block-side port array has all its element widths available, this lowers the connect statements
@@ -1095,6 +1119,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
           case elaborateRecord: ElaborateRecord.ExpandArrayConnections =>
             expandArrayConnections(elaborateRecord)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord: ElaborateRecord.RewriteArrayAllocate =>
+            rewriteArrayAllocate(elaborateRecord)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord: ElaborateRecord.ResolveArrayAllocated =>
             resolveArrayAllocated(elaborateRecord)
