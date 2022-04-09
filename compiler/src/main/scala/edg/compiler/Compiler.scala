@@ -645,7 +645,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   // Note: actual expansion task set on the link side
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, blockPortPostfix, Seq(), Seq(constrName), false)
                   elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
                     expandArrayTask
                   ))
 
@@ -661,7 +660,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                   elaboratePending.addNode(expandArrayTask,
                     Seq(
-                      ElaborateRecord.ElaboratePortArray(path ++ intPostfix),  // port must be defined
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Elements),
                       // allocated must run first, it depends on constraints not being lowered
                       ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
@@ -1077,7 +1075,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     import edg.ExprBuilder.ValueExpr
     val allocatedIndexToConstraint = combinedConstrNames.map { constrName =>
-        println(parentBlock.getConstraints(constrName))
       parentBlock.getConstraints(constrName).connectMapRef {
         case ValueExpr.Ref(record.portPath :+ index) => (index, constrName)
         case ValueExpr.Ref(record.portPath :+ index :+ interior) => (index, constrName)  // for link arrays
