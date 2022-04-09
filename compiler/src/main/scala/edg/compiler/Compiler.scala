@@ -30,6 +30,7 @@ object ElaborateRecord {
       extends ElaborateTask
 
   // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
+  // For recursive arrays, (eg, in link arrays), this is set when recursively elaborated.
   // Only called for port arrays without defined elements (so excluding blocks that define their ports, including
   // generator-defined port arrays which are structurally similar).
   // Created but never run for abstract blocks with abstract port array.
@@ -926,15 +927,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None)  // resolved in initPortsFromModel
         portName -> portElements.size
     }
-    link.initPortsFromModel(linkPortArrayCounts).foreach { case (createdPortPostfix, createdPort) =>
-      // TODO dedup w/ elaboratePort, this is a special case
-      elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path ++ createdPortPostfix), Seq(
-        ElaborateRecord.ParamValue(path.asIndirect ++ createdPortPostfix + IndirectStep.Elements)
-      ))
-    }
 
-    // Expand port arrays based on ELEMENTS
-    // Propagate ELEMENTS
+    // Expand port arrays based on ELEMENTS - first propagate ELEMENTS
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
@@ -951,6 +945,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           path.asIndirect + portName + IndirectStep.Elements,
           path.asIndirect + IndirectStep.Elements,
           path, s"$portName (link-array ports-from-elts)")
+    }
+    // Then expand the port-arrays
+    link.initPortsFromModel(linkPortArrayCounts).foreach { case (createdPortPostfix, createdPort) =>
+      elaboratePortArray(path ++ createdPortPostfix)
+      elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path ++ createdPortPostfix), None)
     }
 
 //    elaborateLink(path)
@@ -1140,17 +1139,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.ValueExpr
     val allocatedIndexToConstraint = combinedConstrNames.map { constrName =>
       parentBlock.getConstraints(constrName).connectMapRef {
-        case ValueExpr.Ref(record.portPath :+ index) => (index, constrName)
-        case ValueExpr.Ref(record.portPath :+ index :+ interior) => (index, constrName)  // for link arrays
+        case ValueExpr.Ref(record.portPath :+ index) => (Seq(index), constrName)
+        case ValueExpr.Ref(record.portPath :+ index :+ interior) => (Seq(index, interior), constrName)  // for link arrays
       }
     }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
-    portArray.getPorts.foreach { case (index, innerPort) =>
-      val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
-        (constrName, parentBlock.getConstraints(constrName))
-      }
-      resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
+    portArray.getPorts.foreach {
+      case (index, innerPort: wir.PortArray) =>  // for link arrays
+        require(innerPort.isElaborated)
+        innerPort.getPorts.foreach { case (subIndex, subPort) =>
+          val constraintOption = allocatedIndexToConstraint.get(Seq(index, subIndex)).map { constrName =>
+            (constrName, parentBlock.getConstraints(constrName))
+          }
+          resolvePortConnectivity(record.parent, record.portPath :+ index :+ subIndex, constraintOption)
+        }
+      case (index, innerPort) =>
+        val constraintOption = allocatedIndexToConstraint.get(Seq(index)).map { constrName =>
+          (constrName, parentBlock.getConstraints(constrName))
+        }
+        resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
     }
   }
 
