@@ -3,7 +3,7 @@ package edg.compiler
 import edg.EdgirUtils._
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir._
-import edg.{EdgirUtils, wir}
+import edg.wir
 import edgir.expr.expr
 import edgir.ref.ref
 import edgir.schema.schema
@@ -919,12 +919,27 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     val link = resolve(path).asInstanceOf[wir.LinkArray]
 
+    val linkPortArrayCounts = link.getModelPorts.collect {
+      case (portName, port: wir.PortArray) =>
+        val portElements = ArrayValue.ExtractText(
+          constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
+        elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None)  // resolved in initPortsFromModel
+        portName -> portElements.size
+    }
+    link.initPortsFromModel(linkPortArrayCounts).foreach { case (createdPortPostfix, createdPort) =>
+      // TODO dedup w/ elaboratePort, this is a special case
+      elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path ++ createdPortPostfix), Seq(
+        ElaborateRecord.ParamValue(path.asIndirect ++ createdPortPostfix + IndirectStep.Elements)
+      ))
+    }
+
     // Expand port arrays based on ELEMENTS
     // Propagate ELEMENTS
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
+
         portElements.foreach { index =>
           constProp.addDirectedEquality(
             path.asIndirect + portName + index + IndirectStep.Elements,

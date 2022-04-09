@@ -5,7 +5,7 @@ import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
 
-import scala.collection.mutable
+import scala.collection.{SeqMap, mutable}
 
 
 sealed trait LinkLike extends Pathable {
@@ -69,6 +69,28 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   def getModelPorts: Map[String, PortLike] = model.get.getPorts
 
+  // Creates my ports from the model type and array lengths, returning the port postfix and created port.
+  // Outer arrays have their elements set, while inner arrays (corresponding to the link-array's ELEMENTS)
+  // must be set externally.
+  def initPortsFromModel(arrayLengths: Map[String, Int]): Map[Seq[String], PortArray] = {
+    require(ports.isEmpty)
+    model.get.getPorts.flatMap {
+      case (portName, port: PortArray) =>
+        val outerCreated = new PortArray(elem.PortArray(selfClass=None))
+        ports.update(portName, outerCreated)
+        val inner = (0 until arrayLengths(portName)).map { index =>
+          val created = new PortArray(elem.PortArray(selfClass=Some(port.getType)))
+          (index.toString, created)
+        }
+        outerCreated.setPorts(inner.to(SeqMap))
+        inner.map { case (index, created) => (Seq(portName, index), created) }
+      case (portName, port: PortLibrary) =>
+        val created = new PortArray(elem.PortArray(selfClass=Some(port.target)))
+        ports.update(portName, created)
+        Seq((Seq(portName), created))
+      case _ => throw new IllegalArgumentException
+    }
+  }
 
   // TODO explicit isElaborated flag? instead of inferring?
   override def isElaborated: Boolean = !(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty)
