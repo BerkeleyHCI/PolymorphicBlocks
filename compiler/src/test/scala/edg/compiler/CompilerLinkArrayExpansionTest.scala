@@ -39,7 +39,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     )
   )
 
-  "Compiler on design with abstract source and array sink" should "expand blocks" in {
+  "Compiler on design with link-array" should "expand constraints and link arrays" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
@@ -101,6 +101,55 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Length) should
         equal(Some(IntValue(3)))
+
+    compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+
+    val linkPb = compiled.getContents.links("link").getArray
+    linkPb.links.keySet should equal(Set("0", "1", "2"))
+    linkPb.links("0").getLink.getSelfClass should equal(LibraryPath("link"))
+    linkPb.links("1").getLink.getSelfClass should equal(LibraryPath("link"))
+    linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
+
+    linkPb.constraints should equal(referenceLinkArrayConstraints)
+  }
+
+  "Compiler on design with partially-connected link-arrays" should "work" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "source" -> Block.Library("sourceBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Array("link"),
+      ),
+      constraints = Map(
+        "sourceConnect" -> Constraint.ConnectedArray(Ref("source", "port"), Ref("link", "source")),
+      )
+    ))
+    val referenceConstraints = Map(  // expected constraints in the top-level design
+      "sourceConnect.0" -> Constraint.Connected(Ref("source", "port", "0"), Ref("link", "source", "0")),
+      "sourceConnect.1" -> Constraint.Connected(Ref("source", "port", "1"), Ref("link", "source", "1")),
+      "sourceConnect.2" -> Constraint.Connected(Ref("source", "port", "2"), Ref("link", "source", "2")),
+    )
+    val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+      "source.0" -> Constraint.Exported(Ref("source", "0"), Ref("0", "source")),
+      "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
+      "source.2" -> Constraint.Exported(Ref("source", "2"), Ref("2", "source")),
+    )
+
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    compiled.getContents.constraints should equal(referenceConstraints)
+
+    compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq())))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
+        equal(Some(IntValue(0)))
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
