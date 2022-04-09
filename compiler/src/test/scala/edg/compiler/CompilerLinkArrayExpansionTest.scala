@@ -58,23 +58,39 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     val referenceConstraints = Map(  // expected constraints in the top-level design
       "sourceConnect.0" -> Constraint.Connected(Ref("source", "port", "0"), Ref("link", "source", "0")),
       "sourceConnect.1" -> Constraint.Connected(Ref("source", "port", "1"), Ref("link", "source", "1")),
+      "sourceConnect.2" -> Constraint.Connected(Ref("source", "port", "2"), Ref("link", "source", "2")),
 
       "sink0Connect.0" -> Constraint.Connected(Ref("sink0", "port", "0"), Ref("link", "sinks", "0", "0")),
       "sink0Connect.1" -> Constraint.Connected(Ref("sink0", "port", "1"), Ref("link", "sinks", "0", "1")),
+      "sink0Connect.2" -> Constraint.Connected(Ref("sink0", "port", "2"), Ref("link", "sinks", "0", "2")),
       "sink1Connect.0" -> Constraint.Connected(Ref("sink1", "port", "0"), Ref("link", "sinks", "1", "0")),
       "sink1Connect.1" -> Constraint.Connected(Ref("sink1", "port", "1"), Ref("link", "sinks", "1", "1")),
+      "sink1Connect.2" -> Constraint.Connected(Ref("sink1", "port", "2"), Ref("link", "sinks", "1", "2")),
     )
     val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
       "source.0" -> Constraint.Exported(Ref("source", "0"), Ref("0", "source")),
       "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
+      "source.2" -> Constraint.Exported(Ref("source", "2"), Ref("2", "source")),
 
       "sink.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
       "sink.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
+      "sink.0.2" -> Constraint.Exported(Ref("sinks", "0", "2"), Ref("2", "sinks", "0")),
       "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
       "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
+      "sink.2.0" -> Constraint.Exported(Ref("sinks", "1", "2"), Ref("2", "sinks", "1")),
     )
 
-    val (compiler, compiled) = testCompile(inputDesign, library)
+//    val (compiler, compiled) = testCompile(inputDesign, library)
+    // TODO remove with above once things fully work
+    import edg.wir.{EdgirLibrary, Refinements}
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
+    val compiled = compiler.compile()
+
+
+    // TEMPORARILY HERE REMOVE ME
+    compiled.contents.get.constraints should equal(referenceConstraints)
+
+
 
     val dsv = new DesignStructuralValidate()
     dsv.map(Design(compiled.contents.get)) should equal(Seq())
