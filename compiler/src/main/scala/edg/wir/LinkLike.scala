@@ -72,34 +72,57 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
   // Creates my ports from the model type and array lengths, returning the port postfix and created port.
   // Outer arrays have their elements set, while inner arrays (corresponding to the link-array's ELEMENTS)
   // must be set externally.
-  def initPortsFromModel(arrayLengths: Map[String, Int]): Map[Seq[String], PortArray] = {
+  def initPortsFromModel(arrayElements: Map[String, Seq[String]]): Map[Seq[String], PortArray] = {
     require(ports.isEmpty)
     model.get.getPorts.flatMap {
       case (portName, port: PortArray) =>
         val outerCreated = new PortArray(elem.PortArray(selfClass=None))
-        ports.update(portName, outerCreated)
-        val inner = (0 until arrayLengths(portName)).map { index =>
+        ports.put(portName, outerCreated)
+        val inner = arrayElements(portName).map { index =>
           val created = new PortArray(elem.PortArray(selfClass=Some(port.getType)))
-          (index.toString, created)
+          (index, created)
         }
         outerCreated.setPorts(inner.to(SeqMap))
         inner.map { case (index, created) => (Seq(portName, index), created) }
       case (portName, port: PortLibrary) =>
         val created = new PortArray(elem.PortArray(selfClass=Some(port.target)))
-        ports.update(portName, created)
+        ports.put(portName, created)
         Seq((Seq(portName), created))
       case _ => throw new IllegalArgumentException
     }
   }
 
   // Creates the specified amount of internal links, returning the name and created link.
-  def initLinks(elements: Seq[String]): Map[String, LinkLibrary] = {
+  def initLinks(linkElements: Seq[String]): Map[String, LinkLibrary] = {
     require(links.isEmpty)
-    elements.map { index =>
+    linkElements.map { index =>
       val created = new LinkLibrary(getModelLibrary)
-      links.update(index, created)
+      links.put(index, created)
       (index, created)
     }.toMap
+  }
+
+  def initConstraints(linkElements: Seq[String], arrayElements: Map[String, Seq[String]]): Unit = {
+    import edg.ElemBuilder.Constraint
+    import edg.ExprBuilder.Ref
+    require(constraints.isEmpty)
+    model.get.getPorts.foreach {
+      case (portName, port: PortArray) =>
+        arrayElements(portName).foreach { arrayIndex =>
+          linkElements.foreach { elementIndex =>
+            constraints.put(s"$portName.$arrayIndex.$elementIndex", Constraint.Exported(
+              Ref(portName, arrayIndex, elementIndex), Ref(elementIndex, portName, arrayIndex)
+            ))
+          }
+        }
+      case (portName, port: PortLibrary) =>
+        linkElements.foreach { elementIndex =>
+          constraints.put(s"$portName.$elementIndex", Constraint.Exported(
+            Ref(portName, elementIndex), Ref(elementIndex, portName)
+          ))
+        }
+      case _ => throw new IllegalArgumentException
+    }
   }
 
   // TODO explicit isElaborated flag? instead of inferring?

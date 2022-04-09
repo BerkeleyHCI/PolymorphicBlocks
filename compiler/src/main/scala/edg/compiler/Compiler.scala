@@ -648,6 +648,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   val linkPortPostfix = connected.getLinkPort match {
                     case ValueExpr.Ref(linkPortPostfix) => linkPortPostfix
                     case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
+                    case _ => throw new IllegalArgumentException
                   }
 
                   constProp.addEquality(path.asIndirect ++ portPostfix + IndirectStep.Elements,
@@ -812,6 +813,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             }
         }
       }
+      case _ => throw new IllegalArgumentException
     }
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
@@ -917,28 +919,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   protected def elaborateLinkArray(path: DesignPath): Unit = {
-    import edg.ExprBuilder.{Ref, ValueExpr}
     val link = resolve(path).asInstanceOf[wir.LinkArray]
 
     val linkElements = ArrayValue.ExtractText(
       constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
-
-    val linkPortArrayCounts = link.getModelPorts.collect {
+    val linkPortArrayElements = link.getModelPorts.collect {
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
         constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size))
         elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None)  // resolved in initPortsFromModel
-        portName -> portElements.size
+        portName -> portElements
     }
 
     // Expand port arrays based on ELEMENTS - first propagate ELEMENTS
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
-        val portElements = ArrayValue.ExtractText(
-          constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
-
-        portElements.foreach { index =>
+        linkPortArrayElements(portName).foreach { index =>
           constProp.addDirectedEquality(
             path.asIndirect + portName + index + IndirectStep.Elements,
             path.asIndirect + IndirectStep.Elements,
@@ -951,7 +948,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           path, s"$portName (link-array ports-from-elts)")
     }
     // Then expand the port-arrays
-    link.initPortsFromModel(linkPortArrayCounts).foreach { case (createdPortPostfix, createdPort) =>
+    link.initPortsFromModel(linkPortArrayElements).foreach { case (createdPortPostfix, createdPort) =>
       elaboratePortArray(path ++ createdPortPostfix)
       elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path ++ createdPortPostfix), None)
     }
@@ -963,8 +960,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Create internal connects
+    link.initConstraints(linkElements, linkPortArrayElements)
 
     // Resolve connections
+    link.getConstraints.foreach { case (constrName, constr) =>
+      processConnectedConstraint(path, constrName, constr, true)
+    }
   }
 
   def elaboratePortArray(path: DesignPath): Unit = {
@@ -1039,6 +1040,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             s"${record.constraintName}.$index" -> newConstr
           }
         }.keys
+
+      case _ => throw new IllegalArgumentException
     }
 
     expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)

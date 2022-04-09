@@ -72,12 +72,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
       "source.2" -> Constraint.Exported(Ref("source", "2"), Ref("2", "source")),
 
-      "sink.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
-      "sink.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
-      "sink.0.2" -> Constraint.Exported(Ref("sinks", "0", "2"), Ref("2", "sinks", "0")),
-      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
-      "sink.1.0" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
-      "sink.2.0" -> Constraint.Exported(Ref("sinks", "1", "2"), Ref("2", "sinks", "1")),
+      "sinks.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
+      "sinks.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
+      "sinks.0.2" -> Constraint.Exported(Ref("sinks", "0", "2"), Ref("2", "sinks", "0")),
+      "sinks.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
+      "sinks.1.1" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
+      "sinks.1.2" -> Constraint.Exported(Ref("sinks", "1", "2"), Ref("2", "sinks", "1")),
     )
 
 //    val (compiler, compiled) = testCompile(inputDesign, library)
