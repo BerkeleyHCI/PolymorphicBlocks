@@ -3,7 +3,7 @@ package edg.compiler
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
+import edg.wir.{IndirectDesignPath, IndirectStep}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -104,14 +104,11 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
 
     val linkPb = compiled.getContents.links("link").getArray
-    linkPb.links.keySet should equal(Set("0", "1", "2"))
-    linkPb.links("0").getLink.getSelfClass should equal(LibraryPath("link"))
-    linkPb.links("1").getLink.getSelfClass should equal(LibraryPath("link"))
-    linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
-
     linkPb.constraints should equal(referenceLinkArrayConstraints)
 
+    linkPb.links.keySet should equal(Set("0", "1", "2"))
     (0 until 3).foreach { elementIndex =>
+      linkPb.links(elementIndex.toString).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
@@ -160,14 +157,11 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
 
     val linkPb = compiled.getContents.links("link").getArray
-    linkPb.links.keySet should equal(Set("0", "1", "2"))
-    linkPb.links("0").getLink.getSelfClass should equal(LibraryPath("link"))
-    linkPb.links("1").getLink.getSelfClass should equal(LibraryPath("link"))
-    linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
-
     linkPb.constraints should equal(referenceLinkArrayConstraints)
 
+    linkPb.links.keySet should equal(Set("0", "1", "2"))
     (0 until 3).foreach { elementIndex =>
+      linkPb.links(elementIndex.toString).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq())))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
