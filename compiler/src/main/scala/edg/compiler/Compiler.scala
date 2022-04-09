@@ -577,6 +577,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     array.createFrom(model)
 
+    // For all arrays, size ELEMENTS directly from ALLOCATED
+    model.getPorts.collect { case (portName, port: wir.PortArray) =>
+      constProp.addDirectedEquality(
+        path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
+        path, s"$path.$portName (link array-from-connects)")
+    }
+
     val arrayPortDeps = model.getPorts.collect { case (portName, port: wir.PortArray) =>
       ElaborateRecord.ParamValue(path.asIndirect + portName + IndirectStep.Elements)
     }.toSeq
@@ -936,7 +943,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           path, s"$path.$portName (link array")
     }
 
-    elaborateLink(path)
+//    elaborateLink(path)
   }
 
   def elaboratePortArray(path: DesignPath): Unit = {
