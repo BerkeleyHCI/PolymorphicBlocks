@@ -86,18 +86,41 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
     val compiled = compiler.compile()
 
-
-    // TEMPORARILY HERE REMOVE ME
-    compiled.contents.get.constraints should equal(referenceConstraints)
-
-
-
-    val dsv = new DesignStructuralValidate()
-    dsv.map(Design(compiled.contents.get)) should equal(Seq())
-
-    val drv = new DesignRefsValidate()
-    drv.validate(Design(compiled.contents.get)) should equal(Seq())
+//    val dsv = new DesignStructuralValidate()
+//    dsv.map(Design(compiled.contents.get)) should equal(Seq())
+//
+//    val drv = new DesignRefsValidate()
+//    drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
     compiled.contents.get.constraints should equal(referenceConstraints)
+
+    compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+
+    compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
+        equal(Some(IntValue(2)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+
+
+        // TEMPORARILY HERE TO MAKE A INCOMPLETE TEST FAILURE
+        val dsv = new DesignStructuralValidate()
+        dsv.map(Design(compiled.contents.get)) should equal(Seq())
+
+        val drv = new DesignRefsValidate()
+        drv.validate(Design(compiled.contents.get)) should equal(Seq())
   }
 }

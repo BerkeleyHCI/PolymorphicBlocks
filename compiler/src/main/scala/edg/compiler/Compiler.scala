@@ -924,6 +924,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
+        constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size))
         elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None)  // resolved in initPortsFromModel
         portName -> portElements.size
     }
