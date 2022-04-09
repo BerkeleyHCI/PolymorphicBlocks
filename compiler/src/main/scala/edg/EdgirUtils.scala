@@ -28,13 +28,15 @@ object EdgirUtils {
         (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
           case (true, false) => fn(connected.getBlockPort)
           case (false, true) => fn(connected.getLinkPort)
-          case _ => throw new IllegalArgumentException("block xor link did not match")
+          case (true, true) => throw new IllegalArgumentException("block and link both matched")
+          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => fn(exported.getExteriorPort)
           case (false, true) => fn(exported.getInternalBlockPort)
-          case _ => throw new IllegalArgumentException("exterior xor interior did not match")
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
       case _ => throw new IllegalArgumentException
     }
@@ -45,13 +47,15 @@ object EdgirUtils {
         (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
           case (true, false) => connection.update(_.connected.blockPort := fn(connected.getBlockPort))
           case (false, true) => connection.update(_.connected.linkPort := fn(connected.getLinkPort))
-          case _ => throw new IllegalArgumentException("block xor link did not match")
+          case (true, true) => throw new IllegalArgumentException("block and link both matched")
+          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
         }
       case expr.ValueExpr.Expr.Exported(exported) =>
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => connection.update(_.exported.exteriorPort := fn(exported.getExteriorPort))
           case (false, true) => connection.update(_.exported.internalBlockPort := fn(exported.getInternalBlockPort))
-          case _ => throw new IllegalArgumentException("exterior xor interior did not match")
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
       case _ => throw new IllegalArgumentException
     }

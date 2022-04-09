@@ -941,17 +941,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
       case expr.ValueExpr.Expr.ConnectedArray(connected) =>
         // in all cases, the expansion is by link's elements, and any link-side allocations must be resolved
-        val linkArrayName = connected.getLinkPort.getRef.steps.head.getName
+        val linkArrayPostfix = Seq(connected.getLinkPort.getRef.steps.head.getName)
         val linkArrayElts = ArrayValue.ExtractText( // propagates inner to outer
-          constProp.getValue(record.parent.asIndirect + linkArrayName + IndirectStep.Elements).get)
+          constProp.getValue(record.parent.asIndirect ++ linkArrayPostfix + IndirectStep.Elements).get)
         parentBlock.mapMultiConstraint(record.constraintName) { constr =>
           linkArrayElts.map { index =>
             val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
-              case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayName) => ValueExpr.Ref((ref :+ index): _*)
-              case ValueExpr.RefAllocate(ref, suggestedName) if !ref.startsWith(linkArrayName) =>
+              case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
+              case ValueExpr.RefAllocate(ref, suggestedName) if !ref.startsWith(linkArrayPostfix) =>
                 ValueExpr.RefAllocate(ref :+ index, suggestedName)
             }.connectUpdateRef {
-              case ValueExpr.Ref(ref) if ref.startsWith(linkArrayName) => ValueExpr.Ref((ref :+ index): _*)
+              case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
             }
             s"${record.constraintName}.$index" -> newConstr
           }
