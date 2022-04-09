@@ -21,6 +21,7 @@ object ElaborateRecord {
 
   case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
   case class Link(linkPath: DesignPath) extends ElaborateTask
+  case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
@@ -557,21 +558,31 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     newLink
   }
 
-  // Expands an link array in-place.
+  // Expand an link array in-place.
   protected def expandLinkArray(path: DesignPath, array: wir.LinkArray): Unit = {
     val libraryPath = array.getModelLibrary
 
-    library.getLink(libraryPath) match {
+    val modelPb = library.getLink(libraryPath) match {
       case Errorable.Success(linkPb) =>
-        val model = new wir.Link(linkPb)
-        model.getPorts.foreach { case (portName, port) =>
-          elaboratePort(path + portName, model, port)
-        }
-        array.createFrom(model)
+        linkPb
       case Errorable.Error(err) =>
         import edgir.elem.elem
         errors += CompilerError.LibraryError(path, libraryPath, err)
+        elem.Link()
     }
+    val model = new wir.Link(modelPb)
+
+    model.getPorts.foreach { case (portName, port) =>
+      elaboratePort(path + portName, model, port)
+    }
+    array.createFrom(model)
+
+    val arrayPortDeps = model.getPorts.collect { case (portName, port: wir.PortArray) =>
+      ElaborateRecord.ParamValue(path.asIndirect + portName + IndirectStep.Elements)
+    }.toSeq
+    val elementDep = ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
+
+    elaboratePending.addNode(ElaborateRecord.LinkArray(path), arrayPortDeps :+ elementDep)
   }
 
   protected def runGenerator(path: DesignPath, generator: wir.Generator): Unit = {
@@ -901,6 +912,33 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  protected def elaborateLinkArray(path: DesignPath): Unit = {
+    import edg.ExprBuilder.{Ref, ValueExpr}
+    val link = resolve(path).asInstanceOf[wir.LinkArray]
+
+    // Expand port arrays based on ELEMENTS
+
+    // Propagate ELEMENTS
+    link.getModelPorts.foreach {
+      case (portName, port: wir.PortArray) =>
+        val portElements = ArrayValue.ExtractText(
+          constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
+        portElements.foreach { index =>
+          constProp.addDirectedEquality(
+            path.asIndirect + portName + index + IndirectStep.Elements,
+            path.asIndirect + IndirectStep.Allocated,
+            path, s"$path.$portName (link array-from-connects)")
+        }
+      case (portName, port) =>
+        constProp.addDirectedEquality(
+          path.asIndirect + portName + IndirectStep.Elements,
+          path.asIndirect + IndirectStep.Elements,
+          path, s"$path.$portName (link array")
+    }
+
+    elaborateLink(path)
+  }
+
   def elaboratePortArray(path: DesignPath): Unit = {
     val port = resolvePort(path).asInstanceOf[wir.PortArray]
     if (!port.portsSet) {
@@ -1116,6 +1154,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case elaborateRecord@ElaborateRecord.Link(linkPath) =>
             debug(s"Elaborate link @ $linkPath")
             elaborateLink(linkPath)
+            elaboratePending.setValue(elaborateRecord, None)
+          case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
+            debug(s"Elaborate link array @ $linkPath")
+            elaborateLinkArray(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
           case connect: ElaborateRecord.Connect =>
             debug(s"Elaborate connect $connect")
