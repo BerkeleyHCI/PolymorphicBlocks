@@ -1084,8 +1084,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }.toMap
 
-    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
-    portArray.getPorts.foreach { case (index, innerPort) =>
+    val portArrayElts = ArrayValue.ExtractText(
+      constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
+    portArrayElts.foreach { index =>
       val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
         (constrName, parentBlock.getConstraints(constrName))
       }
