@@ -2,7 +2,7 @@ package edg.compiler
 
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
-import edg.ExprBuilder.Ref
+import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir.{IndirectDesignPath, IndirectStep}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -14,18 +14,28 @@ import org.scalatest.matchers.should.Matchers._
 class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
-      Port.Port("sourcePort"),
-      Port.Port("sinkPort"),
+      Port.Port("sourcePort", params=Map("param" -> ValInit.Integer)),
+      Port.Port("sinkPort", params=Map("param" -> ValInit.Integer)),
     ),
     blocks = Seq(
       Block.Block("sourceBlock",  // array elements source
         ports = Map(
           "port" -> Port.Array("sourcePort", Seq("a", "b", "c"), Port.Library("sinkPort")),
+        ),
+        constraints = Map(
+          "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(1)),
+          "port.b" -> Constraint.Assign(Ref("port", "b", "param"), ValueExpr.Literal(2)),
+          "port.c" -> Constraint.Assign(Ref("port", "c", "param"), ValueExpr.Literal(3)),
         )
       ),
       Block.Block("sinkBlock",  // array elements sink
         ports = Map(
           "port" -> Port.Array("sinkPort"),
+        ),
+        constraints = Map(
+          "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(11)),
+          "port.b" -> Constraint.Assign(Ref("port", "b", "param"), ValueExpr.Literal(12)),
+          "port.c" -> Constraint.Assign(Ref("port", "c", "param"), ValueExpr.Literal(13)),
         )
       ),
     ),
@@ -34,6 +44,11 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         ports = Map(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
+        ),
+        params = Map(
+          "param" -> ValInit.Integer
+        ), constraints = Map(
+          "param_set" -> Constraint.Assign(Ref("param"), ValueExpr.Literal(-1)),
         )
       ),
     )
@@ -93,10 +108,10 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
         equal(Some(IntValue(2)))
-    (0 until 2).foreach { sinkIndex =>
-      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Elements) should
+    Seq("0", "1").foreach { sinkIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
-      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Length) should
+      compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + IndirectStep.Length) should
           equal(Some(IntValue(3)))
     }
 
@@ -113,6 +128,34 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
           equal(Some(IntValue(2)))
+    }
+
+    // Check parameter propagation
+    Map("a" -> 1, "b" -> 2, "c" -> 3).foreach { case (elementIndex, paramValue) =>
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + "param") should
+          equal(Some(IntValue(paramValue)))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + "param") should
+          equal(Some(IntValue(paramValue)))
+    }
+
+    Seq("0", "1").foreach { sinkIndex =>
+      Map("a" -> 11, "b" -> 12, "c" -> 13).foreach { case (elementIndex, paramValue) =>
+        compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + "param") should
+            equal(Some(IntValue(paramValue)))
+        compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + "param") should
+            equal(Some(IntValue(paramValue)))
+      }
+    }
+
+    Seq("a", "b", "c").foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
+          equal(Some(IntValue(-1)))
+    }
+    Seq("0", "1").foreach { sinkIndex =>
+      Seq("a", "b", "c").foreach { elementIndex =>
+        compiler.getValue(IndirectDesignPath() + s"sink$sinkIndex" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
+            equal(Some(IntValue(-1)))
+      }
     }
   }
 
@@ -166,6 +209,19 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(ArrayValue(Seq())))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
           equal(Some(IntValue(0)))
+    }
+
+    // Check parameter propagation
+    Map("a" -> 1, "b" -> 2, "c" -> 3).foreach { case (elementIndex, paramValue) =>
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + "param") should
+          equal(Some(IntValue(paramValue)))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + "param") should
+          equal(Some(IntValue(paramValue)))
+    }
+
+    Seq("a", "b", "c").foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
+          equal(Some(IntValue(-1)))
     }
   }
 }
