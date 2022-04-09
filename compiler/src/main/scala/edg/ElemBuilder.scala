@@ -151,12 +151,12 @@ object ElemBuilder {
     )))
 
     // Fully elaborated (known length) PortArray
-    def Array(selfClass: String, count: Int, port: elem.PortLike): elem.PortLike =
+    def Array(selfClass: String, elements: Seq[String], port: elem.PortLike): elem.PortLike =
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
         selfClass=Some(LibraryPath(selfClass)),
         contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
-          (0 until count).map { i =>
-            i.toString -> port
+          elements.map { element =>
+            element -> port
           }.toMap
         ))
       )))

@@ -20,7 +20,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     blocks = Seq(
       Block.Block("sourceBlock",  // array elements source
         ports = Map(
-          "port" -> Port.Array("sourcePort", 3, Port.Library("sinkPort")),
+          "port" -> Port.Array("sourcePort", Seq("a", "b", "c"), Port.Library("sinkPort")),
         )
       ),
       Block.Block("sinkBlock",  // array elements sink
@@ -56,28 +56,28 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = Map(  // expected constraints in the top-level design
-      "sourceConnect.0" -> Constraint.Connected(Ref("source", "port", "0"), Ref("link", "source", "0")),
-      "sourceConnect.1" -> Constraint.Connected(Ref("source", "port", "1"), Ref("link", "source", "1")),
-      "sourceConnect.2" -> Constraint.Connected(Ref("source", "port", "2"), Ref("link", "source", "2")),
+      "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
+      "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
+      "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
 
-      "sink0Connect.0" -> Constraint.Connected(Ref("sink0", "port", "0"), Ref("link", "sinks", "0", "0")),
-      "sink0Connect.1" -> Constraint.Connected(Ref("sink0", "port", "1"), Ref("link", "sinks", "0", "1")),
-      "sink0Connect.2" -> Constraint.Connected(Ref("sink0", "port", "2"), Ref("link", "sinks", "0", "2")),
-      "sink1Connect.0" -> Constraint.Connected(Ref("sink1", "port", "0"), Ref("link", "sinks", "1", "0")),
-      "sink1Connect.1" -> Constraint.Connected(Ref("sink1", "port", "1"), Ref("link", "sinks", "1", "1")),
-      "sink1Connect.2" -> Constraint.Connected(Ref("sink1", "port", "2"), Ref("link", "sinks", "1", "2")),
+      "sink0Connect.a" -> Constraint.Connected(Ref("sink0", "port", "a"), Ref("link", "sinks", "0", "a")),
+      "sink0Connect.b" -> Constraint.Connected(Ref("sink0", "port", "b"), Ref("link", "sinks", "0", "b")),
+      "sink0Connect.c" -> Constraint.Connected(Ref("sink0", "port", "c"), Ref("link", "sinks", "0", "c")),
+      "sink1Connect.a" -> Constraint.Connected(Ref("sink1", "port", "a"), Ref("link", "sinks", "1", "a")),
+      "sink1Connect.b" -> Constraint.Connected(Ref("sink1", "port", "b"), Ref("link", "sinks", "1", "b")),
+      "sink1Connect.c" -> Constraint.Connected(Ref("sink1", "port", "c"), Ref("link", "sinks", "1", "c")),
     )
     val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
-      "source.0" -> Constraint.Exported(Ref("source", "0"), Ref("0", "source")),
-      "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
-      "source.2" -> Constraint.Exported(Ref("source", "2"), Ref("2", "source")),
+      "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
+      "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
+      "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
 
-      "sinks.0.0" -> Constraint.Exported(Ref("sinks", "0", "0"), Ref("0", "sinks", "0")),
-      "sinks.0.1" -> Constraint.Exported(Ref("sinks", "0", "1"), Ref("1", "sinks", "0")),
-      "sinks.0.2" -> Constraint.Exported(Ref("sinks", "0", "2"), Ref("2", "sinks", "0")),
-      "sinks.1.0" -> Constraint.Exported(Ref("sinks", "1", "0"), Ref("0", "sinks", "1")),
-      "sinks.1.1" -> Constraint.Exported(Ref("sinks", "1", "1"), Ref("1", "sinks", "1")),
-      "sinks.1.2" -> Constraint.Exported(Ref("sinks", "1", "2"), Ref("2", "sinks", "1")),
+      "sinks.0.a" -> Constraint.Exported(Ref("sinks", "0", "a"), Ref("a", "sinks", "0")),
+      "sinks.0.b" -> Constraint.Exported(Ref("sinks", "0", "b"), Ref("b", "sinks", "0")),
+      "sinks.0.c" -> Constraint.Exported(Ref("sinks", "0", "c"), Ref("c", "sinks", "0")),
+      "sinks.1.a" -> Constraint.Exported(Ref("sinks", "1", "a"), Ref("a", "sinks", "1")),
+      "sinks.1.b" -> Constraint.Exported(Ref("sinks", "1", "b"), Ref("b", "sinks", "1")),
+      "sinks.1.c" -> Constraint.Exported(Ref("sinks", "1", "c"), Ref("c", "sinks", "1")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -85,7 +85,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiled.getContents.constraints should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Length) should
         equal(Some(IntValue(3)))
 
@@ -95,23 +95,23 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(IntValue(2)))
     (0 until 2).foreach { sinkIndex =>
       compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Elements) should
-          equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+          equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
       compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex.toString + IndirectStep.Length) should
           equal(Some(IntValue(3)))
     }
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
 
     val linkPb = compiled.getContents.links("link").getArray
     linkPb.constraints should equal(referenceLinkArrayConstraints)
 
-    linkPb.links.keySet should equal(Set("0", "1", "2"))
-    (0 until 3).foreach { elementIndex =>
-      linkPb.links(elementIndex.toString).getLink.getSelfClass should equal(LibraryPath("link"))
-      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
+    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    Seq("a", "b", "c").foreach { elementIndex =>
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
-      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
           equal(Some(IntValue(2)))
     }
   }
@@ -129,14 +129,14 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = Map(  // expected constraints in the top-level design
-      "sourceConnect.0" -> Constraint.Connected(Ref("source", "port", "0"), Ref("link", "source", "0")),
-      "sourceConnect.1" -> Constraint.Connected(Ref("source", "port", "1"), Ref("link", "source", "1")),
-      "sourceConnect.2" -> Constraint.Connected(Ref("source", "port", "2"), Ref("link", "source", "2")),
+      "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
+      "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
+      "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
     )
     val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
-      "source.0" -> Constraint.Exported(Ref("source", "0"), Ref("0", "source")),
-      "source.1" -> Constraint.Exported(Ref("source", "1"), Ref("1", "source")),
-      "source.2" -> Constraint.Exported(Ref("source", "2"), Ref("2", "source")),
+      "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
+      "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
+      "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -144,7 +144,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiled.getContents.constraints should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Length) should
         equal(Some(IntValue(3)))
 
@@ -154,17 +154,17 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(IntValue(0)))
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
 
     val linkPb = compiled.getContents.links("link").getArray
     linkPb.constraints should equal(referenceLinkArrayConstraints)
 
-    linkPb.links.keySet should equal(Set("0", "1", "2"))
-    (0 until 3).foreach { elementIndex =>
-      linkPb.links(elementIndex.toString).getLink.getSelfClass should equal(LibraryPath("link"))
-      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Elements) should
+    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    Seq("a", "b", "c").foreach { elementIndex =>
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq())))
-      compiler.getValue(IndirectDesignPath() + "link" + elementIndex.toString + "sinks" + IndirectStep.Length) should
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
           equal(Some(IntValue(0)))
     }
   }

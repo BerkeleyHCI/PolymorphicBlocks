@@ -32,13 +32,13 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
       Block.Block("concreteSinksBlock",
         superclasses = Seq("baseSinksBlock"),
         ports = Map(
-          "port" -> Port.Array("sinkPort", 2, Port.Library("sinkPort")),
+          "port" -> Port.Array("sinkPort", Seq("0", "1"), Port.Library("sinkPort")),
         )
       ),
       Block.Block("emptySinksBlock",
         superclasses = Seq("baseSinksBlock"),
         ports = Map(
-          "port" -> Port.Array("sinkPort", 0, Port.Library("sinkPort")),
+          "port" -> Port.Array("sinkPort", Seq(), Port.Library("sinkPort")),
         )
       ),
       Block.Block("concreteWrapperBlock",
