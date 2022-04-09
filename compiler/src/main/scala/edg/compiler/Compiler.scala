@@ -571,10 +571,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elem.Link()
     }
     val model = new wir.Link(modelPb)
-
-    model.getPorts.foreach { case (portName, port) =>
-      elaboratePort(path + portName, model, port)
-    }
     array.createFrom(model)
 
     // For all arrays, size ELEMENTS directly from ALLOCATED
@@ -662,7 +658,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   // Note: actual expansion task set on the link side
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
                   elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
+                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
                     expandArrayTask
                   ))
 
@@ -682,7 +678,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                       ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated)
                   ))
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask, Seq(expandArrayTask))
+                  elaboratePending.addNode(resolveConnectedTask, Seq(
+                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
+                    expandArrayTask))
 
                 case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
               }
@@ -701,7 +699,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements)))
+                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
@@ -736,14 +734,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements)))
+                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
@@ -779,14 +776,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 }
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask,
-                  Seq(ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements)) ++
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++
                   expandArrayTasks)
 
               case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements)))
+                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
@@ -801,7 +798,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   // Note: actual expansion task set on the link side
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
                   elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
+                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
                     expandArrayTask))
 
                 case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
@@ -889,14 +886,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements)))
+                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
@@ -1135,9 +1131,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }.toMap
 
-    val portArrayElts = ArrayValue.ExtractText(
-      constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
-    portArrayElts.foreach { index =>
+    val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
+    portArray.getPorts.foreach { case (index, innerPort) =>
       val constraintOption = allocatedIndexToConstraint.get(index).map { constrName =>
         (constrName, parentBlock.getConstraints(constrName))
       }
