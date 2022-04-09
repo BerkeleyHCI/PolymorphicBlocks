@@ -92,6 +92,16 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     }
   }
 
+  // Creates the specified amount of internal links, returning the name and created link.
+  def initLinks(elements: Seq[String]): Map[String, LinkLibrary] = {
+    require(links.isEmpty)
+    elements.map { index =>
+      val created = new LinkLibrary(getModelLibrary)
+      links.update(index, created)
+      (index, created)
+    }.toMap
+  }
+
   // TODO explicit isElaborated flag? instead of inferring?
   override def isElaborated: Boolean = !(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty)
 

@@ -94,9 +94,6 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     compiled.getContents.constraints should equal(referenceConstraints)
 
-    compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
-        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
-
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
     compiler.getValue(IndirectDesignPath() + "link" + "source" + IndirectStep.Length) should
@@ -115,9 +112,16 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "1" + IndirectStep.Length) should
         equal(Some(IntValue(3)))
 
-    compiled.getContents.links("link").getArray.constraints should equal(referenceLinkArrayConstraints)
+    compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))))
 
+    val linkPb = compiled.getContents.links("link").getArray
+    linkPb.links.keySet should equal(Set("0", "1", "2"))
+    linkPb.links("0").getLink.getSelfClass should equal(LibraryPath("link"))
+    linkPb.links("1").getLink.getSelfClass should equal(LibraryPath("link"))
+    linkPb.links("2").getLink.getSelfClass should equal(LibraryPath("link"))
 
+    linkPb.constraints should equal(referenceLinkArrayConstraints)
 
         // TEMPORARILY HERE TO MAKE A INCOMPLETE TEST FAILURE
         val dsv = new DesignStructuralValidate()

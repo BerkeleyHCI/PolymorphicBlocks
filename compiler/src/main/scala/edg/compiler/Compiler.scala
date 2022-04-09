@@ -920,6 +920,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     import edg.ExprBuilder.{Ref, ValueExpr}
     val link = resolve(path).asInstanceOf[wir.LinkArray]
 
+    val linkElements = ArrayValue.ExtractText(
+      constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
+
     val linkPortArrayCounts = link.getModelPorts.collect {
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
@@ -954,6 +957,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // Create internal links
+    link.initLinks(linkElements).foreach { case (createdLinkName, createdLink) =>
+      val innerLinkElaborated = expandLink(path + createdLinkName, createdLink)
+      link.elaborate(createdLinkName, innerLinkElaborated)
+    }
 
     // Create internal connects
 
