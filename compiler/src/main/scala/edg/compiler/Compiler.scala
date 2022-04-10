@@ -1040,7 +1040,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
                 ValueExpr.RefAllocate(ref, None)  // allocate stays intact
               case ValueExpr.RefAllocate(ref, Some(suggestedName)) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref, Some(s"$suggestedName.$index"))  // index tacked onto suggested name
+                ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index"))  // index tacked onto suggested name
             }.connectUpdateRef {
               case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
             }
@@ -1094,7 +1094,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           val elts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect + linkPath.head + IndirectStep.Elements).get)
           suggestedName match {
-            case Some(suggestedName) => elts.map { elt => Some(s"$suggestedName.$elt") }
+            case Some(suggestedName) => elts.map { elt => Some(s"${suggestedName}_$elt") }
             case None => Seq.fill(elts.length)(None)
           }
           // TODO Ref and RefAllocate cases are completely duplicated
@@ -1102,7 +1102,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           val elts = ArrayValue.ExtractText(
             constProp.getValue(record.parent.asIndirect + linkPath.head + IndirectStep.Elements).get)
           suggestedName match {
-            case Some(suggestedName) => elts.map { elt => Some(s"$suggestedName.$elt") }
+            case Some(suggestedName) => elts.map { elt => Some(s"${suggestedName}_$elt") }
             case None => Seq.fill(elts.length)(None)
           }
 
@@ -1158,6 +1158,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr => constr.connectUpdateRef {
         case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
+          require(portElements.contains(suggestedName), s"suggested name $suggestedName not in array $portElements")
           ValueExpr.Ref((record.portPath :+ suggestedName):_*)
         case ValueExpr.RefAllocate(record.portPath, None) =>
           ValueExpr.Ref((record.portPath :+ freeNames.next()):_*)

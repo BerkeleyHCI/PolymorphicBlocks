@@ -320,12 +320,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "source1Connect.a" -> Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
       "source1Connect.b" -> Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
       "source1Connect.c" -> Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
-      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "n0.a"), Ref("link0", "sinks", "0", "a")),
-      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "n0.b"), Ref("link0", "sinks", "0", "b")),
-      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "n0.c"), Ref("link0", "sinks", "0", "c")),
-      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "n1.a"), Ref("link1", "sinks", "0", "a")),
-      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "n1.b"), Ref("link1", "sinks", "0", "b")),
-      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "n1.c"), Ref("link1", "sinks", "0", "c")),
+      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "n0_a"), Ref("link0", "sinks", "0", "a")),
+      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "n0_b"), Ref("link0", "sinks", "0", "b")),
+      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "n0_c"), Ref("link0", "sinks", "0", "c")),
+      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "n1_a"), Ref("link1", "sinks", "0", "a")),
+      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "n1_b"), Ref("link1", "sinks", "0", "b")),
+      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "n1_c"), Ref("link1", "sinks", "0", "c")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -340,11 +340,13 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     // Don't need to test ELEMENTS, that is out of scope - typically would be handled by a generator
     compiler.getValue(IndirectDesignPath() + "sink" + "port" + IndirectStep.Allocated) should
         equal(Some(ArrayValue(Seq(
-          TextValue("n0.a"), TextValue("n0.b"), TextValue("n0.c"),
-          TextValue("n1.a"), TextValue("n1.b"), TextValue("n1.c")
+          TextValue("n0_a"), TextValue("n0_b"), TextValue("n0_c"),
+          TextValue("n1_a"), TextValue("n1_b"), TextValue("n1_c")
         ))))
+    compiled.getContents.blocks("sink").getHierarchy.ports("port").getArray.getPorts.ports.keySet should equal(
+      Set("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c"))
 
-    Seq("n0.a", "n0.b", "n0.c", "n1.a", "n1.b", "n1.c").foreach { elementIndex =>
+    Seq("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
     }
