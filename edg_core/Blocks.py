@@ -73,7 +73,7 @@ class NewConnectedPorts():
       ports_vectors = set([isinstance(port, BaseVector) for port in ports])
       ports_link_types = set([self._baseport_leaf_type(port).link_type for port in ports])
       if len(ports_link_types) == 1:
-        port_link_type = ports_link_types.pop()
+        link = ports_link_types.pop()()
       else:
         raise ValueError(f"Ambiguous link {ports_link_types} for connection between {ports}")
 
@@ -84,9 +84,13 @@ class NewConnectedPorts():
       else:
         raise ValueError(f"Can't connect vector and non-vector types without flattening")
 
+      # TODO HANDLE BRIDGING
+
       ports_by_type: Dict[Type[Port], List[BasePort]] = {}
       for port in ports:
         ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
+
+      for (port_type, port_type_ports) in ports_by_type.items():  # assign to link ports
 
 
 
