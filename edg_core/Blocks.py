@@ -24,16 +24,13 @@ class NewConnectedPorts():
   class PortRecord(NamedTuple):  # internal structure for each connected port - TBD add debugging data
     port: BasePort
 
-  class BaseConnection:
-    pass
-
-  class Connection(BaseConnection, NamedTuple):  # link-mediated connection (including bridged ports and inner links)
+  class Connection(NamedTuple):  # link-mediated connection (including bridged ports and inner links)
     link_type: Type[Link]
     is_link_array: bool
     bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
     link_connects: List[Tuple[BasePort, edgir.LocalPath]]  # internal block port <> link port
 
-  class Export(BaseConnection, NamedTuple):  # direct export (1:1, single or vector)
+  class Export(NamedTuple):  # direct export (1:1, single or vector)
     is_array: bool
     external_port: BasePort
     internal_port: BasePort
@@ -44,18 +41,19 @@ class NewConnectedPorts():
     self.flatten = flatten  # vectors are treated as connected to a link
 
   def add_ports(self, ports: Iterable[BasePort]):
-    self.ports.append([NewConnectedPorts.PortRecord(port) for port in ports])
+    for port in ports:
+      self.ports.append(NewConnectedPorts.PortRecord(port))
 
   @staticmethod
-  def _link_type_of(port: BasePort) -> Type[Link]:
+  def _baseport_leaf_type(port: BasePort) -> Port:
     if isinstance(port, Port):
-      return port.link_type
+      return port
     elif isinstance(port, BaseVector):
-      return NewConnectedPorts._link_type_of(port._get_elt_sample())
+      return NewConnectedPorts._baseport_leaf_type(port._get_elt_sample())
     else:
       raise ValueError(f"Unknown BasePort subtype {port}")
 
-  def make_connection(self, parent: BaseBlock) -> Optional[BaseConnection]:
+  def make_connection(self, parent: BaseBlock) -> Optional[Union[Connection, Export]]:
     ports = [port_record.port for port_record in self.ports]
 
     if len(ports) == 1 and not (self.flatten and isinstance(ports[0], BaseVector)):
@@ -73,10 +71,11 @@ class NewConnectedPorts():
 
     else:  # link-mediated case
       ports_vectors = set([isinstance(port, BaseVector) for port in ports])
-      ports_link_types = set([self._link_type_of(port) for port in ports])
-      if len(ports_link_types) != 1:
+      ports_link_types = set([self._baseport_leaf_type(port).link_type for port in ports])
+      if len(ports_link_types) == 1:
+        port_link_type = ports_link_types.pop()
+      else:
         raise ValueError(f"Ambiguous link {ports_link_types} for connection between {ports}")
-      port_link_type = ports_link_types.pop()
 
       if self.flatten or ports_vectors == {False}:  # element connect case
         is_link_array = False
@@ -85,6 +84,9 @@ class NewConnectedPorts():
       else:
         raise ValueError(f"Can't connect vector and non-vector types without flattening")
 
+      ports_by_type: Dict[Type[Port], List[BasePort]] = {}
+      for port in ports:
+        ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
 
 
 
