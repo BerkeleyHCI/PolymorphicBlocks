@@ -165,10 +165,6 @@ object CompilerError {
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
-  // TODO better debug toggle
-//  protected def debug(msg: => String): Unit = println(msg)
-  protected def debug(msg: => String): Unit = { }
-
   def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
     path.getTarget.getName
   }
@@ -344,7 +340,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val instantiated = port match {
       case port: wir.PortLibrary =>
         val libraryPath = port.target
-        debug(s"Elaborate port @ $path")
 
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
@@ -688,13 +683,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                require(arrayConnects.isEmpty)
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(setAllocatedTask, Seq())
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                val expandArrayConnectTasks = arrayConnects.map { case (allocated, constrName, constr) =>
+                  ElaborateRecord.ExpandArrayConnections(path, constrName)
+                }
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false)
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++ expandArrayConnectTasks :+ setAllocatedTask)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
               case PortConnections.NotConnected =>
@@ -768,7 +765,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 elaboratePending.addNode(setAllocatedTask, Seq(
                   ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)))
                 val resolveAllocateTask = ElaborateRecord.RewriteArrayAllocate(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveAllocateTask, Seq())
+                elaboratePending.addNode(resolveAllocateTask, Seq(setAllocatedTask))
                 val expandArrayTasks = arrayConnects.map { arrayConnect =>
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, arrayConnect._2)
                   elaboratePending.addNode(expandArrayTask, Seq(
@@ -1069,6 +1066,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case ValueExpr.RefAllocate(record.portPath, index) => index
       }
     }
+    println(record.portPath)
     val arrayIndices = record.arrayConstraintNames.map { constrName =>
       parentBlock.getConstraints(constrName).expr
     }.flatMap {
@@ -1088,7 +1086,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case expr.ValueExpr.Expr.ConnectedArray(connected) => (connected.getBlockPort, connected.getLinkPort) match {
         case (_, ValueExpr.RefAllocate(record.portPath, None)) =>  // link-side of array-connect treated as a unit
           Seq(None)
-        case _ => throw new IllegalArgumentException
+
+        case (ValueExpr.RefAllocate(record.portPath, suggestedName), ValueExpr.RefAllocate(linkPath, _)) =>
+          val elts = ArrayValue.ExtractText(
+            constProp.getValue(record.parent.asIndirect + linkPath.head + IndirectStep.Elements).get)
+          suggestedName match {
+            case Some(suggestedName) => elts.map { elt => Some(s"$suggestedName.$elt") }
+            case None => Seq.fill(elts.length)(None)
+          }
+          // TODO Ref and RefAllocate cases are completely duplicated
+        case (ValueExpr.RefAllocate(record.portPath, suggestedName), ValueExpr.Ref(linkPath)) =>
+          val elts = ArrayValue.ExtractText(
+            constProp.getValue(record.parent.asIndirect + linkPath.head + IndirectStep.Elements).get)
+          suggestedName match {
+            case Some(suggestedName) => elts.map { elt => Some(s"$suggestedName.$elt") }
+            case None => Seq.fill(elts.length)(None)
+          }
       }
       case _ => throw new IllegalArgumentException
     }
@@ -1193,19 +1206,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         onElaborate(elaborateRecord)
         elaborateRecord match {
           case elaborateRecord@ElaborateRecord.Block(blockPath) =>
-            debug(s"Elaborate block @ $blockPath")
             elaborateBlock(blockPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.Link(linkPath) =>
-            debug(s"Elaborate link @ $linkPath")
             elaborateLink(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
           case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
-            debug(s"Elaborate link array @ $linkPath")
             elaborateLinkArray(linkPath)
             elaboratePending.setValue(elaborateRecord, None)
           case connect: ElaborateRecord.Connect =>
-            debug(s"Elaborate connect $connect")
             elaborateConnect(connect)
             elaboratePending.setValue(elaborateRecord, None)
 
