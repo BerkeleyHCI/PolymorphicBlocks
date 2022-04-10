@@ -49,30 +49,34 @@ object ElaborateRecord {
   // Defines the ALLOCATED for the port array, by aggregating all the connected ports.
   // Requires: ELEMENTS of all incoming connections defined.
   case class ResolveArrayAllocated(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                   arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+                                   arrayConstraintNames: Seq[String], portIsLink: Boolean)
+      extends ElaborateTask with ElaborateDependency
 
   // For array connections (to link arrays) only, rewrites constraints to replace the ALLOCATE with a concrete
   // port name, automatically allocated.
   // Requires: array-connections expanded, port's ELEMENTS defined.
   case class RewriteArrayAllocate(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                  arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+                                  arrayConstraintNames: Seq[String], portIsLink: Boolean)
+      extends ElaborateTask with ElaborateDependency
 
   // Expands ArrayConnect and ArrayExport connections to individual Connect and Export operations.
   // ALLOCATEs are preserved as-is, meaning those will be allocated on an individual (instead of array) basis.
   // Requires: port's ELEMENTS defined.
-  case class ExpandArrayConnections(parent: DesignPath, constraintName: String) extends ElaborateTask
-      with ElaborateDependency
+  case class ExpandArrayConnections(parent: DesignPath, constraintName: String)
+      extends ElaborateTask with ElaborateDependency
 
   // Once lowered to single connects, rewrites constraints to replace the ALLOCATE with a concrete port name,
   // allocated from the port's ELEMENTS.
   // Requires: array-connections expanded, port's ELEMENTS defined.
   case class RewriteConnectAllocate(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                    arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+                                    arrayConstraintNames: Seq[String], portIsLink: Boolean)
+      extends ElaborateTask with ElaborateDependency
 
   // Sets a PortArray's IS_CONNECTED based off all the connected constraints.
   // Requires: array-connections expanded, ALLOCATE replaced with concrete indices
   case class ResolveArrayIsConnected(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                     arrayConstraintNames: Seq[String], portIsLink: Boolean) extends ElaborateTask
+                                     arrayConstraintNames: Seq[String], portIsLink: Boolean)
+      extends ElaborateTask
 }
 
 
@@ -1101,6 +1105,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             case Some(suggestedName) => elts.map { elt => Some(s"$suggestedName.$elt") }
             case None => Seq.fill(elts.length)(None)
           }
+
+        case _ => throw new IllegalArgumentException
       }
       case _ => throw new IllegalArgumentException
     }
