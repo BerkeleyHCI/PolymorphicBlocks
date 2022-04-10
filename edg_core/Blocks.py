@@ -20,6 +20,61 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
+class NewConnectedPorts():
+  class PortRecord(NamedTuple):  # internal structure for each connected port - TBD add debugging data
+    port: BasePort
+
+  class BaseConnection:
+    pass
+
+  class Connection(BaseConnection, NamedTuple):  # link-mediated connection (including bridged ports and inner links)
+    link_type: Type[Link]
+    is_vector: bool
+    bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
+    link_connects: List[Tuple[BasePort, edgir.LocalPath]]  # internal block port <> link port
+
+  class Export(BaseConnection, NamedTuple):  # direct export (1:1, single or vector)
+    is_vector: bool
+    external_port: BasePort
+    internal_port: BasePort
+
+  """A data structure that tracks connected ports."""
+  def __init__(self, flatten: bool) -> None:
+    self.ports: List[NewConnectedPorts.PortRecord] = []
+    self.flatten = flatten  # vectors are treated as connected to a link
+
+  def add_ports(self, ports: Iterable[BasePort]):
+    self.ports.append([NewConnectedPorts.PortRecord(port) for port in ports])
+
+  @staticmethod
+  def _link_type_of(port: BasePort) -> Type[Link]:
+    if isinstance(port, Port):
+      return port.link_type
+    elif isinstance(port, BaseVector):
+      return NewConnectedPorts._link_type_of(port._get_elt_sample())
+    else:
+      raise ValueError(f"Unknown BasePort subtype {port}")
+
+  def make_connection(self, parent: BaseBlock) -> Optional[BaseConnection]:
+    ports = [port_record.port for port_record in self.ports]
+
+    if len(ports) == 1 and not (self.flatten and isinstance(ports[0], BaseVector)):
+      return None  # not a real connection, eg could be a name assignment
+
+    elif len(ports) == 2:  # exported case
+      if ports[0]._type_of() == ports[1]._type_of() and (
+          (ports[0]._block_parent() is parent and not ports[1]._block_parent() is parent) or
+          (ports[1]._block_parent() is parent and not ports[0]._block_parent() is parent)):
+        is_vector = isinstance(ports[0], BaseVector)
+        if ports[0]._block_parent() is parent:
+          return NewConnectedPorts.Export(is_vector, ports[0], ports[1])
+        else:
+          return NewConnectedPorts.Export(is_vector, ports[1], ports[0])
+
+    else:  # link-mediated case
+      pass
+
+
 class ConnectedPorts():
   """Internal data structure to track ports which are connected, infer a link, and incrementally assign connected ports
   to link ports"""
