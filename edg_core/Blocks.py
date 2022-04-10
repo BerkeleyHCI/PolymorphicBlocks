@@ -29,12 +29,12 @@ class NewConnectedPorts():
 
   class Connection(BaseConnection, NamedTuple):  # link-mediated connection (including bridged ports and inner links)
     link_type: Type[Link]
-    is_vector: bool
+    is_link_array: bool
     bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
     link_connects: List[Tuple[BasePort, edgir.LocalPath]]  # internal block port <> link port
 
   class Export(BaseConnection, NamedTuple):  # direct export (1:1, single or vector)
-    is_vector: bool
+    is_array: bool
     external_port: BasePort
     internal_port: BasePort
 
@@ -72,7 +72,20 @@ class NewConnectedPorts():
           return NewConnectedPorts.Export(is_vector, ports[1], ports[0])
 
     else:  # link-mediated case
-      pass
+      ports_vectors = set([isinstance(port, BaseVector) for port in ports])
+      ports_link_types = set([self._link_type_of(port) for port in ports])
+      if len(ports_link_types) != 1:
+        raise ValueError(f"Ambiguous link {ports_link_types} for connection between {ports}")
+      port_link_type = ports_link_types.pop()
+
+      if self.flatten or ports_vectors == {False}:  # element connect case
+        is_link_array = False
+      elif ports_vectors == {True}:  # vector connect case
+        is_link_array = True
+      else:
+        raise ValueError(f"Can't connect vector and non-vector types without flattening")
+
+
 
 
 class ConnectedPorts():
