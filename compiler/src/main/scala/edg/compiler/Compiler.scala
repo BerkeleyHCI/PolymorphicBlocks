@@ -170,7 +170,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Working design tree data structure
-  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
+  private val root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
   def resolveLink(path: DesignPath): wir.LinkLike = root.resolve(path.steps).asInstanceOf[wir.LinkLike]
@@ -1066,7 +1066,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case ValueExpr.RefAllocate(record.portPath, index) => index
       }
     }
-    println(record.portPath)
     val arrayIndices = record.arrayConstraintNames.map { constrName =>
       parentBlock.getConstraints(constrName).expr
     }.flatMap {
