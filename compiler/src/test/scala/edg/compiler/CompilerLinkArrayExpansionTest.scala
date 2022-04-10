@@ -20,7 +20,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     blocks = Seq(
       Block.Block("sourceBlock",  // array elements source
         ports = Map(
-          "port" -> Port.Array("sourcePort", Seq("a", "b", "c"), Port.Library("sinkPort")),
+          "port" -> Port.Array("sourcePort", Seq("a", "b", "c"), Port.Library("sourcePort")),
         ),
         constraints = Map(
           "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(1)),
@@ -30,7 +30,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       Block.Block("sinkBlock",  // array elements sink
         ports = Map(
-          "port" -> Port.Array("sinkPort"),
+          "port" -> Port.Array("sinkPort", Seq("a", "b", "c"), Port.Library("sinkPort")),
         ),
         constraints = Map(
           "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(11)),
