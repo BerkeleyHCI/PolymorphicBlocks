@@ -931,7 +931,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
         constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size))
-        elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None)  // resolved in initPortsFromModel
+        elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None) // resolved in initPortsFromModel
         portName -> portElements
     }
 
@@ -972,8 +972,32 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     link.initConstraints(linkElements, linkPortArrayElements)
 
     // Resolve connections
+    import edg.ExprBuilder.ValueExpr
     link.getConstraints.foreach { case (constrName, constr) =>
       processConnectedConstraint(path, constrName, constr, true)
+    }
+
+    // Resolve is-connected - need to sort by inner link's outermost port
+    link.getConstraints.toSeq.map { case (constrName, constr) =>
+      val ValueExpr.Ref(portPostfix) = constr.getExported.getInternalBlockPort
+      link.getModelPorts(portPostfix(1)) match {
+        case _: wir.PortArray =>
+          (portPostfix.init, (constrName, constr)) // drop the array index
+        case _ => // non-array like Port and Bundle
+          (portPostfix, (constrName, constr))
+      }
+    }.groupBy(_._1).foreach { case (portPostfix, elts) =>  // actually resolve (delayed if array)
+      val constrNamesConstrs = elts.map { _._2 }
+      link.getModelPorts(portPostfix(1)) match {
+        case _: wir.PortArray =>
+          val constrNames = constrNamesConstrs.map { case (constrName, constr) => constrName }
+          val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, Seq(), false)
+          elaboratePending.addNode(resolveConnectedTask, Seq(
+            ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+        case _ => // non-array like Port and Bundle
+          val Seq((constrName, constr)) = constrNamesConstrs  // can only be one element
+          resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+      }
     }
   }
 
