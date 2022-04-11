@@ -249,7 +249,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
       elif isinstance(connect_elts, NewConnectedPorts.Connection):  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
-        pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
+
+        if connect_elts.is_link_array:
+          pb.links[name].array.self_class.target.name = connect_elts.link_type._static_def_name()
+        else:
+          pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
         self._namespace_order.append(f"{name}")
 
         for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
