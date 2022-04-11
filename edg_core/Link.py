@@ -4,7 +4,7 @@ from typing import *
 
 import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock
+from .Blocks import BaseBlock, NewConnectedPorts
 from .Core import Refable, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
@@ -48,13 +48,16 @@ class Link(BaseBlock[edgir.Link]):
       self._links_order[str(len(self._links_order))] = f"{name}"
 
       connect_elts = connect.make_connection(self, True)
-      assert connect_elts is not None and connect_elts.link_type is not None, "bad connect definition in link"
+      assert isinstance(connect_elts, NewConnectedPorts.Connection)
 
       link_path = edgir.localpath_concat(edgir.LocalPath(), name)
       pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
 
+      assert not connect_elts.is_link_array
+
       for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
-        if isinstance(self_port, DerivedVector):
+        if isinstance(self_port, BaseVector):
+          assert isinstance(self_port, DerivedVector)
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.path.steps.add().name = \
             self_port.target._name_from(self_port.base._get_elt_sample())

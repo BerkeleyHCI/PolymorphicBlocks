@@ -37,12 +37,12 @@ class NewConnectedPorts():
 
   """A data structure that tracks connected ports."""
   def __init__(self, flatten: bool) -> None:
-    self.ports: List[NewConnectedPorts.PortRecord] = []
+    self.connected: List[NewConnectedPorts.PortRecord] = []
     self.flatten = flatten  # vectors are treated as connected to a link
 
   def add_ports(self, ports: Iterable[BasePort]):
     for port in ports:
-      self.ports.append(NewConnectedPorts.PortRecord(port))
+      self.connected.append(NewConnectedPorts.PortRecord(port))
 
   @staticmethod
   def _baseport_leaf_type(port: BasePort) -> Port:
@@ -53,13 +53,17 @@ class NewConnectedPorts():
     else:
       raise ValueError(f"Unknown BasePort subtype {port}")
 
+  def ports(self) -> Iterable[BasePort]:
+    return [port_record.port for port_record in self.connected]
+
   def contains(self, port: BasePort) -> bool:
     # TODO maybe we can maintain a parallel Set data structure to make this faster
-    return True in [port is port_record.port for port_record in self.ports]
+    return True in [port is port_record.port for port_record in self.connected]
 
   def make_connection(self, parent: BaseBlock, force_flatten: bool = False) -> Optional[Union[Connection, Export]]:
     from .HierarchyBlock import Block
-    ports = [port_record.port for port_record in self.ports]
+    from .Link import Link
+    ports = [port_record.port for port_record in self.connected]
 
     if force_flatten:  # TODO remove this hax
       self.flatten = True
@@ -128,7 +132,8 @@ class NewConnectedPorts():
           for port in port_type_ports:
             link_facing_connections.append((port, link_ref_map[link_port]))
         else:  # single port, can only connect one thing
-          assert len(port_type_ports) == 1 and (is_link_array or not isinstance(port_type_ports[0], Vector))
+          assert len(port_type_ports) == 1 and (is_link_array or not isinstance(port_type_ports[0], Vector)), \
+              f"attempted multiple connect {port_type_ports} to non-array {link_port}"
           link_facing_connections.append((port_type_ports[0], link_ref_map[link_port]))
       link_facing_connections_dict = IdentityDict(link_facing_connections)
 
@@ -140,7 +145,7 @@ class NewConnectedPorts():
           bridged_connects.append((port, link_facing_connections_dict[bridged_ports[port]]))
         else:
           link_connects.append((port, link_facing_connections_dict[port]))
-      return NewConnectedPorts.Connection(link_type, is_link_array, bridged_connects, link)
+      return NewConnectedPorts.Connection(link_type, is_link_array, bridged_connects, link_connects)
 
 
 

@@ -237,27 +237,24 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       connect_elts = connect.make_connection(self)
       if connect_elts is None:  # single port net - effectively discard
         pass
-      elif connect_elts.link_type is None:  # generate direct export
-        exterior_port = connect_elts.bridged_connects[0][0]
-        interior_port = connect_elts.direct_connects[0][0]
-        assert exterior_port._type_of() == interior_port._type_of()
-        if isinstance(exterior_port, Vector):  # TODO more principled port-array connection
-          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
-          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
-        elif isinstance(exterior_port, Port):
-          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
-          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
-        else:
-          raise NotImplementedError(f"unknown exported port type {exterior_port}")
-        self._namespace_order.append(f"(conn){name}")
-      else:  # generate link
-        link_path = edgir.localpath_concat(edgir.LocalPath(), name)
 
-        self._namespace_order.append(f"{name}")
+      elif isinstance(connect_elts, NewConnectedPorts.Export):  # generate direct export
+        if connect_elts.is_array:
+          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
+        else:
+          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
+        self._namespace_order.append(f"(conn){name}")
+
+      elif isinstance(connect_elts, NewConnectedPorts.Connection):  # generate link
+        link_path = edgir.localpath_concat(edgir.LocalPath(), name)
         pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
+        self._namespace_order.append(f"{name}")
 
         for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
           assert isinstance(self_port, Port)
+          assert not connect_elts.is_link_array, "bridged arrays not supported"
           assert self_port.bridge_type is not None
 
           port_name = self_port._name_from(self)
@@ -273,10 +270,16 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           pb.constraints[f"(conn){name}_b{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
           self._namespace_order.append(f"(conn){name}_b{idx}")
 
-        for idx, (subelt_port, link_port_path) in enumerate(connect_elts.direct_connects):
-          pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
-          pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+        for idx, (subelt_port, link_port_path) in enumerate(connect_elts.link_connects):
+          if connect_elts.is_link_array:
+            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.block_port.ref.CopyFrom(ref_map[subelt_port])
+            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+          else:
+            pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
+            pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
           self._namespace_order.append(f"(conn){name}_d{idx}")
+      else:
+        raise ValueError("unknown connect type")
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
@@ -297,7 +300,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     """Returns an IdentitySet of all ports (boundary and interior) involved in a connect or export."""
     rtn = IdentitySet[BasePort]()
     for name, connect in self._connects.items_ordered():
-      rtn.update(connect.ports)
+      rtn.update(connect.ports())
     return rtn
 
   # TODO make this non-overriding?
