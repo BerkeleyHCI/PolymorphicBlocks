@@ -54,7 +54,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'source'
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'source'
-    expected_conn.connectedArray.block_port.ref.steps.add().name = 'source'
+    expected_conn.connectedArray.block_port.ref.steps.add().name = 'sources'
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -62,7 +62,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink1'
-    expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connectedArray.block_port.ref.steps.add().name = 'sinks'
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -70,5 +70,5 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink2'
-    expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink'
+    expected_conn.connectedArray.block_port.ref.steps.add().name = 'sinks'
     self.assertIn(expected_conn, self.pb.constraints.values())
