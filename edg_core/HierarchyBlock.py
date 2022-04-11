@@ -5,7 +5,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, ConnectedPorts
+from .Blocks import BaseBlock, ConnectedPorts, NewConnectedPorts
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -157,7 +157,7 @@ class ChainConnect:
   """Return type of chain connect operation, that can't be used in EDG operations except assignment to instance
   variable for naming.
   """
-  def __init__(self, blocks: List[Block], links: List[ConnectedPorts]):
+  def __init__(self, blocks: List[Block], links: List[NewConnectedPorts]):
     self.blocks = blocks
     self.links = links
 
@@ -217,17 +217,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     ref_map = self._get_ref_map(edgir.LocalPath())
 
-    # opportunistic check in the frontend that all internal ports marked connected are connected
-    all_connected_ports = IdentitySet[BasePort]()
-    for name, connect in self._connects.items():
-      if len(connect.ports) > 1:
-        all_connected_ports.update(connect.ports)
-
     for name, block in self._blocks.items():
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
 
     # actually generate the links and connects
-    link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
+    link_chain_names = IdentityDict[NewConnectedPorts, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
     for name, chain in self._chains.items_ordered():
       for i, connect in enumerate(chain.links):
@@ -240,7 +234,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         else:
           name = link_chain_names[connect][0]  # arbitrarily pick the first one for now, TODO disambiguate?
 
-      connect_elts = connect.generate_connections()
+      connect_elts = connect.make_connection(self)
       if connect_elts is None:  # single port net - effectively discard
         pass
       elif connect_elts.link_type is None:  # generate direct export

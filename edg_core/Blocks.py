@@ -53,9 +53,16 @@ class NewConnectedPorts():
     else:
       raise ValueError(f"Unknown BasePort subtype {port}")
 
-  def make_connection(self, parent: BaseBlock) -> Optional[Union[Connection, Export]]:
+  def contains(self, port: BasePort) -> bool:
+    # TODO maybe we can maintain a parallel Set data structure to make this faster
+    return True in [port is port_record.port for port_record in self.ports]
+
+  def make_connection(self, parent: BaseBlock, force_flatten: bool = False) -> Optional[Union[Connection, Export]]:
     from .HierarchyBlock import Block
     ports = [port_record.port for port_record in self.ports]
+
+    if force_flatten:  # TODO remove this hax
+      self.flatten = True
 
     if len(ports) == 1 and not (self.flatten and isinstance(ports[0], BaseVector)):
       return None  # not a real connection, eg could be a name assignment
@@ -325,7 +332,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
-    self._connects = self.manager.new_dict(ConnectedPorts, anon_prefix='anon_link')
+    self._connects = self.manager.new_dict(NewConnectedPorts, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
     self._name = StringExpr()._bind(NameBinding(self))
@@ -563,25 +570,35 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
-  def connect(self, *ports: BasePort) -> ConnectedPorts:
-    for port in ports:
-      if not isinstance(port, BasePort):
-        raise TypeError(f"param to connect(...) must be BasePort, got {port} of type {type(port)}")
+  def connect(self, *connects: Union[BasePort, NewConnectedPorts]) -> NewConnectedPorts:
+    for connect in connects:
+      if not isinstance(connect, (BasePort, NewConnectedPorts)):
+        raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
 
-    existing_connect: Optional[ConnectedPorts] = None
-    for connect in self._connects.all_values_temp():
-      for port in ports:
-        if port in connect.ports:
-          assert existing_connect is None, "TODO implement net join"
-          existing_connect = connect
+    connects_ports = [connect for connect in connects if isinstance(connect, BasePort)]
+    connects_connects = [connect for connect in connects if isinstance(connect, NewConnectedPorts)]
 
-    if existing_connect is None:
-      existing_connect = ConnectedPorts(self)
-      self._connects.register(existing_connect)
+    connects_ports_new = []
+    connects_ports_connects = []
+    for port in connects_ports:
+      port_connects = [connect for connect in self._connects.all_values_temp() if connect.contains(port)]
+      if not port_connects:
+        connects_ports_new.append(port)
+      else:
+        connects_ports_connects.extend(port_connects)
 
-    existing_connect.add_ports(ports)
+    existing_connects = connects_connects + connects_ports_connects
+    if len(existing_connects) == 1:
+      connect = existing_connects[0]
+    elif not existing_connects:
+      connect = NewConnectedPorts(False)
+      self._connects.register(connect)
+    else:  # more than 1 existing connect
+      raise ValueError("TODO implement net join")
 
-    return existing_connect
+    connect.add_ports(connects_ports_new)
+
+    return connect
 
   def ref_to_proto(self) -> str:
     return self.__class__.__module__ + "." + self.__class__.__name__

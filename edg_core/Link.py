@@ -47,7 +47,7 @@ class Link(BaseBlock[edgir.Link]):
     for name, connect in self._connects.items_ordered():
       self._links_order[str(len(self._links_order))] = f"{name}"
 
-      connect_elts = connect.generate_connections()
+      connect_elts = connect.make_connection(self, True)
       assert connect_elts is not None and connect_elts.link_type is not None, "bad connect definition in link"
 
       link_path = edgir.localpath_concat(edgir.LocalPath(), name)
