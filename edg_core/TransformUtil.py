@@ -149,6 +149,9 @@ class Transform():
   def visit_link(self, context: TransformContext, link: edgir.Link) -> None:
     pass
 
+  def visit_linkarray(self, context: TransformContext, link: edgir.LinkArray) -> None:
+    pass
+
   # The visit_*like allows changing the "type", eg lib -> instantiated h-block
   def visit_blocklike(self, context: TransformContext, block: edgir.BlockLike) -> None:
     pass
@@ -230,6 +233,18 @@ class Transform():
         self._traverse_portlike(context.append_port(name), port)
 
       for name, link in elt.link.links.items():
+        self._traverse_linklike(context.append_link(name), link)
+    elif elt.HasField('array'):
+      try:
+        self.visit_linkarray(context, elt.array)
+      except Exception as e:
+        raise type(e)(f"(while visiting LinkArray at {context}) " + str(e)) \
+          .with_traceback(sys.exc_info()[2])
+
+      for name, port in elt.array.ports.items():
+        self._traverse_portlike(context.append_port(name), port)
+
+      for name, link in elt.array.links.items():
         self._traverse_linklike(context.append_link(name), link)
     else:
       raise ValueError(f"_traverse_linklike encountered unknown type {elt} at {context}")
