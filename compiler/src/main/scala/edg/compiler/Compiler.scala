@@ -790,7 +790,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
               case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
             }
-          case _ =>
+          case _ =>  // non-array, eg Port or Bundle
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
               case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
                 case expr.ValueExpr.Expr.ConnectedArray(connected) =>
@@ -807,8 +807,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
               }
 
-              case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
-                resolvePortConnectivity(path, portPostfix, None)
+              case PortConnections.NotConnected =>
+                // ignored - not-connected-ness will be forwarded
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }

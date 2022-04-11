@@ -151,6 +151,8 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(IntValue(paramValue)))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + "param") should
           equal(Some(IntValue(paramValue)))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(true)))
     }
 
     Seq("0", "1").foreach { sinkIndex =>
@@ -159,17 +161,23 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
             equal(Some(IntValue(paramValue)))
         compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + "param") should
             equal(Some(IntValue(paramValue)))
+        compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + IndirectStep.IsConnected) should
+            equal(Some(BooleanValue(true)))
       }
     }
 
     Seq("a", "b", "c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
+      compiler.getValue(IndirectDesignPath() + s"source" + "port" + elementIndex + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(true)))
     }
     Seq("0", "1").foreach { sinkIndex =>
       Seq("a", "b", "c").foreach { elementIndex =>
         compiler.getValue(IndirectDesignPath() + s"sink$sinkIndex" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
             equal(Some(IntValue(-1)))
+        compiler.getValue(IndirectDesignPath() + s"sink$sinkIndex" + "port" + elementIndex + IndirectStep.IsConnected) should
+            equal(Some(BooleanValue(true)))
       }
     }
   }
@@ -249,7 +257,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         "link" -> Link.Array("link"),
       ),
       constraints = Map(
-        "sinkConnect" -> Constraint.ConnectedArray(Ref("sink", "port"), Ref.Allocate(Ref("link", "sink"))),
+        "sinkConnect" -> Constraint.ConnectedArray(Ref("sink", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
     val referenceConstraints = Map(  // expected constraints in the top-level design
@@ -258,6 +266,10 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "sinkConnect.c" -> Constraint.Connected(Ref("sink", "port", "c"), Ref("link", "sinks", "0", "c")),
     )
     val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+      "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),  // always generated, even if NC
+      "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
+      "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
+
       "sinks.0.a" -> Constraint.Exported(Ref("sinks", "0", "a"), Ref("a", "sinks", "0")),
       "sinks.0.b" -> Constraint.Exported(Ref("sinks", "0", "b"), Ref("b", "sinks", "0")),
       "sinks.0.c" -> Constraint.Exported(Ref("sinks", "0", "c"), Ref("c", "sinks", "0")),
@@ -303,11 +315,17 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       }
     }
 
-    Seq("0").foreach { sinkIndex =>
-      Seq("a", "b", "c").foreach { elementIndex =>
-        compiler.getValue(IndirectDesignPath() + s"sink$sinkIndex" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
-            equal(Some(IntValue(-1)))
-      }
+    Seq("a", "b", "c").foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
+          equal(Some(IntValue(-1)))
+    }
+
+    // Check disconnected-ness
+    Seq("a", "b", "c").foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(false)))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(false)))
     }
   }
 
