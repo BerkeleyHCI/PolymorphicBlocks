@@ -76,12 +76,9 @@ class Path(NamedTuple):  # internal helper type
       return None, (self, curr)
     elif steps[0].HasField('name'):
       name = steps[0].name
-      if (isinstance(curr, edgir.Port) or isinstance(curr, edgir.Bundle) or
-          isinstance(curr, edgir.HierarchyBlock) or isinstance(curr, edgir.Link)) \
-          and name in curr.params:
+      if isinstance(curr, (edgir.Port, edgir.Bundle, edgir.HierarchyBlock, edgir.Link)) and name in curr.params:
         return self.append_param(name)._follow_partial_steps(steps[1:], curr.params[name])
-      elif (isinstance(curr, edgir.Bundle) or isinstance(curr, edgir.Link) or
-            isinstance(curr, edgir.HierarchyBlock)) and name in curr.ports:
+      elif isinstance(curr, (edgir.Bundle, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)) and name in curr.ports:
         path = self.append_port(name)
         port = edgir.resolve_portlike(curr.ports[name])
         return path._follow_partial_steps(steps[1:], port)
@@ -91,7 +88,7 @@ class Path(NamedTuple):  # internal helper type
         return path._follow_partial_steps(steps[1:], port)
       elif isinstance(curr, edgir.HierarchyBlock) and name in curr.blocks:
         return self.append_block(name)._follow_partial_steps(steps[1:], edgir.resolve_blocklike(curr.blocks[name]))
-      elif (isinstance(curr, edgir.HierarchyBlock) or isinstance(curr, edgir.Link)) and name in curr.links.keys():
+      elif isinstance(curr, (edgir.HierarchyBlock, edgir.Link, edgir.LinkArray)) and name in curr.links.keys():
         return self.append_link(name)._follow_partial_steps(steps[1:], edgir.resolve_linklike(curr.links[name]))
       else:
         return steps, (self, curr)

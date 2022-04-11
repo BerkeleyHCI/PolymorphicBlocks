@@ -5,7 +5,7 @@ from .init_pb2 import ValInit
 from .name_pb2 import *
 from .impl_pb2 import *
 from .ref_pb2 import LibraryPath, LocalPath, LocalStep, CONNECTED_LINK, IS_CONNECTED, LENGTH, ALLOCATED, NAME
-from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkLike
+from .elem_pb2 import Port, PortArray, PortLike, Bundle, HierarchyBlock, BlockLike, Link, LinkArray, LinkLike
 from .schema_pb2 import Library, Design
 from .expr_pb2 import ConnectedExpr, ExportedExpr, ValueExpr, BinaryExpr, \
   BinarySetExpr, UnaryExpr, UnarySetExpr, MapExtractExpr
@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 PortTypes = Union[Port, PortArray, Bundle]
 BlockTypes = HierarchyBlock
 BlockLikeTypes = Union[BlockTypes, Link]
-EltTypes = Union[PortTypes, BlockLikeTypes, ValInit]
+LinkTypes = Union[Link, LinkArray]  # LinkArray is not block-like b/c it doesn't have a class and params
+EltTypes = Union[PortTypes, BlockLikeTypes, LinkArray, ValInit]
 
 
 def resolve_blocklike(block: BlockLike) -> BlockTypes:
@@ -31,9 +32,11 @@ def resolve_blocklike(block: BlockLike) -> BlockTypes:
     raise ValueError(f"bad blocklike {block}")
 
 
-def resolve_linklike(link: LinkLike) -> Link:
+def resolve_linklike(link: LinkLike) -> LinkTypes:
   if link.HasField('link'):
     return link.link
+  if link.HasField('array'):
+    return link.array
   else:
     raise ValueError(f"bad linklike {link}")
 
