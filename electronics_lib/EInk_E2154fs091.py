@@ -120,12 +120,8 @@ class E2154fs091(EInk):
     self.connect(self.boost_sw.source, self.boost_res.a, self.ic.rese)
     self.connect(self.boost_res.b.as_voltage_sink(), self.gnd)
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap0 = imp.Block(DecouplingCapacitor(capacitance=0.11*uFarad(tol=0.2)))
-      self.vdd_cap1 = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+    self.vdd_cap0 = self.Block(DecouplingCapacitor(capacitance=0.11*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+    self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
     decoupling_cap_model = Capacitor(
       capacitance=1*uFarad(tol=0.2), voltage=(0, 16)*Volt

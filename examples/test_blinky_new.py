@@ -120,9 +120,9 @@ class Ref_Lf21215tmr(Block):
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.out = self.Export(self.ic.vout)
 
-    self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
-    self.connect(self.cap.pwr, self.pwr)
-    self.connect(self.cap.gnd, self.gnd)
+    self.cap = self.Block(DecouplingCapacitor(
+      capacitance=0.1*uFarad(tol=0.2)
+    )).connected(self.gnd, self.pwr)
 
     # Or, the more explicit way of writing it
     # self.pwr = self.Port(VoltageSink(), [Power])
@@ -258,11 +258,8 @@ class Ref_Bh1620fvc(Block):
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.vout = self.Export(self.ic.iout)
 
-    self.gc1_pur = self.Block(PullupResistor(resistance=4.7*kOhm(tol=0.1)))
-    self.gc2_pur = self.Block(PullupResistor(resistance=4.7*kOhm(tol=0.1)))
-    self.connect(self.pwr, self.gc2_pur.pwr, self.gc1_pur.pwr)
-    self.connect(self.gc1_pur.io, self.ic.gc1)
-    self.connect(self.gc2_pur.io, self.ic.gc2)
+    self.gc1_pur = self.Block(PullupResistor(resistance=4.7*kOhm(tol=0.1))).connected(self.pwr, self.ic.gc1)
+    self.gc2_pur = self.Block(PullupResistor(resistance=4.7*kOhm(tol=0.1))).connected(self.pwr, self.ic.gc2)
 
     self.require(rload.within((1, 1000)*kOhm))
     self.load = self.Block(Resistor(resistance=rload))

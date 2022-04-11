@@ -77,12 +77,13 @@ class BufferedSupply(PowerConditioner):
                      voltage_out=self.pwr.link().voltage),
                    self.sc_out)
 
-      self.pwr_out_merge = self.Block(MergedVoltageSource())
-      self.connect(self.pwr_out_merge.sink1, self.pwr)
-      self.connect(self.pwr_out_merge.sink2, self.diode.cathode.as_voltage_source(
-        voltage_out=(self.pwr.link().voltage.lower() - self.voltage_drop.upper(), self.pwr.link().voltage.upper())
-      ))  # TODO replace with SeriesVoltageDiode or something that automatically calculates voltage drops?
-      self.connect(self.pwr_out_merge.source, self.pwr_out)
+      self.pwr_out_merge = self.Block(MergedVoltageSource()).connected_from(
+        self.pwr,
+        self.diode.cathode.as_voltage_source(
+          voltage_out=(self.pwr.link().voltage.lower() - self.voltage_drop.upper(), self.pwr.link().voltage.upper())
+        )  # TODO replace with SeriesVoltageDiode or something that automatically calculates voltage drops?
+      )
+      self.connect(self.pwr_out_merge.pwr_out, self.pwr_out)
 
       # TODO check if this tolerance stackup is stacking in the right direction... it might not
       low_sense_volt_diff = self.charging_current.lower() * self.sense_resistance.lower()
@@ -130,15 +131,15 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
       current_draw=self.pwr_out.link().current_drawn
     ))
 
-    self.merge = self.Block(MergedVoltageSource())
-    self.connect(self.pwr_in, self.merge.sink1)
-    self.connect(self.diode.cathode.as_voltage_source(
-      voltage_out=(self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
-                   self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()),
-      current_limits=(-float('inf'), float('inf'))
-    ), self.merge.sink2)
-
-    self.connect(self.merge.source, self.pwr_out)
+    self.merge = self.Block(MergedVoltageSource()).connected_from(
+      self.pwr_in,
+      self.diode.cathode.as_voltage_source(
+        voltage_out=(self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
+                     self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()),
+        current_limits=(-float('inf'), float('inf'))
+      )
+    )
+    self.connect(self.merge.pwr_out, self.pwr_out)
 
 
 class DiodePowerMerge(PowerConditioner, Block):
@@ -166,18 +167,18 @@ class DiodePowerMerge(PowerConditioner, Block):
       reverse_recovery_time=reverse_recovery_time,
     ))
 
-    self.merge = self.Block(MergedVoltageSource())
-    self.connect(self.diode1.cathode.as_voltage_source(
-      voltage_out=(self.pwr_in1.link().voltage.lower() - self.diode1.voltage_drop.upper(),
-                   self.pwr_in1.link().voltage.upper()),
-      current_limits=(-float('inf'), float('inf'))
-    ), self.merge.sink1)
-    self.connect(self.diode2.cathode.as_voltage_source(
-      voltage_out=(self.pwr_in2.link().voltage.lower() - self.diode2.voltage_drop.upper(),
-                   self.pwr_in2.link().voltage.upper()),
-      current_limits=(-float('inf'), float('inf'))
-    ), self.merge.sink2)
-
+    self.merge = self.Block(MergedVoltageSource()).connected_from(
+      self.diode1.cathode.as_voltage_source(
+        voltage_out=(self.pwr_in1.link().voltage.lower() - self.diode1.voltage_drop.upper(),
+                     self.pwr_in1.link().voltage.upper()),
+        current_limits=(-float('inf'), float('inf'))
+      ),
+      self.diode2.cathode.as_voltage_source(
+        voltage_out=(self.pwr_in2.link().voltage.lower() - self.diode2.voltage_drop.upper(),
+                     self.pwr_in2.link().voltage.upper()),
+        current_limits=(-float('inf'), float('inf'))
+      )
+    )
     self.connect(self.diode1.anode.as_voltage_sink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
@@ -187,4 +188,4 @@ class DiodePowerMerge(PowerConditioner, Block):
       current_draw=self.pwr_out.link().current_drawn
     ), self.pwr_in2)
 
-    self.connect(self.merge.source, self.pwr_out)
+    self.connect(self.merge.pwr_out, self.pwr_out)

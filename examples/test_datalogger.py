@@ -13,27 +13,23 @@ class TestDatalogger(BoardTop):
     self.usb_forced_current = self.Block(ForcedVoltageCurrentDraw(forced_current_draw=(0, 0.5) * Amp))
     self.connect(self.usb_conn.pwr, self.usb_forced_current.pwr_in)
 
-    self.gnd_merge1 = self.Block(MergedVoltageSource())
-    self.connect(self.usb_conn.gnd, self.gnd_merge1.sink1)
-    self.connect(self.pwr_conn.gnd, self.gnd_merge1.sink2)
-    self.gnd_merge2 = self.Block(MergedVoltageSource())
-    self.connect(self.gnd_merge1.source, self.gnd_merge2.sink1)
-    # second slow reserved for the RTC battery
+    self.bat = self.Block(Cr2032())
 
-    self.pwr_5v_merge = self.Block(MergedVoltageSource())
-    self.connect(self.usb_forced_current.pwr_out, self.pwr_5v_merge.sink1)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge2.source, [Common]),
+        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
     ) as imp:
       (self.pwr_5v,), _ = self.chain(
         self.pwr_conn.pwr,
-        imp.Block(BuckConverter(output_voltage=(4.85, 5.4)*Volt)),
-        self.pwr_5v_merge.sink2
+        imp.Block(BuckConverter(output_voltage=(4.85, 5.4)*Volt))
       )
+      self.pwr_5v_merge = self.Block(MergedVoltageSource()).connected_from(
+        self.usb_forced_current.pwr_out, self.pwr_5v.pwr_out)
 
       (self.buffer, self.pwr_3v3), _ = self.chain(
-        self.pwr_5v_merge.source,
+        self.pwr_5v_merge.pwr_out,
         imp.Block(BufferedSupply(charging_current=(0.4, 0.5)*Amp, sense_resistance=0.47*Ohm(tol=0.01),
                                  voltage_drop=(0, 0.4)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
@@ -43,10 +39,10 @@ class TestDatalogger(BoardTop):
     self.duck = self.Block(DuckLogo())
 
     self.vin = self.connect(self.pwr_conn.pwr)
-    self.v5 = self.connect(self.pwr_5v_merge.source)
+    self.v5 = self.connect(self.pwr_5v_merge.pwr_out)
     self.v5_buffered = self.connect(self.buffer.pwr_out)
     self.v3v3 = self.connect(self.pwr_3v3.pwr_out)  # TODO better auto net names
-    self.gnd = self.connect(self.gnd_merge2.source)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     with self.implicit_connect(
       ImplicitConnect(self.pwr_3v3.pwr_out, [Power]),
@@ -86,9 +82,7 @@ class TestDatalogger(BoardTop):
       self.rtc = imp.Block(Pcf2129())
       self.connect(aux_spi, self.rtc.spi)
       self.connect(self.mcu.gpio.allocate('rtc_cs'), self.rtc.cs)
-      self.bat = imp.Block(Cr2032())
       self.connect(self.bat.pwr, self.rtc.pwr_bat)
-      self.connect(self.bat.gnd, self.gnd_merge2.sink2)
 
       self.eink = imp.Block(E2154fs091())
       self.connect(aux_spi, self.eink.spi)

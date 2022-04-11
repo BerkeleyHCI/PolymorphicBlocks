@@ -334,14 +334,8 @@ class Lpc1549SwdPull(Block):
     super().contents()
     self.swd.swo.init_from(DigitalSingleSource())
     self.swd.reset.init_from(DigitalSingleSource())
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.swdio = imp.Block(PullupResistor((10, 100) * kOhm(tol=0.05)))
-      self.connect(self.swdio.io, self.swd.swdio)
-      self.swclk = imp.Block(PulldownResistor((10, 100) * kOhm(tol=0.05)))
-      self.connect(self.swclk.io, self.swd.swclk)
+    self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
+    self.swclk = self.Block(PulldownResistor((10, 100) * kOhm(tol=0.05))).connected(self.gnd, self.swd.swclk)
 
 
 @abstract_block
@@ -354,28 +348,27 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
   def contents(self):
     super().contents()
-    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
-    self.connect(self.pwr, self.ic.pwr)
-    self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic)
 
-    self.pwr_cap = ElementDict[DecouplingCapacitor]()
-    self.pwra_cap = ElementDict[DecouplingCapacitor]()
-    self.vref_cap = ElementDict[DecouplingCapacitor]()
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
+      self.pwr_cap = ElementDict[DecouplingCapacitor]()
       for i in range(3):
         self.pwr_cap[i*2] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
         self.pwr_cap[i*2+1] = imp.Block(DecouplingCapacitor(0.01 * uFarad(tol=0.2)))
       self.vbat_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
       # one set of 0.1, 10uF caps for each VddA, VssA pin, per reference schematic
+      self.pwra_cap = ElementDict[DecouplingCapacitor]()
       self.pwra_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.pwra_cap[1] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+      self.vref_cap = ElementDict[DecouplingCapacitor]()
       self.vref_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))

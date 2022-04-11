@@ -74,16 +74,12 @@ class Xbee_S3b(IntegratedCircuit, FootprintBlock):
   def contents(self):
     super().contents()
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap_0 = imp.Block(DecouplingCapacitor(
-        capacitance=1.0*uFarad(tol=0.2),
-      ))
-      self.vdd_cap_1 = imp.Block(DecouplingCapacitor(
-        capacitance=47*pFarad(tol=0.2),
-      ))
+    self.vdd_cap_0 = self.Block(DecouplingCapacitor(
+      capacitance=1.0*uFarad(tol=0.2),
+    )).connected(self.gnd, self.pwr)
+    self.vdd_cap_1 = self.Block(DecouplingCapacitor(
+      capacitance=47*pFarad(tol=0.2),
+    )).connected(self.gnd, self.pwr)
 
 
 class BlueSmirf(IntegratedCircuit, FootprintBlock):

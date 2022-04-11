@@ -52,10 +52,6 @@ class Tlv9061(Opamp):
     self.connect(self.gnd, self.ic.vss)
 
     # Datasheet section 11: place 0.1uF bypass capacitors close to the power-supply pins
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.vdd_cap = imp.Block(DecouplingCapacitor(
-        capacitance=0.1*uFarad(tol=0.2),
-      ))
+    self.vdd_cap = self.Block(DecouplingCapacitor(
+      capacitance=0.1*uFarad(tol=0.2),
+    )).connected(self.gnd, self.pwr)
