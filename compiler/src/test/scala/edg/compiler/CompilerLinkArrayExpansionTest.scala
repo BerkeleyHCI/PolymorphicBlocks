@@ -174,7 +174,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     }
   }
 
-  "Compiler on design with partially-connected link-arrays" should "work" in {
+  "Compiler on design with partially-connected link-arrays, source only" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "source" -> Block.Library("sourceBlock"),
@@ -237,6 +237,77 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Seq("a", "b", "c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
+    }
+  }
+
+  "Compiler on design with partially-connected link-arrays, sinks only" should "work" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "sink" -> Block.Library("sinkBlock"),
+      ),
+      links = Map(
+        "link" -> Link.Array("link"),
+      ),
+      constraints = Map(
+        "sinkConnect" -> Constraint.ConnectedArray(Ref("sink", "port"), Ref.Allocate(Ref("link", "sink"))),
+      )
+    ))
+    val referenceConstraints = Map(  // expected constraints in the top-level design
+      "sinkConnect.a" -> Constraint.Connected(Ref("sink", "port", "a"), Ref("link", "sinks", "0", "a")),
+      "sinkConnect.b" -> Constraint.Connected(Ref("sink", "port", "b"), Ref("link", "sinks", "0", "b")),
+      "sinkConnect.c" -> Constraint.Connected(Ref("sink", "port", "c"), Ref("link", "sinks", "0", "c")),
+    )
+    val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+      "sinks.0.a" -> Constraint.Exported(Ref("sinks", "0", "a"), Ref("a", "sinks", "0")),
+      "sinks.0.b" -> Constraint.Exported(Ref("sinks", "0", "b"), Ref("b", "sinks", "0")),
+      "sinks.0.c" -> Constraint.Exported(Ref("sinks", "0", "c"), Ref("c", "sinks", "0")),
+    )
+
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    compiled.getContents.constraints should equal(referenceConstraints)
+
+    compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
+
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
+        equal(Some(IntValue(1)))
+
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
+    compiler.getValue(IndirectDesignPath() + "link" + "sinks" + "0" + IndirectStep.Length) should
+        equal(Some(IntValue(3)))
+
+
+    val linkPb = compiled.getContents.links("link").getArray
+    linkPb.constraints should equal(referenceLinkArrayConstraints)
+
+    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    Seq("a", "b", "c").foreach { elementIndex =>
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
+          equal(Some(ArrayValue(Seq(TextValue("0")))))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
+          equal(Some(IntValue(1)))
+    }
+
+    // Check parameter propagation
+    Seq("0").foreach { sinkIndex =>
+      Map("a" -> 11, "b" -> 12, "c" -> 13).foreach { case (elementIndex, paramValue) =>
+        compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + "param") should
+            equal(Some(IntValue(paramValue)))
+        compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + "param") should
+            equal(Some(IntValue(paramValue)))
+      }
+    }
+
+    Seq("0").foreach { sinkIndex =>
+      Seq("a", "b", "c").foreach { elementIndex =>
+        compiler.getValue(IndirectDesignPath() + s"sink$sinkIndex" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
+            equal(Some(IntValue(-1)))
+      }
     }
   }
 
