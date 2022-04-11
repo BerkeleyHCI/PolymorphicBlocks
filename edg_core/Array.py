@@ -178,7 +178,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elt_sample = tpe._bind(self)
     self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
-    self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
+    self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
     self._allocated = ArrayExpr(StringExpr())._bind(AllocatedBinding(self))
@@ -284,12 +284,22 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates.append((suggested_name, allocated))
     return allocated
 
-  def allocate_vector(self) -> Vector[VectorType]:
+  def allocate_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
     """Returns a new dynamic-length, array-port slice of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
+    Can only be used as an array elements sink.
     """
-    raise NotImplementedError
+    from .HierarchyBlock import Block
+    assert self._is_bound(), "not bound, can't allocate array elements"
+    block_parent = self._block_parent()
+    assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
+    assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
+      "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
+    # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
+    allocated = Vector(type(self._tpe).empty())._bind(self)
+    self._allocates.append((suggested_name, allocated))
+    return allocated
 
   def length(self) -> IntExpr:
     return self._length

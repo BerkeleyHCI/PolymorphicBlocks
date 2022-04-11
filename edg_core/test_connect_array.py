@@ -76,8 +76,8 @@ class ArrayAllocatedConnectBlock(Block):
     self.source1 = self.Block(TestBlockSourceFixedArray())
     self.source2 = self.Block(TestBlockSourceFixedArray())
     self.sink = self.Block(TestBlockSinkElasticArray())
-    self.test_net1 = self.connect(self.source1.sources, self.sink.sinks.allocate())
-    self.test_net2 = self.connect(self.source2.sources, self.sink.sinks.allocate())
+    self.test_net1 = self.connect(self.source1.sources, self.sink.sinks.allocate_vector())
+    self.test_net2 = self.connect(self.source2.sources, self.sink.sinks.allocate_vector())
 
 
 class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
@@ -85,8 +85,9 @@ class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
     self.pb = ArrayAllocatedConnectBlock()._elaborated_def_to_proto()
 
   def test_link_inference(self) -> None:
-    self.assertEqual(len(self.pb.links), 1)
-    self.assertEqual(self.pb.links['test_net'].array.self_class.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(len(self.pb.links), 2)
+    self.assertEqual(self.pb.links['test_net1'].array.self_class.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(self.pb.links['test_net2'].array.self_class.target.name, "edg_core.test_common.TestLink")
 
   def test_connectivity(self) -> None:
     expected_conn = edgir.ValueExpr()
@@ -102,7 +103,7 @@ class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink'
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sinks'
-    expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
+    expected_conn.connectedArray.block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     expected_conn = edgir.ValueExpr()
@@ -118,7 +119,7 @@ class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sink'
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sinks'
-    expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
+    expected_conn.connectedArray.block_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
 
     self.assertEqual(len(self.pb.constraints), 4)
