@@ -118,7 +118,7 @@ class NewConnectedPorts():
       elif is_vectors == {True}:  # vector connect case
         is_link_array = True
       else:
-        raise UnconnectableError(f"Can't connect vector and non-vector types without flattening")
+        raise UnconnectableError(f"Can't connect array and non-array types without flattening")
 
       link_facing_ports_by_type: Dict[Type[Port], List[BasePort]] = {}
       for port in link_facing_ports:
@@ -133,7 +133,7 @@ class NewConnectedPorts():
           for port in port_type_ports:
             link_facing_connections.append((port, link_ref_map[link_port]))
         else:  # single port, can only connect one thing
-          if len(port_type_ports) > 1 or (not is_link_array and isinstance(port_type_ports[0], Vector)):
+          if len(port_type_ports) > 1 or (not is_link_array and not self.flatten and isinstance(port_type_ports[0], Vector)):
               raise UnconnectableError(f"Multiple connect {port_type_ports} to non-array {link_port}")
           link_facing_connections.append((port_type_ports[0], link_ref_map[link_port]))
       link_facing_connections_dict = IdentityDict(link_facing_connections)

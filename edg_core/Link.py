@@ -54,8 +54,8 @@ class Link(BaseBlock[edgir.Link]):
       pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
 
       assert not connect_elts.is_link_array
-
-      for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
+      assert not connect_elts.bridged_connects
+      for idx, (self_port, link_port_path) in enumerate(connect_elts.link_connects):
         if isinstance(self_port, BaseVector):
           assert isinstance(self_port, DerivedVector)
           pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
