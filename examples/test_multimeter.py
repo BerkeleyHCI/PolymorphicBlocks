@@ -378,15 +378,15 @@ class MultimeterTest(BoardTop):
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
-        (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['measure', 'res', 'footprint'], 'Resistor_SMD:R_2512_6332Metric'),
 
         # pin footprints to re-select parts with newer parts tables
-        (['driver', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
-        (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
-        (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
-        (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
-        (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
-        (['reg_5v', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+        (['driver', 'fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['gate', 'amp_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
+        (['gate', 'ctl_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D1
+        (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
+        (['gate', 'pwr_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
+        (['reg_5v', 'inductor', 'footprint'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
