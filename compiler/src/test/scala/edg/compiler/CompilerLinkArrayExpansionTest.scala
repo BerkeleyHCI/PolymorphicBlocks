@@ -149,6 +149,8 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Map("a" -> 1, "b" -> 2, "c" -> 3).foreach { case (elementIndex, paramValue) =>
       compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + "param") should
           equal(Some(IntValue(paramValue)))
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(true)))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + "param") should
           equal(Some(IntValue(paramValue)))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
@@ -159,6 +161,8 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       Map("a" -> 11, "b" -> 12, "c" -> 13).foreach { case (elementIndex, paramValue) =>
         compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + "param") should
             equal(Some(IntValue(paramValue)))
+        compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + IndirectStep.IsConnected) should
+            equal(Some(BooleanValue(true)))
         compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + "param") should
             equal(Some(IntValue(paramValue)))
         compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + IndirectStep.IsConnected) should
@@ -238,6 +242,8 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Map("a" -> 1, "b" -> 2, "c" -> 3).foreach { case (elementIndex, paramValue) =>
       compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + "param") should
           equal(Some(IntValue(paramValue)))
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(true)))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + "param") should
           equal(Some(IntValue(paramValue)))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
@@ -309,11 +315,21 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(IntValue(1)))
     }
 
+    // Check disconnected-ness
+    Seq("a", "b", "c").foreach { elementIndex =>
+      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(false)))
+      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
+          equal(Some(BooleanValue(false)))
+    }
+
     // Check parameter propagation
     Seq("0").foreach { sinkIndex =>
       Map("a" -> 11, "b" -> 12, "c" -> 13).foreach { case (elementIndex, paramValue) =>
         compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + "param") should
             equal(Some(IntValue(paramValue)))
+        compiler.getValue(IndirectDesignPath() + "link" + "sinks" + sinkIndex + elementIndex + IndirectStep.IsConnected) should
+            equal(Some(BooleanValue(true)))
         compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + "param") should
             equal(Some(IntValue(paramValue)))
         compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + sinkIndex + IndirectStep.IsConnected) should
@@ -326,14 +342,6 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(IntValue(-1)))
       compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.IsConnected) should
           equal(Some(BooleanValue(true)))
-    }
-
-    // Check disconnected-ness
-    Seq("a", "b", "c").foreach { elementIndex =>
-      compiler.getValue(IndirectDesignPath() + "link" + "source" + elementIndex + IndirectStep.IsConnected) should
-          equal(Some(BooleanValue(false)))
-      compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "source" + IndirectStep.IsConnected) should
-          equal(Some(BooleanValue(false)))
     }
   }
 

@@ -300,7 +300,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case _: wir.Block =>
           connectedLink.put(portPath, DesignPath())
           elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        case _: wir.Link =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
+        case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
       }
       port match {
         case port: wir.Bundle =>
@@ -808,7 +808,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
 
               case PortConnections.NotConnected =>
-                // ignored - not-connected-ness will be forwarded
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(
+                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
