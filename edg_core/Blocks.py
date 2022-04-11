@@ -110,7 +110,7 @@ class NewConnectedPorts():
         link = link_type()
       else:
         raise UnconnectableError(f"Ambiguous link {link_types} for connection between {ports}")
-      link_ports_by_type: Dict[Port, List[BasePort]] = {}  # sorted by port order; mutable and consumed as allocated
+      link_ports_by_type: Dict[Type[Port], List[BasePort]] = {}  # sorted by port order; mutable and consumed as allocated
       for name, port in link._ports.items():
         link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
       link_ref_map = link._get_ref_map_allocate(edgir.LocalPath())
