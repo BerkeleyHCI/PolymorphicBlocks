@@ -81,7 +81,7 @@ class NewConnectedPorts():
         return NewConnectedPorts.Export(is_vector, ports[1], ports[0])
 
     else:  # link-mediated case
-      bridged_ports_tuples: List[Tuple[BasePort, BasePort]] = []  # from boundary-port to link-facing-port
+      bridged_ports_tuples: List[Tuple[BasePort, BasePort]] = []  # from link-facing-port to boundary-port
       if isinstance(parent, Link):  # links don't bridge, all ports are treated as internal
         for port in ports:
           assert port._block_parent() is parent
@@ -95,7 +95,7 @@ class NewConnectedPorts():
             if bridge is None:
               raise UnconnectableError(f"no bridge for {port}")
             link_facing_ports.append(bridge.inner_link)
-            bridged_ports_tuples.append((port, bridge.inner_link))
+            bridged_ports_tuples.append((bridge.inner_link, port))
           else:  # no bridge needed
             link_facing_ports.append(port)
       else:
@@ -110,7 +110,9 @@ class NewConnectedPorts():
         link = link_type()
       else:
         raise UnconnectableError(f"Ambiguous link {link_types} for connection between {ports}")
-      link_ports_by_type = {type(self._baseport_leaf_type(port)): port for name, port in link._ports.items()}
+      link_ports_by_type: Dict[Port, List[BasePort]] = {}  # sorted by port order; mutable and consumed as allocated
+      for name, port in link._ports.items():
+        link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
       link_ref_map = link._get_ref_map_allocate(edgir.LocalPath())
 
       if self.flatten or is_vectors == {False}:  # element connect case
@@ -120,32 +122,28 @@ class NewConnectedPorts():
       else:
         raise UnconnectableError(f"Can't connect array and non-array types without flattening")
 
-      link_facing_ports_by_type: Dict[Type[Port], List[BasePort]] = {}
-      for port in link_facing_ports:
-        link_facing_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
-
-      # assign connections to link ports
-      link_facing_connections: List[Tuple[BasePort, edgir.LocalPath]] = []  # link facing port -> link port path
-      for (port_type, port_type_ports) in link_facing_ports_by_type.items():  # assign to link ports
-        # assumed that the link has the right port, since the link was inferred from the port type
-        link_port = link_ports_by_type[port_type]
-        if isinstance(link_port, BaseVector):  # array on link side, can connect as many as needed but needs an allocate
-          for port in port_type_ports:
-            link_facing_connections.append((port, link_ref_map[link_port]))
-        else:  # single port, can only connect one thing
-          if len(port_type_ports) > 1 or (not is_link_array and not self.flatten and isinstance(port_type_ports[0], Vector)):
-              raise UnconnectableError(f"Multiple connect {port_type_ports} to non-array {link_port}")
-          link_facing_connections.append((port_type_ports[0], link_ref_map[link_port]))
-      link_facing_connections_dict = IdentityDict(link_facing_connections)
-
-      # remap those to Connection object
+      # assign connections to link-facing ports, consuming link ports as needed
       bridged_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
       link_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
-      for port in ports:
-        if port in bridged_ports:
-          bridged_connects.append((port, link_facing_connections_dict[bridged_ports[port]]))
+      for link_facing_port in link_facing_ports:
+        allocatable_link_ports = link_ports_by_type[type(self._baseport_leaf_type(link_facing_port))]
+        if not allocatable_link_ports:
+          raise UnconnectableError(f"No remaining link ports to {link_facing_port}")
+        allocated_link_port = allocatable_link_ports[0]
+
+        if isinstance(allocated_link_port, BaseVector):  # array on link side, can connect as many as needed
+          link_ref = link_ref_map[allocated_link_port]
+        else:  # single port, can only connect one thing
+          if not is_link_array and isinstance(link_facing_port, BaseVector):
+            raise UnconnectableError("Can't connect array to link-side non-array port")
+          link_ref = link_ref_map[allocated_link_port]
+          allocatable_link_ports.pop(0)
+
+        if link_facing_port in bridged_ports:
+          bridged_connects.append((bridged_ports[link_facing_port], link_ref))
         else:
-          link_connects.append((port, link_facing_connections_dict[port]))
+          link_connects.append((link_facing_port, link_ref))
+
       return NewConnectedPorts.Connection(link_type, is_link_array, bridged_connects, link_connects)
 
 
