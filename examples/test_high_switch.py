@@ -101,14 +101,10 @@ class TestHighSwitch(BoardTop):
         self.mcu.adc.allocate('vsense'))
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # CAN RGB
-      self.connect(self.mcu.gpio.allocate('rgb1_red'), self.rgb1.red)
-      self.connect(self.mcu.gpio.allocate('rgb1_grn'), self.rgb1.green)
-      self.connect(self.mcu.gpio.allocate('rgb1_blue'), self.rgb1.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb1'), self.rgb1.signals)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # system RGB 2
-      self.connect(self.mcu.gpio.allocate('rgb2_red'), self.rgb2.red)
-      self.connect(self.mcu.gpio.allocate('rgb2_grn'), self.rgb2.green)
-      self.connect(self.mcu.gpio.allocate('rgb2_blue'), self.rgb2.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb2'), self.rgb2.signals)
 
     self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
     self.connect(self.pwr_conn.pwr, self.limit_light_current.pwr_in)
@@ -142,10 +138,10 @@ class TestHighSwitch(BoardTop):
           'can.rxd=44',
           'vsense=21',
           'rgb1_red=28',
-          'rgb1_grn=23',
+          'rgb1_green=23',
           'rgb1_blue=22',
           'rgb2_red=18',
-          'rgb2_grn=15',
+          'rgb2_green=15',
           'rgb2_blue=13',
           'light_00=12',
           'light_01=8',

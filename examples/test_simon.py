@@ -51,9 +51,7 @@ class TestSimon(BoardTop):
       ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
       self.rgb = imp.Block(IndicatorSinkRgbLed())  # status RGB
-      self.connect(self.mcu.gpio.allocate('rgb_red'), self.rgb.red)
-      self.connect(self.mcu.gpio.allocate('rgb_grn'), self.rgb.green)
-      self.connect(self.mcu.gpio.allocate('rgb_blue'), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       (self.sw, self.sw_pull), _ = self.chain(
         imp.Block(DigitalSwitch()), imp.Block(PullupResistor(10 * kOhm(tol=0.05))),
@@ -66,7 +64,7 @@ class TestSimon(BoardTop):
       for i in range(4):
         conn = self.btn[i] = imp.Block(DomeButtonConnector())
         pull = self.btn_pull[i] = imp.Block(PullupResistor(10 * kOhm(tol=0.05)))
-        self.connect(pull.io, conn.sw1)
+        self.connect(pull.io, conn.sw1, self.mcu.gpio.allocate(f'btn_sw{i}'))
 
     self.pwr = self.Block(Ap3012(output_voltage=12*Volt(tol=0.1)))
 
@@ -80,6 +78,7 @@ class TestSimon(BoardTop):
     ) as imp:
       for i in range(4):
         driver = self.btn_drv[i] = imp.Block(HighSideSwitch(frequency=(0.1, 10) * kHertz))
+        self.connect(self.mcu.gpio.allocate(f'btn_drv{i}'), driver.control)
         if i == 0:  # only one draws current, since we assume only one will be lit at any point in time
           self.connect(driver.output, self.btn[i].led_a)
         else:
@@ -87,15 +86,6 @@ class TestSimon(BoardTop):
             driver.output,
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
-
-    self.connect(self.mcu.gpio.allocate('btn_drv0'), self.btn_drv[0].control)
-    self.connect(self.mcu.gpio.allocate('btn_sw0'), self.btn[0].sw1)
-    self.connect(self.mcu.gpio.allocate('btn_drv1'), self.btn_drv[1].control)
-    self.connect(self.mcu.gpio.allocate('btn_sw1'), self.btn[1].sw1)
-    self.connect(self.mcu.gpio.allocate('btn_drv2'), self.btn_drv[2].control)
-    self.connect(self.mcu.gpio.allocate('btn_sw2'), self.btn[2].sw1)
-    self.connect(self.mcu.gpio.allocate('btn_drv3'), self.btn_drv[3].control)
-    self.connect(self.mcu.gpio.allocate('btn_sw3'), self.btn[3].sw1)
 
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
@@ -107,7 +97,7 @@ class TestSimon(BoardTop):
         (['mcu', 'pin_assigns'], ';'.join([
           'spk=24',
           'rgb_red=15',
-          'rgb_grn=14',
+          'rgb_green=14',
           'rgb_blue=13',
           'sw=27',
           'btn_drv0=5',

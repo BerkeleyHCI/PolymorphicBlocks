@@ -103,19 +103,13 @@ class TestDatalogger(BoardTop):
       self.connect(self.mcu.gpio.allocate('ext_rts'), self.ext.rts)
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # system RGB 1
-      self.connect(self.mcu.gpio.allocate('rgb1_red'), self.rgb1.red)
-      self.connect(self.mcu.gpio.allocate('rgb1_grn'), self.rgb1.green)
-      self.connect(self.mcu.gpio.allocate('rgb1_blue'), self.rgb1.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb1'), self.rgb1.signals)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # sd card RGB
-      self.connect(self.mcu.gpio.allocate('rgb2_red'), self.rgb2.red)
-      self.connect(self.mcu.gpio.allocate('rgb2_grn'), self.rgb2.green)
-      self.connect(self.mcu.gpio.allocate('rgb2_blue'), self.rgb2.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb2'), self.rgb2.signals)
 
       self.rgb3 = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate('rgb3_red'), self.rgb3.red)
-      self.connect(self.mcu.gpio.allocate('rgb3_grn'), self.rgb3.green)
-      self.connect(self.mcu.gpio.allocate('rgb3_blue'), self.rgb3.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb3'), self.rgb3.signals)
 
       sw_pull_model = PullupResistor(4.7 * kOhm(tol=0.05))
       (self.sw1, self.sw1_pull), _ = self.chain(imp.Block(DigitalSwitch()),
@@ -173,13 +167,13 @@ class TestDatalogger(BoardTop):
           'ext_cts=62',
           'ext_rts=59',
           'rgb1_red=31',
-          'rgb1_grn=32',
+          'rgb1_green=32',
           'rgb1_blue=30',
           'rgb2_red=28',
-          'rgb2_grn=29',
+          'rgb2_green=29',
           'rgb2_blue=25',
           'rgb3_red=46',
-          'rgb3_grn=39',
+          'rgb3_green=39',
           'rgb3_blue=34',  # used to be 38, which is ISP_1
           'sw1=33',
           'sw2=23',

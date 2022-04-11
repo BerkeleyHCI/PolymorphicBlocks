@@ -244,9 +244,7 @@ class MultimeterTest(BoardTop):
       self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
-      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
-      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
@@ -350,9 +348,9 @@ class MultimeterTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'rgb_r=36',
-          'rgb_b=2',
-          'rgb_g=3',
+          'rgb_red=36',
+          'rgb_blue=2',
+          'rgb_green=3',
 
           'spi.miso=28',
           'adc_cs=5',

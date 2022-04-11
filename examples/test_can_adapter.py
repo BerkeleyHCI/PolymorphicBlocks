@@ -46,13 +46,8 @@ class CanAdapter(BoardTop):
     self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
     self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
-    self.connect(self.mcu.gpio.allocate('rgb_usb_red'), self.rgb_usb.red)
-    self.connect(self.mcu.gpio.allocate('rgb_usb_grn'), self.rgb_usb.green)
-    self.connect(self.mcu.gpio.allocate('rgb_usb_blue'), self.rgb_usb.blue)
-
-    self.connect(self.mcu.gpio.allocate('rgb_can_red'), self.rgb_can.red)
-    self.connect(self.mcu.gpio.allocate('rgb_can_grn'), self.rgb_can.green)
-    self.connect(self.mcu.gpio.allocate('rgb_can_blue'), self.rgb_can.blue)
+    self.connect(self.mcu.gpio.allocate_vector('rgb_usb'), self.rgb_usb.signals)
+    self.connect(self.mcu.gpio.allocate_vector('rgb_can'), self.rgb_can.signals)
 
     # Isolated CAN Domain
     # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
@@ -100,10 +95,10 @@ class CanAdapter(BoardTop):
           'lcd_spi.miso=NC',
           'lcd_cs=22',
           'rgb_usb_red=2',
-          'rgb_usb_grn=1',
+          'rgb_usb_green=1',
           'rgb_usb_blue=3',
           'rgb_can_red=6',
-          'rgb_can_grn=4',
+          'rgb_can_green=4',
           'rgb_can_blue=7',
           'swd.swo=PIO0_8',
         ]))

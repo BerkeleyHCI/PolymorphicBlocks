@@ -335,9 +335,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.gpio.allocate('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
-      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
-      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
@@ -416,9 +414,9 @@ class UsbSourceMeasureTest(BoardTop):
           'sw1=43',
           'sw2=44',
           'sw3=45',
-          'rgb_b=46',
-          'rgb_g=47',
-          'rgb_r=48',
+          'rgb_blue=46',
+          'rgb_green=47',
+          'rgb_red=48',
 
           'dac_ldac=1',
           'dac_in_cs=2',

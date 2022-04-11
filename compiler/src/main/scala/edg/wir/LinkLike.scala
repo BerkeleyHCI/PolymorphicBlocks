@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
@@ -34,7 +35,7 @@ class Link(pb: elem.Link) extends LinkLike
       } else if (links.contains(subname)) {
         links(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Link")
+        throw new InvalidPathException(s"No element $subname (of $suffix} in Link ${pb.getSelfClass.toSimpleString}")
       }
   }
 
@@ -136,7 +137,7 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
       } else if (links.contains(subname)) {
         links(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Link")
+        throw new InvalidPathException(s"No element $subname (of $suffix) in Link ${pb.getSelfClass.toSimpleString}")
       }
   }
 
@@ -156,7 +157,7 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 case class LinkLibrary(target: ref.LibraryPath) extends LinkLike {
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+    case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
   }
   def toPb: elem.LinkLike = elem.LinkLike(elem.LinkLike.Type.LibElem(target))
   override def isElaborated: Boolean = false
