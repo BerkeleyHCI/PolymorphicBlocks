@@ -20,11 +20,11 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
-class NewConnectedPorts():
+class Connection():
   class PortRecord(NamedTuple):  # internal structure for each connected port - TBD add debugging data
     port: BasePort
 
-  class Connection(NamedTuple):  # link-mediated connection (including bridged ports and inner links)
+  class ConnectedLink(NamedTuple):  # link-mediated connection (including bridged ports and inner links)
     link_type: Type[Link]
     is_link_array: bool
     bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
@@ -37,19 +37,19 @@ class NewConnectedPorts():
 
   """A data structure that tracks connected ports."""
   def __init__(self, flatten: bool) -> None:
-    self.connected: List[NewConnectedPorts.PortRecord] = []
+    self.connected: List[Connection.PortRecord] = []
     self.flatten = flatten  # vectors are treated as connected to a link
 
   def add_ports(self, ports: Iterable[BasePort]):
     for port in ports:
-      self.connected.append(NewConnectedPorts.PortRecord(port))
+      self.connected.append(Connection.PortRecord(port))
 
   @staticmethod
   def _baseport_leaf_type(port: BasePort) -> Port:
     if isinstance(port, Port):
       return port
     elif isinstance(port, BaseVector):
-      return NewConnectedPorts._baseport_leaf_type(port._get_elt_sample())
+      return Connection._baseport_leaf_type(port._get_elt_sample())
     else:
       raise ValueError(f"Unknown BasePort subtype {port}")
 
@@ -60,7 +60,7 @@ class NewConnectedPorts():
     # TODO maybe we can maintain a parallel Set data structure to make this faster
     return True in [port is port_record.port for port_record in self.connected]
 
-  def make_connection(self, parent: BaseBlock, force_flatten: bool = False) -> Optional[Union[Connection, Export]]:
+  def make_connection(self, parent: BaseBlock, force_flatten: bool = False) -> Optional[Union[ConnectedLink, Export]]:
     from .HierarchyBlock import Block
     from .Link import Link
     ports = [port_record.port for port_record in self.connected]
@@ -76,9 +76,9 @@ class NewConnectedPorts():
           (ports[1]._block_parent() is parent and not ports[0]._block_parent() is parent)):
       is_vector = isinstance(ports[0], BaseVector)
       if ports[0]._block_parent() is parent:
-        return NewConnectedPorts.Export(is_vector, ports[0], ports[1])
+        return Connection.Export(is_vector, ports[0], ports[1])
       else:
-        return NewConnectedPorts.Export(is_vector, ports[1], ports[0])
+        return Connection.Export(is_vector, ports[1], ports[0])
 
     else:  # link-mediated case
       bridged_ports_tuples: List[Tuple[BasePort, BasePort]] = []  # from link-facing-port to boundary-port
@@ -144,7 +144,7 @@ class NewConnectedPorts():
         else:
           link_connects.append((link_facing_port, link_ref))
 
-      return NewConnectedPorts.Connection(link_type, is_link_array, bridged_connects, link_connects)
+      return Connection.ConnectedLink(link_type, is_link_array, bridged_connects, link_connects)
 
 
 class BlockElaborationState(Enum):
@@ -175,7 +175,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
-    self._connects = self.manager.new_dict(NewConnectedPorts, anon_prefix='anon_link')
+    self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
     self._name = StringExpr()._bind(NameBinding(self))
@@ -413,13 +413,13 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
-  def connect(self, *connects: Union[BasePort, NewConnectedPorts]) -> NewConnectedPorts:
+  def connect(self, *connects: Union[BasePort, Connection]) -> Connection:
     for connect in connects:
-      if not isinstance(connect, (BasePort, NewConnectedPorts)):
+      if not isinstance(connect, (BasePort, Connection)):
         raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
 
     connects_ports = [connect for connect in connects if isinstance(connect, BasePort)]
-    connects_connects = [connect for connect in connects if isinstance(connect, NewConnectedPorts)]
+    connects_connects = [connect for connect in connects if isinstance(connect, Connection)]
 
     connects_ports_new = []
     connects_ports_connects = []
@@ -434,7 +434,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if len(existing_connects) == 1:
       connect = existing_connects[0]
     elif not existing_connects:
-      connect = NewConnectedPorts(False)
+      connect = Connection(False)
       self._connects.register(connect)
     else:  # more than 1 existing connect
       raise ValueError("TODO implement net join")

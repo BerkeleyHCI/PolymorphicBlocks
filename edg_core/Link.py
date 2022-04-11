@@ -4,7 +4,7 @@ from typing import *
 
 import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock, NewConnectedPorts
+from .Blocks import BaseBlock, Connection
 from .Core import Refable, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
@@ -48,7 +48,7 @@ class Link(BaseBlock[edgir.Link]):
       self._links_order[str(len(self._links_order))] = f"{name}"
 
       connect_elts = connect.make_connection(self, True)
-      assert isinstance(connect_elts, NewConnectedPorts.Connection)
+      assert isinstance(connect_elts, Connection.ConnectedLink)
 
       link_path = edgir.localpath_concat(edgir.LocalPath(), name)
       pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()

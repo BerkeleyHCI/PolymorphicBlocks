@@ -5,7 +5,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, NewConnectedPorts
+from .Blocks import BaseBlock, Connection
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -157,7 +157,7 @@ class ChainConnect:
   """Return type of chain connect operation, that can't be used in EDG operations except assignment to instance
   variable for naming.
   """
-  def __init__(self, blocks: List[Block], links: List[NewConnectedPorts]):
+  def __init__(self, blocks: List[Block], links: List[Connection]):
     self.blocks = blocks
     self.links = links
 
@@ -221,7 +221,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
 
     # actually generate the links and connects
-    link_chain_names = IdentityDict[NewConnectedPorts, List[str]]()  # prefer chain name where applicable
+    link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
     for name, chain in self._chains.items_ordered():
       for i, connect in enumerate(chain.links):
@@ -238,7 +238,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       if connect_elts is None:  # single port net - effectively discard
         pass
 
-      elif isinstance(connect_elts, NewConnectedPorts.Export):  # generate direct export
+      elif isinstance(connect_elts, Connection.Export):  # generate direct export
         if connect_elts.is_array:
           pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
           pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
@@ -247,7 +247,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
         self._namespace_order.append(f"(conn){name}")
 
-      elif isinstance(connect_elts, NewConnectedPorts.Connection):  # generate link
+      elif isinstance(connect_elts, Connection.ConnectedLink):  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
 
         if connect_elts.is_link_array:
