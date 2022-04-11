@@ -5,7 +5,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, ConnectedPorts, NewConnectedPorts
+from .Blocks import BaseBlock, NewConnectedPorts
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
