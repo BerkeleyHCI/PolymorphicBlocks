@@ -277,7 +277,8 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
-    assert builder.get_enclosing_block() is block_parent._parent, "can only allocate ports of internal blocks"
+    assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
+      "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = type(self._tpe).empty()._bind(self)
     self._allocates.append((suggested_name, allocated))

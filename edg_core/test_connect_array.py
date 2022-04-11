@@ -2,7 +2,7 @@ import unittest
 
 import edgir
 from . import *
-from .test_common import TestBlockSource, TestBlockSink, TestPortSource, TestPortSink, List
+from .test_common import TestPortSource, TestPortSink, List
 
 
 class TestBlockSourceFixedArray(Block):
@@ -82,15 +82,13 @@ class ArrayAllocatedConnectBlock(Block):
 
 class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
-    self.pb = ArrayConnectBlock()._elaborated_def_to_proto()
+    self.pb = ArrayAllocatedConnectBlock()._elaborated_def_to_proto()
 
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 1)
     self.assertEqual(self.pb.links['test_net'].array.self_class.target.name, "edg_core.test_common.TestLink")
 
   def test_connectivity(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 4)
-
     expected_conn = edgir.ValueExpr()
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'test_net1'
     expected_conn.connectedArray.link_port.ref.steps.add().name = 'source'
@@ -122,3 +120,5 @@ class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
     expected_conn.connectedArray.block_port.ref.steps.add().name = 'sinks'
     expected_conn.connectedArray.link_port.ref.steps.add().allocate = ''
     self.assertIn(expected_conn, self.pb.constraints.values())
+
+    self.assertEqual(len(self.pb.constraints), 4)
