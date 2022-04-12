@@ -45,8 +45,8 @@ class Debugger(BoardTop):
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.pwr, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.usb_reg = imp.Block(LinearRegulator(3.3*Volt(tol=0.05)))
       self.usb_esd = imp.Block(UsbEsdDiode())
@@ -55,17 +55,18 @@ class Debugger(BoardTop):
       self.target_reg = imp.Block(Ap2204k_Block(3.3*Volt(tol=0.05)))
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
+    self.vtarget = self.connect(self.target_reg.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.target_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vtarget, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
       self.led_target = imp.Block(VoltageIndicatorLed())
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 

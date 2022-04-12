@@ -17,9 +17,10 @@ class TestDatalogger(BoardTop):
 
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.pwr_5v,), _ = self.chain(
         self.pwr_conn.pwr,
@@ -42,11 +43,10 @@ class TestDatalogger(BoardTop):
     self.v5 = self.connect(self.pwr_5v_merge.pwr_out)
     self.v5_buffered = self.connect(self.buffer.pwr_out)
     self.v3v3 = self.connect(self.pwr_3v3.pwr_out)  # TODO better auto net names
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     with self.implicit_connect(
-      ImplicitConnect(self.pwr_3v3.pwr_out, [Power]),
-      ImplicitConnect(self.pwr_3v3.gnd, [Common]),
+      ImplicitConnect(self.v3v3, [Power]),
+      ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -114,11 +114,11 @@ class TestDatalogger(BoardTop):
                                                 self.mcu.gpio.allocate('sw2'))
 
     with self.implicit_connect(
-        ImplicitConnect(self.pwr_3v3.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       div_model = VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)
-      (self.v12sense, ), _ = self.chain(self.pwr_conn.pwr, imp.Block(div_model), self.mcu.adc.allocate('v12sense'))
-      (self.v5sense, ), _ = self.chain(self.pwr_5v.pwr_out, imp.Block(div_model), self.mcu.adc.allocate('v5sense'))
+      (self.v12sense, ), _ = self.chain(self.vin, imp.Block(div_model), self.mcu.adc.allocate('v12sense'))
+      (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.allocate('v5sense'))
       (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.allocate('vscsense'))
 
     self.hole = ElementDict[MountingHole]()

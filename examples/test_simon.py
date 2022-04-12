@@ -36,10 +36,13 @@ class TestSimon(BoardTop):
     super().contents()
 
     self.mcu = self.Block(Nucleo_F303k8())
+    self.v5v = self.connect(self.mcu.pwr_5v)
+    self.v3v3 = self.connect(self.mcu.pwr_3v3)
+    self.gnd = self.connect(self.mcu.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.mcu.pwr_5v, [Power]),
-        ImplicitConnect(self.mcu.gnd, [Common]),
+        ImplicitConnect(self.v5v, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_drv, self.spk), _ = self.chain(
         self.mcu.dac.allocate('spk'),
@@ -47,8 +50,8 @@ class TestSimon(BoardTop):
         self.Block(Speaker()))
 
     with self.implicit_connect(
-      ImplicitConnect(self.mcu.pwr_3v3, [Power]),
-      ImplicitConnect(self.mcu.gnd, [Common]),
+      ImplicitConnect(self.v3v3, [Power]),
+      ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.rgb = imp.Block(IndicatorSinkRgbLed())  # status RGB
       self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
@@ -67,14 +70,12 @@ class TestSimon(BoardTop):
         self.connect(pull.io, conn.sw1, self.mcu.gpio.allocate(f'btn_sw{i}'))
 
     self.pwr = self.Block(Ap3012(output_voltage=12*Volt(tol=0.1)))
-
-    self.v3v3 = self.connect(self.mcu.pwr_3v3)
-    self.v5 = self.connect(self.pwr.pwr_in, self.mcu.pwr_5v)
-    self.gnd = self.connect(self.pwr.gnd, self.mcu.gnd)
+    self.connect(self.v5v, self.pwr.pwr_in)
+    self.connect(self.gnd, self.pwr.gnd)
     self.v12 = self.connect(self.pwr.pwr_out)
     with self.implicit_connect(
-        ImplicitConnect(self.pwr.pwr_out, [Power]),
-        ImplicitConnect(self.mcu.gnd, [Common]),
+        ImplicitConnect(self.v12, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
         driver = self.btn_drv[i] = imp.Block(HighSideSwitch(frequency=(0.1, 10) * kHertz))

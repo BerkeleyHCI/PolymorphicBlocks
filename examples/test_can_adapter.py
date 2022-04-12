@@ -14,7 +14,7 @@ class CanAdapter(BoardTop):
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.usb_reg, ), _ = self.chain(
         self.usb.pwr,
@@ -24,8 +24,8 @@ class CanAdapter(BoardTop):
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -56,15 +56,15 @@ class CanAdapter(BoardTop):
     self.can_gnd = self.connect(self.can.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.can.gnd, [Common]),
+        ImplicitConnect(self.can_gnd, [Common]),
     ) as imp:
-      (self.can_reg, self.led_can), _ = self.chain(self.can.pwr,
+      (self.can_reg, self.led_can), _ = self.chain(self.can_vcan,
                                                    imp.Block(LinearRegulator(5.0*Volt(tol=0.05))),
                                                    imp.Block(VoltageIndicatorLed()))
       (self.can_esd, ), _ = self.chain(self.xcvr.can, imp.Block(CanEsdDiode()), self.can.differential)
 
     self.can_v5v = self.connect(self.can_reg.pwr_out, self.xcvr.can_pwr)
-    self.connect(self.can.gnd, self.xcvr.can_gnd)
+    self.connect(self.can_gnd, self.xcvr.can_gnd)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

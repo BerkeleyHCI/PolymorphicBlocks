@@ -208,15 +208,16 @@ class MultimeterTest(BoardTop):
 
     # POWER
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
-        self.bat.pwr,
+        self.vbat,
         imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=(3.8, 4.3)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
+      self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
@@ -229,8 +230,8 @@ class MultimeterTest(BoardTop):
 
     # DIGITAL DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
-        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
@@ -260,7 +261,7 @@ class MultimeterTest(BoardTop):
 
     # SPEAKER DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_5v.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
@@ -271,15 +272,15 @@ class MultimeterTest(BoardTop):
       # the AA battery is incapable of driving this at full power,
       # so this indicates it will be run at only partial power
       (self.spk_pwr, ), _ = self.chain(
-        self.reg_5v.pwr_out,
+        self.v5v,
         self.Block(ForcedVoltageCurrentDraw((0, 0.1)*Amp)),
         self.spk_drv.pwr
       )
 
     # ANALOG DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
-        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # NEGATIVE PORT
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
@@ -315,7 +316,7 @@ class MultimeterTest(BoardTop):
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
-      self.connect(self.reg_3v3.pwr_out, self.adc.ref)
+      self.connect(self.v3v3, self.adc.ref)
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(

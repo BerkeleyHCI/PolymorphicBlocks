@@ -113,7 +113,7 @@ def init_in_parent(fn: InitType) -> InitType:
 class ImplicitConnect:
   """Implicit connect definition. a port and all the implicit connect tags it supports.
   To implicitly connect to a sub-block's port, this tags list must be a superset of the sub-block port's tag list."""
-  def __init__(self, port: Port, tags: List[PortTag]) -> None:
+  def __init__(self, port: Union[Port, Connection], tags: List[PortTag]) -> None:
     self.port = port
     self.tags = set(tags)
 
@@ -328,13 +328,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
-  def chain(self, *elts: Union[BasePort, Block]) -> ChainConnect:
+  def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
     if not elts:
       return self._chains.register(ChainConnect([], []))
     chain_blocks = []
     chain_links = []
 
-    if isinstance(elts[0], BasePort):
+    if isinstance(elts[0], (BasePort, Connection)):
       current_port = elts[0]
     elif isinstance(elts[0], Block):
       outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
