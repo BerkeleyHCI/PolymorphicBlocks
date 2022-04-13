@@ -387,6 +387,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return ImplicitScope(self, implicits)
 
+  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+    assert not flatten, "flatten only allowed in links"
+    return super().connect(*connects, flatten=flatten)
+
   CastableType = TypeVar('CastableType')
   from .ConstraintExpr import BoolLike, BoolExpr, FloatLike, FloatExpr, RangeLike, RangeExpr
   # type ignore is needed because IntLike overlaps BoolLike

@@ -13,7 +13,7 @@ from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .Ports import BasePort, Port, Bundle
+from .Ports import BasePort, Port
 from .StructuredMetadata import MetaNamespaceOrder
 
 if TYPE_CHECKING:
@@ -60,13 +60,10 @@ class Connection():
     # TODO maybe we can maintain a parallel Set data structure to make this faster
     return True in [port is port_record.port for port_record in self.connected]
 
-  def make_connection(self, parent: BaseBlock, force_flatten: bool = False) -> Optional[Union[ConnectedLink, Export]]:
+  def make_connection(self, parent: BaseBlock) -> Optional[Union[ConnectedLink, Export]]:
     from .HierarchyBlock import Block
     from .Link import Link
     ports = [port_record.port for port_record in self.connected]
-
-    if force_flatten:  # TODO remove this hax
-      self.flatten = True
 
     if len(ports) == 1 and not (self.flatten and isinstance(ports[0], BaseVector)):
       return None  # not a real connection, eg could be a name assignment
@@ -413,7 +410,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return elt
 
-  def connect(self, *connects: Union[BasePort, Connection]) -> Connection:
+  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
     for connect in connects:
       if not isinstance(connect, (BasePort, Connection)):
         raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
@@ -433,8 +430,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     existing_connects = connects_connects + connects_ports_connects
     if len(existing_connects) == 1:
       connect = existing_connects[0]
+      assert connect.flatten == flatten, "flatten must be equivalent to existing connect"
     elif not existing_connects:
-      connect = Connection(False)
+      connect = Connection(flatten)
       self._connects.register(connect)
     else:  # more than 1 existing connect
       raise ValueError("TODO implement net join")

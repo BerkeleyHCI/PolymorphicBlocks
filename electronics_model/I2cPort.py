@@ -17,12 +17,10 @@ class I2cLink(Link):
     super().contents()
     # TODO define all IDs
 
-    self.scl = self.connect(
-      self.pull.scl,
-      self.master.scl, self.devices.map_extract(lambda device: device.scl))
-    self.sda = self.connect(
-      self.pull.sda,
-      self.master.sda, self.devices.map_extract(lambda device: device.sda))
+    self.scl = self.connect(self.pull.scl, self.master.scl, self.devices.map_extract(lambda device: device.scl),
+                            flatten=True)
+    self.sda = self.connect(self.pull.sda, self.master.sda, self.devices.map_extract(lambda device: device.sda),
+                            flatten=True)
 
 
 class I2cPullupPort(Bundle[I2cLink]):

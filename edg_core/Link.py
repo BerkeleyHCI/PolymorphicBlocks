@@ -47,7 +47,7 @@ class Link(BaseBlock[edgir.Link]):
     for name, connect in self._connects.items_ordered():
       self._links_order[str(len(self._links_order))] = f"{name}"
 
-      connect_elts = connect.make_connection(self, True)
+      connect_elts = connect.make_connection(self)
       assert isinstance(connect_elts, Connection.ConnectedLink)
 
       link_path = edgir.localpath_concat(edgir.LocalPath(), name)
