@@ -6,11 +6,28 @@ from typing import *
 import edgir
 from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
-from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr
+from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, MapExtractBinding
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr
+
+
+class MapExtractBinding(Binding):
+  def __init__(self, container: Vector, elt: ConstraintExpr):
+    super().__init__()
+    self.container = container
+    self.elt = elt
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.container]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    contained_map = self.container._get_contained_ref_map()
+    pb = edgir.ValueExpr()
+    pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
+    pb.map_extract.path.CopyFrom(contained_map[self.elt])
+    return pb
 
 
 @non_library

@@ -9,25 +9,6 @@ from .ConstraintExpr import ConstraintExpr, FloatExpr, RangeExpr, RangeLike, Boo
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
-if TYPE_CHECKING:
-  from .Array import Vector
-
-
-class MapExtractBinding(Binding):
-  def __init__(self, container: Vector, elt: ConstraintExpr):
-    super().__init__()
-    self.container = container
-    self.elt = elt
-
-  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
-    return [self.container]
-
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    contained_map = self.container._get_contained_ref_map()
-    pb = edgir.ValueExpr()
-    pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
-    pb.map_extract.path.CopyFrom(contained_map[self.elt])
-    return pb
 
 
 class SampleElementBinding(Binding):
