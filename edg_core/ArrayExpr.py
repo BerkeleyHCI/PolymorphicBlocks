@@ -90,7 +90,7 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], ArrayCastable], Generic[A
 
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
-class ArrayRangeExpr(ArrayExpr[List[range], ArrayRangeLike]):
+class ArrayRangeExpr(ArrayExpr[range, Any]):
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
                             rhs: ConstraintExpr,
@@ -109,8 +109,7 @@ class ArrayRangeExpr(ArrayExpr[List[range], ArrayRangeLike]):
 
 
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
-class ArrayStringExpr(ConstraintExpr[List[str], ArrayStringLike], ArrayExpr[List[str], ArrayStringLike]):
-# class ArrayStringExpr(ConstraintExpr[List[str], ArrayStringLike]):
+class ArrayStringExpr(ArrayExpr[str, Any]):
   pass
 
 
