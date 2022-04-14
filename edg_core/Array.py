@@ -10,7 +10,7 @@ from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, Stri
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr
 
 
 class MapExtractBinding(Binding):
@@ -203,7 +203,7 @@ class Vector(BaseVector, Generic[VectorType]):
   def length(self) -> IntExpr:
     return self._length
 
-  def allocated(self) -> ArrayExpr[StringExpr]:
+  def allocated(self) -> ArrayStringExpr:
     return self._allocated
 
   def _type_of(self) -> Hashable:
