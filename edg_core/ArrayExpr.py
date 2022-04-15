@@ -10,6 +10,7 @@ from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, Range
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
+from .Range import Range
 
 
 class SampleElementBinding(Binding):
@@ -24,14 +25,10 @@ class SampleElementBinding(Binding):
 
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
-ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr)
-ArrayEltCastable = TypeVar('ArrayEltCastable', bound=ConstraintExpr)
-AllConstraintLikeTypes = Union[BoolLike, IntLike, FloatLike, RangeLike, StringLike]
-ArrayCastable = Union['ArrayExpr', List[AllConstraintLikeTypes]]
-
 ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
 ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
-class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], ArrayCastable], Generic[ArrayWrappedType, ArrayCastableType]):
+class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedType, ArrayCastableType]'],
+                Generic[ArrayWrappedType, ArrayCastableType]):
   def __init__(self, elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType]) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
@@ -90,7 +87,7 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], ArrayCastable], Generic[A
 
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
-class ArrayRangeExpr(ArrayExpr[range, Any]):
+class ArrayRangeExpr(ArrayExpr[Range, RangeLike]):
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
                             rhs: ConstraintExpr,
@@ -108,9 +105,10 @@ class ArrayRangeExpr(ArrayExpr[range, Any]):
       self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
+ArrayStringExpr = ArrayExpr[str, StringLike]
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
-class ArrayStringExpr(ArrayExpr[str, Any]):
-  pass
+# class ArrayStringExpr(ArrayExpr[str, Any]):
+#   pass
 
 
 
