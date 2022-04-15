@@ -34,13 +34,13 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedTy
     # TODO: should array_type really be bound?
     self.elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType] = elt._new_bind(SampleElementBinding())
 
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:
+  def _new_bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
     clone: SelfType = type(self)(self.elt)
     clone.binding = binding
     return clone
 
-  def _bind(self: SelfType, binding: Binding) -> SelfType:
+  def _bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
     assert not self._is_bound()
     assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
