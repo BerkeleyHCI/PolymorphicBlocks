@@ -4,6 +4,7 @@ from abc import abstractmethod
 from functools import reduce
 from itertools import chain
 from typing import *
+from typing_extensions import Protocol
 
 import edgir
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
@@ -22,6 +23,18 @@ if TYPE_CHECKING:
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
 WrappedType = TypeVar('WrappedType', covariant=True)
 CastableType = TypeVar('CastableType', contravariant=True)
+class ConstraintExtractable(Protocol[WrappedType, CastableType]):
+  """A simple 'mixin' that defines the extractable type for a constraint, used in generators."""
+  _constraint_extractable_type: WrappedType
+  _constraint_assignable_type: CastableType
+  pass
+
+class ConstraintAssignable(Protocol[CastableType]):
+  """A simple 'mixin' that defines the extractable type for a constraint, used in generators."""
+  _constraint_assignable_type: CastableType
+  pass
+
+
 class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
@@ -85,7 +98,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     return self.binding.expr_to_proto(self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
-  def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
+  def __eq__(self: SelfType, other: CastableType) -> BoolExpr:  #type: ignore
     # TODO: avoid creating excess BoolExpr
     return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
 
@@ -93,6 +106,9 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 BoolLike = Union[bool, 'BoolExpr']
 class BoolExpr(ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
+  _constraint_extractable_type: bool
+  _constraint_assignable_type: bool
+
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
@@ -248,6 +264,9 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
 
 IntLike = Union['IntExpr', int]
 class IntExpr(NumLikeExpr[int, IntLike]):
+  _constraint_extractable_type: int
+  _constraint_assignable_type: int
+
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -267,6 +286,9 @@ class IntExpr(NumLikeExpr[int, IntLike]):
 FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float]
 class FloatExpr(NumLikeExpr[float, FloatLike]):
+  _constraint_extractable_type: float
+  _constraint_assignable_type: Union[float, int]
+
   @classmethod
   def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -291,6 +313,9 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
+  _constraint_extractable_type: Range
+  _constraint_assignable_type: Union[Range, Tuple[FloatLike, FloatLike]]
+
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -404,6 +429,9 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
 
 StringLike = Union['StringExpr', str]
 class StringExpr(ConstraintExpr[str, StringLike]):
+  _constraint_extractable_type: str
+  _constraint_assignable_type: str
+
   """String expression, can be used as a constraint"""
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
