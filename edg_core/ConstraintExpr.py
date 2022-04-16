@@ -93,8 +93,8 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 
 
 PWrappedType = TypeVar('PWrappedType', covariant=True)
-PCastableType = TypeVar('PCastableType', contravariant=True)
-class ConstraintExtractable(ConstraintExpr, Generic[PWrappedType, PCastableType]):
+PCastableType = TypeVar('PCastableType')
+class ConstraintExtractable(ConstraintExpr, Generic[PWrappedType]):
   """A simple 'mixin' that defines the extractable type for a constraint, used in generators."""
 
 # class ConstraintAssignable(Protocol[PCastableType]):
@@ -108,7 +108,7 @@ class ConstraintAssignable(ConstraintExpr, Generic[PCastableType]):
 
 
 BoolLike = Union[bool, 'BoolExpr']
-class BoolExpr(ConstraintExpr[bool, BoolLike], ConstraintExtractable[bool, bool], ConstraintAssignable[bool]):
+class BoolExpr(ConstraintExtractable[bool], ConstraintAssignable[BoolLike], ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
   def __init__(self, initializer: Optional[Union[bool, BoolLike]] = None):
     super().__init__(initializer)
@@ -267,7 +267,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
 
 
 IntLike = Union['IntExpr', int]
-class IntExpr(NumLikeExpr[int, IntLike], ConstraintExtractable[int, int], ConstraintAssignable[int]):
+class IntExpr(ConstraintExtractable[int], ConstraintAssignable[IntLike], NumLikeExpr[int, IntLike]):
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -287,7 +287,7 @@ class IntExpr(NumLikeExpr[int, IntLike], ConstraintExtractable[int, int], Constr
 FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float]
 class FloatExpr(NumLikeExpr[float, FloatLike],
-                ConstraintExtractable[float, Union[float, int]], ConstraintAssignable[Union[float, int]]):
+                ConstraintExtractable[float], ConstraintAssignable[FloatLike]):
   @classmethod
   def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -311,9 +311,9 @@ class FloatExpr(NumLikeExpr[float, FloatLike],
 
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
-class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]],
-                ConstraintExtractable[Range, Union[Range, Tuple[FloatLike, FloatLike]]],
-                ConstraintAssignable[Union[Range, Tuple[FloatLike, FloatLike]]]):
+class RangeExpr(ConstraintExtractable[Range],
+                ConstraintAssignable[RangeLike],
+                NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -426,7 +426,7 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]],
     return self * rhs_cast.__mul_inv__()
 
 StringLike = Union['StringExpr', str]
-class StringExpr(ConstraintExpr[str, StringLike], ConstraintExtractable[str, str], ConstraintAssignable[str]):
+class StringExpr(ConstraintExtractable[str], ConstraintAssignable[StringLike], ConstraintExpr[str, StringLike]):
   """String expression, can be used as a constraint"""
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
