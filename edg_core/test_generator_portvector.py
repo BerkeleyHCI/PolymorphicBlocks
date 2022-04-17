@@ -124,14 +124,15 @@ class GeneratorArrayParam(GeneratorBlock):
 
   def generate(self, elements: List[Range]) -> None:
     for elt in elements:
-      self.ports.append_elt(TestPortSink(elt))
+      created_port = self.ports.append_elt(TestPortSink(elt))  # any port
+    self.require(created_port.link().sinks_range == Range(-2, 1))
 
 
 class GeneratorArrayParamTop(Block):
   def __init__(self) -> None:
     super().__init__()
     self.block = self.Block(GeneratorArrayParam([
-      (-1, 1), (-5, 5), (-2, 2)
+      (-3, 1), (-5, 5), (-2, 2)
     ]))
 
     self.source = self.Block(TestBlockSource(1.0))

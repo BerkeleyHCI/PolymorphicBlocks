@@ -88,6 +88,14 @@ class ConstProp {
       case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
       case init.ValInit.Val.Text(_) => classOf[TextValue]
       case init.ValInit.Val.Range(_) => classOf[RangeType]
+      case init.ValInit.Val.Array(arrayType) => arrayType.`val` match {
+        case init.ValInit.Val.Floating(_) => classOf[ArrayValue[FloatValue]]
+        case init.ValInit.Val.Integer(_) => classOf[ArrayValue[IntValue]]
+        case init.ValInit.Val.Boolean(_) => classOf[ArrayValue[BooleanValue]]
+        case init.ValInit.Val.Text(_) => classOf[ArrayValue[TextValue]]
+        case init.ValInit.Val.Range(_) => classOf[ArrayValue[RangeType]]
+        case _ => throw new NotImplementedError(s"Unknown init array-type $decl")
+      }
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
     paramTypes.put(target, paramType)

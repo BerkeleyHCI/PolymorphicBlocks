@@ -21,6 +21,11 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(ValueExpr.Literal(Literal.Boolean(true))) should equal(BooleanValue(true))
     evalTest.map(ValueExpr.Literal(Literal.Text("test"))) should equal(TextValue("test"))
     evalTest.map(ValueExpr.Literal(Literal.Range(-2, 4))) should equal(RangeValue(-2, 4))
+    evalTest.map(ValueExpr.Literal(Literal.Array(Seq(
+      Literal.Boolean(false), Literal.Boolean(true), Literal.Boolean(false)
+    )))) should equal(ArrayValue(Seq(
+      BooleanValue(false), BooleanValue(true), BooleanValue(false)
+    )))
   }
 
   it should "handle binary arithmetic ops" in {
