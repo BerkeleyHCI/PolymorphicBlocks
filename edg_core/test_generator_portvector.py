@@ -113,3 +113,32 @@ class TestGeneratorWrapper(unittest.TestCase):
     self.assertIn('0', pb_ports)
     self.assertIn('named', pb_ports)
     self.assertIn('1', pb_ports)
+
+
+class GeneratorArrayParam(GeneratorBlock):
+  @init_in_parent
+  def __init__(self, param: ArrayRangeLike) -> None:
+    super().__init__()
+    self.ports = self.Port(Vector(TestPortSink()))
+    self.generator(self.generate, param)
+
+  def generate(self, elements: List[Range]) -> None:
+    for elt in elements:
+      self.ports.append_elt(TestPortSink(elt))
+
+
+class GeneratorArrayParamTop(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.block = self.Block(GeneratorArrayParam([
+      (-1, 1), (-5, 5), (-2, 2)
+    ]))
+
+    self.source = self.Block(TestBlockSource(1.0))
+    self.connect(self.source.port,
+                 self.block.ports.allocate(), self.block.ports.allocate(), self.block.ports.allocate())
+
+
+class TestGeneratorArrayParam(unittest.TestCase):
+  def test_generator(self):
+    ScalaCompiler.compile(GeneratorArrayParamTop)

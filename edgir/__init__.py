@@ -90,6 +90,9 @@ def lit_to_valuelit(value: LitTypes) -> ValueLit:
     pb.range.maximum.floating.val = value.upper
   elif isinstance(value, str):
     pb.text.val = value
+  elif isinstance(value, list):
+    for elt in value:
+      pb.array.elts.add().CopyFrom(lit_to_valuelit(elt))
   else:
     raise ValueError(f"unknown lit {value}")
   return pb
