@@ -10,7 +10,7 @@ from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, Stri
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr
 
 
 class MapExtractBinding(Binding):
@@ -91,7 +91,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._allocated = ArrayExpr(StringExpr())._bind(AllocatedBinding(self))
+    self._allocated = ArrayStringExpr()._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -239,47 +239,47 @@ class Vector(BaseVector, Generic[VectorType]):
     if not isinstance(param, BoolExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to any_true(...) must return BoolExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).any()
+    return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).any()
 
-  def equal_any(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ExtractConstraintType:
+  @overload
+  def sum(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr: ...
+  @overload
+  def sum(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr: ...
+  def sum(self, selector: Callable[[VectorType], Union[RangeExpr, FloatExpr]]) -> Union[RangeExpr, FloatExpr]:
     param = selector(self._elt_sample)
-    if not isinstance(param, ConstraintExpr):  # TODO check that returned type is child
-      raise TypeError(f"selector to equal_any(...) must return ConstraintExpr, got {param} of type {type(param)}")
-
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).equal_any()
-
-  ExtractNumericType = TypeVar('ExtractNumericType', bound=Union[FloatExpr, RangeExpr])
-  def sum(self, selector: Callable[[VectorType], ExtractNumericType]) -> ExtractNumericType:
-    param = selector(self._elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
+    if isinstance(param, FloatExpr):
+      return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).sum()
+    elif isinstance(param, RangeExpr):
+      return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).sum()
+    else:  # TODO check that returned type is child
       raise TypeError(f"selector to sum(...) must return Float/RangeExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).sum()  #type:ignore
+
 
   def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to min(...) must return Float, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).min()
+    return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).min()
 
   def max(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to max(...) must return Float, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).max()
+    return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).max()
 
   def intersection(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, RangeExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to intersection(...) must return RangeExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).intersection()
+    return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).intersection()
 
   def hull(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, RangeExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to hull(...) must return RangeExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).hull()
+    return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).hull()

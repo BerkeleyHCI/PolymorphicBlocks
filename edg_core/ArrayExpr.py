@@ -6,7 +6,7 @@ import edgir
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
-  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding
+  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
@@ -25,18 +25,16 @@ class SampleElementBinding(Binding):
 
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
+ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True)
 ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
 ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
-class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedType, ArrayCastableType]'],
-                Generic[ArrayWrappedType, ArrayCastableType]):
-  def __init__(self, elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType]) -> None:
-    super().__init__()
-    # TODO: should array_type really be bound?
-    self.elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType] = elt._new_bind(SampleElementBinding())
+class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
+                Generic[ArrayEltType, ArrayWrappedType, ArrayCastableType]):
+  _elt_sample: ArrayEltType
 
   def _new_bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    clone: SelfType = type(self)(self.elt)
+    clone: SelfType = type(self)(self._elt_sample)
     clone.binding = binding
     return clone
 
@@ -46,21 +44,17 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedTy
     assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
     if not isinstance(binding, ParamBinding):
       assert self.initializer is None, "Only Parameters may have initializers"
-    clone: SelfType = type(self)(self.elt)
+    clone: SelfType = type(self)(self._elt_sample)
     clone.binding = binding
     return clone
-
-  @classmethod
-  def _to_expr_type(cls, input: ArrayExpr) -> ArrayExpr:
-    return input
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
-  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
-    return self.elt._new_bind(UnarySetOpBinding(self, op))
+  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayEltType:
+    return self._elt_sample._new_bind(UnarySetOpBinding(self, op))
 
-  def sum(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def sum(self) -> ArrayEltType:
     return self._create_unary_set_op(NumericOp.sum)
 
   def min(self) -> FloatExpr:
@@ -69,25 +63,51 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedTy
   def max(self) -> FloatExpr:
     return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
 
-  def intersection(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def intersection(self) -> ArrayEltType:
     return self._create_unary_set_op(RangeSetOp.intersection)
 
-  def hull(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def hull(self) -> ArrayEltType:
     return self._create_unary_set_op(RangeSetOp.hull)
 
-  def equal_any(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
-    return self._create_unary_set_op(RangeSetOp.equal_any)
 
-  # TODO: not sure if ArrayType is being checked properly =(
-  def any(self: ArrayExpr[List[bool], Any]) -> BoolExpr:
+ArrayBoolLike = Union['ArrayBoolExpr', List[BoolLike]]
+class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
+  @classmethod
+  def _to_expr_type(cls, input):
+    raise NotImplementedError
+
+  def __init__(self, initializer = None):
+    super().__init__(initializer)
+    self._elt_sample = BoolExpr()._new_bind(SampleElementBinding())
+
+  def any(self) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
 
-  def all(self: ArrayExpr[List[bool], Any]) -> BoolExpr:
+  def all(self) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
+ArrayFloatLike = Union['ArrayStringExpr', List[StringLike]]
+class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
+  @classmethod
+  def _to_expr_type(cls, input):
+    raise NotImplementedError
+
+  def __init__(self, initializer = None):
+    super().__init__(initializer)
+    self._elt_sample = FloatExpr()._new_bind(SampleElementBinding())
+
+
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
-class ArrayRangeExpr(ArrayExpr[Range, RangeLike]):
+class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
+  @classmethod
+  def _to_expr_type(cls, input):
+    raise NotImplementedError
+
+  def __init__(self, initializer = None):
+    super().__init__(initializer)
+    self._elt_sample = RangeExpr()._new_bind(SampleElementBinding())
+
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
                             rhs: ConstraintExpr,
@@ -105,10 +125,12 @@ class ArrayRangeExpr(ArrayExpr[Range, RangeLike]):
       self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
-ArrayStringExpr = ArrayExpr[str, StringLike]
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
-# class ArrayStringExpr(ArrayExpr[str, Any]):
-#   pass
+class ArrayStringExpr(ArrayExpr[StringExpr, List[str], ArrayStringLike]):
+  @classmethod
+  def _to_expr_type(cls, input):
+    raise NotImplementedError
 
-
-
+  def __init__(self, initializer = None):
+    super().__init__(initializer)
+    self._elt_sample = StringExpr()._new_bind(SampleElementBinding())
