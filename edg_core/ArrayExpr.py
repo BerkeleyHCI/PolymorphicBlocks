@@ -114,7 +114,6 @@ class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
       raise TypeError(f"op arg to ArrayIntExpr must be ArrayIntLike, got {input} of type {type(input)}")
 
 
-
 ArrayFloatLike = Union['ArrayFloatExpr', List[FloatLike]]
 class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
   _elt_type = FloatExpr
@@ -132,7 +131,6 @@ class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
       raise TypeError(f"op arg to ArrayFloatExpr must be ArrayFloatLike, got {input} of type {type(input)}")
 
 
-
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
 class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
   _elt_type = RangeExpr
@@ -148,7 +146,6 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
       return cls()._bind(ArrayLiteralBinding(elt_bindings))
     else:
       raise TypeError(f"op arg to ArrayRangeExpr must be ArrayRangeLike, got {input} of type {type(input)}")
-
 
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
