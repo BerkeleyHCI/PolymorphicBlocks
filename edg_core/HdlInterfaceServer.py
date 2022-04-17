@@ -117,13 +117,10 @@ class HdlInterface():  # type: ignore
       assert issubclass(generator_type, GeneratorBlock)
       generator_obj = generator_type()
 
-      generator_values = [(value.path, edgir.valuelit_to_lit(value.value)) for value in request.values]
-      assert None not in generator_values
-
       response.generated.CopyFrom(builder.elaborate_toplevel(
         generator_obj, f"in generate for {request.element}",
         is_generator=True,
-        generate_values=cast(List[Tuple[edgir.LocalPath, edgir.LitTypes]], generator_values)))
+        generate_values=[(value.path, value.value) for value in request.values]))
     except BaseException as e:
       import traceback
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st

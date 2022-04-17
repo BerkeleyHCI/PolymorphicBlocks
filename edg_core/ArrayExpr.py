@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import *
 
 import edgir
-from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
-  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr, IntExpr
+  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, StringExpr, IntExpr
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
@@ -37,6 +36,11 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
   explicitly in the subclasses.
   """
   _elt_type: Type[ArrayEltType]
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> ArrayWrappedType:
+    assert pb.HasField('array')
+    return [cls._elt_type._from_lit(sub_pb) for sub_pb in pb.array.elts]  # type: ignore
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend

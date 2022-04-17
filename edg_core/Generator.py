@@ -186,7 +186,7 @@ class GeneratorBlock(Block):
     else:
       return super()._def_to_proto()
 
-  def _generated_def_to_proto(self, generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]]) -> \
+  def _generated_def_to_proto(self, generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]]) -> \
       edgir.HierarchyBlock:
     assert self._generator is not None, f"{self} did not define a generator"
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
@@ -202,26 +202,9 @@ class GeneratorBlock(Block):
       if isinstance(port, Port):
         port.link()  # lazy-initialize connected_link refs so it's ready for params
 
-    def validate_value(param: ConstraintExpr, value: edgir.LitTypes) -> edgir.LitTypes:
-      if isinstance(param, FloatExpr):
-        assert isinstance(value, Number), f"type mismatch for value for {param}, got {value}"
-      elif isinstance(param, IntExpr):
-        assert isinstance(value, int), f"type mismatch for value for {param}, got {value}"
-      elif isinstance(param, RangeExpr):
-        assert isinstance(value, Range), f"type mismatch for value for {param}, got {value}"
-      elif isinstance(param, BoolExpr):
-        assert isinstance(value, bool), f"type mismatch for value for {param}, got {value}"
-      elif isinstance(param, StringExpr):
-        assert isinstance(value, str), f"type mismatch for value for {param}, got {value}"
-      elif isinstance(param, ArrayExpr):
-        assert isinstance(value, list), f"type mismatch for value for {param}, got {value}"
-      else:
-        raise NotImplementedError(f"unknown type of {param}, got {value}")
-      return value
-
     ref_map = self._get_ref_map(edgir.LocalPath())
     generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
-    fn_args = [validate_value(arg_param, generate_values_map[ref_map[arg_param].SerializeToString()])
+    fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
                for arg_param in self._generator.fn_args]
 
     self._generator.fn(*fn_args)

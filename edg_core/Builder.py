@@ -36,7 +36,7 @@ class Builder:
 
   def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *,
                          is_generator: bool = False,
-                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.LitTypes]] = []) -> edgir.HierarchyBlock:
+                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
     assert self.get_curr_context() is None
     self.push_element(block)
     try:

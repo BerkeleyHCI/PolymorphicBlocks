@@ -248,12 +248,11 @@ class Vector(BaseVector, Generic[VectorType]):
     else:
       raise TypeError(f"selector to map_extract(...) must return ConstraintExpr or BasePort, got {param} of type {type(param)}")
 
-
   def any(self, selector: Callable[[VectorType], BoolExpr]) -> BoolExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, BoolExpr):  # TODO check that returned type is child
-      raise TypeError(f"selector to any_true(...) must return BoolExpr, got {param} of type {type(param)}")
 
+      raise TypeError(f"selector to any_true(...) must return BoolExpr, got {param} of type {type(param)}")
     return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).any()
 
   @overload
@@ -268,8 +267,6 @@ class Vector(BaseVector, Generic[VectorType]):
       return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).sum()
     else:  # TODO check that returned type is child
       raise TypeError(f"selector to sum(...) must return Float/RangeExpr, got {param} of type {type(param)}")
-
-
 
   def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self._elt_sample)

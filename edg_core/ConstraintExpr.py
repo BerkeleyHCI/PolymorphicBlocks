@@ -42,6 +42,12 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     """Casts the input from an equivalent-type to the self-type."""
     raise NotImplementedError
 
+  @classmethod
+  @abstractmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+    """Parses the literal / wrapped type from a ValueLit proto."""
+    raise NotImplementedError
+
   def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
     self.binding: Optional[Binding] = None
     if isinstance(initializer, type(self)) and not initializer._is_bound():  # model passed in
@@ -103,6 +109,11 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
       return BoolExpr()._bind(BoolLiteralBinding(input))
     else:
       raise ValueError("unexpected type for %s of %s, expected BoolLike" % (input, type(input)))
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> bool:
+    assert pb.HasField('boolean')
+    return pb.boolean.val
 
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
@@ -259,6 +270,11 @@ class IntExpr(NumLikeExpr[int, IntLike]):
     else:
       raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
 
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> int:
+    assert pb.HasField('integer')
+    return pb.integer.val
+
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.integer.CopyFrom(edgir.Empty())
@@ -277,6 +293,11 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
       return FloatExpr()._bind(FloatLiteralBinding(input))
     else:
       raise TypeError(f"op arg to FloatExpr must be FloatLike, got {input} of type {type(input)}")
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> float:
+    assert pb.HasField('floating')
+    return pb.floating.val
 
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
@@ -301,15 +322,6 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
   EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
 
-  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
-    # must cast non-empty initializer type, because range supports wider initializers
-    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
-    if initializer is not None and not isinstance(initializer, RangeExpr):
-      initializer = self._to_expr_type(initializer)
-    super().__init__(initializer)
-    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
-    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
-
   @classmethod
   def _to_expr_type(cls, input: Union[RangeLike, FloatLike]) -> RangeExpr:
     if isinstance(input, RangeExpr):
@@ -331,6 +343,20 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
         ))
     else:
       raise TypeError(f"op arg to RangeExpr must be FloatLike, got {input} of type {type(input)}")
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> Range:
+    assert pb.HasField('range') and pb.range.minimum.HasField('floating') and pb.range.maximum.HasField('floating')
+    return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
+
+  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
+    # must cast non-empty initializer type, because range supports wider initializers
+    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
+    if initializer is not None and not isinstance(initializer, RangeExpr):
+      initializer = self._to_expr_type(initializer)
+    super().__init__(initializer)
+    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
+    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
 
   def _initializer_to(self, target: ConstraintExpr) -> BoolExpr:
     # must also handle initializer mode (subset, superset) here
@@ -416,6 +442,11 @@ class StringExpr(ConstraintExpr[str, StringLike]):
     else:
       raise ValueError("unexpected type for %s of %s, expected StringLike" % (input, type(input)))
 
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> str:
+    assert pb.HasField('text')
+    return pb.text.val
+
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.text.CopyFrom(edgir.Empty())
@@ -431,6 +462,10 @@ class AssignExpr(ConstraintExpr[None, None]):
   @classmethod
   def _to_expr_type(cls, input: Any) -> AssignExpr:
     raise ValueError("can't convert to AssignExpr")
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+    raise ValueError("can't unpack AssignExpr")
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError("can't create parameter from AssignExpr")
