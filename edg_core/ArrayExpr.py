@@ -6,7 +6,7 @@ import edgir
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
-  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding
+  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
@@ -25,14 +25,15 @@ class SampleElementBinding(Binding):
 
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
+ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True)
 ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
 ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
 class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedType, ArrayCastableType]'],
-                Generic[ArrayWrappedType, ArrayCastableType]):
+                Generic[ArrayEltType, ArrayWrappedType, ArrayCastableType]):
   def __init__(self, elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType]) -> None:
     super().__init__()
     # TODO: should array_type really be bound?
-    self.elt: ConstraintExpr[ArrayWrappedType, ArrayCastableType] = elt._new_bind(SampleElementBinding())
+    self.elt: ArrayEltType = elt._new_bind(SampleElementBinding())
 
   def _new_bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
     # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
@@ -51,16 +52,16 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedTy
     return clone
 
   @classmethod
-  def _to_expr_type(cls, input: ArrayExpr) -> ArrayExpr:
+  def _to_expr_type(cls, input: SelfType) -> SelfType:
     return input
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
-  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayEltType:
     return self.elt._new_bind(UnarySetOpBinding(self, op))
 
-  def sum(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def sum(self) -> ArrayEltType:
     return self._create_unary_set_op(NumericOp.sum)
 
   def min(self) -> FloatExpr:
@@ -69,25 +70,31 @@ class ArrayExpr(ConstraintExpr[List[ArrayWrappedType], 'ArrayExpr[ArrayWrappedTy
   def max(self) -> FloatExpr:
     return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
 
-  def intersection(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def intersection(self) -> ArrayEltType:
     return self._create_unary_set_op(RangeSetOp.intersection)
 
-  def hull(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def hull(self) -> ArrayEltType:
     return self._create_unary_set_op(RangeSetOp.hull)
 
-  def equal_any(self) -> ConstraintExpr[ArrayWrappedType, ArrayCastableType]:
+  def equal_any(self) -> ArrayEltType:
     return self._create_unary_set_op(RangeSetOp.equal_any)
 
   # TODO: not sure if ArrayType is being checked properly =(
-  def any(self: ArrayExpr[List[bool], Any]) -> BoolExpr:
+  def any(self: ArrayBoolExpr) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
 
-  def all(self: ArrayExpr[List[bool], Any]) -> BoolExpr:
+  def all(self: ArrayBoolExpr) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
+ArrayBoolExpr = ArrayExpr[BoolExpr, bool, BoolLike]
+ArrayBoolLike = Union['ArrayBoolExpr', List[BoolLike]]
+# class ArrayStringExpr(ArrayExpr[str, Any]):
+#   pass
+
+
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
-class ArrayRangeExpr(ArrayExpr[Range, RangeLike]):
+class ArrayRangeExpr(ArrayExpr[RangeExpr, Range, RangeLike]):
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
                             rhs: ConstraintExpr,
@@ -105,10 +112,7 @@ class ArrayRangeExpr(ArrayExpr[Range, RangeLike]):
       self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
-ArrayStringExpr = ArrayExpr[str, StringLike]
+ArrayStringExpr = ArrayExpr[StringExpr, str, StringLike]
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
 # class ArrayStringExpr(ArrayExpr[str, Any]):
 #   pass
-
-
-
