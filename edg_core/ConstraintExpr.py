@@ -38,7 +38,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 
   @classmethod
   @abstractmethod
-  def _to_expr_type(cls: Type[SelfType], input: Union[SelfType, WrappedType]) -> SelfType:
+  def _to_expr_type(cls: Type[SelfType], input: CastableType) -> SelfType:
     """Casts the input from an equivalent-type to the self-type."""
     raise NotImplementedError
 

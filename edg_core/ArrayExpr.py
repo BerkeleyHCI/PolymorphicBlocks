@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import *
 
 import edgir
+from .Binding import ArrayLiteralBinding, StringLiteralBinding, RangeLiteralBinding, FloatLiteralBinding, \
+  BoolLiteralBinding, IntLiteralBinding
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
   NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, StringExpr, IntExpr
@@ -72,8 +74,17 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
   _elt_type = BoolExpr
 
   @classmethod
-  def _to_expr_type(cls, input):
-    raise NotImplementedError
+  def _to_expr_type(cls, input: ArrayBoolLike) -> ArrayBoolExpr:
+    if isinstance(input, cls):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, list):
+      elt_bindings = [cast(BoolLiteralBinding, cls._elt_type._to_expr_type(elt).binding) for elt in input]
+      assert all(isinstance(elt, BoolLiteralBinding) for elt in input)
+      return cls()._bind(ArrayLiteralBinding(elt_bindings))
+    else:
+      raise TypeError(f"op arg to ArrayBoolExpr must be ArrayBoolLike, got {input} of type {type(input)}")
+
 
   def __init__(self, initializer = None):
     super().__init__(initializer)
@@ -91,17 +102,35 @@ class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
   _elt_type = IntExpr
 
   @classmethod
-  def _to_expr_type(cls, input):
-    raise NotImplementedError
+  def _to_expr_type(cls, input: ArrayIntLike) -> ArrayIntExpr:
+    if isinstance(input, cls):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, list):
+      elt_bindings = [cast(IntLiteralBinding, cls._elt_type._to_expr_type(elt).binding) for elt in input]
+      assert all(isinstance(elt, IntLiteralBinding) for elt in input)
+      return cls()._bind(ArrayLiteralBinding(elt_bindings))
+    else:
+      raise TypeError(f"op arg to ArrayIntExpr must be ArrayIntLike, got {input} of type {type(input)}")
 
 
-ArrayFloatLike = Union['ArrayStringExpr', List[StringLike]]
+
+ArrayFloatLike = Union['ArrayFloatExpr', List[FloatLike]]
 class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
   _elt_type = FloatExpr
 
   @classmethod
-  def _to_expr_type(cls, input):
-    raise NotImplementedError
+  def _to_expr_type(cls, input: ArrayFloatLike) -> ArrayFloatExpr:
+    if isinstance(input, cls):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, list):
+      elt_bindings = [cast(FloatLiteralBinding, cls._elt_type._to_expr_type(elt).binding) for elt in input]
+      assert all(isinstance(elt, FloatLiteralBinding) for elt in input)
+      return cls()._bind(ArrayLiteralBinding(elt_bindings))
+    else:
+      raise TypeError(f"op arg to ArrayFloatExpr must be ArrayFloatLike, got {input} of type {type(input)}")
+
 
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
@@ -109,8 +138,17 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
   _elt_type = RangeExpr
 
   @classmethod
-  def _to_expr_type(cls, input):
-    raise NotImplementedError
+  def _to_expr_type(cls, input: ArrayRangeLike) -> ArrayRangeExpr:
+    if isinstance(input, cls):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, list):
+      elt_bindings = [cast(RangeLiteralBinding, cls._elt_type._to_expr_type(elt).binding) for elt in input]
+      assert all(isinstance(elt, RangeLiteralBinding) for elt in input)
+      return cls()._bind(ArrayLiteralBinding(elt_bindings))
+    else:
+      raise TypeError(f"op arg to ArrayRangeExpr must be ArrayRangeLike, got {input} of type {type(input)}")
+
 
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
@@ -134,5 +172,13 @@ class ArrayStringExpr(ArrayExpr[StringExpr, List[str], ArrayStringLike]):
   _elt_type = StringExpr
 
   @classmethod
-  def _to_expr_type(cls, input):
-    raise NotImplementedError
+  def _to_expr_type(cls, input: ArrayStringLike) -> ArrayStringExpr:
+    if isinstance(input, cls):
+      assert input._is_bound()
+      return input
+    elif isinstance(input, list):
+      elt_bindings = [cast(StringLiteralBinding, cls._elt_type._to_expr_type(elt).binding) for elt in input]
+      assert all(isinstance(elt, StringLiteralBinding) for elt in input)
+      return cls()._bind(ArrayLiteralBinding(elt_bindings))
+    else:
+      raise TypeError(f"op arg to ArrayStringExpr must be ArrayStringLike, got {input} of type {type(input)}")
