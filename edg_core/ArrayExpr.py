@@ -7,7 +7,7 @@ from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
   NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr, \
-  ConstraintExtractable, ConstraintAssignable
+  ConstraintAssignable
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
@@ -71,7 +71,7 @@ class ArrayExpr(ConstraintExpr, Generic[ArrayEltType]):
 
 
 ArrayBoolLike = Union['ArrayBoolExpr', List[BoolLike]]
-class ArrayBoolExpr(ArrayExpr[BoolExpr], ConstraintExtractable[List[bool], ArrayBoolLike], ConstraintAssignable[ArrayBoolLike]):
+class ArrayBoolExpr(ArrayExpr[BoolExpr], ConstraintAssignable[List[bool], ArrayBoolLike]):
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
@@ -88,7 +88,7 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr], ConstraintExtractable[List[bool], Array
 
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
-class ArrayRangeExpr(ArrayExpr[RangeExpr], ConstraintExtractable[List[RangeLike], ArrayRangeLike], ConstraintAssignable[ArrayRangeLike]):
+class ArrayRangeExpr(ArrayExpr[RangeExpr], ConstraintAssignable[List[RangeLike], ArrayRangeLike]):
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
@@ -115,7 +115,7 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr], ConstraintExtractable[List[RangeLike]
 
 
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
-class ArrayStringExpr(ArrayExpr[StringExpr], ConstraintExtractable[List[str], ArrayStringLike], ConstraintAssignable[ArrayStringLike]):
+class ArrayStringExpr(ArrayExpr[StringExpr], ConstraintAssignable[List[str], ArrayStringLike]):
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError

@@ -7,7 +7,8 @@ import edgir
 from .Array import ArrayExpr
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding, NameBinding
 from .Blocks import BlockElaborationState
-from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr, ConstraintExtractable
+from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr, ConstraintExtractable, \
+  ConstraintAssignable
 from .Core import non_library
 from .Exceptions import *
 from .HierarchyBlock import Block
@@ -66,92 +67,92 @@ class GeneratorBlock(Block):
   def generator(self, fn: Callable[[], None]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExtractable[ConstrType6, ConstrCastable6]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintAssignable[ConstrType6, ConstrCastable6]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExtractable[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExtractable[ConstrType7, ConstrCastable7]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintAssignable[ConstrType6, ConstrCastable6]],
+                req7: Union[ConstrCastable7, ConstraintAssignable[ConstrType7, ConstrCastable7]]) -> None: ...
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7, ConstrType8], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExtractable[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExtractable[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExtractable[ConstrType8, ConstrCastable8]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintAssignable[ConstrType6, ConstrCastable6]],
+                req7: Union[ConstrCastable7, ConstraintAssignable[ConstrType7, ConstrCastable7]],
+                req8: Union[ConstrCastable8, ConstraintAssignable[ConstrType8, ConstrCastable8]]) -> None: ...
 
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7, ConstrType8,
                                     ConstrType9], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExtractable[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExtractable[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExtractable[ConstrType8, ConstrCastable8]],
-                req9: Union[ConstrCastable9, ConstraintExtractable[ConstrType9, ConstrCastable9]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintAssignable[ConstrType6, ConstrCastable6]],
+                req7: Union[ConstrCastable7, ConstraintAssignable[ConstrType7, ConstrCastable7]],
+                req8: Union[ConstrCastable8, ConstraintAssignable[ConstrType8, ConstrCastable8]],
+                req9: Union[ConstrCastable9, ConstraintAssignable[ConstrType9, ConstrCastable9]]) -> None: ...
 
   @overload
   def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
                                     ConstrType5, ConstrType6, ConstrType7, ConstrType8,
                                     ConstrType9, ConstrType10], None],
-                req1: Union[ConstrCastable1, ConstraintExtractable[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExtractable[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExtractable[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExtractable[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExtractable[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExtractable[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExtractable[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExtractable[ConstrType8, ConstrCastable8]],
-                req9: Union[ConstrCastable9, ConstraintExtractable[ConstrType9, ConstrCastable9]],
-                req10: Union[ConstrCastable10, ConstraintExtractable[ConstrType10, ConstrCastable10]]) -> None: ...
+                req1: Union[ConstrCastable1, ConstraintAssignable[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintAssignable[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintAssignable[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintAssignable[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintAssignable[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintAssignable[ConstrType6, ConstrCastable6]],
+                req7: Union[ConstrCastable7, ConstraintAssignable[ConstrType7, ConstrCastable7]],
+                req8: Union[ConstrCastable8, ConstraintAssignable[ConstrType8, ConstrCastable8]],
+                req9: Union[ConstrCastable9, ConstraintAssignable[ConstrType9, ConstrCastable9]],
+                req10: Union[ConstrCastable10, ConstraintAssignable[ConstrType10, ConstrCastable10]]) -> None: ...
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
-  def generator(self, fn: Callable[..., None], *reqs: ConstraintExtractable) -> None:  # type: ignore
+  def generator(self, fn: Callable[..., None], *reqs: ConstraintAssignable) -> None:  # type: ignore
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
