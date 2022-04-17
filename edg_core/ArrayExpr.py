@@ -6,7 +6,7 @@ import edgir
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
-  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr
+  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, ParamBinding, StringExpr, IntExpr
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort
@@ -30,29 +30,19 @@ ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
 ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
 class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
                 Generic[ArrayEltType, ArrayWrappedType, ArrayCastableType]):
-  _elt_sample: ArrayEltType
-
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
-    # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    clone: SelfType = type(self)(self._elt_sample)
-    clone.binding = binding
-    return clone
-
-  def _bind(self: SelfType, binding: Binding) -> SelfType:  # type: ignore
-    # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    assert not self._is_bound()
-    assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
-    if not isinstance(binding, ParamBinding):
-      assert self.initializer is None, "Only Parameters may have initializers"
-    clone: SelfType = type(self)(self._elt_sample)
-    clone.binding = binding
-    return clone
+  """An Array-valued ConstraintExpr (a variable-sized list of ConstraintExpr).
+  All the cases are explicitly expanded (eg, ArrayBoolExpr, ArrayIntExpr, ...) because ConstraintExpr requires the
+  wrapped-type and castable-type (for example, used in Generator.generator(...) args), yet ArrayExpr also needs the
+  element type, and there doesn't seem to be any way to express that these are related. So all three are provided,
+  explicitly in the subclasses.
+  """
+  _elt_type: Type[ArrayEltType]
 
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError  # currently not possible to declare an array in the frontend
 
   def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayEltType:
-    return self._elt_sample._new_bind(UnarySetOpBinding(self, op))
+    return self._elt_type._new_bind(UnarySetOpBinding(self, op))
 
   def sum(self) -> ArrayEltType:
     return self._create_unary_set_op(NumericOp.sum)
@@ -72,6 +62,8 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
 
 ArrayBoolLike = Union['ArrayBoolExpr', List[BoolLike]]
 class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
+  _elt_type = BoolExpr
+
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
@@ -87,26 +79,31 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
-ArrayFloatLike = Union['ArrayStringExpr', List[StringLike]]
-class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
+ArrayIntLike = Union['ArrayIntExpr', List[IntLike]]
+class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
+  _elt_type = IntExpr
+
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
 
-  def __init__(self, initializer = None):
-    super().__init__(initializer)
-    self._elt_sample = FloatExpr()._new_bind(SampleElementBinding())
+
+ArrayFloatLike = Union['ArrayStringExpr', List[StringLike]]
+class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
+  _elt_type = FloatExpr
+
+  @classmethod
+  def _to_expr_type(cls, input):
+    raise NotImplementedError
 
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
 class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
+  _elt_type = RangeExpr
+
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
-
-  def __init__(self, initializer = None):
-    super().__init__(initializer)
-    self._elt_sample = RangeExpr()._new_bind(SampleElementBinding())
 
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
@@ -127,10 +124,8 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
 
 ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
 class ArrayStringExpr(ArrayExpr[StringExpr, List[str], ArrayStringLike]):
+  _elt_type = StringExpr
+
   @classmethod
   def _to_expr_type(cls, input):
     raise NotImplementedError
-
-  def __init__(self, initializer = None):
-    super().__init__(initializer)
-    self._elt_sample = StringExpr()._new_bind(SampleElementBinding())

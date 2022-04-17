@@ -10,7 +10,7 @@ from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, Stri
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 
 
 class MapExtractBinding(Binding):
@@ -213,21 +213,36 @@ class Vector(BaseVector, Generic[VectorType]):
     """Returns the type of the element."""
     return type(self._elt_sample)
 
-  ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=Port)
+  # See the note in ArrayExpr for why this is expanded.
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], BoolExpr]) -> ArrayBoolExpr: ...
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], IntExpr]) -> ArrayIntExpr: ...
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], FloatExpr]) -> ArrayFloatExpr: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
   @overload
-  def map_extract(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ArrayExpr[ExtractConstraintType]: ...
+  def map_extract(self, selector: Callable[[VectorType], StringExpr]) -> ArrayStringExpr: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
   def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
     param = selector(self._elt_sample)
-    if isinstance(param, RangeExpr):
-      return ArrayRangeExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
-    elif isinstance(param, ConstraintExpr):
-      return ArrayExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
+    if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
+      if isinstance(param, BoolExpr):
+        return ArrayBoolExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, IntExpr):
+        return ArrayIntExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, FloatExpr):
+        return ArrayFloatExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, RangeExpr):
+        return ArrayRangeExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, StringExpr):
+        return ArrayStringExpr()._bind(MapExtractBinding(self, param))
+      else:
+        raise TypeError(f"unknown ConstrExpr type to map_extract(...), got {param} of type {type(param)}")
     elif isinstance(param, BasePort):
       return DerivedVector(self, param)
     else:

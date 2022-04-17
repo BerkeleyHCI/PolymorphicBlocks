@@ -56,9 +56,10 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     assert self.binding is not None
     return chain([self], self.binding.get_subexprs())
 
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:
+  @classmethod
+  def _new_bind(cls: Type[SelfType], binding: Binding) -> SelfType:
     """Returns a clone of this object with the specified binding. Discards existing binding / init data."""
-    clone: SelfType = type(self)()
+    clone: SelfType = cls()
     clone.binding = binding
     return clone
 
