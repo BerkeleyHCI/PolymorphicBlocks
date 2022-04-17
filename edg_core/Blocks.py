@@ -8,7 +8,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, ConstraintAssignable
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
@@ -392,9 +392,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return constraint
 
-  ConstrAssignableType = TypeVar('ConstrAssignableType')
-  def assign(self, target: ConstraintAssignable[ConstrAssignableType],
-             value: ConstrAssignableType,
+  ConstrType = TypeVar('ConstrType')
+  def assign(self, target: ConstraintExpr[ConstrType, Any],
+             value: Union[ConstraintExpr[ConstrType, Any], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")

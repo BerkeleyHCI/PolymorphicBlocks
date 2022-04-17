@@ -20,7 +20,9 @@ if TYPE_CHECKING:
 
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-class ConstraintExpr(Refable):
+WrappedType = TypeVar('WrappedType', covariant=True)
+CastableType = TypeVar('CastableType', contravariant=True)
+class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
   """
@@ -33,6 +35,12 @@ class ConstraintExpr(Refable):
       return f"{super().__repr__()}({self.binding})"
     else:
       return f"{super().__repr__()}"
+
+  @classmethod
+  @abstractmethod
+  def _to_expr_type(cls: Type[SelfType], input: Union[SelfType, WrappedType]) -> SelfType:
+    """Casts the input from an equivalent-type to the self-type."""
+    raise NotImplementedError
 
   def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
     self.binding: Optional[Binding] = None
@@ -77,28 +85,14 @@ class ConstraintExpr(Refable):
     return self.binding.expr_to_proto(self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
-  def __eq__(self: SelfType, other: CastableType) -> BoolExpr:  #type: ignore
+  def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
     # TODO: avoid creating excess BoolExpr
     return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
 
 
-WrappedType = TypeVar('WrappedType', covariant=True)
-CastableType = TypeVar('CastableType', contravariant=True)
-class ConstraintAssignable(Generic[WrappedType, CastableType]):
-  """A simple 'mixin' that defines the extractable type for a constraint, used in generators."""
-  @classmethod
-  @abstractmethod
-  def _to_expr_type(cls: Type[SelfType], input: Union[SelfType, CastableType]) -> SelfType:
-    """Casts the input from an equivalent-type to the self-type."""
-    raise NotImplementedError
-
-
 BoolLike = Union[bool, 'BoolExpr']
-class BoolExpr(ConstraintExpr, ConstraintAssignable[bool, BoolLike]):
+class BoolExpr(ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
-  def __init__(self, initializer: Optional[Union[bool, BoolLike]] = None):
-    super().__init__(initializer)
-
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
@@ -253,7 +247,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
 
 
 IntLike = Union['IntExpr', int]
-class IntExpr(NumLikeExpr[int, IntLike], ConstraintAssignable[int, IntLike]):
+class IntExpr(NumLikeExpr[int, IntLike]):
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -272,8 +266,7 @@ class IntExpr(NumLikeExpr[int, IntLike], ConstraintAssignable[int, IntLike]):
 
 FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float]
-class FloatExpr(NumLikeExpr[float, FloatLike],
-                ConstraintAssignable[float, FloatLike]):
+class FloatExpr(NumLikeExpr[float, FloatLike]):
   @classmethod
   def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -297,8 +290,7 @@ class FloatExpr(NumLikeExpr[float, FloatLike],
 
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
-class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]],
-                ConstraintAssignable[Range, RangeLike]):
+class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -411,7 +403,7 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]],
     return self * rhs_cast.__mul_inv__()
 
 StringLike = Union['StringExpr', str]
-class StringExpr(ConstraintExpr, ConstraintAssignable[str, StringLike]):
+class StringExpr(ConstraintExpr[str, StringLike]):
   """String expression, can be used as a constraint"""
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
@@ -433,7 +425,7 @@ class StringExpr(ConstraintExpr, ConstraintAssignable[str, StringLike]):
     return isinstance(self.binding, StringLiteralBinding)
 
 
-class AssignExpr(ConstraintExpr):
+class AssignExpr(ConstraintExpr[None, None]):
   """Assignment expression, should be an internal type"""
   @classmethod
   def _to_expr_type(cls, input: Any) -> AssignExpr:

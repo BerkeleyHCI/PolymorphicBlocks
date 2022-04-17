@@ -10,7 +10,7 @@ from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, Stri
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr
 
 
 class MapExtractBinding(Binding):
@@ -91,7 +91,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._allocated = ArrayStringExpr()._bind(AllocatedBinding(self))
+    self._allocated = ArrayExpr(StringExpr())._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -239,7 +239,14 @@ class Vector(BaseVector, Generic[VectorType]):
     if not isinstance(param, BoolExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to any_true(...) must return BoolExpr, got {param} of type {type(param)}")
 
-    return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).any()
+    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).any()
+
+  def equal_any(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ExtractConstraintType:
+    param = selector(self._elt_sample)
+    if not isinstance(param, ConstraintExpr):  # TODO check that returned type is child
+      raise TypeError(f"selector to equal_any(...) must return ConstraintExpr, got {param} of type {type(param)}")
+
+    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).equal_any()
 
   ExtractNumericType = TypeVar('ExtractNumericType', bound=Union[FloatExpr, RangeExpr])
   def sum(self, selector: Callable[[VectorType], ExtractNumericType]) -> ExtractNumericType:
