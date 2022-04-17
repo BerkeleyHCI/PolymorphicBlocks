@@ -42,8 +42,11 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     assert pb.HasField('array')
     return [cls._elt_type._from_lit(sub_pb) for sub_pb in pb.array.elts]  # type: ignore
 
-  def _decl_to_proto(self) -> edgir.ValInit:
-    raise ValueError  # currently not possible to declare an array in the frontend
+  @classmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
+    pb = edgir.ValInit()
+    pb.array.CopyFrom(cls._elt_type._decl_to_proto())
+    return pb
 
   def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayEltType:
     return self._elt_type._new_bind(UnarySetOpBinding(self, op))
