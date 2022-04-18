@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from edg_core import *
 from .CircuitBlock import CircuitLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge
+from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
 
 
 class AnalogLink(CircuitLink):
@@ -94,6 +94,18 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
 
 
 class AnalogSink(AnalogBase):
+  @staticmethod
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
+                  current_draw: RangeLike = Default(RangeExpr.ZERO),
+                  impedance: RangeLike = Default(RangeExpr.INF)):
+    return AnalogSink(
+      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
+                     RangeExpr._to_expr_type(voltage_limit_tolerance),
+      current_draw=current_draw,
+      impedance=impedance
+    )
+
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
                impedance: RangeLike = Default(RangeExpr.INF)) -> None:
