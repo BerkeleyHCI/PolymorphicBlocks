@@ -234,7 +234,7 @@ class MultimeterTest(BoardTop):
     ) as imp:
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
-      self.mcu = imp.Block(Holyiot_18010())
+      self.mcu = imp.Block(Mdbt50q_1mv2())
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
       self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
@@ -349,32 +349,34 @@ class MultimeterTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'rgb_r=36',
-          'rgb_b=2',
-          'rgb_g=3',
+          # TODO reassign for this differently-pinned device
 
-          'spi.miso=28',
-          'adc_cs=5',
-          'lcd_cs=26',
-
-          'spi.sck=20',
-          'spi.mosi=19',
-          'lcd_rs=18',
-          'lcd_reset=17',
-
-          'spk=15',
-
-          'measure_select=30',
-          'gate_control=29',
-
-          'sw0=13',
-          'driver_control=12',
-          'driver_enable=11',
-
-          'sw1=33',
-          'sw2=6',
-
-          'inn_control=4',
+          # 'rgb_r=36',
+          # 'rgb_b=2',
+          # 'rgb_g=3',
+          #
+          # 'spi.miso=28',
+          # 'adc_cs=5',
+          # 'lcd_cs=26',
+          #
+          # 'spi.sck=20',
+          # 'spi.mosi=19',
+          # 'lcd_rs=18',
+          # 'lcd_reset=17',
+          #
+          # 'spk=15',
+          #
+          # 'measure_select=30',
+          # 'gate_control=29',
+          #
+          # 'sw0=13',
+          # 'driver_control=12',
+          # 'driver_enable=11',
+          #
+          # 'sw1=33',
+          # 'sw2=6',
+          #
+          # 'inn_control=4',
         ])),
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
