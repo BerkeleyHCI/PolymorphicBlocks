@@ -10,8 +10,8 @@ class Xc9142_Device(DiscreteChip, FootprintBlock, GeneratorBlock):
     ('50', Range(4.900, 5.100), Range(1.07, 2.30)),
   ]
   parts_frequency = [  # fosc
-    ('C', (1.02e6, 1.38e6)),  # 1.2MHz
-    ('D', (2.40e6, 3.60e6)),  # 3.0MHz
+    ('C', Range(1.02e6, 1.38e6)),  # 1.2MHz
+    ('D', Range(2.40e6, 3.60e6)),  # 3.0MHz
   ]
   parts_package = [
     ('MR-G', 'Package_TO_SOT_SMD:SOT-23-5'),
@@ -26,6 +26,9 @@ class Xc9142_Device(DiscreteChip, FootprintBlock, GeneratorBlock):
       # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
+    self.ce = self.Port(DigitalSink.from_supply(self.gnd, self.vin,
+                                                voltage_limit_tolerance=(0, 5)*Volt,
+                                                input_threshold_abs=(0.2, 0.6)*Volt))
     self.sw = self.Port(VoltageSource())
     self.vout = self.Port(VoltageSource().empty())
 
@@ -50,7 +53,7 @@ class Xc9142_Device(DiscreteChip, FootprintBlock, GeneratorBlock):
     self.footprint(
       'U', part_package,
       {
-        '1': self.vin,  # CE, active-high
+        '1': self.ce,
         '2': self.gnd,
         '3': self.vin,
         '4': self.vout,
@@ -76,7 +79,6 @@ class Xc9142(DiscreteBoostConverter):
       self.connect(self.ic.vout, self.pwr_out)
       self.assign(self.frequency, self.ic.actual_frequency)
 
-      # TODO add constraint on effective inductance and capacitance range
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
         self.pwr_out.link().current_drawn, self.ic.vout.current_limits,
@@ -85,3 +87,6 @@ class Xc9142(DiscreteBoostConverter):
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
+
+      # CE resistor: recommended through a <1M resistor; must not be left open
+      self.ce_res = imp.Block(PullupResistor(100*kOhm(tol=0.2))).connected(io=self.ic.ce)
