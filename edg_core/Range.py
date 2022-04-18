@@ -48,7 +48,7 @@ class Range:
     assert output_side.lower >= 0 and output_side.upper >= 0, "TODO support negative values"
     lower = input_side.upper * output_side.lower
     upper = input_side.lower * output_side.upper
-    assert lower <= upper, "TODO dedicated empty range construct"
+    assert lower <= upper, f"empty range in cancel-multiply {input_side} and {output_side}"
     return Range(lower, upper)
 
   @staticmethod

@@ -133,6 +133,7 @@ class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
 
 class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
   """TPA2005D1 configured in single-ended input mode"""
+  @init_in_parent
   def __init__(self, gain: RangeLike = Range.from_tolerance(20, 0.2)):
     super().__init__()
     # TODO should be a SpeakerDriver abstract part
@@ -162,6 +163,8 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     in_res_model = Resistor(
       resistance=res_value
     )
+    # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
+    # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
     fc = Range(10, 20)  # arbitrary, right on the edge of audio frequency
     cap_value = Range.cancel_multiply(1 / (2 * math.pi * res_value), 1 / fc)
     in_cap_model = Capacitor(

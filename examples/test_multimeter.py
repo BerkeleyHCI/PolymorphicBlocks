@@ -273,7 +273,7 @@ class MultimeterTest(BoardTop):
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
-        imp.Block(Tpa2005d1(gain=Range(1, 8))),
+        imp.Block(Tpa2005d1(gain=Range.from_tolerance(2, 0.2))),
         self.Block(Speaker()))
 
       # the AA battery is incapable of driving this at full power,
