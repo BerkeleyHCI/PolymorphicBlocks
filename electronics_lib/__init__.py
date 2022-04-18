@@ -25,6 +25,7 @@ from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, A
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BoostConverters_AnalogDevices import Ltc3429
 from .BoostConverters_DiodesInc import Ap3012
+from .BoostConverters_Torex import Xc9142
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64

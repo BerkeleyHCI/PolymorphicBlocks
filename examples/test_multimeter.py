@@ -215,7 +215,7 @@ class MultimeterTest(BoardTop):
       (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
         self.bat.pwr,
         imp.Block(FetPowerGate()),
-        imp.Block(BoostConverter(output_voltage=(3.8, 4.3)*Volt)),
+        imp.Block(BoostConverter(output_voltage=(4.5, 5.5)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
@@ -350,7 +350,7 @@ class MultimeterTest(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['reg_5v'], Ltc3429),
+        (['reg_5v'], Xc9142),
         (['reg_3v3'], Xc6209),
         (['measure', 'res'], ChipResistor),
       ],
