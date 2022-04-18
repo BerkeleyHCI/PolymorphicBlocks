@@ -93,6 +93,7 @@ class JlcCapacitor(TableDeratingCapacitor, JlcFootprint):
                                   capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
                                   voltage=self.voltage)
     self.c = ElementDict[JlcDummyCapacitor]()
+    assert row[self.PARALLEL_COUNT] < 10, f"too many ({row[self.PARALLEL_COUNT]}) parallel capacitors to generate"
     for i in range(row[self.PARALLEL_COUNT]):
       self.c[i] = self.Block(cap_model)
       self.connect(self.c[i].pos, self.pos)

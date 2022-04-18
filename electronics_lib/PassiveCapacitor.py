@@ -80,6 +80,7 @@ class SmtCeramicCapacitor(TableDeratingCapacitor):
                                   manufacturer=row[self._TABLE.MANUFACTURER], part_number=row[self._TABLE.PART_NUMBER],
                                   value=row[self._TABLE.DESCRIPTION])
     self.c = ElementDict[DummyCapacitor]()
+    assert row[self.PARALLEL_COUNT] < 10, f"too many ({row[self.PARALLEL_COUNT]}) parallel capacitors to generate"
     for i in range(row[self.PARALLEL_COUNT]):
       self.c[i] = self.Block(cap_model)
       self.connect(self.c[i].pos, self.pos)
