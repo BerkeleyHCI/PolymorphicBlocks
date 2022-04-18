@@ -19,6 +19,7 @@ class MultimeterAnalog(Block):
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input_positive = self.Port(AnalogSink.empty())
+    self.input_negative = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
     self.select = self.Port(DigitalSink.empty())  # divider or not
@@ -40,7 +41,7 @@ class MultimeterAnalog(Block):
     ), self.range.input, self.output)
     self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
     self.connect(self.rdiv.a.as_analog_sink(), self.range.out0)
-    self.connect(self.rdiv.b.as_ground(), self.gnd)
+    self.connect(self.rdiv.b.as_analog_sink(), self.input_negative)
     (self.range1_nc, ), _ = self.chain(
       self.range.out1,
       self.Block(DummyAnalogSink())
@@ -194,7 +195,8 @@ class MultimeterTest(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.bat = self.Block(AABattery())
+    # also support LiIon AA batteries
+    self.bat = self.Block(AABattery(voltage=(1.1, 4.2)*Volt, actual_voltage=(1.1, 4.2)*Volt))
 
     # Data-only USB port, for example to connect to a computer that can't source USB PD
     # so the PD port can be connected to a dedicated power brick.
@@ -236,6 +238,10 @@ class MultimeterTest(BoardTop):
 
       self.mcu = imp.Block(Mdbt50q_1mv2())
 
+      (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,
+                                         imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
+                                         self.mcu.adc.allocate('v5sense'))
+
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
       self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
 
@@ -266,7 +272,7 @@ class MultimeterTest(BoardTop):
     ) as imp:
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
-        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
 
@@ -308,6 +314,7 @@ class MultimeterTest(BoardTop):
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
+      self.connect(self.measure.input_negative, self.inn_mux.out)
       (self.measure_buffer, self.adc), self.measure_chain = self.chain(
         self.measure.output,
         imp.Block(OpampFollower()),
@@ -378,7 +385,7 @@ class MultimeterTest(BoardTop):
           #
           # 'inn_control=4',
         ])),
-        (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
+        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
         (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
