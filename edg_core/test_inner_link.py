@@ -13,8 +13,10 @@ class TestBundleLink(Link):
     self.source = self.Port(TestBundleSource())
     self.sinks = self.Port(Vector(TestBundleSink()))
 
-    self.a_net = self.connect(self.source.a, self.sinks.map_extract(lambda x: x.a))
-    self.b_net = self.connect(self.source.b, self.sinks.map_extract(lambda x: x.b))
+    self.a_net = self.connect(self.source.a, self.sinks.map_extract(lambda x: x.a),
+                              flatten=True)
+    self.b_net = self.connect(self.source.b, self.sinks.map_extract(lambda x: x.b),
+                              flatten=True)
 
 
 class TestBundleSource(Bundle[TestBundleLink]):

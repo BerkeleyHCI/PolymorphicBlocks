@@ -87,6 +87,9 @@ object ExprBuilder {
         }
         case _ => None
       }
+      def apply(path: Seq[String], suggestedName: Option[String]) = expr.ValueExpr(
+        expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref.Allocate(ExprBuilder.Ref(path: _*), suggestedName))
+      )
     }
 
     def Assign(dst: ref.LocalPath, src: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(

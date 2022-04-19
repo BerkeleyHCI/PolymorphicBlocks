@@ -27,7 +27,7 @@ Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, 
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
 Hierarchy = Dict[TransformUtil.Path, str]  # path -> classname
 class NetlistCollect(TransformUtil.Transform):
-  def process_blocklike(self, path: TransformUtil.Path, block: edgir.BlockLikeTypes) -> None:
+  def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
     short_path = self.short_paths[path]
 
@@ -185,6 +185,9 @@ class NetlistCollect(TransformUtil.Transform):
     self.process_blocklike(context.path, block)
 
   def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
+    self.process_blocklike(context.path, link)
+
+  def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
     self.process_blocklike(context.path, link)
 
   def __init__(self, design: CompiledDesign):

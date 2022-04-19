@@ -130,44 +130,45 @@ class IndicatorSinkRgbLed(Light):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.red = self.Port(DigitalSink.empty())
-    self.green = self.Port(DigitalSink.empty())
-    self.blue = self.Port(DigitalSink.empty())
+    self.signals = self.Port(Vector(DigitalSink.empty()))
+    signal_red = self.signals.append_elt(DigitalSink.empty(), 'red')
+    signal_green = self.signals.append_elt(DigitalSink.empty(), 'green')
+    signal_blue = self.signals.append_elt(DigitalSink.empty(), 'blue')
 
     self.target_current_draw = self.Parameter(RangeExpr(current_draw))
-    self.require(self.red.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
-    self.require(self.green.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
-    self.require(self.blue.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(signal_red.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(signal_green.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
+    self.require(signal_blue.current_draw.within((-1 * self.target_current_draw.upper(), 0)))
     self.require(self.pwr.current_draw.within((0, 3 * self.target_current_draw.upper())))
 
     self.package = self.Block(RgbLedCommonAnode())
 
     self.red_res = self.Block(Resistor(
-      resistance=(self.red.link().voltage.upper() / self.target_current_draw.upper(),
-                  self.red.link().output_thresholds.upper() / self.target_current_draw.lower())))
+      resistance=(signal_red.link().voltage.upper() / self.target_current_draw.upper(),
+                  signal_red.link().output_thresholds.upper() / self.target_current_draw.lower())))
     self.green_res = self.Block(Resistor(
-      resistance=(self.green.link().voltage.upper() / self.target_current_draw.upper(),
-                  self.green.link().output_thresholds.upper() / self.target_current_draw.lower())))
+      resistance=(signal_green.link().voltage.upper() / self.target_current_draw.upper(),
+                  signal_green.link().output_thresholds.upper() / self.target_current_draw.lower())))
     self.blue_res = self.Block(Resistor(
-      resistance=(self.blue.link().voltage.upper() / self.target_current_draw.upper(),
-                  self.blue.link().output_thresholds.upper() / self.target_current_draw.lower())))
+      resistance=(signal_blue.link().voltage.upper() / self.target_current_draw.upper(),
+                  signal_blue.link().output_thresholds.upper() / self.target_current_draw.lower())))
 
     self.connect(self.red_res.a, self.package.k_red)
     self.connect(self.green_res.a, self.package.k_green)
     self.connect(self.blue_res.a, self.package.k_blue)
     self.connect(self.red_res.b.as_digital_sink(
-      current_draw=(-1 * self.red.link().voltage.upper() / self.red_res.actual_resistance.lower(), 0)
-    ), self.red)
+      current_draw=(-1 * signal_red.link().voltage.upper() / self.red_res.actual_resistance.lower(), 0)
+    ), signal_red)
     self.connect(self.green_res.b.as_digital_sink(
-      current_draw=(-1 * self.green.link().voltage.upper() / self.green_res.actual_resistance.lower(), 0)
-    ), self.green)
+      current_draw=(-1 * signal_green.link().voltage.upper() / self.green_res.actual_resistance.lower(), 0)
+    ), signal_green)
     self.connect(self.blue_res.b.as_digital_sink(
-      current_draw=(-1 * self.blue.link().voltage.upper() / self.blue_res.actual_resistance.lower(), 0)
-    ), self.blue)
+      current_draw=(-1 * signal_blue.link().voltage.upper() / self.blue_res.actual_resistance.lower(), 0)
+    ), signal_blue)
 
     self.connect(self.pwr, self.package.a.as_voltage_sink(
       current_draw=(0,
-                    self.red.link().voltage.upper() / self.red_res.actual_resistance.lower() +
-                    self.green.link().voltage.upper() / self.green_res.actual_resistance.lower() +
-                    self.blue.link().voltage.upper() / self.blue_res.actual_resistance.lower())
+                    signal_red.link().voltage.upper() / self.red_res.actual_resistance.lower() +
+                    signal_green.link().voltage.upper() / self.green_res.actual_resistance.lower() +
+                    signal_blue.link().voltage.upper() / self.blue_res.actual_resistance.lower())
     ))

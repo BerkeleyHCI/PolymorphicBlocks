@@ -41,9 +41,13 @@ trait DesignMap[PortType, BlockType, LinkType] {
     throw new NotImplementedError(s"Undefined mapBlockLibrary at $path")
   }
 
-  def mapLink(path: DesignPath, block: elem.Link,
+  def mapLink(path: DesignPath, link: elem.Link,
               ports: SeqMap[String, PortType], links: SeqMap[String, LinkType]): LinkType = {
     throw new NotImplementedError(s"Undefined mapLink at $path")
+  }
+  def mapLinkArray(path: DesignPath, link: elem.LinkArray,
+                   ports: SeqMap[String, PortType], links: SeqMap[String, LinkType]): LinkType = {
+    throw new NotImplementedError(s"Undefined mapLinkArray at $path")
   }
   def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): LinkType = {
     throw new NotImplementedError(s"Undefined mapLinkLibrary at $path")
@@ -110,9 +114,21 @@ trait DesignMap[PortType, BlockType, LinkType] {
     mapLink(path, link, ports, links)
   }
 
+  def wrapLinkArray(path: DesignPath, link: elem.LinkArray): LinkType = {
+    val nameOrder = ProtoUtil.getNameOrder(link.meta)
+    val ports = link.ports.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt) }
+        .sortKeysFrom(nameOrder)
+    val links = link.links.map { case (name, elt) =>
+      name -> wrapLinklike(path + name, elt) }
+        .sortKeysFrom(nameOrder)
+    mapLinkArray(path, link, ports, links)
+  }
+
   def wrapLinklike(path: DesignPath, linkLike: elem.LinkLike): LinkType = {
     linkLike.`type` match {
       case elem.LinkLike.Type.Link(link) => wrapLink(path, link)
+      case elem.LinkLike.Type.Array(link) => wrapLinkArray(path, link)
       case elem.LinkLike.Type.LibElem(link) => mapLinkLibrary(path, link)
       case link => throw new NotImplementedError(s"Unknown LinkLike type at $path: $link")
     }
@@ -151,6 +167,9 @@ trait DesignBlockMap[BlockType] extends DesignMap[Unit, BlockType, Unit] {
 
   final override def mapLink(path: DesignPath, block: elem.Link,
               ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
+  }
+  final override def mapLinkArray(path: DesignPath, block: elem.LinkArray,
+                                  ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
   }
   final override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {
   }

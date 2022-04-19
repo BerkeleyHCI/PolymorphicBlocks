@@ -208,15 +208,16 @@ class MultimeterTest(BoardTop):
 
     # POWER
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
-        self.bat.pwr,
+        self.vbat,
         imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=(3.8, 4.3)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
+      self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
@@ -229,8 +230,8 @@ class MultimeterTest(BoardTop):
 
     # DIGITAL DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
-        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
@@ -243,9 +244,7 @@ class MultimeterTest(BoardTop):
       self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
-      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
-      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
@@ -262,7 +261,7 @@ class MultimeterTest(BoardTop):
 
     # SPEAKER DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_5v.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
@@ -273,15 +272,15 @@ class MultimeterTest(BoardTop):
       # the AA battery is incapable of driving this at full power,
       # so this indicates it will be run at only partial power
       (self.spk_pwr, ), _ = self.chain(
-        self.reg_5v.pwr_out,
+        self.v5v,
         self.Block(ForcedVoltageCurrentDraw((0, 0.1)*Amp)),
         self.spk_drv.pwr
       )
 
     # ANALOG DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
-        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # NEGATIVE PORT
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
@@ -317,7 +316,7 @@ class MultimeterTest(BoardTop):
 
       # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
-      self.connect(self.reg_3v3.pwr_out, self.adc.ref)
+      self.connect(self.v3v3, self.adc.ref)
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
@@ -349,9 +348,9 @@ class MultimeterTest(BoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
-          'rgb_r=36',
-          'rgb_b=2',
-          'rgb_g=3',
+          'rgb_red=36',
+          'rgb_blue=2',
+          'rgb_green=3',
 
           'spi.miso=28',
           'adc_cs=5',
@@ -379,15 +378,15 @@ class MultimeterTest(BoardTop):
         (['reg_5v', 'dutycycle_limit'], Range(0, float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
-        (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['measure', 'res', 'footprint'], 'Resistor_SMD:R_2512_6332Metric'),
 
         # pin footprints to re-select parts with newer parts tables
-        (['driver', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
-        (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
-        (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
-        (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
-        (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
-        (['reg_5v', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+        (['driver', 'fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['gate', 'amp_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
+        (['gate', 'ctl_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D1
+        (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
+        (['gate', 'pwr_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
+        (['reg_5v', 'inductor', 'footprint'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

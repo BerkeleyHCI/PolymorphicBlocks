@@ -47,9 +47,20 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
     Seq(CompilerError.LibraryElement(path, block))
   }
 
-  override def mapLink(path: DesignPath, block: elem.Link,
-              ports: SeqMap[String, Seq[CompilerError]], links: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
+  override def mapLink(path: DesignPath, link: elem.Link,
+                       ports: SeqMap[String, Seq[CompilerError]], links: SeqMap[String, Seq[CompilerError]]):
+      Seq[CompilerError] = {
     (ports.values.flatten ++ links.values.flatten).toSeq
+  }
+  override def mapLinkArray(path: DesignPath, link: elem.LinkArray,
+                            ports: SeqMap[String, Seq[CompilerError]], links: SeqMap[String, Seq[CompilerError]]):
+      Seq[CompilerError] = {
+    val undefinedError = if (link.ports.isEmpty || link.links.isEmpty) {
+      Seq(CompilerError.AbstractBlock(path, link.getSelfClass))
+    } else {
+      Seq()
+    }
+    undefinedError ++ (ports.values.flatten ++ links.values.flatten).toSeq
   }
   override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Seq[CompilerError] = {
     Seq(CompilerError.LibraryElement(path, link))

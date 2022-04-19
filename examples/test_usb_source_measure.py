@@ -280,51 +280,52 @@ class UsbSourceMeasureTest(BoardTop):
     self.vusb = self.connect(self.pwr_usb.pwr)
 
     with self.implicit_connect(
-        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
-        self.pwr_usb.pwr,
+        self.vusb,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
+      self.v5 = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       (self.reg_analog, self.led_analog), _ = self.chain(
-        self.reg_5v.pwr_out,
+        self.v5,
         imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
         imp.Block(VoltageIndicatorLed())
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
-        self.reg_analog.pwr_out,
+        self.vanalog,
         imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower())
       )
-      self.connect(self.reg_analog.pwr_out, self.ref_buf.pwr)
+      self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
     with self.implicit_connect(
-        ImplicitConnect(self.pwr_usb.pwr, [Power]),
-        ImplicitConnect(self.gnd_merge.pwr_out, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
         current=(0, 3)*Amp,
         rds_on=(0, 0.2)*Ohm
       ))
-      self.connect(self.control.pwr_logic, self.reg_3v3.pwr_out)
-      self.connect(self.control.ref_center, self.ref_buf.output)
+      self.connect(self.v3v3, self.control.pwr_logic)
+      self.connect(self.vcenter, self.control.ref_center)
 
     with self.implicit_connect(
-        ImplicitConnect(self.reg_3v3.pwr_out, [Power]),
-        ImplicitConnect(self.reg_3v3.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
-      self.connect(self.pd.vbus, self.pwr_usb.pwr)
+      self.connect(self.pwr_usb.pwr, self.pd.vbus)
       self.connect(self.pwr_usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(IoController())
@@ -335,9 +336,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.gpio.allocate('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate('rgb_r'), self.rgb.red)
-      self.connect(self.mcu.gpio.allocate('rgb_g'), self.rgb.green)
-      self.connect(self.mcu.gpio.allocate('rgb_b'), self.rgb.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
@@ -366,7 +365,7 @@ class UsbSourceMeasureTest(BoardTop):
       (self.adc_i, ), _ = self.chain(self.control.measured_current, imp.Block(Mcp3201()),
                                      shared_spi)
 
-      self.connect(self.reg_analog.pwr_out,
+      self.connect(self.vanalog,
                    self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
                    self.adc_v.ref, self.adc_i.ref)
 
@@ -382,7 +381,7 @@ class UsbSourceMeasureTest(BoardTop):
       self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.outn.port.as_voltage_sink(), self.gnd_merge.pwr_out)
+    self.connect(self.gnd, self.outn.port.as_voltage_sink())
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.as_voltage_sink(), self.control.out)
 
@@ -416,9 +415,9 @@ class UsbSourceMeasureTest(BoardTop):
           'sw1=43',
           'sw2=44',
           'sw3=45',
-          'rgb_b=46',
-          'rgb_g=47',
-          'rgb_r=48',
+          'rgb_blue=46',
+          'rgb_green=47',
+          'rgb_red=48',
 
           'dac_ldac=1',
           'dac_in_cs=2',
@@ -442,13 +441,13 @@ class UsbSourceMeasureTest(BoardTop):
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
-        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
+        (['control', 'int', 'c', 'footprint'], 'Capacitor_SMD:C_0603_1608Metric'),
 
       ],
       class_refinements=[

@@ -66,14 +66,14 @@ class TestHighSwitch(BoardTop):
 
     self.pwr_conn = self.Block(CalSolPowerConnector())
 
-    self.vin = self.connect(self.pwr_conn.pwr)  # TODO should autogenerate better names in future
+    self.vin = self.connect(self.pwr_conn.pwr)
     self.gnd = self.connect(self.pwr_conn.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.pwr_conn.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.pwr, ), _ = self.chain(
-        self.pwr_conn.pwr,
+        self.vin,
         imp.Block(Tps561201(output_voltage=3.3*Volt(tol=0.05))))
 
     self.v3v3 = self.connect(self.pwr.pwr_out)
@@ -82,8 +82,8 @@ class TestHighSwitch(BoardTop):
     self.duck = self.Block(DuckLogo())
 
     with self.implicit_connect(
-      ImplicitConnect(self.pwr.pwr_out, [Power]),
-      ImplicitConnect(self.pwr.gnd, [Common]),
+      ImplicitConnect(self.v3v3, [Power]),
+      ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -96,25 +96,21 @@ class TestHighSwitch(BoardTop):
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       (self.vsense, ), _ = self.chain(
-        self.pwr_conn.pwr,
+        self.vin,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
         self.mcu.adc.allocate('vsense'))
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # CAN RGB
-      self.connect(self.mcu.gpio.allocate('rgb1_red'), self.rgb1.red)
-      self.connect(self.mcu.gpio.allocate('rgb1_grn'), self.rgb1.green)
-      self.connect(self.mcu.gpio.allocate('rgb1_blue'), self.rgb1.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb1'), self.rgb1.signals)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # system RGB 2
-      self.connect(self.mcu.gpio.allocate('rgb2_red'), self.rgb2.red)
-      self.connect(self.mcu.gpio.allocate('rgb2_grn'), self.rgb2.green)
-      self.connect(self.mcu.gpio.allocate('rgb2_blue'), self.rgb2.blue)
+      self.connect(self.mcu.gpio.allocate_vector('rgb2'), self.rgb2.signals)
 
     self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
-    self.connect(self.pwr_conn.pwr, self.limit_light_current.pwr_in)
+    self.connect(self.vin, self.limit_light_current.pwr_in)
     with self.implicit_connect(
         ImplicitConnect(self.limit_light_current.pwr_out, [Power]),
-        ImplicitConnect(self.pwr.gnd, [Common]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.light = ElementDict[LightsDriver]()
       for i in range(4):
@@ -142,10 +138,10 @@ class TestHighSwitch(BoardTop):
           'can.rxd=44',
           'vsense=21',
           'rgb1_red=28',
-          'rgb1_grn=23',
+          'rgb1_green=23',
           'rgb1_blue=22',
           'rgb2_red=18',
-          'rgb2_grn=15',
+          'rgb2_green=15',
           'rgb2_blue=13',
           'light_00=12',
           'light_01=8',

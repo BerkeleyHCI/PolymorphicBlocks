@@ -138,7 +138,7 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
         "link" -> Link.Link(selfClass="link",
           ports = Map(
             "source" -> Port.Port(selfClass="sourcePort"),
-            "sinks" -> Port.Array(selfClass="sinkPort", 3, Port.Port(selfClass="sinkPort")),
+            "sinks" -> Port.Array(selfClass="sinkPort", Seq("0", "1", "2"), Port.Port(selfClass="sinkPort")),
           )
         )
       ),
@@ -196,7 +196,7 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
         "link" -> Link.Link(selfClass="link",
           ports = Map(
             "source" -> Port.Port(selfClass="sourcePort"),
-            "sinks" -> Port.Array(selfClass="sinkPort", 0, Port.Port(selfClass="sinkPort")),
+            "sinks" -> Port.Array(selfClass="sinkPort", Seq(), Port.Port(selfClass="sinkPort")),
           )
         )
       ),

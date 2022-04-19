@@ -123,10 +123,14 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     // do nothing
   }
 
-  override def mapLink(path: DesignPath, block: elem.Link,
-              ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
-    block.params.foreach { case (name, _) => paramDefs.add(path + name) }
-    block.constraints.foreach { case (name, constr) => mapConstraint(path, name, constr) }
+  override def mapLink(path: DesignPath, link: elem.Link,
+                       ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
+    link.params.foreach { case (name, _) => paramDefs.add(path + name) }
+    link.constraints.foreach { case (name, constr) => mapConstraint(path, name, constr) }
+  }
+  override def mapLinkArray(path: DesignPath, link: elem.LinkArray,
+                            ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
+    link.constraints.foreach { case (name, constr) => mapConstraint(path, name, constr) }
   }
   override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {
     // do nothing

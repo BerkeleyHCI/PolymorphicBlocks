@@ -15,14 +15,14 @@ class SwdLink(Link):
   def contents(self) -> None:
     super().contents()
     
-    self.swdio = self.connect(self.host.swdio, self.device.swdio,
-                              self.pull.map_extract(lambda port: port.swdio))
-    self.swclk = self.connect(self.host.swclk, self.device.swclk,
-                              self.pull.map_extract(lambda port: port.swclk))
-    self.swo = self.connect(self.host.swo, self.device.swo,
-                            self.pull.map_extract(lambda port: port.swo))
-    self.reset = self.connect(self.host.reset, self.device.reset,
-                              self.pull.map_extract(lambda port: port.reset))
+    self.swdio = self.connect(self.host.swdio, self.device.swdio, self.pull.map_extract(lambda port: port.swdio),
+                              flatten=True)
+    self.swclk = self.connect(self.host.swclk, self.device.swclk, self.pull.map_extract(lambda port: port.swclk),
+                              flatten=True)
+    self.swo = self.connect(self.host.swo, self.device.swo, self.pull.map_extract(lambda port: port.swo),
+                            flatten=True)
+    self.reset = self.connect(self.host.reset, self.device.reset, self.pull.map_extract(lambda port: port.reset),
+                              flatten=True)
 
 
 class SwdHostPort(Bundle[SwdLink]):

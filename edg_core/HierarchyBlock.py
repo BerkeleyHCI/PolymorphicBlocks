@@ -5,7 +5,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, ConnectedPorts
+from .Blocks import BaseBlock, Connection
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -113,7 +113,7 @@ def init_in_parent(fn: InitType) -> InitType:
 class ImplicitConnect:
   """Implicit connect definition. a port and all the implicit connect tags it supports.
   To implicitly connect to a sub-block's port, this tags list must be a superset of the sub-block port's tag list."""
-  def __init__(self, port: Port, tags: List[PortTag]) -> None:
+  def __init__(self, port: Union[Port, Connection], tags: List[PortTag]) -> None:
     self.port = port
     self.tags = set(tags)
 
@@ -157,7 +157,7 @@ class ChainConnect:
   """Return type of chain connect operation, that can't be used in EDG operations except assignment to instance
   variable for naming.
   """
-  def __init__(self, blocks: List[Block], links: List[ConnectedPorts]):
+  def __init__(self, blocks: List[Block], links: List[Connection]):
     self.blocks = blocks
     self.links = links
 
@@ -217,17 +217,11 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     ref_map = self._get_ref_map(edgir.LocalPath())
 
-    # opportunistic check in the frontend that all internal ports marked connected are connected
-    all_connected_ports = IdentitySet[BasePort]()
-    for name, connect in self._connects.items():
-      if len(connect.ports) > 1:
-        all_connected_ports.update(connect.ports)
-
     for name, block in self._blocks.items():
       pb.blocks[name].lib_elem.target.name = block._get_def_name()
 
     # actually generate the links and connects
-    link_chain_names = IdentityDict[ConnectedPorts, List[str]]()  # prefer chain name where applicable
+    link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
     for name, chain in self._chains.items_ordered():
       for i, connect in enumerate(chain.links):
@@ -240,30 +234,31 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         else:
           name = link_chain_names[connect][0]  # arbitrarily pick the first one for now, TODO disambiguate?
 
-      connect_elts = connect.generate_connections()
+      connect_elts = connect.make_connection(self)
       if connect_elts is None:  # single port net - effectively discard
         pass
-      elif connect_elts.link_type is None:  # generate direct export
-        exterior_port = connect_elts.bridged_connects[0][0]
-        interior_port = connect_elts.direct_connects[0][0]
-        assert exterior_port._type_of() == interior_port._type_of()
-        if isinstance(exterior_port, Vector):  # TODO more principled port-array connection
-          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
-          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
-        elif isinstance(exterior_port, Port):
-          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.bridged_connects[0][0]])
-          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.direct_connects[0][0]])
+
+      elif isinstance(connect_elts, Connection.Export):  # generate direct export
+        if connect_elts.is_array:
+          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
         else:
-          raise NotImplementedError(f"unknown exported port type {exterior_port}")
+          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
         self._namespace_order.append(f"(conn){name}")
-      else:  # generate link
+
+      elif isinstance(connect_elts, Connection.ConnectedLink):  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
 
+        if connect_elts.is_link_array:
+          pb.links[name].array.self_class.target.name = connect_elts.link_type._static_def_name()
+        else:
+          pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
         self._namespace_order.append(f"{name}")
-        pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
 
         for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
           assert isinstance(self_port, Port)
+          assert not connect_elts.is_link_array, "bridged arrays not supported"
           assert self_port.bridge_type is not None
 
           port_name = self_port._name_from(self)
@@ -279,10 +274,16 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           pb.constraints[f"(conn){name}_b{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
           self._namespace_order.append(f"(conn){name}_b{idx}")
 
-        for idx, (subelt_port, link_port_path) in enumerate(connect_elts.direct_connects):
-          pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
-          pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+        for idx, (subelt_port, link_port_path) in enumerate(connect_elts.link_connects):
+          if connect_elts.is_link_array:
+            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.block_port.ref.CopyFrom(ref_map[subelt_port])
+            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+          else:
+            pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
+            pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
           self._namespace_order.append(f"(conn){name}_d{idx}")
+      else:
+        raise ValueError("unknown connect type")
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
@@ -303,7 +304,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     """Returns an IdentitySet of all ports (boundary and interior) involved in a connect or export."""
     rtn = IdentitySet[BasePort]()
     for name, connect in self._connects.items_ordered():
-      rtn.update(connect.ports)
+      rtn.update(connect.ports())
     return rtn
 
   # TODO make this non-overriding?
@@ -327,13 +328,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
-  def chain(self, *elts: Union[BasePort, Block]) -> ChainConnect:
+  def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
     if not elts:
       return self._chains.register(ChainConnect([], []))
     chain_blocks = []
     chain_links = []
 
-    if isinstance(elts[0], BasePort):
+    if isinstance(elts[0], (BasePort, Connection)):
       current_port = elts[0]
     elif isinstance(elts[0], Block):
       outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
@@ -385,6 +386,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
                         f"got {implicit} of type {type(implicit)}")
 
     return ImplicitScope(self, implicits)
+
+  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+    assert not flatten, "flatten only allowed in links"
+    return super().connect(*connects, flatten=flatten)
 
   CastableType = TypeVar('CastableType')
   from .ConstraintExpr import BoolLike, BoolExpr, FloatLike, FloatExpr, RangeLike, RangeExpr

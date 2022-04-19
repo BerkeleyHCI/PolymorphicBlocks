@@ -56,8 +56,10 @@ class CanDiffLink(Link):
   def contents(self) -> None:
     super().contents()
 
-    self.canh = self.connect(self.nodes.map_extract(lambda node: node.canh))
-    self.canl = self.connect(self.nodes.map_extract(lambda node: node.canl))
+    self.canh = self.connect(self.nodes.map_extract(lambda node: node.canh),
+                             flatten=True)
+    self.canl = self.connect(self.nodes.map_extract(lambda node: node.canl),
+                             flatten=True)
 
 
 class CanDiffPort(Bundle[CanDiffLink]):
