@@ -62,10 +62,7 @@ class JlcCapacitorTable(JlcTable):
       except (KeyError, PartsTableUtil.ParseError):
         return None
 
-    raw_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-      'JLCPCB_SMT_Parts_Library.csv'
-    ], 'resources'), encoding='gb2312')
-    return raw_table.map_new_columns(parse_row).sort_by(
+    return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.FOOTPRINT], row[cls.COST]]
     )
 
