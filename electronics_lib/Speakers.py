@@ -206,5 +206,5 @@ class ConnectorSpeaker(Speaker):
 
     self.conn = self.Block(PassiveConnector())
 
-    self.connect(self.input.a, self.conn.pins.allocate().as_analog_source(impedance=impedance))
-    self.connect(self.input.b, self.conn.pins.allocate().as_analog_source(impedance=impedance))
+    self.connect(self.input.a, self.conn.pins.allocate('1').as_analog_sink(impedance=impedance))
+    self.connect(self.input.b, self.conn.pins.allocate('2').as_analog_sink(impedance=impedance))

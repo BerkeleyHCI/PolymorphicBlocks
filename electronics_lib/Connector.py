@@ -30,6 +30,7 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
     max_pin_index = 0
     for pin in pins:
       self.pins.append_elt(Passive(), pin)
+      assert pin != '0', "cannot have zero pin, explicit pin numbers through suggested_name are required"
       max_pin_index = max(max_pin_index, int(pin))
     if length == 0:
       length = max_pin_index
@@ -37,8 +38,10 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
     self.assign(self.actual_length, length)
     self.require(max_pin_index <= self.actual_length,
                  f"maximum pin index {max_pin_index} over requested length {length}")
-    self.require(self.allowed_pins[0] <= self.actual_length <= self.allowed_pins[1],
-                 f"requested length {length} outside allowed range {self.allowed_pins[0]} - {self.allowed_pins[1]}")
+    self.require(self.actual_length >= self.allowed_pins[0],
+                 f"requested length {length} below allowed range {self.allowed_pins[0]} - {self.allowed_pins[1]}")
+    self.require(self.actual_length <= self.allowed_pins[1],
+                 f"requested length {length} above allowed range {self.allowed_pins[0]} - {self.allowed_pins[1]}")
 
     (footprint, mfr, part) = self.part_footprint_mfr_name(length)
     self.footprint(
