@@ -39,6 +39,7 @@ from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
 
 from .AdcSpi_Mcp3201 import Mcp3201
+from .AdcSpi_Mcp3561 import Mcp3561
 from .DacSpi_Mcp4901 import Mcp4921
 
 from .Rtc_Pcf2129 import Pcf2129

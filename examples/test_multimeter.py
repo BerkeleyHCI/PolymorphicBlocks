@@ -315,16 +315,18 @@ class MultimeterTest(BoardTop):
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
       self.connect(self.measure.input_negative, self.inn_mux.out)
-      (self.measure_buffer, self.adc), self.measure_chain = self.chain(
+      (self.measure_buffer, ), _ = self.chain(
         self.measure.output,
-        imp.Block(OpampFollower()),
-        imp.Block(Mcp3201()),
+        imp.Block(OpampFollower()))
+      (self.adc, ), _ = self.chain(
+        imp.Block(Mcp3561()),
         shared_spi)
+      self.connect(self.adc.pwr, self.reg_3v3.pwr_out)
+      self.connect(self.adc.pwra, self.reg_3v3.pwr_out)  # TODO analog from analog supply
+      self.connect(self.adc.vins.allocate(), self.measure_buffer.output)
+      self.connect(self.adc.vins.allocate(), self.ref_buf.output)
       self.connect(self.mcu.gpio.allocate('measure_select'), self.measure.select)
-
-      # External ADC option, semi-pin-compatible with high resolution MCP3550/1/3 ADCs
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
-      self.connect(self.reg_3v3.pwr_out, self.adc.ref)
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
