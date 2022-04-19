@@ -102,6 +102,4 @@ class Mcp3561(Block):
       self.dvdd_cap_0 = imp.Block(cap_model).connected(pwr=self.ic.dvdd)
       self.dvdd_cap_1 = imp.Block(cap_model).connected(pwr=self.ic.dvdd)
 
-    self.vref_cap = self.Block(Capacitor(10*uFarad(tol=0.2), (0, 10)*Volt))
-    self.connect(self.vref_cap.pos.as_analog_sink(), self.ref)
-    self.connect(self.vref_cap.neg.as_ground(), self.gnd)
+      self.vref_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2))).connected(pwr=self.ic.vrefp)
