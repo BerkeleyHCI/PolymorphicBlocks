@@ -32,7 +32,13 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
       Block.Block("concreteSinksBlock",
         superclasses = Seq("baseSinksBlock"),
         ports = Map(
-          "port" -> Port.Array("sinkPort", 2, Port.Library("sinkPort")),
+          "port" -> Port.Array("sinkPort", Seq("0", "1"), Port.Library("sinkPort")),
+        )
+      ),
+      Block.Block("emptySinksBlock",
+        superclasses = Seq("baseSinksBlock"),
+        ports = Map(
+          "port" -> Port.Array("sinkPort", Seq(), Port.Library("sinkPort")),
         )
       ),
       Block.Block("concreteWrapperBlock",
@@ -41,6 +47,17 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         ),
         blocks = Map(
           "inner" -> Block.Library("concreteSinksBlock")
+        ),
+        constraints = Map(
+          "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
+        )
+      ),
+      Block.Block("emptyWrapperBlock",
+        ports = Map(
+          "port" -> Port.Array("sinkPort"),
+        ),
+        blocks = Map(
+          "inner" -> Block.Library("emptySinksBlock")
         ),
         constraints = Map(
           "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
@@ -152,6 +169,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         equal(Some(IntValue(2)))
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "0" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "1" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
   }
 
   "Compiler on design with nested sink" should "expand across levels of hierarchy" in {
@@ -197,5 +219,73 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         equal(Some(IntValue(2)))
     compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "0" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "1" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + "0" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + "1" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+  }
+
+  "Compiler on design with partially connected ports" should "work" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "source0" -> Block.Library("sourceBlock"),
+        "sinks" -> Block.Library("concreteSinksBlock"),
+      ),
+      links = Map(
+        "link0" -> Link.Library("link"),
+        "link1" -> Link.Library("link"),
+      ),
+      constraints = Map(
+        "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
+        "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
+      )
+    ))
+    val referenceConstraints = Map(
+      "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
+      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
+    )
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    val dsv = new DesignStructuralValidate()
+    dsv.map(Design(compiled.contents.get)) should equal(Seq())
+
+    val drv = new DesignRefsValidate()
+    drv.validate(Design(compiled.contents.get)) should equal(Seq())
+
+    compiled.contents.get.constraints should equal(referenceConstraints)
+
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
+        equal(Some(IntValue(2)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
+        equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
+
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "0" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "1" + IndirectStep.IsConnected) should
+        equal(Some(BooleanValue(false)))
+  }
+
+  "Compiler on design with empty nested sink" should "not fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "sinks" -> Block.Library("emptyWrapperBlock"),
+      ),
+      links = Map(),
+      constraints = Map()
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    val dsv = new DesignStructuralValidate()
+    dsv.map(Design(compiled.contents.get)) should equal(Seq())
+
+    val drv = new DesignRefsValidate()
+    drv.validate(Design(compiled.contents.get)) should equal(Seq())
+
+    compiled.contents.get.constraints shouldBe empty
   }
 }

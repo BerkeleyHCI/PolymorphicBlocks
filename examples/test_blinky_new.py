@@ -142,12 +142,13 @@ class NewBlinkyMagsense(BoardTop):
 
     self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-    self.connect(self.jack.pwr, self.buck.pwr_in)
-    self.connect(self.jack.gnd, self.buck.gnd)
+    self.vin = self.connect(self.jack.pwr, self.buck.pwr_in)
+    self.gnd = self.connect(self.jack.gnd, self.buck.gnd)
+    self.v3v3 = self.connect(self.buck.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.jack.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -173,13 +174,13 @@ class NewBlinkyLightsense(BoardTop):
 
     self.usb = self.Block(UsbMicroBReceptacle())
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-    self._v5 = self.connect(self.usb.pwr, self.buck.pwr_in)
-    self._gnd = self.connect(self.usb.gnd, self.buck.gnd)
-    self._v3 = self.connect(self.buck.pwr_out)
+    self.v5 = self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.gnd = self.connect(self.usb.gnd, self.buck.gnd)
+    self.v3v3 = self.connect(self.buck.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
       self.esd = imp.Block(UsbEsdDiode())

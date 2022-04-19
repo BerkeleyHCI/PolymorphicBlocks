@@ -80,7 +80,8 @@ class ScalaCompilerInstance:
     self.request_serializer.write(request)
     result = self.response_deserializer.read()
     assert result is not None
-    assert result.HasField('design'), f"no compiled result, with error {result.error}"
+    if not result.HasField('design'):
+      raise CompilerCheckError(f"no compiled result, with error {result.error}")
     if result.error and errors_fatal:
       raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign(result)

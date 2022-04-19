@@ -117,7 +117,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   MAX_CAP_PACKAGE = 'Capacitor_SMD:C_1206_3216Metric' # default package for largest possible capacitor
 
   @init_in_parent
-  def __init__(self, *args, footprint_spec: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs):
+  def __init__(self, *args, footprint: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs):
     """
     footprint_spec specifies an optional constraint on footprint
     derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.
@@ -125,7 +125,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
     super().__init__(*args, **kwargs)
 
     self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage,
-                   footprint_spec, derating_coeff)
+                   footprint, derating_coeff)
 
     # Output values
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
@@ -178,7 +178,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   ]
 
   def select_capacitor_no_prod_table(self, capacitance: Range, voltage: Range,
-                                     footprint_spec: str, derating_coeff: float) -> None:
+                                     footprint: str, derating_coeff: float) -> None:
     """
     Selects a generic capacitor without using product tables
 
@@ -192,10 +192,10 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
 
     def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
 
-      if footprint_spec == "":
+      if footprint == "":
         package_options = self.PACKAGE_SPECS
       else:
-        package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint_spec]
+        package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint]
 
       for package in package_options:
         if package.max >= nominal_capacitance:
@@ -212,10 +212,10 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
 
       self.assign(self.selected_nominal_capacitance, num_caps * nominal_capacitance)
 
-      if footprint_spec == "":
+      if footprint == "":
         split_package = self.MAX_CAP_PACKAGE
       else:
-        split_package = footprint_spec
+        split_package = footprint
 
       cap_model = DummyCapacitor(capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
                                  footprint=split_package,
@@ -227,13 +227,13 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
         self.connect(self.c[i].neg, self.neg)
     else:
       value = ESeriesUtil.choose_preferred_number(nominal_capacitance, ESeriesUtil.SERIES[24], 0)
-      assert value is not None, "cannot generate a preferred number"
-      valid_footprint_spec = select_package(value, voltage)
-      assert valid_footprint_spec is not None, "cannot generate a valid footprint spec"
+      assert value is not None, "cannot select a preferred number"
+      valid_footprint = select_package(value, voltage)
+      assert valid_footprint is not None, "cannot select a valid footprint"
       self.assign(self.selected_nominal_capacitance, value)
 
       self.footprint(
-        'C', valid_footprint_spec,
+        'C', valid_footprint,
         {
           '1': self.pos,
           '2': self.neg,

@@ -18,6 +18,7 @@ class TestBlock(TestBlockBase):
   def __init__(self) -> None:
     super().__init__()
     self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
+    self.array_init = self.Parameter(ArrayBoolExpr([False, True, False]))
     self.port_lit = self.Port(TestPortBase(117), optional=True)
 
 
@@ -81,10 +82,14 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.ports['port_lit'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
 
   def test_param_def(self) -> None:
-    self.assertEqual(len(self.pb.params), 2)
+    self.assertEqual(len(self.pb.params), 3)
     self.assertTrue(self.pb.params['range_init'].HasField('range'))
+    self.assertTrue(self.pb.params['array_init'].HasField('array'))
 
   def test_param_init(self) -> None:
     self.assertEqual(
       edgir.AssignLit(['range_init'], Range(-4.2, -1.3)),
       self.pb.constraints["(init)range_init"])
+    self.assertEqual(
+      edgir.AssignLit(['array_init'], [False, True, False]),
+      self.pb.constraints["(init)array_init"])

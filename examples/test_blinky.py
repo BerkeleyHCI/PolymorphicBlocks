@@ -62,13 +62,12 @@ class TestBlinkyBroken(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
-
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.pwr, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -84,21 +83,20 @@ class TestBlinkyFlattened(BoardTop):
   def contents(self):
     super().contents()
     self.usb = self.Block(UsbDeviceCReceptacle())
-
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.pwr, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -166,16 +164,16 @@ class TestBlinkyComplete(BoardTop):
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.pwr, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 

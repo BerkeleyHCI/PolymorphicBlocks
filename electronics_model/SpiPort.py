@@ -12,9 +12,12 @@ class SpiLink(Link):
 
   def contents(self) -> None:
     super().contents()
-    self.sck = self.connect(self.master.sck, self.devices.map_extract(lambda device: device.sck))
-    self.miso = self.connect(self.master.miso, self.devices.map_extract(lambda device: device.miso))
-    self.mosi = self.connect(self.master.mosi, self.devices.map_extract(lambda device: device.mosi))
+    self.sck = self.connect(self.master.sck, self.devices.map_extract(lambda device: device.sck),
+                            flatten=True)
+    self.miso = self.connect(self.master.miso, self.devices.map_extract(lambda device: device.miso),
+                             flatten=True)
+    self.mosi = self.connect(self.master.mosi, self.devices.map_extract(lambda device: device.mosi),
+                             flatten=True)
 
 
 class SpiMaster(Bundle[SpiLink]):

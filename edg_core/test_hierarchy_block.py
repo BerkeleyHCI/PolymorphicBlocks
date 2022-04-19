@@ -66,9 +66,11 @@ class MultiConnectBlock(Block):
     self.source = self.Block(TestBlockSource())
     self.sink1 = self.Block(TestBlockSink())
     self.sink2 = self.Block(TestBlockSink())
+    self.sink3 = self.Block(TestBlockSink())
 
     self.test_net = self.connect(self.source.source, self.sink1.sink)
     self.connect(self.source.source, self.sink2.sink)  # not named, to not conflict with the first
+    self.connect(self.test_net, self.sink3.sink)
 
 
 class MultiConnectBlockProtoTestCase(unittest.TestCase):
@@ -76,7 +78,7 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
     self.pb = MultiConnectBlock()._elaborated_def_to_proto()
 
   def test_connectivity(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 3)
+    self.assertEqual(len(self.pb.constraints), 4)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
@@ -98,6 +100,14 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, self.pb.constraints.values())
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink3'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, self.pb.constraints.values())
 

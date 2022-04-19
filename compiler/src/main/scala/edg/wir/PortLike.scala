@@ -1,5 +1,7 @@
 package edg.wir
 
+import edg.EdgirUtils.SimpleLibraryPath
+
 import scala.collection.{SeqMap, mutable}
 import edgir.init.init
 import edgir.elem.elem
@@ -33,7 +35,7 @@ class Port(pb: elem.Port) extends PortLike
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case suffix => throw new InvalidPathException(s"No suffix $suffix in Port")
+    case suffix => throw new InvalidPathException(s"No elements (of $suffix) in Port")
   }
 
   def toEltPb: elem.Port = {
@@ -60,7 +62,7 @@ class Bundle(pb: elem.Bundle) extends PortLike
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Block")
+        throw new InvalidPathException(s"No elements $subname (of $suffix) in Bundle ${pb.getSelfClass.toSimpleString}")
       }
   }
 
@@ -94,7 +96,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Block")
+        throw new InvalidPathException(s"No element $subname (of $suffix) in PortArray ${pb.getSelfClass.toSimpleString}")
       }
   }
 
@@ -126,7 +128,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 case class PortLibrary(target: ref.LibraryPath) extends PortLike {
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+    case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
   }
   def toPb: elem.PortLike = elem.PortLike(elem.PortLike.Is.LibElem(target))
   override def isElaborated: Boolean = false

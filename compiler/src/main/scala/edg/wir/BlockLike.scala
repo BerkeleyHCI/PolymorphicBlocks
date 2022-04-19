@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
@@ -45,7 +46,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
       } else if (links.contains(subname)) {
         links(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname in Block")
+        throw new InvalidPathException(s"No element $subname (of $suffix) in Block ${pb.getSelfClass.toSimpleString}")
       }
   }
 
@@ -134,7 +135,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case _ => throw new InvalidPathException(s"Can't resolve into library $target")
+    case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
   }
   def toPb: elem.BlockLike = elem.BlockLike(elem.BlockLike.Type.LibElem(target))
   override def isElaborated: Boolean = false

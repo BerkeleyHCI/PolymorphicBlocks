@@ -45,8 +45,8 @@ class Debugger(BoardTop):
     self.gnd = self.connect(self.usb.gnd)
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb.pwr, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.usb_reg = imp.Block(LinearRegulator(3.3*Volt(tol=0.05)))
       self.usb_esd = imp.Block(UsbEsdDiode())
@@ -55,17 +55,18 @@ class Debugger(BoardTop):
       self.target_reg = imp.Block(Ap2204k_Block(3.3*Volt(tol=0.05)))
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
+    self.vtarget = self.connect(self.target_reg.pwr_out)
 
     with self.implicit_connect(
-        ImplicitConnect(self.target_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.vtarget, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
       self.led_target = imp.Block(VoltageIndicatorLed())
 
     with self.implicit_connect(
-        ImplicitConnect(self.usb_reg.pwr_out, [Power]),
-        ImplicitConnect(self.usb.gnd, [Common]),
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -99,13 +100,8 @@ class Debugger(BoardTop):
     self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
     self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
-    self.connect(self.mcu.gpio.allocate('rgb_usb_red'), self.rgb_usb.red)
-    self.connect(self.mcu.gpio.allocate('rgb_usb_grn'), self.rgb_usb.green)
-    self.connect(self.mcu.gpio.allocate('rgb_usb_blue'), self.rgb_usb.blue)
-
-    self.connect(self.mcu.gpio.allocate('rgb_tgt_red'), self.rgb_tgt.red)
-    self.connect(self.mcu.gpio.allocate('rgb_tgt_grn'), self.rgb_tgt.green)  # pinning on stock ST-Link
-    self.connect(self.mcu.gpio.allocate('rgb_tgt_blue'), self.rgb_tgt.blue)
+    self.connect(self.mcu.gpio.allocate_vector('rgb_usb'), self.rgb_usb.signals)
+    self.connect(self.mcu.gpio.allocate_vector('rgb_tgt'), self.rgb_tgt.signals)
 
     self.connect(self.mcu.gpio.allocate('sw_usb'), self.sw_usb.out)
 
@@ -141,10 +137,10 @@ class Debugger(BoardTop):
           'lcd_spi.miso=NC',
           'lcd_cs=28',
           'rgb_usb_red=14',
-          'rgb_usb_grn=12',
+          'rgb_usb_green=12',
           'rgb_usb_blue=11',
           'rgb_tgt_red=13',
-          'rgb_tgt_grn=30',
+          'rgb_tgt_green=30',  # pinning on stock st-link
           'rgb_tgt_blue=10',
           'sw_usb=38',
         ]))

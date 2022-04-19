@@ -6,12 +6,11 @@ from typing import *
 import edgir
 from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
-from .ConstraintExpr import NumericOp, BoolOp, RangeSetOp, BoolExpr, ConstraintExpr, Binding, \
-  UnarySetOpBinding, BinarySetOpBinding, ParamBinding, \
-  FloatExpr, RangeExpr, StringExpr, IntExpr, RangeLike
+from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 
 
 class MapExtractBinding(Binding):
@@ -29,95 +28,6 @@ class MapExtractBinding(Binding):
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
     pb.map_extract.path.CopyFrom(contained_map[self.elt])
     return pb
-
-
-class SampleElementBinding(Binding):
-  def __init__(self):
-    super().__init__()
-
-  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
-    return []
-
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    raise ValueError  # can't be used directly
-
-
-SelfType = TypeVar('SelfType', bound='ArrayExpr')
-ArrayType = TypeVar('ArrayType', bound=ConstraintExpr)
-class ArrayExpr(ConstraintExpr[Any, Any], Generic[ArrayType]):
-  def __init__(self, elt: ArrayType) -> None:
-    super().__init__()
-    # TODO: should array_type really be bound?
-    self.elt: ArrayType = elt._new_bind(SampleElementBinding())
-
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:
-    # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    clone: SelfType = type(self)(self.elt)
-    clone.binding = binding
-    return clone
-
-  def _bind(self: SelfType, binding: Binding) -> SelfType:
-    # TODO dedup w/ ConstraintExpr, but here the constructor arg is elt
-    assert not self._is_bound()
-    assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
-    if not isinstance(binding, ParamBinding):
-      assert self.initializer is None, "Only Parameters may have initializers"
-    clone: SelfType = type(self)(self.elt)
-    clone.binding = binding
-    return clone
-
-  @classmethod
-  def _to_expr_type(cls, input: ArrayExpr) -> ArrayExpr:
-    return input
-
-  def _decl_to_proto(self) -> edgir.ValInit:
-    raise ValueError  # currently not possible to declare an array in the frontend
-
-  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayType:
-    return self.elt._new_bind(UnarySetOpBinding(self, op))
-
-  def sum(self) -> ArrayType:
-    return self._create_unary_set_op(NumericOp.sum)
-
-  def min(self) -> FloatExpr:
-    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min))
-
-  def max(self) -> FloatExpr:
-    return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max))
-
-  def intersection(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.intersection)
-
-  def hull(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.hull)
-
-  def equal_any(self) -> ArrayType:
-    return self._create_unary_set_op(RangeSetOp.equal_any)
-
-  # TODO: not sure if ArrayType is being checked properly =(
-  def any(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
-
-  def all(self: ArrayExpr[BoolExpr]) -> BoolExpr:
-    return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
-
-
-class ArrayRangeExpr(ArrayExpr[RangeExpr]):
-  def _create_binary_set_op(self,
-                        lhs: ConstraintExpr,
-                        rhs: ConstraintExpr,
-                        op: NumericOp) -> ArrayRangeExpr:
-    """Creates a new expression that is the result of a binary operation on inputs, and returns my own type.
-    Any operand can be of any type (eg, scalar-array, array-array, array-scalar), and it is up to the caller
-    to ensure this makes sense. No type checking happens here."""
-    assert lhs._is_bound() and rhs._is_bound()
-    return self._new_bind(BinarySetOpBinding(lhs, rhs, op))
-
-  # TODO support pointwise multiply in the future
-  def __rtruediv__(self, other: RangeLike) -> ArrayRangeExpr:
-    """Broadcast-pointwise invert-and-multiply (division with array as rhs)"""
-    return self._create_binary_set_op(
-      self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
 @non_library
@@ -178,10 +88,10 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elt_sample = tpe._bind(self)
     self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
-    self._allocates: List[Tuple[Optional[str], VectorType]] = []  # used to track .allocate() for ref_map
+    self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._allocated = ArrayExpr(StringExpr())._bind(AllocatedBinding(self))
+    self._allocated = ArrayStringExpr()._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -217,7 +127,7 @@ class Vector(BaseVector, Generic[VectorType]):
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     elts_items = self._elts.items() if self._elts is not None else []
 
-    return super()._get_ref_map(prefix) + IdentityDict(
+    return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
       [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
        (self._allocated, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
@@ -277,23 +187,34 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
-    assert builder.get_enclosing_block() is block_parent._parent, "can only allocate ports of internal blocks"
+    assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
+      "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = type(self._tpe).empty()._bind(self)
     self._allocates.append((suggested_name, allocated))
     return allocated
 
-  def allocate_vector(self) -> Vector[VectorType]:
+  def allocate_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
     """Returns a new dynamic-length, array-port slice of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
+    Can only be used as an array elements sink.
     """
-    raise NotImplementedError
+    from .HierarchyBlock import Block
+    assert self._is_bound(), "not bound, can't allocate array elements"
+    block_parent = self._block_parent()
+    assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
+    assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
+      "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
+    # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
+    allocated = Vector(type(self._tpe).empty())._bind(self)
+    self._allocates.append((suggested_name, allocated))
+    return allocated
 
   def length(self) -> IntExpr:
     return self._length
 
-  def allocated(self) -> ArrayExpr[StringExpr]:
+  def allocated(self) -> ArrayStringExpr:
     return self._allocated
 
   def _type_of(self) -> Hashable:
@@ -303,73 +224,85 @@ class Vector(BaseVector, Generic[VectorType]):
     """Returns the type of the element."""
     return type(self._elt_sample)
 
-  ExtractConstraintType = TypeVar('ExtractConstraintType', bound=ConstraintExpr)
   ExtractPortType = TypeVar('ExtractPortType', bound=Port)
+  # See the note in ArrayExpr for why this is expanded.
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], BoolExpr]) -> ArrayBoolExpr: ...
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], IntExpr]) -> ArrayIntExpr: ...
+  @overload
+  def map_extract(self, selector: Callable[[VectorType], FloatExpr]) -> ArrayFloatExpr: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
   @overload
-  def map_extract(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ArrayExpr[ExtractConstraintType]: ...
+  def map_extract(self, selector: Callable[[VectorType], StringExpr]) -> ArrayStringExpr: ...
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
   def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
     param = selector(self._elt_sample)
-    if isinstance(param, RangeExpr):
-      return ArrayRangeExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
-    elif isinstance(param, ConstraintExpr):
-      return ArrayExpr(param)._bind(MapExtractBinding(self, param))  # TODO check that returned type is child
+    if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
+      if isinstance(param, BoolExpr):
+        return ArrayBoolExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, IntExpr):
+        return ArrayIntExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, FloatExpr):
+        return ArrayFloatExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, RangeExpr):
+        return ArrayRangeExpr()._bind(MapExtractBinding(self, param))
+      elif isinstance(param, StringExpr):
+        return ArrayStringExpr()._bind(MapExtractBinding(self, param))
+      else:
+        raise TypeError(f"unknown ConstrExpr type to map_extract(...), got {param} of type {type(param)}")
     elif isinstance(param, BasePort):
       return DerivedVector(self, param)
     else:
       raise TypeError(f"selector to map_extract(...) must return ConstraintExpr or BasePort, got {param} of type {type(param)}")
 
-
   def any(self, selector: Callable[[VectorType], BoolExpr]) -> BoolExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, BoolExpr):  # TODO check that returned type is child
+
       raise TypeError(f"selector to any_true(...) must return BoolExpr, got {param} of type {type(param)}")
+    return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).any()
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).any()
-
-  def equal_any(self, selector: Callable[[VectorType], ExtractConstraintType]) -> ExtractConstraintType:
+  @overload
+  def sum(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr: ...
+  @overload
+  def sum(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr: ...
+  def sum(self, selector: Callable[[VectorType], Union[RangeExpr, FloatExpr]]) -> Union[RangeExpr, FloatExpr]:
     param = selector(self._elt_sample)
-    if not isinstance(param, ConstraintExpr):  # TODO check that returned type is child
-      raise TypeError(f"selector to equal_any(...) must return ConstraintExpr, got {param} of type {type(param)}")
-
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).equal_any()
-
-  ExtractNumericType = TypeVar('ExtractNumericType', bound=Union[FloatExpr, RangeExpr])
-  def sum(self, selector: Callable[[VectorType], ExtractNumericType]) -> ExtractNumericType:
-    param = selector(self._elt_sample)
-    if not isinstance(param, (FloatExpr, RangeExpr)):  # TODO check that returned type is child
+    if isinstance(param, FloatExpr):
+      return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).sum()
+    elif isinstance(param, RangeExpr):
+      return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).sum()
+    else:  # TODO check that returned type is child
       raise TypeError(f"selector to sum(...) must return Float/RangeExpr, got {param} of type {type(param)}")
-
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).sum()  #type:ignore
 
   def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to min(...) must return Float, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).min()
+    return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).min()
 
   def max(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, FloatExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to max(...) must return Float, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).max()
+    return ArrayFloatExpr()._bind(MapExtractBinding(self, param)).max()
 
   def intersection(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, RangeExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to intersection(...) must return RangeExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).intersection()
+    return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).intersection()
 
   def hull(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, RangeExpr):  # TODO check that returned type is child
       raise TypeError(f"selector to hull(...) must return RangeExpr, got {param} of type {type(param)}")
 
-    return ArrayExpr(param)._bind(MapExtractBinding(self, param)).hull()
+    return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).hull()
