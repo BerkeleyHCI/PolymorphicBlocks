@@ -14,21 +14,22 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
       current_draw=(0.002, 0.37)*mAmp))  # shutdown to max operating current
     self.vss = self.Port(Ground())
 
-    self.vref = self.Port(VoltageSink(
-      # voltage_limits=(0.25*Volt, self.vdd.link().voltage.upper()),
-      # current_draw=(0.001, 150)*uAmp
+    self.vrefp = self.Port(VoltageSink(
+      voltage_limits=(0.6*Volt, self.avdd.link().voltage.upper()),
     ), optional=True)  # R version has internal voltage reference
-    input_model = AnalogSink(
 
-    )
-    self.inp = self.Port(AnalogSink.from_supply(
+    input_model = AnalogSink.from_supply(
       self.vss, self.avdd,
       voltage_limit_tolerance=(-0.1, 0.1)*Volt,
       impedance=(20, 510)*kOhm  # varies based on gain
-    ))
+    )
+    self.ch = self.Port(Vector(AnalogSink().empty()))
+    self.chs = []
+    for i in range(8):
+      self.chs.append(self.ch.append_elt(input_model))
 
     dio_model = DigitalBidir.from_supply(
-      self.vss, self.vdd,
+      self.vss, self.dvdd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       input_threshold_factor=(0.3, 0.7)
     )
@@ -37,15 +38,22 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:
+    # TODO specify part number based on used channels and reference
     self.footprint(
       'U', 'Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm',
       {
         '1': self.avdd,
         '2': self.vss,
-        # '3': REFIN-
-        '4': self.vref,
-        '5': self.inp,
-        # '6': CH1
+        '3': self.vss,  # actually Vref-
+        '4': self.vrefp,
+        '5': self.chs[0],
+        '6': self.chs[1],
+        '7': self.chs[2],
+        '8': self.chs[3],
+        '9': self.chs[4],
+        '10': self.chs[5],
+        '11': self.chs[6],
+        '12': self.chs[7],
         '13': self.cs,
         '14': self.spi.sck,
         '15': self.spi.mosi,
@@ -66,11 +74,12 @@ class Mcp3561(Block):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Mcp3561_Device())
-    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.pwra = self.Port(VoltageSink.empty())
+    self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
 
-    self.ref = self.Export(self.ic.vref)
-    self.vin = self.Export(self.ic.inp, [Input])
+    self.ref = self.Export(self.ic.vrefp)
+    self.vins = self.Export(self.ic.ch)
 
     self.spi = self.Export(self.ic.spi, [Output])
     self.cs = self.Export(self.ic.cs)
@@ -78,7 +87,21 @@ class Mcp3561(Block):
   def contents(self) -> None:
     super().contents()
 
-    # Datasheet Section 6.4: 1uF cap recommended
-    self.vdd_cap = self.Block(DecouplingCapacitor(
-      capacitance=1*uFarad(tol=0.2),
-    )).connected(self.gnd, self.pwr)
+    self.avdd_res = self.Block(SeriesPowerResistor(
+      10*Ohm(tol=0.05), (0, 2.5)*mAmp
+    )).connected(self.pwra, self.ic.avdd)
+    self.dvdd_res = self.Block(SeriesPowerResistor(
+      10*Ohm(tol=0.05), (0, 2.5)*mAmp
+    )).connected(self.pwr, self.ic.dvdd)
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      cap_model = DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2))
+      self.avdd_cap_0 = imp.Block(cap_model).connected(pwr=self.ic.avdd)
+      self.avdd_cap_1 = imp.Block(cap_model).connected(pwr=self.ic.avdd)
+      self.dvdd_cap_0 = imp.Block(cap_model).connected(pwr=self.ic.dvdd)
+      self.dvdd_cap_1 = imp.Block(cap_model).connected(pwr=self.ic.dvdd)
+
+    self.vref_cap = self.Block(Capacitor(10*uFarad(tol=0.2), (0, 10)*Volt))
+    self.connect(self.vref_cap.pos.as_analog_sink(), self.ref)
+    self.connect(self.vref_cap.neg.as_ground(), self.gnd)
