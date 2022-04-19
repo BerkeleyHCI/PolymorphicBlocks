@@ -1,5 +1,3 @@
-from typing import *
-
 from electronics_abstract_parts import *
 
 
@@ -26,9 +24,8 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
       impedance=(20, 510)*kOhm  # varies based on gain
     )
     self.ch = self.Port(Vector(AnalogSink().empty()))
-    self.chs = []
     for i in range(8):
-      self.chs.append(self.ch.append_elt(input_model, str(i)))
+      self.ch.append_elt(input_model, str(i))
 
     dio_model = DigitalBidir.from_supply(
       self.vss, self.dvdd,
@@ -48,14 +45,14 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
         '2': self.vss,
         '3': self.vss,  # actually Vref-
         '4': self.vrefp,
-        '5': self.chs[0],
-        '6': self.chs[1],
-        '7': self.chs[2],
-        '8': self.chs[3],
-        '9': self.chs[4],
-        '10': self.chs[5],
-        '11': self.chs[6],
-        '12': self.chs[7],
+        '5': self.ch['0'],
+        '6': self.ch['1'],
+        '7': self.ch['2'],
+        '8': self.ch['3'],
+        '9': self.ch['4'],
+        '10': self.ch['5'],
+        '11': self.ch['6'],
+        '12': self.ch['7'],
         '13': self.cs,
         '14': self.spi.sck,
         '15': self.spi.mosi,

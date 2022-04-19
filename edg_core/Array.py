@@ -86,7 +86,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self)
-    self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
+    self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
 
@@ -97,6 +97,15 @@ class Vector(BaseVector, Generic[VectorType]):
     # TODO dedup w/ Core.__repr__
     # but this can't depend on get_def_name since that crashes
     return "Array[%s]@%02x" % (self._elt_sample, (id(self) // 4) & 0xff)
+
+  def __getitem__(self, item: str) -> VectorType:
+    """Returns a port previously defined by append_elt, indexed by (required) suggested_name.
+    Can only be called from the block defining this port (where this is a boundary port),
+    and this port must be bound."""
+    assert self._is_bound(), "not bound, can't create array elements"
+    assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+    assert self._elts is not None, "no elts defined"
+    return self._elts[item]
 
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
   def _name_of_child(self, subelt: Any) -> str:
@@ -154,7 +163,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
 
     if self._elts is None:
-      self._elts = {}
+      self._elts = OrderedDict()
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -168,7 +177,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
     if self._elts is None:
-      self._elts = {}
+      self._elts = OrderedDict()
     if suggested_name is None:
       suggested_name = str(self._elt_next_index)
       self._elt_next_index += 1
