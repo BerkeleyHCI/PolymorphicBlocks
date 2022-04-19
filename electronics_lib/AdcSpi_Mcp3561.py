@@ -14,9 +14,11 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
       current_draw=(0.002, 0.37)*mAmp))  # shutdown to max operating current
     self.vss = self.Port(Ground())
 
-    self.vrefp = self.Port(VoltageSink(
-      voltage_limits=(0.6*Volt, self.avdd.link().voltage.upper()),
-    ), optional=True)  # R version has internal voltage reference
+    self.vrefp = self.Port(VoltageSource(
+      # voltage_limits=(0.6*Volt, self.avdd.link().voltage.upper()),  # TODO allow input Vrefp
+      voltage_out=2.4*Volt(tol=0.02),
+      current_limits=0*mAmp(tol=0),
+    ))
 
     input_model = AnalogSink.from_supply(
       self.vss, self.avdd,
@@ -38,7 +40,7 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:
-    # TODO specify part number based on used channels and reference
+    # TODO specify part number based on used channels and connected reference
     self.footprint(
       'U', 'Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm',
       {
@@ -78,7 +80,6 @@ class Mcp3561(Block):
     self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
 
-    self.ref = self.Export(self.ic.vrefp)
     self.vins = self.Export(self.ic.ch)
 
     self.spi = self.Export(self.ic.spi, [Output])
