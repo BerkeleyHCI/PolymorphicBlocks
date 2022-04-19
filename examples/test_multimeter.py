@@ -362,6 +362,7 @@ class MultimeterTest(BoardTop):
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Xc6209),
         (['measure', 'res'], ChipResistor),
+        (['spk', 'conn'], JstPhK),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -412,7 +413,8 @@ class MultimeterTest(BoardTop):
         (BananaSafetyJack, Fcr7350),
         (Capacitor, JlcCapacitor),
         (Resistor, JlcResistor),
-        (AnalogSwitch, Nlas4157)
+        (AnalogSwitch, Nlas4157),
+        (Speaker, ConnectorSpeaker),
       ],
     )
 

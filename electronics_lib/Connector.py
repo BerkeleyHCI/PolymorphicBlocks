@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import List, Tuple
 from electronics_abstract_parts import *
 
@@ -17,15 +16,15 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
   @init_in_parent
   def __init__(self, length: IntLike = 0):
     super().__init__()
-    self.pins = self.Port(Vector(Passive()))
-    self.generator(self.generate, length, self.pins.allocated())
+    self.pins = self.Port(Vector(Passive().empty()))
     self.actual_length = self.Parameter(IntExpr())
 
-  @abstractmethod
+    self.generator(self.generate, length, self.pins.allocated())
+
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     """Returns the part footprint, manufacturer, and name given the number of pins (length).
     Implementing classes must implement this method."""
-    ...
+    raise NotImplementedError
 
   def generate(self, length: int, pins: List[str]):
     max_pin_index = 0
@@ -49,8 +48,17 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
     )
 
 
-class JstPhKConnector(PassiveConnector, FootprintBlock):
+class PinHeader254(PassiveConnector, FootprintBlock):
+  """Generic 2.54mm pin header in vertical through-hole."""
+  allowed_pins = (2, 16)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Vertical',
+            "Generic", f"PinHeader2.54 1x{length}")
+
+
+class JstPhK(PassiveConnector, FootprintBlock):
   """JST PH-K series connector: 2.00mm shrouded and polarized, in vertical and through-hole."""
   allowed_pins = (2, 16)
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-    return (f'Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical', "JST", "PH")
+    return (f'Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical',
+            "JST", f"B{length}B-PH-K")

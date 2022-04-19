@@ -1,6 +1,7 @@
 from typing import *
 
 from electronics_abstract_parts import *
+from .Connector import PassiveConnector
 
 
 class Lm4871_Device(DiscreteChip, FootprintBlock):
@@ -189,22 +190,21 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     self.connect(self.spk.b, self.ic.vo2)
 
 
-class Speaker(DiscreteApplication, FootprintBlock):
+@abstract_block
+class Speaker(DiscreteApplication):
+  """Abstract speaker part with speaker input port."""
   def __init__(self):
     super().__init__()
+    self.input = self.Port(SpeakerPort().empty(), [Input])
 
-    self.input = self.Port(SpeakerPort(
-      AnalogSink(impedance=8*Ohm(tol=0))
-    ), [Input])
 
-  def contents(self):
-    super().contents()
-    self.footprint(
-      'U', 'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical',
-      {
-        '1': self.input.a,
-        '2': self.input.b,
-      },
-      part='Header 2-pos, speaker',
-      datasheet='https://www.soberton.com/wp-content/uploads/2018/07/SP-1504-June-2018.pdf'
-    )
+class ConnectorSpeaker(Speaker):
+  """Speaker that delegates to a PassiveConnector and with configurable impedance."""
+  @init_in_parent
+  def __init__(self, impedance: RangeLike = 8*Ohm(tol=0)):
+    super().__init__()
+
+    self.conn = self.Block(PassiveConnector())
+
+    self.connect(self.input.a, self.conn.pins.allocate().as_analog_source(impedance=impedance))
+    self.connect(self.input.b, self.conn.pins.allocate().as_analog_source(impedance=impedance))
