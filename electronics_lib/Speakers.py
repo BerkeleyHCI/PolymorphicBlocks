@@ -110,8 +110,6 @@ class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
     self.vo1 = self.Port(speaker_port)
     self.vo2 = self.Port(speaker_port)
 
-    self.byp = self.Port(Passive())
-
   def contents(self):
     self.footprint(
       'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.73x1.85mm_ThermalVias',
@@ -159,14 +157,17 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr)  # "charge reservoir" recommended cap per 11.1, 2.2-10uF
 
     # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
-    res_value = Range.cancel_multiply(2 / Range(142e3, 158e3), 1 / gain)
+    res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / gain)
     in_res_model = Resistor(
       resistance=res_value
     )
     # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
     # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
-    fc = Range(10, 20)  # arbitrary, right on the edge of audio frequency
+    fc = Range(1, 20)  # arbitrary, right on the edge of audio frequency
     cap_value = Range.cancel_multiply(1 / (2 * math.pi * res_value), 1 / fc)
+    if cap_value.lower < 1e-6 * 0.8:  # account for 20% capacitor tolerance
+      assert cap_value.upper >= 1e-6, f"input coupling cap {cap_value} below recommended 1uF, datasheet 10.2.2.2.1"
+      cap_value.lower = 1e-6 * 0.8
     in_cap_model = Capacitor(
       capacitance=cap_value,
       voltage=self.sig.link().voltage
@@ -177,7 +178,6 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     self.connect(self.sig, self.inp_cap.neg.as_analog_sink())
     self.connect(self.inp_cap.pos, self.inp_res.a)
     self.connect(self.inp_res.b.as_analog_source(), self.ic.inp)
-    self.require(self.inp_cap.capacitance.lower() >= 1*uFarad, "input coupling cap below recommendation, 10.2.2.2.1")
 
     self.inn_cap = self.Block(in_cap_model)
     self.inn_res = self.Block(in_res_model)
