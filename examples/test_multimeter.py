@@ -212,23 +212,20 @@ class MultimeterTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.gate, self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
+      (self.gate, self.reg_5v, self.reg_3v3), _ = self.chain(
         self.vbat,
         imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=(4.5, 5.5)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
       )
       self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.ref_div, self.ref_buf), _ = self.chain(
-        self.reg_3v3.pwr_out,
-        imp.Block(VoltageDivider(output_voltage=1.62*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
-        imp.Block(OpampFollower())
+      (self.reg_analog, ), _ = self.chain(
+        self.v5v,
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
       )
-      self.connect(self.reg_3v3.pwr_out, self.ref_buf.pwr)
-      self.vcenter = self.connect(self.ref_buf.output)
+      self.vanalog = self.connect(self.reg_analog.pwr_out)
 
     # DIGITAL DOMAIN
     with self.implicit_connect(
@@ -285,19 +282,29 @@ class MultimeterTest(BoardTop):
 
     # ANALOG DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.vanalog, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      (self.ref_div, self.ref_buf), _ = self.chain(
+        self.vanalog,
+        imp.Block(VoltageDivider(output_voltage=1.62*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        imp.Block(OpampFollower())
+      )
+      self.vcenter = self.connect(self.ref_buf.output)
+
       # NEGATIVE PORT
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
       # and Vdd/2 (high impedance, but can measure negative voltages)
       self.inn = self.Block(BananaSafetyJack())
       self.inn_mux = imp.Block(AnalogMuxer())
-      self.connect(self.inn_mux.out, self.inn.port.as_analog_sink())
-      # TODO remove this with proper bridging adapters
+      self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
+        self.inn_mux.out, self.inn.port.as_analog_source())
+
+      # # TODO remove this with proper bridging adapters
       from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
       self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
       self.connect(self.gnd_src.src, self.gnd_merge.pwr_out)
+
       self.connect(self.inn_mux.input0, self.gnd_src.dst)
       self.connect(self.inn_mux.input1, self.ref_buf.output)
       self.connect(self.mcu.gpio.allocate('inn_control'), self.inn_mux.control)
@@ -313,17 +320,17 @@ class MultimeterTest(BoardTop):
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
-      self.connect(self.measure.input_negative, self.inn_mux.out)
+      self.connect(self.measure.input_negative, self.inn_merge.output)
       (self.measure_buffer, ), _ = self.chain(
         self.measure.output,
         imp.Block(OpampFollower()))
       (self.adc, ), _ = self.chain(
         imp.Block(Mcp3561()),
         shared_spi)
-      self.connect(self.adc.pwr, self.reg_3v3.pwr_out)
-      self.connect(self.adc.pwra, self.reg_3v3.pwr_out)  # TODO analog from analog supply
+      self.connect(self.adc.pwr, self.v3v3)
+      self.connect(self.adc.pwra, self.vanalog)
       self.connect(self.adc.vins.allocate(), self.measure_buffer.output)
-      self.connect(self.adc.vins.allocate(), self.ref_buf.output)
+      self.connect(self.adc.vins.allocate(), self.inn_merge.output)
       self.connect(self.mcu.gpio.allocate('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
 
@@ -353,6 +360,7 @@ class MultimeterTest(BoardTop):
       instance_refinements=[
         (['reg_5v'], Xc9142),
         (['reg_3v3'], Xc6209),
+        (['reg_analog'], Xc6209),
         (['measure', 'res'], ChipResistor),
       ],
       instance_values=[
