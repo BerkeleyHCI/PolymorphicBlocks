@@ -329,8 +329,8 @@ class MultimeterTest(BoardTop):
         shared_spi)
       self.connect(self.adc.pwr, self.v3v3)
       self.connect(self.adc.pwra, self.vanalog)
-      self.connect(self.adc.vins.allocate(), self.measure_buffer.output)
-      self.connect(self.adc.vins.allocate(), self.inn_merge.output)
+      self.connect(self.adc.vins.allocate('0'), self.measure_buffer.output)
+      self.connect(self.adc.vins.allocate('1'), self.inn_merge.output)
       self.connect(self.mcu.gpio.allocate('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
 

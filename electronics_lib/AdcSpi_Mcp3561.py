@@ -28,7 +28,7 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
     self.ch = self.Port(Vector(AnalogSink().empty()))
     self.chs = []
     for i in range(8):
-      self.chs.append(self.ch.append_elt(input_model))
+      self.chs.append(self.ch.append_elt(input_model, str(i)))
 
     dio_model = DigitalBidir.from_supply(
       self.vss, self.dvdd,
