@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import *
 
 import edgir
+from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
+  ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection
@@ -75,6 +77,16 @@ def init_in_parent(fn: InitType) -> InitType:
             param_model = RangeExpr()
           elif arg_param.annotation in (StringLike, "StringLike", StringExpr, "StringExpr"):
             param_model = StringExpr()
+          elif arg_param.annotation in (ArrayBoolLike, "ArrayBoolLike", ArrayBoolExpr, "ArrayBoolExpr"):
+            param_model = ArrayBoolExpr()
+          elif arg_param.annotation in (ArrayIntLike, "ArrayIntLike", ArrayIntExpr, "ArrayIntExpr"):
+            param_model = ArrayIntExpr()
+          elif arg_param.annotation in (ArrayFloatLike, "ArrayFloatLike", ArrayFloatExpr, "ArrayFloatExpr"):
+            param_model = ArrayFloatExpr()
+          elif arg_param.annotation in (ArrayRangeLike, "ArrayRangeLike", ArrayRangeExpr, "ArrayRangeExpr"):
+            param_model = ArrayRangeExpr()
+          elif arg_param.annotation in (ArrayStringLike, "ArrayStringLike", ArrayStringExpr, "ArrayStringExpr"):
+            param_model = ArrayStringExpr()
           else:
             raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
 

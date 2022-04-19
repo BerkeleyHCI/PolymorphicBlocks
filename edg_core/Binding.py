@@ -183,6 +183,23 @@ class StringLiteralBinding(LiteralBinding):
     return pb
 
 
+class ArrayLiteralBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Lit({self.values})"
+
+  def __init__(self, values: Sequence[LiteralBinding]):
+    super().__init__()
+    self.values = values
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    for value in self.values:
+      elt_value = value.expr_to_proto(expr, ref_map)
+      assert elt_value.HasField('literal')
+      pb.literal.array.elts.add().CopyFrom(elt_value.literal)
+    return pb
+
+
 class RangeBuilderBinding(Binding):
   def __repr__(self) -> str:
     return f"RangeBuilder({self.lower}, {self.upper})"

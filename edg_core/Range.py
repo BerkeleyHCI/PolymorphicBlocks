@@ -41,7 +41,7 @@ class Range:
     C = cancel_multiply(1/(2*pi*R), 1/w)
 
     THIS MAY RETURN AN EMPTY RANGE - for example, if the input tolerance is larger than the
-    output tolerance (so no result would satisfy the original equiation).
+    output tolerance (so no result would satisfy the original equation).
     """
     assert isinstance(input_side, Range) and isinstance(output_side, Range)
     assert input_side.lower >= 0 and input_side.upper >= 0, "TODO support negative values"

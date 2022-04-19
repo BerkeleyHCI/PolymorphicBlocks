@@ -27,6 +27,7 @@ message ValInit {
     edgir.common.Empty set      = 8;
     edgir.common.Empty struct   = 9;
     edgir.common.Empty range    = 10;
+    ValInit            array    = 11;
   }
 
   edgir.common.Metadata meta = 127;

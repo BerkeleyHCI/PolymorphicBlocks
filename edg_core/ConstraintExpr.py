@@ -38,8 +38,20 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 
   @classmethod
   @abstractmethod
-  def _to_expr_type(cls: Type[SelfType], input: Union[SelfType, WrappedType]) -> SelfType:
+  def _to_expr_type(cls: Type[SelfType], input: CastableType) -> SelfType:
     """Casts the input from an equivalent-type to the self-type."""
+    raise NotImplementedError
+
+  @classmethod
+  @abstractmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
+    """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
+    raise NotImplementedError
+
+  @classmethod
+  @abstractmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+    """Parses the literal / wrapped type from a ValueLit proto."""
     raise NotImplementedError
 
   def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
@@ -56,9 +68,10 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     assert self.binding is not None
     return chain([self], self.binding.get_subexprs())
 
-  def _new_bind(self: SelfType, binding: Binding) -> SelfType:
+  @classmethod
+  def _new_bind(cls: Type[SelfType], binding: Binding) -> SelfType:
     """Returns a clone of this object with the specified binding. Discards existing binding / init data."""
-    clone: SelfType = type(self)()
+    clone: SelfType = cls()
     clone.binding = binding
     return clone
 
@@ -74,11 +87,6 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 
   def _is_bound(self) -> bool:
     return self.binding is not None and self.binding.is_bound()
-
-  @abstractmethod
-  def _decl_to_proto(self) -> edgir.ValInit:
-    """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
-    raise NotImplementedError
 
   def _expr_to_proto(self, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     assert self.binding is not None
@@ -103,10 +111,16 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
     else:
       raise ValueError("unexpected type for %s of %s, expected BoolLike" % (input, type(input)))
 
+  @classmethod
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.boolean.CopyFrom(edgir.Empty())
     return pb
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> bool:
+    assert pb.HasField('boolean')
+    return pb.boolean.val
 
   @classmethod
   def _create_binary_op(cls,
@@ -258,10 +272,16 @@ class IntExpr(NumLikeExpr[int, IntLike]):
     else:
       raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
 
-  def _decl_to_proto(self) -> edgir.ValInit:
+  @classmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.integer.CopyFrom(edgir.Empty())
     return pb
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> int:
+    assert pb.HasField('integer')
+    return pb.integer.val
 
 
 FloatLit = Union[float, int]
@@ -277,10 +297,16 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
     else:
       raise TypeError(f"op arg to FloatExpr must be FloatLike, got {input} of type {type(input)}")
 
-  def _decl_to_proto(self) -> edgir.ValInit:
+  @classmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.floating.CopyFrom(edgir.Empty())
     return pb
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> float:
+    assert pb.HasField('floating')
+    return pb.floating.val
 
   def min(self, other: FloatLike) -> FloatExpr:
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.min)
@@ -299,15 +325,6 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   ZERO: Range = Range(0.0, 0.0)
   EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
   EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
-
-  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
-    # must cast non-empty initializer type, because range supports wider initializers
-    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
-    if initializer is not None and not isinstance(initializer, RangeExpr):
-      initializer = self._to_expr_type(initializer)
-    super().__init__(initializer)
-    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
-    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
 
   @classmethod
   def _to_expr_type(cls, input: Union[RangeLike, FloatLike]) -> RangeExpr:
@@ -331,6 +348,26 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
     else:
       raise TypeError(f"op arg to RangeExpr must be FloatLike, got {input} of type {type(input)}")
 
+  @classmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
+    pb = edgir.ValInit()
+    pb.range.CopyFrom(edgir.Empty())
+    return pb
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> Range:
+    assert pb.HasField('range') and pb.range.minimum.HasField('floating') and pb.range.maximum.HasField('floating')
+    return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
+
+  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
+    # must cast non-empty initializer type, because range supports wider initializers
+    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
+    if initializer is not None and not isinstance(initializer, RangeExpr):
+      initializer = self._to_expr_type(initializer)
+    super().__init__(initializer)
+    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
+    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
+
   def _initializer_to(self, target: ConstraintExpr) -> BoolExpr:
     # must also handle initializer mode (subset, superset) here
     assert isinstance(target, type(self)), "target must be of same type"  # TODO don't use isinstance
@@ -338,11 +375,6 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
       return BoolExpr._to_expr_type(True)
     else:
       return target == self.initializer
-
-  def _decl_to_proto(self) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.range.CopyFrom(edgir.Empty())
-    return pb
 
   def within(self, item: RangeLike) -> BoolExpr:
     return self._create_bool_op(self, RangeExpr._to_expr_type(item), OrdOp.within)
@@ -415,10 +447,16 @@ class StringExpr(ConstraintExpr[str, StringLike]):
     else:
       raise ValueError("unexpected type for %s of %s, expected StringLike" % (input, type(input)))
 
-  def _decl_to_proto(self) -> edgir.ValInit:
+  @classmethod
+  def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.text.CopyFrom(edgir.Empty())
     return pb
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> str:
+    assert pb.HasField('text')
+    return pb.text.val
 
   def _is_lit(self) -> bool:
     assert self._is_bound()
@@ -431,8 +469,13 @@ class AssignExpr(ConstraintExpr[None, None]):
   def _to_expr_type(cls, input: Any) -> AssignExpr:
     raise ValueError("can't convert to AssignExpr")
 
+  @classmethod
   def _decl_to_proto(self) -> edgir.ValInit:
     raise ValueError("can't create parameter from AssignExpr")
+
+  @classmethod
+  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+    raise ValueError("can't unpack AssignExpr")
 
   def _is_lit(self) -> bool:
     raise ValueError("can't have literal AssignExpr")
