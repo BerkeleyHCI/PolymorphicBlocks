@@ -688,12 +688,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                val arrayDeps = arrayConnects.map { case (allocated, constrName, constr) =>
-                  val linkName = constr.getConnectedArray.getLinkPort match {
-                    case ValueExpr.RefAllocate(linkPostfix, _) => linkPostfix.head
-                    case extPort => throw new IllegalArgumentException(s"unknown exported exterior $extPort")
-                  }
-                  ElaborateRecord.ParamValue(path.asIndirect + linkName + IndirectStep.Elements)
+                val arrayDeps = arrayConnects.map { case (allocated, constrName, constr) =>  // link elements required
+                  val ValueExpr.RefAllocate(linkPostfix, _) = constr.getConnectedArray.getLinkPort
+                  ElaborateRecord.ParamValue(path.asIndirect + linkPostfix.head + IndirectStep.Elements)
                 }
                 val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(setAllocatedTask, arrayDeps)
@@ -778,10 +775,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)))
                 val resolveAllocateTask = ElaborateRecord.RewriteArrayAllocate(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveAllocateTask, Seq(setAllocatedTask))
-                val expandArrayTasks = arrayConnects.map { arrayConnect =>
-                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, arrayConnect._2)
+                val expandArrayTasks = arrayConnects.map { case (allocated, constrName, constr) =>
+                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                  val blockPortPostfix = constr.getConnectedArray.getBlockPort match {
+                    case ValueExpr.RefAllocate(blockPortPostfix, _) => blockPortPostfix
+                    case ValueExpr.Ref(blockPortPostfix) => blockPortPostfix
+                    case blockPort => throw new IllegalArgumentException(s"unknown block port $blockPort")
+                  }
+                  val blockArrayDep =  // block allocated connect must run first since it must be pre-expansion
+                    ElaborateRecord.ParamValue(path.asIndirect ++ blockPortPostfix + IndirectStep.Allocated)
                   elaboratePending.addNode(expandArrayTask, Seq(
                     ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements),
+                    blockArrayDep,
                     resolveAllocateTask))
                   expandArrayTask
                 }
@@ -1105,6 +1110,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       }
     }
     val arrayIndices = record.arrayConstraintNames.map { constrName =>
+      require(!expandedArrayConnectConstraints.contains(record.parent + constrName),
+        "resolve array allocate must be array-connect pre-expansion")
       parentBlock.getConstraints(constrName).expr
     }.flatMap {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
