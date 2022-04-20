@@ -25,8 +25,8 @@ class Nlas4157_Device(FootprintBlock):
     self.analog_on_resistance = self.Parameter(RangeExpr((0.3, 4.3)*Ohm))
 
     self.a = self.Port(Passive())
-    self.b1 = self.Port(Passive())
-    self.b0 = self.Port(Passive())
+    self.b1 = self.Port(Passive(), optional=True)
+    self.b0 = self.Port(Passive(), optional=True)
 
   def contents(self):
     super().contents()

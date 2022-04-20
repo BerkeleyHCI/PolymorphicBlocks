@@ -40,22 +40,25 @@ class AnalogMuxer(GeneratorBlock):
     self.out = self.Export(self.device.com.as_analog_source(
       voltage_out=self.inputs.hull(lambda x: x.link().voltage),
       current_limits=self.device.analog_current_limits,
-      impedance=self.inputs.hull(lambda x: x.link().source_impedance) + self.device.analog_on_resistance
+      # impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     ))
 
     self.generator(self.generate, self.inputs.allocated())
 
   def generate(self, elts: List[str]):
+    self.inputs.defined()
     for elt in elts:
-      self.inputs.append_elt(self.device.inputs.allocate(elt).as_analog_sink(
-        voltage_limits=self.device.analog_voltage_limits,
-        current_draw=self.out.link().current_drawn,
-        impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
-      ))
+      self.connect(
+        self.inputs.append_elt(AnalogSink().empty(), elt),
+        self.device.inputs.allocate(elt).as_analog_sink(
+          voltage_limits=self.device.analog_voltage_limits,
+          current_draw=self.out.link().current_drawn,
+          impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
+        ))
 
   def input_from(self, *inputs: Port[AnalogLink]) -> 'AnalogMuxer':
-    # for i, input_port in enumerate(inputs):
-    #   cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.allocate(str(i)))
+    for i, input_port in enumerate(inputs):
+      cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.allocate(str(i)))
     return self
 
 
