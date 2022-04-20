@@ -11,6 +11,7 @@ class Keystone5015(TestPoint, FootprintBlock, JlcFootprint):
       {
         '1': self.io,  # also I2C SCL
       },
+      value=name,
       mfr='Keystone', part='5015',
       datasheet='https://www.keyelco.com/userAssets/file/M65p55.pdf'
     )

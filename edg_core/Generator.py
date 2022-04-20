@@ -163,10 +163,11 @@ class GeneratorBlock(Block):
     assert self._generator is None, f"redefinition of generator, multiple generators not allowed"
 
     for (i, req_param) in enumerate(reqs):
-      assert isinstance(req_param.binding, InitParamBinding) or \
-             (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding, NameBinding))
-              and req_param.binding.src._parent is self), \
-        f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
+      pass  # TODO check arguments - but also allow things like link parameters
+      # assert isinstance(req_param.binding, InitParamBinding) or \
+      #        (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding, NameBinding))
+      #         and req_param.binding.src._parent is self), \
+      #   f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
 
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 

@@ -254,12 +254,15 @@ class MultimeterTest(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.gate, self.reg_5v, self.prot_5v, self.reg_3v3, self.prot_3v3), _ = self.chain(
+      (self.gate, self.reg_5v, self.tp_5v, self.prot_5v,
+       self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.vbat,
         imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=(4.5, 5.5)*Volt)),
+        self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(5.5, 7.0)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
       )
       self.v5v = self.connect(self.reg_5v.pwr_out)
