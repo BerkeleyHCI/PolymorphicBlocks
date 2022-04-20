@@ -105,21 +105,22 @@ class DiodeTable(BaseDiodeTable):
 
 class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
+    super().__init__(*args, **kwargs)
     self.actual_voltage_rating = self.Parameter(RangeExpr())
     self.actual_current_rating = self.Parameter(RangeExpr())
     self.actual_voltage_drop = self.Parameter(RangeExpr())
     self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
     self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
-                   self.reverse_recovery_time)
-    # TODO: also support optional part and footprint name
+                   self.reverse_recovery_time, part, footprint)
 
   def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
-                  reverse_recovery_time: Range) -> None:
+                  reverse_recovery_time: Range, part_spec: str, footprint_spec: str) -> None:
     # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
     part = DiodeTable.table().filter(lambda row: (
+        (not part_spec or part_spec == row[DiodeTable.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[DiodeTable.FOOTPRINT]) and
         reverse_voltage.fuzzy_in(row[DiodeTable.VOLTAGE_RATING]) and
         current.fuzzy_in(row[DiodeTable.CURRENT_RATING]) and
         row[DiodeTable.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
@@ -184,16 +185,17 @@ class ZenerTable(BaseDiodeTable):
 
 class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
   @init_in_parent
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
+    super().__init__(*args, **kwargs)
     self.actual_zener_voltage = self.Parameter(RangeExpr())
     self.actual_forward_voltage_drop = self.Parameter(RangeExpr())
 
-    self.generator(self.select_part, self.zener_voltage, self.forward_voltage_drop)
-    # TODO: also support optional part and footprint name
+    self.generator(self.select_part, self.zener_voltage, self.forward_voltage_drop, part, footprint)
 
-  def select_part(self, zener_voltage: Range, forward_voltage_drop: Range) -> None:
+  def select_part(self, zener_voltage: Range, forward_voltage_drop: Range, part_spec: str, footprint_spec: str) -> None:
     part = ZenerTable.table().filter(lambda row: (
+        (not part_spec or part_spec == row[ZenerTablePART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[ZenerTable.FOOTPRINT]) and
         row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage) and
         row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
     )).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")

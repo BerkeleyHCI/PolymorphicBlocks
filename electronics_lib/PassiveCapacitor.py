@@ -119,7 +119,7 @@ class SmtCeramicCapacitorGeneric(Capacitor, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs):
     """
-    footprint_spec specifies an optional constraint on footprint
+    footprint specifies an optional constraint on footprint
     derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.
     """
     super().__init__(*args, **kwargs)
