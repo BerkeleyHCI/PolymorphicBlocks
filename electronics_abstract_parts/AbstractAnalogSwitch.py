@@ -65,7 +65,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
         for sw_port_i in range(switch_size):
           port_i = sw_i * switch_size + sw_port_i
           if port_i < len(ports):
-            self.connect(sw.inputs.allocate(str(port_i)), ports[port_i])
+            self.connect(sw.inputs.allocate(str(sw_port_i)), ports[port_i])
         new_ports.append(sw.com)
 
         for (i, control_io) in enumerate(stage_control_ios):

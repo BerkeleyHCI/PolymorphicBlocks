@@ -38,9 +38,10 @@ class MultimeterAnalog(Block):
         ImplicitConnect(self.pwr, [Power]),
     ) as imp:
       self.range_floating = self.Block(DummyAnalogSink())
+      self.range_floating2 = self.Block(DummyAnalogSink())
 
       self.range = imp.Block(AnalogDemuxer()).demux_to(
-        outputs=[self.rdiv.a.as_analog_sink(), self.range_floating.io]
+        outputs=[self.rdiv.a.as_analog_sink(), self.range_floating.io, self.range_floating2.io]
       )
       self.connect(self.select, self.range.control)
       # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
