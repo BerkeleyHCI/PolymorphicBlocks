@@ -321,7 +321,7 @@ class MultimeterTest(BoardTop):
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.as_analog_source())
 
-      # self.connect(self.mcu.gpio.allocate_vector('inn_control'), self.inn_mux.control)
+      self.connect(self.mcu.gpio.allocate_vector('inn_control'), self.inn_mux.control)
 
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())
