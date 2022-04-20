@@ -192,8 +192,19 @@ class FetPowerGate(Block):
 
 
 class MultimeterTest(BoardTop):
+  """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
+  Basically an ADC and programmable constant current driver with ranging circuits.
+  Good up to the specified VOLTAGE_RATING, in any measurement mode.
+
+  IMPORTANT: HIGH VOLTAGE SAFETY ALSO DEPENDS ON MECHANICAL DESIGN AND LAYOUT.
+    NOT RECOMMENDED FOR USAGE ON HIGH VOLTAGES.
+  IMPORTANT: OVERLOAD PROTECTION HAS NOT BEEN TESTED. THIS HAS NOT BEEN CAT RATED.
+    DO NOT PLUG INTO MAINS, WHERE VERY HIGH VOLTAGE TRANSIENTS (kV level) ARE POSSIBLE.
+  """
+
   def contents(self) -> None:
     super().contents()
+    VOLTAGE_RATING = (0, 400) * Volt
 
     # also support LiIon AA batteries
     self.bat = self.Block(AABattery(voltage=(1.1, 4.2)*Volt, actual_voltage=(1.1, 4.2)*Volt))
@@ -251,7 +262,6 @@ class MultimeterTest(BoardTop):
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
-      # TODO next revision: proper navigation switch
 
       shared_spi = self.mcu.spi.allocate('spi')
 
@@ -312,7 +322,7 @@ class MultimeterTest(BoardTop):
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())
       inp_port = self.inp.port.as_analog_source(
-        voltage_out=(0, 300)*Volt,
+        voltage_out=VOLTAGE_RATING,
         current_limits=(0, 10)*mAmp,
         impedance=(0, 100)*Ohm,
       )
@@ -337,7 +347,7 @@ class MultimeterTest(BoardTop):
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
         resistance=1 * kOhm(tol=0.1),
-        voltage_rating=(0, 300)*Volt
+        voltage_rating=VOLTAGE_RATING
       ))
       self.connect(self.driver.output, inp_port)
       (self.driver_dac, ), _ = self.chain(
