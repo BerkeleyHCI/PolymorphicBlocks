@@ -46,7 +46,9 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 
     stage_num_controls = math.ceil(math.log2(switch_size))  # number of control IOs per stage
     ports = [self.inputs.append_elt(Passive.empty(), elt) for elt in elts]
+    all_switches = []
     switch_stage = 0
+
     while len(ports) > 1:  # stages in the tree
       num_switches = math.ceil(len(ports) / switch_size)
       new_ports = []  # output ports of this current stage
@@ -56,6 +58,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 
       for sw_i in range(num_switches):
         sw = self.sw[f'{switch_stage}_{sw_i}'] = self.Block(AnalogSwitch())
+        all_switches.append(sw)
         self.connect(sw.pwr, self.pwr)
         self.connect(sw.gnd, self.gnd)
 
@@ -73,6 +76,15 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 
     assert len(ports) == 1
     self.connect(ports[0], self.com)
+
+    # Create bulk tree model
+    # Voltage is unchanged
+    self.assign(self.analog_voltage_limits, all_switches[0].analog_voltage_limits)
+    # Current limit is bottlenecked by the final stage
+    self.assign(self.analog_current_limits,
+                all_switches[0].analog_current_limits / (switch_size ** (switch_stage - 1)))
+    # On resistance sums through each stage
+    self.assign(self.analog_on_resistance, all_switches[0].analog_on_resistance * switch_stage)
 
 
 class AnalogMuxer(GeneratorBlock):
