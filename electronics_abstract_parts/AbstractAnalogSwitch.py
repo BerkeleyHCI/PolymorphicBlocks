@@ -26,6 +26,55 @@ class AnalogSwitch(Block):
     self.analog_on_resistance = self.Parameter(RangeExpr())
 
 
+class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
+  """Generates an n-ported analog switch by creating a tree of individual, smaller switches.
+  Parameterized by the size of the element switches."""
+  @init_in_parent
+  def __init__(self, switch_size: IntLike = 0):
+    super().__init__()
+    self.generator(self.generate, self.inputs.allocated(), switch_size)
+
+  def generate(self, elts: List[str], switch_size: int):
+    import math
+
+    assert switch_size > 1, f"switch size {switch_size} must be greater than 1"
+    assert len(elts) > 1, "passthrough AnalogSwitchTree not (yet?) supported"
+    self.sw = ElementDict[AnalogSwitch]()
+
+    self.inputs.defined()
+    self.control.defined()
+
+    stage_num_controls = math.ceil(math.log2(switch_size))  # number of control IOs per stage
+    ports = [self.inputs.append_elt(Passive.empty(), elt) for elt in elts]
+    switch_stage = 0
+    while len(ports) > 1:  # stages in the tree
+      num_switches = math.ceil(len(ports) / switch_size)
+      new_ports = []  # output ports of this current stage
+
+      stage_control_ios = [self.control.append_elt(DigitalSink.empty(), f'{switch_stage}_{i}')
+                           for i in range(stage_num_controls)]
+
+      for sw_i in range(num_switches):
+        sw = self.sw[f'{switch_stage}_{sw_i}'] = self.Block(AnalogSwitch())
+        self.connect(sw.pwr, self.pwr)
+        self.connect(sw.gnd, self.gnd)
+
+        for sw_port_i in range(switch_size):
+          port_i = sw_i * switch_size + sw_port_i
+          if port_i < len(ports):
+            self.connect(sw.inputs.allocate(str(port_i)), ports[port_i])
+        new_ports.append(sw.com)
+
+        for (i, control_io) in enumerate(stage_control_ios):
+          self.connect(sw.control.allocate(str(i)), control_io)
+
+      ports = new_ports
+      switch_stage += 1
+
+    assert len(ports) == 1
+    self.connect(ports[0], self.com)
+
+
 class AnalogMuxer(GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """

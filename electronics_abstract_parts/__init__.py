@@ -22,7 +22,7 @@ from .AbstractDiodes import Diode, ZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode
 from .AbstractFets import Fet, NFet, PFet, SwitchFet, SwitchNFet, SwitchPFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch
-from .AbstractAnalogSwitch import AnalogSwitch, AnalogDemuxer, AnalogMuxer
+from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp, OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet

@@ -37,8 +37,10 @@ class MultimeterAnalog(Block):
         ImplicitConnect(self.gnd, [Common]),
         ImplicitConnect(self.pwr, [Power]),
     ) as imp:
+      self.range_floating = self.Block(DummyAnalogSink())
+
       self.range = imp.Block(AnalogDemuxer()).demux_to(
-        outputs=[self.rdiv.a.as_analog_sink()]  # 1 is intentionally floating
+        outputs=[self.rdiv.a.as_analog_sink(), self.range_floating.io]
       )
       self.connect(self.select, self.range.control)
       # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
@@ -375,10 +377,12 @@ class MultimeterTest(BoardTop):
         (['reg_5v'], Xc9142),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Xc6209),
+        (['measure', 'range', 'device'], AnalogSwitchTree),
         (['measure', 'res'], ChipResistor),
         (['spk', 'conn'], JstPhK),
       ],
       instance_values=[
+        (['measure', 'range', 'device', 'switch_size'], 2),
         (['mcu', 'pin_assigns'], ';'.join([
           # TODO reassign for this differently-pinned device
           # 'rgb_red=36',
