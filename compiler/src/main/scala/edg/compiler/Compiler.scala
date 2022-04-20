@@ -12,7 +12,7 @@ import scala.collection.{SeqMap, mutable}
 
 
 class IllegalConstraintException(msg: String) extends Exception(msg)
-class ElaboratingException(msg: String, wrapped: Exception) extends Exception(msg + ":\n" + wrapped.toString)
+class ElaboratingException(msg: String, wrapped: Exception) extends Exception(f"$msg:\n$wrapped")
 
 
 sealed trait ElaborateRecord
