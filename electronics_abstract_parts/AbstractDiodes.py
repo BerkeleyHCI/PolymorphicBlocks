@@ -50,7 +50,7 @@ class ProtectionZenerDiode(DiscreteApplication):
   def __init__(self, voltage: RangeLike):
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power, Input])
+    self.pwr = self.Port(VoltageSink.empty(), [Power, InOut])
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.voltage = self.ArgParameter(voltage)

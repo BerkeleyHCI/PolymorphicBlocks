@@ -1,6 +1,31 @@
 import unittest
+from typing import List
 
 from edg import *
+
+
+class ResistorMux(GeneratorBlock):
+  """Generates an array of resistors with one side muxed and the other end an array. Passive-typed.
+  Specify an infinite resistance for an open circuit."""
+  @init_in_parent
+  def __init__(self, resistances: ArrayRangeLike):
+    super().__init__()
+
+    self.switch = self.Block(AnalogSwitch())
+
+    self.pwr = self.Export(self.switch.pwr, [Power])
+    self.gnd = self.Export(self.switch.gnd, [Common])
+
+    self.control = self.Export(self.switch.control)
+    self.com = self.Export(self.switch.com)
+    self.inputs = self.Port(Vector(Passive.empty()))
+
+    self.generate(self.generate, resistances)
+
+
+  def generate(self, resistances: List[Range]):
+    for resistance in resistances:
+      pass
 
 
 class MultimeterAnalog(Block):
@@ -44,7 +69,7 @@ class MultimeterAnalog(Block):
         outputs=[self.rdiv.a.as_analog_sink(), self.range_floating.io, self.range_floating2.io]
       )
       self.connect(self.select, self.range.control)
-      # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
+
       self.connect(self.res.b.as_analog_source(
         voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
         current_limits=(-10, 10)*mAmp,
@@ -229,18 +254,21 @@ class MultimeterTest(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.gate, self.reg_5v, self.reg_3v3), _ = self.chain(
+      (self.gate, self.reg_5v, self.prot_5v, self.reg_3v3, self.prot_3v3), _ = self.chain(
         self.vbat,
         imp.Block(FetPowerGate()),
         imp.Block(BoostConverter(output_voltage=(4.5, 5.5)*Volt)),
+        imp.Block(ProtectionZenerDiode(voltage=(5.5, 7.0)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
       )
       self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.reg_analog, ), _ = self.chain(
+      (self.reg_analog, self.prot_analog), _ = self.chain(
         self.v5v,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
@@ -249,8 +277,6 @@ class MultimeterTest(BoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
-
       self.mcu = imp.Block(Mdbt50q_1mv2())
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,
