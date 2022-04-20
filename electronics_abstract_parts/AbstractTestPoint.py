@@ -12,6 +12,7 @@ class TestPoint(GeneratorBlock):
   def __init__(self, name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(Passive(), [InOut])
+
     self.generator(self.generate, name, self.io.link().name())
     self.actual_name = self.Parameter(StringExpr())
 
