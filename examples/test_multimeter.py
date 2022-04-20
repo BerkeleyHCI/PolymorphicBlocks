@@ -81,7 +81,7 @@ class MultimeterCurrentDriver(Block):
       current_draw=(0, max_in_voltage / self.resistance.lower())
     ))
     self.fet = self.Block(PFet(
-      drain_voltage=(0, self.voltage_rating.upper()),
+      drain_voltage=self.voltage_rating,  # protect against negative overvoltage
       drain_current=(0, max_in_voltage / self.resistance.lower()),
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
     ))
@@ -105,7 +105,7 @@ class MultimeterCurrentDriver(Block):
     self.connect(self.sw.out, self.fet.gate.as_analog_sink())
 
     self.diode = self.Block(Diode(
-      reverse_voltage=self.voltage_rating,
+      reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
       current=(0, max_in_voltage / self.resistance.lower()),
       voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
       reverse_recovery_time=RangeExpr.ALL
