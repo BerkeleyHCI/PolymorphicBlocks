@@ -259,7 +259,7 @@ class SourceMeasureControl(Block):
                    self.err_volt.actual)
 
 
-class UsbSourceMeasureTest(BoardTop):
+class UsbSourceMeasureTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -392,10 +392,6 @@ class UsbSourceMeasureTest(BoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
-    self.jlc_th1 = self.Block(JlcToolingHole())
-    self.jlc_th2 = self.Block(JlcToolingHole())
-    self.jlc_th3 = self.Block(JlcToolingHole())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -455,8 +451,6 @@ class UsbSourceMeasureTest(BoardTop):
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
-        (Capacitor, JlcCapacitor),
-        (Resistor, JlcResistor),
       ],
     )
 

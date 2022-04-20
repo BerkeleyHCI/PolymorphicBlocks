@@ -18,7 +18,25 @@ class BoardTop(DesignTop):
         (PFet, SmtPFet),
         (SwitchNFet, SmtSwitchNFet),
         (SwitchPFet, SmtSwitchPFet),
+        (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+      ]
+    )
+
+
+class JlcBoardTop(BoardTop):
+  """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
+  def contents(self):
+    super().contents()
+    self.jlc_th1 = self.Block(JlcToolingHole())
+    self.jlc_th2 = self.Block(JlcToolingHole())
+    self.jlc_th3 = self.Block(JlcToolingHole())
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_refinements=[
+        (Capacitor, JlcCapacitor),
+        (Resistor, JlcResistor),
       ]
     )

@@ -220,7 +220,7 @@ class FetPowerGate(Block):
     self.connect(self.pull_res.b, self.ctl_diode.anode, self.pwr_fet.gate, self.amp_fet.drain)
 
 
-class MultimeterTest(BoardTop):
+class MultimeterTest(JlcBoardTop):
   """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
   Basically an ADC and programmable constant current driver with ranging circuits.
   Good up to the specified VOLTAGE_RATING, in any measurement mode.
@@ -394,9 +394,6 @@ class MultimeterTest(BoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
-    self.jlc_th1 = self.Block(JlcToolingHole())
-    self.jlc_th2 = self.Block(JlcToolingHole())
-    self.jlc_th3 = self.Block(JlcToolingHole())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -460,8 +457,6 @@ class MultimeterTest(BoardTop):
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (BananaSafetyJack, Fcr7350),
-        (Capacitor, JlcCapacitor),
-        (Resistor, JlcResistor),
         (AnalogSwitch, Nlas4157),
         (Speaker, ConnectorSpeaker),
       ],

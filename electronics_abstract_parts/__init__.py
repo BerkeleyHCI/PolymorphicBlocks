@@ -31,6 +31,7 @@ from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, Boost
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal
+from .AbstractTestPoint import TestPoint
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 
