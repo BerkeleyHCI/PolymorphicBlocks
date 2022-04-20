@@ -87,22 +87,23 @@ class MultimeterCurrentDriver(Block):
     ))
     self.connect(self.res.b, self.fet.source)
 
-    self.amp = self.Block(Opamp())
-    self.connect(self.amp.pwr, self.pwr)
-    self.connect(self.amp.gnd, self.gnd)
-    self.connect(self.amp.inp, self.control)
-    self.connect(self.amp.inn, self.res.b.as_analog_source(
-      voltage_out=(0, max_in_voltage),
-      impedance=self.res.actual_resistance
-    ))
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+        ImplicitConnect(self.pwr, [Power]),
+    ) as imp:
+      self.amp = imp.Block(Opamp())
+      self.connect(self.amp.inp, self.control)
+      self.connect(self.amp.inn, self.res.b.as_analog_source(
+        voltage_out=(0, max_in_voltage),
+        impedance=self.res.actual_resistance
+      ))
 
-    self.sw = self.Block(AnalogMuxer())
-    self.connect(self.sw.pwr, self.pwr)
-    self.connect(self.sw.gnd, self.gnd)
-    self.connect(self.enable, self.sw.control)
-    self.connect(self.fet.source.as_analog_source(), self.sw.input0)
-    self.connect(self.amp.out, self.sw.input1)
-    self.connect(self.sw.out, self.fet.gate.as_analog_sink())
+      self.sw = imp.Block(AnalogMuxer()).input_from(
+        self.fet.source.as_analog_source(),
+        self.amp.out
+      )
+      self.connect(self.enable, self.sw.control.allocate())
+      self.connect(self.sw.out, self.fet.gate.as_analog_sink())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -198,8 +199,10 @@ class MultimeterTest(BoardTop):
 
   IMPORTANT: HIGH VOLTAGE SAFETY ALSO DEPENDS ON MECHANICAL DESIGN AND LAYOUT.
     NOT RECOMMENDED FOR USAGE ON HIGH VOLTAGES.
-  IMPORTANT: OVERLOAD PROTECTION HAS NOT BEEN TESTED. THIS HAS NOT BEEN CAT RATED.
+  IMPORTANT: THERE IS NO INPUT OVERLOAD PROTECTION.
     DO NOT PLUG INTO MAINS, WHERE VERY HIGH VOLTAGE TRANSIENTS (kV level) ARE POSSIBLE.
+  IMPORTANT: THE USB PORT IS NOT ELECTRICALLY ISOLATED. DO NOT MEASURE NON-ISOLATED
+    CIRCUITS WHILE USB IS PLUGGED IN. BE AWARE OF GROUND PATHS.
   """
 
   def contents(self) -> None:
@@ -306,18 +309,19 @@ class MultimeterTest(BoardTop):
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
       # and Vdd/2 (high impedance, but can measure negative voltages)
       self.inn = self.Block(BananaSafetyJack())
-      self.inn_mux = imp.Block(AnalogMuxer())
-      self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
-        self.inn_mux.out, self.inn.port.as_analog_source())
 
       # # TODO remove this with proper bridging adapters
       from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
       self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.gnd_src.src, self.gnd_merge.pwr_out)
+      self.connect(self.gnd_src.src, self.gnd)
 
-      self.connect(self.inn_mux.input0, self.gnd_src.dst)
-      self.connect(self.inn_mux.input1, self.ref_buf.output)
-      self.connect(self.mcu.gpio.allocate('inn_control'), self.inn_mux.control)
+      self.inn_mux = imp.Block(AnalogMuxer()).input_from(
+        self.gnd_src.dst, self.ref_buf.output
+      )
+      self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
+        self.inn_mux.out, self.inn.port.as_analog_source())
+
+      self.connect(self.mcu.gpio.allocate_vector('inn_control'), self.inn_mux.control)
 
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())

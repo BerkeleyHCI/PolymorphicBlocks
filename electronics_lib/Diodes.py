@@ -194,7 +194,7 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
 
   def select_part(self, zener_voltage: Range, forward_voltage_drop: Range, part_spec: str, footprint_spec: str) -> None:
     part = ZenerTable.table().filter(lambda row: (
-        (not part_spec or part_spec == row[ZenerTablePART_NUMBER]) and
+        (not part_spec or part_spec == row[ZenerTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[ZenerTable.FOOTPRINT]) and
         row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage) and
         row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
