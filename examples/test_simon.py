@@ -110,6 +110,12 @@ class TestSimon(BoardTop):
           'btn_drv3=11',
           'btn_sw3=12',
         ]))
+      ],
+      instance_refinements=[
+        (['spk', 'conn'], JstPhK),
+      ],
+      class_refinements=[
+        (Speaker, ConnectorSpeaker),
       ]
     )
 

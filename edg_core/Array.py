@@ -113,14 +113,14 @@ class Vector(BaseVector, Generic[VectorType]):
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block)
 
-    if builder.get_enclosing_block() is block_parent:
-      # in block defining this port (direct elt definition)
+    if builder.get_enclosing_block() is block_parent or builder.get_enclosing_block() is None:
+      # in block defining this port (direct elt definition), or in test top
       assert self._elts is not None, "can't get name on undefined vector"
       for (name, elt) in self._elts.items():
         if subelt is elt:
           return name
       raise ValueError(f"no name for {subelt}")
-    elif builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None:
+    elif builder.get_enclosing_block() is block_parent._parent:
       # in block enclosing the block defining this port (allocate required)
       for (i, (suggested_name, allocate_elt)) in enumerate(self._allocates):
         if subelt is allocate_elt:
@@ -128,7 +128,7 @@ class Vector(BaseVector, Generic[VectorType]):
             return suggested_name
           else:
             return f"_allocate_{i}"
-      raise ValueError(f"no name for {subelt}")
+      raise ValueError(f"allocated elt not found {subelt}")
     else:
       raise ValueError(f"unknown context of array")
 

@@ -11,7 +11,7 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
   than the maximum pin index (but can be smaller, unassigned pins arer NC).
   The allocated pin names correlate with the footprint pin, 1-indexed (per electronics convention).
   It is up to the instantiating layer to set the pinmap (or allow the user to set it by refinements)."""
-  allowed_pins: Tuple[int, int]  # inclusive on both ends
+  allowed_pins: Tuple[int, int] = (0, 0)  # inclusive on both ends, default disallowed anywhere
 
   @init_in_parent
   def __init__(self, length: IntLike = 0):

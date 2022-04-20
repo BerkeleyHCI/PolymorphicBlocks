@@ -1,7 +1,7 @@
 from typing import *
 
 from electronics_abstract_parts import *
-from .Connector import PassiveConnector
+from .PassiveConnector import PassiveConnector
 
 
 class Lm4871_Device(DiscreteChip, FootprintBlock):
