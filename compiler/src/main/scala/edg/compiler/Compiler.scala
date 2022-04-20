@@ -729,7 +729,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 throw new NotImplementedError()
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                require(arrayConnects.isEmpty)
+                require(arrayConnects.isEmpty)  // flattening (array-array w/o LinkArray) connections currently not used
                 val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(setAllocatedTask, Seq())
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
