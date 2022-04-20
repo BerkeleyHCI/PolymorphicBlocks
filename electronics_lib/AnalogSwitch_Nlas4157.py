@@ -54,9 +54,9 @@ class Nlas4157(AnalogSwitch):
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.gnd)
     self.connect(self.com, self.ic.a)
-    self.connect(self.no, self.ic.b1)
-    self.connect(self.nc, self.ic.b0)
-    self.connect(self.control, self.ic.s)
+    self.connect(self.inputs.append_elt(Passive.empty(), '0'), self.ic.b0)
+    self.connect(self.inputs.append_elt(Passive.empty(), '1'), self.ic.b1)
+    self.connect(self.control.append_elt(DigitalSink.empty(), '0'), self.ic.s)
 
     self.assign(self.analog_voltage_limits, self.ic.analog_voltage_limits)
     self.assign(self.analog_current_limits, self.ic.analog_current_limits)
