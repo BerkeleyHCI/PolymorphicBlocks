@@ -22,30 +22,31 @@ class MultimeterAnalog(Block):
     self.input_negative = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.select = self.Port(DigitalSink.empty())  # divider or not
+    self.select = self.Port(Vector(DigitalSink.empty()))
 
   def contents(self):
     super().contents()
 
     self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
     self.connect(self.res.a.as_analog_sink(), self.input_positive)
-    self.range = self.Block(AnalogDemuxer())
-    self.connect(self.range.pwr, self.pwr)
-    self.connect(self.range.gnd, self.gnd)
-    self.connect(self.select, self.range.control)
-    # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
-    self.connect(self.res.b.as_analog_source(
-      voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-      current_limits=(-10, 10)*mAmp,
-      impedance=1*mOhm(tol=0)
-    ), self.range.input, self.output)
+
     self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
-    self.connect(self.rdiv.a.as_analog_sink(), self.range.out0)
     self.connect(self.rdiv.b.as_analog_sink(), self.input_negative)
-    (self.range1_nc, ), _ = self.chain(
-      self.range.out1,
-      self.Block(DummyAnalogSink())
-    )
+
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+        ImplicitConnect(self.pwr, [Power]),
+    ) as imp:
+      self.range = imp.Block(AnalogDemuxer()).demux_to(
+        outputs=[self.rdiv.a.as_analog_sink()]  # 1 is intentionally floating
+      )
+      self.connect(self.select, self.range.control)
+      # TODO add a dedicated TVS diode, this relies on the TVS diodes in the analog switch to limit to safe voltages
+      self.connect(self.res.b.as_analog_source(
+        voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+        current_limits=(-10, 10)*mAmp,
+        impedance=1*mOhm(tol=0)
+      ), self.range.input, self.output)
 
 
 class MultimeterCurrentDriver(Block):
@@ -98,12 +99,11 @@ class MultimeterCurrentDriver(Block):
         impedance=self.res.actual_resistance
       ))
 
-      self.sw = imp.Block(AnalogMuxer()).input_from(
-        self.fet.source.as_analog_source(),
-        self.amp.out
+      self.sw = imp.Block(AnalogMuxer()).mux_to(
+        [self.fet.source.as_analog_source(), self.amp.out],
+        self.fet.gate.as_analog_sink()
       )
       self.connect(self.enable, self.sw.control.allocate())
-      self.connect(self.sw.out, self.fet.gate.as_analog_sink())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -315,8 +315,8 @@ class MultimeterTest(BoardTop):
       self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
       self.connect(self.gnd_src.src, self.gnd)
 
-      self.inn_mux = imp.Block(AnalogMuxer()).input_from(
-        self.gnd_src.dst, self.ref_buf.output
+      self.inn_mux = imp.Block(AnalogMuxer()).mux_to(
+        inputs=[self.gnd_src.dst, self.ref_buf.output]
       )
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.as_analog_source())
@@ -345,7 +345,7 @@ class MultimeterTest(BoardTop):
       self.connect(self.adc.pwra, self.vanalog)
       self.connect(self.adc.vins.allocate('0'), self.measure_buffer.output)
       self.connect(self.adc.vins.allocate('1'), self.inn_merge.output)
-      self.connect(self.mcu.gpio.allocate('measure_select'), self.measure.select)
+      self.connect(self.mcu.gpio.allocate_vector('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
 
       # DRIVER CIRCUITS

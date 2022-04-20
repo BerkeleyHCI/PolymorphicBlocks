@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, cast, Optional
 
 from electronics_model import *
 from .DummyDevices import MergedAnalogSource
@@ -35,8 +35,8 @@ class AnalogMuxer(GeneratorBlock):
     self.pwr = self.Export(self.device.pwr, [Power])
     self.gnd = self.Export(self.device.gnd, [Common])
     self.control = self.Export(self.device.control)
-    self.inputs = self.Port(Vector(AnalogSink.empty()))
 
+    self.inputs = self.Port(Vector(AnalogSink.empty()))
     self.out = self.Export(self.device.com.as_analog_source(
       voltage_out=self.inputs.hull(lambda x: x.link().voltage),
       current_limits=self.device.analog_current_limits,
@@ -56,13 +56,17 @@ class AnalogMuxer(GeneratorBlock):
           impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
         ))
 
-  def input_from(self, *inputs: Port[AnalogLink]) -> 'AnalogMuxer':
-    for i, input_port in enumerate(inputs):
-      cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.allocate(str(i)))
+  def mux_to(self, inputs: Optional[List[Port[AnalogLink]]] = None,
+             output: Optional[Port[AnalogLink]] = None) -> 'AnalogMuxer':
+    if inputs is not None:
+      for i, input_port in enumerate(inputs):
+        cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.allocate(str(i)))
+    if output is not None:
+      cast(Block, builder.get_enclosing_block()).connect(output, self.out)
     return self
 
 
-class AnalogDemuxer(Block):
+class AnalogDemuxer(GeneratorBlock):
   """Wrapper around AnalogSwitch that provides demuxing functionality - multiple source ports, one sink port.
   """
   def __init__(self) -> None:
@@ -70,28 +74,33 @@ class AnalogDemuxer(Block):
     self.device = self.Block(AnalogSwitch())
     self.pwr = self.Export(self.device.pwr, [Power])
     self.gnd = self.Export(self.device.gnd, [Common])
-    self.control = self.Port(DigitalSink())  # TODO port to n-ported
-    # self.control = self.Export(self.device.control)
+    self.control = self.Export(self.device.control)
 
+    self.outputs = self.Port(Vector(AnalogSource.empty()))
     self.input = self.Export(self.device.com.as_analog_sink(
       voltage_limits=self.device.analog_voltage_limits,
-      current_draw=RangeExpr(),  # forward-declared
-      impedance=RangeExpr(),  # forward-declared
+      current_draw=self.outputs.hull(lambda x: x.link().current_drawn),
+      impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     ))
-    self.out0 = self.Port(AnalogSource())  # TODO port to n-ported
-    self.out1 = self.Port(AnalogSource())
-    # self.out0 = self.Export(self.device.nc.as_analog_source(
-    #   voltage_out=self.input.link().voltage,
-    #   current_limits=self.device.analog_current_limits,
-    #   impedance=self.input.link().source_impedance + self.device.analog_on_resistance
-    # ))
-    # self.out1 = self.Export(self.device.no.as_analog_source(
-    #   voltage_out=self.input.link().voltage,
-    #   current_limits=self.device.analog_current_limits,
-    #   impedance=self.input.link().source_impedance + self.device.analog_on_resistance
-    # ))
-    self.assign(self.input.current_draw,
-                self.out0.link().current_drawn.hull(self.out1.link().current_drawn))
-    self.assign(self.input.impedance,
-                self.out0.link().sink_impedance.hull(self.out1.link().sink_impedance) +
-                self.device.analog_on_resistance)
+
+    self.generator(self.generate, self.outputs.allocated())
+
+  def generate(self, elts: List[str]):
+    self.outputs.defined()
+    for elt in elts:
+      self.connect(
+        self.outputs.append_elt(AnalogSource().empty(), elt),
+        self.device.inputs.allocate(elt).as_analog_source(
+          voltage_out=self.input.link().voltage,
+          current_limits=self.device.analog_current_limits,
+          impedance=self.input.link().source_impedance + self.device.analog_on_resistance
+        ))
+
+  def demux_to(self, input: Optional[Port[AnalogLink]] = None,
+                   outputs: Optional[List[Port[AnalogLink]]] = None) -> 'AnalogDemuxer':
+    if outputs is not None:
+      for i, output in enumerate(outputs):
+        cast(Block, builder.get_enclosing_block()).connect(output, self.outputs.allocate(str(i)))
+    if input is not None:
+      cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+    return self
