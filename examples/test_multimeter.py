@@ -22,7 +22,6 @@ class ResistorMux(GeneratorBlock):
 
     self.generator(self.generate, resistances)
 
-
   def generate(self, resistances: List[Range]):
     for resistance in resistances:
       pass
