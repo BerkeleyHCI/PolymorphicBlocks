@@ -66,10 +66,9 @@ class PinResource(BaseLeafPinMapResource):
 
 
 class PeripheralFixedPin(BaseLeafPinMapResource):
-  """A resource for a peripheral as a Bundle port, where the internal ports can be mapped to pins based on a fixed
-  list of options (sort of a very limited switch matrix).
+  """A resource for a peripheral as a Bundle port, where the internal ports are fixed. No allocation happens.
   The internal port model must be fully defined here."""
-  def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: dict[str, List[str]]):
+  def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: dict[str, str]):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_pins = inner_allowed_pins
@@ -224,8 +223,8 @@ class PinMapUtil:
         else:
           return None
       elif isinstance(resource, PeripheralFixedPin):
-        remapped_pins = {elt_name: [pinmap[elt_pin] for elt_pin in elt_pins if elt_pin in pinmap]
-                         for elt_name, elt_pins in resource.inner_allowed_pins.items()}
+        remapped_pins = {elt_name: pinmap[elt_pin] for elt_name, elt_pin in resource.inner_allowed_pins.items()
+                         if elt_pin in pinmap}
         return PeripheralFixedPin(resource.name, resource.port_model, remapped_pins)
       elif isinstance(resource, BaseDelegatingPinMapResource):
         return resource
@@ -293,15 +292,12 @@ class PinMapUtil:
         return allocated_resource
       elif isinstance(resource, PeripheralFixedPin):  # fixed pin: check user-assignment, or assign first
         inner_pin_map = {}
-        for (inner_name, inner_pins) in resource.inner_allowed_pins.items():  # TODO should this be recursive?
+        for (inner_name, inner_pin) in resource.inner_allowed_pins.items():  # TODO should this be recursive?
           inner_assignment, inner_sub_assignments = sub_assignments.get_elt(inner_name)
+          if inner_assignment is not None and inner_assignment != inner_pin:
+            raise BadUserAssignError(f"invalid assignment to {port_name}.{inner_name}: {inner_assignment}")
 
-          if inner_assignment is not None:
-            if inner_assignment not in inner_pins:
-              raise BadUserAssignError(f"invalid assignment to {port_name}.{inner_name}: {inner_assignment}")
-            inner_pin_map[inner_name] = inner_assignment
-          else:
-            inner_pin_map[inner_name] = inner_pins[0]
+          inner_pin_map[inner_name] = inner_pin
           inner_sub_assignments.check_empty()
 
         sub_assignments.check_empty()
@@ -351,6 +347,8 @@ class PinMapUtil:
       if assignment is not None:  # filter the available resources to the assigned ones
         allowed_resources = resources_by_name.get(assignment, [])
         resource_pool = [resource for resource in resource_pool if resource in allowed_resources]
+        if not resource_pool:  # specifically is a bad assignment
+          raise BadUserAssignError(f"no available allocation for {port_name}: {assignment}")
 
       for resource in resource_pool:  # given the available resources, assign the first one possible
         allocated = try_allocate_resource(port_type, port_name, resource, sub_assignments)

@@ -156,7 +156,7 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
         'scl': ['PIO0_22'], 'sda': ['PIO0_23']
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {
-        'dp': ['USB_DP'], 'dm': ['USB_DM']
+        'dp': 'USB_DP', 'dm': 'USB_DM'
       }),
 
       # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
@@ -184,6 +184,7 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
       (UartPort, uart_allocates), (CanControllerPort, can_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
+    self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 

@@ -140,10 +140,10 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       # PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
-        'swclk': ['SWCLK'], 'swdio': ['SWDIO'], 'reset': ['P0.18'], 'swo': ['P1.00'],
+        'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18', 'swo': 'P1.00',
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {
-        'dp': ['D+'], 'dm': ['D-']
+        'dp': 'D+', 'dm': 'D-'
       }),
 
       PeripheralFixedResource('SPI0', spi_model, {

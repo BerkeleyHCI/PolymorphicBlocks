@@ -136,7 +136,7 @@ class Stm32f303Base_Device():
       }),
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_ft_model), {  # TODO some are FTf pins
-        'swdio': ['PA13'], 'swclk': ['PA14'], 'reset': ['NRST'], 'swo': ['PB3'],
+        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST', 'swo': 'PB3',
       }),
     ])
 
@@ -213,6 +213,7 @@ class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBloc
         (UartPort, uart_allocates), (CanControllerPort, can_allocates),
         (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
+    self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
