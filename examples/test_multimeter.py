@@ -245,7 +245,7 @@ class MultimeterTest(JlcBoardTop):
 
   def contents(self) -> None:
     super().contents()
-    VOLTAGE_RATING = (0, 400) * Volt
+    VOLTAGE_RATING = (0, 250) * Volt
 
     # also support LiIon AA batteries
     self.bat = self.Block(AABattery(voltage=(1.1, 4.2)*Volt, actual_voltage=(1.1, 4.2)*Volt))
@@ -468,8 +468,7 @@ class MultimeterTest(JlcBoardTop):
         # IMPORTANT! Most 2512 resistors are rated to ~200V working voltage, this one is up to 3kV.
 
         # pin footprints to re-select parts with newer parts tables
-        # TODO re-select high-voltage-rated PFET
-        # (['driver', 'fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['driver', 'fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
         (['gate', 'amp_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
         (['gate', 'ctl_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D1
         (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
