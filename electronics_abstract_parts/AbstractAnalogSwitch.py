@@ -45,7 +45,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.control.defined()
 
     stage_num_controls = math.ceil(math.log2(switch_size))  # number of control IOs per stage
-    ports = [self.inputs.append_elt(Passive.empty(), elt) for elt in elts]
+    ports = [self.inputs.append_elt(Passive.empty(), str(i)) for i in range(len(elts))]
     all_switches = []
     switch_stage = 0
 
