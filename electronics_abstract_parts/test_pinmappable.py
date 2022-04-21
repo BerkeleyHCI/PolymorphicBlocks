@@ -28,7 +28,7 @@ class PinMapUtilTest(unittest.TestCase):
     assert isinstance(mapper.resources[2], PeripheralFixedPin)
     self.assertEqual(remapped.resources[1].name, 'Per1')
     self.assertTrue(remapped.resources[1].port_model is mapper.resources[2].port_model)
-    self.assertEqual(remapped.resources[1].inner_allowed_pins, {'dp': ['4', '5'], 'dm': ['6', '7']})
+    self.assertEqual(remapped.resources[1].inner_allowed_pins, {'dp': '4', 'dm': '6'})
 
     self.assertTrue(remapped.resources[2] is mapper.resources[3])  # simple passthrough
 
