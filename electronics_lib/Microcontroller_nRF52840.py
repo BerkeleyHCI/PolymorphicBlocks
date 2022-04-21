@@ -146,28 +146,28 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
         'dp': ['D+'], 'dm': ['D-']
       }),
 
-      PeripheralFixedPin('SPI0', spi_model, {
+      PeripheralFixedResource('SPI0', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedPin('SPI1', spi_model, {
+      PeripheralFixedResource('SPI1', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedPin('SPI2', spi_model, {
+      PeripheralFixedResource('SPI2', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedPin('SPI3', spi_model, {
+      PeripheralFixedResource('SPI3', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedPin('I2C0', i2c_model, {
+      PeripheralFixedResource('I2C0', i2c_model, {
         'scl': hf_io_pins, 'sda': hf_io_pins,
       }),
-      PeripheralFixedPin('I2C1', i2c_model, {
+      PeripheralFixedResource('I2C1', i2c_model, {
         'scl': hf_io_pins, 'sda': hf_io_pins,
       }),
-      PeripheralFixedPin('UART0', uart_model, {
+      PeripheralFixedResource('UART0', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
-      PeripheralFixedPin('UART1', uart_model, {
+      PeripheralFixedResource('UART1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
     ])
