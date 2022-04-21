@@ -20,7 +20,7 @@ class ResistorMux(GeneratorBlock):
     self.com = self.Export(self.switch.com)
     self.inputs = self.Port(Vector(Passive.empty()))
 
-    self.generate(self.generate, resistances)
+    self.generator(self.generate, resistances)
 
 
   def generate(self, resistances: List[Range]):
@@ -268,9 +268,10 @@ class MultimeterTest(JlcBoardTop):
       self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.reg_analog, self.prot_analog), _ = self.chain(
+      (self.reg_analog, self.tp_analog, self.prot_analog), _ = self.chain(
         self.v5v,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
@@ -284,7 +285,7 @@ class MultimeterTest(JlcBoardTop):
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
-                                         self.mcu.adc.allocate('v5sense'))
+                                         self.mcu.adc.allocate('vbatsense'))
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
       self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
@@ -311,9 +312,10 @@ class MultimeterTest(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
+      (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
+        self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
@@ -367,9 +369,10 @@ class MultimeterTest(JlcBoardTop):
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
       self.connect(self.measure.input_negative, self.inn_merge.output)
-      (self.measure_buffer, ), _ = self.chain(
+      (self.measure_buffer, self.tp_measure), _ = self.chain(
         self.measure.output,
-        imp.Block(OpampFollower()))
+        imp.Block(OpampFollower()),
+        self.Block(AnalogTestPoint()))
       (self.adc, ), _ = self.chain(
         imp.Block(Mcp3561()),
         shared_spi)
@@ -379,6 +382,11 @@ class MultimeterTest(JlcBoardTop):
       self.connect(self.adc.vins.allocate('1'), self.inn_merge.output)
       self.connect(self.mcu.gpio.allocate_vector('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
+
+      self.adc_vref = self.connect(self.adc.vref)
+      (self.tp_vref, ), _ = self.chain(
+        self.adc.vref,
+        self.Block(VoltageTestPoint()))
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(

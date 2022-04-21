@@ -76,6 +76,7 @@ class Mcp3561(Block):
     self.pwra = self.Port(VoltageSink.empty())
     self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
+    self.vref = self.Export(self.ic.vrefp, optional=True)
 
     self.vins = self.Export(self.ic.ch)
 
