@@ -405,7 +405,7 @@ class MultimeterTest(JlcBoardTop):
       self.connect(self.driver.output, inp_port)
       (self.driver_dac, ), _ = self.chain(
         self.mcu.gpio.allocate('driver_control'),
-        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 1*kHertz(tol=0.5))),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 100*Hertz(tol=0.5))),
         self.driver.control)
       self.connect(self.mcu.gpio.allocate_vector('driver_select'), self.driver.select)
       self.connect(self.mcu.gpio.allocate('driver_enable'), self.driver.enable)

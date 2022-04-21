@@ -77,8 +77,15 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
     i2c_model = I2cMaster(DigitalBidir.empty())
+
+    hf_io_pins = [
+      'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
+      'P0.05', 'P0.06', 'P0.07', 'P0.08', 'P1.08', 'P1.09', 'P0.11', 'P0.12',
+      'P0.14', 'P0.16', 'P0.19', 'P0.21', 'P0.23', 'P0.25',  # 'P0.18'
+      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  # 'P1.00'
+    ]
 
     return PinMapUtil([  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
       PinResource('P0.31', {'P0.31': dio_lf_model, 'AIN7': adc_model}),
@@ -139,14 +146,30 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
         'dp': ['D+'], 'dm': ['D-']
       }),
 
-      PeripheralAnyResource('SPI0', spi_model),
-      PeripheralAnyResource('SPI1', spi_model),
-      PeripheralAnyResource('SPI2', spi_model),
-      PeripheralAnyResource('SPI3', spi_model),
-      PeripheralAnyResource('I2C0', i2c_model),
-      PeripheralAnyResource('I2C1', i2c_model),
-      PeripheralAnyResource('UART0', uart_model),
-      PeripheralAnyResource('UART1', uart_model),
+      PeripheralFixedPin('SPI0', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedPin('SPI1', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedPin('SPI2', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedPin('SPI3', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedPin('I2C0', i2c_model, {
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedPin('I2C1', i2c_model, {
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedPin('UART0', uart_model, {
+        'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
+      PeripheralFixedPin('UART1', uart_model, {
+        'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
     ])
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
@@ -213,6 +236,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
       (UartPort, uart_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
+    self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
@@ -321,6 +345,7 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
       (UartPort, uart_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
+    self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 

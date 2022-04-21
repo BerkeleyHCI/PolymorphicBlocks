@@ -15,7 +15,24 @@ class PinMappable(Block):
   @init_in_parent
   def __init__(self, pin_assigns: StringLike = "") -> None:
     super().__init__()
-    self.pin_assigns = pin_assigns
+    self.pin_assigns = self.ArgParameter(pin_assigns)
+    self.actual_pin_assigns = self.Parameter(ArrayStringExpr())
+
+  def generator_set_allocation(self, allocations: List['AllocatedResource']):
+    allocation_strs = []
+    for allocation in allocations:
+      if allocation.pin is None:
+        allocation_strs.append(f"{allocation.name}={allocation.resource_name}")
+      elif isinstance(allocation.pin, str):
+        allocation_strs.append(f"{allocation.name}={allocation.resource_name},{allocation.pin}")
+      elif isinstance(allocation.pin, dict):
+        allocation_strs.append(f"{allocation.name}={allocation.resource_name}")
+        for subport_name, subport_pin in allocation.pin.items():
+          allocation_strs.append(f"{allocation.name}.{subport_name}={subport_pin}")
+      else:
+        raise ValueError(f"unknown allocation type {allocation}")
+
+    self.assign(self.actual_pin_assigns, allocation_strs)
 
 
 class BasePinMapResource(metaclass=ABCMeta):
@@ -331,10 +348,8 @@ class PinMapUtil:
         return AllocatedResource(port_type(), port_name, 'NC', None)
 
       if assignment is not None:  # filter the available resources to the assigned ones
-        allowed_resourrces = resources_by_name.get(assignment, [])
-        resource_pool = [resource for resource in resource_pool if resource in allowed_resourrces]
-        if not resource_pool:
-          raise BadUserAssignError(f"no available allocation for {port_name}: {assignment}")
+        allowed_resources = resources_by_name.get(assignment, [])
+        resource_pool = [resource for resource in resource_pool if resource in allowed_resources]
 
       for resource in resource_pool:  # given the available resources, assign the first one possible
         allocated = try_allocate_resource(port_type, port_name, resource, sub_assignments)
