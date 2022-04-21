@@ -113,6 +113,12 @@ class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
     return self
 
 
+class DummyPassive(DummyDevice):
+  def __init__(self) -> None:
+    super().__init__()
+    self.io = self.Port(Passive(), [InOut])
+
+
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),

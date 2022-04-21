@@ -42,4 +42,4 @@ from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw
-from .DummyDevices import DummyAnalogSink
+from .DummyDevices import DummyPassive, DummyAnalogSink

@@ -17,14 +17,21 @@ class ResistorMux(GeneratorBlock):
     self.gnd = self.Export(self.switch.gnd, [Common])
 
     self.control = self.Export(self.switch.control)
-    self.com = self.Export(self.switch.com)
-    self.inputs = self.Port(Vector(Passive.empty()))
+    self.input = self.Port(Passive.empty())  # resistor side
+    self.com = self.Export(self.switch.com)  # switch side
 
     self.generator(self.generate, resistances)
 
   def generate(self, resistances: List[Range]):
-    for resistance in resistances:
-      pass
+    self.res = ElementDict[Resistor]()
+    for i, resistance in enumerate(resistances):
+      if resistance.upper == float('inf'):  # open circuit for this step
+        self.dummy = self.Block(DummyPassive())
+        self.connect(self.dummy.io, self.switch.inputs.allocate(str(i)))
+      else:
+        res = self.res[i] = self.Block(Resistor(resistance))
+        self.connect(res.a, self.input)
+        self.connect(res.b, self.switch.inputs.allocate(str(i)))
 
 
 class MultimeterAnalog(Block):
@@ -54,26 +61,24 @@ class MultimeterAnalog(Block):
     self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
     self.connect(self.res.a.as_analog_sink(), self.input_positive)
 
-    self.rdiv = self.Block(Resistor(100*Ohm(tol=0.01)))
-    self.connect(self.rdiv.b.as_analog_sink(), self.input_negative)
-
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
         ImplicitConnect(self.pwr, [Power]),
     ) as imp:
-      self.range_floating = self.Block(DummyAnalogSink())
-      self.range_floating2 = self.Block(DummyAnalogSink())
-
-      self.range = imp.Block(AnalogDemuxer()).demux_to(
-        outputs=[self.rdiv.a.as_analog_sink(), self.range_floating.io, self.range_floating2.io]
-      )
-      self.connect(self.select, self.range.control)
-
+      self.range = imp.Block(ResistorMux([
+        1*kOhm(tol=0.01),  # 1:1000 step
+        10*kOhm(tol=0.01),  # 1:100 step
+        100*kOhm(tol=0.01),  # 1:10 step
+        Range(float('inf'), float('inf'))  # open circuit
+      ]))
+      self.connect(self.range.input.as_analog_sink(), self.input_negative)
       self.connect(self.res.b.as_analog_source(
         voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
         current_limits=(-10, 10)*mAmp,
         impedance=1*mOhm(tol=0)
-      ), self.range.input, self.output)
+      ), self.range.com.as_analog_sink(), self.output)
+
+      self.connect(self.select, self.range.control)
 
 
 class MultimeterCurrentDriver(Block):
@@ -411,12 +416,12 @@ class MultimeterTest(JlcBoardTop):
         (['reg_5v'], Xc9142),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Xc6209),
-        (['measure', 'range', 'device'], AnalogSwitchTree),
+        (['measure', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], ChipResistor),
         (['spk', 'conn'], JstPhK),
       ],
       instance_values=[
-        (['measure', 'range', 'device', 'switch_size'], 2),
+        (['measure', 'range', 'switch', 'switch_size'], 2),
         (['mcu', 'pin_assigns'], ';'.join([
           # TODO reassign for this differently-pinned device
           # 'rgb_red=36',
@@ -462,6 +467,9 @@ class MultimeterTest(JlcBoardTop):
         (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
         (['gate', 'pwr_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
         (['reg_5v', 'power_path', 'inductor', 'footprint'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+      ],
+      class_values=[
+        # (AnalogSwitchTree, ['switch_size'], 2),  # TODO this breaks because of parameter resolution ordering
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
