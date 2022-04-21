@@ -66,10 +66,10 @@ class MultimeterAnalog(Block):
         ImplicitConnect(self.pwr, [Power]),
     ) as imp:
       self.range = imp.Block(ResistorMux([
-        1*kOhm(tol=0.01),  # 1:1000 step
-        10*kOhm(tol=0.01),  # 1:100 step
-        100*kOhm(tol=0.01),  # 1:10 step
-        Range(float('inf'), float('inf'))  # open circuit
+        1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
+        10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
+        100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
+        Range(float('inf'), float('inf'))  # 1:1 step, open circuit
       ]))
       self.connect(self.range.input.as_analog_sink(), self.input_negative)
       self.connect(self.res.b.as_analog_source(
@@ -83,12 +83,9 @@ class MultimeterAnalog(Block):
 
 class MultimeterCurrentDriver(Block):
   """Protected constant-current stage for the multimeter driver.
-
-  TODO: this uses an analog voltage which gives limited dynamic range,
-    instead this should range by switching across several resistors
   """
   @init_in_parent
-  def __init__(self, resistance: RangeLike = RangeExpr(), voltage_rating: RangeLike = RangeExpr()):
+  def __init__(self, voltage_rating: RangeLike = RangeExpr()):
     super().__init__()
 
     # TODO: separate Vref?
@@ -98,27 +95,19 @@ class MultimeterCurrentDriver(Block):
     self.output = self.Port(AnalogSink.empty())  # TBD this should be some kind of AnalogBidirectional
 
     self.control = self.Port(AnalogSink.empty())
-    self.enable = self.Port(DigitalSink.empty())
+    self.select = self.Port(Vector(DigitalSink.empty()))
 
-    self.resistance = self.ArgParameter(resistance)
     self.voltage_rating = self.ArgParameter(voltage_rating)
 
   def contents(self):
     super().contents()
     max_in_voltage = self.control.link().voltage.upper()
 
-    self.res = self.Block(Resistor(
-      resistance=self.resistance
-    ))
-    self.connect(self.pwr, self.res.a.as_voltage_sink(
-      current_draw=(0, max_in_voltage / self.resistance.lower())
-    ))
     self.fet = self.Block(PFet(
       drain_voltage=self.voltage_rating,  # protect against negative overvoltage
-      drain_current=(0, max_in_voltage / self.resistance.lower()),
+      drain_current=(0, max_in_voltage / 1000),  # approx lowest resistance - TODO properly model the resistor mux
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
     ))
-    self.connect(self.res.b, self.fet.source)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -126,20 +115,28 @@ class MultimeterCurrentDriver(Block):
     ) as imp:
       self.amp = imp.Block(Opamp())
       self.connect(self.amp.inp, self.control)
-      self.connect(self.amp.inn, self.res.b.as_analog_source(
-        voltage_out=(0, max_in_voltage),
-        impedance=self.res.actual_resistance
-      ))
 
-      self.sw = imp.Block(AnalogMuxer()).mux_to(
-        [self.fet.source.as_analog_source(), self.amp.out],
-        self.fet.gate.as_analog_sink()
-      )
-      self.connect(self.enable, self.sw.control.allocate())
+      self.range = imp.Block(ResistorMux([
+        1*kOhm(tol=0.01),  # 1 mA range
+        10*kOhm(tol=0.01),  # 100 uA range
+        100*kOhm(tol=0.01),  # 10 uA range
+        1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
+      ]))
+      self.connect(self.pwr, self.range.input.as_voltage_sink(
+        current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
+      ))
+      self.connect(self.amp.inn,
+                   self.fet.source.as_analog_sink(),
+                   self.range.com.as_analog_source(
+                     voltage_out=(0, max_in_voltage),
+                     impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
+                   ))
+
+      self.connect(self.select, self.range.control)
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
-      current=(0, max_in_voltage / self.resistance.lower()),
+      current=(0, max_in_voltage / 1000),  # approx lowest resistance - TODO properly model the resistor mux
       voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
       reverse_recovery_time=RangeExpr.ALL
     ))
@@ -394,7 +391,6 @@ class MultimeterTest(JlcBoardTop):
 
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
-        resistance=1 * kOhm(tol=0.1),
         voltage_rating=VOLTAGE_RATING
       ))
       self.connect(self.driver.output, inp_port)
@@ -402,7 +398,7 @@ class MultimeterTest(JlcBoardTop):
         self.mcu.gpio.allocate('driver_control'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 1*kHertz(tol=0.5))),
         self.driver.control)
-      self.connect(self.mcu.gpio.allocate('driver_enable'), self.driver.enable)
+      self.connect(self.mcu.gpio.allocate_vector('driver_select'), self.driver.select)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
