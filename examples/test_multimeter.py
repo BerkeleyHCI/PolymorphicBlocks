@@ -96,6 +96,7 @@ class MultimeterCurrentDriver(Block):
 
     self.control = self.Port(AnalogSink.empty())
     self.select = self.Port(Vector(DigitalSink.empty()))
+    self.enable = self.Port(DigitalSink.empty())
 
     self.voltage_rating = self.ArgParameter(voltage_rating)
 
@@ -125,14 +126,22 @@ class MultimeterCurrentDriver(Block):
       self.connect(self.pwr, self.range.input.as_voltage_sink(
         current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
       ))
-      self.connect(self.amp.inn,
-                   self.fet.source.as_analog_sink(),
-                   self.range.com.as_analog_source(
-                     voltage_out=(0, max_in_voltage),
-                     impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
-                   ))
+      fet_source_node = self.fet.source.as_analog_sink()
+      self.connect(
+        self.amp.inn,
+        fet_source_node,
+        self.range.com.as_analog_source(
+          voltage_out=(0, max_in_voltage),
+          impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
+        ))
 
       self.connect(self.select, self.range.control)
+
+      self.sw = imp.Block(AnalogMuxer()).mux_to(  # enable switch
+        [fet_source_node, self.amp.out],
+        self.fet.gate.as_analog_sink()
+      )
+      self.connect(self.enable, self.sw.control.allocate())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -399,6 +408,7 @@ class MultimeterTest(JlcBoardTop):
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 1*kHertz(tol=0.5))),
         self.driver.control)
       self.connect(self.mcu.gpio.allocate_vector('driver_select'), self.driver.select)
+      self.connect(self.mcu.gpio.allocate('driver_enable'), self.driver.enable)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -413,11 +423,13 @@ class MultimeterTest(JlcBoardTop):
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Xc6209),
         (['measure', 'range', 'switch'], AnalogSwitchTree),
+        (['driver', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], ChipResistor),
         (['spk', 'conn'], JstPhK),
       ],
       instance_values=[
         (['measure', 'range', 'switch', 'switch_size'], 2),
+        (['driver', 'range', 'switch', 'switch_size'], 2),
         (['mcu', 'pin_assigns'], ';'.join([
           # TODO reassign for this differently-pinned device
           # 'rgb_red=36',
