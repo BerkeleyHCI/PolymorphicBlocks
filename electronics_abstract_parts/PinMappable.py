@@ -282,9 +282,10 @@ class PinMapUtil:
     allocated_resources: List[AllocatedResource] = []
 
     def try_allocate_resource(port_type: Type[Port], port_name: str, resource: BasePinMapResource,
-                              sub_assignments: UserAssignmentDict) -> Optional[AllocatedResource]:
-      """Try to assign a port to the specified resource, returning any resources used by this mapping and the
-      pin mapping, or None if there are no satisfying mappings starting with this resource."""
+                              sub_assignments: UserAssignmentDict) -> AllocatedResource:
+      """Try to assign a port to the specified resource, returning any resources used by this mapping and
+      the pin mapping.
+      Backtracking search is not implemented, this cannot fail."""
       if isinstance(resource, PinResource):  # single pin: just assign it
         sub_assignments.check_empty()
         resource_name, resource_model = resource.get_name_model_for_type(port_type)
@@ -312,10 +313,10 @@ class PinMapUtil:
         inner_models = {}
         resource_name = resource.name  # typer gets confused if this is put directly where it is used
         for (inner_name, inner_model) in resource.port_model._ports.items():
-          if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
-            inner_type = self.transforms[type(inner_model)][0]
-          else:
-            inner_type = type(inner_model)
+          inner_type = type(inner_model)
+          if inner_type in self.transforms:  # apply transform to search for the resource type, if needed
+            inner_type = self.transforms[inner_type][0]
+
           inner_assignment, inner_sub_assignments = sub_assignments.get_elt(inner_name)
 
           resource_pool = free_resources_by_type[inner_type]
@@ -330,10 +331,10 @@ class PinMapUtil:
           if inner_allocation.pin is not None:
             assert isinstance(inner_allocation.pin, str)
             inner_pin_map[inner_name] = inner_allocation.pin
+
+          inner_models[inner_name] = inner_allocation.port_model
           if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed
-            inner_models[inner_name] = self.transforms[type(inner_model)][1](inner_allocation.port_model)
-          else:
-            inner_models[inner_name] = inner_allocation.port_model
+            inner_models[inner_name] = self.transforms[type(inner_model)][1](inner_models[inner_name])
         sub_assignments.check_empty()
         resource_model = resource_model.with_elt_initializers(inner_models)
         allocated_resource = AllocatedResource(resource_model, port_name, resource_name, inner_pin_map)
@@ -353,10 +354,8 @@ class PinMapUtil:
 
       for resource in resource_pool:  # given the available resources, assign the first one possible
         allocated = try_allocate_resource(port_type, port_name, resource, sub_assignments)
-        if allocated is not None:
-          allocated_resource = allocated
-          mark_resource_used(resource)
-          return allocated_resource
+        mark_resource_used(resource)
+        return allocated
 
       raise AutomaticAllocationError(f"no available allocation for {port_name}: {assignment}")
 

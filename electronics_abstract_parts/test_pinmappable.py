@@ -110,6 +110,13 @@ class PinMapUtilTest(unittest.TestCase):
     ]).allocate([(UsbDevicePort, ['usb'])])
     self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '1', 'dp': '3'}), allocated)
 
+  def test_assign_bundle_fixed_overlapping_auto(self):
+    usb_model = UsbDevicePort()
+    allocated = PinMapUtil([
+      PeripheralFixedPin('USB0', usb_model, {'dm': ['1', '2'], 'dp': ['1', '2']}),
+    ]).allocate([(UsbDevicePort, ['usb'])])
+    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '1', 'dp': '2'}), allocated)
+
   def test_assign_bundle_fixed_badspec(self):
     usb_model = UsbDevicePort()
     with self.assertRaises(BadUserAssignError):
