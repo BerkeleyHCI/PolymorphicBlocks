@@ -420,8 +420,8 @@ class MultimeterTest(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Xc9142),
-        (['reg_3v3'], Xc6209),
-        (['reg_analog'], Xc6209),
+        (['reg_3v3'], Lp5907),  # could be a cheaper LDO actually
+        (['reg_analog'], Lp5907),
         (['measure', 'range', 'switch'], AnalogSwitchTree),
         (['driver', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], ChipResistor),

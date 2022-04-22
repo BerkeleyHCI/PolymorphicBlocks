@@ -293,7 +293,8 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
 
 
 class Ap2210(LinearRegulator):
-  """AP2210 RF ULDO in SOT-23-5 with high PSRR"""
+  """AP2210 RF ULDO in SOT-23-5 with high PSRR and high(er) voltage tolerant.
+  """
   def contents(self) -> None:
     super().contents()
 
@@ -303,6 +304,75 @@ class Ap2210(LinearRegulator):
       self.ic = imp.Block(Ap2210_Device(output_voltage=self.output_voltage))
       self.in_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
       self.out_cap = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))
+
+      self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+      self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+
+class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeLike):
+    super().__init__()
+
+    self.assign(self.pwr_in.voltage_limits, (2.2, 5.5) * Volt)
+    self.assign(self.pwr_out.current_limits, (0, 250) * mAmp)
+    self.assign(self.actual_quiescent_current, (0.2, 425) * uAmp)
+    self.assign(self.actual_dropout, (50, 250) * mVolt)
+
+    self.generator(self.select_part, output_voltage)
+
+  def select_part(self, output_voltage: Range):
+    parts = [  # output voltage, Table in 6.5 tolerance varies by output voltage
+      (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB '),
+      (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB'),
+      (Range.from_tolerance(1.8, 0.02), 'LP5907MFX-1.8/NOPB'),
+      (Range.from_tolerance(2.5, 0.02), 'LP5907MFX-2.5/NOPB'),
+      # (Range.from_tolerance(2.8, 0.02), 'LP5907MFX-2.8/NOPB '),
+      # (Range.from_tolerance(2.85, 0.02), 'LP5907MFX-2.85/NOPB '),
+      # (Range.from_tolerance(2.9, 0.02), 'LP5907MFX-2.9/NOPB'),
+      (Range.from_tolerance(3.0, 0.02), 'LP5907MFX-3.0/NOPB'),
+      # (Range.from_tolerance(3.1, 0.02), 'LP5907MFX-3.1/NOPB'),
+      # (Range.from_tolerance(3.2, 0.02), 'LP5907MFX-3.2/NOPB'),
+      (Range.from_tolerance(3.3, 0.02), 'LP5907MFX-3.3/NOPB'),
+      (Range.from_tolerance(4.5, 0.02), 'LP5907MFX-4.5/NOPB'),
+    ]
+    # TODO should prefer parts by closeness to nominal (center) specified voltage
+    suitable_parts = [(part_out, part_number) for part_out, part_number in parts
+                      if part_out in output_voltage]
+    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+    part_output_voltage, part_number = suitable_parts[0]
+
+    self.assign(self.actual_target_voltage, part_output_voltage)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-5',
+      {
+        '1': self.pwr_in,
+        '2': self.gnd,
+        '3': self.pwr_in,  # EN
+        # pin 4 is NC
+        '5': self.pwr_out,
+      },
+      mfr='Texas Instruments', part=part_number,
+      datasheet='https://www.ti.com/lit/ds/symlink/lp5907.pdf',
+    )
+
+
+class Lp5907(LinearRegulator):
+  """High-PSRR LDO in SOT-23-5.
+  Other pin-compatible high-PSRR LDOs:
+  - LP5907
+  - AP139
+  - TCR2EF
+  """
+  def contents(self) -> None:
+    super().contents()
+
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ic = imp.Block(Lp5907_Device(output_voltage=self.output_voltage))
+      self.in_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+      self.out_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)

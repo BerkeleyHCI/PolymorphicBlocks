@@ -23,7 +23,7 @@ from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210, Lp5907
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BoostConverters_AnalogDevices import Ltc3429
 from .BoostConverters_DiodesInc import Ap3012
