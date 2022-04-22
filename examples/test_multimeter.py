@@ -415,6 +415,9 @@ class MultimeterTest(JlcBoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+    self.m1 = self.Block(MountingHole())
+    self.m2 = self.Block(MountingHole())
+
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -484,6 +487,7 @@ class MultimeterTest(JlcBoardTop):
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
         (Speaker, ConnectorSpeaker),
+        (MountingHole, MountingHole_M3),
       ],
     )
 
