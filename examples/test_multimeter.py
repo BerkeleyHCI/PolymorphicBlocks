@@ -482,7 +482,7 @@ class MultimeterTest(JlcBoardTop):
         # (AnalogSwitchTree, ['switch_size'], 2),  # TODO this breaks because of parameter resolution ordering
       ],
       class_refinements=[
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),
         (Opamp, Tlv9061),  # higher precision opamps
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
