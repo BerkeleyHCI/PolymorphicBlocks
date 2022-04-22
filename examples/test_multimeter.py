@@ -309,13 +309,12 @@ class MultimeterTest(JlcBoardTop):
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
 
-      shared_spi = self.mcu.spi.allocate('spi')
-
+      lcd_spi = self.mcu.spi.allocate('lcd_spi')
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
       self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
       self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
-      self.connect(shared_spi, self.lcd.spi)  # MISO unused
+      self.connect(lcd_spi, self.lcd.spi)  # MISO unused
       self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
 
     # SPEAKER DOMAIN
@@ -376,6 +375,7 @@ class MultimeterTest(JlcBoardTop):
       )
 
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
+      adc_spi = self.mcu.spi.allocate('adc_spi')
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
       self.connect(self.measure.input_negative, self.inn_merge.output)
@@ -385,7 +385,7 @@ class MultimeterTest(JlcBoardTop):
         self.Block(AnalogTestPoint()))
       (self.adc, ), _ = self.chain(
         imp.Block(Mcp3561()),
-        shared_spi)
+        adc_spi)
       self.connect(self.adc.pwr, self.v3v3)
       self.connect(self.adc.pwra, self.vanalog)
       self.connect(self.adc.vins.allocate('0'), self.measure_buffer.output)
@@ -435,6 +435,20 @@ class MultimeterTest(JlcBoardTop):
         (['driver', 'range', 'switch', 'switch_size'], 2),
         (['mcu', 'pin_assigns'], ';'.join([
           # TODO reassign for this differently-pinned device
+          'adc_spi.miso=3',
+          'adc_spi.mosi=7',
+          'adc_spi.sck=5',
+          # 4
+          'adc_cs=6',
+          'inn_control_0=8',
+          'measure_select_0_0=10',
+          'measure_select_1_0=12',
+          'driver_select_1_0=14',
+          'driver_select_0_0=13',
+          'driver_enable=11',
+          'gate_control=17',
+          'sw0=16',
+
           # 'rgb_red=36',
           # 'rgb_blue=2',
           # 'rgb_green=3',
