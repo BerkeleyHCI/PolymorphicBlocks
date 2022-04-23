@@ -1,6 +1,9 @@
 from edg_core import *
 from electronics_model import *
 
+from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow, PartsTableUtil
+from .PartsTablePart import PartsTablePart
+
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
@@ -18,7 +21,7 @@ from .AbstractPassives import Resistor, UnpolarizedCapacitor, Capacitor, Inducto
 from .AbstractPassives import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor, DecouplingCapacitor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
-from .AbstractDiodes import Diode, ZenerDiode, ProtectionZenerDiode
+from .AbstractDiodes import Diode, ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode
 from .AbstractFets import Fet, NFet, PFet, SwitchFet, SwitchNFet, SwitchPFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch

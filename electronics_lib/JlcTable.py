@@ -30,7 +30,8 @@ class JlcTable(CapacitorTable):
     return {
       #chooses the highest price, which is for the lowest quantity
       cls.COST: float(max(float_array)),
-      cls.JLC_PART_NUMBER: row['LCSC Part']
+      cls.JLC_PART_NUMBER: row['LCSC Part'],
+      PartsTablePart.PART_NUMBER: row['LCSC Part'],
     }
 
   """Extracts out component values from the "Description" column of JlCPCB_SMT_Parts_Library.csv

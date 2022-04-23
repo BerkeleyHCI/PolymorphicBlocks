@@ -1,5 +1,7 @@
 from electronics_model import *
 from .Categories import *
+from .PartsTable import PartsTableColumn
+from .PartsTablePart import PartsTablePart, PartsTableFootprint
 
 
 @abstract_block
@@ -39,6 +41,30 @@ class ZenerDiode(DiscreteSemiconductor):
     self.cathode = self.Port(Passive.empty())
 
     self.zener_voltage = self.ArgParameter(zener_voltage)
+
+
+@abstract_block
+class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
+  ZENER_VOLTAGE = PartsTableColumn(Range)
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.actual_zener_voltage = self.Parameter(RangeExpr())
+
+    self.generator(self.select_part, self.zener_voltage, self.part, self.footprint_spec)
+
+  def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
+    part = self._get_table().filter(lambda row: (
+        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        row[self.ZENER_VOLTAGE].fuzzy_in(zener_voltage)
+    )).first(f"no zener diodes in Vz={zener_voltage} V")
+
+    self.assign(self.actual_zener_voltage, part[self.ZENER_VOLTAGE])
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+
+    self._make_footprint(part)
 
 
 class ProtectionZenerDiode(DiscreteApplication):
