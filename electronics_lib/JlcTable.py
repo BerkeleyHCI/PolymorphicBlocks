@@ -13,11 +13,11 @@ class JlcTable(CapacitorTable):
 
   @classmethod
   def _jlc_table(cls) -> PartsTable:
-    if cls._cached_full_table is None:
-     cls._cached_full_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+    if JlcTable._cached_full_table is None:  # specifically this class, so results are visible to subclasses
+      JlcTable._cached_full_table = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
         'JLCPCB_SMT_Parts_Library.csv'
       ], 'resources'), encoding='gb2312')
-    return cls._cached_full_table
+    return JlcTable._cached_full_table
 
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
