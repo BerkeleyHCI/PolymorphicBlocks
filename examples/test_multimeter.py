@@ -447,33 +447,21 @@ class MultimeterTest(JlcBoardTop):
           'driver_enable=48',
           'gate_control=49',
           'sw0=50',
+          'driver_control=45',  # high frequency PWM
 
-          # 'rgb_red=36',
-          # 'rgb_blue=2',
-          # 'rgb_green=3',
-          #
-          # 'spi.miso=28',
-          # 'adc_cs=5',
-          # 'lcd_cs=26',
-          #
-          # 'spi.sck=20',
-          # 'spi.mosi=19',
-          # 'lcd_rs=18',
-          # 'lcd_reset=17',
-          #
-          # 'spk=15',
-          #
-          # 'measure_select=30',
-          # 'gate_control=29',
-          #
-          # 'sw0=13',
-          # 'driver_control=12',
-          # 'driver_enable=11',
-          #
-          # 'sw1=33',
-          # 'sw2=6',
-          #
-          # 'inn_control=4',
+          'lcd_cs=16',
+          'lcd_spi.sck=17',
+          'lcd_spi.mosi=18',
+          'lcd_spi.sck=17',
+          'lcd_rs=14',
+          'lcd_reset=12',
+
+          'spk=36',
+          'vbatsense=11',
+
+          'rgb_red=9',
+          'rgb_blue=7',
+          'rgb_green=5',
         ])),
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
