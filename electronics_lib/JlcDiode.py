@@ -23,7 +23,7 @@ class JlcZenerTable(JlcBaseDiodeTable):
   FORWARD_VOLTAGE = PartsTableColumn(Range)
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("±(\d+\.?\d*%) (\d+\.?\d*V) (\d+\.?\d*\w?A) @ (\d+\.?\d*V) (\d+\.?\d*\w?W).*"),
+    (re.compile("(±\d+\.?\d*%) (\d+\.?\d*V) (\d+\.?\d*\w?A) @ (\d+\.?\d*V) (\d+\.?\d*\w?W).*"),
      lambda match: {
        JlcZenerTable.ZENER_VOLTAGE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'V'),
                                                          PartsTableUtil.parse_tolerance(match.group(1)))
@@ -38,7 +38,7 @@ class JlcZenerTable(JlcBaseDiodeTable):
   @classmethod
   def _generate_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['Library Type'] != 'Basic' or row['Second Category'] != 'Zener Diodes':
+      if row['Second Category'] != 'Zener Diodes':
         return None
       footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package'])
       if footprint is None:
@@ -54,7 +54,8 @@ class JlcZenerTable(JlcBaseDiodeTable):
       if new_cols is None:
         return None
 
-      new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[footprint]
+      new_cols[cls.FOOTPRINT] = footprint
+      new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
@@ -81,7 +82,7 @@ class JlcZenerDiode(ZenerDiode, JlcFootprint, FootprintBlock, GeneratorBlock):
     self.assign(self.actual_zener_voltage, part[JlcZenerTable.ZENER_VOLTAGE])
 
     self.footprint(
-      'D', part[JlcTable.FOOTPRINT],
+      'D', part[JlcZenerTable.FOOTPRINT],
       {
         '1': self.cathode,
         '2': self.anode,

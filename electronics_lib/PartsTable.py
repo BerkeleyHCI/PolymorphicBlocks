@@ -159,7 +159,7 @@ class PartsTableUtil:
   }
   SI_PREFIXES = ''.join(SI_PREFIX_DICT.keys())
 
-  NUMBER_REGEX = '\d+(?:\.\d+)?'
+  NUMBER_REGEX = '\d+\.?\d*'
 
   VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(.+)$')
   DefaultType = TypeVar('DefaultType')
@@ -180,7 +180,7 @@ class PartsTableUtil:
       return float(matches.group(1)) * cls.SI_PREFIX_DICT[matches.group(2)]
     else:
       if default == cls.ParseError:
-        raise cls.ParseError(f"Cannot parse units {units} from {value}")
+        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
       else:
         return default  #type:ignore
 
@@ -191,17 +191,20 @@ class PartsTableUtil:
     """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
     For example, ±10% would be returned as (-0.1, 0.1)"""
     matches = cls.TOLERANCE_REGEX.match(value)
-    if matches is not None and matches.group(1) == '±':  # only support the ± case right now
-      if matches.group(3) == '%':
-        scale = 1.0/100
-      elif matches.group(3) == 'ppm':
-        scale = 1e-6
+    if matches is not None:
+      if matches.group(1) == '±':  # only support the ± case right now
+        if matches.group(3) == '%':
+          scale = 1.0/100
+        elif matches.group(3) == 'ppm':
+          scale = 1e-6
+        else:
+          raise cls.ParseError(f"Cannot determine tolerance scale from '{value}'")
+        parsed = float(matches.group(2))
+        return -parsed * scale, parsed * scale
       else:
-        raise cls.ParseError(f"Cannot determine tolerance scale from {value}")
-      parsed = float(matches.group(2))
-      return -parsed * scale, parsed * scale
+        raise cls.ParseError(f"Cannot determine tolerance type from '{value}'")
     else:
-      raise cls.ParseError(f"Cannot determine tolerance type from {value}")
+      raise cls.ParseError(f"Cannot parse tolerance from '{value}'")
 
   @staticmethod
   def strip_parameter(value: str) -> str:
