@@ -1,8 +1,7 @@
 import unittest
 
-import csv
 import os
-from .PartsTable import *
+from electronics_abstract_parts.PartsTable import *
 
 
 class PartsTableTest(unittest.TestCase):
@@ -10,7 +9,7 @@ class PartsTableTest(unittest.TestCase):
 
   # TODO don't test using internal variables
   def setUp(self) -> None:
-    path = os.path.join(os.path.dirname(__file__), 'resources', 'test_table.csv')
+    path = os.path.join(os.path.dirname(__file__), '../electronics_abstract_parts/resources', 'test_table.csv')
     with open(path, newline='') as csvfile:
       reader = csv.DictReader(csvfile)
       self.table = PartsTable.from_dict_rows([row for row in reader])
@@ -22,7 +21,7 @@ class PartsTableTest(unittest.TestCase):
     self.assertEqual(self.table.rows[2].value, {'header1': '3', 'header2': 'ducks', 'header3': '7'})
 
   def test_multiple(self) -> None:
-    path = os.path.join(os.path.dirname(__file__), 'resources', 'test_table.csv')
+    path = os.path.join(os.path.dirname(__file__), '../electronics_abstract_parts/resources', 'test_table.csv')
     with open(path, newline='') as csvfile:
       reader = csv.DictReader(csvfile)
       rows = [row for row in reader]

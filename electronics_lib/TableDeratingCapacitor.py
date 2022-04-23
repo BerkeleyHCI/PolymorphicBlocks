@@ -1,6 +1,6 @@
 from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
-from .PartsTable import *
+from electronics_abstract_parts.PartsTable import *
 import math
 from .JlcFootprint import JlcFootprint
 
