@@ -454,15 +454,15 @@ class MultimeterTest(JlcBoardTop):
           'lcd_spi.sck=18',
           'lcd_spi.mosi=19',
           'lcd_spi.miso=NC',
-          'lcd_rs=8',
-          'lcd_reset=6',
+          'lcd_rs=10',
+          'lcd_reset=8',
           'sw2=3',
 
           'spk=36',
-          'vbatsense=11',
+          'vbatsense=9',
 
-          'rgb_blue=9',
-          'rgb_red=7',
+          'rgb_blue=6',
+          'rgb_red=4',
           'rgb_green=5',
         ])),
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
