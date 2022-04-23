@@ -449,18 +449,20 @@ class MultimeterTest(JlcBoardTop):
           'sw0=50',
           'driver_control=45',  # high frequency PWM
 
-          'lcd_cs=16',
-          'lcd_spi.sck=17',
-          'lcd_spi.mosi=18',
-          'lcd_spi.sck=17',
-          'lcd_rs=14',
-          'lcd_reset=12',
+          'sw1=16',
+          'lcd_cs=17',
+          'lcd_spi.sck=18',
+          'lcd_spi.mosi=19',
+          'lcd_spi.miso=NC',
+          'lcd_rs=8',
+          'lcd_reset=6',
+          'sw2=3',
 
           'spk=36',
           'vbatsense=11',
 
-          'rgb_red=9',
-          'rgb_blue=7',
+          'rgb_blue=9',
+          'rgb_red=7',
           'rgb_green=5',
         ])),
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
