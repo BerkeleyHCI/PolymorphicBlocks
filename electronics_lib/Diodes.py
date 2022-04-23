@@ -144,7 +144,6 @@ class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
 
 class ZenerTable(BaseDiodeTable):
   ZENER_VOLTAGE = PartsTableColumn(Range)  # actual zener voltage, positive
-  FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
   FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
 
@@ -158,11 +157,6 @@ class ZenerTable(BaseDiodeTable):
         new_cols[cls.ZENER_VOLTAGE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Voltage - Zener (Nom) (Vz)'], 'V'),
           PartsTableUtil.parse_tolerance(row['Tolerance']),
-        )
-        new_cols[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(
-          PartsTableUtil.parse_value(
-            PartsTableUtil.strip_parameter(row['Voltage - Forward (Vf) (Max) @ If']),
-            'V')
         )
         new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Power - Max'], 'W')
@@ -188,20 +182,17 @@ class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
   def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
     self.actual_zener_voltage = self.Parameter(RangeExpr())
-    self.actual_forward_voltage_drop = self.Parameter(RangeExpr())
 
-    self.generator(self.select_part, self.zener_voltage, self.forward_voltage_drop, part, footprint)
+    self.generator(self.select_part, self.zener_voltage, part, footprint)
 
-  def select_part(self, zener_voltage: Range, forward_voltage_drop: Range, part_spec: str, footprint_spec: str) -> None:
+  def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
     part = ZenerTable.table().filter(lambda row: (
         (not part_spec or part_spec == row[ZenerTable.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[ZenerTable.FOOTPRINT]) and
-        row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage) and
-        row[ZenerTable.FORWARD_VOLTAGE].fuzzy_in(forward_voltage_drop)
-    )).first(f"no zener diodes in Vz={zener_voltage} V, Vf={forward_voltage_drop} V")
+        row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage)
+    )).first(f"no zener diodes in Vz={zener_voltage} V")
 
     self.assign(self.actual_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
-    self.assign(self.actual_forward_voltage_drop, part[ZenerTable.FORWARD_VOLTAGE])
 
     self.footprint(
       'D', part[ZenerTable.FOOTPRINT],

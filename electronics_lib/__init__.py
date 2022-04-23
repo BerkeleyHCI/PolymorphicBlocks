@@ -7,6 +7,7 @@ from .JlcCapacitor import JlcCapacitor
 from .PassiveInductor import SmtInductor
 from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
 from .Diodes import SmtDiode, SmtZenerDiode
+from .JlcDiode import JlcZenerDiode
 from .Fets import SmtNFet, SmtPFet, SmtSwitchNFet, SmtSwitchPFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa

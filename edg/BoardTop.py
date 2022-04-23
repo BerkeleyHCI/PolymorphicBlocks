@@ -38,5 +38,6 @@ class JlcBoardTop(BoardTop):
       class_refinements=[
         (Capacitor, JlcCapacitor),
         (Resistor, JlcResistor),
+        (ZenerDiode, JlcZenerDiode),
       ]
     )

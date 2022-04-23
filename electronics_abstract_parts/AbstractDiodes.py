@@ -32,15 +32,13 @@ class ZenerDiode(DiscreteSemiconductor):
   """
 
   @init_in_parent
-  def __init__(self, zener_voltage: RangeLike, *,
-               forward_voltage_drop: RangeLike = Default(RangeExpr.ALL)) -> None:
+  def __init__(self, zener_voltage: RangeLike) -> None:
     super().__init__()
 
     self.anode = self.Port(Passive.empty())
     self.cathode = self.Port(Passive.empty())
 
     self.zener_voltage = self.ArgParameter(zener_voltage)
-    self.forward_voltage_drop = self.ArgParameter(forward_voltage_drop)
 
 
 class ProtectionZenerDiode(DiscreteApplication):
