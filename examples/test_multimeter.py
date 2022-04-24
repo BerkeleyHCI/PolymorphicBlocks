@@ -273,7 +273,7 @@ class MultimeterTest(JlcBoardTop):
         imp.Block(ProtectionZenerDiode(voltage=(5.5, 7.0)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
       self.v5v = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
@@ -282,7 +282,7 @@ class MultimeterTest(JlcBoardTop):
         self.v5v,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
@@ -480,6 +480,10 @@ class MultimeterTest(JlcBoardTop):
         (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
         (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
         (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+
+        (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (['prot_5v', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
