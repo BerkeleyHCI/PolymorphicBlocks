@@ -482,8 +482,8 @@ class MultimeterTest(JlcBoardTop):
         (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
         # (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
 
-        (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
