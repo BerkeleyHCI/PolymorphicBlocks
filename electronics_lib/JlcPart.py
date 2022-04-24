@@ -42,7 +42,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   def _jlc_table(cls) -> PartsTable:
     if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
       JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
-        'JLCPCB_SMT_Parts_Library.csv'
+        'Pruned_JLCPCB SMT Parts Library(20220419).csv'
       ], 'resources'), encoding='gb2312')
     return JlcTablePart._JLC_TABLE
 

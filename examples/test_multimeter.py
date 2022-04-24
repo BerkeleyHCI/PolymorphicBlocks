@@ -483,11 +483,10 @@ class MultimeterTest(JlcBoardTop):
 
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (['prot_5v', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
-        (['tp_5v', 'tp', 'require_basic_part'], False),
+        # (['tp_5v', 'tp', 'require_basic_part'], False),  # use the big boy Zener
         (['tp_3v3', 'tp', 'require_basic_part'], False),
         (['tp_analog', 'tp', 'require_basic_part'], False),
         (['tp_vref', 'tp', 'require_basic_part'], False),
