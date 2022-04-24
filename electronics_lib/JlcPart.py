@@ -50,10 +50,13 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
     #extracts out all the available prices for a given part by order quantity
     price_list = re.findall(":(\d+\.\d*),", row[cls.COST_HEADER])
     float_array = [float(x) for x in price_list]
+    if not float_array:
+      cost = float('inf')  # disprefer heavily if no price listed
+    else:
+      cost = max(float_array)  # choose the highest price, which is for the lowest quantity
 
     return {
-      #chooses the highest price, which is for the lowest quantity
-      cls.COST: float(max(float_array)),
+      cls.COST: cost,
       cls.PART_NUMBER: row[cls._PART_NUMBER_HEADER],
     }
 
