@@ -11,14 +11,15 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
     '1206': 'Resistor_SMD:R_1206_3216Metric',
   }
 
+  RESISTOR_MATCHES = {
+    'resistance': re.compile("(^|\s)(\S+Ω)($|\s)"),
+    'tolerance': re.compile("(^|\s)(±\S+%)($|\s)"),
+    'power': re.compile("(^|\s)(\S+W)($|\s)"),
+  }
+  RESISTOR_POWER_DIV_MATCH = re.compile("(\d+)/(\d+)W")
+
   @classmethod
   def _make_table(cls) -> PartsTable:
-    RESISTOR_MATCHES = {
-      'resistance': re.compile("(^|\s)(\S+Ω)($|\s)"),
-      'tolerance': re.compile("(^|\s)(±\S+%)($|\s)"),
-      'power': re.compile("(^|\s)(\S+W)($|\s)"),
-    }
-
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['First Category'] != 'Resistors':
         return None
@@ -29,14 +30,20 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
         new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
         new_cols.update(cls._parse_jlcpcb_common(row))
 
-        extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], RESISTOR_MATCHES)
+        extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], cls.RESISTOR_MATCHES)
 
         new_cols[cls.RESISTANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
           PartsTableUtil.parse_tolerance(extracted_values['tolerance'][1])
         )
 
-        new_cols[cls.POWER_RATING] = Range.zero_to_upper(PartsTableUtil.parse_value(extracted_values['power'][1], 'W'))
+        power_value = extracted_values['power'][1]
+        power_div_match = cls.RESISTOR_POWER_DIV_MATCH.match(power_value)
+        if power_div_match:
+          power_rating = float(power_div_match.group(1)) / float(power_div_match.group(2))
+        else:
+          power_rating = PartsTableUtil.parse_value(power_value, 'W')
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(power_rating)
 
         return new_cols
       except (KeyError, PartsTableUtil.ParseError):

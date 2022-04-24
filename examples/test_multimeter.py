@@ -268,9 +268,9 @@ class MultimeterTest(JlcBoardTop):
        self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.vbat,
         imp.Block(FetPowerGate()),
-        imp.Block(BoostConverter(output_voltage=(4.5, 5.5)*Volt)),
+        imp.Block(BoostConverter(output_voltage=(4.5, 5.2)*Volt)),
         self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(5.5, 7.0)*Volt)),
+        imp.Block(ProtectionZenerDiode(voltage=(5.2, 6.5)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -486,13 +486,13 @@ class MultimeterTest(JlcBoardTop):
 
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
-        # (['tp_5v', 'tp', 'require_basic_part'], False),  # use the big boy Zener
+        (['tp_5v', 'tp', 'require_basic_part'], False),
         (['tp_3v3', 'tp', 'require_basic_part'], False),
         (['tp_analog', 'tp', 'require_basic_part'], False),
         (['tp_vref', 'tp', 'require_basic_part'], False),
         (['tp_measure', 'tp', 'require_basic_part'], False),
         (['spk_tp', 'tp', 'require_basic_part'], False),
-        (['prot_5v', 'diode', 'require_basic_part'], False),
+        # (['prot_5v', 'diode', 'require_basic_part'], False),  # use the big boy Zener
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['prot_analog', 'diode', 'require_basic_part'], False),
         (['reg_5v', 'power_path', 'in_cap', 'cap', 'require_basic_part'], False),
