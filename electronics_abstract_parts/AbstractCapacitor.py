@@ -102,14 +102,16 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
       self._make_parallel_capacitors(derated_parts, capacitance, voltage)
 
   def _make_single_capacitor(self, derated_parts: PartsTable, capacitance: Range, voltage: Range):
-    part = derated_parts.filter(lambda row: (
+    parts = derated_parts.filter(lambda row: (
         row[self.DERATED_CAPACITANCE] in capacitance
-    )).first(f"no single capacitor in {capacitance} F, {voltage} V")
+    ))
+    part = parts.first(f"no single capacitor in {capacitance} F, {voltage} V")
 
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
     self.assign(self.actual_derated_capacitance, part[self.DERATED_CAPACITANCE])
-    self.assign(self.actual_part, part[self.PART_NUMBER])
 
     self._make_footprint(part)
 
@@ -126,15 +128,17 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
       new_cols[self.PARALLEL_CAPACITANCE] = row[self.CAPACITANCE] * count
       return new_cols
 
-    part = derated_parts.map_new_columns(
+    parts = derated_parts.map_new_columns(
       add_parallel_row
-    ).sort_by(self._parallel_sort_criteria
-    ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
+    ).sort_by(self._parallel_sort_criteria)
+    part = parts.first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
+    self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER]}")
+    self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])
     self.assign(self.actual_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
-    self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER]}")
+
 
     self._make_parallel_footprints(part)
 

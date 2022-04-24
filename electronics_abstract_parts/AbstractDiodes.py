@@ -46,14 +46,18 @@ class TableDiode(Diode, PartsTableFootprint, GeneratorBlock):
 
   def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
                   reverse_recovery_time: Range, part_spec: str, footprint_spec: str) -> None:
-    part = self._get_table().filter(lambda row: (
+    parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         reverse_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
         current.fuzzy_in(row[self.CURRENT_RATING]) and
         row[self.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
         row[self.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
-    )).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
+    ))
+    part = parts.first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
+
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
@@ -93,14 +97,17 @@ class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
     self.generator(self.select_part, self.zener_voltage, self.part, self.footprint_spec)
 
   def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
-    part = self._get_table().filter(lambda row: (
+    parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         row[self.ZENER_VOLTAGE].fuzzy_in(zener_voltage)
-    )).first(f"no zener diodes in Vz={zener_voltage} V")
+    ))
+    part = parts.first(f"no zener diodes in Vz={zener_voltage} V")
+
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_zener_voltage, part[self.ZENER_VOLTAGE])
-    self.assign(self.actual_part, part[self.PART_NUMBER])
 
     self._make_footprint(part)
 

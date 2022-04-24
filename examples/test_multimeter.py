@@ -429,6 +429,8 @@ class MultimeterTest(JlcBoardTop):
         (['driver', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], GenericChipResistor),
         (['spk', 'conn'], JstPhK),
+
+        (['driver', 'diode'], DigikeySmtDiode),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -466,18 +468,18 @@ class MultimeterTest(JlcBoardTop):
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
-        (['measure', 'res', 'footprint'], 'Resistor_SMD:R_2512_6332Metric'),  # beefy input resistor
+        (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),  # beefy input resistor
         (['measure', 'res', 'fp_mfr'], 'Bourns Inc.'),
         (['measure', 'res', 'fp_part'], 'CHV2512-F*-1004***'),
         # IMPORTANT! Most 2512 resistors are rated to ~200V working voltage, this one is up to 3kV.
 
         # pin footprints to re-select parts with newer parts tables
-        (['driver', 'fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
-        (['gate', 'amp_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
-        (['gate', 'ctl_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D1
-        (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
-        (['gate', 'pwr_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
-        (['reg_5v', 'power_path', 'inductor', 'footprint'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+        (['driver', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
+        (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
+        (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
+        (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
+        (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
 
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
@@ -491,6 +493,9 @@ class MultimeterTest(JlcBoardTop):
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['prot_analog', 'diode', 'require_basic_part'], False),
         (['reg_5v', 'power_path', 'in_cap', 'cap', 'require_basic_part'], False),
+
+        (['gate', 'ctl_diode', 'require_basic_part'], False),
+        (['gate', 'btn_diode', 'require_basic_part'], False),
       ],
       class_values=[
         # (AnalogSwitchTree, ['switch_size'], 2),  # TODO this breaks because of parameter resolution ordering

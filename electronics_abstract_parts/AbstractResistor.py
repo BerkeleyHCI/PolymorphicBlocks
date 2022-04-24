@@ -32,16 +32,18 @@ class TableResistor(Resistor, PartsTableFootprint, GeneratorBlock):
     self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec)
 
   def select_part(self, resistance: Range, power_dissipation: Range, part_spec: str, footprint_spec: str) -> None:
-    part = self._get_table().filter(lambda row: (
+    parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         row[self.RESISTANCE].fuzzy_in(resistance) and
         power_dissipation.fuzzy_in(row[self.POWER_RATING])
-    )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
+    ))
+    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_resistance, part[self.RESISTANCE])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
-    self.assign(self.actual_part, part[self.PART_NUMBER])
 
     self._make_footprint(part)
 

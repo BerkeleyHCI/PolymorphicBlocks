@@ -57,7 +57,7 @@ class ResistorTestCase(unittest.TestCase):
 
   def test_footprint(self) -> None:
     compiled = ScalaCompiler.compile(ResistorTestTop, Refinements(
-      instance_values=[(['dut', 'footprint'], 'Resistor_SMD:R_1206_3216Metric')]
+      instance_values=[(['dut', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric')]
     ))
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Resistor_SMD:R_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_value']), '1k, 1%, 0.25 W')

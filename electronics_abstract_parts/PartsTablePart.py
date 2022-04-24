@@ -23,6 +23,8 @@ class PartsTablePart(Block):
   def _get_table(cls) -> PartsTable:
     if cls._TABLE is None:
       cls._TABLE = cls._make_table()
+      if len(cls._TABLE) == 0:
+        raise ValueError(f"{cls.__name__} _make_table returned empty table")
     return cls._TABLE
 
   @init_in_parent
@@ -30,6 +32,7 @@ class PartsTablePart(Block):
     super().__init__(*args, **kwargs)
     self.part = self.ArgParameter(part)
     self.actual_part = self.Parameter(StringExpr())
+    self.matching_parts = self.Parameter(IntExpr())
 
 
 class PartsTableFootprint(PartsTablePart, Block):

@@ -16,10 +16,10 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
 
   @init_in_parent
   def __init__(self, *args, series: IntLike = Default(24), tolerance: FloatLike = Default(0.01),
-               footprint: StringLike = Default(""), **kwargs):
+               footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint)
+    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
 
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
                       footprint_spec: str) -> None:

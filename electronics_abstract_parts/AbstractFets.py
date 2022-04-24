@@ -66,7 +66,7 @@ class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
   def select_part(self, drain_voltage: Range, drain_current: Range,
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
                   part_spec: str, footprint_spec: str,) -> None:
-    part = self._get_table().filter(lambda row: (
+    parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
@@ -75,7 +75,11 @@ class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
         row[self.RDS_ON].fuzzy_in(rds_on) and
         row[self.GATE_CHARGE].fuzzy_in(gate_charge) and
         power.fuzzy_in(row[self.POWER_RATING])
-    )).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    ))
+    part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
@@ -170,9 +174,11 @@ class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBloc
       else:
         return None
 
-    part = prefiltered_parts.map_new_columns(
-      process_row
-    ).first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    parts = prefiltered_parts.map_new_columns(process_row)
+    part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])

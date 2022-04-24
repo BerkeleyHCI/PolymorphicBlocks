@@ -437,15 +437,17 @@ class UsbSourceMeasureTest(JlcBoardTop):
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'high_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
-        (['control', 'driver', 'low_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        (['control', 'int', 'c', 'footprint'], 'Capacitor_SMD:C_0603_1608Metric'),
+        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
 
         (['prot_3v3', 'diode', 'require_basic_part'], False),
+        (['control', 'err_source', 'diode', 'require_basic_part'], False),
+        (['control', 'err_sink', 'diode', 'require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

@@ -42,13 +42,17 @@ class TableInductor(Inductor, PartsTableFootprint, GeneratorBlock):
 
   def select_part(self, inductance: Range, current: Range, frequency: Range,
                   part_spec: str, footprint_spec: str) -> None:
-    part = self._get_table().filter(lambda row: (
+    parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         row[self.INDUCTANCE].fuzzy_in(inductance) and
         row[self.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
         frequency.fuzzy_in(row[self.FREQUENCY_RATING])
-    )).first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
+    ))
+    part = parts.first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
+
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_inductance, part[self.INDUCTANCE])
     self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
