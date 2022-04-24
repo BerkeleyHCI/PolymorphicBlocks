@@ -53,17 +53,3 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'L', part[self.KICAD_FOOTPRINT],
-      {
-        # '1': self.a,
-        # '2': self.b,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

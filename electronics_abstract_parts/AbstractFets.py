@@ -83,7 +83,7 @@ class BaseTableFet(Fet):
 
 
 @abstract_block
-class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
+class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -118,6 +118,15 @@ class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
 
     self._make_footprint(part)
 
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'Q', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
+
 
 @abstract_block
 class PFet(Fet):
@@ -150,7 +159,7 @@ class SwitchFet(Fet):
 
 
 @abstract_block
-class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBlock):
+class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)
@@ -220,6 +229,15 @@ class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBloc
     self.assign(self.actual_total_power, part[self.TOTAL_POWER])
 
     self._make_footprint(part)
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'Q', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
 
 
 @abstract_block

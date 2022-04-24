@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 from .DigikeyPart import DigikeyTablePart
 
 
-class DigikeyBaseFet(BaseTableFet, FetStandardPinning, DigikeyTablePart):
+class DigikeyBaseFet(BaseTableFet, DigikeyTablePart):
   PACKAGE_FOOTPRINT_MAP = {
     'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
@@ -63,18 +63,9 @@ class DigikeyBaseFet(BaseTableFet, FetStandardPinning, DigikeyTablePart):
       lambda row: row[cls.COST]
     )
 
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'Q', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=f"Vds={part['Drain to Source Voltage (Vdss)']}, Ids={part['Current - Continuous Drain (Id) @ 25°C']}",
-      datasheet=part[self.DATASHEET_COL]
-    )
-
 
 @abstract_block
-class DigikeyFet(DigikeyBaseFet, TableFet):
+class DigikeyFet(TableFet, DigikeyBaseFet):
   pass
 
 
