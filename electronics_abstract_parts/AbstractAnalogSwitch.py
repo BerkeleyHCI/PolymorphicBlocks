@@ -1,8 +1,6 @@
 from typing import List, cast, Optional
 
 from electronics_model import *
-from .DummyDevices import MergedAnalogSource
-from .AbstractPassives import Resistor
 
 
 @abstract_block

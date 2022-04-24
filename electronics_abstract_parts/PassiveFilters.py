@@ -1,7 +1,8 @@
 from math import pi
 
 from electronics_model import *
-from .AbstractPassives import Resistor, Capacitor
+from .AbstractResistor import Resistor
+from .AbstractCapacitor import Capacitor
 from .Categories import *
 
 

@@ -17,8 +17,11 @@ from .ESeriesUtil import ESeriesUtil
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
-from .AbstractPassives import TableResistor, Resistor, UnpolarizedCapacitor, Capacitor, Inductor
-from .AbstractPassives import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor, DecouplingCapacitor
+from .AbstractResistor import Resistor, TableResistor
+from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
+from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor
+from .AbstractCapacitor import DecouplingCapacitor
+from .AbstractInductor import Inductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
 from .AbstractDiodes import Diode, ZenerDiode, TableZenerDiode, ProtectionZenerDiode

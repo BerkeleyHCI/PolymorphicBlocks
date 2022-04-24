@@ -1,6 +1,6 @@
 from electronics_model import *
 from .DummyDevices import MergedAnalogSource
-from .AbstractPassives import Resistor
+from .AbstractResistor import Resistor
 
 
 @abstract_block

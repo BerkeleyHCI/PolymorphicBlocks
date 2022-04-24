@@ -1,7 +1,7 @@
 from typing import List
 
 from electronics_model import *
-from .AbstractPassives import *
+from .AbstractCapacitor import *
 from .Categories import *
 
 

@@ -1,6 +1,6 @@
 from electronics_model import *
 from .AbstractFets import SwitchNFet, SwitchPFet
-from .AbstractPassives import Resistor
+from .AbstractResistor import Resistor
 
 
 class HighSideSwitch(Block):

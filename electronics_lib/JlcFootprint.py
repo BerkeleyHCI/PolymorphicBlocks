@@ -55,3 +55,17 @@ class JlcTableFootprint(JlcFootprint, PartsTableFootprint):
       cls.COST: float(max(float_array)),
       cls.PART_NUMBER: row[cls._PART_NUMBER_HEADER],
     }
+
+  @staticmethod
+  def parse(description, regex_dictionary):
+    extraction_table = {}
+
+    for key in regex_dictionary:
+      matches = re.findall(regex_dictionary[key], description)
+      if matches:  # discard if not matched
+        assert len(matches) == 1  # excess matches fail noisily
+        assert key not in extraction_table  # duplicate matches fail noisily
+        extraction_table[key] = matches[0]
+
+    return extraction_table
+
