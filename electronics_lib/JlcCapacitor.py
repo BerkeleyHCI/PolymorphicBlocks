@@ -89,6 +89,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
   def _make_parallel_footprints(self, part: PartsTableRow) -> None:
     assert part[self.PARALLEL_COUNT] < 10, f"too many parallel capacitors ({part[self.PARALLEL_COUNT]})"
     cap_model = JlcDummyCapacitor(set_lcsc_part=part[self.LCSC_PART_HEADER],
+                                  set_basic_part=part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
                                   footprint=part[self.KICAD_FOOTPRINT],
                                   manufacturer=part[self.MANUFACTURER_HEADER], part_number=part[self.PART_NUMBER],
                                   value=part[self.DESCRIPTION_HEADER],

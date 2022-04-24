@@ -445,6 +445,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint'], 'Capacitor_SMD:C_0603_1608Metric'),
 
+        (['prot_3v3', 'diode', 'require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
