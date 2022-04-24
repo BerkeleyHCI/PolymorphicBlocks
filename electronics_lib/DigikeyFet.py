@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Any
 from electronics_abstract_parts import *
-from .DigikeyTable import DigikeyTablePart
+from .DigikeyPart import DigikeyTablePart
 
 
 class DigikeyBaseFet(BaseTableFet, FetStandardPinning, DigikeyTablePart):
@@ -67,7 +67,7 @@ class DigikeyBaseFet(BaseTableFet, FetStandardPinning, DigikeyTablePart):
     self.footprint(
       'Q', part[self.KICAD_FOOTPRINT],
       self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=f"Vds={part['Drain to Source Voltage (Vdss)']}, Ids={part['Current - Continuous Drain (Id) @ 25°C']}",
       datasheet=part[self.DATASHEET_HEADER]
     )

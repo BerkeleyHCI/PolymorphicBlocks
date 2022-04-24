@@ -30,13 +30,13 @@ class TableCrystal(Crystal, PartsTableFootprint, GeneratorBlock):
 
   def select_part(self, frequency: Range, part_spec: str, footprint_spec: str) -> None:
     parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         row[self.FREQUENCY] in frequency
     ))
     part = parts.first(f"no crystal matching f={frequency} Hz")
 
-    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
     self.crystal.init_from(CrystalPort(part[self.FREQUENCY]))
     self.gnd.init_from(Ground())

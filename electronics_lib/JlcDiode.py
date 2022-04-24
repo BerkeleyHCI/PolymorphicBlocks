@@ -73,7 +73,7 @@ class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
         '1': self.cathode,
         '2': self.anode,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=part[self.DESCRIPTION_HEADER],
       datasheet=part[self.DATASHEET_HEADER]
     )
@@ -125,7 +125,7 @@ class JlcZenerDiode(TableZenerDiode, JlcTablePart, JlcBaseDiode, FootprintBlock)
         '1': self.cathode,
         '2': self.anode,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=part[self.DESCRIPTION_HEADER],
       datasheet=part[self.DATASHEET_HEADER]
     )

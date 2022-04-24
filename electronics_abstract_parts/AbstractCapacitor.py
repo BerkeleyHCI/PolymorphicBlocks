@@ -73,7 +73,7 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltererd_parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
         Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
@@ -107,7 +107,7 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
     ))
     part = parts.first(f"no single capacitor in {capacitance} F, {voltage} V")
 
-    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
@@ -133,7 +133,7 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
     ).sort_by(self._parallel_sort_criteria)
     part = parts.first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
-    self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER]}")
+    self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER_COL]}")
     self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])

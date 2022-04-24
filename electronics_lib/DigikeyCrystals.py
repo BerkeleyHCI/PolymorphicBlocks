@@ -1,6 +1,6 @@
 from typing import Optional, Any, Dict
 from electronics_abstract_parts import *
-from .DigikeyTable import DigikeyTablePart
+from .DigikeyPart import DigikeyTablePart
 
 
 class DigikeyCrystal(TableCrystal, DigikeyTablePart, FootprintBlock):
@@ -51,7 +51,7 @@ class DigikeyCrystal(TableCrystal, DigikeyTablePart, FootprintBlock):
         '3': self.crystal.b,
         '4': self.gnd,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=f"{part['Frequency']}, {part['Load Capacitance']}",
       datasheet=part[self.DATASHEET_HEADER]
     )

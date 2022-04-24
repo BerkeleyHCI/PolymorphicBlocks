@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional
 from electronics_abstract_parts import *
-from .DigikeyTable import DigikeyTablePart
+from .DigikeyPart import DigikeyTablePart
 
 
 class DigikeyInductor(TableInductor, DigikeyTablePart, FootprintBlock):
@@ -70,7 +70,7 @@ class DigikeyInductor(TableInductor, DigikeyTablePart, FootprintBlock):
         '1': self.a,
         '2': self.b,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=f"{part['Inductance']}, {part['Current Rating (Amps)']}",
       datasheet=part[self.DATASHEET_HEADER]
     )

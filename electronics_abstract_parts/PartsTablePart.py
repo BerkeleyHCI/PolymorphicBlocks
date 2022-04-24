@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 from electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
@@ -11,7 +11,12 @@ class PartsTablePart(Block):
   Additional filtering can be done by the generator.
   Defines a PART_NUMBER table column and a part spec arg-param."""
   _TABLE: Optional[PartsTable] = None
-  PART_NUMBER = PartsTableColumn(str)
+  PART_NUMBER_COL: Union[str, PartsTableColumn[str]]
+
+  # These need to be implemented by the part table
+  MANUFACTURER_COL: Union[str, PartsTableColumn[str]]
+  DESCRIPTION_COL: Union[str, PartsTableColumn[str]]
+  DATASHEET_COL: Union[str, PartsTableColumn[str]]
 
   @classmethod
   @abstractmethod

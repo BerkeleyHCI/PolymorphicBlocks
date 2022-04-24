@@ -120,7 +120,7 @@ class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
                   gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
                   part_spec: str, footprint_spec: str,) -> None:
     parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
         drain_current.fuzzy_in(row[self.IDS_RATING]) and
@@ -131,7 +131,7 @@ class TableFet(BaseTableFet, PartsTableFootprint, GeneratorBlock):
     ))
     part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
@@ -198,7 +198,7 @@ class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBloc
                   part_spec: str, footprint_spec: str) -> None:
     # Pre-filter out by the static parameters
     prefiltered_parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
         drain_current.fuzzy_in(row[self.IDS_RATING]) and
@@ -230,7 +230,7 @@ class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBloc
     parts = prefiltered_parts.map_new_columns(process_row)
     part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
-    self.assign(self.actual_part, part[self.PART_NUMBER])
+    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])

@@ -61,7 +61,7 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
         # '1': self.a,
         # '2': self.b,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
       value=part[self.DESCRIPTION_HEADER],
       datasheet=part[self.DATASHEET_HEADER]
     )
