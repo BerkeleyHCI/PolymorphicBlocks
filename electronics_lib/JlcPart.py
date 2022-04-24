@@ -25,6 +25,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   _PART_NUMBER_HEADER = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
   DESCRIPTION_HEADER = 'Description'
   DATASHEET_HEADER = 'Datasheet'
+  _PACKAGE_HEADER = 'Package'
 
   LCSC_PART_HEADER = 'LCSC Part'
   BASIC_PART_HEADER = 'Library Type'

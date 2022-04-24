@@ -37,7 +37,7 @@ class JlcZenerDiode(TableZenerDiode, JlcTablePart, FootprintBlock):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'Zener Diodes':
         return None
-      footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row['Package'])
+      footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row[cls._PACKAGE_HEADER])
       if footprint is None:
         return None
 

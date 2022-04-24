@@ -20,7 +20,7 @@ class DigikeyMlcc(TableDeratingCapacitorNew, DigikeyTablePart, FootprintBlock):
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        footprint = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
         nominal_capacitance = PartsTableUtil.parse_value(row['Capacitance'], 'F')
 
         # enforce minimum packages, note the cutoffs are exclusive

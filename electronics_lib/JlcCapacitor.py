@@ -29,7 +29,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
-        footprint = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
+        footprint = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
 
         extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], CAPACITOR_MATCHES)
 

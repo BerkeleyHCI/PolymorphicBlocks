@@ -25,7 +25,7 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         # handle the footprint first since this is the most likely to filter
-        new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
+        new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
         new_cols.update(cls._parse_jlcpcb_common(row))
 
         extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], RESISTOR_MATCHES)
