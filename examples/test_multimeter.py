@@ -379,7 +379,7 @@ class MultimeterTest(JlcBoardTop):
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
       self.connect(self.measure.input_negative, self.inn_merge.output)
-      (self.measure_buffer, self.tp_measure), _ = self.chain(
+      (self.measure_buffer, self.tp_measure), self.meas_chain = self.chain(
         self.measure.output,
         imp.Block(OpampFollower()),
         self.Block(AnalogTestPoint()))
