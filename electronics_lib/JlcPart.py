@@ -69,4 +69,3 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
         extraction_table[key] = matches[0]
 
     return extraction_table
-
