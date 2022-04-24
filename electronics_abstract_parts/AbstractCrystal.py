@@ -1,6 +1,7 @@
 from electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, Capacitor
+from . import PartsTableFootprint, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
@@ -18,7 +19,19 @@ class Crystal(DiscreteComponent):
 
 
 @abstract_block
-class TableCrystal(Crystal, PartsTableFootprint, GeneratorBlock):
+class CapacitorStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
+  FOOTPRINT_PINNING_MAP = {
+    'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
+      '1': block.crystal.a,
+      '2': block.gnd,
+      '3': block.crystal.b,
+      '4': block.gnd,
+    },
+  }
+
+
+@abstract_block
+class TableCrystal(CapacitorStandardPinning, PartsTableFootprint, GeneratorBlock):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 
@@ -43,6 +56,15 @@ class TableCrystal(Crystal, PartsTableFootprint, GeneratorBlock):
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
 
     self._make_footprint(part)
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'X', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
 
 
 class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?

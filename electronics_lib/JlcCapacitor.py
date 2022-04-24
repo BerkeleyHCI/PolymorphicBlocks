@@ -5,7 +5,7 @@ from .DigikeyMlcc import *
 from .JlcPart import JlcPart, JlcTablePart
 
 
-class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
+class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',
@@ -71,16 +71,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
     )
 
   def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'R', part[self.KICAD_FOOTPRINT],
-      {
-        '1': self.pos,
-        '2': self.neg,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+    super()._make_footprint(part)
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
 

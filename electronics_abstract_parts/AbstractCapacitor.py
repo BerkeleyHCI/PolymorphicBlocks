@@ -6,6 +6,7 @@ from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
@@ -31,6 +32,26 @@ class Capacitor(UnpolarizedCapacitor):
 
 
 @abstract_block
+class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
+  # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Capacitor_SMD:C_0201_0603Metric',
+      'Capacitor_SMD:C_0402_1005Metric',
+      'Capacitor_SMD:C_0603_1608Metric',
+      'Capacitor_SMD:C_0805_2012Metric',
+      'Capacitor_SMD:C_1206_3216Metric',
+      'Capacitor_SMD:C_1210_3225Metric',
+      'Capacitor_SMD:C_1812_4532Metric',
+      'Capacitor_SMD:C_2512_6332Metric',
+    ): lambda block: {
+      '1': block.pos,
+      '2': block.neg,
+    },
+  }
+
+
+@abstract_block
 class TableCapacitor(Capacitor):
   """Abstract table-based capacitor, providing some interface column definitions.
   DO NOT USE DIRECTLY - this provides no selection logic implementation."""
@@ -47,7 +68,7 @@ class TableCapacitor(Capacitor):
 
 
 @abstract_block
-class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBlock):
+class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)
@@ -115,6 +136,15 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
 
     self._make_footprint(part)
 
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'C', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
+
   def _make_parallel_capacitors(self, derated_parts: PartsTable, capacitance: Range, voltage: Range):
     def add_parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
@@ -139,7 +169,6 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
     self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])
     self.assign(self.actual_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
 
-
     self._make_parallel_footprints(part)
 
   def _parallel_sort_criteria(self, row: PartsTableRow) -> List:
@@ -155,6 +184,8 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
 class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
   """Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
   Used as the leaf block for generating parallel capacitors.
+
+  TODO: use footprint table?
   """
 
   @init_in_parent

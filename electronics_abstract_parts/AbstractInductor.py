@@ -29,12 +29,14 @@ class Inductor(PassiveComponent):
 class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
   FOOTPRINT_PINNING_MAP = {
     (
+      'Inductor_SMD:L_0201_0603Metric',
+      'Inductor_SMD:L_0402_1005Metric',
       'Inductor_SMD:L_0603_1608Metric',
       'Inductor_SMD:L_0805_2012Metric',
       'Inductor_SMD:L_1206_3216Metric',
       'Inductor_SMD:L_1210_3225Metric',
-      'Inductor_SMD:L_2010_5025Metric',
       'Inductor_SMD:L_1812_4532Metric',
+      'Inductor_SMD:L_2010_5025Metric',
       'Inductor_SMD:L_2512_6332Metric',
 
       'Inductor_SMD:L_Bourns-SRR1005',

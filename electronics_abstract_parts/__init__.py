@@ -19,8 +19,8 @@ from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractResistor import Resistor, ResistorStandardPinning, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
-from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, TableDeratingCapacitorNew, DummyCapacitorFootprint
-from .AbstractCapacitor import DecouplingCapacitor
+from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardPinning, TableDeratingCapacitor
+from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac

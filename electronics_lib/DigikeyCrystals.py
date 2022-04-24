@@ -41,17 +41,3 @@ class DigikeyCrystal(TableCrystal, DigikeyTablePart, FootprintBlock):
     return raw_table.map_new_columns(parse_row).sort_by(
       lambda row: row[cls.COST]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'X', part[self.KICAD_FOOTPRINT],
-      {
-        '1': self.crystal.a,
-        '2': self.gnd,
-        '3': self.crystal.b,
-        '4': self.gnd,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=f"{part['Frequency']}, {part['Load Capacitance']}",
-      datasheet=part[self.DATASHEET_COL]
-    )
