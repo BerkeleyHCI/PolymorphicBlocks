@@ -3,4 +3,4 @@ Digikey*.csv
 
 # to avoid large clones, only a pruned / shrunk table is included
 # see the README for more details
-FULL*
+JLCPCB SMT Parts Library*
