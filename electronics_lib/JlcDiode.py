@@ -2,12 +2,11 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart
+from .JlcPart import JlcTablePart, DescriptionParser
 
 
-DescriptionParser = Tuple[re.Pattern,
-                          Callable[[re.Match],
-                                   Dict[PartsTableColumn, Any]]]
+
+
 
 class JlcZenerDiode(TableZenerDiode, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
@@ -41,13 +40,7 @@ class JlcZenerDiode(TableZenerDiode, JlcTablePart, FootprintBlock):
       if footprint is None:
         return None
 
-      new_cols: Optional[Dict[PartsTableColumn, Any]] = None
-      for parser, match_fn in cls.DESCRIPTION_PARSERS:
-        parsed_values = parser.match(row[cls.DESCRIPTION_HEADER])
-        if parsed_values:
-          new_cols = match_fn(parsed_values)
-          break
-
+      new_cols = cls.parse_full_description(row[cls.DESCRIPTION_HEADER], cls.DESCRIPTION_PARSERS)
       if new_cols is None:
         return None
 

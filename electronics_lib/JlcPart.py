@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple, Callable, List
 import re
 
 from electronics_abstract_parts import *
@@ -16,6 +16,9 @@ class JlcPart(Block):
 
     self.require(self.require_basic_part.implies(self.actual_basic_part), "required basic part")
 
+
+DescriptionParser = Tuple[re.Pattern,
+                          Callable[[re.Match], Dict[PartsTableColumn, Any]]]
 
 @abstract_block
 class JlcTablePart(JlcPart, PartsTableFootprint):
@@ -72,3 +75,14 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
         extraction_table[key] = matches[0]
 
     return extraction_table
+
+  @staticmethod
+  def parse_full_description(description: str, parser_options: List[DescriptionParser]) -> \
+      Optional[Dict[PartsTableColumn, Any]]:
+    new_cols: Optional[Dict[PartsTableColumn, Any]] = None
+    for parser, match_fn in parser_options:
+      parsed_values = parser.match(description)
+      if parsed_values:
+        return match_fn(parsed_values)
+
+    return None  # exhausted all options
