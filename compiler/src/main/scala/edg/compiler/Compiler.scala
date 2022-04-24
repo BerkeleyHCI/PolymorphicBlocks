@@ -463,6 +463,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         elem.HierarchyBlock()
     }
 
+    // add class-based refinements - must be set before refinement params
+    refinements.classValues.get(refinedLibraryPath).foreach { classValueRefinements =>
+      for ((subpath, value) <- classValueRefinements) {
+        constProp.setForcedValue(path.asIndirect ++ subpath, value,
+          s"${refinedLibraryPath.getTarget.getName} class refinement")
+      }
+    }
+
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
       if (!library.isSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
@@ -483,14 +491,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.addAssignment(path.asIndirect + refinedNewParam, path, refinedDefault,
             s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
         }
-      }
-    }
-
-    // add class-based refinements
-    refinements.classValues.get(refinedLibraryPath).foreach { classValueRefinements =>
-      for ((subpath, value) <- classValueRefinements) {
-        constProp.setForcedValue(path.asIndirect ++ subpath, value,
-          s"${refinedLibraryPath.getTarget.getName} class refinement")
       }
     }
 
