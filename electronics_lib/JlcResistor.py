@@ -14,9 +14,9 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
   @classmethod
   def _make_table(cls) -> PartsTable:
     RESISTOR_MATCHES = {
-      'resistance': re.compile("(^|\s)(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])($|\s)"),
-      'tolerance': re.compile("(^|\s)([\u00B1]\d+(?:\.\d*)?%)($|\s)"),
-      'power': re.compile("(^|\s)(\d+(?:\.\d*)?[GMkmunp]?W)($|\s)"),
+      'resistance': re.compile("(^|\s)(\S+Ω)($|\s)"),
+      'tolerance': re.compile("(^|\s)(±\S+%)($|\s)"),
+      'power': re.compile("(^|\s)(\S+W)($|\s)"),
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
