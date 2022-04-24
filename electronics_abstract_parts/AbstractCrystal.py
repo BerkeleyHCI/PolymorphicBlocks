@@ -39,6 +39,8 @@ class TableCrystal(Crystal, PartsTableFootprint, GeneratorBlock):
     self.gnd.init_from(Ground())
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
 
+    self._make_footprint(part)
+
 
 class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?
   PARASITIC_CAPACITANCE = 5e-12

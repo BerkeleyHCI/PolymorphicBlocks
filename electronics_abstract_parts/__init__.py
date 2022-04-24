@@ -21,7 +21,7 @@ from .AbstractResistor import Resistor, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, TableDeratingCapacitorNew, DummyCapacitorFootprint
 from .AbstractCapacitor import DecouplingCapacitor
-from .AbstractInductor import Inductor
+from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
 from .AbstractDiodes import Diode, ZenerDiode, TableZenerDiode, ProtectionZenerDiode
