@@ -46,6 +46,7 @@ class TableInductor(Inductor, PartsTableFootprint, GeneratorBlock):
         (not part_spec or part_spec == row[self.PART_NUMBER]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         row[self.INDUCTANCE].fuzzy_in(inductance) and
+        current.fuzzy_in(row[self.CURRENT_RATING]) and
         row[self.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
         frequency.fuzzy_in(row[self.FREQUENCY_RATING])
     ))

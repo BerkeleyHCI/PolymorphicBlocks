@@ -332,7 +332,7 @@ class MultimeterTest(JlcBoardTop):
       # so this indicates it will be run at only partial power
       (self.spk_pwr, ), _ = self.chain(
         self.v5v,
-        self.Block(ForcedVoltageCurrentDraw((0, 0.1)*Amp)),
+        self.Block(ForcedVoltageCurrentDraw((0, 0.05)*Amp)),
         self.spk_drv.pwr
       )
 
@@ -484,6 +484,8 @@ class MultimeterTest(JlcBoardTop):
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
 
+        (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
         (['tp_5v', 'tp', 'require_basic_part'], False),

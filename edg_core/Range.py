@@ -66,6 +66,20 @@ class Range:
       raise ValueError(f"unknown tolerance format {tolerance}")
 
   @staticmethod
+  def from_abs_tolerance(center: float, tolerance: Union[float, Tuple[float, float]]) -> 'Range':
+    """Creates a Range given a center value and absolute tolerance.
+    If a single tolerance is given, it is treated as bidirectional (+/- value).
+    If a tuple of two values is given, it is treated as negative, then positive tolerance."""
+    if isinstance(tolerance, tuple):
+      assert tolerance[0] <= tolerance[1], f"invalid tolerance {tolerance}"
+      return Range(center + tolerance[0], center + tolerance[1])
+    elif isinstance(tolerance, (float, int)):
+      assert tolerance >= 0, f"bidirectional tolerance {tolerance} must be positive"
+      return Range(center - tolerance, center + tolerance)
+    else:
+      raise ValueError(f"unknown tolerance format {tolerance}")
+
+  @staticmethod
   def from_lower(lower: float) -> 'Range':
     """Creates a Range from lower to positive infinity"""
     return Range(lower, float('inf'))

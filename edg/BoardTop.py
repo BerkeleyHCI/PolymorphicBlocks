@@ -37,8 +37,10 @@ class JlcBoardTop(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
-        (Capacitor, JlcCapacitor),
         (Resistor, JlcResistor),
+        (Capacitor, JlcCapacitor),
+        (Inductor, JlcInductor),
+
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
       ]
