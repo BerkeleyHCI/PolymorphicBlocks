@@ -2,7 +2,7 @@ from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
 from electronics_abstract_parts.PartsTable import *
 import math
-from .JlcFootprint import JlcFootprint
+from .JlcFootprint import JlcPart
 
 class CapacitorTable(LazyTable):
   CAPACITANCE: PartsTableColumn[Range]
@@ -103,7 +103,8 @@ class TableDeratingCapacitor(Capacitor, FootprintBlock, GeneratorBlock):
             (not part_spec or part_spec == row[self._TABLE.PART_NUMBER]) and
             (not footprint_spec or footprint_spec == row[self._TABLE.FOOTPRINT]) and
             voltage.fuzzy_in(row[self._TABLE.VOLTAGE_RATING]) and
-            Range.exact(row[self._TABLE.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)))
+            Range.exact(row[self._TABLE.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance))
+                                               )
     return filtered_rows
 
 
@@ -175,13 +176,3 @@ class DummyCapacitor(DummyDevice, Capacitor, FootprintBlock):
     )
 
 
-class JlcDummyCapacitor(DummyCapacitor, JlcFootprint):
-  """
-  Dummy capacitor that has lcsc_part as an additional parameter
-  """
-  @init_in_parent
-  def __init__(self, set_lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
-               part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
-    super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
-
-    self.assign(self.lcsc_part, set_lcsc_part)

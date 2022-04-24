@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class JlcFootprint(Block):
+class JlcPart(Block):
   """Provides additional data fields for JLCPCB parts for their SMT service."""
   @init_in_parent
   def __init__(self, require_basic_part: BoolLike = False):
@@ -19,7 +19,7 @@ class JlcFootprint(Block):
 
 
 @abstract_block
-class JlcTableFootprint(JlcFootprint, PartsTableFootprint):
+class JlcTablePart(JlcPart, PartsTableFootprint):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   MANUFACTURER_HEADER = 'Manufacturer'
   DATASHEET_HEADER = 'Datasheet'
@@ -36,11 +36,11 @@ class JlcTableFootprint(JlcFootprint, PartsTableFootprint):
 
   @classmethod
   def _jlc_table(cls) -> PartsTable:
-    if JlcTableFootprint._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
-      JlcTableFootprint._JLC_TABLE = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+    if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
+      JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
         'JLCPCB_SMT_Parts_Library.csv'
       ], 'resources'), encoding='gb2312')
-    return JlcTableFootprint._JLC_TABLE
+    return JlcTablePart._JLC_TABLE
 
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:

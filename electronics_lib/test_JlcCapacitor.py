@@ -14,14 +14,14 @@ class JlcCapacitorTestTop(Block):
 
 
 class JlcBigCapacitorTestTop(Block):
-    def __init__(self):
-        super().__init__()
-        self.dut = self.Block(JlcCapacitor(
-            capacitance=(50, 1000) * uFarad,
-            voltage=(0, 3.3) * Volt
-        ))
-        (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-        (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+  def __init__(self):
+    super().__init__()
+    self.dut = self.Block(JlcCapacitor(
+        capacitance=(50, 1000) * uFarad,
+        voltage=(0, 3.3) * Volt
+    ))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
 
 
 class CapacitorTestCase(unittest.TestCase):
@@ -44,7 +44,7 @@ class CapacitorTestCase(unittest.TestCase):
 
   def test_capacitor_footprint(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(
-        instance_values=[(['dut', 'footprint'], 'Capacitor_SMD:C_0805_2012Metric')]
+        instance_values=[(['dut', 'footprint_spec'], 'Capacitor_SMD:C_0805_2012Metric')]
     ))
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'CL21B103KBANNNC')

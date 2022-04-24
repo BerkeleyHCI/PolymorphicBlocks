@@ -1,10 +1,9 @@
 from typing import Optional, Dict, Any
 from electronics_abstract_parts import *
-from .JlcFootprint import JlcTableFootprint
-from .JlcTable import JlcTable
+from .JlcFootprint import JlcTablePart
 
 
-class JlcResistor(TableResistor, JlcTableFootprint, FootprintBlock):
+class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0603': 'Resistor_SMD:R_0603_1608Metric',
     '0805': 'Resistor_SMD:R_0805_2012Metric',
@@ -29,7 +28,7 @@ class JlcResistor(TableResistor, JlcTableFootprint, FootprintBlock):
         new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package']]
         new_cols.update(cls._parse_jlcpcb_common(row))
 
-        extracted_values = JlcTable.parse(row[cls.DESCRIPTION_HEADER], RESISTOR_MATCHES)
+        extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], RESISTOR_MATCHES)
 
         new_cols[cls.RESISTANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(extracted_values['resistance'][1], 'Ω'),

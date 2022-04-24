@@ -1,6 +1,6 @@
 from typing import NamedTuple
 from .DigikeyCapacitorTable import *
-from .JlcTable import *
+
 
 class MlccTable(DigikeyCapacitorTable):
   CAPACITANCE = PartsTableColumn(Range)

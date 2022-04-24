@@ -19,7 +19,7 @@ from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractResistor import Resistor, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
-from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor
+from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, TableDeratingCapacitorNew, DummyCapacitorFootprint
 from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider

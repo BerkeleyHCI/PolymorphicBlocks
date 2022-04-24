@@ -2,14 +2,14 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcFootprint import JlcTableFootprint
+from .JlcFootprint import JlcTablePart
 
 
 DescriptionParser = Tuple[re.Pattern,
                           Callable[[re.Match],
                                    Dict[PartsTableColumn, Any]]]
 
-class JlcZenerDiode(TableZenerDiode, JlcTableFootprint, FootprintBlock):
+class JlcZenerDiode(TableZenerDiode, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     'LL-34': 'Diode_SMD:D_MiniMELF',
     'SOD-123': 'Diode_SMD:D_SOD-123',
