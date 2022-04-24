@@ -92,9 +92,10 @@ class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.actual_zener_voltage = self.Parameter(RangeExpr())
-
     self.generator(self.select_part, self.zener_voltage, self.part, self.footprint_spec)
+
+    self.actual_zener_voltage = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())
 
   def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
     parts = self._get_table().filter(lambda row: (
@@ -108,6 +109,7 @@ class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
     self.assign(self.matching_parts, len(parts))
 
     self.assign(self.actual_zener_voltage, part[self.ZENER_VOLTAGE])
+    self.assign(self.actual_power_rating, part[self.POWER_RATING])
 
     self._make_footprint(part)
 

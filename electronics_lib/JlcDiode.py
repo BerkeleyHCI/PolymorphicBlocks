@@ -83,15 +83,17 @@ class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
 
 class JlcZenerDiode(TableZenerDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?\S+W (\S+V).* Zener Diodes.*"),
+    (re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
      lambda match: {
-       TableZenerDiode.ZENER_VOLTAGE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'V'),
-                                                           PartsTableUtil.parse_tolerance(match.group(1)))
+       TableZenerDiode.ZENER_VOLTAGE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(3), 'V'),
+                                                           PartsTableUtil.parse_tolerance(match.group(1))),
+       TableZenerDiode.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'W')),
      }),
-    (re.compile("\S+A@\S+V \S+Ω (?:Single )?(\S+V)~(\S+V) \S+W \S+V .* Zener Diodes.*"),
+    (re.compile("\S+A@\S+V \S+Ω (?:Single )?(\S+V)~(\S+V) (\S+W) \S+V .* Zener Diodes.*"),
      lambda match: {
        TableZenerDiode.ZENER_VOLTAGE: Range(PartsTableUtil.parse_value(match.group(1), 'V'),
-                                            PartsTableUtil.parse_value(match.group(2), 'V'))
+                                            PartsTableUtil.parse_value(match.group(2), 'V')),
+       TableZenerDiode.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'W')),
      }),
   ]
 
