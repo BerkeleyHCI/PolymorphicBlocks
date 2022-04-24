@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 from .DigikeyTable import *
 
 
-class BaseDiodeTable(DigikeyTable):
+class DigikeyBaseDiode:
   PACKAGE_FOOTPRINT_MAP = {
     'DO-214AC, SMA': 'Diode_SMD:D_SMA',
     'DO-214AA, SMB': 'Diode_SMD:D_SMB',
@@ -53,19 +53,13 @@ class BaseDiodeTable(DigikeyTable):
     }[footprint]
 
 
-class DiodeTable(BaseDiodeTable):
-  VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable voltages, positive
-  CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
-  FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
-  REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
-  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
-
+class DigikeySmtDiode(TableDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintBlock):
   @classmethod
-  def _generate_table(cls) -> PartsTable:
+  def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
 
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - DC Reverse (Vr) (Max)'], 'V')
@@ -103,57 +97,24 @@ class DiodeTable(BaseDiodeTable):
       lambda row: row[cls.COST]
     )
 
-
-class DigikeySmtDiode(Diode, FootprintBlock, GeneratorBlock):
-  @init_in_parent
-  def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
-    super().__init__(*args, **kwargs)
-    self.actual_voltage_rating = self.Parameter(RangeExpr())
-    self.actual_current_rating = self.Parameter(RangeExpr())
-    self.actual_voltage_drop = self.Parameter(RangeExpr())
-    self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
-
-    self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
-                   self.reverse_recovery_time, part, footprint)
-
-  def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
-                  reverse_recovery_time: Range, part_spec: str, footprint_spec: str) -> None:
-    # TODO maybe apply ideal diode law / other simple static model to better bound Vf?
-    part = DiodeTable.table().filter(lambda row: (
-        (not part_spec or part_spec == row[DiodeTable.PART_NUMBER]) and
-        (not footprint_spec or footprint_spec == row[DiodeTable.FOOTPRINT]) and
-        reverse_voltage.fuzzy_in(row[DiodeTable.VOLTAGE_RATING]) and
-        current.fuzzy_in(row[DiodeTable.CURRENT_RATING]) and
-        row[DiodeTable.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
-        row[DiodeTable.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
-    )).first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
-
-    self.assign(self.actual_voltage_rating, part[DiodeTable.VOLTAGE_RATING])
-    self.assign(self.actual_current_rating, part[DiodeTable.CURRENT_RATING])
-    self.assign(self.actual_voltage_drop, part[DiodeTable.FORWARD_VOLTAGE])
-    self.assign(self.actual_reverse_recovery_time, part[DiodeTable.REVERSE_RECOVERY])
-
+  def _make_footprint(self, part: PartsTableRow):
     self.footprint(
-      'D', part[DiodeTable.FOOTPRINT],
-      DiodeTable.footprint_pinmap(part[DiodeTable.FOOTPRINT],
-                                  self.anode, self.cathode),
-      mfr=part[DiodeTable.MANUFACTURER], part=part[DiodeTable.PART_NUMBER],
+      'D', part[self.KICAD_FOOTPRINT],
+      self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
+                            self.anode, self.cathode),
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
       value=f"Vr={part['Voltage - DC Reverse (Vr) (Max)']}, I={part['Current - Average Rectified (Io)']}",
-      datasheet=part[DiodeTable.DATASHEETS]
+      datasheet=part[self.DATASHEET_HEADER]
     )
 
 
-class ZenerTable(BaseDiodeTable):
-  ZENER_VOLTAGE = PartsTableColumn(Range)  # actual zener voltage, positive
-  POWER_RATING = PartsTableColumn(Range)  # tolerable power
-  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
-
+class DigikeySmtZenerDiode(TableZenerDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintBlock):
   @classmethod
-  def _generate_table(cls) -> PartsTable:
+  def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
-        new_cols[cls.FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row['Package / Case']]
+        new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
 
         new_cols[cls.ZENER_VOLTAGE] = Range.from_tolerance(
           PartsTableUtil.parse_value(row['Voltage - Zener (Nom) (Vz)'], 'V'),
@@ -177,29 +138,12 @@ class ZenerTable(BaseDiodeTable):
       lambda row: row[cls.COST]
     )
 
-
-class DigikeySmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
-  @init_in_parent
-  def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
-    super().__init__(*args, **kwargs)
-    self.actual_zener_voltage = self.Parameter(RangeExpr())
-
-    self.generator(self.select_part, self.zener_voltage, part, footprint)
-
-  def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
-    part = ZenerTable.table().filter(lambda row: (
-        (not part_spec or part_spec == row[ZenerTable.PART_NUMBER]) and
-        (not footprint_spec or footprint_spec == row[ZenerTable.FOOTPRINT]) and
-        row[ZenerTable.ZENER_VOLTAGE].fuzzy_in(zener_voltage)
-    )).first(f"no zener diodes in Vz={zener_voltage} V")
-
-    self.assign(self.actual_zener_voltage, part[ZenerTable.ZENER_VOLTAGE])
-
+  def _make_footprint(self, part: PartsTableRow) -> None:
     self.footprint(
-      'D', part[ZenerTable.FOOTPRINT],
-      ZenerTable.footprint_pinmap(part[ZenerTable.FOOTPRINT],
-                                  self.anode, self.cathode),
-      mfr=part[ZenerTable.MANUFACTURER], part=part[ZenerTable.PART_NUMBER],
+      'D', part[self.KICAD_FOOTPRINT],
+      self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
+                            self.anode, self.cathode),
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
       value=f"Vz={part['Voltage - Zener (Nom) (Vz)']}, I={part['Voltage - Forward (Vf) (Max) @ If']}",
-      datasheet=part[ZenerTable.DATASHEETS]
+      datasheet=part[self.DATASHEET_HEADER]
     )
