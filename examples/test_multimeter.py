@@ -431,8 +431,6 @@ class MultimeterTest(JlcBoardTop):
         (['spk', 'conn'], JstPhK),
       ],
       instance_values=[
-        (['measure', 'range', 'switch', 'switch_size'], 2),
-        (['driver', 'range', 'switch', 'switch_size'], 2),
         (['mcu', 'pin_assigns'], ';'.join([
           # TODO reassign for this differently-pinned device
           'adc_spi.miso=24',
@@ -480,9 +478,18 @@ class MultimeterTest(JlcBoardTop):
         (['gate', 'btn_diode', 'footprint'], 'Diode_SMD:D_SOD-323'),  # D2
         (['gate', 'pwr_fet', 'footprint'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
         (['reg_5v', 'power_path', 'inductor', 'footprint'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+
+        (['measure', 'range', 'switch', 'switch_size'], 2),
+        (['driver', 'range', 'switch', 'switch_size'], 2),
+        (['tp_5v', 'require_basic_part'], False),
+        (['tp_3v3', 'require_basic_part'], False),
+        (['tp_analog', 'require_basic_part'], False),
+        (['tp_vref', 'require_basic_part'], False),
+        (['tp_spk', 'require_basic_part'], False),
       ],
       class_values=[
         # (AnalogSwitchTree, ['switch_size'], 2),  # TODO this breaks because of parameter resolution ordering
+        # (Keystone5015, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),

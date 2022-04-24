@@ -23,7 +23,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if (row['Library Type'] != 'Basic' or row['First Category'] != 'Capacitors'):
+      if row['First Category'] != 'Capacitors':
         return None
 
       new_cols: Dict[PartsTableColumn, Any] = {}
@@ -64,7 +64,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.KICAD_FOOTPRINT], row[cls.COST]]
+      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
 
   def _make_footprint(self, part: PartsTableRow) -> None:
@@ -95,14 +95,19 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
       self.connect(self.c[i].pos, self.pos)
       self.connect(self.c[i].neg, self.neg)
 
+    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+
 
 class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
   """
   Dummy capacitor that has lcsc_part as an additional parameter
   """
   @init_in_parent
-  def __init__(self, set_lcsc_part: StringLike = "", footprint: StringLike = "", manufacturer: StringLike = "",
+  def __init__(self, set_lcsc_part: StringLike = "", set_basic_part: BoolLike = False,
+               footprint: StringLike = "", manufacturer: StringLike = "",
                part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
     super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
 
     self.assign(self.lcsc_part, set_lcsc_part)
+    self.assign(self.actual_basic_part, set_basic_part)

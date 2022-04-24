@@ -14,8 +14,7 @@ class JlcPart(Block):
     self.actual_basic_part = self.Parameter(BoolExpr())
     self.require_basic_part = self.ArgParameter(require_basic_part)
 
-    # TODO not enforced while migrating
-    # self.require(self.require_basic_part.implies(self.actual_basic_part), "required basic part")
+    self.require(self.require_basic_part.implies(self.actual_basic_part), "required basic part")
 
 
 @abstract_block

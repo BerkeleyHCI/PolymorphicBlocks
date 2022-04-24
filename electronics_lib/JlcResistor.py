@@ -19,7 +19,7 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if (row['Library Type'] != 'Basic' or row['First Category'] != 'Resistors'):
+      if row['First Category'] != 'Resistors':
         return None
 
       new_cols: Dict[PartsTableColumn, Any] = {}
