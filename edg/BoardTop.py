@@ -43,5 +43,7 @@ class JlcBoardTop(BoardTop):
 
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
+        (NFet, JlcNFet),
+        (PFet, JlcPFet),
       ]
     )

@@ -11,6 +11,7 @@ from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, 
 from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .DigikeyFet import DigikeyNFet, DigikeyPFet, DigikeySwitchNFet, DigikeySwitchPFet
+from .JlcFet import JlcNFet, JlcPFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
 from .DigikeyCrystals import DigikeyCrystal

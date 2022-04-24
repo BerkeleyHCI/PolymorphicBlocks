@@ -430,6 +430,7 @@ class MultimeterTest(JlcBoardTop):
         (['measure', 'res'], GenericChipResistor),
         (['spk', 'conn'], JstPhK),
 
+        (['driver', 'fet'], DigikeyPFet),
         (['driver', 'diode'], DigikeySmtDiode),
       ],
       instance_values=[

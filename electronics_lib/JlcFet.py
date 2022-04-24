@@ -6,37 +6,53 @@ from .JlcPart import JlcTablePart, DescriptionParser
 
 
 class JlcFet(TableFet, JlcTablePart, FootprintBlock):
+  FET_TYPE = PartsTableColumn(str)
+
   PACKAGE_FOOTPRINT_MAP = {
-    'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
-    'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
-    'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
-    'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
-    'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
+    'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
+    'SOT-23-3L': 'Package_TO_SOT_SMD:SOT-23',
+    'TO-252-2': 'Package_TO_SOT_SMD:TO-252-2',  # aka DPak
+    'TO-263-2': 'Package_TO_SOT_SMD:TO-263-2',  # aka D2Pak
+    'SOT-223': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+    'SOT-223-3': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("(\S+A) (\S+H) (±\S+%) (\S+Ω) .* Inductors.*"),
+    (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       TableInductor.INDUCTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
-                                                      PartsTableUtil.parse_tolerance(match.group(3))),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
-       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
+       JlcFet.FET_TYPE: match.group(7),
+       TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
+       TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
+       # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
+       TableFet.VGS_RATING: Range.from_abs_tolerance(0,
+                                                     PartsTableUtil.parse_value(match.group(5), 'V')),
+       TableFet.VGS_DRIVE: Range(PartsTableUtil.parse_value(match.group(6), 'V'),
+                                 PartsTableUtil.parse_value(match.group(5), 'V')),
+       TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
+       TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'W')),
+       TableFet.GATE_CHARGE: Range.all(),  # not specified, user must manually check
      }),
-    (re.compile("(\S+A) (\S+H) ±(\S+H) (\S+Ω) .* Inductors.*"),
+    # Some of them have the power entry later, for whatever reason
+    (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
-                                                          PartsTableUtil.parse_value(match.group(3), 'H')),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
-       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
+       JlcFet.FET_TYPE: match.group(7),
+       TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
+       TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
+       # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
+       TableFet.VGS_RATING: Range.from_abs_tolerance(0,
+                                                     PartsTableUtil.parse_value(match.group(4), 'V')),
+       TableFet.VGS_DRIVE: Range(PartsTableUtil.parse_value(match.group(6), 'V'),
+                                 PartsTableUtil.parse_value(match.group(4), 'V')),
+       TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'Ω')),
+       TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(5), 'W')),
+       TableFet.GATE_CHARGE: Range.all(),  # not specified, user must manually check
      }),
   ]
 
   @classmethod
-  def _make_table(cls) -> PartsTable:
+  def _make_fet_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['Second Category'] != 'Inductors (SMD)':
+      if row['Second Category'] != 'MOSFETs':
         return None
       footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row[cls._PACKAGE_HEADER])
       if footprint is None:
@@ -53,3 +69,24 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    super()._make_footprint(part)
+    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+
+
+class JlcNFet(NFet, JlcFet):
+  @classmethod
+  def _make_table(cls) -> PartsTable:
+    return cls._make_fet_table().filter(lambda row: (
+        row[cls.FET_TYPE] == 'N'
+    ))
+
+
+class JlcPFet(PFet, JlcFet):
+  @classmethod
+  def _make_table(cls) -> PartsTable:
+    return cls._make_fet_table().filter(lambda row: (
+        row[cls.FET_TYPE] == 'P'
+    ))
