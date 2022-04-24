@@ -7,10 +7,10 @@ class DigikeyTablePart(PartsTableFootprint):
   Can be overridden by subclasses as needed.
   """
   PART_NUMBER_COL = 'Manufacturer Part Number'
+  MANUFACTURER_COL = 'Manufacturer'
+  DESCRIPTION_COL = 'Description'
+  DATASHEET_COL = 'Datasheets'
 
-  MANUFACTURER_HEADER = 'Manufacturer'
-  DESCRIPTION_HEADER = 'Description'
-  DATASHEET_HEADER = 'Datasheets'
   _PACKAGE_HEADER = 'Package / Case'
 
   _COST_HEADER = 'Unit Price (USD)'

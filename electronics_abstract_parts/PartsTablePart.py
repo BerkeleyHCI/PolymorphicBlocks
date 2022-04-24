@@ -11,9 +11,9 @@ class PartsTablePart(Block):
   Additional filtering can be done by the generator.
   Defines a PART_NUMBER table column and a part spec arg-param."""
   _TABLE: Optional[PartsTable] = None
-  PART_NUMBER_COL: Union[str, PartsTableColumn[str]]
 
   # These need to be implemented by the part table
+  PART_NUMBER_COL: Union[str, PartsTableColumn[str]]
   MANUFACTURER_COL: Union[str, PartsTableColumn[str]]
   DESCRIPTION_COL: Union[str, PartsTableColumn[str]]
   DATASHEET_COL: Union[str, PartsTableColumn[str]]

@@ -42,7 +42,7 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
       if footprint is None:
         return None
 
-      new_cols = cls.parse_full_description(row[cls.DESCRIPTION_HEADER], cls.DESCRIPTION_PARSERS)
+      new_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
       if new_cols is None:
         return None
 
@@ -61,9 +61,9 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
         # '1': self.a,
         # '2': self.b,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_HEADER],
-      datasheet=part[self.DATASHEET_HEADER]
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
     )
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

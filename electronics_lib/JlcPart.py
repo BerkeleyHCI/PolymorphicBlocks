@@ -24,10 +24,10 @@ DescriptionParser = Tuple[re.Pattern,
 class JlcTablePart(JlcPart, PartsTableFootprint):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   PART_NUMBER_COL = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
+  MANUFACTURER_COL = 'Manufacturer'
+  DESCRIPTION_COL = 'Description'
+  DATASHEET_COL = 'Datasheet'
 
-  MANUFACTURER_HEADER = 'Manufacturer'
-  DESCRIPTION_HEADER = 'Description'
-  DATASHEET_HEADER = 'Datasheet'
   _PACKAGE_HEADER = 'Package'
 
   LCSC_PART_HEADER = 'LCSC Part'

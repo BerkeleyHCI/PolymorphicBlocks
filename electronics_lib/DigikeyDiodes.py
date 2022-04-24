@@ -102,9 +102,9 @@ class DigikeySmtDiode(TableDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintB
       'D', part[self.KICAD_FOOTPRINT],
       self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
                             self.anode, self.cathode),
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
       value=f"Vr={part['Voltage - DC Reverse (Vr) (Max)']}, I={part['Current - Average Rectified (Io)']}",
-      datasheet=part[self.DATASHEET_HEADER]
+      datasheet=part[self.DATASHEET_COL]
     )
 
 
@@ -143,7 +143,7 @@ class DigikeySmtZenerDiode(TableZenerDiode, DigikeyTablePart, DigikeyBaseDiode, 
       'D', part[self.KICAD_FOOTPRINT],
       self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
                             self.anode, self.cathode),
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
       value=f"Vz={part['Voltage - Zener (Nom) (Vz)']}, I={part['Voltage - Forward (Vf) (Max) @ If']}",
-      datasheet=part[self.DATASHEET_HEADER]
+      datasheet=part[self.DATASHEET_COL]
     )

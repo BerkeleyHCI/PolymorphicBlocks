@@ -72,9 +72,9 @@ class DigikeyMlcc(TableDeratingCapacitorNew, DigikeyTablePart, FootprintBlock):
         '1': self.pos,
         '2': self.neg,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_HEADER],
-      datasheet=part[self.DATASHEET_HEADER]
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
     )
 
   def _make_parallel_footprints(self, part: PartsTableRow) -> None:
@@ -82,8 +82,8 @@ class DigikeyMlcc(TableDeratingCapacitorNew, DigikeyTablePart, FootprintBlock):
     cap_model = DummyCapacitorFootprint(
       capacitance=part[self.NOMINAL_CAPACITANCE], voltage=self.voltage,
       footprint=part[self.KICAD_FOOTPRINT],
-      manufacturer=part[self.MANUFACTURER_HEADER], part_number=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_HEADER])
+      manufacturer=part[self.MANUFACTURER_COL], part_number=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL])
     self.c = ElementDict[DummyCapacitorFootprint]()
     for i in range(part[self.PARALLEL_COUNT]):
       self.c[i] = self.Block(cap_model)

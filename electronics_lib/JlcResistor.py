@@ -30,7 +30,7 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
         new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
         new_cols.update(cls._parse_jlcpcb_common(row))
 
-        extracted_values = cls.parse(row[cls.DESCRIPTION_HEADER], cls.RESISTOR_MATCHES)
+        extracted_values = cls.parse(row[cls.DESCRIPTION_COL], cls.RESISTOR_MATCHES)
 
         new_cols[cls.RESISTANCE] = Range.from_tolerance(
           PartsTableUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
@@ -60,9 +60,9 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
         '1': self.a,
         '2': self.b,
       },
-      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_HEADER],
-      datasheet=part[self.DATASHEET_HEADER]
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
     )
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
