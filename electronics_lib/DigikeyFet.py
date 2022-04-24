@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 from .DigikeyTable import DigikeyTablePart
 
 
-class DigikeyBaseFets(BaseTableFet, DigikeyTablePart, FootprintBlock):
+class DigikeyBaseFet(BaseTableFet, DigikeyTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
@@ -107,11 +107,11 @@ class DigikeyBaseFets(BaseTableFet, DigikeyTablePart, FootprintBlock):
 
 
 @abstract_block
-class DigikeyFets(DigikeyBaseFets, TableFet):
+class DigikeyFet(DigikeyBaseFet, TableFet):
   pass
 
 
-class DigikeyNFet(NFet, DigikeyFets):
+class DigikeyNFet(NFet, DigikeyFet):
   @classmethod
   def _make_table(cls) -> PartsTable:
     return cls._make_fet_table().filter(lambda row: (
@@ -119,7 +119,7 @@ class DigikeyNFet(NFet, DigikeyFets):
     ))
 
 
-class DigikeyPFet(PFet, DigikeyFets):
+class DigikeyPFet(PFet, DigikeyFet):
   @classmethod
   def _make_table(cls) -> PartsTable:
     return cls._make_fet_table().filter(lambda row: (
@@ -128,7 +128,7 @@ class DigikeyPFet(PFet, DigikeyFets):
 
 
 @abstract_block
-class DigikeySwitchFet(DigikeyBaseFets, TableSwitchFet):
+class DigikeySwitchFet(DigikeyBaseFet, TableSwitchFet):
   pass
 
 

@@ -436,6 +436,10 @@ class UsbSourceMeasureTest(JlcBoardTop):
         ])),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        # JLC does not have frequency specs, must be checked TODO
+        (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
@@ -445,6 +449,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
 
+        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['control', 'err_source', 'diode', 'require_basic_part'], False),
         (['control', 'err_sink', 'diode', 'require_basic_part'], False),
