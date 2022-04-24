@@ -62,15 +62,3 @@ class DigikeyInductor(TableInductor, DigikeyTablePart, FootprintBlock):
     return raw_table.map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.COST], row[cls.KICAD_FOOTPRINT]]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'L', part[self.KICAD_FOOTPRINT],
-      {
-        '1': self.a,
-        '2': self.b,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=f"{part['Inductance']}, {part['Current Rating (Amps)']}",
-      datasheet=part[self.DATASHEET_COL]
-    )

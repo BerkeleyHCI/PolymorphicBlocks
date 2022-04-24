@@ -1,9 +1,10 @@
 from typing import Optional, cast
 
 from electronics_model import *
-from .PartsTable import PartsTableColumn
+from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
@@ -25,7 +26,37 @@ class Inductor(PassiveComponent):
 
 
 @abstract_block
-class TableInductor(Inductor, PartsTableFootprint, GeneratorBlock):
+class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Inductor_SMD:L_0603_1608Metric',
+      'Inductor_SMD:L_0805_2012Metric',
+      'Inductor_SMD:L_1206_3216Metric',
+      'Inductor_SMD:L_1210_3225Metric',
+      'Inductor_SMD:L_2010_5025Metric',
+      'Inductor_SMD:L_1812_4532Metric',
+      'Inductor_SMD:L_2512_6332Metric',
+
+      'Inductor_SMD:L_Bourns-SRR1005',
+      'Inductor_SMD:L_Bourns_SRR1210A',
+      'Inductor_SMD:L_Bourns_SRR1260',
+
+      'Inductor_SMD:L_Taiyo-Yuden_NR-20xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-24xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-30xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-40xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-50xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-60xx',
+      'Inductor_SMD:L_Taiyo-Yuden_NR-80xx',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
+
+
+@abstract_block
+class TableInductor(InductorStandardPinning, PartsTableFootprint, GeneratorBlock):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
@@ -60,3 +91,12 @@ class TableInductor(Inductor, PartsTableFootprint, GeneratorBlock):
     self.assign(self.actual_frequency_rating, part[self.FREQUENCY_RATING])
 
     self._make_footprint(part)
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'L', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
