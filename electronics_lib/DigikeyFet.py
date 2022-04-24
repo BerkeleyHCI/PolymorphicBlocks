@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 from .DigikeyTable import DigikeyTablePart
 
 
-class DigikeyBaseFet(BaseTableFet, DigikeyTablePart, FootprintBlock):
+class DigikeyBaseFet(BaseTableFet, FetStandardPinning, DigikeyTablePart):
   PACKAGE_FOOTPRINT_MAP = {
     'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
@@ -11,38 +11,6 @@ class DigikeyBaseFet(BaseTableFet, DigikeyTablePart, FootprintBlock):
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
     'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
   }
-
-  @classmethod
-  def footprint_pinmap(cls, footprint: str, gate: CircuitPort, drain: CircuitPort, source: CircuitPort):
-    return {
-      'Package_TO_SOT_SMD:SOT-23': {
-        '1': gate,
-        '2': source,
-        '3': drain,
-      },
-      'Package_TO_SOT_SMD:SOT-223-3_TabPin2': {
-        '1': gate,
-        '2': drain,
-        '3': source,
-      },
-      'Package_TO_SOT_SMD:TO-252-2': {
-        '1': gate,
-        '2': drain,
-        '3': source,
-      },
-      'Package_TO_SOT_SMD:TO-263-2': {
-        '1': gate,
-        '2': drain,
-        '3': source,
-      },
-      'Package_SO:PowerPAK_SO-8_Single': {
-        '1': source,
-        '2': source,
-        '3': source,
-        '4': gate,
-        '5': drain,
-      },
-    }[footprint]
 
   @classmethod
   def _make_fet_table(cls) -> PartsTable:
@@ -98,8 +66,7 @@ class DigikeyBaseFet(BaseTableFet, DigikeyTablePart, FootprintBlock):
   def _make_footprint(self, part: PartsTableRow) -> None:
     self.footprint(
       'Q', part[self.KICAD_FOOTPRINT],
-      self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
-                            self.gate, self.drain, self.source),
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
       mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
       value=f"Vds={part['Drain to Source Voltage (Vdss)']}, Ids={part['Current - Continuous Drain (Id) @ 25°C']}",
       datasheet=part[self.DATASHEET_HEADER]

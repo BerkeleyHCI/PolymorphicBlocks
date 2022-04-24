@@ -7,16 +7,11 @@ from .JlcPart import JlcTablePart, DescriptionParser
 
 class JlcFet(TableFet, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
-    'L0603': 'Inductor_SMD:L_0603_1608Metric',
-    '0603': 'Inductor_SMD:L_0603_1608Metric',
-    'L0805': 'Inductor_SMD:L_0805_2012Metric',
-    '0805': 'Inductor_SMD:L_0805_2012Metric',
-    'L1206': 'Inductor_SMD:L_1206_3216Metric',
-    '1206': 'Inductor_SMD:L_1206_3216Metric',
-    '1210': 'Inductor_SMD:L_1210_3225Metric',
-    'L1210': 'Inductor_SMD:L_1210_3225Metric',
-    '1812': 'Inductor_SMD:L_1812_4532Metric',
-    'L1812': 'Inductor_SMD:L_1812_4532Metric',
+    'TO-236-3, SC-59, SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
+    'TO-261-4, TO-261AA': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+    'TO-252-3, DPak (2 Leads + Tab), SC-63': 'Package_TO_SOT_SMD:TO-252-2',
+    'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
+    'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
@@ -63,8 +58,8 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
     self.footprint(
       'L', part[self.KICAD_FOOTPRINT],
       {
-        '1': self.a,
-        '2': self.b,
+        # '1': self.a,
+        # '2': self.b,
       },
       mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
       value=part[self.DESCRIPTION_HEADER],

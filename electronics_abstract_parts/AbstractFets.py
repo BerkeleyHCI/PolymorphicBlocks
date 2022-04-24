@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, TypeVar, Generic, Callable, Union, List, Tuple
 
 from electronics_model import *
 from . import PartsTableFootprint, PartsTableColumn, PartsTableRow
@@ -41,6 +41,59 @@ class Fet(DiscreteSemiconductor):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
+
+
+StandardPinningType = TypeVar('StandardPinningType', bound=Block)
+PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
+@abstract_block
+class StandardPinningFootprint(FootprintBlock, Generic[StandardPinningType]):
+  """An infrastructural block that provides table to provide standard pin mapping from footprints."""
+
+  FOOTPRINT_PINNING_MAP: Dict[Union[str, Tuple[str, ...]], PinningFunction]  # user-specified
+  _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated
+
+  def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
+    if self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP is None:
+      footprint_map = {}
+      for pinning_footprints, pinning_fn in self.FOOTPRINT_PINNING_MAP.items():
+        if isinstance(pinning_footprints, tuple):
+          for pinning_footprint in pinning_footprints:
+            assert pinning_footprint not in footprint_map, f"duplicate footprint entry {pinning_footprint}"
+            footprint_map[pinning_footprint] = pinning_fn
+        elif isinstance(pinning_footprints, str):
+          assert pinning_footprints not in footprint_map, f"duplicate footprint entry {pinning_footprint}"
+          footprint_map[pinning_footprints] = pinning_fn
+        else:
+          raise ValueError(f"unknown footprint entry {pinning_footprints}")
+      self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP = footprint_map
+    return self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP[footprint](self)
+
+
+@abstract_block
+class FetStandardPinning(Fet, StandardPinningFootprint[Fet]):
+  FOOTPRINT_PINNING_MAP = {
+    'Package_TO_SOT_SMD:SOT-23': lambda block: {
+      '1': block.gate,
+      '2': block.source,
+      '3': block.drain,
+    },
+    (
+      'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+      'Package_TO_SOT_SMD:TO-252-2',
+      'Package_TO_SOT_SMD:TO-263-2'
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.drain,
+      '3': block.source,
+    },
+    'Package_SO:PowerPAK_SO-8_Single': lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+    },
+  }
 
 
 class BaseTableFet(Fet):
