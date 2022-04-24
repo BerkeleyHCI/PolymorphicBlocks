@@ -6,6 +6,7 @@ from electronics_abstract_parts import *
 
 @abstract_block
 class JlcFootprint(Block):
+  """Provides additional data fields for JLCPCB parts for their SMT service."""
   @init_in_parent
   def __init__(self, require_basic_part: BoolLike = False):
     super().__init__()
@@ -19,6 +20,7 @@ class JlcFootprint(Block):
 
 @abstract_block
 class JlcTableFootprint(JlcFootprint, PartsTableFootprint):
+  """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   MANUFACTURER_HEADER = 'Manufacturer'
   DATASHEET_HEADER = 'Datasheet'
   DESCRIPTION_HEADER = 'Description'

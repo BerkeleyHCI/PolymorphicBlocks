@@ -21,9 +21,6 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint)
 
-    # Output values
-    self.actual_power_rating = self.Parameter(RangeExpr())
-
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
                       footprint_spec: str) -> None:
     if series == 0:  # exact, not matched to E-series

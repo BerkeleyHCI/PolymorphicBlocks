@@ -1,6 +1,8 @@
 from typing import Optional, cast
 
 from electronics_model import *
+from .PartsTable import PartsTableColumn
+from .PartsTablePart import PartsTableFootprint
 from .Categories import *
 
 
@@ -16,6 +18,32 @@ class Resistor(PassiveComponent):
     self.resistance = self.ArgParameter(resistance)
     self.power = self.ArgParameter(power)  # operating power range
     self.actual_resistance = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())
+
+
+@abstract_block
+class TableResistor(Resistor, PartsTableFootprint, GeneratorBlock):
+  RESISTANCE = PartsTableColumn(Range)
+  POWER_RATING = PartsTableColumn(Range)
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec)
+
+  def select_part(self, resistance: Range, power_dissipation: Range, part_spec: str, footprint_spec: str) -> None:
+    part = self._get_table().filter(lambda row: (
+        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        row[self.RESISTANCE].fuzzy_in(resistance) and
+        power_dissipation.fuzzy_in(row[self.POWER_RATING])
+    )).first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
+
+    self.assign(self.actual_resistance, part[self.RESISTANCE])
+    self.assign(self.actual_power_rating, part[self.POWER_RATING])
+    self.assign(self.actual_part, part[self.PART_NUMBER])
+
+    self._make_footprint(part)
 
 
 class PullupResistor(DiscreteApplication):
