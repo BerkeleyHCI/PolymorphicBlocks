@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Callable, Any
+from typing import Dict, Optional, Any
 from electronics_abstract_parts import *
 from .DigikeyTable import DigikeyTablePart
 

@@ -118,7 +118,7 @@ class SwitchFet(Fet):
 
 
 @abstract_block
-class TableSwitchFet(SwitchFet, PartsTableFootprint, GeneratorBlock, BaseTableFet):
+class TableSwitchFet(BaseTableFet, SwitchFet, PartsTableFootprint, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)

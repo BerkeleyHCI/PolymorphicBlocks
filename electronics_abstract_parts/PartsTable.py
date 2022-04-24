@@ -252,20 +252,3 @@ class PartsTableUtil:
         return self.remap.format(*match.groups())
       else:
         return None
-
-
-class LazyTable(metaclass=ABCMeta):
-  """A wrapper around PartTable that doesn't generate the table until the first time it's requested.
-  The generated table is then stored for future use."""
-
-  _table: PartsTable
-
-  @classmethod
-  def table(cls) -> PartsTable:
-    if not hasattr(cls, '_table'):
-      cls._table = cls._generate_table()
-    return cls._table
-
-  @classmethod
-  @abstractmethod
-  def _generate_table(cls) -> PartsTable: ...
