@@ -1,3 +1,4 @@
+from typing import Dict, Optional
 from electronics_abstract_parts import *
 from .DigikeyTable import *
 

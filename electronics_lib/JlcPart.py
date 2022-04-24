@@ -22,14 +22,15 @@ class JlcPart(Block):
 class JlcTablePart(JlcPart, PartsTableFootprint):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   MANUFACTURER_HEADER = 'Manufacturer'
-  DATASHEET_HEADER = 'Datasheet'
+  _PART_NUMBER_HEADER = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
   DESCRIPTION_HEADER = 'Description'
+  DATASHEET_HEADER = 'Datasheet'
+
   LCSC_PART_HEADER = 'LCSC Part'
   BASIC_PART_HEADER = 'Library Type'
   BASIC_PART_VALUE = 'Basic'
 
-  _PART_NUMBER_HEADER = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
-
+  COST_HEADER = 'Price'
   COST = PartsTableColumn(float)
 
   _JLC_TABLE: Optional[PartsTable] = None
@@ -47,7 +48,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
     """Returns a dict with the cost row, or errors out with KeyError."""
 
     #extracts out all the available prices for a given part by order quantity
-    price_list = re.findall(":(\d+\.\d*),", row['Price'])
+    price_list = re.findall(":(\d+\.\d*),", row[cls.COST_HEADER])
     float_array = [float(x) for x in price_list]
 
     return {

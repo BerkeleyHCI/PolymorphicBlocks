@@ -96,7 +96,7 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
       self.connect(self.c[i].neg, self.neg)
 
 
-class JlcDummyCapacitor(DummyCapacitor, JlcPart):
+class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
   """
   Dummy capacitor that has lcsc_part as an additional parameter
   """

@@ -1,21 +1,22 @@
-from typing import NamedTuple
-from .DigikeyCapacitorTable import *
+from typing import Optional, Dict, Any
+from electronics_abstract_parts import *
+from electronics_lib.DigikeyTable import DigikeyTablePart
 
 
-class MlccTable(DigikeyCapacitorTable):
-  CAPACITANCE = PartsTableColumn(Range)
-  NOMINAL_CAPACITANCE = PartsTableColumn(float)
-  VOLTAGE_RATING = PartsTableColumn(Range)
-  FOOTPRINT = PartsTableColumn(str)  # KiCad footprint name
-
+class DigikeyMlcc(TableDeratingCapacitorNew, DigikeyTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0603 (1608 Metric)': 'Capacitor_SMD:C_0603_1608Metric',
     '0805 (2012 Metric)': 'Capacitor_SMD:C_0805_2012Metric',
     '1206 (3216 Metric)': 'Capacitor_SMD:C_1206_3216Metric',
   }
+  DERATE_VOLTCO_MAP = {  # in terms of %capacitance / V over 3.6
+    'Capacitor_SMD:C_0603_1608Metric': float('inf'),  # not supported, should not generate below 1uF
+    'Capacitor_SMD:C_0805_2012Metric': 0.08,
+    'Capacitor_SMD:C_1206_3216Metric': 0.04,
+  }
 
   @classmethod
-  def _generate_table(cls) -> PartsTable:
+  def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
@@ -33,7 +34,7 @@ class MlccTable(DigikeyCapacitorTable):
         ]:
           return None
 
-        new_cols[cls.FOOTPRINT] = footprint
+        new_cols[cls.KICAD_FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = Range.from_tolerance(
           nominal_capacitance,
           PartsTableUtil.parse_tolerance(row['Tolerance'])
@@ -42,6 +43,7 @@ class MlccTable(DigikeyCapacitorTable):
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Voltage - Rated'], 'V')
         )
+        new_cols[cls.VOLTCO] = cls.DERATE_VOLTCO_MAP[footprint]
 
         new_cols.update(cls._parse_digikey_common(row))
 
@@ -60,28 +62,30 @@ class MlccTable(DigikeyCapacitorTable):
       'Digikey_MLCC_YageoCc_1uF_E3.csv',
     ], 'resources'), encoding='utf-8-sig')
     return raw_table.map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.FOOTPRINT], row[cls.COST]]  # prefer smaller first
+      lambda row: [row[cls.KICAD_FOOTPRINT], row[cls.COST]]  # prefer smaller first
     )
 
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'R', part[self.KICAD_FOOTPRINT],
+      {
+        '1': self.pos,
+        '2': self.neg,
+      },
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      value=part[self.DESCRIPTION_HEADER],
+      datasheet=part[self.DATASHEET_HEADER]
+    )
 
-class DigikeyMlcc(TableDeratingCapacitor):
-  _TABLE = MlccTable
-
-  @init_in_parent
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-
-  def generate_parallel_capacitor(self, row: PartsTableRow,
-                                  capacitance: Range, voltage: Range) -> None:
-    super().generate_parallel_capacitor(row, capacitance, voltage)
-    cap_model = DummyCapacitor(capacitance=row[self._TABLE.NOMINAL_CAPACITANCE],
-                                  voltage=self.voltage,
-                                  footprint=row[self._TABLE.FOOTPRINT],
-                                  manufacturer=row[self._TABLE.MANUFACTURER], part_number=row[self._TABLE.PART_NUMBER],
-                                  value=row[self._TABLE.DESCRIPTION])
-    self.c = ElementDict[DummyCapacitor]()
-    assert row[self.PARALLEL_COUNT] < 10, f"too many ({row[self.PARALLEL_COUNT]}) parallel capacitors to generate"
-    for i in range(row[self.PARALLEL_COUNT]):
+  def _make_parallel_footprints(self, part: PartsTableRow) -> None:
+    assert part[self.PARALLEL_COUNT] < 10, f"too many parallel capacitors ({part[self.PARALLEL_COUNT]})"
+    cap_model = DummyCapacitorFootprint(
+      capacitance=part[self.NOMINAL_CAPACITANCE], voltage=self.voltage,
+      footprint=part[self.KICAD_FOOTPRINT],
+      manufacturer=part[self.MANUFACTURER_HEADER], part_number=part[self.PART_NUMBER],
+      value=part[self.DESCRIPTION_HEADER])
+    self.c = ElementDict[DummyCapacitorFootprint]()
+    for i in range(part[self.PARALLEL_COUNT]):
       self.c[i] = self.Block(cap_model)
       self.connect(self.c[i].pos, self.pos)
       self.connect(self.c[i].neg, self.neg)

@@ -1,5 +1,6 @@
-from typing import NamedTuple
-from .DigikeyCapacitorTable import *
+from typing import NamedTuple, Dict, Optional
+import math
+from electronics_abstract_parts import *
 
 
 class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
@@ -132,10 +133,11 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
       else:
         split_package = footprint
 
-      cap_model = DummyCapacitor(capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
-                                 footprint=split_package,
-                                 value=f'{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F')
-      self.c = ElementDict[DummyCapacitor]()
+      cap_model = DummyCapacitorFootprint(
+        capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
+        footprint=split_package,
+        value=f'{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F')
+      self.c = ElementDict[DummyCapacitorFootprint]()
       for i in range(num_caps):
         self.c[i] = self.Block(cap_model)
         self.connect(self.c[i].pos, self.pos)
