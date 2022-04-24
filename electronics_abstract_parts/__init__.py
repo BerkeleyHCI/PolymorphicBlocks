@@ -17,7 +17,7 @@ from .ESeriesUtil import ESeriesUtil
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
-from .AbstractResistor import Resistor, TableResistor
+from .AbstractResistor import Resistor, ResistorStandardPinning, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, TableDeratingCapacitorNew, DummyCapacitorFootprint
 from .AbstractCapacitor import DecouplingCapacitor

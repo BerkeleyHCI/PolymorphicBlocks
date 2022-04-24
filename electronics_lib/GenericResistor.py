@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
+class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.
@@ -45,10 +45,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
 
     self.footprint(
       'R', suitable_packages[0][1],
-      {
-        '1': self.a,
-        '2': self.b,
-      },
+      self._make_pinning(suitable_packages[0][1]),
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
 

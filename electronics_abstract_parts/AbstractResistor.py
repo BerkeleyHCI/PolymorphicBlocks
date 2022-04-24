@@ -1,9 +1,10 @@
 from typing import Optional, cast
 
 from electronics_model import *
-from .PartsTable import PartsTableColumn
+from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
@@ -22,7 +23,38 @@ class Resistor(PassiveComponent):
 
 
 @abstract_block
-class TableResistor(Resistor, PartsTableFootprint, GeneratorBlock):
+class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Resistor_SMD:R_0201_0603Metric',
+      'Resistor_SMD:R_0402_1005Metric',
+      'Resistor_SMD:R_0603_1608Metric',
+      'Resistor_SMD:R_0805_2012Metric',
+      'Resistor_SMD:R_1206_3216Metric',
+      'Resistor_SMD:R_1210_3225Metric',
+      'Resistor_SMD:R_2010_5025Metric',
+      'Resistor_SMD:R_2512_6332Metric',
+
+      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P15.24mm_Horizontal',
+
+      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P5.08mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P5.08mm_Vertical',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
+
+
+@abstract_block
+class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
 
@@ -46,6 +78,15 @@ class TableResistor(Resistor, PartsTableFootprint, GeneratorBlock):
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
 
     self._make_footprint(part)
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'R', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
 
 
 class PullupResistor(DiscreteApplication):
