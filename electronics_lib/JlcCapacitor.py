@@ -1,3 +1,5 @@
+from typing import List
+
 from .DigikeyMlcc import *
 from .JlcPart import JlcPart, JlcTablePart
 
@@ -80,6 +82,9 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
     )
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+
+  def _parallel_sort_criteria(self, row: PartsTableRow) -> List:
+    return [row[self.BASIC_PART_HEADER], row[self.PARALLEL_COUNT]]
 
   def _make_parallel_footprints(self, part: PartsTableRow) -> None:
     assert part[self.PARALLEL_COUNT] < 10, f"too many parallel capacitors ({part[self.PARALLEL_COUNT]})"

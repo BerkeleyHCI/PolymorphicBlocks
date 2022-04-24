@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, cast, Dict, Any
+from typing import Optional, cast, Dict, Any, List
 import math
 
 from electronics_model import *
@@ -128,7 +128,7 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
 
     part = derated_parts.map_new_columns(
       add_parallel_row
-    ).sort_by(lambda row: [row[self.PARALLEL_COUNT]]
+    ).sort_by(self._parallel_sort_criteria
     ).first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
@@ -137,6 +137,10 @@ class TableDeratingCapacitorNew(TableCapacitor, PartsTableFootprint, GeneratorBl
     self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER]}")
 
     self._make_parallel_footprints(part)
+
+  def _parallel_sort_criteria(self, row: PartsTableRow) -> List:
+    """Provides a hook to allow re-sorting of parallel caps."""
+    return [row[self.PARALLEL_COUNT]]
 
   @abstractmethod
   def _make_parallel_footprints(self, part: PartsTableRow) -> None:
