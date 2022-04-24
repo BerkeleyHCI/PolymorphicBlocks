@@ -1,7 +1,7 @@
 from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn
-from .PartsTablePart import PartsTablePart, PartsTableFootprint
+from .PartsTablePart import PartsTableFootprint
 
 
 @abstract_block
