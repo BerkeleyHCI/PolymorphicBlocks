@@ -1,5 +1,5 @@
-from .PassiveCapacitor import *
-from .JlcFootprint import JlcPart, JlcTablePart
+from .DigikeyMlcc import *
+from .JlcPart import JlcPart, JlcTablePart
 
 
 class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):

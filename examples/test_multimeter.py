@@ -427,7 +427,7 @@ class MultimeterTest(JlcBoardTop):
         (['reg_analog'], Lp5907),
         (['measure', 'range', 'switch'], AnalogSwitchTree),
         (['driver', 'range', 'switch'], AnalogSwitchTree),
-        (['measure', 'res'], ChipResistor),
+        (['measure', 'res'], GenericChipResistor),
         (['spk', 'conn'], JstPhK),
       ],
       instance_values=[

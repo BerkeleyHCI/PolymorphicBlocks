@@ -119,7 +119,7 @@ class FetTable(DigikeyTable):
     ))
 
 @abstract_block
-class SmtFet(Fet, FootprintBlock, GeneratorBlock):
+class DigikeyFets(Fet, FootprintBlock, GeneratorBlock):
   TABLE_FN: Callable[[Any], PartsTable]
 
   @init_in_parent
@@ -162,16 +162,16 @@ class SmtFet(Fet, FootprintBlock, GeneratorBlock):
     )
 
 
-class SmtNFet(NFet, SmtFet):
+class DigikeyNFet(NFet, DigikeyFets):
   TABLE_FN = FetTable.n_fet_table
 
 
-class SmtPFet(PFet, SmtFet):
+class DigikeyPFet(PFet, DigikeyFets):
   TABLE_FN = FetTable.p_fet_table
 
 
 @abstract_block
-class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
+class DigikeySwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
   TABLE_FN: Callable[[Any], PartsTable]
 
   SWITCHING_POWER = PartsTableColumn(Range)
@@ -252,9 +252,9 @@ class SmtSwitchFet(SwitchFet, FootprintBlock, GeneratorBlock):
     )
 
 
-class SmtSwitchNFet(SwitchNFet, SmtSwitchFet):
+class DigikeySwitchNFet(SwitchNFet, DigikeySwitchFet):
   TABLE_FN = FetTable.n_fet_table
 
 
-class SmtSwitchPFet(SwitchPFet, SmtSwitchFet):
+class DigikeySwitchPFet(SwitchPFet, DigikeySwitchFet):
   TABLE_FN = FetTable.p_fet_table

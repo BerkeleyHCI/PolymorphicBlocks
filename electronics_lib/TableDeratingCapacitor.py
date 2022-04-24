@@ -2,7 +2,7 @@ from electronics_abstract_parts.Categories import DummyDevice
 from electronics_abstract_parts import *
 from electronics_abstract_parts.PartsTable import *
 import math
-from .JlcFootprint import JlcPart
+from .JlcPart import JlcPart
 
 class CapacitorTable(LazyTable):
   CAPACITANCE: PartsTableColumn[Range]

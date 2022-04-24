@@ -53,7 +53,7 @@ class ESeriesResistor(Resistor, FootprintBlock, GeneratorBlock):
     )
 
 
-class ChipResistor(ESeriesResistor):
+class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     # (1.0/32, '01005'),  # KiCad doesn't seem to have a default footprint this small
@@ -68,7 +68,7 @@ class ChipResistor(ESeriesResistor):
   ]
 
 
-class AxialResistor(ESeriesResistor):
+class GenericAxialResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     (1.0/8, 'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal'),
@@ -79,7 +79,7 @@ class AxialResistor(ESeriesResistor):
   ]
 
 
-class AxialVerticalResistor(ESeriesResistor):
+class GenericAxialVerticalResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     (1.0/8, 'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical'),

@@ -69,7 +69,7 @@ class InductorTable(DigikeyTable):
     )
 
 
-class SmtInductor(Inductor, FootprintBlock, GeneratorBlock):
+class DigikeyInductor(Inductor, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, part: StringLike = "", footprint: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)

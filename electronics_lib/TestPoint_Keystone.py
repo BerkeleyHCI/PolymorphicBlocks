@@ -1,5 +1,5 @@
 from electronics_abstract_parts import *
-from .JlcFootprint import JlcPart
+from .JlcPart import JlcPart
 
 
 class Keystone5015(TestPoint, FootprintBlock, JlcPart):

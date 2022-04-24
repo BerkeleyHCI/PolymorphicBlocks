@@ -1,13 +1,13 @@
 import unittest
 
 from .test_passive_common import *
-from .PassiveResistor import ChipResistor
+from .GenericResistor import GenericChipResistor
 
 
 class ResistorTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.dut = self.Block(ChipResistor(
+    self.dut = self.Block(GenericChipResistor(
       resistance=1 * kOhm(tol=0.1),
       power=(0, 0)*Watt
     ))
@@ -18,7 +18,7 @@ class ResistorTestTop(Block):
 class PowerResistorTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.dut = self.Block(ChipResistor(
+    self.dut = self.Block(GenericChipResistor(
       resistance=1 * kOhm(tol=0.1),
       power=(0, .24)*Watt
     ))
@@ -29,7 +29,7 @@ class PowerResistorTestTop(Block):
 class NonE12ResistorTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.dut = self.Block(ChipResistor(
+    self.dut = self.Block(GenericChipResistor(
       resistance=8.06 * kOhm(tol=0.01),
       power=(0, 0)*Watt
     ))

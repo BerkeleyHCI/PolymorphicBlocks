@@ -2,7 +2,7 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcFootprint import JlcTablePart
+from .JlcPart import JlcTablePart
 
 
 DescriptionParser = Tuple[re.Pattern,

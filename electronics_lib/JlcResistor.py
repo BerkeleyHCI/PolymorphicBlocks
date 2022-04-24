@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 from electronics_abstract_parts import *
-from .JlcFootprint import JlcTablePart
+from .JlcPart import JlcTablePart
 
 
 class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):

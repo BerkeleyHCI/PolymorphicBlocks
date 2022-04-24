@@ -103,7 +103,7 @@ class DiodeTable(BaseDiodeTable):
     )
 
 
-class SmtDiode(Diode, FootprintBlock, GeneratorBlock):
+class DigikeySmtDiode(Diode, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
@@ -177,7 +177,7 @@ class ZenerTable(BaseDiodeTable):
     )
 
 
-class SmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
+class DigikeySmtZenerDiode(ZenerDiode, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, part: StringLike = Default(""), footprint: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)

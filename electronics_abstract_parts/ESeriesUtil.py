@@ -36,7 +36,10 @@ class ESeriesUtil:
   def choose_preferred_number(cls, within: Range, series: Sequence[float], tolerance: float) -> \
       Optional[float]:
     lower_pow10 = math.floor(math.log10(within.lower))
-    upper_pow10 = math.ceil(math.log10(within.upper))
+    if within.upper == float('inf'):
+      upper_pow10 = lower_pow10 + 1  # arbitrarily give it one more power of 10 if it's unbounded
+    else:
+      upper_pow10 = math.ceil(math.log10(within.upper))
 
     powers = cls.zigzag_range(lower_pow10, upper_pow10)  # prefer the center power first, then zigzag away from it
     # TODO given the tolerance we can actually bound this further

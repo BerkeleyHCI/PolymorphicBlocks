@@ -6,18 +6,18 @@ class BoardTop(DesignTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
-        (Resistor, ChipResistor),
-        (Capacitor, SmtCeramicCapacitor),
-        (Inductor, SmtInductor),
+        (Resistor, GenericChipResistor),
+        (Capacitor, GenericMlcc),
+        (Inductor, DigikeyInductor),
         (Switch, SmtSwitch),
-        (Diode, SmtDiode),
+        (Diode, DigikeySmtDiode),
         (Led, SmtLed),
         (RgbLedCommonAnode, SmtRgbLed),
-        (ZenerDiode, SmtZenerDiode),
-        (NFet, SmtNFet),
-        (PFet, SmtPFet),
-        (SwitchNFet, SmtSwitchNFet),
-        (SwitchPFet, SmtSwitchPFet),
+        (ZenerDiode, DigikeySmtZenerDiode),
+        (NFet, DigikeyNFet),
+        (PFet, DigikeyPFet),
+        (SwitchNFet, DigikeySwitchNFet),
+        (SwitchPFet, DigikeySwitchPFet),
         (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),

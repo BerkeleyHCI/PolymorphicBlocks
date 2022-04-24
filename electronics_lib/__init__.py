@@ -1,17 +1,18 @@
 from electronics_abstract_parts import *
 
-from .PassiveResistor import ESeriesResistor, ChipResistor, AxialResistor, AxialVerticalResistor
+from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
-from .PassiveCapacitor import SmtCeramicCapacitor, SmtCeramicCapacitorGeneric
+from .DigikeyMlcc import DigikeyMlcc
+from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
-from .PassiveInductor import SmtInductor
+from .DigikeyInductor import DigikeyInductor
 from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
-from .Diodes import SmtDiode, SmtZenerDiode
+from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcZenerDiode
-from .Fets import SmtNFet, SmtPFet, SmtSwitchNFet, SmtSwitchPFet
+from .DigikeyFets import DigikeyNFet, DigikeyPFet, DigikeySwitchNFet, DigikeySwitchPFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
-from .Crystals import OscillatorCrystal, SmdCrystal
+from .DigikeyCrystals import OscillatorCrystal, SmdCrystal
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061

@@ -402,8 +402,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'isen', 'res', 'res'], ChipResistor),  # big one not from JLC
-        (['control', 'int', 'c'], SmtCeramicCapacitorGeneric),  # no 1nF basic parts from JLC
+        (['control', 'isen', 'res', 'res'], GenericChipResistor),  # big one not from JLC
+        (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
