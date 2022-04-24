@@ -2,16 +2,14 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-
-from .JlcTable import JlcTable
-from .JlcFootprint import JlcFootprint
+from .JlcFootprint import JlcTableFootprint
 
 
 DescriptionParser = Tuple[re.Pattern,
                           Callable[[re.Match],
                                    Dict[PartsTableColumn, Any]]]
 
-class JlcZenerDiode(TableZenerDiode, JlcFootprint, FootprintBlock):
+class JlcZenerDiode(TableZenerDiode, JlcTableFootprint, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     'LL-34': 'Diode_SMD:D_MiniMELF',
     'SOD-123': 'Diode_SMD:D_SOD-123',
@@ -45,7 +43,7 @@ class JlcZenerDiode(TableZenerDiode, JlcFootprint, FootprintBlock):
 
       new_cols: Optional[Dict[PartsTableColumn, Any]] = None
       for parser, match_fn in cls.DESCRIPTION_PARSERS:
-        parsed_values = parser.match(row[JlcTable.DESCRIPTION])
+        parsed_values = parser.match(row[cls.DESCRIPTION_HEADER])
         if parsed_values:
           new_cols = match_fn(parsed_values)
           break
@@ -54,11 +52,11 @@ class JlcZenerDiode(TableZenerDiode, JlcFootprint, FootprintBlock):
         return None
 
       new_cols[cls.KICAD_FOOTPRINT] = footprint
-      new_cols.update(JlcTable._parse_jlcpcb_common(row))
+      new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return JlcTable._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.KICAD_FOOTPRINT], row[JlcTable.COST]]
+    return cls._jlc_table().map_new_columns(parse_row).sort_by(
+      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
 
   def _make_footprint(self, part: PartsTableRow) -> None:
@@ -68,8 +66,9 @@ class JlcZenerDiode(TableZenerDiode, JlcFootprint, FootprintBlock):
         '1': self.cathode,
         '2': self.anode,
       },
-      mfr=part[JlcTable.MANUFACTURER], part=part[JlcTable.PART_NUMBER],
-      value=part[JlcTable.DESCRIPTION],
-      datasheet=part[JlcTable.DATASHEETS]
+      mfr=part[self.MANUFACTURER_HEADER], part=part[self.PART_NUMBER],
+      value=part[self.DESCRIPTION_HEADER],
+      datasheet=part[self.DATASHEET_HEADER]
     )
-    self.assign(self.lcsc_part, part[JlcTable.JLC_PART_NUMBER])
+    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
