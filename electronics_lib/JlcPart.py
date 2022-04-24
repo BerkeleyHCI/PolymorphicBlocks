@@ -50,7 +50,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
     """Returns a dict with the cost row, or errors out with KeyError."""
 
-    #extracts out all the available prices for a given part by order quantity
+    # extracts out all the available prices for a given part by order quantity
     price_list = re.findall(":(\d+\.\d*),", row[cls.COST_HEADER])
     float_array = [float(x) for x in price_list]
     if not float_array:
@@ -64,11 +64,11 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
     }
 
   @staticmethod
-  def parse(description, regex_dictionary):
+  def parse(description: str, regex_dictionary: Dict[str, re.Pattern]):
     extraction_table = {}
 
-    for key in regex_dictionary:
-      matches = re.findall(regex_dictionary[key], description)
+    for key, pattern in regex_dictionary.items():
+      matches = pattern.findall(description)
       if matches:  # discard if not matched
         assert len(matches) == 1  # excess matches fail noisily
         assert key not in extraction_table  # duplicate matches fail noisily

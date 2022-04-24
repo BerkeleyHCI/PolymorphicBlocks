@@ -1,4 +1,5 @@
 from typing import List
+import re
 
 from .DigikeyMlcc import *
 from .JlcPart import JlcPart, JlcTablePart
@@ -19,9 +20,9 @@ class JlcCapacitor(TableDeratingCapacitorNew, JlcTablePart, FootprintBlock):
   @classmethod
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
-      'nominal_capacitance': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?F)($|\s)",
-      'tolerance': "(^|\s)(([\u00B1]\d+(?:\.\d*)?%)|([\u00B1]\d+(?:\.\d*)?[GMkmunp]?F))($|\s)",
-      'voltage': "(^|\s)(\d+(?:\.\d*)?V)($|\s)",
+      'nominal_capacitance': re.compile("(^|\s)(\d+(?:\.\d*)?[GMkmunp]?F)($|\s)"),
+      'tolerance': re.compile("(^|\s)(([\u00B1]\d+(?:\.\d*)?%)|([\u00B1]\d+(?:\.\d*)?[GMkmunp]?F))($|\s)"),
+      'voltage': re.compile("(^|\s)(\d+(?:\.\d*)?V)($|\s)"),
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:

@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Dict, Any
 from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart
@@ -13,9 +14,9 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
   @classmethod
   def _make_table(cls) -> PartsTable:
     RESISTOR_MATCHES = {
-      'resistance': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])($|\s)",
-      'tolerance': "(^|\s)([\u00B1]\d+(?:\.\d*)?%)($|\s)",
-      'power': "(^|\s)(\d+(?:\.\d*)?[GMkmunp]?W)($|\s)",
+      'resistance': re.compile("(^|\s)(\d+(?:\.\d*)?[GMkmunp]?[\u03A9])($|\s)"),
+      'tolerance': re.compile("(^|\s)([\u00B1]\d+(?:\.\d*)?%)($|\s)"),
+      'power': re.compile("(^|\s)(\d+(?:\.\d*)?[GMkmunp]?W)($|\s)"),
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
