@@ -487,8 +487,8 @@ class MultimeterTest(JlcBoardTop):
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-
         (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
+
         (['measure', 'range', 'switch', 'switch_size'], 2),
         (['driver', 'range', 'switch', 'switch_size'], 2),
         (['tp_5v', 'tp', 'require_basic_part'], False),
@@ -500,7 +500,6 @@ class MultimeterTest(JlcBoardTop):
         # (['prot_5v', 'diode', 'require_basic_part'], False),  # use the big boy Zener
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['prot_analog', 'diode', 'require_basic_part'], False),
-        (['reg_5v', 'power_path', 'in_cap', 'cap', 'require_basic_part'], False),
 
         (['gate', 'ctl_diode', 'require_basic_part'], False),
         (['gate', 'btn_diode', 'require_basic_part'], False),
