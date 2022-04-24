@@ -18,6 +18,7 @@ class BoardTop(DesignTop):
         (PFet, DigikeyPFet),
         (SwitchNFet, DigikeySwitchNFet),
         (SwitchPFet, DigikeySwitchPFet),
+        (Crystal, DigikeyCrystal),
         (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),

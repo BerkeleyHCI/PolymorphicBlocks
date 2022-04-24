@@ -12,7 +12,7 @@ from .JlcDiode import JlcZenerDiode
 from .DigikeyFets import DigikeyNFet, DigikeyPFet, DigikeySwitchNFet, DigikeySwitchPFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
-from .DigikeyCrystals import OscillatorCrystal, SmdCrystal
+from .DigikeyCrystals import DigikeyCrystal
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061

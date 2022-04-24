@@ -32,7 +32,7 @@ class DigikeyTablePart(PartsTableFootprint):
   DESCRIPTION_HEADER = 'Description'
   DATASHEET_HEADER = 'Datasheets'
   _PACKAGE_HEADER = 'Package / Case'
-  
+
   _COST_HEADER = 'Unit Price (USD)'
   COST = PartsTableColumn(float)
 

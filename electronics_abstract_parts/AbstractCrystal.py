@@ -1,4 +1,5 @@
 from electronics_model import *
+from . import PartsTableFootprint, PartsTableColumn, Capacitor
 from .Categories import *
 
 
@@ -10,6 +11,65 @@ class Crystal(DiscreteComponent):
     super().__init__()
 
     self.frequency = self.ArgParameter(frequency)
+    self.actual_capacitance = self.Parameter(FloatExpr())
 
     self.crystal = self.Port(CrystalPort.empty(), [InOut])  # set by subclass
     self.gnd = self.Port(Ground.empty(), [Common])
+
+
+@abstract_block
+class TableCrystal(Crystal, PartsTableFootprint, GeneratorBlock):
+  FREQUENCY = PartsTableColumn(Range)
+  CAPACITANCE = PartsTableColumn(float)
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs) -> None:
+    """Discrete crystal component."""
+    super().__init__(*args, **kwargs)
+    self.generator(self.select_part, self.frequency, self.part, self.footprint_spec)
+
+  def select_part(self, frequency: Range, part_spec: str, footprint_spec: str) -> None:
+    part = self._get_table().filter(lambda row: (
+        (not part_spec or part_spec == row[self.PART_NUMBER]) and
+        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        row[self.FREQUENCY] in frequency
+    )).first(f"no crystal matching f={frequency} Hz")
+
+    self.crystal.init_from(CrystalPort(part[self.FREQUENCY]))
+    self.gnd.init_from(Ground())
+    self.assign(self.actual_capacitance, part[self.CAPACITANCE])
+
+
+class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?
+  PARASITIC_CAPACITANCE = 5e-12
+
+  # Tolerance selected using table 32 in https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf, which gives suggested
+  # load cap values 18pF, 39pF, 57pF. Assume any capacitance in the center could round either way - 22pF goes to 18pF
+  # or 39pF, which gives a 28% tolerance.
+  # Calculation: for tolerance y and series multiplicative factor a, we need (1+y) = a(1-y)
+  # which solves to y=(a-1)/(a+1)
+  # Then stack an additive 10% tolerance for the capacitor tolerance, for a total 0.38 tolerance.
+  # TODO this should be formalized better.
+  CAPACITOR_TOLERANCE = 0.38
+
+  @init_in_parent
+  def __init__(self, frequency: RangeLike) -> None:
+    """Crystal and supporting circuitry to connect it to an oscillator driver.
+    Should include load capacitors."""
+    super().__init__()
+
+    self.package = self.Block(Crystal(frequency=frequency))
+    self.crystal = self.Export(self.package.crystal, [InOut])
+    self.gnd = self.Export(self.package.gnd, [Common])
+
+    cap_model = Capacitor(
+      capacitance=(
+        (self.package.actual_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 - self.CAPACITOR_TOLERANCE),
+        (self.package.actual_capacitance - self.PARASITIC_CAPACITANCE) * 2 * (1 + self.CAPACITOR_TOLERANCE)),
+      voltage=self.crystal.link().drive_voltage
+    )
+    self.cap_a = self.Block(cap_model)
+    self.cap_b = self.Block(cap_model)
+    self.connect(self.cap_a.pos, self.crystal.a)
+    self.connect(self.cap_b.pos, self.crystal.b)
+    self.connect(self.gnd, self.cap_a.neg.as_ground(), self.cap_b.neg.as_ground())
