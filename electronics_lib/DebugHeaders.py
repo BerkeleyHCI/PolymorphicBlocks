@@ -1,5 +1,3 @@
-from typing import *
-
 from electronics_abstract_parts import *
 
 
@@ -40,7 +38,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
         '9': self.gnd,
         '10': self.swd.reset,
       },
-      mfr='CNC Text', part='3220-10-0300-00',
+      mfr='CNC Tech', part='3220-10-0300-00',
       value='SWD'
     )
 

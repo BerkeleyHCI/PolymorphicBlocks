@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional
 from electronics_abstract_parts import *
-from .DigikeyTable import *
+from .DigikeyTable import DigikeyTablePart
 
 
 class DigikeyInductor(TableInductor, DigikeyTablePart, FootprintBlock):
