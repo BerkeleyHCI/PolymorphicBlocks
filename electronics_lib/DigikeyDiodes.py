@@ -17,41 +17,6 @@ class DigikeyBaseDiode:
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
   }
 
-  @classmethod
-  def footprint_pinmap(cls, footprint: str, anode: CircuitPort, cathode: CircuitPort):
-    return {
-      'Diode_SMD:D_SMA': {
-        '1': cathode,
-        '2': anode,
-      },
-      'Diode_SMD:D_SMB': {
-        '1': cathode,
-        '2': anode,
-      },
-      'Diode_SMD:D_SMC': {
-        '1': cathode,
-        '2': anode,
-      },
-      'Diode_SMD:D_SOD-123': {
-        '1': cathode,
-        '2': anode,
-      },
-      'Diode_SMD:D_SOD-323': {
-        '1': cathode,
-        '2': anode,
-      },
-      'Package_TO_SOT_SMD:TO-252-2': {
-        '1': anode,
-        '2': cathode,
-        '3': anode,
-      },
-      'Package_TO_SOT_SMD:TO-263-2': {
-        '1': anode,  # TODO sometimes NC
-        '2': cathode,
-        '3': anode,
-      },
-    }[footprint]
-
 
 class DigikeySmtDiode(TableDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintBlock):
   @classmethod
@@ -97,16 +62,6 @@ class DigikeySmtDiode(TableDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintB
       lambda row: row[cls.COST]
     )
 
-  def _make_footprint(self, part: PartsTableRow):
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
-                            self.anode, self.cathode),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=f"Vr={part['Voltage - DC Reverse (Vr) (Max)']}, I={part['Current - Average Rectified (Io)']}",
-      datasheet=part[self.DATASHEET_COL]
-    )
-
 
 class DigikeySmtZenerDiode(TableZenerDiode, DigikeyTablePart, DigikeyBaseDiode, FootprintBlock):
   @classmethod
@@ -136,14 +91,4 @@ class DigikeySmtZenerDiode(TableZenerDiode, DigikeyTablePart, DigikeyBaseDiode, 
     ], 'resources'), encoding='utf-8-sig')
     return raw_table.map_new_columns(parse_row).sort_by(
       lambda row: row[cls.COST]
-    )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      self.footprint_pinmap(part[self.KICAD_FOOTPRINT],
-                            self.anode, self.cathode),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=f"Vz={part['Voltage - Zener (Nom) (Vz)']}, I={part['Voltage - Forward (Vf) (Max) @ If']}",
-      datasheet=part[self.DATASHEET_COL]
     )

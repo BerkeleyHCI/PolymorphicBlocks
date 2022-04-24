@@ -1,24 +1,59 @@
 from electronics_model import *
 from .Categories import *
-from .PartsTable import PartsTableColumn
+from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class Diode(DiscreteSemiconductor):
+class BaseDiode(DiscreteSemiconductor):
+  """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
+  """
+
+  @init_in_parent
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.anode = self.Port(Passive.empty())
+    self.cathode = self.Port(Passive.empty())
+
+
+@abstract_block
+class BaseDiodeStandardPinning(BaseDiode, StandardPinningFootprint[BaseDiode]):
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Diode_SMD:D_MiniMELF',
+      'Diode_SMD:D_SOD-123',
+      'Diode_SMD:D_SOD-323',
+      'Diode_SMD:D_SMA',
+      'Diode_SMD:D_SMB',
+      'Diode_SMD:D_SMC',
+    ): lambda block: {
+      '1': block.cathode,
+      '2': block.anode,
+    },
+    (  # TODO are these standard?
+      'Package_TO_SOT_SMD:TO-252-2',
+      'Package_TO_SOT_SMD:TO-263-2',
+    ): lambda block: {
+      '1': block.anode,  # sometimes NC
+      '2': block.cathode,
+      '3': block.anode,
+    },
+  }
+
+
+@abstract_block
+class Diode(BaseDiode):
   """Base class for untyped diodes
 
   TODO power? capacitance? leakage current?
   """
-
   @init_in_parent
   def __init__(self, reverse_voltage: RangeLike, current: RangeLike, *,
                voltage_drop: RangeLike = Default(Range.all()),
                reverse_recovery_time: RangeLike = Default(Range.all())) -> None:
     super().__init__()
-
-    self.anode = self.Port(Passive.empty())
-    self.cathode = self.Port(Passive.empty())
 
     self.reverse_voltage = self.ArgParameter(reverse_voltage)
     self.current = self.ArgParameter(current)
@@ -27,7 +62,7 @@ class Diode(DiscreteSemiconductor):
 
 
 @abstract_block
-class TableDiode(Diode, PartsTableFootprint, GeneratorBlock):
+class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
@@ -66,26 +101,31 @@ class TableDiode(Diode, PartsTableFootprint, GeneratorBlock):
 
     self._make_footprint(part)
 
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'D', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
+
 
 @abstract_block
-class ZenerDiode(DiscreteSemiconductor):
+class ZenerDiode(BaseDiode, DiscreteSemiconductor):
   """Base class for untyped zeners
 
   TODO power? capacitance? leakage current?
   """
-
   @init_in_parent
   def __init__(self, zener_voltage: RangeLike) -> None:
     super().__init__()
-
-    self.anode = self.Port(Passive.empty())
-    self.cathode = self.Port(Passive.empty())
 
     self.zener_voltage = self.ArgParameter(zener_voltage)
 
 
 @abstract_block
-class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
+class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 
@@ -112,6 +152,15 @@ class TableZenerDiode(ZenerDiode, PartsTableFootprint, GeneratorBlock):
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
 
     self._make_footprint(part)
+
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    self.footprint(
+      'D', part[self.KICAD_FOOTPRINT],
+      self._make_pinning(part[self.KICAD_FOOTPRINT]),
+      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
+      value=part[self.DESCRIPTION_COL],
+      datasheet=part[self.DATASHEET_COL]
+    )
 
 
 class ProtectionZenerDiode(DiscreteApplication):

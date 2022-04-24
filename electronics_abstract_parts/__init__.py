@@ -24,7 +24,8 @@ from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
-from .AbstractDiodes import Diode, TableDiode, ZenerDiode, TableZenerDiode, ProtectionZenerDiode
+from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
+from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet, NFet, PFet
 from .AbstractFets import SwitchFet, TableSwitchFet, SwitchNFet, SwitchPFet

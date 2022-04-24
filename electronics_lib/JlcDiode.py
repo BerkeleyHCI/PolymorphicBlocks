@@ -119,15 +119,6 @@ class JlcZenerDiode(TableZenerDiode, JlcTablePart, JlcBaseDiode, FootprintBlock)
     )
 
   def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      {
-        '1': self.cathode,
-        '2': self.anode,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+    super()._make_footprint(part)
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
