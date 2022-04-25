@@ -98,8 +98,7 @@ class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
 
 
 class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
-  """
-  Dummy capacitor that has lcsc_part as an additional parameter
+  """Dummy capacitor that additionally has JLC part fields
   """
   @init_in_parent
   def __init__(self, set_lcsc_part: StringLike = "", set_basic_part: BoolLike = False,

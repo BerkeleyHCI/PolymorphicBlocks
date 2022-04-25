@@ -8,7 +8,7 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
   Intended as an infrastructural block where a particular connector series is not fixed,
   but can be selected through the refinements system.
   An optional length argument can be specified, which forces total number of pins. This must be larger
-  than the maximum pin index (but can be smaller, unassigned pins arer NC).
+  than the maximum pin index (but can be smaller, unassigned pins are NC).
   The allocated pin names correlate with the footprint pin, 1-indexed (per electronics convention).
   It is up to the instantiating layer to set the pinmap (or allow the user to set it by refinements)."""
   allowed_pins: Tuple[int, int] = (0, 0)  # inclusive on both ends, default disallowed anywhere
@@ -60,7 +60,7 @@ class PinHeader254(PassiveConnector, FootprintBlock):
 
 
 class JstPhK(PassiveConnector, FootprintBlock):
-  """JST PH-K series connector: 2.00mm shrouded and polarized, in vertical and through-hole."""
+  """JST PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = (2, 16)
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical',

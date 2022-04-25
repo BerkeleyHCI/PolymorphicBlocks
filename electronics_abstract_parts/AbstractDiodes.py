@@ -9,7 +9,6 @@ from .StandardPinningFootprint import StandardPinningFootprint
 class BaseDiode(DiscreteSemiconductor):
   """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
   """
-
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()

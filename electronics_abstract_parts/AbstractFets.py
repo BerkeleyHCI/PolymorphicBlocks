@@ -91,7 +91,7 @@ class BaseTableFet(Fet):
   RDS_ON = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   GATE_CHARGE = PartsTableColumn(Range)
-  CHANNEL = PartsTableColumn(str)
+  CHANNEL = PartsTableColumn(str)  # either 'P' or 'N'
 
 
 @abstract_block

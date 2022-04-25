@@ -98,8 +98,8 @@ class AnalogMuxer(GeneratorBlock):
     self.inputs = self.Port(Vector(AnalogSink.empty()))
     self.out = self.Export(self.device.com.as_analog_source(
       voltage_out=self.inputs.hull(lambda x: x.link().voltage),
-      current_limits=self.device.analog_current_limits,
-      # impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
+      current_limits=self.device.analog_current_limits,  # this device only, current draw propagated
+      impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     ))
 
     self.generator(self.generate, self.inputs.allocated())
@@ -110,7 +110,7 @@ class AnalogMuxer(GeneratorBlock):
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
         self.device.inputs.allocate(elt).as_analog_sink(
-          voltage_limits=self.device.analog_voltage_limits,
+          voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
           current_draw=self.out.link().current_drawn,
           impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
         ))
@@ -137,7 +137,7 @@ class AnalogDemuxer(GeneratorBlock):
 
     self.outputs = self.Port(Vector(AnalogSource.empty()))
     self.input = self.Export(self.device.com.as_analog_sink(
-      voltage_limits=self.device.analog_voltage_limits,
+      voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
       current_draw=self.outputs.hull(lambda x: x.link().current_drawn),
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     ))
@@ -151,7 +151,7 @@ class AnalogDemuxer(GeneratorBlock):
         self.outputs.append_elt(AnalogSource().empty(), elt),
         self.device.inputs.allocate(elt).as_analog_source(
           voltage_out=self.input.link().voltage,
-          current_limits=self.device.analog_current_limits,
+          current_limits=self.device.analog_current_limits,  # this device only, voltages propagated
           impedance=self.input.link().source_impedance + self.device.analog_on_resistance
         ))
 

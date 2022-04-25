@@ -10,7 +10,7 @@ class Keystone5015(TestPoint, FootprintBlock, JlcPart):
     self.footprint(
       'TP', 'TestPoint:TestPoint_Keystone_5015_Micro-Minature',
       {
-        '1': self.io,  # also I2C SCL
+        '1': self.io,
       },
       value=name,
       mfr='Keystone', part='5015',

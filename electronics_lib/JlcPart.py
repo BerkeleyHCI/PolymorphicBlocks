@@ -41,6 +41,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
 
   @classmethod
   def _jlc_table(cls) -> PartsTable:
+    """Returns the full JLC parts table, saving the result for future use."""
     if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
       JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
         'Pruned_JLCPCB SMT Parts Library(20220419).csv'
@@ -50,7 +51,6 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
     """Returns a dict with the cost row, or errors out with KeyError."""
-
     # extracts out all the available prices for a given part by order quantity
     price_list = re.findall(":(\d+\.\d*),", row[cls.COST_HEADER])
     float_array = [float(x) for x in price_list]
@@ -79,7 +79,6 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   @staticmethod
   def parse_full_description(description: str, parser_options: List[DescriptionParser]) -> \
       Optional[Dict[PartsTableColumn, Any]]:
-    new_cols: Optional[Dict[PartsTableColumn, Any]] = None
     for parser, match_fn in parser_options:
       parsed_values = parser.match(description)
       if parsed_values:

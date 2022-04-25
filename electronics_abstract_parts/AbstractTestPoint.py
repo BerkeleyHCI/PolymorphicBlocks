@@ -36,7 +36,7 @@ class VoltageTestPoint(Block):
 
 
 class DigitalTestPoint(Block):
-  """Test point with a VoltageSink port."""
+  """Test point with a DigitalSink port."""
   def __init__(self):
     super().__init__()
     self.io = self.Port(DigitalSink().empty(), [InOut])
@@ -45,7 +45,7 @@ class DigitalTestPoint(Block):
 
 
 class AnalogTestPoint(Block):
-  """Test point with a VoltageSink port."""
+  """Test point with a AnalogSink port."""
   def __init__(self):
     super().__init__()
     self.io = self.Port(AnalogSink().empty(), [InOut])

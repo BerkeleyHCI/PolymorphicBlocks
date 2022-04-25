@@ -9,7 +9,7 @@ class StandardPinningFootprint(FootprintBlock, Generic[StandardPinningType]):
   """An infrastructural block that provides table to provide standard pin mapping from footprints."""
 
   FOOTPRINT_PINNING_MAP: Dict[Union[str, Tuple[str, ...]], PinningFunction]  # user-specified
-  _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated
+  _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated from above
 
   def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
     if self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP is None:

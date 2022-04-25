@@ -1,7 +1,6 @@
-from typing import List
+from typing import List, cast
 
 from electronics_model import *
-from .AbstractCapacitor import *
 from .Categories import *
 
 
