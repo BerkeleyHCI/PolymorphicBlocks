@@ -19,6 +19,8 @@ class BoardTop(DesignTop):
         (SwitchNFet, DigikeySwitchNFet),
         (SwitchPFet, DigikeySwitchPFet),
         (Crystal, DigikeyCrystal),
+
+        (UsbEsdDiode, Tpd2e009),
         (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
@@ -45,5 +47,7 @@ class JlcBoardTop(BoardTop):
         (Diode, JlcDiode),
         (NFet, JlcNFet),
         (PFet, JlcPFet),
+
+        (UsbEsdDiode, Esda5v3l),
       ]
     )

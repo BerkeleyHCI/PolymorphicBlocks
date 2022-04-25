@@ -495,10 +495,12 @@ class MultimeterTest(JlcBoardTop):
 
         (['gate', 'ctl_diode', 'require_basic_part'], False),
         (['gate', 'btn_diode', 'require_basic_part'], False),
+
+        (['usb_esd', 'require_basic_part'], False),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
-        (Keystone5015, ['require_basic_part'], False),
+        (TestPoint, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),

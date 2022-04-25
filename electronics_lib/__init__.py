@@ -40,7 +40,8 @@ from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
-from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbEsdDiode, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
+from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
+from .UsbPorts import UsbEsdDiode, Tpd2e009, Esda5v3l
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
 

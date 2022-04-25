@@ -464,10 +464,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     // add class-based refinements - must be set before refinement params
-    refinements.classValues.get(refinedLibraryPath).foreach { classValueRefinements =>
-      for ((subpath, value) <- classValueRefinements) {
-        constProp.setForcedValue(path.asIndirect ++ subpath, value,
-          s"${refinedLibraryPath.getTarget.getName} class refinement")
+    // note that this operates on the post-refinement class
+    refinements.classValues.foreach {  case (classPath, refinements) =>
+      if (library.isSubclassOf(refinedLibraryPath, classPath)) {
+        refinements.foreach{ case (subpath, value) =>
+          constProp.setForcedValue(path.asIndirect ++ subpath, value,
+            s"${refinedLibraryPath.getTarget.getName} class refinement")
+        }
       }
     }
 
