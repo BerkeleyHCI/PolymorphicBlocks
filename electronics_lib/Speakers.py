@@ -113,7 +113,7 @@ class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
 
   def contents(self):
     self.footprint(
-      'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.73x1.85mm_ThermalVias',
+      'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',
       {
         '7': self.gnd,
         '4': self.inp,  # Vin+
@@ -131,7 +131,8 @@ class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
 
 
 class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
-  """TPA2005D1 configured in single-ended input mode"""
+  """TPA2005D1 configured in single-ended input mode.
+  Possible semi-pin-compatible with PAM8302AASCR, but which has internal resistor."""
   @init_in_parent
   def __init__(self, gain: RangeLike = Range.from_tolerance(20, 0.2)):
     super().__init__()
