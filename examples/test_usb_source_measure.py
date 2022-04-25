@@ -410,7 +410,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'driver', 'high_fet'], DigikeyFet),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'pd_int=28',
           'sw1=43',
           'sw2=44',
@@ -437,7 +437,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
           'high_en=23',
 
           'swd.swo=PIO0_8',
-        ])),
+        ]),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L

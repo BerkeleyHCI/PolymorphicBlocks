@@ -434,8 +434,7 @@ class MultimeterTest(JlcBoardTop):
         (['driver', 'diode'], DigikeySmtDiode),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
-          # TODO reassign for this differently-pinned device
+        (['mcu', 'pin_assigns'], [
           'adc_spi.miso=24',
           'adc_spi.mosi=26',
           'adc_spi.sck=37',
@@ -465,7 +464,7 @@ class MultimeterTest(JlcBoardTop):
           'rgb_blue=6',
           'rgb_red=4',
           'rgb_green=5',
-        ])),
+        ]),
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
         (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors

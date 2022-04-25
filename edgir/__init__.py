@@ -94,6 +94,7 @@ def lit_to_valuelit(value: LitTypes) -> ValueLit:
   elif isinstance(value, str):
     pb.text.val = value
   elif isinstance(value, list):
+    pb.array.SetInParent()
     for elt in value:
       pb.array.elts.add().CopyFrom(lit_to_valuelit(elt))
   else:

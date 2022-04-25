@@ -13,7 +13,7 @@ class PinMappable(Block):
   to delegate the pin mapping to the microcontroller chip block.
   """
   @init_in_parent
-  def __init__(self, pin_assigns: StringLike = "") -> None:
+  def __init__(self, pin_assigns: ArrayStringLike = []) -> None:
     super().__init__()
     self.pin_assigns = self.ArgParameter(pin_assigns)
     self.actual_pin_assigns = self.Parameter(ArrayStringExpr())
@@ -148,12 +148,12 @@ class UserAssignmentDict:
   """A recursive dict mapping for user assignment strings, structured as a dict keyed by the top-level prefix of the
   assignment name. Contains a root (that is string-valued) and recursive-valued elements."""
   @staticmethod
-  def from_string(assignments_spec: str) -> 'UserAssignmentDict':
+  def from_spec(assignments_spec: List[str]) -> 'UserAssignmentDict':
     def parse_elt(assignment_spec: str) -> Tuple[List[str], str]:
       assignment_split = assignment_spec.split('=')
       assert len(assignment_split) == 2, f"bad assignment spec {assignment_spec}"
       return (assignment_split[0].split('.'), assignment_split[1])
-    assignment_spec_list = [parse_elt(assignment) for assignment in assignments_spec.split(';') if assignment]
+    assignment_spec_list = [parse_elt(assignment) for assignment in assignments_spec]
     root, assignments = UserAssignmentDict._from_list(assignment_spec_list, [])
     if root is not None:
       raise BadUserAssignError(f"unexpected root assignment to {root}")
@@ -253,14 +253,14 @@ class PinMapUtil:
     else:
       raise NotImplementedError(f"unsupported resource type {resource}")
 
-  def allocate(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: str = "") -> \
+  def allocate(self, port_types_names: List[Tuple[Type[Port], List[str]]], assignments_spec: List[str] = []) -> \
       List[AllocatedResource]:
     """Performs port assignment given a list of port types and their names, and optional user-defined pin assignments
     (which may be empty). Names may be duplicated (either within a port type, or across port types), and multiple
     records will show up accordingly in the output data structure.
     Returns a list of assigned ports, structured as a port model (set recursively for bundle ports), the input name,
     and pin assignment as a pin string for leaf ports, or a dict (possibly recursive) for bundles."""
-    assignments = UserAssignmentDict.from_string(assignments_spec)
+    assignments = UserAssignmentDict.from_spec(assignments_spec)
 
     # mutable data structure, resources will be removed as they are assigned
     free_resources_by_type: dict[Type[Port], List[BasePinMapResource]] = {}

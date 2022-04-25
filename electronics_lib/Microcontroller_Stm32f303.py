@@ -195,7 +195,7 @@ class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBloc
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
                    self.can.allocated())
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                can_allocates: List[str]) -> None:

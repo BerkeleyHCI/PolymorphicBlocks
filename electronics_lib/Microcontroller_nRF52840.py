@@ -175,7 +175,7 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None: ...
@@ -224,7 +224,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
     'P0.10': '36',
   }
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None:
@@ -333,7 +333,7 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
     'P1.01': '61',
   }
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None:

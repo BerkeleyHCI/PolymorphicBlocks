@@ -168,7 +168,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
