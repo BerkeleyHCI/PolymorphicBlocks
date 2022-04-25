@@ -10,8 +10,6 @@ Post-process BoM CSV:
 
 - Rename these columns:
   
-  - Package -> Footprint
-  
   - Designation -> JLCPCB Part #
 
 - Add a Comment column
@@ -29,3 +27,5 @@ Post-process position CSV:
   - Rot -> Rotation
   
   - Side -> Layer
+  
+- Diodes may need a 180 rotation
