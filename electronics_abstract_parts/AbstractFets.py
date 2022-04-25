@@ -9,6 +9,7 @@ from .StandardPinningFootprint import StandardPinningFootprint
 @abstract_block
 class Fet(DiscreteSemiconductor):
   """Base class for untyped MOSFETs
+  Drain voltage, drain current, and gate voltages are positive (absolute).
 
   MOSFET equations
   - https://inst.eecs.berkeley.edu/~ee105/fa05/handouts/discussions/Discussion5.pdf (cutoff/linear/saturation regions)
@@ -19,10 +20,19 @@ class Fet(DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-low-frequency-mosfet-parameters/
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
+  @staticmethod
+  def NFet(*args, **kwargs):
+    return Fet(*args, **kwargs, channel='N')
+
+  @staticmethod
+  def PFet(*args, **kwargs):
+    return Fet(*args, **kwargs, channel='P')
+
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
                gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
-               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0))) -> None:
+               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0)),
+               channel: StringLike = StringExpr()) -> None:
     super().__init__()
 
     self.source = self.Port(Passive.empty())
@@ -35,6 +45,7 @@ class Fet(DiscreteSemiconductor):
     self.rds_on = self.ArgParameter(rds_on)
     self.gate_charge = self.ArgParameter(gate_charge)
     self.power = self.ArgParameter(power)
+    self.channel = self.ArgParameter(channel)
 
     self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
     self.actual_drain_current_rating = self.Parameter(RangeExpr())
@@ -80,6 +91,7 @@ class BaseTableFet(Fet):
   RDS_ON = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   GATE_CHARGE = PartsTableColumn(Range)
+  CHANNEL = PartsTableColumn(str)
 
 
 @abstract_block
@@ -88,15 +100,16 @@ class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorB
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power,
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power, self.channel,
                    self.part, self.footprint_spec)
 
   def select_part(self, drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
-                  part_spec: str, footprint_spec: str,) -> None:
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range, channel: str,
+                  part_spec: str, footprint_spec: str) -> None:
     parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        row[self.CHANNEL] == channel and
         drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
         drain_current.fuzzy_in(row[self.IDS_RATING]) and
         gate_voltage.fuzzy_in(row[self.VGS_RATING]) and
@@ -129,20 +142,6 @@ class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorB
 
 
 @abstract_block
-class PFet(Fet):
-  """Base class for PFETs. Drain voltage, drain current, and gate voltages are positive (absolute).
-  """
-  pass
-
-
-@abstract_block
-class NFet(Fet):
-  """Base class for NFETs. Drain voltage, drain current, and gate voltage are positive (absolute).
-  """
-  pass
-
-
-@abstract_block
 class SwitchFet(Fet):
   """FET that switches between an off state and on state, not operating in the linear region except for rise/fall time.
   Ports remain untyped. TODO: are these limitations enough to type the ports? maybe except for the output?
@@ -150,6 +149,15 @@ class SwitchFet(Fet):
   stricter of the explicit input or model-derived parameters."""
   # TODO ideally this would just instantaite a Fet internally, but the parts selection becomes more complex b/c
   # parameters are cross-dependent
+  @staticmethod
+  def NFet(*args, **kwargs):
+    return SwitchFet(*args, **kwargs, channel='N')
+
+  @staticmethod
+  def PFet(*args, **kwargs):
+    return SwitchFet(*args, **kwargs, channel='P')
+
+
   @init_in_parent
   def __init__(self, frequency: RangeLike, drive_current: RangeLike, **kwargs) -> None:
     super().__init__(**kwargs)
@@ -169,8 +177,8 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.frequency, self.drive_current,
                    self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power,
-                   self.part, self.footprint_spec)
+                   self.gate_voltage, self.rds_on, self.gate_charge, self.power, self.channel,
+                   self.part, self.footprint_spec)  # type: ignore
 
     self.actual_static_power = self.Parameter(RangeExpr())
     self.actual_switching_power = self.Parameter(RangeExpr())
@@ -178,12 +186,13 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
 
   def select_part(self, frequency: Range, drive_current: Range,
                   drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range,
+                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range, channel: str,
                   part_spec: str, footprint_spec: str) -> None:
     # Pre-filter out by the static parameters
     prefiltered_parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        row[self.CHANNEL] == channel and
         drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
         drain_current.fuzzy_in(row[self.IDS_RATING]) and
         gate_voltage.fuzzy_in(row[self.VGS_DRIVE]) and
@@ -238,17 +247,3 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
       value=part[self.DESCRIPTION_COL],
       datasheet=part[self.DATASHEET_COL]
     )
-
-
-@abstract_block
-class SwitchPFet(SwitchFet, PFet):
-  """Base class for PFETs. Drain voltage, drain current, and gate voltages are positive (absolute).
-  """
-  pass
-
-
-@abstract_block
-class SwitchNFet(SwitchFet, NFet):
-  """Base class for NFETs. Drain voltage, drain current, and gate voltage are positive (absolute).
-  """
-  pass

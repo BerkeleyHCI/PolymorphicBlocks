@@ -14,10 +14,8 @@ class BoardTop(DesignTop):
         (Led, SmtLed),
         (RgbLedCommonAnode, SmtRgbLed),
         (ZenerDiode, DigikeySmtZenerDiode),
-        (NFet, DigikeyNFet),
-        (PFet, DigikeyPFet),
-        (SwitchNFet, DigikeySwitchNFet),
-        (SwitchPFet, DigikeySwitchPFet),
+        (Fet, DigikeyFet),
+        (SwitchFet, DigikeySwitchFet),
         (Crystal, DigikeyCrystal),
 
         (UsbEsdDiode, Tpd2e009),
@@ -45,8 +43,7 @@ class JlcBoardTop(BoardTop):
 
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
-        (NFet, JlcNFet),
-        (PFet, JlcPFet),
+        (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
       ]

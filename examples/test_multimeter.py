@@ -104,7 +104,7 @@ class MultimeterCurrentDriver(Block):
     super().contents()
     max_in_voltage = self.control.link().voltage.upper()
 
-    self.fet = self.Block(PFet(
+    self.fet = self.Block(Fet.PFet(
       drain_voltage=self.voltage_rating,  # protect against negative overvoltage
       drain_current=(0, max_in_voltage / 1000),  # approx lowest resistance - TODO properly model the resistor mux
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
@@ -180,7 +180,7 @@ class FetPowerGate(Block):
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
     ))
     self.connect(self.pwr_in, self.pull_res.a.as_voltage_sink())
-    self.pwr_fet = self.Block(PFet(
+    self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=(0, max_voltage),
       drain_current=(0, max_current),
       gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
@@ -197,7 +197,7 @@ class FetPowerGate(Block):
     self.amp_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
     ))
-    self.amp_fet = self.Block(NFet(
+    self.amp_fet = self.Block(Fet.NFet(
       drain_voltage=(0, max_voltage),
       drain_current=(0, 0),  # effectively no current
       gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
@@ -430,7 +430,7 @@ class MultimeterTest(JlcBoardTop):
         (['measure', 'res'], GenericChipResistor),
         (['spk', 'conn'], JstPhK),
 
-        (['driver', 'fet'], DigikeyPFet),
+        (['driver', 'fet'], DigikeyFet),
         (['driver', 'diode'], DigikeySmtDiode),
       ],
       instance_values=[

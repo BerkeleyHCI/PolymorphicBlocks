@@ -11,13 +11,18 @@ class DigikeyBaseFet(BaseTableFet, DigikeyTablePart):
     'TO-263-3, D²Pak (2 Leads + Tab), TO-263AB': 'Package_TO_SOT_SMD:TO-263-2',
     'PowerPAK® SO-8': 'Package_SO:PowerPAK_SO-8_Single',
   }
+  CHANNEL_MAP = {
+    'N-Channel': 'N',
+    'P-Channel': 'P',
+  }
 
   @classmethod
-  def _make_fet_table(cls) -> PartsTable:
+  def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       try:
         new_cols[cls.KICAD_FOOTPRINT] = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
+        new_cols[cls.CHANNEL] = cls.CHANNEL_MAP[row['FET Type']]
 
         new_cols[cls.VDS_RATING] = Range.zero_to_upper(
           PartsTableUtil.parse_value(row['Drain to Source Voltage (Vdss)'], 'V')
@@ -64,43 +69,9 @@ class DigikeyBaseFet(BaseTableFet, DigikeyTablePart):
     )
 
 
-@abstract_block
 class DigikeyFet(TableFet, DigikeyBaseFet):
   pass
 
 
-class DigikeyNFet(NFet, DigikeyFet):
-  @classmethod
-  def _make_table(cls) -> PartsTable:
-    return cls._make_fet_table().filter(lambda row: (
-        row['FET Type'] == 'N-Channel'
-    ))
-
-
-class DigikeyPFet(PFet, DigikeyFet):
-  @classmethod
-  def _make_table(cls) -> PartsTable:
-    return cls._make_fet_table().filter(lambda row: (
-        row['FET Type'] == 'P-Channel'
-    ))
-
-
-@abstract_block
 class DigikeySwitchFet(DigikeyBaseFet, TableSwitchFet):
   pass
-
-
-class DigikeySwitchNFet(SwitchNFet, DigikeySwitchFet):
-  @classmethod
-  def _make_table(cls) -> PartsTable:
-    return cls._make_fet_table().filter(lambda row: (
-        row['FET Type'] == 'N-Channel'
-    ))
-
-
-class DigikeySwitchPFet(SwitchPFet, DigikeySwitchFet):
-  @classmethod
-  def _make_table(cls) -> PartsTable:
-    return cls._make_fet_table().filter(lambda row: (
-        row['FET Type'] == 'P-Channel'
-    ))

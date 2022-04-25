@@ -1,5 +1,5 @@
 from electronics_model import *
-from .AbstractFets import SwitchNFet, SwitchPFet
+from .AbstractFets import SwitchFet
 from .AbstractResistor import Resistor
 
 
@@ -30,7 +30,7 @@ class HighSideSwitch(Block):
 
     low_amp_rds_max = pull_resistance.lower() / 1000
 
-    self.pre = self.Block(SwitchNFet(
+    self.pre = self.Block(SwitchFet.NFet(
       drain_voltage=pwr_voltage,
       drain_current=(0, pull_current_max),
       gate_voltage=gate_voltage,
@@ -52,7 +52,7 @@ class HighSideSwitch(Block):
     ))
     self.connect(self.pull.a.as_voltage_sink(), self.pwr)
 
-    self.drv = self.Block(SwitchPFet(
+    self.drv = self.Block(SwitchFet.PFet(
       drain_voltage=pwr_voltage,
       drain_current=out_current,
       gate_voltage=pwr_voltage,
@@ -98,7 +98,7 @@ class HalfBridgeNFet(Block):
                     # self.get(self.control.link().voltage)[1])
     max_rds = self.max_rds
 
-    self.high = self.Block(SwitchNFet(
+    self.high = self.Block(SwitchFet.NFet(
       drain_voltage=pwr_voltage,
       drain_current=(0, out_current.upper()),
       gate_voltage=gate_voltage,
@@ -108,7 +108,7 @@ class HalfBridgeNFet(Block):
       frequency=self.frequency,
       drive_current=self.gate_high.link().current_limits  # TODO this is kind of a max drive current
     ))
-    self.low = self.Block(SwitchNFet(
+    self.low = self.Block(SwitchFet.NFet(
       drain_voltage=pwr_voltage,
       drain_current=(0, -1 * out_current.lower()),
       gate_voltage=gate_voltage,

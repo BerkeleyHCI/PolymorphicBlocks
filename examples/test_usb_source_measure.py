@@ -32,18 +32,20 @@ class GatedEmitterFollower(Block):
   def contents(self) -> None:
     super().contents()
 
-    self.high_fet = self.Block(NFet(drain_voltage=self.pwr.link().voltage,
-                                    drain_current=self.current,
-                                    gate_voltage=self.control.link().voltage,
-                                    rds_on=self.rds_on,
-                                    gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
-                                    power=self.pwr.link().voltage * self.current))
-    self.low_fet = self.Block(PFet(drain_voltage=self.pwr.link().voltage,
-                                   drain_current=self.current,
-                                   gate_voltage=self.control.link().voltage,
-                                   rds_on=self.rds_on,
-                                   gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
-                                   power=self.pwr.link().voltage * self.current))
+    self.high_fet = self.Block(Fet.NFet(
+      drain_voltage=self.pwr.link().voltage,
+      drain_current=self.current,
+      gate_voltage=self.control.link().voltage,
+      rds_on=self.rds_on,
+      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
+      power=self.pwr.link().voltage * self.current))
+    self.low_fet = self.Block(Fet.PFet(
+      drain_voltage=self.pwr.link().voltage,
+      drain_current=self.current,
+      gate_voltage=self.control.link().voltage,
+      rds_on=self.rds_on,
+      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
+      power=self.pwr.link().voltage * self.current))
 
     self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
       current_draw=self.current,
@@ -404,6 +406,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'vmeas', 'amp'], Opa197),
         (['control', 'isen', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
+        (['control', 'driver', 'low_fet'], DigikeyFet),
+        (['control', 'driver', 'high_fet'], DigikeyFet),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], ';'.join([
@@ -453,6 +457,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['control', 'err_source', 'diode', 'require_basic_part'], False),
         (['control', 'err_sink', 'diode', 'require_basic_part'], False),
+        (['usb_esd', 'require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
