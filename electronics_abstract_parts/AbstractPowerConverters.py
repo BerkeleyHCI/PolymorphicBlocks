@@ -1,7 +1,8 @@
 from typing import Optional
 from electronics_model import *
 from .Categories import *
-from .AbstractPassives import Inductor, DecouplingCapacitor
+from .AbstractCapacitor import DecouplingCapacitor
+from .AbstractInductor import Inductor
 
 
 @abstract_block

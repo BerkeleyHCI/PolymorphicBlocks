@@ -133,7 +133,7 @@ class TestHighSwitch(BoardTop):
         (['mcu'], Lpc1549_48),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'can.txd=43',
           'can.rxd=44',
           'vsense=21',
@@ -156,7 +156,7 @@ class TestHighSwitch(BoardTop):
           'light_50=46',
           'light_51=45',
           'swd.swo=PIO0_8',
-        ]))
+        ]),
       ]
     )
 

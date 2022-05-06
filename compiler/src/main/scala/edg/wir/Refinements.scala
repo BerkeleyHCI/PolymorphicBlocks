@@ -2,7 +2,7 @@ package edg.wir
 
 import edgir.ref.ref
 import edgrpc.hdl.hdl
-import edg.compiler.ExprValue
+import edg.compiler.{ExprEvaluate, ExprValue}
 
 
 case class Refinements(
@@ -25,12 +25,12 @@ object Refinements {
     } }.toMap
     val classValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.ClsParam(clsParam) =>
-        clsParam.getCls -> (clsParam.getParamPath -> ExprValue.fromLit(value.getValue))
+        clsParam.getCls -> (clsParam.getParamPath -> ExprEvaluate.evalLiteral(value.getValue))
     } }.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
 
     val instanceValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.Path(path) =>
-        DesignPath() ++ path -> ExprValue.fromLit(value.getValue)
+        DesignPath() ++ path -> ExprEvaluate.evalLiteral(value.getValue)
     } }.toMap
 
     Refinements(classRefinements, instanceRefinements, classValues, instanceValues)

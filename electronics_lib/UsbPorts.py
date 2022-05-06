@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from electronics_lib.JlcPart import JlcPart
 
 
 @abstract_block
@@ -158,12 +159,15 @@ class UsbCcPulldownResistor(Block):
     self.cc2 = self.Block(pdr_model).connected(self.gnd, self.cc.cc2)
 
 
-class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a superclass?
+@abstract_block
+class UsbEsdDiode(TvsDiode):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground(), [Common])
     self.usb = self.Port(UsbPassivePort(), [InOut])
 
+
+class Tpd2e009(UsbEsdDiode, FootprintBlock):
   def contents(self):
     # Note, also compatible: https://www.diodes.com/assets/Datasheets/DT1452-02SO.pdf
     # PESD5V0X1BT,215 (different architecture, but USB listed as application)
@@ -177,4 +181,21 @@ class UsbEsdDiode(TvsDiode, FootprintBlock):  # TODO maybe this should be a supe
       },
       mfr='Texas Instruments', part='TPD2E009',
       datasheet='https://www.ti.com/lit/ds/symlink/tpd2e009.pdf'
+    )
+
+
+class Esda5v3l(UsbEsdDiode, FootprintBlock, JlcPart):
+  def contents(self):
+    super().contents()
+    self.assign(self.lcsc_part, 'C87911')
+    self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23',
+      {
+        '1': self.usb.dm,
+        '2': self.usb.dp,
+        '3': self.gnd,
+      },
+      mfr='STMicroelectronics', part='ESDA5V3L',
+      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/eb/9f/a7/ac/7b/b6/46/7f/CD00002057.pdf/files/CD00002057.pdf/jcr:content/translations/en.CD00002057.pdf'
     )

@@ -193,7 +193,7 @@ class ConstProp {
     */
   def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    require(!params.nodeDefinedAt(target), "forced value must be set before assigns")
+    require(!params.nodeDefinedAt(target), s"forced value must be set before assigns, prior ${paramSource(target)}")
 
     params.setValue(target, value)
     paramSource.put(target, paramSourceRecord)

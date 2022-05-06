@@ -23,7 +23,7 @@ class MountingHole(Mechanical, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', self.FOOTPRINT,
+      'H', self.FOOTPRINT,
       {},
       value=self.VALUE
     )
@@ -53,7 +53,7 @@ class JlcToolingHole(FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', 'edg:JlcToolingHole_1.152mm',
+      'H', 'edg:JlcToolingHole_1.152mm',
       {},
       datasheet='https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order'
     )

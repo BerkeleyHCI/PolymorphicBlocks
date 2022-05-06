@@ -59,7 +59,7 @@ class BufferedSupply(PowerConditioner):
       self.connect(self.pwr, self.sense.a.as_voltage_sink(
         current_draw=(0, max_charge_current)))
 
-      self.fet = self.Block(PFet(
+      self.fet = self.Block(Fet.PFet(
         drain_voltage=(0, max_in_voltage), drain_current=(0, max_charge_current),
         gate_voltage=(self.pwr.link().voltage.lower(), max_in_voltage),
         rds_on=(0, 0.5)*Ohm,  # TODO kind of arbitrary

@@ -1,7 +1,6 @@
-from typing import List
+from typing import List, cast
 
 from electronics_model import *
-from .AbstractPassives import *
 from .Categories import *
 
 
@@ -111,6 +110,12 @@ class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
     for input in inputs:
       cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.allocate())
     return self
+
+
+class DummyPassive(DummyDevice):
+  def __init__(self) -> None:
+    super().__init__()
+    self.io = self.Port(Passive(), [InOut])
 
 
 class DummyAnalogSink(DummyDevice):

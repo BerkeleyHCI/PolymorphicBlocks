@@ -184,5 +184,7 @@ object ExprBuilder {
     val Boolean: init.ValInit = init.ValInit(`val` = init.ValInit.Val.Boolean(common.Empty()))
     val Text: init.ValInit = init.ValInit(`val` = init.ValInit.Val.Text(common.Empty()))
     val Range: init.ValInit = init.ValInit(`val` = init.ValInit.Val.Range(common.Empty()))
+    def Array(eltType: init.ValInit): init.ValInit =
+      init.ValInit(`val` = init.ValInit.Val.Array(eltType))
   }
 }

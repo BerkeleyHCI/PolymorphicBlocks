@@ -108,8 +108,9 @@ class NetlistCollect(TransformUtil.Transform):
         footprint_name,
         # Uncomment one to set value field
         # TODO this should be a user flag
-        value_str
+        value_str  # including manufacturer
         # lcsc_part or ""
+        # value  # for TPs
       )
 
       refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1

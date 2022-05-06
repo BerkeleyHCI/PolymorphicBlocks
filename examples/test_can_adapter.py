@@ -82,7 +82,7 @@ class CanAdapter(BoardTop):
         (['can_reg'], Ap2204k),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'can.txd=8',
           'can.rxd=12',
           'sw_usb=28',
@@ -101,7 +101,7 @@ class CanAdapter(BoardTop):
           'rgb_can_green=4',
           'rgb_can_blue=7',
           'swd.swo=PIO0_8',
-        ]))
+        ])
       ]
     )
 

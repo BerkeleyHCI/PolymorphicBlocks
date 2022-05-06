@@ -7,7 +7,7 @@ from .test_passive_common import *
 class InductorTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.dut = self.Block(SmtInductor(
+    self.dut = self.Block(DigikeyInductor(
       inductance=2.2 * uHenry(tol=0.2),
       frequency=(0, 1) * MHertz,
       current=(0, 500) * mAmp
@@ -22,4 +22,3 @@ class InductorTestCase(unittest.TestCase):
 
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Inductor_SMD:L_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'MLZ2012N2R2LT000')
-    self.assertEqual(compiled.get_value(['dut', 'fp_value']), '2.2µH, 800mA')

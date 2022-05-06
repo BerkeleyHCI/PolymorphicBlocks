@@ -1,6 +1,6 @@
 from electronics_model import *
 from .Categories import *
-from .AbstractPassives import PullupResistor
+from .AbstractResistor import PullupResistor
 
 
 class I2cPullup(DiscreteApplication):

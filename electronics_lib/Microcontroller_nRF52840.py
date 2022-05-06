@@ -77,8 +77,15 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
     i2c_model = I2cMaster(DigitalBidir.empty())
+
+    hf_io_pins = [
+      'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
+      'P0.05', 'P0.06', 'P0.07', 'P0.08', 'P1.08', 'P1.09', 'P0.11', 'P0.12',
+      'P0.14', 'P0.16', 'P0.19', 'P0.21', 'P0.23', 'P0.25',  # 'P0.18'
+      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  # 'P1.00'
+    ]
 
     return PinMapUtil([  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
       PinResource('P0.31', {'P0.31': dio_lf_model, 'AIN7': adc_model}),
@@ -133,26 +140,42 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       # PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
-        'swclk': ['SWCLK'], 'swdio': ['SWDIO'], 'reset': ['P0.18'], 'swo': ['P1.00'],
+        'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18', 'swo': 'P1.00',
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {
-        'dp': ['D+'], 'dm': ['D-']
+        'dp': 'D+', 'dm': 'D-'
       }),
 
-      PeripheralAnyResource('SPI0', spi_model),
-      PeripheralAnyResource('SPI1', spi_model),
-      PeripheralAnyResource('SPI2', spi_model),
-      PeripheralAnyResource('SPI3', spi_model),
-      PeripheralAnyResource('I2C0', i2c_model),
-      PeripheralAnyResource('I2C1', i2c_model),
-      PeripheralAnyResource('UART0', uart_model),
-      PeripheralAnyResource('UART1', uart_model),
+      PeripheralFixedResource('SPI0', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('SPI1', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('SPI2', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('SPI3', spi_model, {
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('I2C0', i2c_model, {
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedResource('I2C1', i2c_model, {
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedResource('UART0', uart_model, {
+        'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
+      PeripheralFixedResource('UART1', uart_model, {
+        'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
     ])
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None: ...
@@ -201,7 +224,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
     'P0.10': '36',
   }
 
-  def generate(self, assignments: str,
+  def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str], swd_connected: bool) -> None:
@@ -213,6 +236,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
       (UartPort, uart_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
+    self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
@@ -243,3 +267,138 @@ class Holyiot_18010(PinMappable, Microcontroller, IoController):
     ) as imp:
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                    self.ic.swd)
+
+
+class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
+    'Vss': ['1', '2', '15', '33', '55'],
+    'Vbus': '32',
+  }
+  RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    'P1.10': '3',
+    'P1.11': '4',
+    'P1.12': '5',
+    'P1.13': '6',
+    'P1.14': '7',
+    'P1.15': '8',
+    'P0.03': '9',
+    'P0.29': '10',
+    'P0.02': '11',
+    'P0.31': '12',
+    'P0.28': '13',
+    'P0.30': '14',
+
+    'P0.27': '16',
+    'P0.00': '17',
+    'P0.01': '18',
+    'P0.26': '19',
+    'P0.04': '20',
+    'P0.05': '21',
+    'P0.06': '22',
+    'P0.07': '23',
+    'P0.08': '24',
+    'P1.08': '25',
+    'P1.09': '26',
+    'P0.11': '27',
+    'P0.12': '29',
+    'D-': '34',
+    'D+': '35',
+
+    'P0.14': '36',
+    'P0.13': '37',
+    'P0.16': '38',
+    'P0.15': '39',
+    'P0.18': '40',
+    'P0.17': '41',
+    'P0.19': '42',
+    'P0.21': '43',
+    'P0.20': '44',
+    'P0.23': '45',
+    'P0.22': '46',
+    'P1.00': '47',
+    'P0.24': '48',
+    'P0.25': '49',
+    'P1.02': '50',
+    'SWDIO': '51',
+    'P0.09': '52',
+    'SWCLK': '53',
+    'P0.10': '54',
+
+    'P1.04': '56',
+    'P1.06': '57',
+    'P1.07': '58',
+    'P1.05': '59',
+    'P1.03': '60',
+    'P1.01': '61',
+  }
+
+  def generate(self, assignments: List[str],
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SwdTargetPort, ['swd'] if swd_connected else []),
+      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+      (UartPort, uart_allocates),
+      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    ], assignments)
+    self.generator_set_allocation(allocated)
+
+    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+
+    self.footprint(
+      'U', 'RF_Module:Raytac_MDBT50Q',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='Raytac', part='MDBT50Q-1MV2',
+      datasheet='https://www.raytac.com/download/index.php?index_id=43',
+    )
+
+
+class Mdbt50q_UsbSeriesResistor(Block):
+  def __init__(self):
+    super().__init__()
+    self.usb_inner = self.Port(UsbHostPort().empty())
+    self.usb_outer = self.Port(UsbDevicePort().empty())
+    self.res_dp = self.Block(Resistor(27*Ohm(tol=0.01)))
+    self.res_dm = self.Block(Resistor(27*Ohm(tol=0.01)))
+    self.connect(self.usb_inner.dp, self.res_dp.a.as_digital_bidir())  # TODO propagate params - needs bridge mechanism
+    self.connect(self.usb_outer.dp, self.res_dp.b.as_digital_bidir())
+    self.connect(self.usb_inner.dm, self.res_dm.a.as_digital_bidir())
+    self.connect(self.usb_outer.dm, self.res_dm.b.as_digital_bidir())
+
+
+class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
+  """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=self.pin_assigns))
+    self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+
+    self.generator(self.generate, self.usb.allocated())
+
+  def generate(self, usb_allocated: List[str]) -> None:
+    super().contents()
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
+    self._export_ios_from(self.ic, excludes=[self.usb])
+
+    self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+                                   self.ic.swd)
+      self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+    if usb_allocated:
+      assert len(usb_allocated) == 1
+      usb_allocated_name = usb_allocated[0]
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated_name)
+      self.usb_res = self.Block(Mdbt50q_UsbSeriesResistor())
+      self.connect(self.ic.usb.allocate(usb_allocated_name), self.usb_res.usb_inner)
+      self.connect(self.usb_res.usb_outer, usb_port)

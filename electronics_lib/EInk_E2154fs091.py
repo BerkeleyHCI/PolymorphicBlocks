@@ -98,7 +98,7 @@ class E2154fs091(EInk):
   def contents(self) -> None:
     super().contents()
 
-    self.boost_sw = self.Block(NFet(  # TODO should use switching NFet, but we don't know anything about frequency
+    self.boost_sw = self.Block(Fet.NFet(  # TODO should use switching NFet, but we don't know anything about frequency
       drain_voltage=(0, 30)*Volt,
       drain_current=(0, 0.8)*Amp,  # assumed, from inductor rating
       gate_voltage=(3, 16)*Volt,  # assumed, from capacitor ratings  # TODO use pwr voltage instead of hardcoding

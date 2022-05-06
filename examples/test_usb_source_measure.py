@@ -32,18 +32,20 @@ class GatedEmitterFollower(Block):
   def contents(self) -> None:
     super().contents()
 
-    self.high_fet = self.Block(NFet(drain_voltage=self.pwr.link().voltage,
-                                    drain_current=self.current,
-                                    gate_voltage=self.control.link().voltage,
-                                    rds_on=self.rds_on,
-                                    gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
-                                    power=self.pwr.link().voltage * self.current))
-    self.low_fet = self.Block(PFet(drain_voltage=self.pwr.link().voltage,
-                                   drain_current=self.current,
-                                   gate_voltage=self.control.link().voltage,
-                                   rds_on=self.rds_on,
-                                   gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
-                                   power=self.pwr.link().voltage * self.current))
+    self.high_fet = self.Block(Fet.NFet(
+      drain_voltage=self.pwr.link().voltage,
+      drain_current=self.current,
+      gate_voltage=self.control.link().voltage,
+      rds_on=self.rds_on,
+      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
+      power=self.pwr.link().voltage * self.current))
+    self.low_fet = self.Block(Fet.PFet(
+      drain_voltage=self.pwr.link().voltage,
+      drain_current=self.current,
+      gate_voltage=self.control.link().voltage,
+      rds_on=self.rds_on,
+      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
+      power=self.pwr.link().voltage * self.current))
 
     self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
       current_draw=self.current,
@@ -259,7 +261,7 @@ class SourceMeasureControl(Block):
                    self.err_volt.actual)
 
 
-class UsbSourceMeasureTest(BoardTop):
+class UsbSourceMeasureTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -392,10 +394,6 @@ class UsbSourceMeasureTest(BoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
-    self.jlc_th1 = self.Block(JlcToolingHole())
-    self.jlc_th2 = self.Block(JlcToolingHole())
-    self.jlc_th3 = self.Block(JlcToolingHole())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -406,11 +404,13 @@ class UsbSourceMeasureTest(BoardTop):
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'isen', 'res', 'res'], ChipResistor),  # big one not from JLC
-        (['control', 'int', 'c'], SmtCeramicCapacitorGeneric),  # no 1nF basic parts from JLC
+        (['control', 'isen', 'res', 'res'], GenericChipResistor),  # big one not from JLC
+        (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
+        (['control', 'driver', 'low_fet'], DigikeyFet),
+        (['control', 'driver', 'high_fet'], DigikeyFet),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'pd_int=28',
           'sw1=43',
           'sw2=44',
@@ -437,26 +437,33 @@ class UsbSourceMeasureTest(BoardTop):
           'high_en=23',
 
           'swd.swo=PIO0_8',
-        ])),
+        ]),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        # JLC does not have frequency specs, must be checked TODO
+        (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'high_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
-        (['control', 'driver', 'low_fet', 'footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        (['control', 'int', 'c', 'footprint'], 'Capacitor_SMD:C_0603_1608Metric'),
+        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
 
+        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
+        (['prot_3v3', 'diode', 'require_basic_part'], False),
+        (['control', 'err_source', 'diode', 'require_basic_part'], False),
+        (['control', 'err_sink', 'diode', 'require_basic_part'], False),
+        (['usb_esd', 'require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
-        (Capacitor, JlcCapacitor),
-        (Resistor, JlcResistor),
       ],
     )
 

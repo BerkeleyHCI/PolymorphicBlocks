@@ -48,7 +48,7 @@ class Range:
     assert output_side.lower >= 0 and output_side.upper >= 0, "TODO support negative values"
     lower = input_side.upper * output_side.lower
     upper = input_side.lower * output_side.upper
-    assert lower <= upper, "TODO dedicated empty range construct"
+    assert lower <= upper, f"empty range in cancel-multiply {input_side} and {output_side}"
     return Range(lower, upper)
 
   @staticmethod
@@ -62,6 +62,20 @@ class Range:
     elif isinstance(tolerance, (float, int)):
       assert tolerance >= 0, f"bidirectional tolerance {tolerance} must be positive"
       return Range(center * (1 - tolerance), center * (1 + tolerance))
+    else:
+      raise ValueError(f"unknown tolerance format {tolerance}")
+
+  @staticmethod
+  def from_abs_tolerance(center: float, tolerance: Union[float, Tuple[float, float]]) -> 'Range':
+    """Creates a Range given a center value and absolute tolerance.
+    If a single tolerance is given, it is treated as bidirectional (+/- value).
+    If a tuple of two values is given, it is treated as negative, then positive tolerance."""
+    if isinstance(tolerance, tuple):
+      assert tolerance[0] <= tolerance[1], f"invalid tolerance {tolerance}"
+      return Range(center + tolerance[0], center + tolerance[1])
+    elif isinstance(tolerance, (float, int)):
+      assert tolerance >= 0, f"bidirectional tolerance {tolerance} must be positive"
+      return Range(center - tolerance, center + tolerance)
     else:
       raise ValueError(f"unknown tolerance format {tolerance}")
 

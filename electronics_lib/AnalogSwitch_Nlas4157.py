@@ -25,8 +25,8 @@ class Nlas4157_Device(FootprintBlock):
     self.analog_on_resistance = self.Parameter(RangeExpr((0.3, 4.3)*Ohm))
 
     self.a = self.Port(Passive())
-    self.b1 = self.Port(Passive())
-    self.b0 = self.Port(Passive())
+    self.b1 = self.Port(Passive(), optional=True)
+    self.b0 = self.Port(Passive(), optional=True)
 
   def contents(self):
     super().contents()
@@ -47,6 +47,11 @@ class Nlas4157_Device(FootprintBlock):
 
 
 class Nlas4157(AnalogSwitch):
+  """NLAS4157 2:1 analog switch, 1ohm Ron, in SOT-363.
+  Pin compatible with:
+  - TS5A3159: 5v tolerant, 1 ohm
+  - TS5A3160: 5v tolerant, 1 ohm
+  """
   def contents(self):
     super().contents()
 
@@ -54,9 +59,9 @@ class Nlas4157(AnalogSwitch):
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.gnd)
     self.connect(self.com, self.ic.a)
-    self.connect(self.no, self.ic.b1)
-    self.connect(self.nc, self.ic.b0)
-    self.connect(self.control, self.ic.s)
+    self.connect(self.inputs.append_elt(Passive.empty(), '0'), self.ic.b0)
+    self.connect(self.inputs.append_elt(Passive.empty(), '1'), self.ic.b1)
+    self.connect(self.control.append_elt(DigitalSink.empty(), '0'), self.ic.s)
 
     self.assign(self.analog_voltage_limits, self.ic.analog_voltage_limits)
     self.assign(self.analog_current_limits, self.ic.analog_current_limits)

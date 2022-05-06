@@ -86,7 +86,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self)
-    self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
+    self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
 
@@ -98,13 +98,39 @@ class Vector(BaseVector, Generic[VectorType]):
     # but this can't depend on get_def_name since that crashes
     return "Array[%s]@%02x" % (self._elt_sample, (id(self) // 4) & 0xff)
 
+  def __getitem__(self, item: str) -> VectorType:
+    """Returns a port previously defined by append_elt, indexed by (required) suggested_name.
+    Can only be called from the block defining this port (where this is a boundary port),
+    and this port must be bound."""
+    assert self._is_bound(), "not bound, can't create array elements"
+    assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+    assert self._elts is not None, "no elts defined"
+    return self._elts[item]
+
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
   def _name_of_child(self, subelt: Any) -> str:
-    assert self._elts is not None, "can't get name on undefined vector"
-    for (name, elt) in self._elts.items():
-      if subelt is elt:
-        return name
-    raise ValueError(f"no name for {subelt}")
+    from .HierarchyBlock import Block
+    block_parent = self._block_parent()
+    assert isinstance(block_parent, Block)
+
+    if builder.get_enclosing_block() is block_parent or builder.get_enclosing_block() is None:
+      # in block defining this port (direct elt definition), or in test top
+      assert self._elts is not None, "can't get name on undefined vector"
+      for (name, elt) in self._elts.items():
+        if subelt is elt:
+          return name
+      raise ValueError(f"no name for {subelt}")
+    elif builder.get_enclosing_block() is block_parent._parent:
+      # in block enclosing the block defining this port (allocate required)
+      for (i, (suggested_name, allocate_elt)) in enumerate(self._allocates):
+        if subelt is allocate_elt:
+          if suggested_name is not None:
+            return suggested_name
+          else:
+            return f"_allocate_{i}"
+      raise ValueError(f"allocated elt not found {subelt}")
+    else:
+      raise ValueError(f"unknown context of array")
 
   def _get_elt_sample(self) -> BasePort:
     return self._elt_sample
@@ -154,7 +180,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
 
     if self._elts is None:
-      self._elts = {}
+      self._elts = OrderedDict()
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -168,7 +194,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
     if self._elts is None:
-      self._elts = {}
+      self._elts = OrderedDict()
     if suggested_name is None:
       suggested_name = str(self._elt_next_index)
       self._elt_next_index += 1

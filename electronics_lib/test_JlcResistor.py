@@ -19,4 +19,4 @@ class JlcResistorTestCase(unittest.TestCase):
 
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Resistor_SMD:R_1206_3216Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_part']), '1206W4F7500T5E')
-    self.assertEqual(compiled.get_value(['dut', 'fp_value']), '0.25W ±1% 750Ω ±100ppm/℃ 1206 Chip Resistor - Surface Mount ROHS')
+    self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C17985')

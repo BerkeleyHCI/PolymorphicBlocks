@@ -416,6 +416,16 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def ArgParameter(self, param: RangeLike) -> RangeExpr: ...  # type: ignore
   @overload
   def ArgParameter(self, param: StringLike) -> StringExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: ArrayBoolLike) -> ArrayBoolExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: ArrayIntLike) -> ArrayIntExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: ArrayFloatLike) -> ArrayFloatExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: ArrayRangeLike) -> ArrayRangeExpr: ...  # type: ignore
+  @overload
+  def ArgParameter(self, param: ArrayStringLike) -> ArrayStringExpr: ...  # type: ignore
 
   def ArgParameter(self, param: CastableType) -> ConstraintExpr[Any, CastableType]:
     """Registers a constructor argument parameter for this Block.

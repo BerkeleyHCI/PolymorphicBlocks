@@ -193,6 +193,7 @@ class ArrayLiteralBinding(LiteralBinding):
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
+    pb.literal.array.SetInParent()
     for value in self.values:
       elt_value = value.expr_to_proto(expr, ref_map)
       assert elt_value.HasField('literal')

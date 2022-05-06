@@ -95,7 +95,7 @@ class TestSimon(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'spk=24',
           'rgb_red=15',
           'rgb_green=14',
@@ -109,7 +109,13 @@ class TestSimon(BoardTop):
           'btn_sw2=10',
           'btn_drv3=11',
           'btn_sw3=12',
-        ]))
+        ]),
+      ],
+      instance_refinements=[
+        (['spk', 'conn'], JstPhK),
+      ],
+      class_refinements=[
+        (Speaker, ConnectorSpeaker),
       ]
     )
 

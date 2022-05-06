@@ -1,6 +1,6 @@
-update=12/15/2021 10:44:18 PM
+update=04/22/22 00:36:08
 version=1
-last_client=pcbnew
+last_client=kicad
 [general]
 version=1
 RootSch=
@@ -16,7 +16,7 @@ LibDir=
 version=1
 PageLayoutDescrFile=
 LastNetListRead=MultimeterTest.net
-CopperLayerCount=2
+CopperLayerCount=4
 BoardThickness=1.6
 AllowMicroVias=0
 AllowBlindVias=0
@@ -30,11 +30,12 @@ MinMicroViaDrill=0.09999999999999999
 MinHoleToHole=0.25
 TrackWidth1=0.16
 TrackWidth2=0.16
-TrackWidth3=0.25
-TrackWidth4=0.5
-TrackWidth5=1
-TrackWidth6=4
-TrackWidth7=8
+TrackWidth3=0.2
+TrackWidth4=0.25
+TrackWidth5=0.5
+TrackWidth6=1
+TrackWidth7=4
+TrackWidth8=8
 ViaDiameter1=0.7
 ViaDrill1=0.3
 ViaDiameter2=0.7
@@ -74,12 +75,12 @@ Type=0
 Enabled=1
 [pcbnew/Layer.In1.Cu]
 Name=In1.Cu
-Type=0
-Enabled=0
+Type=1
+Enabled=1
 [pcbnew/Layer.In2.Cu]
 Name=In2.Cu
-Type=0
-Enabled=0
+Type=1
+Enabled=1
 [pcbnew/Layer.In3.Cu]
 Name=In3.Cu
 Type=0

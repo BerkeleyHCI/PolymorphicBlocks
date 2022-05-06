@@ -121,7 +121,7 @@ class Debugger(BoardTop):
       ],
       instance_values=[
         (['mcu', 'crystal', 'frequency'], Range.from_tolerance(8000000, 0.005)),
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'target_reg_en=16',
           'target_swclk=26',
           'target_swdio_out=27',
@@ -143,7 +143,7 @@ class Debugger(BoardTop):
           'rgb_tgt_green=30',  # pinning on stock st-link
           'rgb_tgt_blue=10',
           'sw_usb=38',
-        ]))
+        ])
       ]
     )
 

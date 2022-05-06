@@ -72,14 +72,6 @@ pip install protobuf
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 
-#### DigiKey Data
-Many of the parts libraries use data downloaded from [DigiKey](https://www.digikey.com/) (a parts distributor), but our interpretation of their Terms of Use is that we cannot redistribute those files.
-**You will need to download your own parts tables, [follow these instructions](digikey-parts.md).**
-
-_Know of open-source parts tables that we could use instead?
-Or do you represent DigiKey and think we've read the Terms of Use too strictly?
-**Please let us know!**_
-
 #### Unit Tests
 You can run the unit test suite to verify that everything works - all tests should be green.
 The test suite includes both unit level tests and example boards.

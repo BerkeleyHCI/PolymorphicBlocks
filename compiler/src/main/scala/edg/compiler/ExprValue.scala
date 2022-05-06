@@ -13,18 +13,6 @@ sealed trait ExprValue {
   def toStringValue: String
 }
 
-object ExprValue {
-  def fromLit(value: lit.ValueLit): ExprValue = value.`type` match {
-    case lit.ValueLit.Type.Floating(value) => FloatValue(value.`val`)
-    case lit.ValueLit.Type.Integer(value) => IntValue(value.`val`)
-    case lit.ValueLit.Type.Boolean(value) => BooleanValue(value.`val`)
-    case lit.ValueLit.Type.Range(value) =>
-      RangeValue(value.getMinimum.getFloating.`val`, value.getMaximum.getFloating.`val`)
-    case lit.ValueLit.Type.Text(value) => TextValue(value.`val`)
-    case value => throw new IllegalArgumentException(s"unknown ValueLit $value")
-  }
-}
-
 // These should be consistent with what is in init.proto
 object FloatPromotable {
   def unapply(floatPromotable: FloatPromotable): Option[Float] = {

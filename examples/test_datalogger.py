@@ -137,7 +137,7 @@ class TestDatalogger(BoardTop):
         (['buffer', 'amp'], Mcp6001),
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], ';'.join([
+        (['mcu', 'pin_assigns'], [
           'can.txd=51',
           'can.rxd=53',
           'sd_spi.sck=17',
@@ -175,7 +175,7 @@ class TestDatalogger(BoardTop):
           'v5sense=9',
           'vscsense=8',
           'swd.swo=PIO0_8',
-        ]))
+        ])
       ]
     )
 
