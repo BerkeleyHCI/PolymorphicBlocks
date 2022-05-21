@@ -370,6 +370,19 @@ message ValueExpr {
 
     AssignExpr assign    = 17;
 
+    // These Exprs support cross-hierarchy operations
+    ExportedExpr     exportedTunnel = 21;  // single port to single port tunneling (cross-hierarchy) export:
+                                           // - the exterior port may be a top-level port on any (recursive) sub-block
+                                           //   for the exterior port, all path components except the last must be block
+                                           //   references, and the last must be a top-level port
+                                           // - exterior ports may not have other internal connections (over-connected)
+                                           // - the interior port may be a port of a (direct) sub-block, and may be an
+                                           //   ALLOCATE on an array
+                                           // - interior ports may not have other external connections (over-connected)
+                                           // - other, semantically this behaves like a normal export
+
+    AssignExpr       assignTunnel = 22;  // parameter assignment which may be cross-hierarchy
+
     edgir.ref.LocalPath  ref     = 99;
   }
 
