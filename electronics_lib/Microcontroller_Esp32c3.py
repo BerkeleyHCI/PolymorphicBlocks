@@ -180,15 +180,12 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
-      # Note: IO4/5/6/7, 10/0/1/3 free
-      # IO18/19 used for USB (optional) - total 8-10 IOs that aren't strapping pins
-
-
-      # TBD R8 PUR to IO8
+      # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
+      # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
+      # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
+      self.io8_pull = imp.Block(PulldownResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
+      self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
       # TBD Boot option jumper JP2 to IO9
       # TBD UART programming header JP4
-      # TBD R0 PUR to IO2
+
       # TBD PUR to EN, optional RC circuit R=10k, C=1uF, recommended RC delay
-      # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
-      # IO9 is 1 for SPI boot and 0 for download boot
-      # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
