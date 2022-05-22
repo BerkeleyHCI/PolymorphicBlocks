@@ -2,6 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
+from .PassiveConnector import PassiveConnector
 
 
 @abstract_block
@@ -49,6 +50,8 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
       'TXD': self.uart0.tx,
       'RXD': self.uart0.rx,
     })
+
+    self.abstract_pinmaps = self.mappable_ios(dio_model)
 
     # TODO add JTAG support
 
@@ -151,7 +154,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
     self.footprint(
       'U', 'RF_Module:ESP-WROOM-02',
@@ -159,6 +162,34 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
       mfr='Espressif Systems', part='ESP-WROOM-02',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
+
+
+class EspProgrammingHeader(ProgrammingConnector):
+  def __init__(self) -> None:
+    super().__init__()
+
+    # TODO: should these also act as sources?
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
+    self.uart = self.Port(UartPort(), [Output])
+
+    self.conn = self.Block(PassiveConnector())
+    self.connect(self.pwr, self.conn.pins.allocate('1').as_voltage_sink())
+    self.connect(self.uart.tx, self.conn.pins.allocate('2').as_digital_source())
+    self.connect(self.uart.rx, self.conn.pins.allocate('3').as_digital_sink())
+    self.connect(self.gnd, self.conn.pins.allocate('4').as_voltage_sink())
+
+
+class PulldownJumper(Block):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.gnd = self.Port(Ground(), [Common])
+    self.io = self.Port(DigitalSource(), [Output])
+
+    self.conn = self.Block(PassiveConnector())
+    self.connect(self.io, self.conn.pins.allocate('1').as_digital_source())
+    self.connect(self.gnd, self.conn.pins.allocate('2').as_voltage_sink())
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
@@ -185,7 +216,11 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
       self.io8_pull = imp.Block(PulldownResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
       self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
-      # TBD Boot option jumper JP2 to IO9
-      # TBD UART programming header JP4
+      self.en_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.en)
+      # TBA PUR to EN, optional RC circuit R=10k, C=1uF, recommended RC delay
 
-      # TBD PUR to EN, optional RC circuit R=10k, C=1uF, recommended RC delay
+      self.uart0 = imp.Block(EspProgrammingHeader())
+      self.connect(self.uart0.uart, self.ic.uart0)
+
+      self.io9 = imp.Block(PulldownJumper())
+      self.connect(self.io9.io, self.ic.io9)
