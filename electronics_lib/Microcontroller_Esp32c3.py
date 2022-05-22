@@ -39,6 +39,12 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model))
 
+    self.system_pinmaps = VariantPinRemapper({
+      'Vdd': self.pwr,
+      'Vss': self.gnd,
+      'EN': self.en,
+    })
+
     # TODO add JTAG support
 
     self.generator(self.generate, self.pin_assigns,
@@ -61,14 +67,14 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     return PinMapUtil([  # section 2.2
       PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
       PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
-      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),
+      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # also a boot pin
       PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH3': adc_model}),
       PinResource('MTMS', {'GPIO4': dio_model, 'ADC1_CH4': adc_model}),
       PinResource('MTDI', {'GPIO5': dio_model, 'ADC2_CH0': adc_model}),
       PinResource('MTCK', {'GPIO6': dio_model}),
       PinResource('MTDO', {'GPIO7': dio_model}),
-      PinResource('GPIO8', {'GPIO8': dio_model}),
-      PinResource('GPIO9', {'GPIO9': dio_model}),
+      PinResource('GPIO8', {'GPIO8': dio_model}),  # also a boot pin
+      PinResource('GPIO9', {'GPIO9': dio_model}),  # also a boot pin
       PinResource('GPIO10', {'GPIO10': dio_model}),
       PinResource('VDD_SPI', {'GPIO11': dio_model}),
       # SPI pins skipped - internal to the modules supported so far
@@ -78,7 +84,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
       PinResource('GPIO21', {'GPIO21': dio_model}),
 
       # peripherals in section 3.11
-      PeripheralFixedResource('U0', uart_model, {
+      PeripheralFixedResource('U0', uart_model, {  # programming pin
         'txd': ['GPIO21'], 'rxd': ['GPIO20']
       }),
       PeripheralAnyResource('U1', uart_model),
@@ -89,12 +95,66 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
       }),
     ])
 
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+
+  def generate(self, assignments: List[str],
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], swd_connected: bool) -> None: ...
+
 
 class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
   """ESP32C module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
   """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '1',
+    'Vss': ['9', '19'],  # 19 is EP
+    'EN': '2',
+  }
+
+  RESOURCE_PIN_REMAP = {
+    'GPIO4': '3',
+    'GPIO5': '4',
+    'GPIO6': '5',
+    'GPIO7': '6',
+    'GPIO8': '7',
+    'GPIO9': '8',
+    'GPIO10': '10',
+    'GPIO20': '11',  # RXD
+    'GPIO21': '12',  # TXD
+    'GPIO18': '13',
+    'GPIO19': '14',
+    'GPIO3': '15',
+    'GPIO2': '16',
+    'GPIO1': '17',
+    'GPIO0': '18',
+  }
+
+  def generate(self, assignments: List[str],
+               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
+               usb_allocates: List[str], swd_connected: bool) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    # allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+    #   (SwdTargetPort, ['swd'] if swd_connected else []),
+    #   (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
+    #   (UartPort, uart_allocates),
+    #   (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+    # ], assignments)
+    # self.generator_set_allocation(allocated)
+
+    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+
+    self.footprint(
+      'U', 'RF_Module:ESP-WROOM-02',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='Espressif Systems', part='ESP-WROOM-02',
+      datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
+    )
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
