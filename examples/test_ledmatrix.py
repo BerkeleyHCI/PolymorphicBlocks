@@ -53,7 +53,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
       self.res[str(col)] = res = self.Block(res_model)
       connect_passive_io (col, res.b)
       for row in range(rows):
-        self.led[str(row * cols + col)] = led = self.Block(led_model)
+        self.led[f"{row}_{col}"] = led = self.Block(led_model)
         self.connect(led.k, res.a)
         if row >= col:  # displaced by resistor
           connect_passive_io(row + 1, led.a)
@@ -109,9 +109,6 @@ class LedMatrixTest(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
-
-      self.rgb = imp.Block(IndicatorSinkRgbLed())  # status RGB
-      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
 
       self.matrix = imp.Block(CharlieplexedLedMatrix(5, 5))
       self.connect(self.mcu.gpio.allocate_vector('led'), self.matrix.ios)
