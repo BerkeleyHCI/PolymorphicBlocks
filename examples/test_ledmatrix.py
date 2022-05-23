@@ -60,7 +60,6 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         else:
           connect_passive_io(row, led.a)
 
-
     # generate the adapters andconnect the internal passive IO to external typed IO
     for index, passive_io in passive_ios.items():
       # if there is a cathode resistor attached to this index, then include the sunk current
