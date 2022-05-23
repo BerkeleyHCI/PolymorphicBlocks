@@ -12,7 +12,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
   A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
   """
   @init_in_parent
-  def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike, current_draw: RangeLike = (1, 10)*mAmp):
+  def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike = [], current_draw: RangeLike = (1, 10)*mAmp):
     super().__init__()
 
     self.current_draw = self.ArgParameter(current_draw)
@@ -51,7 +51,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
     for col in range(cols + 1):  # because of the resistor taking up a crosspoint, there is 1 more column line
       # generate the cathode resistor, guaranteed one per column
       self.res[str(col)] = res = self.Block(res_model)
-      connect_passive_io (col, self.res.b)
+      connect_passive_io (col, res.b)
       for row in range(rows):
         self.led[str(row * cols + col)] = led = self.Block(led_model)
         self.connect(led.k, res.a)
@@ -68,7 +68,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         sink_res = self.res[str(index)]
         sink_current = -(io_voltage / sink_res.actual_resistance).upper() * cols
       else:
-        sink_current = 0
+        sink_current = 0 * mAmp
 
       # then add the maximum of the LED source currents, for the rest of the cathode lines
       source_current = 0 * mAmp
@@ -76,7 +76,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         col_res = self.res[str(col)]
         source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
 
-      self.connect(self.ios.append_elt(str(index), DigitalSink.empty()),
+      self.connect(self.ios.append_elt(DigitalSink.empty(), str(index)),
                    passive_io.as_digital_sink(current_draw=(sink_current, source_current)))
 
 
