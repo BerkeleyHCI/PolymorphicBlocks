@@ -41,8 +41,9 @@ class PullupDelayRc(DigitalFilter, Block):
   def __init__(self, impedance: RangeLike, time_constant: RangeLike):
     super().__init__()
     self.input = self.Port(VoltageSink.empty(), [Power])
+    self.time_constant = self.ArgParameter(time_constant)
 
-    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * time_constant),
+    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
                                    voltage=self.input.link().voltage))
 
     self.connect(self.input, self.rc.input.as_voltage_sink())
