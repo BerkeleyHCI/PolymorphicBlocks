@@ -5,7 +5,7 @@ from edg import *
 
 
 class CharlieplexedLedMatrix(GeneratorBlock):
-  """A LED matrix that saves on IO pins by charlieplexing, only requiring max(rows, cols) + 1 GPIOs to control.
+  """A LED matrix that saves on IO pins by charlieplexing, only requiring max(rows + 1, cols) GPIOs to control.
   Requires IOs that can tri-state, and requires scanning through rows (so not all LEDs are simultaneously on).
 
   Anodes (columns) are directly connected to the IO line, while the cathodes (rows) are connected through a resistor.
@@ -113,8 +113,11 @@ class LedMatrixTest(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      self.matrix = imp.Block(CharlieplexedLedMatrix(5, 5))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+
+      self.matrix = imp.Block(CharlieplexedLedMatrix(4, 5))
       self.connect(self.mcu.gpio.allocate_vector('led'), self.matrix.ios)
+      self.connect(self.mcu.usb.allocate('usb'), self.usb.usb)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

@@ -98,8 +98,8 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
       PeripheralAnyResource('U1', uart_model),
       PeripheralAnyResource('I2C', i2c_model),
       PeripheralAnyResource('SPI2', spi_model),
-      PeripheralFixedResource('USB', UsbDevicePort(), {
-        'dp': ['GPIO19'], 'dm': ['DPIO18']
+      PeripheralFixedResource('USB', UsbDevicePort.empty(), {
+        'dp': ['GPIO19'], 'dm': ['GPIO18']
       }),
     ])
 
@@ -129,10 +129,10 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
   }
 
   RESOURCE_PIN_REMAP = {
-    'GPIO4': '3',
-    'GPIO5': '4',
-    'GPIO6': '5',
-    'GPIO7': '6',
+    'MTMS': '3',  # GPIO4
+    'MTDI': '4',  # GPIO5
+    'MTCK': '5',  # GPIO6
+    'MTDO': '6',  # GPIO7
     'GPIO10': '10',
     'GPIO18': '13',
     'GPIO19': '14',
