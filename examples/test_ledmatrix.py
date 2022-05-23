@@ -48,7 +48,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
     led_model = Led()
 
     # generate the resistor and LEDs for each column
-    for col in range(cols + 1):  # because of the resistor taking up a crosspoint, there is 1 more column line
+    for col in range(cols):
       # generate the cathode resistor, guaranteed one per column
       self.res[str(col)] = res = self.Block(res_model)
       connect_passive_io (col, res.b)
@@ -64,7 +64,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
     # generate the adapters andconnect the internal passive IO to external typed IO
     for index, passive_io in passive_ios.items():
       # if there is a cathode resistor attached to this index, then include the sunk current
-      if index < cols + 1:
+      if index < cols:
         sink_res = self.res[str(index)]
         sink_current = -(io_voltage / sink_res.actual_resistance).upper() * cols
       else:
@@ -90,6 +90,9 @@ class LedMatrixTest(JlcBoardTop):
 
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
+
+    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(
