@@ -1,5 +1,5 @@
 import unittest
-from typing import List
+from typing import List, Dict
 
 from edg import *
 
@@ -9,6 +9,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
   Requires IOs that can tri-state, and requires scanning through rows (so not all LEDs are simultaneously on).
 
   Anodes (columns) are directly connected to the IO line, while the cathodes (rows) are connected through a resistor.
+  A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
   """
   @init_in_parent
   def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike, current_draw: RangeLike = (1, 10)*mAmp):
@@ -22,30 +23,61 @@ class CharlieplexedLedMatrix(GeneratorBlock):
     self.generator(self.generate, rows, cols, skip)
 
   def generate(self, rows: int, cols: int, skip: List[int]):
-    num_ios = max(rows, cols) + 1
+    num_ios = max(rows, cols + 1)
 
     io_voltage = self.ios.hull(lambda x: x.link().voltage)
     io_voltage_upper = io_voltage.upper()
     io_voltage_lower = self.ios.hull(lambda x: x.link().output_thresholds).upper()
 
-    # first, generate the cathode resistors
+    # internally, this uses passive ports on all the components, and only casts to a DigitalSink at the end
+    # which is necessary to account for that not all LEDs can be simultaneously on
+    passive_ios: Dict[int, Passive] = {}  # keeps the passive-side port for each boundary IO
+    def connect_passive_io(index: int, io: Passive):
+      # connects a Passive-typed IO to the index, handling the first and subsequent case
+      if index in passive_ios:
+        self.connect(passive_ios[index], io)  # subsequent case, actually do the connection
+      else:
+        passive_ios[index] = io  # first case, just bootstrap the data structure
+
     self.res = ElementDict[Resistor]()
-    self.led = ElementDict[Led]()
     res_model = Resistor(
       resistance=(io_voltage_upper / self.current_draw.upper(),
                   io_voltage_lower / self.current_draw.lower())
     )
-    for row in range(rows):
-      self.res[str(row)] = res = self.Block(res_model)
-      self.connect(self.ios.append_elt(str(row), DigitalSink.empty()),
-                   res.b.as_digital_sink(
-                     current_draw=io_voltage / res.actual_resistance * cols
-                   ))
-    for row in range(rows):
-      for col in range(cols):
-        self.led[str(row*col)] = self.Block(Led())
-        
+    self.led = ElementDict[Led]()
+    led_model = Led()
 
+    # generate the resistor and LEDs for each column
+    for col in range(cols + 1):  # because of the resistor taking up a crosspoint, there is 1 more column line
+      # generate the cathode resistor, guaranteed one per column
+      self.res[str(col)] = res = self.Block(res_model)
+      connect_passive_io (col, self.res.b)
+      for row in range(rows):
+        self.led[str(row * cols + col)] = led = self.Block(led_model)
+        self.connect(led.k, res.a)
+        if row >= col:  # displaced by resistor
+          connect_passive_io(row + 1, led.a)
+        else:
+          connect_passive_io(row, led.a)
+
+
+    # generate the adapters andconnect the internal passive IO to external typed IO
+    for index, passive_io in passive_ios.items():
+      # if there is a cathode resistor attached to this index, then include the sunk current
+      if index < cols + 1:
+        sink_res = self.res[str(index)]
+        sink_current = -(io_voltage / sink_res.actual_resistance).upper() * cols
+      else:
+        sink_current = 0
+
+      # then add the maximum of the LED source currents, for the rest of the cathode lines
+      source_current = 0 * mAmp
+      for col in range(cols):
+        col_res = self.res[str(col)]
+        source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
+
+      self.connect(self.ios.append_elt(str(index), DigitalSink.empty()),
+                   passive_io.as_digital_sink(current_draw=(sink_current, source_current)))
 
 
 class LedMatrixTest(JlcBoardTop):
