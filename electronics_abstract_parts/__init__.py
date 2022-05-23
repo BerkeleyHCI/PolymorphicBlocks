@@ -23,7 +23,7 @@ from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandar
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac
+from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDelayRc
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
 from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode

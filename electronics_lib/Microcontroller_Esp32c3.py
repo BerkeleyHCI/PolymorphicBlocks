@@ -169,9 +169,9 @@ class EspProgrammingHeader(ProgrammingConnector):
     super().__init__()
 
     # TODO: should these also act as sources?
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-    self.uart = self.Port(UartPort(), [Output])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
+    self.uart = self.Port(UartPort.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
     self.connect(self.pwr, self.conn.pins.allocate('1').as_voltage_sink())
@@ -184,8 +184,8 @@ class PulldownJumper(Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.gnd = self.Port(Ground(), [Common])
-    self.io = self.Port(DigitalSource(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.io = self.Port(DigitalSource.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
     self.connect(self.io, self.conn.pins.allocate('1').as_digital_source())
@@ -216,8 +216,7 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
       self.io8_pull = imp.Block(PulldownResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
       self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
-      self.en_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.en)
-      # TBA PUR to EN, optional RC circuit R=10k, C=1uF, recommended RC delay
+      self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
 
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
