@@ -2,21 +2,21 @@ from electronics_model import *
 from .Categories import *
 
 
-LedColor = str  # type alias
-LedColorLike = StringLike  # type alias
-
-
 @abstract_block
 class Led(DiscreteSemiconductor):
+  Color = str  # type alias
+  ColorLike = StringLike  # type alias
+
   # Common color definitions
-  Red: LedColor = "red"
-  Green: LedColor = "green"
-  Blue: LedColor = "blue"
-  Yellow: LedColor = "yellow"
-  White: LedColor = "white"
+  Red: Color = "red"
+  Green: Color = "green"
+  Blue: Color = "blue"
+  Yellow: Color = "yellow"
+  White: Color = "white"
+  Any: Color = ""
 
   @init_in_parent
-  def __init__(self, color: LedColorLike = ""):
+  def __init__(self, color: ColorLike = Any):
     super().__init__()
 
     self.color = self.ArgParameter(color)

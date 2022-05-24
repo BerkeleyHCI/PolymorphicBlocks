@@ -12,10 +12,12 @@ class CharlieplexedLedMatrix(GeneratorBlock):
   A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
   """
   @init_in_parent
-  def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike = [], current_draw: RangeLike = (1, 10)*mAmp):
+  def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike = [],
+               color: Led.ColorLike = Led.Any, current_draw: RangeLike = (1, 10)*mAmp):
     super().__init__()
 
     self.current_draw = self.ArgParameter(current_draw)
+    self.color = self.ArgParameter(color)
 
     # note that IOs supply both the positive and negative
     self.ios = self.Port(Vector(DigitalSink.empty()))
@@ -45,7 +47,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
                   io_voltage_lower / self.current_draw.lower())
     )
     self.led = ElementDict[Led]()
-    led_model = Led()
+    led_model = Led(color=self.color)
 
     # generate the resistor and LEDs for each column
     for col in range(cols):
@@ -114,7 +116,8 @@ class LedMatrixTest(JlcBoardTop):
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
 
-      self.matrix = imp.Block(CharlieplexedLedMatrix(4, 5))
+      # maximum current draw that is still within the column sink capability of the ESP32
+      self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.allocate_vector('led'), self.matrix.ios)
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
@@ -139,8 +142,10 @@ class LedMatrixTest(JlcBoardTop):
           'led_1=4',
           'led_2=5',
           'led_3=6',
-          'led_4=10',
-          'sw1=15',
+          'led_4=17',
+          'led_5=15',
+          'led_6=10',
+          'sw1=18',
         ]),
 
         (['mcu', 'ic', 'require_basic_part'], False),
@@ -151,7 +156,6 @@ class LedMatrixTest(JlcBoardTop):
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),
-        (JlcLed, ['colorr'], 'red'),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),
