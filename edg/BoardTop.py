@@ -41,6 +41,7 @@ class JlcBoardTop(BoardTop):
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
 
+        (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
         (Fet, JlcFet),

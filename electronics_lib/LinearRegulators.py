@@ -1,9 +1,10 @@
 from typing import *
 
 from electronics_abstract_parts import *
+from electronics_lib.JlcPart import JlcPart
 
 
-class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock, JlcPart):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -17,18 +18,20 @@ class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
 
   def select_part(self, output_voltage: Range):
     parts = [  # output voltage
-      (Range(1.140, 1.260), 'LD1117S12TR'),
-      (Range(1.76, 1.84), 'LD1117S18TR'),
-      (Range(2.45, 2.55), 'LD1117S25TR'),
-      (Range(3.235, 3.365), 'LD1117S33TR'),
-      (Range(4.9, 5.1), 'LD1117S50TR'),
+      (Range(1.140, 1.260), 'LD1117S12TR', 'C155612'),
+      (Range(1.76, 1.84), 'LD1117S18TR', 'C80598'),
+      (Range(2.45, 2.55), 'LD1117S25TR', 'C26457'),
+      (Range(3.235, 3.365), 'LD1117S33TR', 'C86781'),
+      (Range(4.9, 5.1), 'LD1117S50TR', 'C134077'),
     ]
-    suitable_parts = [(part_out, part_number) for part_out, part_number in parts
+    suitable_parts = [(part_out, part_number, lcsc_part) for part_out, part_number, lcsc_part in parts
                       if part_out in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
-    part_output_voltage, part_number = suitable_parts[0]
+    part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage)
+    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
       {
