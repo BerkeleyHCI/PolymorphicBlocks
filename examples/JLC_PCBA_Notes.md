@@ -1,8 +1,20 @@
 ## Process for generating a JLC pick-and-place file
 
+### Exporting data
+
 From EDG: export with NetlistGenerator.py set to refdes mode and LCSC parts
 
 From KiCad: export both BoM and footprint position files (in CSV)
+
+### Post-processing data
+
+#### Script
+
+The `jlcpcb_pcba_postprocess.py` automates the below steps.
+
+Note that other plugins depend on a schematic with a LCSC field, whereas currently this writes the LCSC part number in the value field.
+
+#### Manual post-processing 
 
 Post-process BoM CSV:
 
