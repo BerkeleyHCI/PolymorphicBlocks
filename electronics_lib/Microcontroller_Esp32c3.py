@@ -3,6 +3,7 @@ from typing import *
 
 from electronics_abstract_parts import *
 from .PassiveConnector import PassiveConnector
+from .JlcPart import JlcPart
 
 
 @abstract_block
@@ -35,10 +36,10 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     self.en = self.Port(dio_model)  # needs external pullup
     self.io2 = self.Port(dio_model)  # needs external pullup
     self.io8 = self.Port(dio_model)  # needs external pullup, may control prints
-    self.io9 = self.Port(dio_model)  # internally pulled up for SPI boot, connect to GND for download
+    self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
 
     # similarly, the programming UART is fixed and allocated separately
-    self.uart0 = self.Port(UartPort(dio_model))
+    self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
     self.system_pinmaps = VariantPinRemapper({
       'Vdd': self.pwr,
@@ -112,7 +113,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
                usb_allocates: List[str]) -> None: ...
 
 
-class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
+class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
   """ESP32C module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
@@ -156,10 +157,12 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock):
 
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
+    self.assign(self.lcsc_part, 'C2934560')
+    self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'RF_Module:ESP-WROOM-02',
       dict(chain(system_pins.items(), io_pins.items())),
-      mfr='Espressif Systems', part='ESP-WROOM-02',
+      mfr='Espressif Systems', part='ESP32-C3-WROOM-02',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
 
@@ -221,5 +224,5 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
 
-      self.io9 = imp.Block(PulldownJumper())
-      self.connect(self.io9.io, self.ic.io9)
+      # IO9 left open - to be manually shorted with tweezers, to save space
+      # TODO: alternative programming headers that include IO9?

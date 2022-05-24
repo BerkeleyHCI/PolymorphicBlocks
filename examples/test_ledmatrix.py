@@ -116,7 +116,7 @@ class LedMatrixTest(JlcBoardTop):
 
       self.matrix = imp.Block(CharlieplexedLedMatrix(4, 5))
       self.connect(self.mcu.gpio.allocate_vector('led'), self.matrix.ios)
-      self.connect(self.mcu.usb.allocate('usb'), self.usb.usb)
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -138,9 +138,8 @@ class LedMatrixTest(JlcBoardTop):
 
         ]),
 
+        (['mcu', 'ic', 'require_basic_part'], False),
         (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['prot_analog', 'diode', 'require_basic_part'], False),
-
         (['usb_esd', 'require_basic_part'], False),
       ],
       class_values=[
