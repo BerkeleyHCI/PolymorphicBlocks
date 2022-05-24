@@ -135,7 +135,12 @@ class LedMatrixTest(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-
+          'led_0=3',
+          'led_1=4',
+          'led_2=5',
+          'led_3=6',
+          'led_4=10',
+          'sw1=15',
         ]),
 
         (['mcu', 'ic', 'require_basic_part'], False),
