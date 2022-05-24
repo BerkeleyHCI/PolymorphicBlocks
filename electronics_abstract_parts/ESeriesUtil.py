@@ -188,7 +188,7 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
     initial = target.initial_test_decades()
     search_queue = deque([initial])
     searched_decades = {initial}  # tracks everything that has been on the search queue
-    best = None
+    best: Optional[Tuple[Tuple[float, float], ESeriesRatioValueType, list[float]]] = None
 
     while search_queue:
       r1r2_decade = search_queue.popleft()
