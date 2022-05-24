@@ -494,7 +494,7 @@ class MultimeterTest(JlcBoardTop):
 
         (['gate', 'ctl_diode', 'require_basic_part'], False),
         (['gate', 'btn_diode', 'require_basic_part'], False),
-
+        (['data_usb', 'require_basic_part'], False),  # top-side
         (['usb_esd', 'require_basic_part'], False),
       ],
       class_values=[

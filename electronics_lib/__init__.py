@@ -1,5 +1,8 @@
 from electronics_abstract_parts import *
 
+from .JlcPart import JlcPart
+from .DigikeyPart import DigikeyTablePart
+
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .DigikeyMlcc import DigikeyMlcc
