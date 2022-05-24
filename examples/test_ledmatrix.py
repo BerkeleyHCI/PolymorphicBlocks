@@ -141,6 +141,7 @@ class LedMatrixTest(JlcBoardTop):
         (['mcu', 'ic', 'require_basic_part'], False),
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['usb_esd', 'require_basic_part'], False),
+        (['usb', 'require_basic_part'], False),
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),

@@ -39,7 +39,7 @@ class UsbAReceptacle(UsbConnector, FootprintBlock):
     )
 
 
-class UsbCReceptacle(UsbConnector, FootprintBlock):
+class UsbCReceptacle(UsbConnector, FootprintBlock, JlcPart):
   @init_in_parent
   def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS,
@@ -55,6 +55,9 @@ class UsbCReceptacle(UsbConnector, FootprintBlock):
 
   def contents(self):
     super().contents()
+
+    self.assign(self.lcsc_part, 'C165948')  # note, many other pin-compatible parts also available
+    self.assign(self.actual_basic_part, False)
     self.footprint(
       'J', 'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11',
       {
