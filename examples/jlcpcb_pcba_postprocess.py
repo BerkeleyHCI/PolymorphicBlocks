@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
       for i, row in enumerate(rows):
         if row[lcsc_index] in PART_ROTATIONS:
-          row[rot_index] = (float(row[rot_index]) + PART_ROTATIONS[row[lcsc_index]]) % 360
+          row[rot_index] = str((float(row[rot_index]) + PART_ROTATIONS[row[lcsc_index]]) % 360)
           print(f"correct rotation for row {i}, {row[lcsc_index]}")
         csv_out.writerow(row)
 

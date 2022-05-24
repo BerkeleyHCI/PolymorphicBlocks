@@ -26,7 +26,7 @@ from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageD
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDelayRc
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
 from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
-from .AbstractLed import Led, RgbLedCommonAnode
+from .AbstractLed import Led, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch

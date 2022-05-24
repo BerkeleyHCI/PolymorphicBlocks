@@ -14,7 +14,6 @@ class SmtLed(Led, FootprintBlock):
     )
 
 
-
 class ThtLed(Led, FootprintBlock):
   def contents(self):
     super().contents()

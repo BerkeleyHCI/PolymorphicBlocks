@@ -13,7 +13,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, rows: IntLike, cols: IntLike, skip: ArrayIntLike = [],
-               color: Led.ColorLike = Led.Any, current_draw: RangeLike = (1, 10)*mAmp):
+               color: LedColorLike = Led.Any, current_draw: RangeLike = (1, 10)*mAmp):
     super().__init__()
 
     self.current_draw = self.ArgParameter(current_draw)
