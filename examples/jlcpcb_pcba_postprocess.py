@@ -9,6 +9,15 @@ parser.add_argument('file_path_prefix', type=str,
 args = parser.parse_args()
 
 
+# Correct the rotations on a per-part-number-basis
+PART_ROTATIONS = {
+  'C87911': 180,  # USB ESD diode
+  'C165948': -90,  # USB C connector
+  'C2934560': -90,  # ESP32C
+  'C86781': 180,  # LD1117
+}
+
+
 if __name__ == '__main__':
   def remap_by_dict(elt: str, remap_dict: Dict[str, str]) -> str:
     if elt in remap_dict:
@@ -50,7 +59,13 @@ if __name__ == '__main__':
       rows = list(csv_in)
       rows[0] = [remap_by_dict(elt, POS_HEADER_MAP) for elt in rows[0]]
 
-      for row in rows:
+      lcsc_index = rows[0].index('Val')
+      rot_index = rows[0].index('Rotation')
+
+      for i, row in enumerate(rows):
+        if row[lcsc_index] in PART_ROTATIONS:
+          row[rot_index] = (float(row[rot_index]) + PART_ROTATIONS[row[lcsc_index]]) % 360
+          print(f"correct rotation for row {i}, {row[lcsc_index]}")
         csv_out.writerow(row)
 
     print(f"wrote {args.file_path_prefix}-{pos_postfix}-pos_jlc.csv")
