@@ -71,27 +71,23 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     )
   )
 
-  "Compiler on design with tunnel exports" should "propagate and evaluate values" in {
+  "Compiler on design with single tunnel export" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = Map(
         "container" -> Block.Library("portBlockContainer"),
-        "block" -> Block.Library("portBlock"),
+        "packedBlock" -> Block.Library("portBlock"),
       ),
-      links = Map(
-        "link" -> Link.Library("link")
+      links = Map(  // no connections here
       ),
       constraints = Map(
         "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
-        "blockVal" -> ValueExpr.Assign(Ref("block", "floatVal"), ValueExpr.Literal(2.0)),
 
-        "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
-        "blockConnect" -> Constraint.Connected(Ref("block", "port"), Ref.Allocate(Ref("link", "ports"))),
+        "packedExport" -> Constraint.ExportedTunnel(Ref("packedBlock", "port"), Ref("container", "inner", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiler.getValue(IndirectDesignPath() + "link" + "sum") should equal(Some(FloatValue(3.0)))
-    compiler.getValue(IndirectDesignPath() + "link" + "hull") should equal(Some(RangeValue(1.0, 2.0)))
+    compiler.getValue(IndirectDesignPath() + "packedBlock"  + "port" + "floatValue") should equal(Some(FloatValue(1.0)))
 
 //    // check CONNECTED_LINK through outer (direct connection)
 //    val linkThroughSource = IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink
