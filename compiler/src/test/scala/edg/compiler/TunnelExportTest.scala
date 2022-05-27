@@ -82,7 +82,7 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
       constraints = Map(
         "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
 
-        "packedExport" -> Constraint.ExportedTunnel(Ref("packedBlock", "port"), Ref("container", "inner", "port")),
+        "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)

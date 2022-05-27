@@ -119,6 +119,8 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
         Some((constrName, exported.getInternalBlockPort, constr))
       case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getBlockPort) =>
         Some((constrName, connected.getBlockPort, constr))
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
+        Some((constrName, exported.getInternalBlockPort, constr))
       case _ => None
     } }.toSeq
   }

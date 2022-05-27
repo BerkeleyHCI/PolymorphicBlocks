@@ -190,10 +190,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
-  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)  // TODO clean up this API?
   for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
     constProp.setForcedValue(path.asIndirect, value, "path refinement")
   }
+
+  // Primarily used for unit tests, TODO clean up this API?
+  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
