@@ -302,6 +302,7 @@ object ExprEvaluate {
         case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
         case _ => RangeEmpty
       }
+      case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
       case (Op.NEGATE, vals) => vals match {
         case ArrayValue.ExtractRange(arrayElts) =>

@@ -790,6 +790,8 @@ class ValueExpr(google.protobuf.message.Message):
     CONNECTEDARRAY_FIELD_NUMBER: builtins.int
     EXPORTEDARRAY_FIELD_NUMBER: builtins.int
     ASSIGN_FIELD_NUMBER: builtins.int
+    EXPORTEDTUNNEL_FIELD_NUMBER: builtins.int
+    ASSIGNTUNNEL_FIELD_NUMBER: builtins.int
     REF_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
@@ -835,6 +837,26 @@ class ValueExpr(google.protobuf.message.Message):
     @property
     def assign(self) -> global___AssignExpr: ...
     @property
+    def exportedTunnel(self) -> global___ExportedExpr:
+        """These Exprs support cross-hierarchy operations
+        single port to single port tunneling (cross-hierarchy) export:
+        """
+        pass
+    @property
+    def assignTunnel(self) -> global___AssignExpr:
+        """- the exterior port may be a top-level port on any (recursive) sub-block
+          for the exterior port, all path components except the last must be block
+          references, and the last must be a top-level port
+        - exterior ports may not have other internal connections (over-connected)
+        - the interior port may be a port of a (direct) sub-block, and may be an
+          ALLOCATE on an array
+        - interior ports may not have other external connections (over-connected)
+        - other, semantically this behaves like a normal export
+
+        parameter assignment which may be cross-hierarchy
+        """
+        pass
+    @property
     def ref(self) -> edgir.ref_pb2.LocalPath: ...
     @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
@@ -855,10 +877,12 @@ class ValueExpr(google.protobuf.message.Message):
         connectedArray: typing.Optional[global___ConnectedExpr] = ...,
         exportedArray: typing.Optional[global___ExportedExpr] = ...,
         assign: typing.Optional[global___AssignExpr] = ...,
+        exportedTunnel: typing.Optional[global___ExportedExpr] = ...,
+        assignTunnel: typing.Optional[global___AssignExpr] = ...,
         ref: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["assign",b"assign","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr",b"expr"]) -> typing.Optional[typing_extensions.Literal["literal","binary","binary_set","unary","unary_set","struct","range","ifThenElse","extract","map_extract","connected","exported","connectedArray","exportedArray","assign","ref"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["assign",b"assign","assignTunnel",b"assignTunnel","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","exportedTunnel",b"exportedTunnel","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["assign",b"assign","assignTunnel",b"assignTunnel","binary",b"binary","binary_set",b"binary_set","connected",b"connected","connectedArray",b"connectedArray","exported",b"exported","exportedArray",b"exportedArray","exportedTunnel",b"exportedTunnel","expr",b"expr","extract",b"extract","ifThenElse",b"ifThenElse","literal",b"literal","map_extract",b"map_extract","meta",b"meta","range",b"range","ref",b"ref","struct",b"struct","unary",b"unary","unary_set",b"unary_set"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr",b"expr"]) -> typing.Optional[typing_extensions.Literal["literal","binary","binary_set","unary","unary_set","struct","range","ifThenElse","extract","map_extract","connected","exported","connectedArray","exportedArray","assign","exportedTunnel","assignTunnel","ref"]]: ...
 global___ValueExpr = ValueExpr
