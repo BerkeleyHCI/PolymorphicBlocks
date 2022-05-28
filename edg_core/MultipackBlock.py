@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import TypeVar, NamedTuple
 
 from . import IdentityDict
 from .Core import non_library
 from .ConstraintExpr import ConstraintExpr
 from .Ports import BasePort
 from .HierarchyBlock import Block
+
+
+class MultipackPackingRule(NamedTuple):
+  tunnel_exports: IdentityDict[BasePort, BasePort]  # exterior port -> packed block port
+  tunnel_assigns: IdentityDict[ConstraintExpr, ConstraintExpr]  # my param -> packed block param
 
 
 @non_library
@@ -52,3 +57,8 @@ class MultipackBlock(Block):
   def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     pass
+
+  def _get_block_packing_rule(self, packed_part: Block) -> MultipackPackingRule:
+    """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
+    pass
+
