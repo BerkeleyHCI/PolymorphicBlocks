@@ -398,6 +398,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         blockPath.asIndirect ++ assign.dst.get,
         blockPath, assign.src.get, constrName) // TODO add sourcelocators
       true
+    case expr.ValueExpr.Expr.AssignTunnel(assign) =>
+      // same as normal assign case, but would not enforce locality of references
+      constProp.addAssignment(
+        blockPath.asIndirect ++ assign.dst.get,
+        blockPath, assign.src.get, constrName) // TODO add sourcelocators
+      true
     case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
         expr.ValueExpr.Expr.IfThenElse(_) =>  // raw ValueExprs interpreted as assertions

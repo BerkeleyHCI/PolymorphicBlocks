@@ -25,18 +25,20 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     blocks = Seq(
       Block.Block("portBlock",
         params = Map(
-          "floatVal" -> ValInit.Floating,
+          "portVal" -> ValInit.Floating,
+          "blockVal" -> ValInit.Floating,
         ),
         ports = Map(
           "port" -> Port.Library("port"),
         ),
         constraints = Map(
-          "innerVal" -> Constraint.Assign(Ref("port", "floatVal"), ValueExpr.Ref("floatVal")),
+          "innerVal" -> Constraint.Assign(Ref("port", "floatVal"), ValueExpr.Ref("portVal")),
         ),
       ),
       Block.Block("portBlockContainer",
         params = Map(
-          "floatVal" -> ValInit.Floating,
+          "portVal" -> ValInit.Floating,
+          "blockVal" -> ValInit.Floating,
         ),
         ports = Map(
           "port" -> Port.Library("port"),
@@ -46,19 +48,22 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         ),
         constraints = Map(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port")),
-          "innerVal" -> Constraint.Assign(Ref("inner", "floatVal"), ValueExpr.Ref("floatVal")),
+          "innerPortVal" -> Constraint.Assign(Ref("inner", "portVal"), ValueExpr.Ref("portVal")),
+          "innerBlockVal" -> Constraint.Assign(Ref("inner", "blockVal"), ValueExpr.Ref("blockVal")),
         ),
       ),
       Block.Block("portBlockArray2",  // without generators, the length must be fixed
         params = Map(
-          "floatVal" -> ValInit.Floating,
+          "portVal" -> ValInit.Floating,
+          "block0Val" -> ValInit.Floating,
+          "block1Val" -> ValInit.Floating,
         ),
         ports = Map(
           "ports" -> Port.Array("port", Seq("0", "1"), Port.Library("port")),
         ),
         constraints = Map(
-          "innerVal0" -> Constraint.Assign(Ref("port", "0", "floatVal"), ValueExpr.Ref("floatVal")),
-          "innerVal1" -> Constraint.Assign(Ref("port", "1", "floatVal"), ValueExpr.Ref("floatVal")),
+          "innerVal0" -> Constraint.Assign(Ref("port", "0", "floatVal"), ValueExpr.Ref("portVal")),
+          "innerVal1" -> Constraint.Assign(Ref("port", "1", "floatVal"), ValueExpr.Ref("portVal")),
         ),
       ),
     ),
@@ -93,15 +98,18 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "link" -> Link.Library("link")
       ),
       constraints = Map(
-        "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
+        "containerPortVal" -> ValueExpr.Assign(Ref("container", "portVal"), ValueExpr.Literal(1.0)),
+        "containerBlockVal" -> ValueExpr.Assign(Ref("container", "blockVal"), ValueExpr.Literal(8.0)),
         "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
 
+        "packedAssign" -> Constraint.Assign(Ref("packedBlock", "blockVal"), ValueExpr.Ref("container", "blockVal")),
         "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiler.getValue(IndirectDesignPath() + "packedBlock" + "port" + "floatVal") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(IndirectDesignPath() + "packedBlock" + "blockVal") should equal(Some(FloatValue(8.0)))
 
     compiler.getValue(IndirectDesignPath() + "link" + "sum") should equal(Some(FloatValue(1.0)))
     compiler.getValue(IndirectDesignPath() + "link" + "hull") should equal(Some(RangeValue(1.0, 1.0)))
@@ -149,15 +157,15 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "link" -> Link.Library("link")
       ),
       constraints = Map(
-        "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
+        "containerPortVal" -> ValueExpr.Assign(Ref("container", "portVal"), ValueExpr.Literal(1.0)),
         "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
 
-        "blockVal" -> ValueExpr.Assign(Ref("block", "floatVal"), ValueExpr.Literal(2.0)),
+        "blockPortVal" -> ValueExpr.Assign(Ref("block", "portVal"), ValueExpr.Literal(2.0)),
         "blockConnect" -> Constraint.Connected(Ref("block", "port"), Ref.Allocate(Ref("link", "ports"))),
 
         // Test tunnel export both directly within the top block, and nested one level deep
-        "packed0Export" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
-        "packed1Export" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
+        "packed0Export" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref.Allocate(Ref("packedBlock", "ports"), Some("0"))),
+        "packed1Export" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref.Allocate(Ref("packedBlock", "ports"), Some("1"))),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)

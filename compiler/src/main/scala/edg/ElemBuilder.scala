@@ -39,7 +39,6 @@ object ElemBuilder {
       expr=expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
         exteriorPort=Some(external), internalBlockPort=Some(ValueExpr.Ref(internal))))
     )
-
     def ExportedTunnel(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
       expr=expr.ValueExpr.Expr.ExportedTunnel(expr.ExportedExpr(
         exteriorPort=Some(ValueExpr.Ref(external)), internalBlockPort=Some(ValueExpr.Ref(internal))))
@@ -47,6 +46,10 @@ object ElemBuilder {
 
     def Assign(dst: ref.LocalPath, assignExpr: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
       expr=expr.ValueExpr.Expr.Assign(expr.AssignExpr(
+        dst=Some(dst), src=Some(assignExpr)))
+    )
+    def AssignTunnel(dst: ref.LocalPath, assignExpr: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
+      expr=expr.ValueExpr.Expr.AssignTunnel(expr.AssignExpr(
         dst=Some(dst), src=Some(assignExpr)))
     )
   }
