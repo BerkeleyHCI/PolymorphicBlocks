@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from . import BasePort
+from . import IdentityDict
 from .Core import non_library
+from .ConstraintExpr import ConstraintExpr
+from .Ports import BasePort
 from .HierarchyBlock import Block
 
 
@@ -23,14 +25,30 @@ class MultipackBlock(Block):
   implement the application circuit, containing sub-blocks for both the decoupling cap and the chip) and the
   packing definition (specific to this class - but does not contribute to the block implementation).
   """
+  def __init__(self):
+    super().__init__()
+    self._packed_blocks = self.manager.new_dict(Block)
+    # TODO should these be defined in terms of Refs?
+    # packed block -> (exterior port -> packed block port)
+    self._packed_connects_by_packed_block = IdentityDict[Block, IdentityDict[BasePort, BasePort]]()
+    self._packed_assigns_by_packed_block = IdentityDict[Block, IdentityDict[ConstraintExpr, ConstraintExpr]]()
 
-  BlockType = TypeVar('BlockType', bound='Block')
+  BlockType = TypeVar('BlockType', bound=Block)
   def PackedPart(self, tpe: BlockType) -> BlockType:
     """Adds a block type that can be packed into this block.
     The block is a "virtual block" that will not appear in the design tree."""
+    if not isinstance(tpe, Block):
+      raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
+
+    elt = tpe._bind(self)  # TODO: does this actually need to be bound?
+    self._blocks.register(elt)
+
+    return elt
+
+  def packed_connect(self, exterior_port: BasePort, packed_port: BasePort) -> None:
+    """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     pass
 
-  def packed_connect(self) -> None:
-    """Defines a packing rule specified as a virtual connection between a port on a PackedBlock and
-    an exterior port."""
+  def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
+    """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     pass

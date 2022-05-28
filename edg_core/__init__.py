@@ -9,6 +9,7 @@ from .Link import Link
 from .DesignTop import DesignTop
 from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block
 from .Generator import GeneratorBlock
+from .MultipackBlock import MultipackBlock
 from .PortBlocks import PortBridge, PortAdapter
 from .Array import Vector
 from .PortTag import PortTag, Input, Output, InOut
