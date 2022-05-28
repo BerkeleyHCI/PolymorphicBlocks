@@ -96,7 +96,7 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
         "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
 
-        "containerExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
+        "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -127,7 +127,7 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
       links = Map(
       ),
       constraints = Map(
-        "containerExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
+        "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -156,17 +156,19 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "blockConnect" -> Constraint.Connected(Ref("block", "port"), Ref.Allocate(Ref("link", "ports"))),
 
         // Test tunnel export both directly within the top block, and nested one level deep
-        "containerExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
-        "blockExport" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
+        "packed0Export" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
+        "packed1Export" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref.Allocate(Ref("packedBlock", "ports"))),
       )
     ))
-    val referenceConstraints = Map(
-      "containerExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0")),
-      "blockExport" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1")),
-    )
-
     val (compiler, compiled) = testCompile(inputDesign, library)
-    compiled.contents.get.constraints should contain(referenceConstraints)
+
+    // check that allocates were properly lowered
+    compiled.contents.get.constraints("packed0Export") should equal(
+      Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0"))
+    )
+    compiled.contents.get.constraints("packed1Export") should equal(
+      Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1"))
+    )
 
     compiler.getValue(IndirectDesignPath() + "packedBlock" + "ports" + "0" + "floatVal") should equal(Some(FloatValue(1.0)))
     compiler.getValue(IndirectDesignPath() + "packedBlock" + "ports" + "1" + "floatVal") should equal(Some(FloatValue(2.0)))
@@ -194,5 +196,4 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "ports" + "1" + IndirectStep.IsConnected) should equal(
       Some(BooleanValue(true)))
   }
-
 }

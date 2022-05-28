@@ -722,6 +722,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
+              case PortConnections.AllocatedTunnelExport(connects) =>
+                // similar to AllocateDConnect case, except only with single-element connects
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(setAllocatedTask, Seq())
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
+
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
