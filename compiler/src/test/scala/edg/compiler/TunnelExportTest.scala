@@ -87,7 +87,7 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiler.getValue(IndirectDesignPath() + "packedBlock"  + "port" + "floatValue") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(IndirectDesignPath() + "packedBlock"  + "port" + "floatVal") should equal(Some(FloatValue(1.0)))
 
 //    // check CONNECTED_LINK through outer (direct connection)
 //    val linkThroughSource = IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink

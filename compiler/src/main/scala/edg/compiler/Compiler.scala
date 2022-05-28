@@ -325,6 +325,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
+        case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
+          constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+            containerPath, s"$containerPath.$constrName")
         case None =>
           recursiveSetNotConnected(containerPath ++ portPostfix, port)
         case Some((_, _)) => throw new IllegalArgumentException
@@ -435,6 +439,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
             )
           }
+          true
+        case _ => false  // anything with allocates is not processed
+      }
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+          require(!isInLink)
+          elaboratePending.addNode(
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+            Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+          )
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -720,6 +734,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _ =>  // leaf only, no array support
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
               case PortConnections.SingleConnect(constrName, constr) =>
+                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+              case PortConnections.TunnelExport(constrName, constr) =>
                 resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
               case PortConnections.NotConnected =>
                 resolvePortConnectivity(path, portPostfix, None)
