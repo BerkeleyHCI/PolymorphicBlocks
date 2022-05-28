@@ -25,11 +25,12 @@ class MultipackBlock(Block):
   """
 
   BlockType = TypeVar('BlockType', bound='Block')
-  def PackedBlock(self, tpe: BlockType) -> BlockType:
-    """Adds a block type that can be packed into this block."""
+  def PackedPart(self, tpe: BlockType) -> BlockType:
+    """Adds a block type that can be packed into this block.
+    The block is a "virtual block" that will not appear in the design tree."""
     pass
 
-  def packed_connect(self):
+  def packed_connect(self) -> None:
     """Defines a packing rule specified as a virtual connection between a port on a PackedBlock and
     an exterior port."""
     pass

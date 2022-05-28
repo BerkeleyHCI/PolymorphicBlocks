@@ -8,11 +8,15 @@ import edgrpc
 from .HierarchyBlock import Block
 
 
+DesignPath = Iterable[str]
+DesignPostfix = Iterable[str]
+
+
 class Refinements():
   def __init__(self, class_refinements: Iterable[Tuple[Type[Block], Type[Block]]] = [],
-               instance_refinements: Iterable[Tuple[Iterable[str], Type[Block]]] = [],
-               class_values: Iterable[Tuple[Type[Block], Iterable[str], edgir.LitTypes]] = [],
-               instance_values: Iterable[Tuple[Iterable[str], edgir.LitTypes]] = []):
+               instance_refinements: Iterable[Tuple[DesignPath, Type[Block]]] = [],
+               class_values: Iterable[Tuple[Type[Block], DesignPostfix, edgir.LitTypes]] = [],
+               instance_values: Iterable[Tuple[DesignPath, edgir.LitTypes]] = []):
     self.class_refinements = class_refinements
     self.instance_refinements = instance_refinements
     self.class_values = class_values
