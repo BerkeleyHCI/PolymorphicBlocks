@@ -77,36 +77,51 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "container" -> Block.Library("portBlockContainer"),
         "packedBlock" -> Block.Library("portBlock"),
       ),
-      links = Map(  // no connections here
+      links = Map(
+        "link" -> Link.Library("link")
       ),
       constraints = Map(
         "containerVal" -> ValueExpr.Assign(Ref("container", "floatVal"), ValueExpr.Literal(1.0)),
+        "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
 
         "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiler.getValue(IndirectDesignPath() + "packedBlock"  + "port" + "floatVal") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(IndirectDesignPath() + "packedBlock" + "port" + "floatVal") should equal(Some(FloatValue(1.0)))
 
-//    // check CONNECTED_LINK through outer (direct connection)
-//    val linkThroughSource = IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink
-//    compiler.getValue(linkThroughSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
-//    compiler.getValue(linkThroughSource + "sinkSum") should equal(Some(FloatValue(1.0)))
-//    compiler.getValue(linkThroughSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
-//    compiler.getValue(linkThroughSource + IndirectStep.Name) should equal(Some(TextValue("link")))
-//
-//    // check CONNECTED_LINK through inner (via exports)
-//    val linkThroughInnerSource = IndirectDesignPath() + "source" + "inner" + "port" + IndirectStep.ConnectedLink
-//    compiler.getValue(linkThroughInnerSource + "sourceFloat") should equal(Some(FloatValue(3.0)))
-//    compiler.getValue(linkThroughInnerSource + "sinkSum") should equal(Some(FloatValue(1.0)))
-//    compiler.getValue(linkThroughInnerSource + "sinkIntersect") should equal(Some(RangeValue(5.0, 7.0)))
-//    compiler.getValue(linkThroughInnerSource + IndirectStep.Name) should equal(Some(TextValue("link")))
-//
-//    // check IS_CONNECTED
-//    compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should equal(
-//      Some(BooleanValue(true)))
-//    compiler.getValue(IndirectDesignPath() + "source" + "inner" + "port" + IndirectStep.IsConnected) should equal(
-//      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "link" + "sum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(IndirectDesignPath() + "link" + "hull") should equal(Some(RangeValue(1.0, 1.0)))
+
+    // check CONNECTED_LINK through outer (direct connection)
+    val linkThroughPacked = IndirectDesignPath() + "packedBlock"  + "port" + IndirectStep.ConnectedLink
+    compiler.getValue(linkThroughPacked + "sum") should equal(Some(FloatValue(1.0)))
+    compiler.getValue(linkThroughPacked + "hull") should equal(Some(RangeValue(1.0, 1.0)))
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath() + "packedBlock" + "port" + IndirectStep.IsConnected) should equal(
+      Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "link" + "ports" + "0" + IndirectStep.IsConnected) should equal(
+      Some(BooleanValue(true)))
+  }
+
+  "Compiler on design with disconnected tunnel export" should "propagate and evaluate values" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = Map(
+        "container" -> Block.Library("portBlockContainer"),
+        "packedBlock" -> Block.Library("portBlock"),
+      ),
+      links = Map(
+      ),
+      constraints = Map(
+        "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
+      )
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+
+    // check IS_CONNECTED
+    compiler.getValue(IndirectDesignPath() + "packedBlock" + "port" + IndirectStep.IsConnected) should equal(
+      Some(BooleanValue(false)))
   }
 }
