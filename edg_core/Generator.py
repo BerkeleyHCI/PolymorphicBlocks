@@ -1,19 +1,15 @@
 from __future__ import annotations
 
-from numbers import Number
 from typing import *
 
 import edgir
-from .Array import ArrayExpr
-from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding, NameBinding, ParamBinding
+from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding, NameBinding
 from .Blocks import BlockElaborationState
-from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
+from .ConstraintExpr import ConstraintExpr
 from .Core import non_library
 from .Exceptions import *
 from .HierarchyBlock import Block
-from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
-from .Range import Range
 
 
 @non_library
