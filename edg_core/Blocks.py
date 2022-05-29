@@ -153,11 +153,6 @@ class BlockElaborationState(Enum):
   generate = 6
   post_generate = 7
 
-  def __lt__(self, other):  # allow comparisons, since these states are ordered
-    if self.__class__ is other.__class__:
-      return self.value < other.value
-    return NotImplemented
-
 
 BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
 @non_library

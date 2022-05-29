@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BaseBlockEdgirType, BlockElaborationState
 from .HierarchyBlock import Block
@@ -54,7 +55,9 @@ class DesignTop(Block):
 
   def pack(self, multipack_part: Block, path: DesignPath) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
-    assert self._elaboration_state == BlockElaborationState.init, "can only define multipack in init"
+    if self._elaboration_state not in \
+        [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
+      raise BlockDefinitionError(self, "can only define multipack in init, contents, or generate")
     multipack_block = multipack_part._parent
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
