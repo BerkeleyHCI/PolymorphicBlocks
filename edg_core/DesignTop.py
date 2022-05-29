@@ -67,7 +67,10 @@ class DesignTop(Block):
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
-        pass
+        packed_param_name = multipack_part._name_of_child(packed_param)
+        exported_assign = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_param_name}"].assignTunnel
+        exported_assign.dst.CopyFrom(multipack_ref_map[multipack_param])
+        exported_assign.src.ref.CopyFrom(packed_ref_map[packed_param])
 
     return pb
 
