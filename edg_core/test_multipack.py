@@ -57,4 +57,30 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     self.pb = TopMultipackDesign()._elaborated_def_to_proto()
 
   def test_export_tunnel(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 4)
+    expected_constr = edgir.ValueExpr()
+
+    expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
+    expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_port1'
+    expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink1'
+    expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+    expected_constr.assignTunnel.dst.steps.add().name = 'packed'
+    expected_constr.assignTunnel.dst.steps.add().name = 'param1'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'sink1'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+    expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
+    expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_port2'
+    expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink2'
+    expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'inner'
+    expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+    expected_constr.assignTunnel.dst.steps.add().name = 'packed'
+    expected_constr.assignTunnel.dst.steps.add().name = 'param2'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'sink2'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'inner'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
