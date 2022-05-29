@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+from .IdentityDict import IdentityDict
 from .Blocks import BaseBlockEdgirType, BlockElaborationState
 from .HierarchyBlock import Block
 from .MultipackBlock import MultipackBlock
@@ -9,6 +10,10 @@ from .Refinements import Refinements, DesignPath
 class DesignTop(Block):
   """A top-level design, which may not have ports (including exports), but may define refinements.
   """
+  def __init__(self) -> None:
+    super().__init__()
+    self._packed_blocks = IdentityDict[Block, DesignPath]()  # multipack part -> packed block (as path)
+
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
 
@@ -45,4 +50,4 @@ class DesignTop(Block):
     multipack_block = multipack_part._parent
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
-    rules = multipack_block._get_block_packing_rule(multipack_part)
+    self._packed_blocks[multipack_part] = DesignPath
