@@ -39,6 +39,13 @@ class DesignTop(Block):
     self._elaboration_state = BlockElaborationState.post_contents
     return self._def_to_proto()
 
+  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+    """Add multipack constraints"""
+    pb = super()._populate_def_proto_block_contents(pb)
+    for multipack_part, packed_block in self._packed_blocks.items():
+      pass
+    return pb
+
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
   def PackedBlock(self, tpe: PackedBlockType) -> PackedBlockType:
     """Instantiates a multipack block, that can be used to pack constituent blocks arbitrarily deep in the design."""
@@ -47,6 +54,7 @@ class DesignTop(Block):
 
   def pack(self, multipack_part: Block, path: DesignPath) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
+    assert self._elaboration_state == BlockElaborationState.init, "can only define multipack in init"
     multipack_block = multipack_part._parent
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"

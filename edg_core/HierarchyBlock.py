@@ -7,7 +7,7 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, Connection
+from .Blocks import BaseBlock, Connection, BlockElaborationState
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -480,6 +480,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
     if isinstance(tpe, DesignTop):
       raise TypeError(f"param to Block(...) may not be DesignTop")
+    if self._elaboration_state not in \
+        [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
+      raise BlockDefinitionError(self, "can only define blocks in init, contents, or generate")
 
     elt = tpe._bind(self)
     self._blocks.register(elt)

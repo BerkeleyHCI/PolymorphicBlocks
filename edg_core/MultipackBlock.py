@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar, NamedTuple
 
+from .Blocks import BlockElaborationState
 from .IdentityDict import IdentityDict
 from .Core import non_library
 from .ConstraintExpr import ConstraintExpr
@@ -45,6 +46,7 @@ class MultipackBlock(Block):
     The block is a "virtual block" that will not appear in the design tree."""
     if not isinstance(tpe, Block):
       raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
+    assert self._elaboration_state < BlockElaborationState.post_contents, "can't define multipack post-contents"
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
     self._packed_blocks.register(elt)
@@ -55,15 +57,18 @@ class MultipackBlock(Block):
 
   def packed_connect(self, exterior_port: BasePort, packed_port: BasePort) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
+    assert self._elaboration_state < BlockElaborationState.post_contents, "can't define multipack post-contents"
     self._packed_connects_by_packed_block[packed_port._block_parent()][exterior_port] = packed_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
+    assert self._elaboration_state < BlockElaborationState.post_contents, "can't define multipack post-contents"
     self._packed_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
 
   def _get_block_packing_rule(self, packed_part: Block) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
     self._packed_blocks.finalize()
+    self._packed_finalized = True
     return MultipackPackingRule(
       self._packed_connects_by_packed_block[packed_part],
       self._packed_assigns_by_packed_block[packed_part]
