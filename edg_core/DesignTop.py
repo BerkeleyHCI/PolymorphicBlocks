@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+from .Blocks import BaseBlockEdgirType, BlockElaborationState
 from .HierarchyBlock import Block
 from .MultipackBlock import MultipackBlock
 from .Refinements import Refinements, DesignPath
@@ -23,6 +24,15 @@ class DesignTop(Block):
     """Defines multipack packing rules, by defining multipack devices and providing packing connections.
     Subclasses should define multipack by stacking on top of super().multipack()."""
     pass
+
+  # TODO make this non-overriding? - this needs to call multipack after contents
+  def _elaborated_def_to_proto(self) -> BaseBlockEdgirType:
+    assert self._elaboration_state == BlockElaborationState.post_init
+    self._elaboration_state = BlockElaborationState.contents
+    self.contents()
+    self.multipack()
+    self._elaboration_state = BlockElaborationState.post_contents
+    return self._def_to_proto()
 
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
   def PackedBlock(self, tpe: PackedBlockType) -> PackedBlockType:
