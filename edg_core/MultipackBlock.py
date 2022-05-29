@@ -36,6 +36,7 @@ class MultipackBlock(Block):
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
     self._packed_connects_by_packed_block = IdentityDict[Block, IdentityDict[BasePort, BasePort]]()
+    # packed block -> (self param -> packed param)
     self._packed_assigns_by_packed_block = IdentityDict[Block, IdentityDict[ConstraintExpr, ConstraintExpr]]()
 
   BlockType = TypeVar('BlockType', bound=Block)
@@ -46,18 +47,24 @@ class MultipackBlock(Block):
       raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
-    self._blocks.register(elt)
+    self._packed_blocks.register(elt)
+    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, BasePort]()
+    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, ConstraintExpr]()
 
     return elt
 
   def packed_connect(self, exterior_port: BasePort, packed_port: BasePort) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
-    pass
+    self._packed_connects_by_packed_block[packed_port._block_parent()][exterior_port] = packed_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
-    pass
+    self._packed_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
 
   def _get_block_packing_rule(self, packed_part: Block) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
-    pass
+    self._packed_blocks.finalize()
+    return MultipackPackingRule(
+      self._packed_connects_by_packed_block[packed_part],
+      self._packed_assigns_by_packed_block[packed_part]
+    )

@@ -40,6 +40,9 @@ class DesignTop(Block):
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations
     return self.Block(tpe)
 
-  def pack(self, tpe: Block, path: DesignPath) -> None:
+  def pack(self, multipack_part: Block, path: DesignPath) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
-    pass
+    multipack_block = multipack_part._parent
+    assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
+    assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
+    rules = multipack_block._get_block_packing_rule(multipack_part)
