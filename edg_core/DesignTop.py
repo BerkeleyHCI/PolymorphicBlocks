@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+import edgir
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BaseBlockEdgirType, BlockElaborationState
@@ -32,7 +33,7 @@ class DesignTop(Block):
     pass
 
   # TODO make this non-overriding? - this needs to call multipack after contents
-  def _elaborated_def_to_proto(self) -> BaseBlockEdgirType:
+  def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
     assert self._elaboration_state == BlockElaborationState.post_init
     self._elaboration_state = BlockElaborationState.contents
     self.contents()
@@ -40,11 +41,34 @@ class DesignTop(Block):
     self._elaboration_state = BlockElaborationState.post_contents
     return self._def_to_proto()
 
-  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     """Add multipack constraints"""
     pb = super()._populate_def_proto_block_contents(pb)
-    for multipack_part, packed_block in self._packed_blocks.items():
-      pass
+    for multipack_part, packed_path in self._packed_blocks.items():
+      multipack_block = multipack_part._parent
+      assert isinstance(multipack_block, MultipackBlock)
+      multipack_name = self._name_of_child(multipack_block)
+      part_name = multipack_block._name_of_child(multipack_part)
+      packing_rule = multipack_block._get_block_packing_rule(multipack_part)
+
+      multipack_ref_base = edgir.LocalPath()
+      multipack_ref_base.steps.add().name = multipack_name
+      multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
+
+      packed_ref_base = edgir.LocalPath()
+      for packed_path_part in packed_path:
+        packed_ref_base.steps.add().name = packed_path_part
+      packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
+
+      for exterior_port, packed_port in packing_rule.tunnel_exports.items():
+        packed_port_name = multipack_part._name_of_child(packed_port)
+        exported_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_port_name}"].exportedTunnel
+        exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
+        exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port])
+
+      for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
+        pass
+
     return pb
 
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
@@ -61,4 +85,4 @@ class DesignTop(Block):
     multipack_block = multipack_part._parent
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
-    self._packed_blocks[multipack_part] = DesignPath
+    self._packed_blocks[multipack_part] = path

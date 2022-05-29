@@ -5,7 +5,7 @@ from typing import TypeVar, NamedTuple
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
-from .Core import non_library
+from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr
 from .Ports import BasePort
 from .HierarchyBlock import Block
@@ -34,7 +34,7 @@ class MultipackBlock(Block):
   """
   def __init__(self):
     super().__init__()
-    self._packed_blocks = self.manager.new_dict(Block)
+    self._packed_blocks: SubElementDict[Block] = self.manager.new_dict(Block)
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
     self._packed_connects_by_packed_block = IdentityDict[Block, IdentityDict[BasePort, BasePort]]()
@@ -61,13 +61,17 @@ class MultipackBlock(Block):
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
-    self._packed_connects_by_packed_block[packed_port._block_parent()][exterior_port] = packed_port
+    block_parent = packed_port._block_parent()
+    assert isinstance(block_parent, Block)
+    self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
-    self._packed_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
+    block_parent = packed_param.parent
+    assert isinstance(block_parent, Block)
+    self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
 
   def _get_block_packing_rule(self, packed_part: Block) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
