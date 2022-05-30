@@ -40,11 +40,8 @@ class TestBlockContainerSink(Block):
 class TopMultipackDesign(DesignTop):
   def contents(self):
     super().contents()
-    self.source = self.Block(TestBlockSource())
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
-
-    self.connect(self.source.source, self.sink1.sink, self.sink2.sink)
 
   def multipack(self):
     self.packed = self.Block(MultipackBlockSink())
@@ -57,6 +54,8 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     self.pb = TopMultipackDesign()._elaborated_def_to_proto()
 
   def test_export_tunnel(self) -> None:
+    self.assertEqual(len(self.pb.constraints), 4)
+
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_port1'
@@ -72,6 +71,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
+  def test_assign_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
     expected_constr.assignTunnel.dst.steps.add().name = 'packed'
     expected_constr.assignTunnel.dst.steps.add().name = 'param1'

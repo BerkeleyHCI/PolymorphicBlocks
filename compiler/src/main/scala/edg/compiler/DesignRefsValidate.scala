@@ -66,7 +66,14 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
                                 internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
+  override def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
+                                 internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    exteriorPort ++ internalBlockPort
+  }
   override def mapAssign(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    assign.dst.toSeq ++ src
+  }
+  override def mapAssignTunnel(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     assign.dst.toSeq ++ src
   }
   override def mapRef(path: ref.LocalPath): Seq[ref.LocalPath] =
