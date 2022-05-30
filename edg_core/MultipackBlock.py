@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple, Optional, Union
+from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple
 
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
@@ -17,10 +17,13 @@ class MultipackPackingRule(NamedTuple):
 
 
 class PackedBlockArray:
-  """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks."""
+  """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
+  This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
+  (non-multipack) core infrastructure yet."""
   def __init__(self, tpe: Block):
     self._tpe = tpe
     self._parent: Optional[Block] = None
+    self._allocates: List[Tuple[Optional[str], Block]] = []  # to track allocate for ref_map
 
   def _bind(self, parent: Block) -> PackedBlockArray:
     clone = PackedBlockArray(self._tpe)
@@ -30,7 +33,9 @@ class PackedBlockArray:
   def allocate(self, suggested_name: Optional[str] = None) -> Block:
     """External API, to request a new instance for an array element / packed part."""
     assert self._parent is not None, "no parent set, cannot allocate"
-    return self._tpe._bind(self._parent)
+    allocated = self._tpe._bind(self._parent)
+    self._allocates.append((suggested_name, allocated))
+    return allocated
 
 
 PackedBlockType = Union[Block, PackedBlockArray]
