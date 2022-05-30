@@ -66,6 +66,8 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
 
 
 PackedBlockType = Union[Block, PackedBlockArray]
+PackedPortType = Union[Port, PackedBlockPortArray]
+PackedParamType = Union[ConstraintExpr, PackedBlockParamArray]
 
 
 @non_library
@@ -109,7 +111,7 @@ class MultipackBlock(Block):
 
     return elt  # type: ignore
 
-  def packed_connect(self, exterior_port: BasePort, packed_port: BasePort) -> None:
+  def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortType) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
@@ -117,7 +119,7 @@ class MultipackBlock(Block):
     assert isinstance(block_parent, Block)
     self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
-  def packed_assign(self, self_param: ConstraintExpr, packed_param: ConstraintExpr) -> None:
+  def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamType) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")

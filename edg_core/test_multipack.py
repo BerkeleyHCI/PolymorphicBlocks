@@ -36,7 +36,7 @@ class MultipackArrayBlockSink(MultipackBlock):
     self.params = self.Parameter(ArrayFloatExpr())
     self.sinks = self.PackedPart(PackedBlockArray(PartSink()))
     self.packed_connect(self.sink_ports, self.sinks.ports_array(lambda x: x.sink))
-    self.packed_assign(self.param1, self.sinks.params_array(lambda x: x.param))
+    self.packed_assign(self.params, self.sinks.params_array(lambda x: x.param))
 
 
 class TestBlockContainerSink(Block):
