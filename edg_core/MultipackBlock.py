@@ -13,6 +13,11 @@ from .Ports import BasePort, Port
 from .HierarchyBlock import Block
 
 
+class PackedBlockAllocate(NamedTuple):
+  parent: PackedBlockArray
+  suggested_name: Optional[str]
+
+
 class PackedBlockPortArray(NamedTuple):
   parent: PackedBlockArray
   port: Port
@@ -40,15 +45,10 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
     clone._elt_sample = self._tpe._bind(parent)
     return clone
 
-  def allocate(self, suggested_name: Optional[str] = None) -> Block:
+  def allocate(self, suggested_name: Optional[str] = None) -> PackedBlockAllocate:
     """External API, to request a new instance for an array element / packed part."""
     assert self._parent is not None, "no parent set, cannot allocate"
-    # we don't use self._tpe._bind since this needs to clone to a different context
-    # TODO this should be dedup'd d/ Block._bind
-    allocated = type(self._tpe)(*self._tpe._initializer_args[0], **self._tpe._initializer_args[1])  # type: ignore
-    allocated._bind_in_place(self._parent)
-    self._allocates.append((suggested_name, allocated))
-    return allocated
+    return PackedBlockAllocate(self, suggested_name)
 
   # TODO does this need to return a narrower type?
   # TODO would it be useful to return a proper Vector type, instead of this special PackedBlockPortArray?

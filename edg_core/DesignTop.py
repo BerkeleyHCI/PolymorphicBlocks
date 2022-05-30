@@ -1,11 +1,11 @@
-from typing import TypeVar
+from typing import TypeVar, Union
 
 import edgir
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block
-from .MultipackBlock import MultipackBlock
+from .MultipackBlock import MultipackBlock, PackedBlockAllocate
 from .Refinements import Refinements, DesignPath
 
 
@@ -14,7 +14,7 @@ class DesignTop(Block):
   """
   def __init__(self) -> None:
     super().__init__()
-    self._packed_blocks = IdentityDict[Block, DesignPath]()  # multipack part -> packed block (as path)
+    self._packed_blocks = IdentityDict[Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
 
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
@@ -48,6 +48,8 @@ class DesignTop(Block):
       multipack_block = multipack_part._parent
       assert isinstance(multipack_block, MultipackBlock)
       multipack_name = self._name_of_child(multipack_block)
+
+
       part_name = multipack_block._name_of_child(multipack_part)
       packing_rule = multipack_block._get_block_packing_rule(multipack_part)
 
@@ -80,7 +82,7 @@ class DesignTop(Block):
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations
     return self.Block(tpe)
 
-  def pack(self, multipack_part: Block, path: DesignPath) -> None:
+  def pack(self, multipack_part: Union[Block, PackedBlockAllocate], path: DesignPath) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
     if self._elaboration_state not in \
         [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
