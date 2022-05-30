@@ -120,14 +120,14 @@ class MultipackBlock(Block):
     if isinstance(packed_port, Port):
       assert type(exterior_port) == type(packed_port), "packed_connect ports must be of the same type"
       block_parent = packed_port._block_parent()
+      assert isinstance(block_parent, Block)
+      self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
     elif isinstance(packed_port, PackedBlockPortArray):
       assert isinstance(exterior_port, Vector), "can only connect vector from packed port array"
       assert type(exterior_port._elt_sample) == type(packed_port.port), "packed_connect ports must be of the same type"
-      block_parent = packed_port.parent._parent
+      self._packed_connects_by_packed_block[packed_port.parent][exterior_port] = packed_port
     else:
       raise TypeError()
-    assert isinstance(block_parent, Block)
-    self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.
@@ -137,14 +137,14 @@ class MultipackBlock(Block):
     if isinstance(packed_param, ConstraintExpr):
       assert type(self_param) == type(packed_param), "packed_assign parameters must be of the same type"
       block_parent = packed_param.parent
+      assert isinstance(block_parent, Block)
+      self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
     elif isinstance(packed_param, PackedBlockParamArray):
       assert isinstance(self_param, ArrayExpr), "can only assign array expr from packed param array"
-      assert type(self_param._elt_type) == type(packed_param.param), "packed_assign parameters must be of the same type"
-      block_parent = packed_param.parent._parent
+      assert self_param._elt_type == type(packed_param.param), "packed_assign parameters must be of the same type"
+      self._packed_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
     else:
       raise TypeError()
-    assert isinstance(block_parent, Block)
-    self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
 
   def _get_block_packing_rule(self, packed_part: PackedBlockTypes) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
