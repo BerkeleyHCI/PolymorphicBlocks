@@ -27,14 +27,14 @@ class PackedBlockParamArray(NamedTuple):
   param: ConstraintExpr
 
 
-PackedBlockType = TypeVar('PackedBlockType', bound=Block)
-class PackedBlockArray(Generic[PackedBlockType]):
+PackedBlockElementType = TypeVar('PackedBlockElementType', bound=Block)
+class PackedBlockArray(Generic[PackedBlockElementType]):
   """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
   This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
   (non-multipack) core infrastructure yet."""
-  def __init__(self, tpe: Block):
+  def __init__(self, tpe: PackedBlockElementType):
     self._tpe = tpe
-    self._elt_sample: Optional[Block] = None  # inner facing only
+    self._elt_sample: Optional[PackedBlockElementType] = None  # inner facing only
     self._parent: Optional[Block] = None
     self._allocates: List[Tuple[Optional[str], Block]] = []  # outer facing only, to track allocate for ref_map
 
@@ -52,13 +52,15 @@ class PackedBlockArray(Generic[PackedBlockType]):
     return allocated
 
   # TODO does this need to return a narrower type?
-  def ports_array(self, selector: Callable[[PackedBlockType], Port]) -> PackedBlockPortArray:
+  # TODO would it be useful to return a proper Vector type, instead of this special PackedBlockPortArray?
+  def ports_array(self, selector: Callable[[PackedBlockElementType], Port]) -> PackedBlockPortArray:
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockPortArray(self, selector(self._elt_sample))
 
 
   # TODO does this need to return a narrower type?
-  def params_array(self, selector: Callable[[PackedBlockType], ConstraintExpr]) -> PackedBlockParamArray:
+  # TODO would it be useful to return a proper ConstraintExpr type, instead of this special PackedBlockParamArray?
+  def params_array(self, selector: Callable[[PackedBlockElementType], ConstraintExpr]) -> PackedBlockParamArray:
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockParamArray(self, selector(self._elt_sample))
 
