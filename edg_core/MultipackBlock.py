@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
-from .Array import Vector
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
@@ -10,11 +9,6 @@ from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block
-
-
-class MultipackPackingRule(NamedTuple):
-  tunnel_exports: IdentityDict[BasePort, BasePort]  # exterior port -> packed block port
-  tunnel_assigns: IdentityDict[ConstraintExpr, ConstraintExpr]  # my param -> packed block param
 
 
 class PackedBlockPortArray(NamedTuple):
@@ -70,6 +64,11 @@ PackedPortType = Union[Port, PackedBlockPortArray]
 PackedParamType = Union[ConstraintExpr, PackedBlockParamArray]
 
 
+class MultipackPackingRule(NamedTuple):
+  tunnel_exports: IdentityDict[BasePort, PackedPortType]  # exterior port -> packed block port
+  tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamType]  # my param -> packed block param
+
+
 @non_library
 class MultipackBlock(Block):
   """A block that represents a packed single device that is composed of other blocks - for example,
@@ -91,9 +90,9 @@ class MultipackBlock(Block):
     self._packed_blocks: SubElementDict[PackedBlockType] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
-    self._packed_connects_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[BasePort, BasePort]]()
+    self._packed_connects_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[BasePort, PackedPortType]]()
     # packed block -> (self param -> packed param)
-    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[ConstraintExpr, ConstraintExpr]]()
+    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[ConstraintExpr, PackedParamType]]()
 
   PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
@@ -106,8 +105,8 @@ class MultipackBlock(Block):
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
     self._packed_blocks.register(elt)
-    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, BasePort]()
-    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, ConstraintExpr]()
+    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortType]()
+    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamType]()
 
     return elt  # type: ignore
 
@@ -115,7 +114,12 @@ class MultipackBlock(Block):
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
-    block_parent = packed_port._block_parent()
+    if isinstance(packed_port, Port):
+      block_parent = packed_port._block_parent()
+    elif isinstance(packed_port, PackedBlockPortArray):
+      block_parent = packed_port.parent._parent
+    else:
+      raise TypeError()
     assert isinstance(block_parent, Block)
     self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
@@ -123,7 +127,12 @@ class MultipackBlock(Block):
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
-    block_parent = packed_param.parent
+    if isinstance(packed_param, ConstraintExpr):
+      block_parent = packed_param.parent
+    elif isinstance(packed_param, PackedBlockParamArray):
+      block_parent = packed_param.parent._parent
+    else:
+      raise TypeError()
     assert isinstance(block_parent, Block)
     self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
 
