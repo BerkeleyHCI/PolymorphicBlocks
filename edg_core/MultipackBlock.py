@@ -61,6 +61,7 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
     return PackedBlockParamArray(self, selector(self._elt_sample))
 
 
+# These are all internal-ish APIs (within MultipackBlock - NOT in DesignTop)
 PackedBlockTypes = Union[Block, PackedBlockArray]
 PackedPortTypes = Union[Port, PackedBlockPortArray]
 PackedParamTypes = Union[ConstraintExpr, PackedBlockParamArray]

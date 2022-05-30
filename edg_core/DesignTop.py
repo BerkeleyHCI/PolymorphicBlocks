@@ -1,11 +1,11 @@
-from typing import TypeVar, Optional, Tuple
+from typing import TypeVar
 
 import edgir
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block
-from .MultipackBlock import MultipackBlock, PackedBlockArray, PackedBlockTypes
+from .MultipackBlock import MultipackBlock
 from .Refinements import Refinements, DesignPath
 
 
