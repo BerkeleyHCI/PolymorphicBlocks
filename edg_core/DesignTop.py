@@ -14,7 +14,7 @@ class DesignTop(Block):
   """
   def __init__(self) -> None:
     super().__init__()
-    self._packed_blocks = IdentityDict[PackedBlockTypes, Tuple[DesignPath, Optional[str]]]()  # multipack part -> packed block (as path), name
+    self._packed_blocks = IdentityDict[Block, DesignPath]()  # multipack part -> packed block (as path)
 
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
@@ -56,16 +56,9 @@ class DesignTop(Block):
       multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
 
       packed_ref_base = edgir.LocalPath()
-      if isinstance(multipack_part, Block):
-        for packed_path_part in packed_path:
-          packed_ref_base.steps.add().name = packed_path_part
-        packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
-      elif isinstance(multipack_part, PackedBlockArray):
-        for packed_path_part in packed_path:
-          packed_ref_base.steps.add().name = packed_path_part
-        packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
-      else:
-        raise TypeError
+      for packed_path_part in packed_path:
+        packed_ref_base.steps.add().name = packed_path_part
+      packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
         packed_port_name = multipack_part._name_of_child(packed_port)
@@ -87,17 +80,12 @@ class DesignTop(Block):
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations
     return self.Block(tpe)
 
-  def pack(self, multipack_part: PackedBlockTypes, path: DesignPath, suggested_name: Optional[str] = None) -> None:
+  def pack(self, multipack_part: Block, path: DesignPath) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
     if self._elaboration_state not in \
         [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
       raise BlockDefinitionError(self, "can only define multipack in init, contents, or generate")
-    if isinstance(multipack_part, Block):
-      multipack_block = multipack_part._parent
-    elif isinstance(multipack_part, PackedBlockArray):
-      multipack_block = multipack_part._parent
-    else:
-      raise TypeError
+    multipack_block = multipack_part._parent
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
-    self._packed_blocks[multipack_part] = (path, suggested_name)
+    self._packed_blocks[multipack_part] = path
