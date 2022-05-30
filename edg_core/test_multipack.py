@@ -28,6 +28,17 @@ class MultipackBlockSink(MultipackBlock):
     self.packed_assign(self.param2, self.sink2.param)
 
 
+class MultipackArrayBlockSink(MultipackBlock):
+  """Same as above, but with array constructs."""
+  def __init__(self):
+    super().__init__()
+    self.sink_ports = self.Port(Vector(TestPortSink()))
+    self.params = self.Parameter(ArrayFloatExpr())
+    self.sinks = self.PackedPart(PackedBlockArray(PartSink()))
+    self.packed_connect(self.sink_ports, self.sinks.ports_array(lambda x: x.sink))
+    self.packed_assign(self.param1, self.sinks.params_array(lambda x: x.param))
+
+
 class TestBlockContainerSink(Block):
   def __init__(self) -> None:
     super().__init__()
