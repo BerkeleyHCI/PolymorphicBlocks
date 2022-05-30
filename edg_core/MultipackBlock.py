@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple
+from typing import TypeVar, NamedTuple, Optional, Union
 
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
@@ -14,6 +14,26 @@ from .HierarchyBlock import Block
 class MultipackPackingRule(NamedTuple):
   tunnel_exports: IdentityDict[BasePort, BasePort]  # exterior port -> packed block port
   tunnel_assigns: IdentityDict[ConstraintExpr, ConstraintExpr]  # my param -> packed block param
+
+
+class PackedBlockArray:
+  """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks."""
+  def __init__(self, tpe: Block):
+    self._tpe = tpe
+    self._parent: Optional[Block] = None
+
+  def _bind(self, parent: Block) -> PackedBlockArray:
+    clone = PackedBlockArray(self._tpe)
+    clone._parent = parent
+    return clone
+
+  def allocate(self, suggested_name: Optional[str] = None) -> Block:
+    """External API, to request a new instance for an array element / packed part."""
+    assert self._parent is not None, "no parent set, cannot allocate"
+    return self._tpe._bind(self._parent)
+
+
+PackedBlockType = Union[Block, PackedBlockArray]
 
 
 @non_library
@@ -34,18 +54,18 @@ class MultipackBlock(Block):
   """
   def __init__(self):
     super().__init__()
-    self._packed_blocks: SubElementDict[Block] = self.manager.new_dict(Block)
+    self._packed_blocks: SubElementDict[PackedBlockType] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
-    self._packed_connects_by_packed_block = IdentityDict[Block, IdentityDict[BasePort, BasePort]]()
+    self._packed_connects_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[BasePort, BasePort]]()
     # packed block -> (self param -> packed param)
-    self._packed_assigns_by_packed_block = IdentityDict[Block, IdentityDict[ConstraintExpr, ConstraintExpr]]()
+    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[ConstraintExpr, ConstraintExpr]]()
 
-  BlockType = TypeVar('BlockType', bound=Block)
-  def PackedPart(self, tpe: BlockType) -> BlockType:
+  PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
+  def PackedPart(self, tpe: PackedPartType) -> PackedBlockType:
     """Adds a block type that can be packed into this block.
     The block is a "virtual block" that will not appear in the design tree."""
-    if not isinstance(tpe, Block):
+    if not isinstance(tpe, (Block, PackedBlockArray)):
       raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")

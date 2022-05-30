@@ -80,9 +80,10 @@ class SubElementDict(Generic[ElementType]):
 
 class SubElementManager:
   def __init__(self) -> None:
-    self.dicts: List[Tuple[Type, SubElementDict]] = []
+    self.dicts: List[Tuple[Union[Type, Tuple[Type, ...]], SubElementDict]] = []
 
-  def new_dict(self, filter_type: Type[ElementType], anon_prefix: Optional[str] = None) -> SubElementDict[ElementType]:
+  def new_dict(self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]],
+               anon_prefix: Optional[str] = None) -> SubElementDict[ElementType]:
     sub_dict = SubElementDict[ElementType](anon_prefix)
     self.dicts.append((filter_type, sub_dict))
     return sub_dict
