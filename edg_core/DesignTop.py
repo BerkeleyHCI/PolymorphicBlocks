@@ -44,7 +44,7 @@ class DesignTop(Block):
   def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     """Add multipack constraints"""
     pb = super()._populate_def_proto_block_contents(pb)
-    for multipack_part, (packed_path, suggested_name) in self._packed_blocks.items():
+    for multipack_part, packed_path in self._packed_blocks.items():
       multipack_block = multipack_part._parent
       assert isinstance(multipack_block, MultipackBlock)
       multipack_name = self._name_of_child(multipack_block)

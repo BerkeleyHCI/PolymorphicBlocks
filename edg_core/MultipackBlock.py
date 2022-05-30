@@ -43,7 +43,10 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
   def allocate(self, suggested_name: Optional[str] = None) -> Block:
     """External API, to request a new instance for an array element / packed part."""
     assert self._parent is not None, "no parent set, cannot allocate"
-    allocated = self._tpe._bind(self._parent)
+    # we don't use self._tpe._bind since this needs to clone to a different context
+    # TODO this should be dedup'd d/ Block._bind
+    allocated = type(self._tpe)(*self._tpe._initializer_args[0], **self._tpe._initializer_args[1])  # type: ignore
+    allocated._bind_in_place(self._parent)
     self._allocates.append((suggested_name, allocated))
     return allocated
 
