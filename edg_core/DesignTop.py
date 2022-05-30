@@ -54,8 +54,10 @@ class DesignTop(Block):
     for multipack_part, packed_path in self._packed_blocks.items():
       if isinstance(multipack_part, Block):
         multipack_block = multipack_part._parent
+        multipack_part_block = multipack_part
       elif isinstance(multipack_part, PackedBlockAllocate):
         multipack_block = multipack_part.parent._parent
+        multipack_part_block = multipack_part.parent._elt_sample
       else:
         raise TypeError
       assert isinstance(multipack_block, MultipackBlock)
@@ -65,29 +67,29 @@ class DesignTop(Block):
       multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
 
       packing_rule = multipack_block._get_block_packing_rule(multipack_part)
-
-      if isinstance(multipack_part, Block):
-        part_name = multipack_block._name_of_child(multipack_part)
-      elif isinstance(multipack_part, PackedBlockAllocate):
-        part_name = multipack_block._name_of_child(multipack_part.parent)
-        if multipack_part.suggested_name:
-          part_name += "." + multipack_part.suggested_name
-      else:
-        raise TypeError
-
       packed_ref_base = edgir.LocalPath()
       for packed_path_part in packed_path:
         packed_ref_base.steps.add().name = packed_path_part
-      packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
+      packed_ref_map = multipack_part_block._get_ref_map(packed_ref_base)
+
+      if isinstance(multipack_part, Block):
+        part_name = multipack_block._name_of_child(multipack_part)
+
+      elif isinstance(multipack_part, PackedBlockAllocate):
+        part_name = multipack_block._name_of_child(multipack_part.parent)
+        if multipack_part.suggested_name:
+          part_name += f"[{multipack_part.suggested_name}]"
+      else:
+        raise TypeError
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
-        packed_port_name = multipack_part._name_of_child(packed_port)
+        packed_port_name = multipack_part_block._name_of_child(packed_port)
         exported_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_port_name}"].exportedTunnel
         exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
-        packed_param_name = multipack_part._name_of_child(packed_param)
+        packed_param_name = multipack_part_block._name_of_child(packed_param)
         exported_assign = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_param_name}"].assignTunnel
         exported_assign.dst.CopyFrom(multipack_ref_map[multipack_param])
         exported_assign.src.ref.CopyFrom(packed_ref_map[packed_param])
