@@ -149,11 +149,15 @@ class MultipackBlock(Block):
     else:
       raise TypeError()
 
-  def _get_block_packing_rule(self, packed_part: PackedBlockTypes) -> MultipackPackingRule:
+  def _get_block_packing_rule(self, packed_part: Union[Block, PackedBlockAllocate]) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
     self._packed_blocks.finalize()
-    self._packed_finalized = True
+    if isinstance(packed_part, PackedBlockAllocate):
+      packed_block: PackedBlockTypes = packed_part.parent
+    else:
+      packed_block = packed_part
+
     return MultipackPackingRule(
-      self._packed_connects_by_packed_block[packed_part],
-      self._packed_assigns_by_packed_block[packed_part]
+      self._packed_connects_by_packed_block[packed_block],
+      self._packed_assigns_by_packed_block[packed_block]
     )

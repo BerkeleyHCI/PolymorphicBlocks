@@ -1,6 +1,8 @@
-from typing import TypeVar, Union
+from typing import TypeVar, Union, List
 
 import edgir
+from .ArrayExpr import ArrayExpr
+from .ConstraintExpr import ConstraintExpr
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
@@ -44,11 +46,18 @@ class DesignTop(Block):
   def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     """Add multipack constraints"""
     pb = super()._populate_def_proto_block_contents(pb)
+
+    # Since ConstraintExpr arrays don't have the allocate construct (like connects),
+    # we need to aggregate them into a packed array format (instead of generating a constraint for each element)
+    packed_params = IdentityDict[ArrayExpr, List[ConstraintExpr]]()
+
     for multipack_part, packed_path in self._packed_blocks.items():
-      multipack_block = multipack_part._parent
+      if isinstance(multipack_part, Block):
+        multipack_block = multipack_part._parent
+      elif isinstance(multipack_part, PackedBlockAllocate):
+        multipack_block = multipack_part.parent._parent
       assert isinstance(multipack_block, MultipackBlock)
       multipack_name = self._name_of_child(multipack_block)
-
 
       part_name = multipack_block._name_of_child(multipack_part)
       packing_rule = multipack_block._get_block_packing_rule(multipack_part)
@@ -87,7 +96,12 @@ class DesignTop(Block):
     if self._elaboration_state not in \
         [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
       raise BlockDefinitionError(self, "can only define multipack in init, contents, or generate")
-    multipack_block = multipack_part._parent
+    if isinstance(multipack_part, Block):
+      multipack_block = multipack_part._parent
+    elif isinstance(multipack_part, PackedBlockAllocate):
+      multipack_block = multipack_part.parent._parent
+    else:
+      raise TypeError
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
     self._packed_blocks[multipack_part] = path
