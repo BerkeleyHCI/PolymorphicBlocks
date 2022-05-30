@@ -59,14 +59,14 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
     return PackedBlockParamArray(self, selector(self._elt_sample))
 
 
-PackedBlockType = Union[Block, PackedBlockArray]
-PackedPortType = Union[Port, PackedBlockPortArray]
-PackedParamType = Union[ConstraintExpr, PackedBlockParamArray]
+PackedBlockTypes = Union[Block, PackedBlockArray]
+PackedPortTypes = Union[Port, PackedBlockPortArray]
+PackedParamTypes = Union[ConstraintExpr, PackedBlockParamArray]
 
 
 class MultipackPackingRule(NamedTuple):
-  tunnel_exports: IdentityDict[BasePort, PackedPortType]  # exterior port -> packed block port
-  tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamType]  # my param -> packed block param
+  tunnel_exports: IdentityDict[BasePort, PackedPortTypes]  # exterior port -> packed block port
+  tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamTypes]  # my param -> packed block param
 
 
 @non_library
@@ -87,12 +87,12 @@ class MultipackBlock(Block):
   """
   def __init__(self):
     super().__init__()
-    self._packed_blocks: SubElementDict[PackedBlockType] = self.manager.new_dict((Block, PackedBlockArray))
+    self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
-    self._packed_connects_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[BasePort, PackedPortType]]()
+    self._packed_connects_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[BasePort, PackedPortTypes]]()
     # packed block -> (self param -> packed param)
-    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[ConstraintExpr, PackedParamType]]()
+    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamTypes]]()
 
   PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
@@ -105,12 +105,12 @@ class MultipackBlock(Block):
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
     self._packed_blocks.register(elt)
-    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortType]()
-    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamType]()
+    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
+    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
 
     return elt  # type: ignore
 
-  def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortType) -> None:
+  def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortTypes) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
@@ -123,7 +123,7 @@ class MultipackBlock(Block):
     assert isinstance(block_parent, Block)
     self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
-  def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamType) -> None:
+  def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")

@@ -1,11 +1,11 @@
-from typing import TypeVar
+from typing import TypeVar, Optional, Tuple
 
 import edgir
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
-from .Blocks import BaseBlockEdgirType, BlockElaborationState
+from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block
-from .MultipackBlock import MultipackBlock
+from .MultipackBlock import MultipackBlock, PackedBlockArray, PackedBlockTypes
 from .Refinements import Refinements, DesignPath
 
 
@@ -14,7 +14,7 @@ class DesignTop(Block):
   """
   def __init__(self) -> None:
     super().__init__()
-    self._packed_blocks = IdentityDict[Block, DesignPath]()  # multipack part -> packed block (as path)
+    self._packed_blocks = IdentityDict[Block, Tuple[DesignPath, Optional[str]]]()  # multipack part -> packed block (as path), name
 
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
@@ -44,7 +44,7 @@ class DesignTop(Block):
   def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     """Add multipack constraints"""
     pb = super()._populate_def_proto_block_contents(pb)
-    for multipack_part, packed_path in self._packed_blocks.items():
+    for multipack_part, (packed_path, suggested_name) in self._packed_blocks.items():
       multipack_block = multipack_part._parent
       assert isinstance(multipack_block, MultipackBlock)
       multipack_name = self._name_of_child(multipack_block)
@@ -80,12 +80,17 @@ class DesignTop(Block):
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations
     return self.Block(tpe)
 
-  def pack(self, multipack_part: Block, path: DesignPath) -> None:
+  def pack(self, multipack_part: PackedBlockTypes, path: DesignPath, suggested_name: Optional[str] = None) -> None:
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
     if self._elaboration_state not in \
         [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
       raise BlockDefinitionError(self, "can only define multipack in init, contents, or generate")
-    multipack_block = multipack_part._parent
+    if isinstance(multipack_part, Block):
+      multipack_block = multipack_part._parent
+    elif isinstance(multipack_part, PackedBlockArray):
+      multipack_block = multipack_part._parent
+    else:
+      raise TypeError
     assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
     assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
-    self._packed_blocks[multipack_part] = path
+    self._packed_blocks[multipack_part] = (path, suggested_name)
