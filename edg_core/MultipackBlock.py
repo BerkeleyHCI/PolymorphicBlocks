@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple
+from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
+from .Array import Vector
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr
-from .Ports import BasePort
+from .Ports import BasePort, Port
 from .HierarchyBlock import Block
 
 
@@ -16,18 +17,31 @@ class MultipackPackingRule(NamedTuple):
   tunnel_assigns: IdentityDict[ConstraintExpr, ConstraintExpr]  # my param -> packed block param
 
 
-class PackedBlockArray:
+class PackedBlockPortArray(NamedTuple):
+  parent: PackedBlockArray
+  port: Port
+
+
+class PackedBlockParamArray(NamedTuple):
+  parent: PackedBlockArray
+  param: ConstraintExpr
+
+
+PackedBlockType = TypeVar('PackedBlockType', bound=Block)
+class PackedBlockArray(Generic[PackedBlockType]):
   """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
   This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
   (non-multipack) core infrastructure yet."""
   def __init__(self, tpe: Block):
     self._tpe = tpe
+    self._elt_sample: Optional[Block] = None  # inner facing only
     self._parent: Optional[Block] = None
-    self._allocates: List[Tuple[Optional[str], Block]] = []  # to track allocate for ref_map
+    self._allocates: List[Tuple[Optional[str], Block]] = []  # outer facing only, to track allocate for ref_map
 
   def _bind(self, parent: Block) -> PackedBlockArray:
     clone = PackedBlockArray(self._tpe)
     clone._parent = parent
+    clone._elt_sample = self._tpe._bind(parent)
     return clone
 
   def allocate(self, suggested_name: Optional[str] = None) -> Block:
@@ -36,6 +50,17 @@ class PackedBlockArray:
     allocated = self._tpe._bind(self._parent)
     self._allocates.append((suggested_name, allocated))
     return allocated
+
+  # TODO does this need to return a narrower type?
+  def ports_array(self, selector: Callable[[PackedBlockType], Port]) -> PackedBlockPortArray:
+    assert self._elt_sample is not None, "no sample element set, cannot allocate"
+    return PackedBlockPortArray(self, selector(self._elt_sample))
+
+
+  # TODO does this need to return a narrower type?
+  def params_array(self, selector: Callable[[PackedBlockType], ConstraintExpr]) -> PackedBlockParamArray:
+    assert self._elt_sample is not None, "no sample element set, cannot allocate"
+    return PackedBlockParamArray(self, selector(self._elt_sample))
 
 
 PackedBlockType = Union[Block, PackedBlockArray]
