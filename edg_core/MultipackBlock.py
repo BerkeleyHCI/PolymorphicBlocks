@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
-from . import Vector
+from .Array import Vector
 from .ArrayExpr import ArrayExpr
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
@@ -129,7 +129,8 @@ class MultipackBlock(Block):
     self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
-    """Defines a packing rule assigning my parameter from a PackedBlock parameter"""
+    """Defines a packing rule assigning my parameter from a PackedBlock parameter.
+    IMPORTANT: for packed arrays, no ordering on elements is guaranteed, and must be treated as an unordered set."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
@@ -144,7 +145,7 @@ class MultipackBlock(Block):
     assert isinstance(block_parent, Block)
     self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
 
-  def _get_block_packing_rule(self, packed_part: Block) -> MultipackPackingRule:
+  def _get_block_packing_rule(self, packed_part: PackedBlockTypes) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
     self._packed_blocks.finalize()
     self._packed_finalized = True

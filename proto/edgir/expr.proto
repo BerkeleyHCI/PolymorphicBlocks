@@ -275,12 +275,10 @@ message BinarySetExpr {
   ValueExpr rhs = 3;
 }
 
-/** Arrays have an expression form, allowing you to define them with a set of
-    constraints */
-//message ArrayExpr {
-//  repeated ValueExpr vals = 1;
-//  ValueExpr size = 2;
-//}
+/** Creates an array from element exprs */
+message ArrayExpr {
+  repeated ValueExpr vals = 1;
+}
 
 /** Ranges have an expression form, allowing you to constrain them without
     specifying them fully */
@@ -357,7 +355,7 @@ message ValueExpr {
     UnaryExpr        unary       = 3;
     UnarySetExpr     unary_set   = 4;
     // SetExpr          set         = 5;
-    // ArrayExpr        array       = 6;
+    ArrayExpr        array       = 6;
     StructExpr       struct      = 7;
     RangeExpr        range       = 8;
     IfThenElseExpr   ifThenElse  = 10;

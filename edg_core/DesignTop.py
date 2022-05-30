@@ -14,7 +14,7 @@ class DesignTop(Block):
   """
   def __init__(self) -> None:
     super().__init__()
-    self._packed_blocks = IdentityDict[Block, Tuple[DesignPath, Optional[str]]]()  # multipack part -> packed block (as path), name
+    self._packed_blocks = IdentityDict[PackedBlockTypes, Tuple[DesignPath, Optional[str]]]()  # multipack part -> packed block (as path), name
 
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
@@ -56,9 +56,16 @@ class DesignTop(Block):
       multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
 
       packed_ref_base = edgir.LocalPath()
-      for packed_path_part in packed_path:
-        packed_ref_base.steps.add().name = packed_path_part
-      packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
+      if isinstance(multipack_part, Block):
+        for packed_path_part in packed_path:
+          packed_ref_base.steps.add().name = packed_path_part
+        packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
+      elif isinstance(multipack_part, PackedBlockArray):
+        for packed_path_part in packed_path:
+          packed_ref_base.steps.add().name = packed_path_part
+        packed_ref_map = multipack_part._get_ref_map(packed_ref_base)
+      else:
+        raise TypeError
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
         packed_port_name = multipack_part._name_of_child(packed_port)
