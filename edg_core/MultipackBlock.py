@@ -62,7 +62,7 @@ class MultipackBlock(Block):
     self._packed_assigns_by_packed_block = IdentityDict[PackedBlockType, IdentityDict[ConstraintExpr, ConstraintExpr]]()
 
   PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
-  def PackedPart(self, tpe: PackedPartType) -> PackedBlockType:
+  def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
     """Adds a block type that can be packed into this block.
     The block is a "virtual block" that will not appear in the design tree."""
     if not isinstance(tpe, (Block, PackedBlockArray)):
@@ -75,7 +75,7 @@ class MultipackBlock(Block):
     self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, BasePort]()
     self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, ConstraintExpr]()
 
-    return elt
+    return elt  # type: ignore
 
   def packed_connect(self, exterior_port: BasePort, packed_port: BasePort) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
