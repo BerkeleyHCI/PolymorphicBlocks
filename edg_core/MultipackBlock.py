@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
+from . import Vector
+from .ArrayExpr import ArrayExpr
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
@@ -115,8 +117,11 @@ class MultipackBlock(Block):
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_port, Port):
+      assert type(exterior_port) == type(packed_port), "packed_connect ports must be of the same type"
       block_parent = packed_port._block_parent()
     elif isinstance(packed_port, PackedBlockPortArray):
+      assert isinstance(exterior_port, Vector), "can only connect vector from packed port array"
+      assert type(exterior_port._elt_sample) == type(packed_port.port), "packed_connect ports must be of the same type"
       block_parent = packed_port.parent._parent
     else:
       raise TypeError()
@@ -128,8 +133,11 @@ class MultipackBlock(Block):
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
+      assert type(self_param) == type(packed_param), "packed_assign parameters must be of the same type"
       block_parent = packed_param.parent
     elif isinstance(packed_param, PackedBlockParamArray):
+      assert isinstance(self_param, ArrayExpr), "can only assign array expr from packed param array"
+      assert type(self_param._elt_type) == type(packed_param.param), "packed_assign parameters must be of the same type"
       block_parent = packed_param.parent._parent
     else:
       raise TypeError()
