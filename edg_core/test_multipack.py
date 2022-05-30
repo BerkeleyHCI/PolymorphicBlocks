@@ -144,7 +144,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_ref1.steps.add().name = 'sink1'
     expected_ref1.steps.add().name = 'param'
     expected_ref2 = expected_array.vals.add().ref
-    expected_ref2.teps.add().name = 'sink2'
+    expected_ref2.steps.add().name = 'sink2'
     expected_ref2.steps.add().name = 'inner'
     expected_ref2.steps.add().name = 'param'
     self.assertIn(expected_constr, self.pb.constraints.values())
