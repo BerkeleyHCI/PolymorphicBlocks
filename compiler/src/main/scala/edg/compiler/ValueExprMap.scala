@@ -18,6 +18,7 @@ trait ValueExprMap[OutputType] {
       case expr.ValueExpr.Expr.BinarySet(valueExpr) => wrapBinarySet(valueExpr)
       case expr.ValueExpr.Expr.Unary(valueExpr) => wrapUnary(valueExpr)
       case expr.ValueExpr.Expr.UnarySet(valueExpr) => wrapUnarySet(valueExpr)
+      case expr.ValueExpr.Expr.Array(valueExpr) => wrapArray(valueExpr)
       case expr.ValueExpr.Expr.Struct(valueExpr) => wrapStruct(valueExpr)
       case expr.ValueExpr.Expr.Range(valueExpr) => wrapRange(valueExpr)
       case expr.ValueExpr.Expr.IfThenElse(valueExpr) => wrapIfThenElse(valueExpr)
@@ -47,6 +48,8 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapUnary for $unary")
   def mapUnarySet(unarySet: expr.UnarySetExpr, vals: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapBinarySet for $unarySet")
+  def mapArray(array: expr.ArrayExpr, vals: Seq[OutputType]): OutputType =
+    throw new NotImplementedError(s"Undefined mapArray for $array")
   def mapStruct(struct: expr.StructExpr, vals: Map[String, OutputType]): OutputType =
     throw new NotImplementedError(s"Undefined mapStruct for $struct")
   def mapRange(range: expr.RangeExpr, minimum: OutputType, maximum: OutputType): OutputType =
@@ -86,6 +89,9 @@ trait ValueExprMap[OutputType] {
   }
   def wrapUnarySet(unarySet: expr.UnarySetExpr): OutputType = {
     mapUnarySet(unarySet, map(unarySet.vals.get))
+  }
+  def wrapArray(array: expr.ArrayExpr): OutputType = {
+    mapArray(array, array.vals.map(value => map(value)))
   }
   def wrapStruct(struct: expr.StructExpr): OutputType = {
     mapStruct(struct, struct.vals.view.mapValues(value => map(value)).toMap)

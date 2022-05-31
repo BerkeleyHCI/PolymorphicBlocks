@@ -46,6 +46,16 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
     case ExprResult.Result(vals) => ExprResult.Result(ExprEvaluate.evalUnarySet(unarySet, vals))
   }
 
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[ExprResult]): ExprResult = {
+    val missing = vals collect {
+      case ExprResult.Missing(missing) => missing
+    }
+    missing match {
+      case Seq(missing) => ExprResult.Missing(missing)
+      case Seq() => ExprResult.Result(ExprEvaluate.evalArray(array, vals.map(_.asInstanceOf[ExprResult.Result].value)))
+    }
+  }
+
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, ExprResult]): ExprResult =
     ???
 

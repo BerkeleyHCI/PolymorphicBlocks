@@ -149,6 +149,10 @@ class ExprToString() extends ValueExprMap[String] {
     case op => s"unknown[$op](${vals})"
   }
 
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[String]): String = {
+    s"array(${vals.mkString(", ")})"
+  }
+
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, String]): String = {
     val valsStr = vals.map { case (k, v) => s"$k: $v" }
     s"struct(${valsStr.mkString(", ")})"

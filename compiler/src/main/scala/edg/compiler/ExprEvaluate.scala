@@ -326,6 +326,8 @@ object ExprEvaluate {
     }
   }
 
+  def evalArray(array: expr.ArrayExpr, vals: Seq[ExprValue]): ExprValue = ArrayValue(vals)
+
   def evalStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue = ???
 
   def evalRange(range: expr.RangeExpr, minimum: ExprValue, maximum: ExprValue): ExprValue = (minimum, maximum) match {
@@ -367,6 +369,9 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
 
   override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue): ExprValue =
     ExprEvaluate.evalUnarySet(unarySet, vals)
+
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[ExprValue]): ExprValue =
+    ExprEvaluate.evalArray(array, vals)
 
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue =
     ExprEvaluate.evalStruct(struct, vals)
