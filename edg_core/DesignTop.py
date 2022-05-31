@@ -83,6 +83,7 @@ class DesignTop(Block):
         raise TypeError
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
+        # TODO GENERATE ALLOCATE IN PORT ARRAY CASE
         if isinstance(packed_port, Port):
           packed_port_port = packed_port
         elif isinstance(packed_port, PackedBlockPortArray):
@@ -95,6 +96,7 @@ class DesignTop(Block):
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
+        # TODO PACK ARRRAY
         if isinstance(packed_param, ConstraintExpr):
           packed_param_param = packed_param
         elif isinstance(packed_param, PackedBlockParamArray):
