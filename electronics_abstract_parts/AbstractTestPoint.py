@@ -1,3 +1,5 @@
+from typing import cast
+
 from electronics_model import *
 from .Categories import *
 
@@ -34,6 +36,10 @@ class VoltageTestPoint(Block):
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.as_voltage_sink())
 
+  def connected(self, io: Port[VoltageLink]) -> 'VoltageTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
 
 class DigitalTestPoint(Block):
   """Test point with a DigitalSink port."""
@@ -43,6 +49,10 @@ class DigitalTestPoint(Block):
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.as_digital_sink())
 
+  def connected(self, io: Port[DigitalLink]) -> 'DigitalTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
 
 class AnalogTestPoint(Block):
   """Test point with a AnalogSink port."""
@@ -51,3 +61,7 @@ class AnalogTestPoint(Block):
     self.io = self.Port(AnalogSink().empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.as_analog_sink())
+
+  def connected(self, io: Port[AnalogLink]) -> 'AnalogTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self

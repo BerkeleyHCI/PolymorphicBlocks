@@ -30,6 +30,8 @@ kHertz = LiteralConstructor(1e3, 'Hz')
 MHertz = LiteralConstructor(1e6, 'Hz')
 
 Second = LiteralConstructor(1, 'S')
+mSecond = LiteralConstructor(1e-3, 'S')
+uSecond = LiteralConstructor(1e-6, 'S')
 nSecond = LiteralConstructor(1e-9, 'S')
 
 Watt = LiteralConstructor(1, 'W')

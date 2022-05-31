@@ -1,5 +1,8 @@
 from electronics_abstract_parts import *
 
+from .JlcPart import JlcPart
+from .DigikeyPart import DigikeyTablePart
+
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .DigikeyMlcc import DigikeyMlcc
@@ -8,6 +11,7 @@ from .JlcCapacitor import JlcCapacitor
 from .DigikeyInductor import DigikeyInductor
 from .JlcInductor import JlcInductor
 from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
+from .JlcLed import JlcLed
 from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .DigikeyFet import DigikeyFet, DigikeySwitchFet
@@ -38,6 +42,7 @@ from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
+from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle

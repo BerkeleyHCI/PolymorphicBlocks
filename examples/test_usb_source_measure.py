@@ -457,6 +457,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['prot_3v3', 'diode', 'require_basic_part'], False),
         (['control', 'err_source', 'diode', 'require_basic_part'], False),
         (['control', 'err_sink', 'diode', 'require_basic_part'], False),
+        (['data_usb', 'require_basic_part'], False),  # top-side
+        (['pwr_usb', 'require_basic_part'], False),  # top-side
         (['usb_esd', 'require_basic_part'], False),
       ],
       class_refinements=[

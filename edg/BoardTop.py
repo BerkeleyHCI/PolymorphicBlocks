@@ -1,7 +1,7 @@
 from electronics_lib import *
 
 
-class BoardTop(DesignTop):
+class BaseBoardTop(DesignTop):
   """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -22,11 +22,20 @@ class BoardTop(DesignTop):
         (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+      ],
+    )
+
+
+class BoardTop(BaseBoardTop):
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_values=[
+        (JlcPart, ['require_basic_part'], False),  # for non-JLC boards, we don't care about this
       ]
     )
 
 
-class JlcBoardTop(BoardTop):
+class JlcBoardTop(BaseBoardTop):
   """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
   def contents(self):
     super().contents()
@@ -41,10 +50,11 @@ class JlcBoardTop(BoardTop):
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
 
+        (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
         (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
-      ]
+      ],
     )

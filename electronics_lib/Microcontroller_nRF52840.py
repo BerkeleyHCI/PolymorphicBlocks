@@ -380,7 +380,6 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
     self.generator(self.generate, self.usb.allocated())
 
   def generate(self, usb_allocated: List[str]) -> None:
-    super().contents()
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic, excludes=[self.usb])
