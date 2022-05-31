@@ -1,13 +1,14 @@
 from typing import TypeVar, Union, List
 
 import edgir
+from .Ports import Port
 from .ArrayExpr import ArrayExpr
 from .ConstraintExpr import ConstraintExpr
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block
-from .MultipackBlock import MultipackBlock, PackedBlockAllocate
+from .MultipackBlock import MultipackBlock, PackedBlockAllocate, PackedBlockPortArray, PackedBlockParamArray
 from .Refinements import Refinements, DesignPath
 
 
@@ -74,7 +75,6 @@ class DesignTop(Block):
 
       if isinstance(multipack_part, Block):
         part_name = multipack_block._name_of_child(multipack_part)
-
       elif isinstance(multipack_part, PackedBlockAllocate):
         part_name = multipack_block._name_of_child(multipack_part.parent)
         if multipack_part.suggested_name:
@@ -83,16 +83,28 @@ class DesignTop(Block):
         raise TypeError
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
-        packed_port_name = multipack_part_block._name_of_child(packed_port)
+        if isinstance(packed_port, Port):
+          packed_port_port = packed_port
+        elif isinstance(packed_port, PackedBlockPortArray):
+          packed_port_port = packed_port.port
+        else:
+          raise TypeError
+        packed_port_name = multipack_part_block._name_of_child(packed_port_port)
         exported_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_port_name}"].exportedTunnel
         exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
-        exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port])
+        exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
-        packed_param_name = multipack_part_block._name_of_child(packed_param)
+        if isinstance(packed_param, ConstraintExpr):
+          packed_param_param = packed_param
+        elif isinstance(packed_param, PackedBlockParamArray):
+          packed_param_param = packed_param.param
+        else:
+          raise TypeError
+        packed_param_name = multipack_part_block._name_of_child(packed_param_param)
         exported_assign = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_param_name}"].assignTunnel
         exported_assign.dst.CopyFrom(multipack_ref_map[multipack_param])
-        exported_assign.src.ref.CopyFrom(packed_ref_map[packed_param])
+        exported_assign.src.ref.CopyFrom(packed_ref_map[packed_param_param])
 
     return pb
 
