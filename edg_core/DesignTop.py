@@ -1,4 +1,4 @@
-from typing import TypeVar, Union, List
+from typing import TypeVar, Union, List, Tuple, Dict
 
 import edgir
 from .Ports import Port
@@ -50,7 +50,8 @@ class DesignTop(Block):
 
     # Since ConstraintExpr arrays don't have the allocate construct (like connects),
     # we need to aggregate them into a packed array format (instead of generating a constraint for each element)
-    packed_params = IdentityDict[ArrayExpr, List[ConstraintExpr]]()
+    # constr name -> (assign dst, assign src elt)
+    packed_params: Dict[str, Tuple[edgir.ValueExpr, List[edgir.ValueExpr]]] = {}
 
     for multipack_part, packed_path in self._packed_blocks.items():
       if isinstance(multipack_part, Block):
@@ -83,7 +84,6 @@ class DesignTop(Block):
         raise TypeError
 
       for exterior_port, packed_port in packing_rule.tunnel_exports.items():
-        # TODO GENERATE ALLOCATE IN PORT ARRAY CASE
         if isinstance(packed_port, Port):
           packed_port_port = packed_port
         elif isinstance(packed_port, PackedBlockPortArray):
@@ -98,17 +98,28 @@ class DesignTop(Block):
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
-        # TODO PACK ARRRAY
         if isinstance(packed_param, ConstraintExpr):
-          packed_param_param = packed_param
+          packed_param_name = multipack_part_block._name_of_child(packed_param)
+          assign_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_param_name}"].assignTunnel
+          assign_tunnel.dst.CopyFrom(multipack_ref_map[multipack_param])
+          assign_tunnel.src.ref.CopyFrom(packed_ref_map[packed_param])
         elif isinstance(packed_param, PackedBlockParamArray):
-          packed_param_param = packed_param.param
+          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          constr_name = f"(packed){multipack_name}.{multipack_param_name}"
+
+          packed_params.setdefault(constr_name, (multipack_ref_map[multipack_param], []))[1].append(
+            packed_ref_map[packed_param.param])
+
         else:
           raise TypeError
-        packed_param_name = multipack_part_block._name_of_child(packed_param_param)
-        exported_assign = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_param_name}"].assignTunnel
-        exported_assign.dst.CopyFrom(multipack_ref_map[multipack_param])
-        exported_assign.src.ref.CopyFrom(packed_ref_map[packed_param_param])
+
+    # Generate packed array assigns (see comment near top of function)
+    for constr_name, (assign_dst, assign_srcs) in packed_params.items():
+      assign_tunnel = pb.constraints[constr_name].assignTunnel
+      assign_tunnel.dst.CopyFrom(assign_dst)
+      assign_src_vals = assign_tunnel.src.array.vals
+      for assign_src in assign_srcs:
+        assign_src_vals.add().ref.CopyFrom(assign_src)
 
     return pb
 
