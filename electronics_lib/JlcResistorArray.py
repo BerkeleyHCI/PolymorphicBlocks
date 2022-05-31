@@ -4,11 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart, DescriptionParser
 
 
-class JlcResistorArray(TableResistor, JlcTablePart, FootprintBlock):
-  RESISTANCE = PartsTableColumn(Range)
-  POWER_RATING = PartsTableColumn(int)
-  COUNT = PartsTableColumn(int)
-
+class JlcResistorArray(TableResistorArray, JlcTablePart, FootprintBlock):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('4D03', '0603_x4'): 'Resistor_SMD:R_Array_Concave_4x0603',  # 1206 overall size
     ('4D03', 'RES-ARRAY-SMD'): 'Resistor_SMD:R_Array_Concave_4x0603',  # same as above, but inconsistent footprint field
@@ -19,10 +15,10 @@ class JlcResistorArray(TableResistor, JlcTablePart, FootprintBlock):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+) (±\S+%) \S+ (\S+Ω) (\S+W) ±\S+ \S+ Resistor Networks & Arrays.*"),
      lambda match: {
-       TableDiode.RESISTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(3), 'Ω'),
-                                                   PartsTableUtil.parse_tolerance(match.group(2))),
-       TableDiode.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'W')),
-       TableDiode.COUNT: int(match.group(1)),
+       TableResistorArray.RESISTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(3), 'Ω'),
+                                                           PartsTableUtil.parse_tolerance(match.group(2))),
+       TableResistorArray.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'W')),
+       TableResistorArray.COUNT: int(match.group(1)),
      }),
   ]
 

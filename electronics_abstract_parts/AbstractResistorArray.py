@@ -1,10 +1,15 @@
-from typing import Optional, cast
+from typing import Optional, cast, List
 
 from electronics_model import *
+from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
 from .StandardPinningFootprint import StandardPinningFootprint
+
+
+class ResistorArrayElement(Resistor):  # to avoid an abstract part error
+  pass
 
 
 @abstract_block
@@ -19,8 +24,15 @@ class ResistorArray(PassiveComponent, MultipackBlock):
 
     self.resistances = self.Parameter(ArrayRangeExpr())
     self.powers = self.Parameter(ArrayRangeExpr())  # operating power range
+    self.count = self.ArgParameter(count)
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())  # per element
+
+    self.elements = self.PackedPart(PackedBlockArray(ResistorArrayElement()))
+    self.packed_connect(self.a, self.elements.ports_array(lambda x: x.a))
+    self.packed_connect(self.b, self.elements.ports_array(lambda x: x.b))
+    self.packed_assign(self.resistances, self.elements.params_array(lambda x: x.resistance))
+    self.packed_assign(self.powers, self.elements.params_array(lambda x: x.power))
 
 
 @abstract_block
@@ -63,20 +75,36 @@ class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[Resis
 class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
+  COUNT = PartsTableColumn(int)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec)
+    self.generator(self.select_part, self.count, self.a.allocated(), self.b.allocated(),
+                   self.resistances, self.powers, self.part, self.footprint_spec)
 
-  def select_part(self, resistance: Range, power_dissipation: Range, part_spec: str, footprint_spec: str) -> None:
+  def select_part(self, count: int, a_allocations: List[str], b_allocations: List[str],
+                  resistances: List[Range], power_dissipations: List[Range],
+                  part_spec: str, footprint_spec: str) -> None:
+    # TODO some kind of range intersect construct?
+    resistances_min = max([resistance.lower for resistance in resistances])
+    resistances_max = min([resistance.lower for resistance in resistances])
+    assert resistances_min <= resistances_max, "resistances do not intersect"
+    resistance_intersect = Range(resistances_min, resistances_max)
+
+    powers_min = min([power.lower for power in power_dissipations])
+    powers_max = max([power.lower for power in power_dissipations])
+    powers_hull = Range(powers_min, powers_max)
+
     parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.RESISTANCE].fuzzy_in(resistance) and
-        power_dissipation.fuzzy_in(row[self.POWER_RATING])
+        (count == 0 or count == row[self.COUNT]) and
+        (row[self.COUNT] >= len(a_allocations) and row[self.COUNT] >= len(b_allocations)) and
+        row[self.RESISTANCE].fuzzy_in(resistance_intersect) and
+        powers_hull.fuzzy_in(row[self.POWER_RATING])
     ))
-    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
+    part = parts.first(f"no resistors in {resistance_intersect} Ohm, {powers_hull} W")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
@@ -87,7 +115,7 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
 
   def _make_footprint(self, part: PartsTableRow) -> None:
     self.footprint(
-      'R', part[self.KICAD_FOOTPRINT],
+      'RN', part[self.KICAD_FOOTPRINT],
       self._make_pinning(part[self.KICAD_FOOTPRINT]),
       mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
       value=part[self.DESCRIPTION_COL],
