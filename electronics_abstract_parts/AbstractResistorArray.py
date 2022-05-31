@@ -25,31 +25,36 @@ class ResistorArray(PassiveComponent, MultipackBlock):
 
 @abstract_block
 class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[ResistorArray]):
-  FOOTPRINT_PINNING_MAP = {
+  # TODO some way to ensure the resistor count is sufficient?
+  FOOTPRINT_PINNING_MAP = {  # these are all the footprints in KiCad as of 2022 05 31
     (
-      'Resistor_SMD:R_0201_0603Metric',
-      'Resistor_SMD:R_0402_1005Metric',
-      'Resistor_SMD:R_0603_1608Metric',
-      'Resistor_SMD:R_0805_2012Metric',
-      'Resistor_SMD:R_1206_3216Metric',
-      'Resistor_SMD:R_1210_3225Metric',
-      'Resistor_SMD:R_2010_5025Metric',
-      'Resistor_SMD:R_2512_6332Metric',
-
-      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P15.24mm_Horizontal',
-
-      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P5.08mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P5.08mm_Vertical',
+      'Resistor_SMD:R_Array_Concave_2x0603',
+      'Resistor_SMD:R_Array_Convex_2x0402',
+      'Resistor_SMD:R_Array_Convex_2x0603',
+      'Resistor_SMD:R_Array_Convex_2x0606',
+      'Resistor_SMD:R_Array_Convex_2x1206',
     ): lambda block: {
-      '1': block.a,
-      '2': block.b,
+      '1': block.a['0'],
+      '4': block.b['0'],
+      '2': block.a['1'],
+      '3': block.b['1'],
+    },
+    (
+      'Resistor_SMD:R_Array_Concave_4x0402',
+      'Resistor_SMD:R_Array_Concave_4x0603',
+      'Resistor_SMD:R_Array_Convex_4x0402',
+      'Resistor_SMD:R_Array_Convex_4x0603',
+      'Resistor_SMD:R_Array_Convex_4x0612',
+      'Resistor_SMD:R_Array_Convex_4x1206',
+    ): lambda block: {
+      '1': block.a['0'],
+      '8': block.b['0'],
+      '2': block.a['1'],
+      '7': block.b['1'],
+      '3': block.a['2'],
+      '6': block.b['2'],
+      '4': block.a['3'],
+      '5': block.b['3'],
     },
   }
 
