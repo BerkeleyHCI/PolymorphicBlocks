@@ -77,8 +77,8 @@ class DesignTop(Block):
         part_name = multipack_block._name_of_child(multipack_part)
       elif isinstance(multipack_part, PackedBlockAllocate):
         part_name = multipack_block._name_of_child(multipack_part.parent)
-        if multipack_part.suggested_name:
-          part_name += f"[{multipack_part.suggested_name}]"
+        assert multipack_part.suggested_name, "multipack parts must have suggested name, for consistency"
+        part_name += f"[{multipack_part.suggested_name}]"
       else:
         raise TypeError
 
@@ -93,6 +93,8 @@ class DesignTop(Block):
         packed_port_name = multipack_part_block._name_of_child(packed_port_port)
         exported_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_port_name}"].exportedTunnel
         exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
+        if isinstance(packed_port, PackedBlockPortArray):
+          exported_tunnel.internal_block_port.ref.steps.add().allocate = multipack_part.suggested_name
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port_port])
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
