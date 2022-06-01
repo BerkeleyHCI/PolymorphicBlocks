@@ -17,14 +17,17 @@ class ResistorArrayElement(Resistor):  # to avoid an abstract part error
 class ResistorArray(PassiveComponent, MultipackBlock):
   """An n-element resistor array, where all resistors have the same resistance and power rating."""
   @init_in_parent
-  def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'
+  def __init__(self, count: IntLike = 0,  # 0 means 'size automatically'
+               resistances: ArrayRangeLike = ArrayRangeExpr(),
+               powers: ArrayRangeLike = ArrayRangeExpr()) -> None:
+    # TODO don't require ArgParam for generator pararms - in packed param base
     super().__init__()
 
-    self.a = self.Port(Vector(Passive.empty()))
-    self.b = self.Port(Vector(Passive.empty()))
+    self.a = self.Port(Vector(Passive.empty()), optional=True)
+    self.b = self.Port(Vector(Passive.empty()), optional=True)
 
-    self.resistances = self.Parameter(ArrayRangeExpr())
-    self.powers = self.Parameter(ArrayRangeExpr())  # operating power range
+    self.resistances = self.ArgParameter(resistances)
+    self.powers = self.ArgParameter(powers)  # operating power range
     self.count = self.ArgParameter(count)
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())  # per element

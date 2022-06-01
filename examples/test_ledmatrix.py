@@ -126,6 +126,14 @@ class LedMatrixTest(JlcBoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def multipack(self) -> None:
+    self.matrix_res1 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res1.elements.allocate('0'), ['matrix', 'res[0]'])
+    self.pack(self.matrix_res1.elements.allocate('1'), ['matrix', 'res[1]'])
+    self.pack(self.matrix_res1.elements.allocate('2'), ['matrix', 'res[2]'])
+    self.pack(self.matrix_res1.elements.allocate('3'), ['matrix', 'res[3]'])
+    self.matrix_res2 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res2.elements.allocate('0'), ['matrix', 'res[4]'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

@@ -49,6 +49,7 @@ class JlcBoardTop(BaseBoardTop):
         (Resistor, JlcResistor),
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
+        (ResistorArray, JlcResistorArray),
 
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
