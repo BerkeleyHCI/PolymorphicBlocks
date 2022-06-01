@@ -2,6 +2,7 @@ import unittest
 from typing import List, Dict
 
 from edg import *
+from electronics_abstract_parts.AbstractResistorArray import ResistorArrayElement
 
 
 class CharlieplexedLedMatrix(GeneratorBlock):
@@ -143,6 +144,12 @@ class LedMatrixTest(JlcBoardTop):
 
         (['driver', 'fet'], DigikeyFet),
         (['driver', 'diode'], DigikeySmtDiode),
+
+        (['matrix', 'res[0]'], ResistorArrayElement),  # TODO move into infrastructure!
+        (['matrix', 'res[1]'], ResistorArrayElement),
+        (['matrix', 'res[2]'], ResistorArrayElement),
+        (['matrix', 'res[3]'], ResistorArrayElement),
+        (['matrix', 'res[4]'], ResistorArrayElement),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -164,6 +171,7 @@ class LedMatrixTest(JlcBoardTop):
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),
+        (ResistorArray, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),

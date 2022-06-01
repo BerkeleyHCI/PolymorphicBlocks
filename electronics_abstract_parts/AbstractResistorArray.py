@@ -92,12 +92,12 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
                   part_spec: str, footprint_spec: str) -> None:
     # TODO some kind of range intersect construct?
     resistances_min = max([resistance.lower for resistance in resistances])
-    resistances_max = min([resistance.lower for resistance in resistances])
+    resistances_max = min([resistance.upper for resistance in resistances])
     assert resistances_min <= resistances_max, "resistances do not intersect"
     resistance_intersect = Range(resistances_min, resistances_max)
 
     powers_min = min([power.lower for power in power_dissipations])
-    powers_max = max([power.lower for power in power_dissipations])
+    powers_max = max([power.upper for power in power_dissipations])
     powers_hull = Range(powers_min, powers_max)
 
     parts = self._get_table().filter(lambda row: (
