@@ -51,8 +51,8 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
       case ExprResult.Missing(missing) => missing
     }
     missing match {
-      case Seq(missing) => ExprResult.Missing(missing)
       case Seq() => ExprResult.Result(ExprEvaluate.evalArray(array, vals.map(_.asInstanceOf[ExprResult.Result].value)))
+      case missing => ExprResult.Missing(missing.flatten.toSet)
     }
   }
 
