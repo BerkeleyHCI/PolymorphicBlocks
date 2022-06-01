@@ -9,7 +9,8 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 class ResistorArrayElement(Resistor):  # to avoid an abstract part error
-  pass
+  def __init__(self):
+    super().__init__(resistance=RangeExpr(), power=RangeExpr())
 
 
 @abstract_block
@@ -105,6 +106,11 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
         powers_hull.fuzzy_in(row[self.POWER_RATING])
     ))
     part = parts.first(f"no resistors in {resistance_intersect} Ohm, {powers_hull} W")
+
+    # actually create terminals
+    for i in range(part[self.COUNT]):
+      self.a.append_elt(Passive(), str(i))
+      self.b.append_elt(Passive(), str(i))
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))

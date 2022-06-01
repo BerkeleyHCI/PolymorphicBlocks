@@ -28,7 +28,11 @@ class JlcResistorArray(TableResistorArray, JlcTablePart, FootprintBlock):
       if row['Second Category'] != 'Resistor Networks & Arrays':
         return None
 
-      footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row[cls._PACKAGE_HEADER])
+      footprint = None
+      for (series, package), map_footprint in cls.SERIES_PACKAGE_FOOTPRINT_MAP.items():
+        if row[cls.PART_NUMBER_COL].startswith(series) and row[cls._PACKAGE_HEADER] == package:
+          assert footprint is None, f"multiple footprint rules match {row[cls.PART_NUMBER_COL]}"
+          footprint = map_footprint
       if footprint is None:
         return None
 

@@ -51,7 +51,7 @@ class DesignTop(Block):
     # Since ConstraintExpr arrays don't have the allocate construct (like connects),
     # we need to aggregate them into a packed array format (instead of generating a constraint for each element)
     # constr name -> (assign dst, assign src elt)
-    packed_params: Dict[str, Tuple[edgir.ValueExpr, List[edgir.ValueExpr]]] = {}
+    packed_params: Dict[str, Tuple[edgir.LocalPath, List[edgir.LocalPath]]] = {}
 
     for multipack_part, packed_path in self._packed_blocks.items():
       if isinstance(multipack_part, Block):
@@ -59,6 +59,7 @@ class DesignTop(Block):
         multipack_part_block = multipack_part
       elif isinstance(multipack_part, PackedBlockAllocate):
         multipack_block = multipack_part.parent._parent
+        assert isinstance(multipack_part.parent._elt_sample, Block)  # may be optional
         multipack_part_block = multipack_part.parent._elt_sample
       else:
         raise TypeError
@@ -94,6 +95,8 @@ class DesignTop(Block):
         exported_tunnel = pb.constraints[f"(packed){multipack_name}.{part_name}.{packed_port_name}"].exportedTunnel
         exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
         if isinstance(packed_port, PackedBlockPortArray):
+          assert isinstance(multipack_part, PackedBlockAllocate)
+          assert multipack_part.suggested_name
           exported_tunnel.internal_block_port.ref.steps.add().allocate = multipack_part.suggested_name
         exported_tunnel.exterior_port.ref.CopyFrom(packed_ref_map[packed_port_port])
 
