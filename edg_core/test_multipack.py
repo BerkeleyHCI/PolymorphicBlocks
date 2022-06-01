@@ -9,6 +9,7 @@ class PartSink(Block):
   def __init__(self) -> None:
     super().__init__()
     self.param = self.Parameter(FloatExpr())
+    self.result_param = self.Parameter(IntExpr())
     self.sink = self.Port(TestPortSink(), optional=True)
 
 
@@ -20,12 +21,16 @@ class MultipackBlockSink(MultipackBlock):
     self.sink_port2 = self.Port(TestPortSink())
     self.param1 = self.Parameter(FloatExpr())
     self.param2 = self.Parameter(FloatExpr())
+    self.result_param = self.Parameter(IntExpr())
+
     self.sink1 = self.PackedPart(PartSink())
     self.sink2 = self.PackedPart(PartSink())
     self.packed_connect(self.sink_port1, self.sink1.sink)
     self.packed_connect(self.sink_port2, self.sink2.sink)
     self.packed_assign(self.param1, self.sink1.param)
     self.packed_assign(self.param2, self.sink2.param)
+    self.unpacked_assign(self.sink1.result_param, self.result_param)
+    self.unpacked_assign(self.sink2.result_param, self.result_param)
 
 
 class TestBlockContainerSink(Block):
@@ -85,6 +90,22 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.src.ref.steps.add().name = 'sink2'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'inner'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+  def test_assign_unpacked_tunnel(self) -> None:
+    expected_constr = edgir.ValueExpr()
+    expected_constr.assignTunnel.dst.steps.add().name = 'sink1'
+    expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+    expected_constr = edgir.ValueExpr()
+    expected_constr.assignTunnel.dst.steps.add().name = 'sink2'
+    expected_constr.assignTunnel.dst.steps.add().name = 'inner'
+    expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
     self.assertIn(expected_constr, self.pb.constraints.values())
 
 

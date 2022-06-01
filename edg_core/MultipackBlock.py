@@ -131,6 +131,7 @@ class MultipackBlock(Block):
     self._packed_blocks.register(elt)
     self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
     self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
+    self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, UnpackedParamTypes]()
 
     return elt  # type: ignore
 
