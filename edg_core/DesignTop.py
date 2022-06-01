@@ -1,8 +1,7 @@
-from typing import TypeVar, Union, List, Tuple, Dict
+from typing import TypeVar, Union, List, Tuple, Dict, Type
 
 import edgir
 from .Ports import Port
-from .ArrayExpr import ArrayExpr
 from .ConstraintExpr import ConstraintExpr
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
@@ -18,7 +17,8 @@ class DesignTop(Block):
   """
   def __init__(self) -> None:
     super().__init__()
-    self._packed_blocks = IdentityDict[Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
+    self._packed_blocks = IdentityDict[
+      Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
 
   def Port(self, *args, **kwargs):
     raise ValueError("Can't create ports on design top")
@@ -29,7 +29,20 @@ class DesignTop(Block):
   def refinements(self) -> Refinements:
     """Defines top-level refinements.
     Subclasses should define refinements by stacking new refinements on a super().refinements() call."""
-    return Refinements()
+    # Include all the packing refinements as instance refinements
+    def make_packing_refinement(multipack_part: Union[Block, PackedBlockAllocate], path: DesignPath) -> \
+        Tuple[DesignPath, Type[Block]]:
+      if isinstance(multipack_part, Block):
+        return path, type(multipack_part)
+      elif isinstance(multipack_part, PackedBlockAllocate):
+        return path, type(multipack_part.parent._tpe)
+      else:
+        raise TypeError
+
+    return Refinements(
+      instance_refinements=[make_packing_refinement(multipack_part, path)
+                            for multipack_part, path in self._packed_blocks.items()]
+    )
 
   def multipack(self):
     """Defines multipack packing rules, by defining multipack devices and providing packing connections.
@@ -142,6 +155,7 @@ class DesignTop(Block):
     return pb
 
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
+
   def PackedBlock(self, tpe: PackedBlockType) -> PackedBlockType:
     """Instantiates a multipack block, that can be used to pack constituent blocks arbitrarily deep in the design."""
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations

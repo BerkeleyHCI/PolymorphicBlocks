@@ -67,13 +67,14 @@ class ScalaCompilerInstance:
     assert self.request_serializer is not None
     assert self.response_deserializer is not None
 
+    block_obj = block()
     request = edgrpc.CompilerRequest(
       modules=[block.__module__],
       design=edgir.Design(
-        contents=builder.elaborate_toplevel(block(), f"in elaborating top design block {block}"))
+        contents=builder.elaborate_toplevel(block_obj, f"in elaborating top design block {block}"))
     )
-    if issubclass(block, DesignTop):  # TODO don't create another instance
-      refinements = block().refinements() + refinements
+    if isinstance(block_obj, DesignTop):
+      refinements = block_obj.refinements() + refinements
 
     refinements.populate_proto(request.refinements)
 
