@@ -15,6 +15,7 @@ PART_ROTATIONS = {
   'C165948': -90,  # USB C connector
   'C2934560': -90,  # ESP32C
   'C86781': 180,  # LD1117
+  'C425057': -90,  # resistor array 750ohm 4x0603
 }
 
 
