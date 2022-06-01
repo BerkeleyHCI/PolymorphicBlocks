@@ -23,7 +23,12 @@ class PackedBlockPortArray(NamedTuple):
   port: Port
 
 
-class PackedBlockParamArray(NamedTuple):
+class PackedBlockParamArray(NamedTuple):  # an array of parameters packed from an array of blocks
+  parent: PackedBlockArray
+  param: ConstraintExpr
+
+
+class PackedBlockParam(NamedTuple):  # a parameter replicated from an array of blocks
   parent: PackedBlockArray
   param: ConstraintExpr
 
@@ -53,26 +58,37 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
   # TODO does this need to return a narrower type?
   # TODO would it be useful to return a proper Vector type, instead of this special PackedBlockPortArray?
   def ports_array(self, selector: Callable[[PackedBlockElementType], Port]) -> PackedBlockPortArray:
+    """Return an array of ports, packed from the selected port of each array element."""
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockPortArray(self, selector(self._elt_sample))
-
 
   # TODO does this need to return a narrower type?
   # TODO would it be useful to return a proper ConstraintExpr type, instead of this special PackedBlockParamArray?
   def params_array(self, selector: Callable[[PackedBlockElementType], ConstraintExpr]) -> PackedBlockParamArray:
+    """Return an array of params, packed from the selected param of each array element."""
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockParamArray(self, selector(self._elt_sample))
+
+  # TODO does this need to return a narrower type?
+  # TODO would it be useful to return a proper ConstraintExpr type, instead of this special PackedBlockParamArray?
+  def params(self, selector: Callable[[PackedBlockElementType], ConstraintExpr]) -> PackedBlockParam:
+    """Return the selected param on each array element. Only valid for unpacked assign, where the assign
+    is replicated to the selected param on each packed block."""
+    assert self._elt_sample is not None, "no sample element set, cannot allocate"
+    return PackedBlockParam(self, selector(self._elt_sample))
 
 
 # These are all internal-ish APIs (within MultipackBlock - NOT in DesignTop)
 PackedBlockTypes = Union[Block, PackedBlockArray]
 PackedPortTypes = Union[Port, PackedBlockPortArray]
 PackedParamTypes = Union[ConstraintExpr, PackedBlockParamArray]
+UnpackedParamTypes = Union[ConstraintExpr, PackedBlockParam]
 
 
 class MultipackPackingRule(NamedTuple):
   tunnel_exports: IdentityDict[BasePort, PackedPortTypes]  # exterior port -> packed block port
   tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamTypes]  # my param -> packed block param
+  tunnel_unpack_assigns: IdentityDict[ConstraintExpr, UnpackedParamTypes]  # packed block param -> my param
 
 
 @non_library
@@ -97,8 +113,10 @@ class MultipackBlock(Block):
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
     self._packed_connects_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[BasePort, PackedPortTypes]]()
-    # packed block -> (self param -> packed param)
+    # packed block -> (self param -> packed param) (reverse of assign direction)
     self._packed_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamTypes]]()
+    # packed block -> (self param -> packed param)
+    self._unpacked_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, UnpackedParamTypes]]()
 
   PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
@@ -149,6 +167,23 @@ class MultipackBlock(Block):
     else:
       raise TypeError()
 
+  def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
+    """Defines an (un)packing rule assigning a Packed parameter from my parameter (reverse of packed_assign).
+    Only direct parameter-to-parameter assignment allowed, even for packed block arrays,
+    """
+    if self._elaboration_state != BlockElaborationState.init:
+      raise BlockDefinitionError(self, "can only define multipack in init")
+    if isinstance(packed_param, ConstraintExpr):
+      assert type(packed_param) == type(self_param), "unpacked_assign parameters must be of the same type"
+      block_parent = packed_param.parent
+      assert isinstance(block_parent, Block)
+      self._unpacked_assigns_by_packed_block[block_parent][self_param] = packed_param
+    elif isinstance(packed_param, PackedBlockParam):
+      assert type(packed_param.param) == type(self_param), "unpacked_assign parameters must be of the same type"
+      self._unpacked_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
+    else:
+      raise TypeError()
+
   def _get_block_packing_rule(self, packed_part: Union[Block, PackedBlockAllocate]) -> MultipackPackingRule:
     """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
     self._packed_blocks.finalize()
@@ -159,5 +194,6 @@ class MultipackBlock(Block):
 
     return MultipackPackingRule(
       self._packed_connects_by_packed_block[packed_block],
-      self._packed_assigns_by_packed_block[packed_block]
+      self._packed_assigns_by_packed_block[packed_block],
+      self._unpacked_assigns_by_packed_block[packed_block]
     )
