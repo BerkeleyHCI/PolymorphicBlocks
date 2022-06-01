@@ -176,13 +176,16 @@ class PartsTableUtil:
       if default is specified, returns the default."""
     matches = cls.VALUE_REGEX.match(value)
     if matches is not None and matches.group(3) == units:
-      if '/' in matches.group(1):
-        fractional_components = matches.group(1).split('/')
-        assert len(fractional_components) == 2
-        numeric_value = float(fractional_components[0]) / float(fractional_components[1])
-      else:
-        numeric_value = float(matches.group(1))
-      return numeric_value * cls.SI_PREFIX_DICT[matches.group(2)]
+      try:
+        if '/' in matches.group(1):
+          fractional_components = matches.group(1).split('/')
+          assert len(fractional_components) == 2
+          numeric_value = float(fractional_components[0]) / float(fractional_components[1])
+        else:
+          numeric_value = float(matches.group(1))
+        return numeric_value * cls.SI_PREFIX_DICT[matches.group(2)]
+      except ValueError:
+        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
     else:
       if default == cls.ParseError:
         raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
