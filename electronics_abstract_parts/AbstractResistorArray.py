@@ -37,6 +37,8 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     self.packed_connect(self.b, self.elements.ports_array(lambda x: x.b))
     self.packed_assign(self.resistances, self.elements.params_array(lambda x: x.resistance))
     self.packed_assign(self.powers, self.elements.params_array(lambda x: x.power))
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 
 
 @abstract_block

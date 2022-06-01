@@ -8,7 +8,8 @@ from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block
-from .MultipackBlock import MultipackBlock, PackedBlockAllocate, PackedBlockPortArray, PackedBlockParamArray
+from .MultipackBlock import MultipackBlock, PackedBlockAllocate, PackedBlockPortArray, PackedBlockParamArray, \
+  PackedBlockParam
 from .Refinements import Refinements, DesignPath
 
 
@@ -109,10 +110,24 @@ class DesignTop(Block):
         elif isinstance(packed_param, PackedBlockParamArray):
           multipack_param_name = multipack_block._name_of_child(multipack_param)
           constr_name = f"(packed){multipack_name}.{multipack_param_name}"
-
           packed_params.setdefault(constr_name, (multipack_ref_map[multipack_param], []))[1].append(
             packed_ref_map[packed_param.param])
+        else:
+          raise TypeError
 
+      for multipack_param, unpacked_param in packing_rule.tunnel_unpack_assigns.items():
+        if isinstance(unpacked_param, ConstraintExpr):
+          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          # TODO need better constraint naming scheme
+          assign_tunnel = pb.constraints[f"(unpacked){multipack_name}.{part_name}.{multipack_param_name}"].assignTunnel
+          assign_tunnel.dst.CopyFrom(packed_ref_map[unpacked_param])
+          assign_tunnel.src.ref.CopyFrom(multipack_ref_map[multipack_param])
+        elif isinstance(unpacked_param, PackedBlockParam):
+          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          # TODO need better constraint naming scheme
+          assign_tunnel = pb.constraints[f"(unpacked){multipack_name}.{part_name}.{multipack_param_name}"].assignTunnel
+          assign_tunnel.dst.CopyFrom(packed_ref_map[unpacked_param.param])
+          assign_tunnel.src.ref.CopyFrom(multipack_ref_map[multipack_param])
         else:
           raise TypeError
 

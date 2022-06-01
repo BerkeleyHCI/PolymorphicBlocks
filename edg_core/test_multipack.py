@@ -59,7 +59,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     self.pb = TopMultipackDesign()._elaborated_def_to_proto()
 
   def test_export_tunnel(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 4)
+    self.assertEqual(len(self.pb.constraints), 6)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
@@ -115,9 +115,11 @@ class MultipackArrayBlockSink(MultipackBlock):
     super().__init__()
     self.sink_ports = self.Port(Vector(TestPortSink()))
     self.params = self.Parameter(ArrayFloatExpr())
+    self.result_param = self.Parameter(IntExpr())
     self.sinks = self.PackedPart(PackedBlockArray(PartSink()))
     self.packed_connect(self.sink_ports, self.sinks.ports_array(lambda x: x.sink))
     self.packed_assign(self.params, self.sinks.params_array(lambda x: x.param))
+    self.unpacked_assign(self.sinks.params(lambda x: x.result_param), self.result_param)
 
 
 class TopMultipackArrayDesign(DesignTop):
@@ -137,7 +139,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     self.pb = TopMultipackArrayDesign()._elaborated_def_to_proto()
 
   def test_export_tunnel(self) -> None:
-    # self.assertEqual(len(self.pb.constraints), 3)
+    self.assertEqual(len(self.pb.constraints), 5)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
@@ -168,4 +170,20 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_ref2.steps.add().name = 'sink2'
     expected_ref2.steps.add().name = 'inner'
     expected_ref2.steps.add().name = 'param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+  def test_assign_unpacked_tunnel(self) -> None:
+    expected_constr = edgir.ValueExpr()
+    expected_constr.assignTunnel.dst.steps.add().name = 'sink1'
+    expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
+    self.assertIn(expected_constr, self.pb.constraints.values())
+
+    expected_constr = edgir.ValueExpr()
+    expected_constr.assignTunnel.dst.steps.add().name = 'sink2'
+    expected_constr.assignTunnel.dst.steps.add().name = 'inner'
+    expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
+    expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
     self.assertIn(expected_constr, self.pb.constraints.values())
