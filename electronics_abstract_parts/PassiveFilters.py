@@ -1,4 +1,5 @@
 from math import pi
+from typing import Optional, cast
 
 from electronics_model import *
 from .AbstractResistor import Resistor
@@ -31,6 +32,29 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
     self.connect(self.input, self.r.a)
     self.connect(self.r.b, self.c.pos, self.output)  # TODO support negative voltages?
     self.connect(self.c.neg, self.gnd)
+
+
+class PullupDelayRc(DigitalFilter, Block):
+  """Pull-up resistor with capacitor for delay.
+  """
+  @init_in_parent
+  def __init__(self, impedance: RangeLike, time_constant: RangeLike):
+    super().__init__()
+    self.input = self.Port(VoltageSink.empty(), [Power])
+    self.time_constant = self.ArgParameter(time_constant)
+
+    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
+                                   voltage=self.input.link().voltage))
+
+    self.connect(self.input, self.rc.input.as_voltage_sink())
+    self.io = self.Export(self.rc.output.as_digital_pull_high_from_supply(self.input), [Output])
+    self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])
+
+  def connected(self, io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if io is not None:
+      cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
 
 
 class DigitalLowPassRc(DigitalFilter, Block):
