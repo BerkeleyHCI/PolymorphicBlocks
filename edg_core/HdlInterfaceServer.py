@@ -82,15 +82,15 @@ class HdlInterface():  # type: ignore
     obj = elt_cls()
     if isinstance(obj, Block):
       block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}")
-      return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)
+      return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore
     elif isinstance(obj, Link):
       link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}")
       assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
-      return obj, edgir.Library.NS.Val(link=link_proto)
+      return obj, edgir.Library.NS.Val(link=link_proto)  # type: ignore
     elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-      return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())
+      return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())  # type: ignore
     elif isinstance(obj, Port):
-      return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
+      return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))  # type: ignore
     else:
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 

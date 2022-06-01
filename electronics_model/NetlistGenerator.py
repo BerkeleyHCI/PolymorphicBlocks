@@ -141,6 +141,8 @@ class NetlistCollect(TransformUtil.Transform):
         self.process_connected(path, block, constraint.connected)
       elif constraint.HasField('exported'):
         self.process_exported(path, block, constraint.exported)
+      elif constraint.HasField('exportedTunnel'):
+        self.process_exported(path, block, constraint.exportedTunnel)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ConnectedExpr) -> None:
     assert constraint.block_port.HasField('ref')
