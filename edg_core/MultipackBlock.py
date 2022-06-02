@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
+import edgir
 from .Array import Vector
 from .ArrayExpr import ArrayExpr
 from .Blocks import BlockElaborationState
@@ -11,6 +12,29 @@ from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block
+
+
+class PackedBlockPartBase:
+  """Abstract base class for any packed block (part), defining common APIs"""
+  # TODO WIP WIP WIP
+  def name(self) -> str: ...  # user-friendly (non-ref) name in parent
+  def get_packing_rule(self) -> MultipackPackingRule: ...  # packing rule for this part
+  def parent(self) -> MultipackBlock: ...  # returns the containing multipack device
+
+class PackedPortBase:
+  """Abstract base class for a port on a packed block, defining common APIs"""
+  # TODO WIP WIP WIP
+  def name(self) -> str: ...  # name of port in parent
+  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath: ...  # ref of this port
+
+class PackedParamBase:
+  """Abstract base class for a param on a packed block, defining common APIs"""
+  # TODO WIP WIP WIP
+  # TODO the allocate case is really nasty
+  def name(self) -> str: ...  # name of param in parent
+  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath: ...  # ref of this param
+
+
 
 
 class PackedBlockAllocate(NamedTuple):
