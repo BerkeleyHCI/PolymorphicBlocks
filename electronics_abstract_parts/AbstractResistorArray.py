@@ -17,26 +17,20 @@ class ResistorArrayElement(Resistor):  # to avoid an abstract part error
 class ResistorArray(PassiveComponent, MultipackBlock):
   """An n-element resistor array, where all resistors have the same resistance and power rating."""
   @init_in_parent
-  def __init__(self, count: IntLike = 0,  # 0 means 'size automatically'
-               resistances: ArrayRangeLike = ArrayRangeExpr(),
-               powers: ArrayRangeLike = ArrayRangeExpr()) -> None:
-    # TODO don't require ArgParam for generator pararms - in packed param base
+  def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'
     super().__init__()
 
-    self.a = self.Port(Vector(Passive.empty()), optional=True)
-    self.b = self.Port(Vector(Passive.empty()), optional=True)
-
-    self.resistances = self.ArgParameter(resistances)
-    self.powers = self.ArgParameter(powers)  # operating power range
     self.count = self.ArgParameter(count)
-    self.actual_resistance = self.Parameter(RangeExpr())
-    self.actual_power_rating = self.Parameter(RangeExpr())  # per element
 
     self.elements = self.PackedPart(PackedBlockArray(ResistorArrayElement()))
-    self.packed_connect(self.a, self.elements.ports_array(lambda x: x.a))
-    self.packed_connect(self.b, self.elements.ports_array(lambda x: x.b))
-    self.packed_assign(self.resistances, self.elements.params_array(lambda x: x.resistance))
-    self.packed_assign(self.powers, self.elements.params_array(lambda x: x.power))
+    self.a = self.PackedExport(self.elements.ports_array(lambda x: x.a))
+    self.b = self.PackedExport(self.elements.ports_array(lambda x: x.b))
+
+    self.resistances = self.PackedParameter(self.elements.params_array(lambda x: x.resistance))
+    self.powers = self.PackedParameter(self.elements.params_array(lambda x: x.power))
+
+    self.actual_resistance = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())  # per element
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 

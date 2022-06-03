@@ -17,18 +17,16 @@ class MultipackBlockSink(MultipackBlock):
   """Unlike a real multipack block, this is simplified and has no implementation."""
   def __init__(self):
     super().__init__()
-    self.sink_port1 = self.Port(TestPortSink())
-    self.sink_port2 = self.Port(TestPortSink())
-    self.param1 = self.Parameter(FloatExpr())
-    self.param2 = self.Parameter(FloatExpr())
-    self.result_param = self.Parameter(IntExpr())
 
     self.sink1 = self.PackedPart(PartSink())
     self.sink2 = self.PackedPart(PartSink())
-    self.packed_connect(self.sink_port1, self.sink1.sink)
-    self.packed_connect(self.sink_port2, self.sink2.sink)
-    self.packed_assign(self.param1, self.sink1.param)
-    self.packed_assign(self.param2, self.sink2.param)
+
+    self.sink_port1 = self.PackedExport(self.sink1.sink)
+    self.sink_port2 = self.PackedExport(self.sink2.sink)
+    self.param1 = self.PackedParameter(self.sink1.param)
+    self.param2 = self.PackedParameter(self.sink2.param)
+
+    self.result_param = self.Parameter(IntExpr())
     self.unpacked_assign(self.sink1.result_param, self.result_param)
     self.unpacked_assign(self.sink2.result_param, self.result_param)
 
@@ -113,12 +111,11 @@ class MultipackArrayBlockSink(MultipackBlock):
   """Same as above, but with array constructs."""
   def __init__(self):
     super().__init__()
-    self.sink_ports = self.Port(Vector(TestPortSink()))
-    self.params = self.Parameter(ArrayFloatExpr())
-    self.result_param = self.Parameter(IntExpr())
     self.sinks = self.PackedPart(PackedBlockArray(PartSink()))
-    self.packed_connect(self.sink_ports, self.sinks.ports_array(lambda x: x.sink))
-    self.packed_assign(self.params, self.sinks.params_array(lambda x: x.param))
+    self.sink_ports = self.PackedExport(self.sinks.ports_array(lambda x: x.sink))
+    self.params = self.PackedParameter(self.sinks.params_array(lambda x: x.param))
+
+    self.result_param = self.Parameter(IntExpr())
     self.unpacked_assign(self.sinks.params(lambda x: x.result_param), self.result_param)
 
 
