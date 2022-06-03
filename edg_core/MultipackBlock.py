@@ -159,14 +159,21 @@ class MultipackBlock(Block):
 
   PackedPortType = TypeVar('PackedPortType', bound=Port)
   @overload
-  def PackedExport(self, packed_port: PackedPortType) -> PackedPortType: ...
+  def PackedExport(self, packed_port: PackedPortType, optional: bool = False) -> PackedPortType: ...
   @overload
-  def PackedExport(self, packed_port: PackedBlockPortArray[PackedPortType]) -> Vector[PackedPortType]: ...
+  def PackedExport(self, packed_port: PackedBlockPortArray[PackedPortType], optional: bool = False) -> Vector[PackedPortType]: ...
 
-  def PackedExport(self, packed_port: PackedPortTypes) -> BasePort:
+  def PackedExport(self, packed_port: PackedPortTypes, optional: bool = False) -> BasePort:
     """Defines a Port in this block, by exporting a port from a packed part or packed part array.
     Like self.Export(...), combines self.Port(...) with self.packed_connect(...)."""
-    pass
+    if isinstance(packed_port, Port):
+      new_port = self.Port(type(packed_port).empty(), optional=optional)
+    elif isinstance(packed_port, PackedBlockPortArray):
+      new_port = self.Port(Vector(type(packed_port.port)), optional=optional)
+    else:
+      raise TypeError()
+    self.packed_connect(new_port, packed_port)
+    return new_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.

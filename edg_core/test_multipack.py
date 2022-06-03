@@ -55,9 +55,10 @@ class TopMultipackDesignTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TopMultipackDesign()._elaborated_def_to_proto()
 
-  def test_export_tunnel(self) -> None:
+  def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
     self.assertEqual(len(self.pb.constraints), 6)
 
+  def test_export_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_port1'
@@ -134,9 +135,10 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TopMultipackArrayDesign()._elaborated_def_to_proto()
 
-  def test_export_tunnel(self) -> None:
+  def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
     self.assertEqual(len(self.pb.constraints), 5)
 
+  def test_export_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_ports'
