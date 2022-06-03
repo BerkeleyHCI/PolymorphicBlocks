@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
+from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
 
 from .Array import Vector
-from .ArrayExpr import ArrayExpr
+from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
-from .ConstraintExpr import ConstraintExpr
+from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block
 
@@ -18,14 +18,18 @@ class PackedBlockAllocate(NamedTuple):
   suggested_name: Optional[str]
 
 
-class PackedBlockPortArray(NamedTuple):
-  parent: PackedBlockArray
-  port: Port
+ArrayPortType = TypeVar('ArrayPortType', bound=Port)
+class PackedBlockPortArray(Generic[ArrayPortType]):
+  def __init__(self, parent: PackedBlockArray, port: ArrayPortType):
+    self.parent = parent
+    self.port = port
 
 
-class PackedBlockParamArray(NamedTuple):  # an array of parameters packed from an array of blocks
-  parent: PackedBlockArray
-  param: ConstraintExpr
+ArrayParamType = TypeVar('ArrayParamType', bound=ConstraintExpr)
+class PackedBlockParamArray(Generic[ArrayParamType]):  # an array of parameters from an array of parts
+  def __init__(self, parent: PackedBlockArray, param: ArrayParamType):
+    self.parent = parent
+    self.param = param
 
 
 class PackedBlockParam(NamedTuple):  # a parameter replicated from an array of blocks
@@ -57,14 +61,16 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
 
   # TODO does this need to return a narrower type?
   # TODO would it be useful to return a proper Vector type, instead of this special PackedBlockPortArray?
-  def ports_array(self, selector: Callable[[PackedBlockElementType], Port]) -> PackedBlockPortArray:
+  PortType = TypeVar('PortType', bound=Port)
+  def ports_array(self, selector: Callable[[PackedBlockElementType], PortType]) -> PackedBlockPortArray[PortType]:
     """Return an array of ports, packed from the selected port of each array element."""
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockPortArray(self, selector(self._elt_sample))
 
   # TODO does this need to return a narrower type?
   # TODO would it be useful to return a proper ConstraintExpr type, instead of this special PackedBlockParamArray?
-  def params_array(self, selector: Callable[[PackedBlockElementType], ConstraintExpr]) -> PackedBlockParamArray:
+  ParamType = TypeVar('ParamType', bound=ConstraintExpr)
+  def params_array(self, selector: Callable[[PackedBlockElementType], ParamType]) -> PackedBlockParamArray[ParamType]:
     """Return an array of params, packed from the selected param of each array element."""
     assert self._elt_sample is not None, "no sample element set, cannot allocate"
     return PackedBlockParamArray(self, selector(self._elt_sample))
@@ -151,6 +157,17 @@ class MultipackBlock(Block):
     else:
       raise TypeError()
 
+  PackedPortType = TypeVar('PackedPortType', bound=Port)
+  @overload
+  def PackedExport(self, packed_port: PackedPortType) -> PackedPortType: ...
+  @overload
+  def PackedExport(self, packed_port: PackedBlockPortArray[PackedPortType]) -> Vector[PackedPortType]: ...
+
+  def PackedExport(self, packed_port: PackedPortTypes) -> BasePort:
+    """Defines a Port in this block, by exporting a port from a packed part or packed part array.
+    Like self.Export(...), combines self.Port(...) with self.packed_connect(...)."""
+    pass
+
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.
     IMPORTANT: for packed arrays, no ordering on elements is guaranteed, and must be treated as an unordered set."""
@@ -167,6 +184,26 @@ class MultipackBlock(Block):
       self._packed_assigns_by_packed_block[packed_param.parent][self_param] = packed_param
     else:
       raise TypeError()
+
+  PackedParamType = TypeVar('PackedParamType', bound=ConstraintExpr)
+  @overload
+  def PackedParameter(self, packed_param: PackedParamType) -> PackedParamType: ...
+  @overload
+  def PackedParameter(self, packed_param: PackedBlockParamArray[BoolExpr]) -> ArrayBoolExpr: ...
+  @overload
+  def PackedParameter(self, packed_param: PackedBlockParamArray[IntExpr]) -> ArrayIntExpr: ...
+  @overload
+  def PackedParameter(self, packed_param: PackedBlockParamArray[FloatExpr]) -> ArrayFloatExpr: ...
+  @overload
+  def PackedParameter(self, packed_param: PackedBlockParamArray[RangeExpr]) -> ArrayRangeExpr: ...
+  @overload
+  def PackedParameter(self, packed_param: PackedBlockParamArray[StringExpr]) -> ArrayStringExpr: ...
+
+  def PackedParameter(self, packed_param: PackedParamTypes) -> ConstraintExpr:
+    """Defines a Parameter in this block, by exporting a parameter from a packed part or packed part array.
+    Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
+    where self.Parameter(...) would error out."""
+    pass
 
   def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
     """Defines an (un)packing rule assigning a Packed parameter from my parameter (reverse of packed_assign).

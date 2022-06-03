@@ -20,7 +20,6 @@ class MultipackBlockSink(MultipackBlock):
 
     self.sink1 = self.PackedPart(PartSink())
     self.sink2 = self.PackedPart(PartSink())
-
     self.sink_port1 = self.PackedExport(self.sink1.sink)
     self.sink_port2 = self.PackedExport(self.sink2.sink)
     self.param1 = self.PackedParameter(self.sink1.param)

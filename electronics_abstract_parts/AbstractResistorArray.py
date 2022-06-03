@@ -25,7 +25,6 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     self.elements = self.PackedPart(PackedBlockArray(ResistorArrayElement()))
     self.a = self.PackedExport(self.elements.ports_array(lambda x: x.a))
     self.b = self.PackedExport(self.elements.ports_array(lambda x: x.b))
-
     self.resistances = self.PackedParameter(self.elements.params_array(lambda x: x.resistance))
     self.powers = self.PackedParameter(self.elements.params_array(lambda x: x.power))
 
