@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable
 
-import edgir
 from .Array import Vector
 from .ArrayExpr import ArrayExpr
 from .Blocks import BlockElaborationState
@@ -15,123 +13,28 @@ from .Ports import BasePort, Port
 from .HierarchyBlock import Block
 
 
-# These define internal data structures for multipack components.
-# The external interface is the typical blocks and constraints, except for the array case where
-# there is no standard construct, and these are exposed as the interface.
-# The overall goal is to look and feel like array ports, even if the implementation is different.
-
-class PackedBlockPartBase(metaclass=ABCMeta):
-  """Abstract base class for any packed block (part), defining common APIs"""
-  @abstractmethod
-  def name(self) -> str: ...  # user-friendly (non-ref) name in parent
-  @abstractmethod
-  def parent(self) -> MultipackBlock: ...  # returns the containing multipack device
+class PackedBlockAllocate(NamedTuple):
+  parent: PackedBlockArray
+  suggested_name: Optional[str]
 
 
-class PackedPortBase(metaclass=ABCMeta):
-  """Abstract base class for a port on a packed block, defining common APIs"""
-  @abstractmethod
-  def name(self) -> str: ...  # name of port in parent
-  @abstractmethod
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath: ...  # ref of this port
+class PackedBlockPortArray(NamedTuple):
+  parent: PackedBlockArray
+  port: Port
 
 
-class PackedParamBase(metaclass=ABCMeta):
-  """Abstract base class for a param on a packed block, defining common APIs"""
-  @abstractmethod
-  def name(self) -> str: ...  # name of param in parent
-  @abstractmethod
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath: ...  # ref of this param - even if an array
+class PackedBlockParamArray(NamedTuple):  # an array of parameters packed from an array of blocks
+  parent: PackedBlockArray
+  param: ConstraintExpr
 
 
-class PackedBlockPart(PackedBlockPartBase):  # internal API
-  def __init__(self, parent: MultipackBlock):
-    self.container = parent
-
-  def name(self) -> str:
-    return self.parent()._name_of(self)
-
-  def parent(self) -> MultipackBlock:
-    return self.container
-
-
-class PackedBlockAllocate(PackedBlockPartBase):  # DesignTop API
-  def __init__(self, parent: MultipackBlock, suggested_name: str):
-    self.container = parent
-    self.suggested_name = suggested_name  # required for now, so ports on the same part are enforced consistent
-
-  def name(self) -> str:
-    return f"{self.parent()._name_of(self)}[{self.suggested_name}]"
-
-  def parent(self) -> MultipackBlock:
-    return self.container
-
-
-class PackedBlockParam(PackedParamBase):  # MultipackBlock API; a parameter on a single (non-array) packed part
-  def __init__(self, param: ConstraintExpr, part_parent: Block):
-    self.param = param
-    self.part_parent = part_parent
-
-  def name(self) -> str:
-    return self.part_parent._name_of(self.param)
-
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath:
-    return self.part_parent._get_ref_map(multipack_ref_base)[self.param]
-
-
-class PackedBlockParamArray(PackedParamBase):  # MultipackBlock API; packed-array parameter on an array of parts
-  def __init__(self, param: ConstraintExpr, elt_parent: Block, part_parent: PackedBlockArray):
-    self.param = param
-    self.elt_parent = elt_parent
-    self.part_parent = part_parent
-
-  def name(self) -> str:
-    return self.elt_parent._name_of(self.param)
-
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath:
-    return self.elt_parent._get_ref_map(multipack_ref_base)[self.param]
-
-
-class PackedBlockParamReplicate(PackedParamBase):  # MultipackBlock API; replicated parameter for an array of parts
-  def __init__(self, param: ConstraintExpr, elt_parent: Block, part_parent: PackedBlockArray):
-    self.param = param
-    self.elt_parent = elt_parent
-    self.part_parent = part_parent
-
-  def name(self) -> str:
-    return self.elt_parent._name_of(self.param)
-
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath:
-    return self.elt_parent._get_ref_map(multipack_ref_base)[self.param]
-
-
-class PackedBlockPort(PackedPortBase):  # MultipackBlock API; a port on a single (non-array) packed part
-  def __init__(self, port: BasePort, part_parent: Block):
-    self.port = port
-    self.part_parent = part_parent
-
-  def name(self) -> str:
-    return self.part_parent._name_of(self.port)
-
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath:
-    return self.part_parent._get_ref_map(multipack_ref_base)[self.port]
-
-
-class PackedBlockPortArray(PackedPortBase):  # MultipackBlock API; packed-array parameter on an array of parts
-  def __init__(self, port: BasePort, elt_parent: Block, part_parent: PackedBlockArray):
-    self.port = port
-    self.elt_parent = elt_parent
-    self.part_parent = part_parent
-
-  def name(self) -> str:
-    return self.elt_parent._name_of(self.port)
-
-  def ref(self, multipack_ref_base: edgir.LocalPath) -> edgir.LocalPath:
-    return self.elt_parent._get_ref_map(multipack_ref_base)[self.port]
+class PackedBlockParam(NamedTuple):  # a parameter replicated from an array of blocks
+  parent: PackedBlockArray
+  param: ConstraintExpr
 
 
 PackedBlockElementType = TypeVar('PackedBlockElementType', bound=Block)
-class PackedBlockArray(PackedBlockPartBase, Generic[PackedBlockElementType]):
+class PackedBlockArray(Generic[PackedBlockElementType]):
   """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
   This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
   (non-multipack) core infrastructure yet."""
@@ -175,13 +78,17 @@ class PackedBlockArray(PackedBlockPartBase, Generic[PackedBlockElementType]):
     return PackedBlockParam(self, selector(self._elt_sample))
 
 
-class MultipackPackingRule(NamedTuple):
-  tunnel_exports: IdentityDict[BasePort, PackedPortBase]  # exterior port -> packed block port
-  tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamBase]  # my param -> packed block param
-  tunnel_unpack_assigns: IdentityDict[ConstraintExpr, PackedParamBase]  # my param -> packed block param
-
-
+# These are all internal-ish APIs (within MultipackBlock - NOT in DesignTop)
 PackedBlockTypes = Union[Block, PackedBlockArray]
+PackedPortTypes = Union[Port, PackedBlockPortArray]
+PackedParamTypes = Union[ConstraintExpr, PackedBlockParamArray]
+UnpackedParamTypes = Union[ConstraintExpr, PackedBlockParam]
+
+
+class MultipackPackingRule(NamedTuple):
+  tunnel_exports: IdentityDict[BasePort, PackedPortTypes]  # exterior port -> packed block port
+  tunnel_assigns: IdentityDict[ConstraintExpr, PackedParamTypes]  # my param -> packed block param
+  tunnel_unpack_assigns: IdentityDict[ConstraintExpr, UnpackedParamTypes]  # packed block param -> my param
 
 
 @non_library
@@ -205,11 +112,11 @@ class MultipackBlock(Block):
     self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?
     # packed block -> (exterior port -> packed block port)
-    self._packed_connects_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[BasePort, PackedPortBase]]()
+    self._packed_connects_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[BasePort, PackedPortTypes]]()
     # packed block -> (self param -> packed param) (reverse of assign direction)
-    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamBase]]()
+    self._packed_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamTypes]]()
     # packed block -> (self param -> packed param)
-    self._unpacked_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamBase]]()
+    self._unpacked_assigns_by_packed_block = IdentityDict[PackedBlockTypes, IdentityDict[ConstraintExpr, UnpackedParamTypes]]()
 
   PackedPartType = TypeVar('PackedPartType', bound=Union[Block, PackedBlockArray])
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
@@ -222,18 +129,17 @@ class MultipackBlock(Block):
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
     self._packed_blocks.register(elt)
-    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortBase]()
-    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamBase]()
-    self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamBase]()
+    self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
+    self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
+    self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, UnpackedParamTypes]()
 
     return elt  # type: ignore
 
-  def packed_connect(self, exterior_port: BasePort, packed_port: Union[BasePort, PackedBlockPortArray]) -> None:
+  def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortTypes) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
-
-    if isinstance(packed_port, BasePort):
+    if isinstance(packed_port, Port):
       assert type(exterior_port) == type(packed_port), "packed_connect ports must be of the same type"
       block_parent = packed_port._block_parent()
       assert isinstance(block_parent, Block)
@@ -245,7 +151,7 @@ class MultipackBlock(Block):
     else:
       raise TypeError()
 
-  def packed_assign(self, self_param: ConstraintExpr, packed_param: Union[ConstraintExpr, PackedParamBase]) -> None:
+  def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.
     IMPORTANT: for packed arrays, no ordering on elements is guaranteed, and must be treated as an unordered set."""
     if self._elaboration_state != BlockElaborationState.init:
@@ -262,7 +168,7 @@ class MultipackBlock(Block):
     else:
       raise TypeError()
 
-  def unpacked_assign(self, packed_param: Union[ConstraintExpr, PackedParamBase], self_param: ConstraintExpr) -> None:
+  def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
     """Defines an (un)packing rule assigning a Packed parameter from my parameter (reverse of packed_assign).
     Only direct parameter-to-parameter assignment allowed, even for packed block arrays,
     """
