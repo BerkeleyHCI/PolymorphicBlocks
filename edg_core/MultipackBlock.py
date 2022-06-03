@@ -169,10 +169,10 @@ class MultipackBlock(Block):
     if isinstance(packed_port, Port):
       new_port = self.Port(type(packed_port).empty(), optional=optional)
     elif isinstance(packed_port, PackedBlockPortArray):
-      new_port = self.Port(Vector(type(packed_port.port)), optional=optional)
+      new_port = self.Port(Vector(type(packed_port.port).empty()), optional=optional)
     else:
       raise TypeError()
-    self.packed_connect(new_port, packed_port)
+    self.packed_connect(new_port, packed_port)  # all checks happen here
     return new_port
 
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
@@ -210,7 +210,14 @@ class MultipackBlock(Block):
     """Defines a Parameter in this block, by exporting a parameter from a packed part or packed part array.
     Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
     where self.Parameter(...) would error out."""
-    pass
+    if isinstance(packed_param, ConstraintExpr):
+      new_param = self.Parameter(type(packed_param)())
+    elif isinstance(packed_param, PackedBlockParamArray):
+      new_param = self.Parameter(ArrayExpr.array_of_elt(packed_param.param))
+    else:
+      raise TypeError()
+    self.packed_assign(new_param, packed_param)
+    return new_param
 
   def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
     """Defines an (un)packing rule assigning a Packed parameter from my parameter (reverse of packed_assign).
