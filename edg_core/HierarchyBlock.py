@@ -434,6 +434,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       raise TypeError(f"param to ArgParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
     if param.binding is None:
       raise TypeError(f"param to ArgParameter(...) must have binding")
+    if not isinstance(param.binding, InitParamBinding):
+      raise TypeError(f"param to ArgParameter(...) must be __init__ argument with @init_in_parent")
     return param
 
   T = TypeVar('T', bound=BasePort)

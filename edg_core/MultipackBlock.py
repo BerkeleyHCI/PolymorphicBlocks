@@ -4,6 +4,7 @@ from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, C
 
 from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
+from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
 from .Exceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
@@ -211,12 +212,13 @@ class MultipackBlock(Block):
     Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
     where self.Parameter(...) would error out."""
     if isinstance(packed_param, ConstraintExpr):
-      new_param = self.Parameter(type(packed_param)())
+      new_param = type(packed_param)()._bind(InitParamBinding(self))
     elif isinstance(packed_param, PackedBlockParamArray):
-      new_param = self.Parameter(ArrayExpr.array_of_elt(packed_param.param))
+      new_param = ArrayExpr.array_of_elt(packed_param.param)._bind(InitParamBinding(self))
     else:
       raise TypeError()
     self.packed_assign(new_param, packed_param)
+    self._parameters.register(new_param)
     return new_param
 
   def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
