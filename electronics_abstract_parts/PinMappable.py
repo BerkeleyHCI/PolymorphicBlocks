@@ -1,6 +1,6 @@
 import itertools
 from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable
+from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable, Dict
 
 from electronics_model import *
 
@@ -24,11 +24,14 @@ class PinMappable(Block):
       if allocation.pin is None:
         allocation_strs.append(f"{allocation.name}={allocation.resource_name}")
       elif isinstance(allocation.pin, str):
-        allocation_strs.append(f"{allocation.name}={allocation.resource_name},{allocation.pin}")
+        allocation_strs.append(f"{allocation.name}={allocation.resource_name}, {allocation.pin}")
       elif isinstance(allocation.pin, dict):
         allocation_strs.append(f"{allocation.name}={allocation.resource_name}")
-        for subport_name, subport_pin in allocation.pin.items():
-          allocation_strs.append(f"{allocation.name}.{subport_name}={subport_pin}")
+        for subport_name, (subport_pin, subport_resource) in allocation.pin.items():
+          if subport_resource is not None:
+            allocation_strs.append(f"{allocation.name}.{subport_name}={subport_resource}, {subport_pin}")
+          else:
+            allocation_strs.append(f"{allocation.name}.{subport_name}={subport_pin}")
       else:
         raise ValueError(f"unknown allocation type {allocation}")
 
@@ -50,7 +53,7 @@ class BaseDelegatingPinMapResource(BasePinMapResource):
 
 class PinResource(BaseLeafPinMapResource):
   """A resource for a single chip pin, which can be one of several port types (eg, an ADC and DIO sharing a pin)."""
-  def __init__(self, pin: str, name_models: dict[str, CircuitPort]):
+  def __init__(self, pin: str, name_models: Dict[str, CircuitPort]):
     self.pin = pin
     self.name_models = name_models
 
@@ -68,7 +71,7 @@ class PinResource(BaseLeafPinMapResource):
 class PeripheralFixedPin(BaseLeafPinMapResource):
   """A resource for a peripheral as a Bundle port, where the internal ports are fixed. No allocation happens.
   The internal port model must be fully defined here."""
-  def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: dict[str, str]):
+  def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: Dict[str, str]):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_pins = inner_allowed_pins
@@ -100,7 +103,7 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
   (sort of a very limited switch matrix).
   The port model here should have empty models for the internal ports, so the models can be assigned from the inner
   resource. This allows things like digital IOs in a peripheral to inherit from the pin-level definition."""
-  def __init__(self, name: str, port_model: Bundle, inner_allowed_names: dict[str, List[str]]):
+  def __init__(self, name: str, port_model: Bundle, inner_allowed_names: Dict[str, List[str]]):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
@@ -115,7 +118,8 @@ class AllocatedResource(NamedTuple):
   port_model: Port  # port model (including defined elements, for bundles)
   name: str  # name given by the user, bundles will have automatic postfixes
   resource_name: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
-  pin: Union[str, None, dict[str, str]]  # pin number if port is leaf, or recursive definition for bundles
+  pin: Union[str, None, Dict[str, Tuple[str, Optional[str]]]]  # pin number if port is leaf, or
+                                                               # recursive definition for bundles (pin, resource)
 
   def __eq__(self, other):
     # TODO better port model check, perhaps by initializer
@@ -126,7 +130,7 @@ class AllocatedResource(NamedTuple):
 # Defines a way to convert port models into related types for use in bundles, for example from the
 # DigitalBidir in pin definitions to the DigitalSource/Sink used by the Uart bundle.
 # Specified as entries of target port type: (source port type, conversion function)
-PortTransformsType = dict[Type, Tuple[Type, Callable]]
+PortTransformsType = Dict[Type, Tuple[Type, Callable]]
 DefaultPortTransforms: PortTransformsType = {
   DigitalSource: (DigitalBidir, DigitalSource.from_bidir),
   DigitalSink: (DigitalBidir, DigitalSink.from_bidir),
@@ -166,7 +170,7 @@ class UserAssignmentDict:
     path as the dict key, and remaps each entry to only contain the path postfix.
     If the path is empty, it gets mapped to the empty-string key, preserving the empty path."""
     root_assigns = set[str]()
-    dict_out: dict[str, List[Tuple[List[str], str]]] = {}
+    dict_out: Dict[str, List[Tuple[List[str], str]]] = {}
     for (named_path, pin) in assignment_spec_list:
       if not named_path:
         root_assigns.add(pin)
@@ -180,7 +184,7 @@ class UserAssignmentDict:
       root_assign = None
     return (root_assign, UserAssignmentDict(dict_out, name))
 
-  def __init__(self, elts: dict[str, List[Tuple[List[str], str]]], name: List[str]):
+  def __init__(self, elts: Dict[str, List[Tuple[List[str], str]]], name: List[str]):
     self.elts = elts
     self.name = name
     self.marked = set[str]()
@@ -212,7 +216,7 @@ class PinMapUtil:
     self.resources = resources
     self.transforms = DefaultPortTransforms if transforms is None else transforms
 
-  def remap_pins(self, pinmap: dict[str, str]) -> 'PinMapUtil':
+  def remap_pins(self, pinmap: Dict[str, str]) -> 'PinMapUtil':
     """Returns a new PinMapUtil with pin names remapped according to the argument dict. Useful for a chip series
     to define a generic pin mapping using pin names, and then remap those to pin numbers for specific packages.
     Pins that are not in the pinmap are discarded."""
@@ -263,7 +267,7 @@ class PinMapUtil:
     assignments = UserAssignmentDict.from_spec(assignments_spec)
 
     # mutable data structure, resources will be removed as they are assigned
-    free_resources_by_type: dict[Type[Port], List[BasePinMapResource]] = {}
+    free_resources_by_type: Dict[Type[Port], List[BasePinMapResource]] = {}
     for resource in self.resources:
       for supported_type in self._resource_port_types(resource):
         free_resources_by_type.setdefault(supported_type, []).append(resource)
@@ -273,7 +277,7 @@ class PinMapUtil:
         free_resources_by_type[supported_type].remove(resource)
 
     # unlike the above, resources are not deleted from this
-    resources_by_name: dict[str, List[BasePinMapResource]] = {}
+    resources_by_name: Dict[str, List[BasePinMapResource]] = {}
     for resource in self.resources:
       for resource_name in self._resource_names(resource):
         resources_by_name.setdefault(resource_name, []).append(resource)
@@ -291,13 +295,13 @@ class PinMapUtil:
         allocated_resource = AllocatedResource(resource_model, port_name, resource_name, resource.pin)
         return allocated_resource
       elif isinstance(resource, PeripheralFixedPin):  # fixed pin: check user-assignment, or assign first
-        inner_pin_map = {}
+        inner_pin_map: Dict[str, Tuple[str, Optional[str]]] = {}
         for (inner_name, inner_pin) in resource.inner_allowed_pins.items():  # TODO should this be recursive?
           inner_assignment, inner_sub_assignments = sub_assignments.get_elt(inner_name)
           if inner_assignment is not None and inner_assignment != inner_pin:
             raise BadUserAssignError(f"invalid assignment to {port_name}.{inner_name}: {inner_assignment}")
 
-          inner_pin_map[inner_name] = inner_pin
+          inner_pin_map[inner_name] = (inner_pin, None)
           inner_sub_assignments.check_empty()
 
         sub_assignments.check_empty()
@@ -326,7 +330,7 @@ class PinMapUtil:
                                                 inner_assignment, inner_sub_assignments)
           if inner_allocation.pin is not None:
             assert isinstance(inner_allocation.pin, str)
-            inner_pin_map[inner_name] = inner_allocation.pin
+            inner_pin_map[inner_name] = (inner_allocation.pin, inner_allocation.resource_name)
 
           inner_models[inner_name] = inner_allocation.port_model
           if type(inner_model) in self.transforms:  # apply transform to search for the resource type, if needed

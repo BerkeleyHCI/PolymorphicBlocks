@@ -99,14 +99,14 @@ class PinMapUtilTest(unittest.TestCase):
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
     ]).allocate([(UsbDevicePort, ['usb'])],
                 ["usb.dm=2", "usb.dp=3"])
-    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '2', 'dp': '3'}), allocated)
+    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
   def test_assign_bundle_fixed_auto(self):
     usb_model = UsbDevicePort()
     allocated = PinMapUtil([
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
     ]).allocate([(UsbDevicePort, ['usb'])])
-    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '2', 'dp': '3'}), allocated)
+    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
   def test_assign_bundle_fixed_badspec(self):
     usb_model = UsbDevicePort()
