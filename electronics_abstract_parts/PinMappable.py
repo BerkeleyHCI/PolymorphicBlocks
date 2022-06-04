@@ -118,6 +118,7 @@ class AllocatedResource(NamedTuple):
   port_model: Port  # port model (including defined elements, for bundles)
   name: str  # name given by the user, bundles will have automatic postfixes
   resource_name: str  # name of the resource assigned, non-delegated bundle elements can have automatic prefixes
+  # TODO recursive definition for bundles with Dict[str, AllocatedResource]? but mypy doesn't like recursive types
   pin: Union[str, None, Dict[str, Tuple[str, Optional[str]]]]  # pin number if port is leaf, or
                                                                # recursive definition for bundles (pin, resource)
 
