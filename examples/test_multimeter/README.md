@@ -9,7 +9,7 @@ Some items were out of stock and substituted with pin compatible alternatives:
   - ~TPA2005D1DRBQ1 (8SON / DFN package)~ also out of stock =()
   - PAM8302AASCR (note internal resistors)
 - TLV9061SQDBVRQ1 (opamp)
-  - OPA991SIDBVR
+  - ~OPA991SIDBVR~ - NOT COMPATIBLE - IT'S ACTIVE HIGH SHUTDOWN
 
 Part selection for some generics:
 - Tactile switch
