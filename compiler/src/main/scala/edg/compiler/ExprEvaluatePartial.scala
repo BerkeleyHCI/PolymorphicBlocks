@@ -33,6 +33,12 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
              (_, ExprResult.Result(BooleanValue(true))) => ExprResult.Result(BooleanValue(true))
         case _ => mapBinaryComplete(binary, lhs, rhs)
       }
+    } else if (binary.op == Op.IMPLIES) {  // short circuit vacuously true
+      if (lhs == ExprResult.Result(BooleanValue(false))) {
+        ExprResult.Result(BooleanValue(true))
+      } else {
+        mapBinaryComplete(binary, lhs, rhs)
+      }
     } else {
       mapBinaryComplete(binary, lhs, rhs)
     }

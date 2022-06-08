@@ -40,10 +40,17 @@ class DigitalLink(CircuitLink):
     self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
                  "DigitalLink must have some kind of source")
 
-    self.assign(self.voltage, self.source.is_connected().then_else(
-      self.bidirs.hull(lambda x: x.voltage_out).hull(self.source.voltage_out),
-      self.bidirs.hull(lambda x: x.voltage_out).hull(self.single_sources.hull(lambda x: x.voltage_out))
-    ))
+    # TODO clean this up, massively, like, this needs new constructs to simplify this pattern
+    voltage_hull = self.bidirs.hull(lambda x: x.voltage_out)
+    voltage_hull = self.single_sources.any_connected().then_else(
+      voltage_hull.hull(self.single_sources.hull(lambda x: x.voltage_out)),
+      voltage_hull
+    )
+    voltage_hull = self.source.is_connected().then_else(
+      voltage_hull.hull(self.source.voltage_out),
+      voltage_hull
+    )
+    self.assign(self.voltage, voltage_hull)
 
     self.assign(self.voltage_limits,
       self.sinks.intersection(lambda x: x.voltage_limits).intersect(self.bidirs.intersection(lambda x: x.voltage_limits))
@@ -64,8 +71,14 @@ class DigitalLink(CircuitLink):
       self.source.output_thresholds,
       RangeExpr.ALL * Volt
     )
-    bidirs_output_thresholds = self.bidirs.intersection(lambda x: x.output_thresholds)
-    single_output_thresholds = self.single_sources.intersection(lambda x: x.output_thresholds)
+    bidirs_output_thresholds = self.bidirs.any_connected().then_else(
+      self.bidirs.intersection(lambda x: x.output_thresholds),
+      RangeExpr.ALL * Volt
+    )
+    single_output_thresholds = self.single_sources.any_connected().then_else(
+      self.single_sources.intersection(lambda x: x.output_thresholds),
+      RangeExpr.ALL * Volt
+    )
     self.assign(self.output_thresholds,
                 source_output_thresholds.intersect(
                   bidirs_output_thresholds.intersect(

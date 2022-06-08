@@ -1,8 +1,8 @@
 from typing import *
 
 from edg_core import *
-from .CircuitBlock import CircuitPortBridge
-from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource, DigitalBidirBridge, \
+  DigitalSinkBridge
 
 
 class I2cLink(Link):
@@ -68,50 +68,6 @@ class I2cSlave(Bundle[I2cLink]):
     self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies
 
 
-class I2cDigitalSinkBridge(CircuitPortBridge):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.outer_port = self.Port(DigitalSink(voltage_limits=RangeExpr(),
-                                            current_draw=RangeExpr(),
-                                            input_thresholds=RangeExpr()))
-
-    self.inner_link = self.Port(DigitalSource(current_limits=RangeExpr.ALL,  # no limits as a pseudo-port
-                                              voltage_out=self.outer_port.link().voltage,
-                                              output_thresholds=self.outer_port.link().output_thresholds,
-                                              pulldown_capable=True, pullup_capable=True))  # assumed, handled at top link
-
-    self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
-    self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
-    self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
-
-
-class I2cDigitalBidirBridge(CircuitPortBridge):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.outer_port = self.Port(DigitalBidir(voltage_out=RangeExpr(), current_draw=RangeExpr(),
-                                             voltage_limits=RangeExpr(), current_limits=RangeExpr(),
-                                             output_thresholds=RangeExpr(), input_thresholds=RangeExpr(),
-                                             # TODO see issue 58, how do we propagate this in both directions?
-                                             # pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
-                                             ))
-    self.inner_link = self.Port(DigitalBidir(voltage_limits=RangeExpr.ALL, current_limits=RangeExpr.ALL,
-                                             pulldown_capable=True, pullup_capable=True  # assumed, handled at top link
-                                             ))
-
-  def contents(self) -> None:
-    super().contents()
-
-    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-    self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
-    self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
-    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO compensate for internal current draw
-
-    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
-    self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
-
-
 class I2cSlaveBridge(PortBridge):
   def __init__(self) -> None:
     super().__init__()
@@ -125,10 +81,10 @@ class I2cSlaveBridge(PortBridge):
     self.assign(self.inner_link.link().pull_through_master, self.outer_port.link().has_pull)
 
     # this duplicates DigitalBidirBridge but mixing in the pullup
-    self.scl_bridge = self.Block(I2cDigitalSinkBridge())
+    self.scl_bridge = self.Block(DigitalSinkBridge())
     self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
     self.connect(self.scl_bridge.inner_link, self.inner_link.scl)
 
-    self.sda_bridge = self.Block(I2cDigitalBidirBridge())
+    self.sda_bridge = self.Block(DigitalBidirBridge())
     self.connect(self.outer_port.sda, self.sda_bridge.outer_port)
     self.connect(self.sda_bridge.inner_link, self.inner_link.sda)
