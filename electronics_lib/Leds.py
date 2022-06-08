@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 class SmtLed(Led, FootprintBlock):
@@ -27,7 +28,7 @@ class ThtLed(Led, FootprintBlock):
     )
 
 
-class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
+class SmtRgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -40,6 +41,8 @@ class SmtRgbLed(RgbLedCommonAnode, FootprintBlock):
       },
       mfr='Everlight Electronics Co Ltd', part='EAST1616RGBB2'
     )
+    self.assign(self.lcsc_part, 'C264517')
+    self.assign(self.actual_basic_part, False)
 
 
 class ThtRgbLed(RgbLedCommonAnode, FootprintBlock):

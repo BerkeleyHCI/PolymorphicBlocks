@@ -83,18 +83,21 @@ class TofArrayTest(JlcBoardTop):
 
   def multipack(self) -> None:
     pass  # TODO pack things interestingly
-    # self.matrix_res1 = self.PackedBlock(ResistorArray())
-    # self.pack(self.matrix_res1.elements.allocate('0'), ['matrix', 'res[0]'])
-    # self.pack(self.matrix_res1.elements.allocate('1'), ['matrix', 'res[1]'])
-    # self.pack(self.matrix_res1.elements.allocate('2'), ['matrix', 'res[2]'])
+    self.matrix_res1 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.matrix_res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.matrix_res1.elements.allocate('2'), ['leds', 'led[2]', 'res'])
+    self.pack(self.matrix_res1.elements.allocate('3'), ['leds', 'led[3]', 'res'])
     #
-    # self.matrix_res2 = self.PackedBlock(ResistorArray())
-    # self.pack(self.matrix_res2.elements.allocate('0'), ['matrix', 'res[3]'])
-    # self.pack(self.matrix_res2.elements.allocate('1'), ['matrix', 'res[4]'])
+    self.matrix_res2 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res2.elements.allocate('0'), ['leds', 'led[4]', 'res'])
+    self.pack(self.matrix_res2.elements.allocate('1'), ['rgb', 'red_res'])
+    self.pack(self.matrix_res2.elements.allocate('2'), ['rgb', 'green_res'])
+    self.pack(self.matrix_res2.elements.allocate('3'), ['rgb', 'blue_res'])
 
   def refinements(self) -> Refinements:
     from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
-
+    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
@@ -114,8 +117,9 @@ class TofArrayTest(JlcBoardTop):
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),
-        (ResistorArray, ['require_basic_part'], False),
+        (SmtRgbLed, ['require_basic_part'], False),
         (Vl53l0x_Device, ['require_basic_part'], False),
+        (Tpa2005d1_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

@@ -420,6 +420,7 @@ class MultimeterTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
+    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Xc9142),
@@ -494,12 +495,14 @@ class MultimeterTest(JlcBoardTop):
 
         (['gate', 'ctl_diode', 'require_basic_part'], False),
         (['gate', 'btn_diode', 'require_basic_part'], False),
-        (['data_usb', 'require_basic_part'], False),  # top-side
         (['usb_esd', 'require_basic_part'], False),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
+        (UsbCReceptacle, ['require_basic_part'], False),
         (TestPoint, ['require_basic_part'], False),
+        (Tpa2005d1_Device, ['require_basic_part'], False),
+        (SmtRgbLed, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),
