@@ -140,10 +140,7 @@ class LedMatrixTest(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
-        (['reg_3v3'], Ldl1117),  # TBD find one that is in stock
-
-        (['driver', 'fet'], DigikeyFet),
-        (['driver', 'diode'], DigikeySmtDiode),
+        (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -173,6 +170,6 @@ class LedMatrixTest(JlcBoardTop):
     )
 
 
-class LedMatrrixTestCase(unittest.TestCase):
+class LedMatrixTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(LedMatrixTest)
