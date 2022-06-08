@@ -66,6 +66,7 @@ from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .Iso1050 import Iso1050dub
 from .BatteryProtector_S8200A import BatteryProtector_S8200A
+from .Distance_Vl53l0x import Vl53l0x, Vl53l0xArray
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode

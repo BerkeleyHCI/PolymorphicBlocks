@@ -130,7 +130,7 @@ class IndicatorSinkRgbLed(Light):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.signals = self.Port(Vector(DigitalSink.empty()))
+    self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
     signal_red = self.signals.append_elt(DigitalSink.empty(), 'red')
     signal_green = self.signals.append_elt(DigitalSink.empty(), 'green')
     signal_blue = self.signals.append_elt(DigitalSink.empty(), 'blue')

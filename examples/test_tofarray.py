@@ -37,20 +37,24 @@ class TofArrayTest(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
-      (self.leds, ), _ = self.chain(imp.Block(IndicatorLedArray(8)), self.mcu.gpio.allocate_vector('leds'))
+      (self.sw1, ), self.sw1_chain = self.chain(
+        imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      (self.leds, ), self.leds_chain = self.chain(
+        imp.Block(IndicatorLedArray(8)), self.mcu.gpio.allocate_vector('leds'))
+      (self.rgb, ), self.rgb_chain = self.chain(
+        imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.allocate_vector('rgb'))
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      (self.usb_esd, ), self.usb_chain = self.chain(
+        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
     # 5V DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+      (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
-        self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
@@ -60,7 +64,7 @@ class TofArrayTest(JlcBoardTop):
     self.id = self.Block(IdDots4())
 
   def multipack(self) -> None:
-    pass  # TBD
+    pass  # TODO pack things interestingly
     # self.matrix_res1 = self.PackedBlock(ResistorArray())
     # self.pack(self.matrix_res1.elements.allocate('0'), ['matrix', 'res[0]'])
     # self.pack(self.matrix_res1.elements.allocate('1'), ['matrix', 'res[1]'])
@@ -93,6 +97,7 @@ class TofArrayTest(JlcBoardTop):
         (ResistorArray, ['require_basic_part'], False),
       ],
       class_refinements=[
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (PassiveConnector, PinHeader254),
         (Speaker, ConnectorSpeaker),
       ],
