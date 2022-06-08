@@ -40,9 +40,14 @@ class TofArrayTest(JlcBoardTop):
       (self.sw1, ), self.sw1_chain = self.chain(
         imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.leds, ), self.leds_chain = self.chain(
-        imp.Block(IndicatorLedArray(8)), self.mcu.gpio.allocate_vector('leds'))
+        imp.Block(IndicatorLedArray(5)), self.mcu.gpio.allocate_vector('leds'))
       (self.rgb, ), self.rgb_chain = self.chain(
         imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.allocate_vector('rgb'))
+
+      self.tof = imp.Block(Vl53l0xArray(5))
+      (self.i2c_pull, ), self.i2c_chain = self.chain(
+        self.mcu.i2c.allocate('i2c'), imp.Block(I2cPullup()), self.tof.i2c)
+      self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())

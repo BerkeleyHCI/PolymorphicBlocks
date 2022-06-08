@@ -12,22 +12,28 @@ class Vl53l0x_Device(DiscreteChip, FootprintBlock):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
+    # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
+    # This model assumes that IOVDD = Vdd
     dio_model = DigitalBidir(
-      voltage_limits=(-0.5, self.pwr.link().voltage.lower() + 0.5),
+      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
       current_draw=(0, 0),
-      voltage_out=(0, self.pwr.link().voltage.lower()),
-      current_limits=(-1, 1) * mAmp,  # TODO higher sink current on SDA/nCE
-      input_thresholds=(0.25 * self.pwr.link().voltage.upper(),
-                        0.7 * self.pwr.link().voltage.upper()),
-      output_thresholds=(0, self.pwr.link().voltage.upper()),
+      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
+      current_limits=Range.all(),  # TODO not given
+      input_thresholds=(0.3 * self.vdd.link().voltage.upper(),
+                        0.7 * self.vdd.link().voltage.upper()),
+      output_thresholds=(0, self.vdd.link().voltage.upper()),
     )
+    self.xshut = self.Port(DigitalSink.from_bidir(dio_model))
+    self.gpio1 = self.Port(dio_model, optional=True)
 
-    self.i2c = self.Port(I2cSlave(dio_model), [Output])
-    self.cs = self.Port(DigitalSink.from_bidir(dio_model))
-
-    opendrain_model = DigitalSingleSource.low_from_supply(self.gnd)  # TODO -1 - 1 mAmp current limit?
-    self.clkout = self.Port(opendrain_model, optional=True)
-    self.int = self.Port(opendrain_model, optional=True)
+    self.i2c = self.Port(I2cSlave(DigitalBidir(
+      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
+      current_draw=(0, 0),
+      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
+      current_limits=Range.all(),  # TODO not given
+      input_thresholds=(0.6, 1.12),
+      output_thresholds=(0, self.vdd.link().voltage.upper()),
+    )), [Output])
 
   def contents(self):
     super().contents()
@@ -58,7 +64,7 @@ class Vl53l0x(Block):
     super().__init__()
 
     self.ic = self.Block(Vl53l0x_Device())
-    self.gnd = self.Export(self.ic.vdd, [Power])
+    self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.vss, [Common])
 
     self.i2c = self.Export(self.ic.i2c)
@@ -94,4 +100,4 @@ class Vl53l0xArray(GeneratorBlock):
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)
       self.connect(self.xshut.append_elt(DigitalSink.empty(), str(elt_i)), elt.xshut)
-      self.connect(self.gpio1.append_elt(DigitalSink.empty(), str(elt_i)), elt.gpio1)
+      self.connect(self.gpio1.append_elt(DigitalBidir.empty(), str(elt_i)), elt.gpio1)
