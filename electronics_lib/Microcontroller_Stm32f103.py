@@ -89,10 +89,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     })
 
     self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
-      PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
-      PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
-      PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
-
       PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),
       PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),
       PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),
@@ -130,6 +126,11 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PB9', {'PB9': dio_ft_model}),
 
       # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
+
+      # de-prioritize these for auto-assignment since they're low-current
+      PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
+      PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
+      PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
 
       PeripheralFixedResource('USART2', uart_model, {
         'tx': ['PA2', 'PD5'], 'rx': ['PA3', 'PD6']

@@ -11,7 +11,7 @@ from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .DigikeyInductor import DigikeyInductor
 from .JlcInductor import JlcInductor
-from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
+from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
 from .JlcLed import JlcLed
 from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcDiode, JlcZenerDiode
