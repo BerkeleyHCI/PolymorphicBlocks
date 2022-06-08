@@ -3,10 +3,11 @@ from typing import *
 
 from electronics_abstract_parts import *
 from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
+from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -168,6 +169,8 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
+  JLC_PART: str  # part number for lcsc_part
+  JLC_BASIC_PART: bool
 
   def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
@@ -191,6 +194,8 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       mfr='STMicroelectronics', part=self.PART,
       datasheet='https://www.st.com/resource/en/datasheet/stm32f103c8.pdf'
     )
+    self.assign(self.lcsc_part, self.JLC_PART)
+    self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
 
 
 class Stm32f103_48_Device(Stm32f103Base_Device):
@@ -249,6 +254,9 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
   }
   PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
   PART = 'STM32F103xxT6'
+  JLC_PART = 'C8734'  # C8T6 variant - basic part
+  # C77994 for GD32F103C8T6, probably mostly drop-in compatible, NOT basic part
+  JLC_BASIC_PART = True
 
 
 class UsbDpPullUp(Block):

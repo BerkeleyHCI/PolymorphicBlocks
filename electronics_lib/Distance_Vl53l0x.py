@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Vl53l0x_Device(DiscreteChip, FootprintBlock):
+class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
   """Board-mount laser ToF sensor"""
   def __init__(self) -> None:
     super().__init__()
@@ -56,6 +57,8 @@ class Vl53l0x_Device(DiscreteChip, FootprintBlock):
       mfr='STMicroelectronics', part='VL53L0X',
       datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/b2/1e/33/77/c6/92/47/6b/DM00279086/files/DM00279086.pdf/jcr:content/translations/en.DM00279086.pdf'
     )
+    self.assign(self.lcsc_part, "C91199")
+    self.assign(self.actual_basic_part, False)
 
 
 class Vl53l0x(Block):

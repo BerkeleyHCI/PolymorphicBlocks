@@ -77,13 +77,25 @@ class DigitalLink(CircuitLink):
     self.require(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
     self.assign(self.pullup_capable,
-                self.bidirs.any(lambda x: x.pullup_capable) | self.single_sources.any(lambda x: x.pullup_capable))
+                self.bidirs.any(lambda x: x.pullup_capable) |
+                self.source.is_connected().then_else(self.source.pullup_capable,
+                                                     BoolExpr._to_expr_type(False)) |
+                self.single_sources.any(lambda x: x.pullup_capable))
     self.assign(self.pulldown_capable,
-                self.bidirs.any(lambda x: x.pulldown_capable) | self.single_sources.any(lambda x: x.pulldown_capable))
+                self.bidirs.any(lambda x: x.pulldown_capable) |
+                self.source.is_connected().then_else(self.source.pulldown_capable,
+                                                     BoolExpr._to_expr_type(False)) |
+                self.single_sources.any(lambda x: x.pulldown_capable))
     self.assign(self.has_low_signal_driver,
-                self.single_sources.any(lambda x: x.low_signal_driver))
+                self.single_sources.any_connected().then_else(
+                  self.single_sources.any(lambda x: x.low_signal_driver),
+                  BoolExpr._to_expr_type(False)
+                ))
     self.assign(self.has_high_signal_driver,
-                self.single_sources.any(lambda x: x.high_signal_driver))
+                self.single_sources.any_connected().then_else(
+                  self.single_sources.any(lambda x: x.high_signal_driver),
+                  BoolExpr._to_expr_type(False)
+                ))
     self.require(self.has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
     self.require(self.has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
 
@@ -209,11 +221,14 @@ class DigitalSource(DigitalBase):
 
   @staticmethod
   def from_bidir(model: DigitalBidir) -> DigitalSource:
-    return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds)
+    return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
+                         pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
 
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL), *,
-               output_thresholds: RangeLike = Default(RangeExpr.ALL)) -> None:
+               output_thresholds: RangeLike = Default(RangeExpr.ALL),
+               pullup_capable: BoolLike = Default(False),
+               pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.bridge_type = DigitalSourceBridge
     self.adapter_types = [DigitalSourceAdapterVoltageSource]
@@ -221,6 +236,9 @@ class DigitalSource(DigitalBase):
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
     self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
+
+    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
+    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
 
   def as_voltage_source(self) -> VoltageSource:
     return self._convert(DigitalSourceAdapterVoltageSource())

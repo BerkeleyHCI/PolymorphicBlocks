@@ -274,6 +274,9 @@ class Vector(BaseVector, Generic[VectorType]):
     else:
       raise TypeError(f"selector to map_extract(...) must return ConstraintExpr or BasePort, got {param} of type {type(param)}")
 
+  def any_connected(self) -> BoolExpr:
+    return self.any(lambda port: port.is_connected())
+
   def any(self, selector: Callable[[VectorType], BoolExpr]) -> BoolExpr:
     param = selector(self._elt_sample)
     if not isinstance(param, BoolExpr):  # TODO check that returned type is child

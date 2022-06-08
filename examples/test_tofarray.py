@@ -80,6 +80,8 @@ class TofArrayTest(JlcBoardTop):
     # self.pack(self.matrix_res2.elements.allocate('1'), ['matrix', 'res[4]'])
 
   def refinements(self) -> Refinements:
+    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
+
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
@@ -100,6 +102,7 @@ class TofArrayTest(JlcBoardTop):
       class_values=[
         (TestPoint, ['require_basic_part'], False),
         (ResistorArray, ['require_basic_part'], False),
+        (Vl53l0x_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

@@ -19,12 +19,33 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
     ExprResult.Result(ExprEvaluate.evalLiteral(literal))
 
   override def mapBinary(binary: expr.BinaryExpr,
-                         lhs: ExprResult, rhs: ExprResult): ExprResult = (lhs, rhs) match {
-    case (ExprResult.Missing(lhs), ExprResult.Missing(rhs)) => ExprResult.Missing(lhs ++ rhs)
-    case (lhs @ ExprResult.Missing(_), ExprResult.Result(_)) => lhs
-    case (ExprResult.Result(_), rhs @ ExprResult.Missing(_)) => rhs
-    case (ExprResult.Result(lhs), ExprResult.Result(rhs)) =>
-      ExprResult.Result(ExprEvaluate.evalBinary(binary, lhs, rhs))
+                         lhs: ExprResult, rhs: ExprResult): ExprResult = {
+    import expr.BinaryExpr.Op
+    if (binary.op == Op.AND) {  // short circuit evaluation semantics
+      (lhs, rhs) match {
+        case (ExprResult.Result(BooleanValue(false)), _) |
+             (_, ExprResult.Result(BooleanValue(false))) => ExprResult.Result(BooleanValue(false))
+        case _ => mapBinaryComplete(binary, lhs, rhs)
+      }
+    } else if (binary.op == Op.OR) {  // short circuit evaluation semantics
+      (lhs, rhs) match {
+        case (ExprResult.Result(BooleanValue(true)), _) |
+             (_, ExprResult.Result(BooleanValue(true))) => ExprResult.Result(BooleanValue(true))
+        case _ => mapBinaryComplete(binary, lhs, rhs)
+      }
+    } else {
+      mapBinaryComplete(binary, lhs, rhs)
+    }
+  }
+
+  def mapBinaryComplete(binary: expr.BinaryExpr, lhs: ExprResult, rhs: ExprResult): ExprResult = {
+    (lhs, rhs) match {
+      case (ExprResult.Missing(lhs), ExprResult.Missing(rhs)) => ExprResult.Missing(lhs ++ rhs)
+      case (lhs@ExprResult.Missing(_), ExprResult.Result(_)) => lhs
+      case (ExprResult.Result(_), rhs@ExprResult.Missing(_)) => rhs
+      case (ExprResult.Result(lhs), ExprResult.Result(rhs)) =>
+        ExprResult.Result(ExprEvaluate.evalBinary(binary, lhs, rhs))
+    }
   }
 
   override def mapBinarySet(binarySet: expr.BinarySetExpr,
