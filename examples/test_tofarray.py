@@ -7,6 +7,12 @@ from edg import *
 class TofArrayTest(JlcBoardTop):
   """A ToF LiDAR array with application as emulating a laser harp and demonstrating another array topology.
   """
+  def __init__(self):
+    super().__init__()
+
+    # design configuration variables
+    self.tof_count = self.Parameter(IntExpr(5))
+
   def contents(self) -> None:
     super().contents()
 
@@ -40,11 +46,11 @@ class TofArrayTest(JlcBoardTop):
       (self.sw1, ), self.sw1_chain = self.chain(
         imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
       (self.leds, ), self.leds_chain = self.chain(
-        imp.Block(IndicatorLedArray(5)), self.mcu.gpio.allocate_vector('leds'))
+        imp.Block(IndicatorLedArray(self.tof_count)), self.mcu.gpio.allocate_vector('leds'))
       (self.rgb, ), self.rgb_chain = self.chain(
         imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.allocate_vector('rgb'))
 
-      self.tof = imp.Block(Vl53l0xArray(5))
+      self.tof = imp.Block(Vl53l0xArray(self.tof_count))
       (self.i2c_pull, ), self.i2c_chain = self.chain(
         self.mcu.i2c.allocate('i2c'), imp.Block(I2cPullup()), self.tof.i2c)
       self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
