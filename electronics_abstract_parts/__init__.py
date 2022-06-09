@@ -28,8 +28,8 @@ from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDel
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
 from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode, LedColor, LedColorLike
-from .AbstractLed import IndicatorLed, VoltageIndicatorLed, IndicatorSinkRgbLed
-from .AbstractLed import IndicatorLedArray
+from .AbstractLed import IndicatorLed, IndicatorSinkLed, VoltageIndicatorLed, IndicatorSinkRgbLed
+from .AbstractLed import IndicatorSinkLedArray
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch

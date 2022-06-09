@@ -71,13 +71,45 @@ class IndicatorLed(Light):
     self.connect(self.res.b.as_ground(), self.gnd)
 
 
-class IndicatorLedArray(Light, GeneratorBlock):
-  """An array of IndicatorLed, just a convenience wrapper."""
+class IndicatorSinkLed(Light):
+  """Low-side-driven ("common anode") indicator LED
+  TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+    """Controlled LEDs, with provisions for both current source and sink configurations.
+    signal_in is a constant-voltage digital source, so this must contain some ballast.
+    This should not contain amplifiers."""
+    super().__init__()
+
+    self.target_current_draw = self.Parameter(RangeExpr(current_draw))
+
+    self.signal = self.Port(DigitalSink.empty(), [InOut])
+    self.pwr = self.Port(VoltageSink().empty(), [Power])
+
+    self.require(self.signal.current_draw.within((-self.target_current_draw.upper(), 0)))
+
+    self.package = self.Block(Led())
+    self.res = self.Block(Resistor(
+      resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
+                  self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
+
+    self.connect(self.package.a.as_voltage_sink(
+      current_draw=self.signal.link().voltage / self.res.actual_resistance
+    ), self.pwr)
+
+    self.connect(self.res.a, self.package.k)
+    self.connect(self.res.b.as_digital_sink(
+      current_draw=-self.signal.link().voltage / self.res.actual_resistance
+    ), self.signal)
+
+
+class IndicatorSinkLedArray(Light, GeneratorBlock):
+  """An array of IndicatorSinkLed, just a convenience wrapper."""
   @init_in_parent
   def __init__(self, count: IntLike, current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
     self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
-    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
 
     self.current_draw = self.ArgParameter(current_draw)
     self.generator(self.generate, count)
@@ -85,9 +117,9 @@ class IndicatorLedArray(Light, GeneratorBlock):
   def generate(self, count: int):
     self.led = ElementDict[IndicatorLed]()
     for led_i in range(count):
-      led = self.led[str(led_i)] = self.Block(IndicatorLed(self.current_draw))
+      led = self.led[str(led_i)] = self.Block(IndicatorSinkLed(self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
-      self.connect(led.gnd, self.gnd)
+      self.connect(led.pwr, self.pwr)
 
 
 class VoltageIndicatorLed(Light):
