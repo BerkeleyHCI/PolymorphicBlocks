@@ -23,5 +23,7 @@ from .SpeakerPort import SpeakerDriverPort, SpeakerPort
 from .CrystalPort import CrystalPort, CrystalDriver
 from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
 
+from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
+
 from .NetlistGenerator import NetlistGenerator, Netlist, InvalidNetlistBlockException
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin

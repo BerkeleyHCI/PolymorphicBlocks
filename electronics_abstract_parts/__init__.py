@@ -26,9 +26,10 @@ from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDelayRc
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
-from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
+from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, VoltageIndicatorLed, IndicatorSinkRgbLed
+from .AbstractLed import IndicatorSinkPackedRgbLed
 from .AbstractLed import IndicatorSinkLedArray
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet

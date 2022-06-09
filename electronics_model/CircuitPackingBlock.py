@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+from typing import *
+from edg_core import *
+
+from .VoltagePorts import VoltageSource, VoltageSink
+
+
+@non_library
+class NetPackingBlock(Block):
+  def packed(self, sources: BasePort, dsts: BasePort) -> None:
+    """Asserts that sources are all connected to the same net, and connects all of dsts to that net."""
+    self.nets_packed_sources = self.Metadata({'_': self._ports.name_of(sources)})  # TODO should be empty
+    self.nets_packed_dsts = self.Metadata({'_': self._ports.name_of(dsts)})  # TODO should be empty
+
+
+class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
+  """Takes in several VoltageSink connections that are of the same net (asserted in netlister),
+  and provides a single VoltageSource. Distributes the current draw from the VoltageSource
+  equally among the inputs."""
+  def __init__(self):
+    super().__init__()
+    self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=RangeExpr(),
+      current_limits=RangeExpr.ALL
+    ))
+    self.generator(self.generate, self.pwr_ins.allocated())
+    self.packed(self.pwr_ins, self.pwr_out)
+
+  def generate(self, in_allocates: List[str]):
+    self.pwr_ins.defined()
+    for in_allocate in in_allocates:
+      self.pwr_ins.append_elt(VoltageSink(
+        voltage_limits=RangeExpr.ALL,
+        current_draw=self.pwr_out.link().current_drawn / len(in_allocates)
+      ), in_allocate)
+
+    self.assign(self.pwr_out.voltage_out,
+                self.pwr_ins.hull(lambda x: x.link().voltage))

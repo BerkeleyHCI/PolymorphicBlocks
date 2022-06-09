@@ -45,10 +45,9 @@ class TofArrayTest(JlcBoardTop):
 
       (self.sw1, ), self.sw1_chain = self.chain(
         imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      # realistically it would be cleaner for the RGB to be separate, but this demonstrates packing
       (self.leds, ), self.leds_chain = self.chain(
-        imp.Block(IndicatorSinkLedArray(self.tof_count)), self.mcu.gpio.allocate_vector('leds'))
-      (self.rgb, ), self.rgb_chain = self.chain(
-        imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.allocate_vector('rgb'))
+        imp.Block(IndicatorSinkLedArray(self.tof_count + 3)), self.mcu.gpio.allocate_vector('leds'))
 
       self.tof = imp.Block(Vl53l0xArray(self.tof_count))
       (self.i2c_pull, ), self.i2c_chain = self.chain(
@@ -91,9 +90,15 @@ class TofArrayTest(JlcBoardTop):
     #
     self.matrix_res2 = self.PackedBlock(ResistorArray())
     self.pack(self.matrix_res2.elements.allocate('0'), ['leds', 'led[4]', 'res'])
-    self.pack(self.matrix_res2.elements.allocate('1'), ['rgb', 'red_res'])
-    self.pack(self.matrix_res2.elements.allocate('2'), ['rgb', 'green_res'])
-    self.pack(self.matrix_res2.elements.allocate('3'), ['rgb', 'blue_res'])
+    self.pack(self.matrix_res2.elements.allocate('1'), ['rgb', 'device', 'red_res'])
+    self.pack(self.matrix_res2.elements.allocate('2'), ['rgb', 'device', 'green_res'])
+    self.pack(self.matrix_res2.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
+
+    self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
+    self.pack(self.rgb.red, ['leds', 'led[5]', 'res'])
+    self.pack(self.rgb.green, ['leds', 'led[6]', 'res'])
+    self.pack(self.rgb.blue, ['leds', 'led[7]', 'res'])
+
 
   def refinements(self) -> Refinements:
     from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device

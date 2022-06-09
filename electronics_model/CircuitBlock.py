@@ -11,17 +11,6 @@ if TYPE_CHECKING:
   from .VoltagePorts import CircuitPort
 
 
-class Pinning:
-  def __init__(self, pins: Mapping[str, CircuitPort]):
-    self.pins = pins
-
-
-class CircuitNet:
-  """Electrical net, a copper connection of "pins", to be used inside Links to denote electrical connectivity."""
-  def __init__(self, pins: List[CircuitArrayReduction[CircuitPort]]):
-    self.pins = pins
-
-
 T = TypeVar('T', bound=BasePort)
 class CircuitArrayReduction(Generic[T]):
   def __init__(self, steps: List[Vector[Any]], port: T):

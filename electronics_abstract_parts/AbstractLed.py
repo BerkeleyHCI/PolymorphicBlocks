@@ -115,7 +115,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
     self.generator(self.generate, count)
 
   def generate(self, count: int):
-    self.led = ElementDict[IndicatorLed]()
+    self.led = ElementDict[IndicatorSinkLed]()
     for led_i in range(count):
       led = self.led[str(led_i)] = self.Block(IndicatorSinkLed(self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
@@ -204,3 +204,34 @@ class IndicatorSinkRgbLed(Light):
                     signal_green.link().voltage.upper() / self.green_res.actual_resistance.lower() +
                     signal_blue.link().voltage.upper() / self.blue_res.actual_resistance.lower())
     ))
+
+
+class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
+  def __init__(self):
+    # Optional multipack definition
+    self.red = self.PackedPart(IndicatorSinkLed())
+    self.green = self.PackedPart(IndicatorSinkLed())
+    self.blue = self.PackedPart(IndicatorSinkLed())
+
+    self.red_sig = self.PackedExport(self.red.signal)
+    self.blue_sig = self.PackedExport(self.red.signal)
+    self.green_sig = self.PackedExport(self.red.signal)
+    self.red_pwr = self.PackedExport(self.red.pwr)
+    self.blue_pwr = self.PackedExport(self.blue.pwr)
+    self.green_pwr = self.PackedExport(self.green.pwr)
+
+    self.pwr = self.Block(PackedVoltageSource())
+    self.connect(self.pwr.pwr_ins.allocate('red'), self.red_pwr)
+    self.connect(self.pwr.pwr_ins.allocate('blue'), self.blue_pwr)
+    self.connect(self.pwr.pwr_ins.allocate('green'), self.green_pwr)
+
+    self.red_current = self.PackedParameter(self.red.target_current_draw)
+    self.green_current = self.PackedParameter(self.red.target_current_draw)
+    self.blue_current = self.PackedParameter(self.red.target_current_draw)
+    target_current = self.red_current.intersect(self.green_current.intersect(self.blue_current))
+
+    self.device = self.Block(IndicatorSinkRgbLed(target_current))
+    self.connect(self.device.pwr, self.pwr.pwr_out)
+    self.connect(self.device.signals.allocate('red'), self.red_sig)
+    self.connect(self.device.signals.allocate('blue'), self.blue_sig)
+    self.connect(self.device.signals.allocate('green'), self.green_sig)

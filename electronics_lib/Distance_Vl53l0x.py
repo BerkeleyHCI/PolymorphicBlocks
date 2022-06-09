@@ -96,7 +96,7 @@ class Vl53l0xArray(GeneratorBlock):
     self.generator(self.generate, count)
 
   def generate(self, count: int):
-    self.elt = ElementDict[IndicatorLed]()
+    self.elt = ElementDict[Vl53l0x]()
     for elt_i in range(count):
       elt = self.elt[str(elt_i)] = self.Block(Vl53l0x())
       self.connect(self.pwr, elt.pwr)
