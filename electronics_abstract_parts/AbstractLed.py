@@ -208,6 +208,8 @@ class IndicatorSinkRgbLed(Light):
 
 class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
   def __init__(self):
+    super().__init__()
+
     # Optional multipack definition
     self.red = self.PackedPart(IndicatorSinkLed())
     self.green = self.PackedPart(IndicatorSinkLed())

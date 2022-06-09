@@ -95,9 +95,9 @@ class TofArrayTest(JlcBoardTop):
     self.pack(self.matrix_res2.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
 
     self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
-    self.pack(self.rgb.red, ['leds', 'led[5]', 'res'])
-    self.pack(self.rgb.green, ['leds', 'led[6]', 'res'])
-    self.pack(self.rgb.blue, ['leds', 'led[7]', 'res'])
+    self.pack(self.rgb.red, ['leds', 'led[5]'])
+    self.pack(self.rgb.green, ['leds', 'led[6]'])
+    self.pack(self.rgb.blue, ['leds', 'led[7]'])
 
 
   def refinements(self) -> Refinements:
