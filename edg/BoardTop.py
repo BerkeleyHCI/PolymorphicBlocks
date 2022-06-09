@@ -18,6 +18,8 @@ class BaseBoardTop(DesignTop):
         (SwitchFet, DigikeySwitchFet),
         (Crystal, DigikeyCrystal),
 
+        (IndicatorSinkLed, IndicatorSinkLedResistor),
+
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, Keystone5015),
 

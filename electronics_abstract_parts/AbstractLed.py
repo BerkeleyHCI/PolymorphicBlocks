@@ -71,9 +71,9 @@ class IndicatorLed(Light):
     self.connect(self.res.b.as_ground(), self.gnd)
 
 
-class IndicatorSinkLed(Light):
-  """Low-side-driven ("common anode") indicator LED
-  TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
+@abstract_block
+class IndicatorSinkLed(Light, Block):
+  """Abstract part for an low-side-driven ("common anode") indicator LED"""
   @init_in_parent
   def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
@@ -81,17 +81,24 @@ class IndicatorSinkLed(Light):
     This should not contain amplifiers."""
     super().__init__()
 
-    self.target_current_draw = self.Parameter(RangeExpr(current_draw))
+    self.current_draw = self.ArgParameter(current_draw)
 
     self.signal = self.Port(DigitalSink.empty(), [InOut])
     self.pwr = self.Port(VoltageSink().empty(), [Power])
 
-    self.require(self.signal.current_draw.within((-self.target_current_draw.upper(), 0)))
+
+class IndicatorSinkLedResistor(IndicatorSinkLed):
+  """TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
+  @init_in_parent
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+
+    self.require(self.signal.current_draw.within((-self.current_draw.upper(), 0)))
 
     self.package = self.Block(Led())
     self.res = self.Block(Resistor(
-      resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
-                  self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
+      resistance=(self.signal.link().voltage.upper() / self.current_draw.upper(),
+                  self.signal.link().output_thresholds.upper() / self.current_draw.lower())))
 
     self.connect(self.package.a.as_voltage_sink(
       current_draw=self.signal.link().voltage / self.res.actual_resistance
@@ -199,11 +206,15 @@ class IndicatorSinkRgbLed(Light):
     ), signal_blue)
 
     self.connect(self.pwr, self.package.a.as_voltage_sink(
-      current_draw=(0,
-                    signal_red.link().voltage.upper() / self.red_res.actual_resistance.lower() +
-                    signal_green.link().voltage.upper() / self.green_res.actual_resistance.lower() +
-                    signal_blue.link().voltage.upper() / self.blue_res.actual_resistance.lower())
+      current_draw=signal_red.current_draw * -1 +
+                   signal_green.current_draw * -1 +
+                   signal_blue.current_draw * -1
     ))
+
+
+class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):
+  def __init__(self):
+    super().__init__(current_draw=RangeExpr())
 
 
 class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
@@ -211,29 +222,29 @@ class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
     super().__init__()
 
     # Optional multipack definition
-    self.red = self.PackedPart(IndicatorSinkLed())
-    self.green = self.PackedPart(IndicatorSinkLed())
-    self.blue = self.PackedPart(IndicatorSinkLed())
+    self.red = self.PackedPart(IndicatorSinkPackedRgbLedElement())
+    self.green = self.PackedPart(IndicatorSinkPackedRgbLedElement())
+    self.blue = self.PackedPart(IndicatorSinkPackedRgbLedElement())
 
     self.red_sig = self.PackedExport(self.red.signal)
-    self.blue_sig = self.PackedExport(self.red.signal)
-    self.green_sig = self.PackedExport(self.red.signal)
+    self.green_sig = self.PackedExport(self.green.signal)
+    self.blue_sig = self.PackedExport(self.blue.signal)
     self.red_pwr = self.PackedExport(self.red.pwr)
-    self.blue_pwr = self.PackedExport(self.blue.pwr)
     self.green_pwr = self.PackedExport(self.green.pwr)
+    self.blue_pwr = self.PackedExport(self.blue.pwr)
 
     self.pwr = self.Block(PackedVoltageSource())
     self.connect(self.pwr.pwr_ins.allocate('red'), self.red_pwr)
-    self.connect(self.pwr.pwr_ins.allocate('blue'), self.blue_pwr)
     self.connect(self.pwr.pwr_ins.allocate('green'), self.green_pwr)
+    self.connect(self.pwr.pwr_ins.allocate('blue'), self.blue_pwr)
 
-    self.red_current = self.PackedParameter(self.red.target_current_draw)
-    self.green_current = self.PackedParameter(self.red.target_current_draw)
-    self.blue_current = self.PackedParameter(self.red.target_current_draw)
+    self.red_current = self.PackedParameter(self.red.current_draw)
+    self.green_current = self.PackedParameter(self.green.current_draw)
+    self.blue_current = self.PackedParameter(self.blue.current_draw)
     target_current = self.red_current.intersect(self.green_current.intersect(self.blue_current))
 
     self.device = self.Block(IndicatorSinkRgbLed(target_current))
     self.connect(self.device.pwr, self.pwr.pwr_out)
     self.connect(self.device.signals.allocate('red'), self.red_sig)
-    self.connect(self.device.signals.allocate('blue'), self.blue_sig)
     self.connect(self.device.signals.allocate('green'), self.green_sig)
+    self.connect(self.device.signals.allocate('blue'), self.blue_sig)

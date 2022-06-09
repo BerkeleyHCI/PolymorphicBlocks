@@ -81,18 +81,17 @@ class TofArrayTest(JlcBoardTop):
     self.id = self.Block(IdDots4())
 
   def multipack(self) -> None:
-    pass  # TODO pack things interestingly
-    self.matrix_res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
-    self.pack(self.matrix_res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
-    self.pack(self.matrix_res1.elements.allocate('2'), ['leds', 'led[2]', 'res'])
-    self.pack(self.matrix_res1.elements.allocate('3'), ['leds', 'led[3]', 'res'])
+    self.res1 = self.PackedBlock(ResistorArray())
+    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.res1.elements.allocate('2'), ['leds', 'led[2]', 'res'])
+    self.pack(self.res1.elements.allocate('3'), ['leds', 'led[3]', 'res'])
     #
-    self.matrix_res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res2.elements.allocate('0'), ['leds', 'led[4]', 'res'])
-    self.pack(self.matrix_res2.elements.allocate('1'), ['rgb', 'device', 'red_res'])
-    self.pack(self.matrix_res2.elements.allocate('2'), ['rgb', 'device', 'green_res'])
-    self.pack(self.matrix_res2.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
+    self.res2 = self.PackedBlock(ResistorArray())
+    self.pack(self.res2.elements.allocate('0'), ['leds', 'led[4]', 'res'])
+    self.pack(self.res2.elements.allocate('1'), ['rgb', 'device', 'red_res'])
+    self.pack(self.res2.elements.allocate('2'), ['rgb', 'device', 'green_res'])
+    self.pack(self.res2.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
 
     self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
     self.pack(self.rgb.red, ['leds', 'led[5]'])
