@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Sn65hvd230_Device(DiscreteChip, FootprintBlock):
+class Sn65hvd230_Device(DiscreteChip, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
@@ -41,6 +42,8 @@ class Sn65hvd230_Device(DiscreteChip, FootprintBlock):
       mfr='Texas Instruments', part='SN65HVD230DR',
       datasheet='www.ti.com/lit/ds/symlink/sn65hvd230.pdf'
     )
+    self.assign(self.lcsc_part, 'C12084')
+    self.assign(self.actual_basic_part, True)
 
 
 class Sn65hvd230(CanTransceiver):
