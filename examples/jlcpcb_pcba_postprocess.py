@@ -16,6 +16,12 @@ PART_ROTATIONS = {
   'C2934560': -90,  # ESP32C
   'C86781': 180,  # LD1117
   'C425057': -90,  # resistor array 750ohm 4x0603
+  'C20197': -90,  # resistor array 1k 4x0603
+  'C8734': -90,  # STM32F103C8T6
+  'C91199': 180,  # VL53L0X
+  'C27396': -90,  # TPA2005D1
+  'C12084': -90,  # SN65HVD230DR
+  'C264517': 90,  # 0606 RGB LED
 }
 
 
