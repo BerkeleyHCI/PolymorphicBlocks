@@ -22,6 +22,10 @@ class InvalidNetlistBlockException(BaseException):
   pass
 
 
+class InvalidPackingException(BaseException):
+   pass
+
+
 Blocks = Dict[TransformUtil.Path, Tuple[str, str]]  # path -> footprint, value
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
@@ -266,6 +270,15 @@ class NetlistGenerator:
               traverse_pin(port)
         traverse_pin(port)
         nets.append(curr_net)
+
+    pin_to_net: Dict[TransformUtil.Path, Set[TransformUtil.Path]] = {}  # values share reference to nets
+    for net in nets:
+      for pin in net:
+        pin_to_net[pin] = net
+
+    for (connected1, connected2) in assert_connected:
+      if pin_to_net[connected1] is not pin_to_net[connected2]:
+        raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
     def name_net(net: Set[TransformUtil.Path]) -> str:
       def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
