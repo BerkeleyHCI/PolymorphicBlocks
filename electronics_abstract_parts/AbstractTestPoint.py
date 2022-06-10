@@ -1,6 +1,7 @@
 from typing import cast
 
 from electronics_model import *
+from electronics_model.I2cPort import I2cLink
 from .Categories import *
 
 
@@ -63,5 +64,20 @@ class AnalogTestPoint(Block):
     self.connect(self.io, self.tp.io.as_analog_sink())
 
   def connected(self, io: Port[AnalogLink]) -> 'AnalogTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
+class I2cTestPoint(Block):
+  """Two test points for I2C SDA and SCL"""
+  def __init__(self):
+    super().__init__()
+    self.io = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
+    self.tp_scl = self.Block(DigitalTestPoint())
+    self.connect(self.tp_scl.io, self.io.scl)
+    self.tp_sda = self.Block(DigitalTestPoint())
+    self.connect(self.tp_sda.io, self.io.sda)
+
+  def connected(self, io: Port[I2cLink]) -> 'I2cTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self

@@ -72,7 +72,7 @@ from .Distance_Vl53l0x import Vl53l0x, Vl53l0xArray
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
 
-from .Labels import DuckLogo, LeadFreeIndicator, IdDots4
+from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4
 from .Mechanicals import MountingHole_NoPad_M2_5

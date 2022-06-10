@@ -50,8 +50,10 @@ class TofArrayTest(JlcBoardTop):
         imp.Block(IndicatorSinkLedArray(self.tof_count + 3)), self.mcu.gpio.allocate_vector('leds'))
 
       self.tof = imp.Block(Vl53l0xArray(self.tof_count))
-      (self.i2c_pull, ), self.i2c_chain = self.chain(
-        self.mcu.i2c.allocate('i2c'), imp.Block(I2cPullup()), self.tof.i2c)
+      (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
+        self.mcu.i2c.allocate('i2c'),
+        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
+        self.tof.i2c)
       self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
@@ -61,9 +63,11 @@ class TofArrayTest(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.spk_dac, self.spk_drv, self.spk), self.spk_chain = self.chain(
+      (self.tp_spk, self.spk_dac, self.tp_spk_in, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.allocate('spk'),
+        imp.Block(DigitalTestPoint()),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
+        imp.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
@@ -79,6 +83,8 @@ class TofArrayTest(JlcBoardTop):
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
+
+    self.lemurr = self.Block(LemurLogo())
 
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
