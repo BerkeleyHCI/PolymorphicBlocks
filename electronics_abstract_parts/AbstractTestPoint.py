@@ -88,7 +88,7 @@ class CanControllerTestPoint(Block):
   """Two test points for CAN controller-side TXD and RXD"""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(CanControllerPort(DigitalBidir.empty()), [InOut])
+    self.io = self.Port(CanPassivePort(DigitalBidir.empty()), [InOut])
     self.tp_txd = self.Block(DigitalTestPoint())
     self.connect(self.tp_txd.io, self.io.txd)
     self.tp_rxd = self.Block(DigitalTestPoint())

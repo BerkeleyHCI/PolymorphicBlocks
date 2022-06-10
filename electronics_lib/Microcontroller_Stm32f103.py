@@ -152,7 +152,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
         'tx': ['PA9', 'PB6'], 'rx': ['PA10', 'PB7']
       }),
       PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
-        'tx': ['PA12', 'PD1', 'PB9'], 'rx': ['PA11', 'PD0', 'PB8']
+        'txd': ['PA12', 'PD1', 'PB9'], 'rxd': ['PA11', 'PD0', 'PB8']
       }),
       PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
         'dm': ['PA11'], 'dp': ['PA12']

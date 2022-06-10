@@ -65,3 +65,12 @@ class JstPhK(PassiveConnector, FootprintBlock):
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical',
             "JST", f"B{length}B-PH-K")
+
+
+class MolexSl(PassiveConnector, FootprintBlock):
+  """Molex SL series connector: 2.54mm shrouded and polarized, in vertical through-hole.
+  Breadboard wire compatible - especially for debugging in a pinch."""
+  allowed_pins = (2, 25)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_Molex:Molex_SL_171971-00{length:02d}_1x{length:02d}_P2.54mm_Vertical',
+            "Molex", f"171971-00{length:02d}_1x{length:02d}")

@@ -17,7 +17,7 @@ from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .UartPort import UartPort
 from .SpiPort import SpiMaster, SpiSlave
 from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave
-from .CanPort import CanControllerPort, CanTransceiverPort, CanDiffPort
+from .CanPort import CanControllerPort, CanTransceiverPort, CanPassivePort, CanDiffPort
 from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort
 from .SpeakerPort import SpeakerDriverPort, SpeakerPort
 from .CrystalPort import CrystalPort, CrystalDriver

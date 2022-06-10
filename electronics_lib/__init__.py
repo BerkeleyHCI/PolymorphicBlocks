@@ -26,7 +26,7 @@ from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 
-from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK
+from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK, MolexSl
 
 from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal

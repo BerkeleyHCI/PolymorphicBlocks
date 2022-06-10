@@ -4,6 +4,24 @@ from typing import List, Dict
 from edg import *
 
 
+class CanConnector(Connector):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd = self.Port(GroundSource.empty())
+    self.differential = self.Port(CanDiffPort().empty(), [Output])
+
+    self.conn = self.Block(PassiveConnector())
+    self.connect(self.pwr, self.conn.pins.allocate('2').as_voltage_source(
+      voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+      current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
+    ))
+    self.connect(self.gnd, self.conn.pins.allocate('3').as_ground_source())
+    self.connect(self.differential.canh, self.conn.pins.allocate('4').as_digital_source())
+    self.connect(self.differential.canl, self.conn.pins.allocate('5').as_digital_source())
+
+
 class TofArrayTest(JlcBoardTop):
   """A ToF LiDAR array with application as emulating a laser harp and demonstrating another array topology.
   """
@@ -17,9 +35,12 @@ class TofArrayTest(JlcBoardTop):
     super().contents()
 
     self.usb = self.Block(UsbCReceptacle())
+    self.can = self.Block(CanConnector())
 
     self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.usb.gnd, self.can.gnd)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
@@ -59,8 +80,9 @@ class TofArrayTest(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
-      (self.tp_can, self.can), self.can_chain = self.chain(
-        self.mcu.can.allocate('can'), imp.Block(CanControllerTestPoint()), imp.Block(Sn65hvd230())
+      (self.tp_can, self.xcvr, self.can_esd), self.can_chain = self.chain(
+        self.mcu.can.allocate('can'), imp.Block(CanControllerTestPoint()),
+        imp.Block(Sn65hvd230()), imp.Block(CanEsdDiode()), self.can.differential
       )
 
     # 5V DOMAIN
@@ -117,6 +139,7 @@ class TofArrayTest(JlcBoardTop):
         (['mcu'], Stm32f103_48),
         (['reg_3v3'], Ldl1117),  # TBD find one that is in stock
         (['spk', 'conn'], JstPhK),
+        (['can', 'conn'], MolexSl),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

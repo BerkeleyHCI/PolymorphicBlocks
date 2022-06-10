@@ -8,8 +8,9 @@ class CanLogicLink(Link):
   """Logic level CAN link, RXD and TXD signals"""
   def __init__(self) -> None:
     super().__init__()
-    self.controller = self.Port(CanControllerPort(DigitalBidir.empty()))  # TODO mark as required
-    self.transceiver = self.Port(CanTransceiverPort(DigitalBidir.empty()))  # TODO mark as required
+    self.controller = self.Port(CanControllerPort(DigitalBidir.empty()))
+    self.transceiver = self.Port(CanTransceiverPort(DigitalBidir.empty()))
+    self.passive = self.Port(Vector(CanPassivePort(DigitalBidir.empty())), optional=True)
 
     # TODO write custom top level digital constraints
     # TODO model frequency ... somewhere
@@ -18,8 +19,10 @@ class CanLogicLink(Link):
     super().contents()
     # TODO future: digital constraints through link inference
 
-    self.txd = self.connect(self.controller.txd, self.transceiver.txd)
-    self.rxd = self.connect(self.controller.rxd, self.transceiver.rxd)
+    self.txd = self.connect(self.controller.txd, self.transceiver.txd, self.passive.map_extract(lambda port: port.txd),
+                            flatten=True)
+    self.rxd = self.connect(self.controller.rxd, self.transceiver.rxd, self.passive.map_extract(lambda port: port.rxd),
+                            flatten=True)
 
 
 class CanControllerPort(Bundle[CanLogicLink]):
@@ -42,6 +45,17 @@ class CanTransceiverPort(Bundle[CanLogicLink]):
       model = DigitalBidir()
     self.txd = self.Port(DigitalSink.from_bidir(model))
     self.rxd = self.Port(DigitalSource.from_bidir(model))
+
+
+class CanPassivePort(Bundle[CanLogicLink]):
+  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    super().__init__()
+    self.link_type = CanLogicLink
+
+    if model is None:  # ideal by default
+      model = DigitalBidir()
+    self.txd = self.Port(DigitalSink.from_bidir(model))
+    self.rxd = self.Port(DigitalSink.from_bidir(model))
 
 
 class CanDiffLink(Link):
