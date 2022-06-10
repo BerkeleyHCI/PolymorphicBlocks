@@ -54,6 +54,7 @@ class JlcBoardTop(BaseBoardTop):
         (ResistorArray, JlcResistorArray),
         (Crystal, JlcCrystal),
 
+        (Switch, JlcSwitch),
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
