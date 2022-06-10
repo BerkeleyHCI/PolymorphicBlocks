@@ -112,14 +112,14 @@ class TofArrayTest(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           'spk=11',  # PWMable pin, with TIMx_CHx function
           'sw1=19',
-          'leds_0=38',
-          'leds_1=31',
-          'leds_5=29',  # RGB R
-          'leds_6=30',  # RGB G
-          'leds_7=28',  # RGB B
-          'leds_2=27',
-          'leds_3=26',
-          'leds_4=25',
+          'leds_0=31',
+          'leds_1=30',
+          'leds_5=28',  # RGB R
+          'leds_6=29',  # RGB G
+          'leds_7=27',  # RGB B
+          'leds_2=26',
+          'leds_3=25',
+          'leds_4=20',
           'tof_xshut_0=41',
           'tof_xshut_1=42',
           'tof_xshut_2=4',
