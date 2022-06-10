@@ -88,8 +88,8 @@ class TofArrayTest(JlcBoardTop):
     self.pack(self.res1.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
     #
     self.res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'green_res'])
-    self.pack(self.res2.elements.allocate('1'), ['rgb', 'device', 'red_res'])
+    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'red_res'])
+    self.pack(self.res2.elements.allocate('1'), ['rgb', 'device', 'green_res'])
     self.pack(self.res2.elements.allocate('2'), ['leds', 'led[1]', 'res'])
     self.pack(self.res2.elements.allocate('3'), ['leds', 'led[0]', 'res'])
 
@@ -114,8 +114,8 @@ class TofArrayTest(JlcBoardTop):
           'sw1=19',
           'leds_0=38',
           'leds_1=31',
-          'leds_5=30',  # RGB R
-          'leds_6=29',  # RGB G
+          'leds_5=29',  # RGB R
+          'leds_6=30',  # RGB G
           'leds_7=28',  # RGB B
           'leds_2=27',
           'leds_3=26',
