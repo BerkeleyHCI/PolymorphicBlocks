@@ -8,11 +8,12 @@ from .VoltagePorts import VoltageSource, VoltageSink
 
 @non_library
 class NetPackingBlock(Block):
-  def packed(self, sources: BasePort, dsts: BasePort) -> None:
+  def packed(self, source: BasePort, dst: BasePort) -> None:
     """Asserts that sources are all connected to the same net, and connects all of dsts to that net."""
-    self.nets_packed_sources = self.Metadata({'_': self._ports.name_of(sources)})  # TODO should be empty
-    self.nets_packed_dsts = self.Metadata({'_': self._ports.name_of(dsts)})  # TODO should be empty
-
+    self.nets_packed = self.Metadata({
+      'src': self._ports.name_of(source),
+      'dst': self._ports.name_of(dst)
+    })
 
 class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
   """Takes in several VoltageSink connections that are of the same net (asserted in netlister),
