@@ -82,16 +82,16 @@ class TofArrayTest(JlcBoardTop):
 
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[4]', 'res'])
-    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[3]', 'res'])
-    self.pack(self.res1.elements.allocate('2'), ['leds', 'led[2]', 'res'])
-    self.pack(self.res1.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
-    #
+    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.res1.elements.allocate('2'), ['rgb', 'device', 'red_res'])
+    self.pack(self.res1.elements.allocate('3'), ['rgb', 'device', 'green_res'])
+
     self.res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'red_res'])
-    self.pack(self.res2.elements.allocate('1'), ['rgb', 'device', 'green_res'])
-    self.pack(self.res2.elements.allocate('2'), ['leds', 'led[1]', 'res'])
-    self.pack(self.res2.elements.allocate('3'), ['leds', 'led[0]', 'res'])
+    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'blue_res'])
+    self.pack(self.res2.elements.allocate('1'), ['leds', 'led[2]', 'res'])
+    self.pack(self.res2.elements.allocate('2'), ['leds', 'led[3]', 'res'])
+    self.pack(self.res2.elements.allocate('3'), ['leds', 'led[4]', 'res'])
 
     self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
     self.pack(self.rgb.red, ['leds', 'led[5]'])
@@ -112,16 +112,16 @@ class TofArrayTest(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           'spk=11',  # PWMable pin, with TIMx_CHx function
           'sw1=19',
-          'leds_0=31',
-          'leds_1=30',
-          'leds_5=28',  # RGB R
-          'leds_6=29',  # RGB G
-          'leds_7=27',  # RGB B
-          'leds_2=26',
-          'leds_3=25',
-          'leds_4=20',
-          'tof_xshut_0=41',
-          'tof_xshut_1=42',
+          'leds_0=20',
+          'leds_1=25',
+          'leds_5=26',  # RGB R
+          'leds_6=27',  # RGB G
+          'leds_7=28',  # RGB B
+          'leds_2=29',
+          'leds_3=30',
+          'leds_4=31',
+          'tof_xshut_0=42',
+          'tof_xshut_1=41',
           'tof_xshut_2=4',
           'tof_xshut_3=3',
           'tof_xshut_4=2',
