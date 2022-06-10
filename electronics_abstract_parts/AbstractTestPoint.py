@@ -1,6 +1,7 @@
 from typing import cast
 
 from electronics_model import *
+from electronics_model.CanPort import CanLogicLink
 from electronics_model.I2cPort import I2cLink
 from .Categories import *
 
@@ -79,5 +80,20 @@ class I2cTestPoint(Block):
     self.connect(self.tp_sda.io, self.io.sda)
 
   def connected(self, io: Port[I2cLink]) -> 'I2cTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
+class CanControllerTestPoint(Block):
+  """Two test points for CAN controller-side TXD and RXD"""
+  def __init__(self):
+    super().__init__()
+    self.io = self.Port(CanControllerPort(DigitalBidir.empty()), [InOut])
+    self.tp_txd = self.Block(DigitalTestPoint())
+    self.connect(self.tp_txd.io, self.io.txd)
+    self.tp_rxd = self.Block(DigitalTestPoint())
+    self.connect(self.tp_rxd.io, self.io.rxd)
+
+  def connected(self, io: Port[CanLogicLink]) -> 'CanControllerTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self

@@ -65,7 +65,8 @@ from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
-from .Iso1050 import Iso1050dub
+from .CanTransceiver_Iso1050 import Iso1050dub
+from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .BatteryProtector_S8200A import BatteryProtector_S8200A
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xArray
 

@@ -59,6 +59,10 @@ class TofArrayTest(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
+      (self.tp_can, self.can), self.can_chain = self.chain(
+        self.mcu.can.allocate('can'), imp.Block(CanControllerTestPoint()), imp.Block(Sn65hvd230())
+      )
+
     # 5V DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
