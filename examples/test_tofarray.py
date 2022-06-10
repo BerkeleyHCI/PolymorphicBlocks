@@ -122,9 +122,9 @@ class TofArrayTest(JlcBoardTop):
           'leds_4=25',
           'tof_xshut_0=41',
           'tof_xshut_1=42',
-          'tof_xshut_2=2',
+          'tof_xshut_2=4',
           'tof_xshut_3=3',
-          'tof_xshut_4=4',
+          'tof_xshut_4=2',
         ]),
 
         (['mcu', 'ic', 'require_basic_part'], False),
