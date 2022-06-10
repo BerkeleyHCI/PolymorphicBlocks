@@ -82,16 +82,16 @@ class TofArrayTest(JlcBoardTop):
 
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
-    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[4]', 'res'])
+    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[3]', 'res'])
     self.pack(self.res1.elements.allocate('2'), ['leds', 'led[2]', 'res'])
-    self.pack(self.res1.elements.allocate('3'), ['leds', 'led[3]', 'res'])
+    self.pack(self.res1.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
     #
     self.res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.res2.elements.allocate('0'), ['leds', 'led[4]', 'res'])
+    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'green_res'])
     self.pack(self.res2.elements.allocate('1'), ['rgb', 'device', 'red_res'])
-    self.pack(self.res2.elements.allocate('2'), ['rgb', 'device', 'green_res'])
-    self.pack(self.res2.elements.allocate('3'), ['rgb', 'device', 'blue_res'])
+    self.pack(self.res2.elements.allocate('2'), ['leds', 'led[1]', 'res'])
+    self.pack(self.res2.elements.allocate('3'), ['leds', 'led[0]', 'res'])
 
     self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
     self.pack(self.rgb.red, ['leds', 'led[5]'])
@@ -110,7 +110,21 @@ class TofArrayTest(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          # TODO must assign speaker to PWM-capable pin
+          'spk=11',  # PWMable pin, with TIMx_CHx function
+          'sw1=19',
+          'leds_0=38',
+          'leds_1=31',
+          'leds_5=30',  # RGB R
+          'leds_6=29',  # RGB G
+          'leds_7=28',  # RGB B
+          'leds_2=27',
+          'leds_3=26',
+          'leds_4=25',
+          'tof_xshut_0=41',
+          'tof_xshut_1=42',
+          'tof_xshut_2=2',
+          'tof_xshut_3=3',
+          'tof_xshut_4=4',
         ]),
 
         (['mcu', 'ic', 'require_basic_part'], False),
