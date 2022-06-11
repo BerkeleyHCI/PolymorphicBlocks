@@ -217,7 +217,7 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
       # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      self.io8_pull = imp.Block(PulldownResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
+      self.io8_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
       self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
 
