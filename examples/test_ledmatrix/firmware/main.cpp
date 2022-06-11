@@ -75,9 +75,9 @@ void setup() {
   Serial.println(WiFi.softAPIP());
   server.begin();
 	
-  auto timer = timerBegin(0, 80, true);
+  timer = timerBegin(0, 80, true);  // prescaler of 80 on 80MHz clock gives 1 tick per us
   timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, 2000, true);
+  timerAlarmWrite(timer, 2000, true);  // interrupt per 2000us = 2ms
   timerAlarmEnable(timer);
 }
 
