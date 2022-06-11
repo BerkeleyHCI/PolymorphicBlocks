@@ -159,9 +159,7 @@ class PartsTableUtil:
   }
   SI_PREFIXES = ''.join(SI_PREFIX_DICT.keys())
 
-  NUMBER_REGEX = '\d+\.?\d*'
-
-  VALUE_REGEX = re.compile(f'^({NUMBER_REGEX})\s*([{SI_PREFIXES}]?)(.+)$')
+  VALUE_REGEX = re.compile(f'^([\d./]+)\s*([{SI_PREFIXES}]?)(.+)$')
   DefaultType = TypeVar('DefaultType')
   @classmethod
   @overload
@@ -172,20 +170,30 @@ class PartsTableUtil:
   @classmethod
   def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], DefaultType] = ParseError) -> Union[DefaultType, float]:
     """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
+    Additionally supports fractional notation, eg 1/16W
     If the input is not a value:
       if default is not specified, raises a ParseError.
       if default is specified, returns the default."""
     matches = cls.VALUE_REGEX.match(value)
     if matches is not None and matches.group(3) == units:
-      return float(matches.group(1)) * cls.SI_PREFIX_DICT[matches.group(2)]
+      try:
+        if '/' in matches.group(1):
+          fractional_components = matches.group(1).split('/')
+          assert len(fractional_components) == 2
+          numeric_value = float(fractional_components[0]) / float(fractional_components[1])
+        else:
+          numeric_value = float(matches.group(1))
+        return numeric_value * cls.SI_PREFIX_DICT[matches.group(2)]
+      except ValueError:
+        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
     else:
       if default == cls.ParseError:
         raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
       else:
-        return default  #type:ignore
+        return default  # type:ignore
 
 
-  TOLERANCE_REGEX = re.compile(f'^(±)\s*({NUMBER_REGEX})\s*(ppm|%)$')
+  TOLERANCE_REGEX = re.compile(f'^(±)\s*([\d.]+)\s*(ppm|%)$')
   @classmethod
   def parse_tolerance(cls, value: str) -> Tuple[float, float]:
     """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.

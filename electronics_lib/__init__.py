@@ -5,6 +5,7 @@ from .DigikeyPart import DigikeyTablePart
 
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
+from .JlcResistorArray import JlcResistorArray
 from .DigikeyMlcc import DigikeyMlcc
 from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor

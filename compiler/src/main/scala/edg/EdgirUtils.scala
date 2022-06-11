@@ -38,6 +38,13 @@ object EdgirUtils {
           case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
           case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => fn(exported.getExteriorPort)
+          case (false, true) => fn(exported.getInternalBlockPort)
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
       case _ => throw new IllegalArgumentException
     }
 
@@ -54,6 +61,13 @@ object EdgirUtils {
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => connection.update(_.exported.exteriorPort := fn(exported.getExteriorPort))
           case (false, true) => connection.update(_.exported.internalBlockPort := fn(exported.getInternalBlockPort))
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => connection.update(_.exportedTunnel.exteriorPort := fn(exported.getExteriorPort))
+          case (false, true) => connection.update(_.exportedTunnel.internalBlockPort := fn(exported.getInternalBlockPort))
           case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
           case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }

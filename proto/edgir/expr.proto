@@ -275,12 +275,10 @@ message BinarySetExpr {
   ValueExpr rhs = 3;
 }
 
-/** Arrays have an expression form, allowing you to define them with a set of
-    constraints */
-//message ArrayExpr {
-//  repeated ValueExpr vals = 1;
-//  ValueExpr size = 2;
-//}
+/** Creates an array from element exprs */
+message ArrayExpr {
+  repeated ValueExpr vals = 1;
+}
 
 /** Ranges have an expression form, allowing you to constrain them without
     specifying them fully */
@@ -357,7 +355,7 @@ message ValueExpr {
     UnaryExpr        unary       = 3;
     UnarySetExpr     unary_set   = 4;
     // SetExpr          set         = 5;
-    // ArrayExpr        array       = 6;
+    ArrayExpr        array       = 6;
     StructExpr       struct      = 7;
     RangeExpr        range       = 8;
     IfThenElseExpr   ifThenElse  = 10;
@@ -369,6 +367,19 @@ message ValueExpr {
     ExportedExpr     exportedArray    = 20;  // array to array export, where allocate means allocate a subarray
 
     AssignExpr assign    = 17;
+
+    // These Exprs support cross-hierarchy operations
+    ExportedExpr     exportedTunnel = 21;  // single port to single port tunneling (cross-hierarchy) export:
+                                           // - the exterior port may be a top-level port on any (recursive) sub-block
+                                           //   for the exterior port, all path components except the last must be block
+                                           //   references, and the last must be a top-level port
+                                           // - exterior ports may not have other internal connections (over-connected)
+                                           // - the interior port may be a port of a (direct) sub-block, and may be an
+                                           //   ALLOCATE on an array
+                                           // - interior ports may not have other external connections (over-connected)
+                                           // - other, semantically this behaves like a normal export
+
+    AssignExpr       assignTunnel = 22;  // parameter assignment which may be cross-hierarchy
 
     edgir.ref.LocalPath  ref     = 99;
   }

@@ -149,6 +149,10 @@ class ExprToString() extends ValueExprMap[String] {
     case op => s"unknown[$op](${vals})"
   }
 
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[String]): String = {
+    s"array(${vals.mkString(", ")})"
+  }
+
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, String]): String = {
     val valsStr = vals.map { case (k, v) => s"$k: $v" }
     s"struct(${valsStr.mkString(", ")})"
@@ -181,8 +185,15 @@ class ExprToString() extends ValueExprMap[String] {
     s"exported($exteriorPort, $internalBlockPort)"
   }
 
+  override def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: String, internalBlockPort: String): String = {
+    s"exportedTunnel($exteriorPort, $internalBlockPort)"
+  }
+
   override def mapAssign(assign: expr.AssignExpr, src: String): String =
     s"${mapRef(assign.getDst)} ⇐ $src"
+
+  override def mapAssignTunnel(assign: expr.AssignExpr, src: String): String =
+    s"${mapRef(assign.getDst)} ⇐() $src"
 
   override def mapRef(path: ref.LocalPath): String = {
     path.steps.map { _.step match {

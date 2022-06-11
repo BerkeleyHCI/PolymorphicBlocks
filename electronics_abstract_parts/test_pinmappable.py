@@ -99,14 +99,14 @@ class PinMapUtilTest(unittest.TestCase):
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
     ]).allocate([(UsbDevicePort, ['usb'])],
                 ["usb.dm=2", "usb.dp=3"])
-    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '2', 'dp': '3'}), allocated)
+    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
   def test_assign_bundle_fixed_auto(self):
     usb_model = UsbDevicePort()
     allocated = PinMapUtil([
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
     ]).allocate([(UsbDevicePort, ['usb'])])
-    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': '2', 'dp': '3'}), allocated)
+    self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
   def test_assign_bundle_fixed_badspec(self):
     usb_model = UsbDevicePort()
@@ -134,7 +134,7 @@ class PinMapUtilTest(unittest.TestCase):
                 ["uart.tx=1", "uart.rx=3"])
     self.assertEqual(allocated[0].name, 'uart')
     self.assertEqual(allocated[0].resource_name, 'UART0')
-    self.assertEqual(allocated[0].pin, {'tx': '1', 'rx': '3'})
+    self.assertEqual(allocated[0].pin, {'tx': ('1', 'PIO1'), 'rx': ('3', 'PIO3')})
 
   def test_assign_bundle_delegating_auto(self):
     dio_model = DigitalBidir()
@@ -148,7 +148,7 @@ class PinMapUtilTest(unittest.TestCase):
     ]).allocate([(UartPort, ['uart'])])
     self.assertEqual(allocated[0].name, 'uart')
     self.assertEqual(allocated[0].resource_name, 'UART0')
-    self.assertEqual(allocated[0].pin, {'tx': '1', 'rx': '2'})
+    self.assertEqual(allocated[0].pin, {'tx': ('1', 'PIO1'), 'rx': ('2', 'PIO2')})
 
   def test_assign_bundle_delegating_badspec(self):
     dio_model = DigitalBidir()
@@ -192,7 +192,7 @@ class PinMapUtilTest(unittest.TestCase):
     ]).allocate([(UartPort, ['uart'])])
     self.assertEqual(allocated[0].name, 'uart')
     self.assertEqual(allocated[0].resource_name, 'UART0')
-    self.assertEqual(allocated[0].pin, {'tx': '3', 'rx': '1'})
+    self.assertEqual(allocated[0].pin, {'tx': ('3', 'PIO3'), 'rx': ('1', 'PIO1')})
 
     assert isinstance(allocated[0].port_model, UartPort)
     self.assertTrue(allocated[0].port_model.tx.voltage_out.initializer is not None)
@@ -209,4 +209,4 @@ class PinMapUtilTest(unittest.TestCase):
                 ['uart.tx=NC'])
     self.assertEqual(allocated[0].name, 'uart')
     self.assertEqual(allocated[0].resource_name, 'UART0')
-    self.assertEqual(allocated[0].pin, {'rx': '1'})
+    self.assertEqual(allocated[0].pin, {'rx': ('1', 'PIO1')})

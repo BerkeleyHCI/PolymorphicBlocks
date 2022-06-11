@@ -16,7 +16,6 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
     'tolerance': re.compile("(^|\s)(±\S+%)($|\s)"),
     'power': re.compile("(^|\s)(\S+W)($|\s)"),
   }
-  RESISTOR_POWER_DIV_MATCH = re.compile("(\d+)/(\d+)W")
 
   @classmethod
   def _make_table(cls) -> PartsTable:
@@ -37,13 +36,8 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
           PartsTableUtil.parse_tolerance(extracted_values['tolerance'][1])
         )
 
-        power_value = extracted_values['power'][1]
-        power_div_match = cls.RESISTOR_POWER_DIV_MATCH.match(power_value)
-        if power_div_match:
-          power_rating = float(power_div_match.group(1)) / float(power_div_match.group(2))
-        else:
-          power_rating = PartsTableUtil.parse_value(power_value, 'W')
-        new_cols[cls.POWER_RATING] = Range.zero_to_upper(power_rating)
+        new_cols[cls.POWER_RATING] = Range.zero_to_upper(
+          PartsTableUtil.parse_value(extracted_values['power'][1], 'W'))
 
         return new_cols
       except (KeyError, PartsTableUtil.ParseError):

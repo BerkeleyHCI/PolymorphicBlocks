@@ -190,10 +190,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
-  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)  // TODO clean up this API?
   for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
     constProp.setForcedValue(path.asIndirect, value, "path refinement")
   }
+
+  // Primarily used for unit tests, TODO clean up this API?
+  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
   private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
 
@@ -323,6 +325,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
+        case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
+          constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+            containerPath, s"$containerPath.$constrName")
         case None =>
           recursiveSetNotConnected(containerPath ++ portPostfix, port)
         case Some((_, _)) => throw new IllegalArgumentException
@@ -392,6 +398,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         blockPath.asIndirect ++ assign.dst.get,
         blockPath, assign.src.get, constrName) // TODO add sourcelocators
       true
+    case expr.ValueExpr.Expr.AssignTunnel(assign) =>
+      // same as normal assign case, but would not enforce locality of references
+      constProp.addAssignment(
+        blockPath.asIndirect ++ assign.dst.get,
+        blockPath, assign.src.get, constrName) // TODO add sourcelocators
+      true
     case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
         expr.ValueExpr.Expr.IfThenElse(_) =>  // raw ValueExprs interpreted as assertions
@@ -433,6 +445,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
             )
           }
+          true
+        case _ => false  // anything with allocates is not processed
+      }
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
+        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+          require(!isInLink)
+          elaboratePending.addNode(
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+            Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+          )
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -706,6 +728,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
+              case PortConnections.AllocatedTunnelExport(connects) =>
+                // similar to AllocateDConnect case, except only with single-element connects
+                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(setAllocatedTask, Seq())
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveAllocateTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
+                elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
+
               case PortConnections.NotConnected =>
                 constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
@@ -718,6 +750,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _ =>  // leaf only, no array support
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
               case PortConnections.SingleConnect(constrName, constr) =>
+                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+              case PortConnections.TunnelExport(constrName, constr) =>
                 resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
               case PortConnections.NotConnected =>
                 resolvePortConnectivity(path, portPostfix, None)

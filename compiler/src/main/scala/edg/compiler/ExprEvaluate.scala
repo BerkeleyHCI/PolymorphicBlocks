@@ -302,6 +302,7 @@ object ExprEvaluate {
         case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
         case _ => RangeEmpty
       }
+      case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
       case (Op.NEGATE, vals) => vals match {
         case ArrayValue.ExtractRange(arrayElts) =>
@@ -324,6 +325,8 @@ object ExprEvaluate {
       case _ => throw new ExprEvaluateException(s"Unknown unary set op in ${unarySet.op} $vals from $unarySet")
     }
   }
+
+  def evalArray(array: expr.ArrayExpr, vals: Seq[ExprValue]): ExprValue = ArrayValue(vals)
 
   def evalStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue = ???
 
@@ -366,6 +369,9 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
 
   override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue): ExprValue =
     ExprEvaluate.evalUnarySet(unarySet, vals)
+
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[ExprValue]): ExprValue =
+    ExprEvaluate.evalArray(array, vals)
 
   override def mapStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue =
     ExprEvaluate.evalStruct(struct, vals)

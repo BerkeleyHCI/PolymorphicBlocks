@@ -50,7 +50,23 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     pb.array.CopyFrom(cls._elt_type._decl_to_proto())
     return pb
 
-  def _create_unary_set_op(self, op: Union[NumericOp,BoolOp,RangeSetOp]) -> ArrayEltType:
+  @staticmethod
+  def array_of_elt(elt: ConstraintExpr) -> ArrayExpr:
+    """Returns the ArrayExpr type that wraps some element expr."""
+    if isinstance(elt, BoolExpr):
+      return ArrayBoolExpr()
+    elif isinstance(elt, IntExpr):
+      return ArrayIntExpr()
+    elif isinstance(elt, FloatExpr):
+      return ArrayFloatExpr()
+    elif isinstance(elt, RangeExpr):
+      return ArrayRangeExpr()
+    elif isinstance(elt, StringExpr):
+      return ArrayStringExpr()
+    else:
+      raise TypeError(f"unknown ConstraintExpr type for wrapped param {elt}")
+
+  def _create_unary_set_op(self, op: Union[NumericOp, BoolOp, RangeSetOp]) -> ArrayEltType:
     return self._elt_type._new_bind(UnarySetOpBinding(self, op))
 
   def sum(self) -> ArrayEltType:

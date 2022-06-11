@@ -19,6 +19,7 @@ from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractResistor import Resistor, ResistorStandardPinning, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
+from .AbstractResistorArray import ResistorArray, ResistorArrayStandardPinning, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardPinning, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor

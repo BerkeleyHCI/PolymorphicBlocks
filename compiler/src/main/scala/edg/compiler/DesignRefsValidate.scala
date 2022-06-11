@@ -31,6 +31,10 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
   override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     vals
   }
+  override def mapArray(array: expr.ArrayExpr,
+                        vals: Seq[Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
+    vals.flatten
+  }
   override def mapStruct(struct: expr.StructExpr,
                          vals: Map[String, Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
     vals.values.foldLeft(Seq[ref.LocalPath]()) { _ ++ _ }
@@ -66,7 +70,14 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
                                 internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
+  override def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
+                                 internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    exteriorPort ++ internalBlockPort
+  }
   override def mapAssign(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+    assign.dst.toSeq ++ src
+  }
+  override def mapAssignTunnel(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     assign.dst.toSeq ++ src
   }
   override def mapRef(path: ref.LocalPath): Seq[ref.LocalPath] =

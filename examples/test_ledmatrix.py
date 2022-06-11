@@ -126,15 +126,21 @@ class LedMatrixTest(JlcBoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def multipack(self) -> None:
+    self.matrix_res1 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res1.elements.allocate('0'), ['matrix', 'res[0]'])
+    self.pack(self.matrix_res1.elements.allocate('1'), ['matrix', 'res[1]'])
+    self.pack(self.matrix_res1.elements.allocate('2'), ['matrix', 'res[2]'])
+
+    self.matrix_res2 = self.PackedBlock(ResistorArray())
+    self.pack(self.matrix_res2.elements.allocate('0'), ['matrix', 'res[3]'])
+    self.pack(self.matrix_res2.elements.allocate('1'), ['matrix', 'res[4]'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
-        (['reg_3v3'], Ldl1117),  # TBD find one that is in stock
-
-        (['driver', 'fet'], DigikeyFet),
-        (['driver', 'diode'], DigikeySmtDiode),
+        (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -156,6 +162,7 @@ class LedMatrixTest(JlcBoardTop):
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),
+        (ResistorArray, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),
@@ -163,6 +170,6 @@ class LedMatrixTest(JlcBoardTop):
     )
 
 
-class LedMatrrixTestCase(unittest.TestCase):
+class LedMatrixTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(LedMatrixTest)

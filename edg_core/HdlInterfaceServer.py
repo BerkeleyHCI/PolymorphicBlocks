@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Optional, Set, Dict, Type, cast, List, Tuple
+from typing import Optional, Set, Dict, Type, cast, List, Tuple, TypeVar
 
 import importlib
 import inspect
@@ -76,20 +76,21 @@ class HdlInterface():  # type: ignore
     return [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
             for indexed in self.library.lib_class_map.keys()]
 
+  LibraryElementType = TypeVar('LibraryElementType', bound=LibraryElement)
   @staticmethod
-  def _elaborate_class(elt_cls: Type[LibraryElement]) -> edgir.Library.NS.Val:
+  def _elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementType, edgir.Library.NS.Val]:
     obj = elt_cls()
     if isinstance(obj, Block):
       block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}")
-      return edgir.Library.NS.Val(hierarchy_block=block_proto)
+      return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore
     elif isinstance(obj, Link):
       link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}")
       assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
-      return edgir.Library.NS.Val(link=link_proto)
+      return obj, edgir.Library.NS.Val(link=link_proto)  # type: ignore
     elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-      return edgir.Library.NS.Val(bundle=obj._def_to_proto())
+      return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())  # type: ignore
     elif isinstance(obj, Port):
-      return edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
+      return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))  # type: ignore
     else:
       raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
@@ -100,9 +101,10 @@ class HdlInterface():  # type: ignore
       if cls is None:
         response.error = f"No library elt {request.element}"
       else:
-        response.element.CopyFrom(self._elaborate_class(cls))
-        if issubclass(cls, DesignTop):  # TODO don't create another instance, perhaps refinements should be static?
-          cls().refinements().populate_proto(response.refinements)
+        obj, obj_proto = self._elaborate_class(cls)
+        response.element.CopyFrom(obj_proto)
+        if isinstance(obj, DesignTop):
+          obj.refinements().populate_proto(response.refinements)
     except BaseException as e:
       import traceback
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st

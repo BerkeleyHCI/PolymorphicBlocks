@@ -75,7 +75,7 @@ class BaseIoController(Block):
         assert isinstance(io_port, CircuitPort)  # otherwise discarded
       elif isinstance(allocation.pin, dict):
         assert isinstance(io_port, Bundle)
-        for (subport_name, pin_name) in allocation.pin.items():
+        for (subport_name, (pin_name, pin_resource)) in allocation.pin.items():
           subport = getattr(io_port, subport_name)
           assert isinstance(subport, CircuitPort), f"bad sub-port {pin_name} {subport}"
           pinmap[pin_name] = subport

@@ -268,18 +268,7 @@ class Vector(BaseVector, Generic[VectorType]):
   def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
     param = selector(self._elt_sample)
     if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
-      if isinstance(param, BoolExpr):
-        return ArrayBoolExpr()._bind(MapExtractBinding(self, param))
-      elif isinstance(param, IntExpr):
-        return ArrayIntExpr()._bind(MapExtractBinding(self, param))
-      elif isinstance(param, FloatExpr):
-        return ArrayFloatExpr()._bind(MapExtractBinding(self, param))
-      elif isinstance(param, RangeExpr):
-        return ArrayRangeExpr()._bind(MapExtractBinding(self, param))
-      elif isinstance(param, StringExpr):
-        return ArrayStringExpr()._bind(MapExtractBinding(self, param))
-      else:
-        raise TypeError(f"unknown ConstrExpr type to map_extract(...), got {param} of type {type(param)}")
+      return ArrayExpr.array_of_elt(param)._bind(MapExtractBinding(self, param))
     elif isinstance(param, BasePort):
       return DerivedVector(self, param)
     else:
