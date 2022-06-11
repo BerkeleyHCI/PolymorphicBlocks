@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
-  """Board-mount laser ToF sensor"""
   def __init__(self) -> None:
     super().__init__()
 
@@ -62,7 +61,7 @@ class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
 
 
 class Vl53l0x(Block):
-  """RTC with integrated crystal. SO-16 version"""
+  """Board-mount laser ToF sensor"""
   def __init__(self) -> None:
     super().__init__()
 
