@@ -14,7 +14,9 @@ class Lf21215tmr_Device(FootprintBlock):
     ))
 
     self.voltage = 5.0
-    self.description = "voltage = {voltage} V"
+    self.description = "The voltage of this block is {voltage}V"
+
+
 
   def contents(self) -> None:
     super().contents()

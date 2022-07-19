@@ -101,8 +101,7 @@ message HierarchyBlock {
   message Phrases {
      oneof PhraseType {
        string text = 1;
-       int32 num = 2;
-       float value = 3;
+       string variable = 2;
      }
   }
   repeated Phrases description = 1;

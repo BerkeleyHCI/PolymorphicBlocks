@@ -297,22 +297,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 # Nathan Code
   def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
 
-    # message = pb.description.add()
-    # message.text = "I have"
-    # message = pb.description.add()
-    # message.num = 3
-    # message = pb.description.add()
-    # message.text = "floats to share with you."
-    # message = pb.description.add()
-    # message.value = 7.13
-    # message = pb.description.add()
-    # message.value = 8.99999
-    # message = pb.description.add()
-    # message.value = 13.2022
-
-    # message = pb.description.add()
-    # message.text = self.description
-
     description = self.description
     size = len(description)
 
@@ -321,13 +305,13 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for varIndex, char in enumerate(description):
       if char == '{':
         endIndex = description[varIndex:].find('}')
-        if description[varIndex:].find('}') != -1:
+        if endIndex != -1:
 
           message = pb.description.add()
           message.text = description[stringStart:varIndex]
 
           message = pb.description.add()
-          message.text = description[varIndex+1:varIndex + endIndex]
+          message.variable = description[varIndex+1:varIndex + endIndex]
 
           stringStart = varIndex + endIndex + 1
 

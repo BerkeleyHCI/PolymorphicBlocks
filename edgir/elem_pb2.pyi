@@ -340,30 +340,20 @@ class HierarchyBlock(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class Phrases(google.protobuf.message.Message):
-        """ // Nathan Code v1
-         string description = 1;
-
-         //   Nathan Code v2
-         repeated string description = 1;
-
-          Nathan Code v3
-        """
+        """  Nathan Code v3"""
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
         TEXT_FIELD_NUMBER: builtins.int
-        NUM_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
+        VARIABLE_FIELD_NUMBER: builtins.int
         text: typing.Text
-        num: builtins.int
-        value: builtins.float
+        variable: typing.Text
         def __init__(self,
             *,
             text: typing.Text = ...,
-            num: builtins.int = ...,
-            value: builtins.float = ...,
+            variable: typing.Text = ...,
             ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","num",b"num","text",b"text","value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","num",b"num","text",b"text","value",b"value"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["PhraseType",b"PhraseType"]) -> typing.Optional[typing_extensions.Literal["text","num","value"]]: ...
+        def HasField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","text",b"text","variable",b"variable"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","text",b"text","variable",b"variable"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["PhraseType",b"PhraseType"]) -> typing.Optional[typing_extensions.Literal["text","variable"]]: ...
 
     PARAMS_FIELD_NUMBER: builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: builtins.int
