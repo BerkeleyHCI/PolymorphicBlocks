@@ -339,6 +339,32 @@ class HierarchyBlock(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
+    class Phrases(google.protobuf.message.Message):
+        """ // Nathan Code v1
+         string description = 1;
+
+         //   Nathan Code v2
+         repeated string description = 1;
+
+          Nathan Code v3
+        """
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        TEXT_FIELD_NUMBER: builtins.int
+        NUM_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        text: typing.Text
+        num: builtins.int
+        value: builtins.float
+        def __init__(self,
+            *,
+            text: typing.Text = ...,
+            num: builtins.int = ...,
+            value: builtins.float = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","num",b"num","text",b"text","value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["PhraseType",b"PhraseType","num",b"num","text",b"text","value",b"value"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["PhraseType",b"PhraseType"]) -> typing.Optional[typing_extensions.Literal["text","num","value"]]: ...
+
     PARAMS_FIELD_NUMBER: builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
@@ -351,6 +377,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     GENERATOR_FIELD_NUMBER: builtins.int
     IS_ABSTRACT_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
+    DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
     def params(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, edgir.init_pb2.ValInit]: ...
     @property
@@ -397,6 +424,8 @@ class HierarchyBlock(google.protobuf.message.Message):
 
     @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
+    @property
+    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___HierarchyBlock.Phrases]: ...
     def __init__(self,
         *,
         params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
@@ -411,9 +440,10 @@ class HierarchyBlock(google.protobuf.message.Message):
         generator: typing.Optional[global___Generator] = ...,
         is_abstract: builtins.bool = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        description: typing.Optional[typing.Iterable[global___HierarchyBlock.Phrases]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["generator",b"generator","meta",b"meta","prerefine_class",b"prerefine_class","self_class",b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","generator",b"generator","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","description",b"description","generator",b"generator","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___HierarchyBlock = HierarchyBlock
 
 class Generator(google.protobuf.message.Message):

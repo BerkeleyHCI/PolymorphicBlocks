@@ -338,6 +338,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         assert not port._get_initializers([port_name]), f"connected boundary port {port_name} has unexpected initializer"
     pb = self._populate_def_proto_port_init(pb)
 
+    # Nathan Code
+    pb = self._populate_def_proto_description(pb)
+
     return pb
 
   def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:

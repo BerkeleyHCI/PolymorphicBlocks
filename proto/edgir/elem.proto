@@ -96,6 +96,16 @@ message HierarchyBlock {
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
 
   edgir.common.Metadata meta = 127;
+
+//   Nathan Code v3
+  message Phrases {
+     oneof PhraseType {
+       string text = 1;
+       int32 num = 2;
+       float value = 3;
+     }
+  }
+  repeated Phrases description = 1;
 }
 
 message Generator {
