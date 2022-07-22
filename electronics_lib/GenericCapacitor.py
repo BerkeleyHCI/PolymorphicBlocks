@@ -47,7 +47,8 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-    self.description = "capacitance: {selected_nominal_capacitance}F of spec: {capacitance} \nvoltage rating {selected_voltage_rating} of spec: {voltage}V"
+    self.description = "<b>capacitance:</b> {selected_nominal_capacitance}F <b>of spec:</b> {capacitance} \n" + \
+                       "<b>voltage rating</b> {selected_voltage_rating} <b>of spec:</b> {voltage}V"
 
   class SmtCeramicCapacitorGenericPackageSpecs(NamedTuple):
     name: str # package name

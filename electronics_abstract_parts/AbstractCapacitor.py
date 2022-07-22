@@ -18,7 +18,7 @@ class UnpolarizedCapacitor(PassiveComponent):
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
-    self.description = "spec capacitance: {capacitance}F"
+    self.description = "<b>spec capacitance:</b> {capacitance}F"
 
 
 @abstract_block
@@ -218,7 +218,7 @@ class DecouplingCapacitor(DiscreteApplication):
     self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
-    self.description = "spec capacitance: {capacitance}F"
+    self.description = "<b>spec capacitance:</b> {capacitance}F"
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
       'DecouplingCapacitor':

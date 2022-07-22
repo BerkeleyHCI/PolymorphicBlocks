@@ -24,7 +24,9 @@ class Inductor(PassiveComponent):
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())
 
-    self.description = "spec inductance: {inductance}H \nspec current: {current}A \nspec frequency: {frequency}Hz"
+    self.description = "<b>spec inductance:</b> {inductance}H \n" + \
+                       "<b>spec current:</b> {current}A \n" + \
+                       "<b>spec frequency:</b> {frequency}Hz"
 
 
 @abstract_block
@@ -75,7 +77,9 @@ class TableInductor(InductorStandardPinning, PartsTableFootprint, GeneratorBlock
     self.actual_current_rating = self.Parameter(RangeExpr())
     self.actual_frequency_rating = self.Parameter(RangeExpr())
 
-    self.description = "inductance: {actual_inductance}H of spec {inductance}H\ncurrent rating: {actual_current_rating}A of spec: {current}A\nfrequency rating: {actual_frequency_rating}Hz of spec: {frequency}Hz"
+    self.description = "<b>inductance:</b> {actual_inductance}H <b>of spec</b> {inductance}H\n" +\
+                       "<b>current rating:</b> {actual_current_rating}A <b>of spec:</b> {current}A\n" +\
+                       "<b>frequency rating:</b> {actual_frequency_rating}Hz <b>of spec:</b> {frequency}Hz"
 
   def select_part(self, inductance: Range, current: Range, frequency: Range,
                   part_spec: str, footprint_spec: str) -> None:

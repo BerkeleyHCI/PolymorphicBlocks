@@ -21,7 +21,8 @@ class Resistor(PassiveComponent):
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
-    self.description = "resistance: {resistance}Ω of spec: {actual_resistance}Ω \nspec power: {power}W"
+    self.description = "<b>resistance:</b> {resistance}Ω <b>of spec:</b> {actual_resistance}Ω \n" + \
+                       "<b>spec power:</b> {power}W"
 
 
 @abstract_block

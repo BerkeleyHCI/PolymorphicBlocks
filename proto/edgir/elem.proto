@@ -97,7 +97,6 @@ message HierarchyBlock {
 
   edgir.common.Metadata meta = 127;
 
-//   Nathan Code v3
   message Phrases {
      oneof PhraseType {
        string text = 1;

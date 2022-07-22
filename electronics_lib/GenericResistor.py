@@ -21,7 +21,8 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
 
-    self.description = "resistance: {resistance}Ω \npower rating {power}W"
+    self.description = "<b>resistance:</b> {resistance}Ω \n" + \
+                       "<b>power rating</b> {power}W"
 
 
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,

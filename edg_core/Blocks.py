@@ -168,9 +168,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._elaboration_state = BlockElaborationState.init
 
-    # Nathan Code
-
-    self.description = "Empty"
+    self.description = ""
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
@@ -294,7 +292,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return pb
 
-# Nathan Code
   def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
 
     description = self.description

@@ -40,8 +40,8 @@ class BlinkyExample(BoardTop):
         self.cap = self.Block(UnpolarizedCapacitor(capacitance=0.1*uFarad(tol=0.2), voltage=5*Volt(tol=0.10)))
         self.res = self.Block(Resistor(resistance=5*Ohm(tol=0.10)))
         self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-        self.ind = self.Block(JlcInductor(inductance=5*Henry(tol=0.10), current=1*Amp(tol=0.05), frequency=100*Hertz(tol=0.01)))
-        self.div = self.Block(ResistiveDivider())
+        self.ind = self.Block(JlcInductor(inductance=(1, 50)*uHenry, current=(0, 0.05)*Amp, frequency=0*Hertz(tol=0.05)))
+        self.div = self.Block(ResistiveDivider(impedance=(1000.0, 10000.0), ratio=(0.22712843, 0.23891547)))
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(

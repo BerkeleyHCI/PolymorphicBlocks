@@ -340,7 +340,6 @@ class HierarchyBlock(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class Phrases(google.protobuf.message.Message):
-        """  Nathan Code v3"""
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
         TEXT_FIELD_NUMBER: builtins.int
         VARIABLE_FIELD_NUMBER: builtins.int
