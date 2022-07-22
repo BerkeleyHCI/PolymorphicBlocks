@@ -21,6 +21,9 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
 
+    self.description = "resistance: {resistance}Ω \npower rating {power}W"
+
+
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
                       footprint_spec: str) -> None:
     if series == 0:  # exact, not matched to E-series
@@ -48,7 +51,6 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
       self._make_pinning(suitable_packages[0][1]),
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
-
 
 class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)

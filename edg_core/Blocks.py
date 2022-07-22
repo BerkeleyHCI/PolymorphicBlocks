@@ -170,7 +170,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     # Nathan Code
 
-    self.description = "Empty Description :)"
+    self.description = "Empty"
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore

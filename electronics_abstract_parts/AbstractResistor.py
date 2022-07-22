@@ -21,6 +21,8 @@ class Resistor(PassiveComponent):
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
+    self.description = "resistance: {resistance}Ω of spec: {actual_resistance}Ω \nspec power: {power}W"
+
 
 @abstract_block
 class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):

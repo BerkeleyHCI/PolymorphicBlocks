@@ -76,6 +76,9 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
 
     self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
+    self.description = "INSERT DESCRIPTION HERE"
+
+
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
@@ -136,6 +139,8 @@ class BaseVoltageDivider(Filter, Block):
 
     self.assign(self.input.current_draw, self.output.link().current_drawn)
     # TODO also model static current draw into gnd
+
+    self.description = "ratio: {selected_ratio} of spec: {ratio} \nimpedance: {selected_impedance}Ω of spec: {impedance}Ω"
 
 
 class VoltageDivider(BaseVoltageDivider):
