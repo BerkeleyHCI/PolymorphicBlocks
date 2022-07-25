@@ -11,7 +11,7 @@ from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .DigikeyInductor import DigikeyInductor
 from .JlcInductor import JlcInductor
-from .Leds import SmtLed, ThtLed, IndicatorLed, VoltageIndicatorLed, SmtRgbLed, ThtRgbLed, IndicatorSinkRgbLed
+from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
 from .JlcLed import JlcLed
 from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcDiode, JlcZenerDiode
@@ -20,12 +20,14 @@ from .JlcFet import JlcFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
 from .DigikeyCrystals import DigikeyCrystal
+from .JlcCrystal import JlcCrystal
+from .JlcSwitches import JlcSwitch
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 
-from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK
+from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK, MolexSl
 
 from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
@@ -64,13 +66,15 @@ from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
-from .Iso1050 import Iso1050dub
+from .CanTransceiver_Iso1050 import Iso1050dub
+from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .BatteryProtector_S8200A import BatteryProtector_S8200A
+from .Distance_Vl53l0x import Vl53l0x, Vl53l0xArray
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
 
-from .Labels import DuckLogo, LeadFreeIndicator, IdDots4
+from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4
 from .Mechanicals import MountingHole_NoPad_M2_5

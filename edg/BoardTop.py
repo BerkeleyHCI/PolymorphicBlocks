@@ -18,6 +18,8 @@ class BaseBoardTop(DesignTop):
         (SwitchFet, DigikeySwitchFet),
         (Crystal, DigikeyCrystal),
 
+        (IndicatorSinkLed, IndicatorSinkLedResistor),
+
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, Keystone5015),
 
@@ -50,7 +52,9 @@ class JlcBoardTop(BaseBoardTop):
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
         (ResistorArray, JlcResistorArray),
+        (Crystal, JlcCrystal),
 
+        (Switch, JlcSwitch),
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),

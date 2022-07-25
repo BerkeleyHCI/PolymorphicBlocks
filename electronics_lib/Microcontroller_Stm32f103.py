@@ -3,10 +3,11 @@ from typing import *
 
 from electronics_abstract_parts import *
 from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
+from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -89,10 +90,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     })
 
     self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
-      PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
-      PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
-      PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
-
       PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),
       PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),
       PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),
@@ -131,6 +128,11 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
 
       # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
 
+      # de-prioritize these for auto-assignment since they're low-current
+      PinResource('PC13', {'PC13': dio_pc_13_14_15_model}),
+      PinResource('PC14', {'PC14': dio_pc_13_14_15_model, 'OSC32_IN': Passive()}),
+      PinResource('PC15', {'PC15': dio_pc_13_14_15_model, 'OSC32_OUT': Passive()}),
+
       PeripheralFixedResource('USART2', uart_model, {
         'tx': ['PA2', 'PD5'], 'rx': ['PA3', 'PD6']
       }),
@@ -150,7 +152,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
         'tx': ['PA9', 'PB6'], 'rx': ['PA10', 'PB7']
       }),
       PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
-        'tx': ['PA12', 'PD1', 'PB9'], 'rx': ['PA11', 'PD0', 'PB8']
+        'txd': ['PA12', 'PD1', 'PB9'], 'rxd': ['PA11', 'PD0', 'PB8']
       }),
       PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
         'dm': ['PA11'], 'dp': ['PA12']
@@ -167,6 +169,8 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
+  JLC_PART: str  # part number for lcsc_part
+  JLC_BASIC_PART: bool
 
   def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
@@ -190,6 +194,8 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       mfr='STMicroelectronics', part=self.PART,
       datasheet='https://www.st.com/resource/en/datasheet/stm32f103c8.pdf'
     )
+    self.assign(self.lcsc_part, self.JLC_PART)
+    self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
 
 
 class Stm32f103_48_Device(Stm32f103Base_Device):
@@ -248,6 +254,9 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
   }
   PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
   PART = 'STM32F103xxT6'
+  JLC_PART = 'C8734'  # C8T6 variant - basic part
+  # C77994 for GD32F103C8T6, probably mostly drop-in compatible, NOT basic part
+  JLC_BASIC_PART = True
 
 
 class UsbDpPullUp(Block):

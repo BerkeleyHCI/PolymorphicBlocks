@@ -2,10 +2,10 @@ import unittest
 
 from typing import Type
 from edg_core import *
-import electronics_model
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-
-from . import *
+from .CircuitBlock import FootprintBlock
+from .VoltagePorts import  VoltageSource, VoltageSink
+from .NetlistGenerator import NetlistGenerator
 
 
 class TestFakeSource(FootprintBlock):
@@ -27,13 +27,16 @@ class TestFakeSource(FootprintBlock):
     )
 
 
-class TestFakeSink(FootprintBlock):
+@abstract_block
+class TestBaseFakeSink(Block):  # abstract base class to support multipacking
   def __init__(self) -> None:
     super().__init__()
 
     self.pos = self.Port(VoltageSink())
     self.neg = self.Port(VoltageSink())
 
+
+class TestFakeSink(TestBaseFakeSink, FootprintBlock):
   def contents(self) -> None:
     super().contents()
     self.footprint(  # load resistor

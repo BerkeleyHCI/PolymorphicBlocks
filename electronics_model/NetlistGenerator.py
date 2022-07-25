@@ -22,11 +22,29 @@ class InvalidNetlistBlockException(BaseException):
   pass
 
 
+class InvalidPackingException(BaseException):
+   pass
+
+
 Blocks = Dict[TransformUtil.Path, Tuple[str, str]]  # path -> footprint, value
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
+AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
 Hierarchy = Dict[TransformUtil.Path, str]  # path -> classname
 class NetlistCollect(TransformUtil.Transform):
+  def __init__(self, design: CompiledDesign):
+    self.blocks: Blocks = {}
+    self.edges: Edges = {}
+    self.assert_connected: AssertConnected = []
+    self.short_paths: Names = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
+    self.hierarchy: Hierarchy = {}
+    self.pins: Set[TransformUtil.Path] = set()
+    self.names: Names = {}
+
+    self.refdes_last: Dict[str, int] = {}
+
+    self.design = design
+
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
     short_path = self.short_paths[path]
@@ -77,6 +95,21 @@ class NetlistCollect(TransformUtil.Transform):
         for dst_path in flat_ports:
           if src_path != dst_path:
             self.edges.setdefault(src_path, []).append(dst_path)
+
+    if 'nets_packed' in block.meta.members.node:
+      # this connects the first source to all destinations, then asserts all the sources are equal
+      # this leaves the sources unconnected, to be connected externally and checked at the end
+      src_port_name = block.meta.members.node['nets_packed'].members.node['src'].text_leaf
+      dst_port_name = block.meta.members.node['nets_packed'].members.node['dst'].text_leaf
+      flat_srcs = list(flatten_port(path.append_port(src_port_name), block.ports[src_port_name]))
+      flat_dsts = list(flatten_port(path.append_port(dst_port_name), block.ports[dst_port_name]))
+      assert flat_srcs, "missing source port(s) for packed net"
+      for dst_path in flat_dsts:
+        self.edges.setdefault(flat_srcs[0], []).append(dst_path)
+        self.edges.setdefault(dst_path, []).append(flat_srcs[0])
+      for src_path in flat_srcs:  # assert all sources connected
+        for dst_path in flat_srcs:
+          self.assert_connected.append((src_path, dst_path))
 
     if 'pinning' in block.meta.members.node:
       footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
@@ -193,19 +226,7 @@ class NetlistCollect(TransformUtil.Transform):
   def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
     self.process_blocklike(context.path, link)
 
-  def __init__(self, design: CompiledDesign):
-    self.blocks: Blocks = {}
-    self.edges: Edges = {}
-    self.short_paths: Names = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
-    self.hierarchy: Hierarchy = {}
-    self.pins: Set[TransformUtil.Path] = set()
-    self.names: Names = {}
-
-    self.refdes_last: Dict[str, int] = {}
-
-    self.design = design
-
-  def run(self) -> Tuple[Blocks, Edges, Names, Hierarchy, Names]:
+  def run(self) -> Tuple[Blocks, Edges, AssertConnected, Names, Hierarchy, Names]:
     self.transform_design(self.design.design)
 
     # Sanity check to ensure all pins exist
@@ -214,7 +235,8 @@ class NetlistCollect(TransformUtil.Transform):
       for pin_dst in pins_dst:
         assert pin_dst in self.pins, f"missing net edge dst pin {pin_dst}"
 
-    return (self.blocks, self.edges, self.short_paths, self.hierarchy, self.names)
+    return (self.blocks, self.edges, self.assert_connected,
+            self.short_paths, self.hierarchy, self.names)
 
 
 def path_to_pin(path: TransformUtil.Path) -> kicad.Pin:
@@ -232,7 +254,7 @@ class Netlist(NamedTuple):
 class NetlistGenerator:
   def generate(self, design: CompiledDesign) -> Netlist:
     # TODO another algorithm is for each block, return its footprints and connected nets, and merge nets incrementally
-    blocks, edges, short_paths, hierarchy, names = NetlistCollect(design).run()
+    blocks, edges, assert_connected, short_paths, hierarchy, names = NetlistCollect(design).run()
 
     seen: Set[TransformUtil.Path] = set()
     nets: List[Set[TransformUtil.Path]] = []
@@ -248,6 +270,15 @@ class NetlistGenerator:
               traverse_pin(port)
         traverse_pin(port)
         nets.append(curr_net)
+
+    pin_to_net: Dict[TransformUtil.Path, Set[TransformUtil.Path]] = {}  # values share reference to nets
+    for net in nets:
+      for pin in net:
+        pin_to_net[pin] = net
+
+    for (connected1, connected2) in assert_connected:
+      if pin_to_net[connected1] is not pin_to_net[connected2]:
+        raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
     def name_net(net: Set[TransformUtil.Path]) -> str:
       def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:

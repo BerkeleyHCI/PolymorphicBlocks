@@ -1,5 +1,5 @@
 from electronics_abstract_parts import *
-from .Iso1050 import Iso1050dub
+from .CanTransceiver_Iso1050 import Iso1050dub
 from .LinearRegulators import Ap2204k
 
 

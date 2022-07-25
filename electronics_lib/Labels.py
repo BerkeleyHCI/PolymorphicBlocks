@@ -29,3 +29,13 @@ class DuckLogo(Label, FootprintBlock):
       {},
       value='Duck'
     )
+
+
+class LemurLogo(Label, FootprintBlock):
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'U', 'edg:Symbol_LemurSmall',
+      {},
+      value='Lemur'
+    )

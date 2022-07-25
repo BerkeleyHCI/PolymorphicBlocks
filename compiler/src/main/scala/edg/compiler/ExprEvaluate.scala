@@ -49,10 +49,14 @@ object ExprEvaluate {
         case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
           val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)
           RangeValue(all.min, all.max)
-        case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
+        case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs >= 0 =>
           RangeValue(lhsMin * rhs, lhsMax * rhs)
-        case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
+        case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs < 0 =>
+          RangeValue(lhsMax * rhs, lhsMin * rhs)
+        case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) if lhs >= 0 =>
           RangeValue(lhs * rhsMin, lhs * rhsMax)
+        case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) if lhs < 0 =>
+          RangeValue(lhs * rhsMax, lhs * rhsMin)
         case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs * rhs)
         case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs * rhs)
         case (IntValue(lhs), IntValue(rhs)) => IntValue(lhs * rhs)

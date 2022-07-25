@@ -26,8 +26,11 @@ from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDelayRc
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode
-from .AbstractDiodes import  ZenerDiode, TableZenerDiode, ProtectionZenerDiode
+from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode, LedColor, LedColorLike
+from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
+from .AbstractLed import IndicatorSinkPackedRgbLed
+from .AbstractLed import IndicatorSinkLedArray
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch
@@ -41,6 +44,7 @@ from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPower
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, AnalogTestPoint
+from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
 

@@ -2,6 +2,7 @@ from typing import *
 
 from electronics_abstract_parts import *
 from .PassiveConnector import PassiveConnector
+from .JlcPart import JlcPart
 
 
 class Lm4871_Device(DiscreteChip, FootprintBlock):
@@ -55,7 +56,6 @@ class Lm4871(IntegratedCircuit):
     self.sig = self.Port(AnalogSink.empty(), [Input])
     self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-
   def contents(self):
     super().contents()
     # TODO size component based on higher level input?
@@ -89,7 +89,7 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
+class Tpa2005d1_Device(DiscreteChip, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -128,11 +128,13 @@ class Tpa2005d1_Device(DiscreteChip, FootprintBlock):
       mfr='Texas Instruments', part='TPA2005D1',
       datasheet='https://www.ti.com/lit/ds/symlink/tpa2005d1.pdf'
     )
+    self.assign(self.lcsc_part, 'C27396')
+    self.assign(self.actual_basic_part, False)
 
 
 class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
   """TPA2005D1 configured in single-ended input mode.
-  Possible semi-pin-compatible with PAM8302AASCR, but which has internal resistor."""
+  Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
   @init_in_parent
   def __init__(self, gain: RangeLike = Range.from_tolerance(20, 0.2)):
     super().__init__()

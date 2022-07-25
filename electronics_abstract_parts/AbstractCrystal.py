@@ -27,6 +27,12 @@ class CapacitorStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
       '3': block.crystal.b,
       '4': block.gnd,
     },
+    'Crystal_SMD_3225-4Pin_3.2x2.5mm': lambda block: {
+      '1': block.crystal.a,
+      '2': block.gnd,
+      '3': block.crystal.b,
+      '4': block.gnd,
+    },
   }
 
 
