@@ -337,7 +337,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         port_name = self.manager.name_of(port) or "unk"
         assert not port._get_initializers([port_name]), f"connected boundary port {port_name} has unexpected initializer"
     pb = self._populate_def_proto_port_init(pb)
-
     pb = self._populate_def_proto_description(pb)
 
     return pb

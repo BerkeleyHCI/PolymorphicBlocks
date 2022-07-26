@@ -97,13 +97,13 @@ message HierarchyBlock {
 
   edgir.common.Metadata meta = 127;
 
-  message Phrases {
-     oneof PhraseType {
+  message StringDescriptionElement {
+     oneof ElementType {
        string text = 1;
        string variable = 2;
      }
   }
-  repeated Phrases description = 1;
+  repeated StringDescriptionElement description = 1;
 }
 
 message Generator {
