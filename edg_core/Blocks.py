@@ -293,7 +293,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return pb
 
   def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
-
     description = self.description
     size = len(description)
 
