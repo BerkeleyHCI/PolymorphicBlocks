@@ -303,7 +303,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       if char == '{':
         endIndex = description[varIndex:].find('}')
         if endIndex != -1:
-
           message = pb.description.add()
           message.text = description[stringStart:varIndex]
 
