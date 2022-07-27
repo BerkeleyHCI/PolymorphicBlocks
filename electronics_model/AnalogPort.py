@@ -22,6 +22,10 @@ class AnalogLink(CircuitLink):
     self.voltage_limits = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+    self.description = "<b>voltage</b>: {voltage}V <b>of limits</b>: {voltage_limits}V\n" + \
+                       "<b>current</b>: {current_drawn}A <b>of limits</b>: {current_limits}A\n" + \
+                       "<b>sink impedance</b>: {sink_impedance}Ω, <b>source impedance</b>: {source_impedance}Ω"
+
   def contents(self) -> None:
     super().contents()
 

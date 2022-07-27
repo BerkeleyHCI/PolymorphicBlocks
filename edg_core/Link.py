@@ -16,6 +16,7 @@ class Link(BaseBlock[edgir.Link]):
   def __init__(self) -> None:
     super().__init__()
     self.parent: Optional[Port] = None
+    self.description = "Empty Description"   # additional string field to be displayed as part of the tooltip for links
 
   # Returns the ref_map, but with a trailing ALLOCATE for BaseVector ports
   def _get_ref_map_allocate(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
@@ -38,6 +39,7 @@ class Link(BaseBlock[edgir.Link]):
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb)
+    pb = self._populate_def_proto_description(pb)
     # specifically ignore the port initializers
 
     # actually generate the links and connects

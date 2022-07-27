@@ -133,6 +133,14 @@ message Link {
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;
+
+  message StringDescriptionElement {
+    oneof ElementType {
+      string text = 1;
+      string variable = 2;
+    }
+  }
+  repeated StringDescriptionElement description = 1;
 }
 
 message LinkArray {

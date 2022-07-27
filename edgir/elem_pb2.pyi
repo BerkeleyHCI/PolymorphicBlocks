@@ -537,6 +537,21 @@ class Link(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
+    class StringDescriptionElement(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        TEXT_FIELD_NUMBER: builtins.int
+        VARIABLE_FIELD_NUMBER: builtins.int
+        text: typing.Text
+        variable: typing.Text
+        def __init__(self,
+            *,
+            text: typing.Text = ...,
+            variable: typing.Text = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","text",b"text","variable",b"variable"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","text",b"text","variable",b"variable"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["ElementType",b"ElementType"]) -> typing.Optional[typing_extensions.Literal["text","variable"]]: ...
+
     PARAMS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     LINKS_FIELD_NUMBER: builtins.int
@@ -544,6 +559,7 @@ class Link(google.protobuf.message.Message):
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
+    DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
     def params(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, edgir.init_pb2.ValInit]: ...
     @property
@@ -564,6 +580,8 @@ class Link(google.protobuf.message.Message):
 
         """
         pass
+    @property
+    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___Link.StringDescriptionElement]: ...
     def __init__(self,
         *,
         params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
@@ -573,9 +591,10 @@ class Link(google.protobuf.message.Message):
         self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
         superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        description: typing.Optional[typing.Iterable[global___Link.StringDescriptionElement]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","links",b"links","meta",b"meta","params",b"params","ports",b"ports","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","description",b"description","links",b"links","meta",b"meta","params",b"params","ports",b"ports","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___Link = Link
 
 class LinkArray(google.protobuf.message.Message):

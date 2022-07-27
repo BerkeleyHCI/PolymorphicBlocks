@@ -22,6 +22,9 @@ class VoltageLink(CircuitLink):
     self.current_drawn = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+    self.description = "<b>voltage</b>: {voltage}V <b>of limits</b>: {voltage_limits}V\n" + \
+                       "<b>current</b>: {current_drawn}A <b>of limits</b>: {current_limits}A"
+
   def contents(self) -> None:
     super().contents()
 

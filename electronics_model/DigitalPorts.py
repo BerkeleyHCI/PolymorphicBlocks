@@ -34,6 +34,10 @@ class DigitalLink(CircuitLink):
     self.has_low_signal_driver = self.Parameter(BoolExpr())
     self.has_high_signal_driver = self.Parameter(BoolExpr())
 
+    self.description = "<b>voltage</b>: {voltage}V <b>of limits</b>: {voltage_limits}V\n" + \
+                       "<b>current</b>: {current_drawn}A <b>of limits</b>: {current_limits}A\n" + \
+                       "<b>output thresholds</b>: {out_thresholds}V, <b>input thresholds</b>: {input_thresholds}V"
+
   def contents(self):
     super().contents()
 
