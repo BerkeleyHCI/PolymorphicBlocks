@@ -8,24 +8,36 @@ import edgrpc.hdl.{hdl => edgrpc}
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
-import java.io.File
+import java.io.{BufferedReader, File, InputStreamReader}
+
+
+class ProtobufSubprocessException(msg: String) extends Exception(msg)
 
 
 class ProtobufStdioSubprocess
     [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
     args: Seq[String]) {
-  protected val process = new ProcessBuilder(args: _*)
-      .redirectError(ProcessBuilder.Redirect.INHERIT)
-      .start()
+  protected val process = new ProcessBuilder(args: _*).start()
 
   def write(message: RequestType): Unit = {
     message.writeDelimitedTo(process.getOutputStream)
     process.getOutputStream.flush()
+
+    if (!process.isAlive) {
+      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
+      throw new ProtobufSubprocessException(error)
+    }
   }
 
   def read(): ResponseType = {
-    responseType.parseDelimitedFrom(process.getInputStream).get
+    val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
+
+    if (!process.isAlive) {
+      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
+      throw new ProtobufSubprocessException(error)
+    }
+    responseOpt.get
   }
 }
 
@@ -39,13 +51,9 @@ class PythonInterface(serverFile: File) {
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  protected val process = if (serverFile.exists()) {
-    Errorable.Success(new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-      edgrpc.HdlResponse,
-      Seq("python", serverFile.getAbsolutePath)))
-  } else {
-    Errorable.Error(s"No HDL Interface Stub at ${serverFile.getAbsolutePath}")
-  }
+  protected val process = Errorable.Success(new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
+    edgrpc.HdlResponse,
+    Seq("python", serverFile.getAbsolutePath)))
 
 
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
