@@ -1,5 +1,4 @@
 #include <mbed.h>
-#include "SoftSerial.h"
 #include "VL53L0X.h"
 
 I2C i2c(B11, B10);  // sda, scl
@@ -29,7 +28,7 @@ DigitalIn sw1(B1, PinMode::PullUp);
 // CAN RXD=B8, TXD=B9
 
 DigitalOut swoPin(B3);
-// SoftSerial serial(B3, NC);  // can't do SWO serial on STM32 =(
+// SoftSerial serial(B3, NC);  // can't do SWO serial on STM32 =(, SoftSerial also seems broken
 
 
 int main() {
