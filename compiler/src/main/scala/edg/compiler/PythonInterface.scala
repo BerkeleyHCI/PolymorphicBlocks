@@ -8,7 +8,7 @@ import edgrpc.hdl.{hdl => edgrpc}
 import edg.util.{Errorable, timeExec}
 import edg.wir.Library
 import edg.IrPort
-import java.io.{BufferedReader, File, InputStreamReader}
+import java.io.File
 
 
 class ProtobufSubprocessException(msg: String) extends Exception(msg)
@@ -22,7 +22,7 @@ class ProtobufStdioSubprocess
 
   def write(message: RequestType): Unit = {
     if (!process.isAlive) {  // quick check before we try to write to a dead process
-      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
+      val error = process.getErrorStream.readAllBytes.map(_.toChar).mkString
       throw new ProtobufSubprocessException(error)
     }
 
@@ -34,13 +34,12 @@ class ProtobufStdioSubprocess
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
-      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
+      val error = process.getErrorStream.readAllBytes.map(_.toChar).mkString
       throw new ProtobufSubprocessException(error)
     } else {  // read is more of a synchronization barrier, so stderr is checked and forwarded here
-      if (process.getErrorStream.available() > 0) {
-        System.err.print(
-          
-          new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n"))
+      val available = process.getErrorStream.available()
+      if (available > 0) {  // readNBytes needed here to not block on end-of-stream
+        System.err.print(process.getErrorStream.readNBytes(available).map(_.toChar).mkString)
       }
     }
     responseOpt.get
