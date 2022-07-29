@@ -6,4 +6,9 @@ fp-info-cache
 
 *.zip
 
+# Firmware files
 **/.pio/
+
+# Mechanical designs
+*.FCStd1
+*.stl

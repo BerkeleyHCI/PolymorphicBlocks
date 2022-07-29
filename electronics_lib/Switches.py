@@ -14,6 +14,8 @@ class SmtSwitch(Switch, FootprintBlock):
       },
       part='3.9x2.9mm Switch'
     )
+    # the P/N isn't standardized, but these have been used in the past:
+    # PTS820 J25K SMTR LFS, 2.5mm actuator height (from board)
 
 # TODO right-angle-ness should be a layout-level decision?
 class SmtSwitchRa(Switch, FootprintBlock):
