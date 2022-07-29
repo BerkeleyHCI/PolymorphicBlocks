@@ -21,13 +21,13 @@ class ProtobufStdioSubprocess
   protected val process = new ProcessBuilder(args: _*).start()
 
   def write(message: RequestType): Unit = {
-    message.writeDelimitedTo(process.getOutputStream)
-    process.getOutputStream.flush()
-
-    if (!process.isAlive) {
+    if (!process.isAlive) {  // quick check before we try to write to a dead process
       val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
       throw new ProtobufSubprocessException(error)
     }
+
+    message.writeDelimitedTo(process.getOutputStream)
+    process.getOutputStream.flush()
   }
 
   def read(): ResponseType = {
@@ -36,6 +36,12 @@ class ProtobufStdioSubprocess
     if (!process.isAlive) {
       val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
       throw new ProtobufSubprocessException(error)
+    } else {  // read is more of a synchronization barrier, so stderr is checked and forwarded here
+      if (process.getErrorStream.available() > 0) {
+        System.err.print(
+          
+          new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n"))
+      }
     }
     responseOpt.get
   }
