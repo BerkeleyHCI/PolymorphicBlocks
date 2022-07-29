@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, List
 import math
 
+from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
@@ -18,7 +19,7 @@ class UnpolarizedCapacitor(PassiveComponent):
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
-    self.description = "<b>spec capacitance:</b> {capacitance}F"
+    self.description = DescriptionString("<b>spec capacitance:</b>", DescriptionString.FormatUnits(self.capacitance, "F"))
 
 
 @abstract_block

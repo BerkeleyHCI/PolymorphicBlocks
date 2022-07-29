@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from abc import abstractmethod
 from enum import Enum
 from itertools import chain
@@ -155,6 +156,41 @@ class BlockElaborationState(Enum):
 
 
 BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
+
+class DescriptionStringElts():
+  @abstractmethod
+  def set_elt_proto(self, pb):
+    raise NotImplementedError
+
+
+class DescriptionString():
+  def __init__(self, *elts: Union[str, DescriptionStringElts]):
+    self.elts = elts
+
+  def add_to_proto(self, pb, ref_map):
+    for elt in self.elts:
+      if isinstance(elt, DescriptionStringElts):
+        elt.set_elt_proto(pb, ref_map)
+      elif isinstance(elt, str):
+        new_phrase = pb.description.add()
+        new_phrase.text = elt
+    return pb
+
+  class FormatUnits(DescriptionStringElts):
+    def __init__(self, param, units):
+      # ref_map = self._get_ref_map(edgir.LocalPath())
+      self.param = param
+      self.units = units
+
+    def set_elt_proto(self, pb, ref_map):
+
+      new_phrase = pb.description.add()
+      # print(f"{ref_map} \n\n\n\n{self.param}", file=sys.stderr)
+      new_phrase.var.param.CopyFrom(ref_map[self.param])
+      new_phrase.var.unit = self.units
+      print(f"param = {ref_map[self.param]}", file=sys.stderr)
+
+
 @non_library
 class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   """Base block that has ports (IOs), parameters, and constraints between them.
@@ -294,22 +330,29 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     description = self.description
-    stringStart = 0
-
-    for varIndex, char in enumerate(description):
-      if char == '{':
-        endIndex = description[varIndex:].find('}')
-        if endIndex != -1:
-          message = pb.description.add()
-          message.text = description[stringStart:varIndex]
-          message = pb.description.add()
-          message.variable = description[varIndex+1:varIndex + endIndex]
-          stringStart = varIndex + endIndex + 1
-
-    message = pb.description.add()
-    message.text = description[stringStart:]
+    if isinstance(description, DescriptionString):
+      pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
 
     return pb
+
+  # def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+  #   description = self.description
+  #   stringStart = 0
+  #
+  #   for varIndex, char in enumerate(description):
+  #     if char == '{':
+  #       endIndex = description[varIndex:].find('}')
+  #       if endIndex != -1:
+  #         message = pb.description.add()
+  #         message.text = description[stringStart:varIndex]
+  #         message = pb.description.add()
+  #         message.variable = description[varIndex+1:varIndex + endIndex]
+  #         stringStart = varIndex + endIndex + 1
+  #
+  #   message = pb.description.add()
+  #   message.text = description[stringStart:]
+  #
+  #   return pb
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(
