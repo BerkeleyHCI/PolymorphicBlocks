@@ -177,18 +177,16 @@ class DescriptionString():
     return pb
 
   class FormatUnits(DescriptionStringElts):
-    def __init__(self, param, units):
-      # ref_map = self._get_ref_map(edgir.LocalPath())
-      self.param = param
+    ref: ConstraintExpr
+    units: str
+    def __init__(self, ref: ConstraintExpr, units: str):
+      self.ref = ref
       self.units = units
 
     def set_elt_proto(self, pb, ref_map):
-
       new_phrase = pb.description.add()
-      # print(f"{ref_map} \n\n\n\n{self.param}", file=sys.stderr)
-      new_phrase.var.param.CopyFrom(ref_map[self.param])
-      new_phrase.var.unit = self.units
-      print(f"param = {ref_map[self.param]}", file=sys.stderr)
+      new_phrase.param.path.CopyFrom(ref_map[self.ref])
+      new_phrase.param.unit = self.units
 
 
 @non_library
@@ -332,27 +330,11 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     description = self.description
     if isinstance(description, DescriptionString):
       pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
+    elif isinstance(description, str):
+      message = pb.description.add()
+      message.text = description
 
     return pb
-
-  # def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
-  #   description = self.description
-  #   stringStart = 0
-  #
-  #   for varIndex, char in enumerate(description):
-  #     if char == '{':
-  #       endIndex = description[varIndex:].find('}')
-  #       if endIndex != -1:
-  #         message = pb.description.add()
-  #         message.text = description[stringStart:varIndex]
-  #         message = pb.description.add()
-  #         message.variable = description[varIndex+1:varIndex + endIndex]
-  #         stringStart = varIndex + endIndex + 1
-  #
-  #   message = pb.description.add()
-  #   message.text = description[stringStart:]
-  #
-  #   return pb
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
     return super()._get_ref_map(prefix) + IdentityDict(

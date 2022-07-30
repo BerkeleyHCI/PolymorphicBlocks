@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from edg_core import *
+from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink
 from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
 
@@ -22,9 +23,13 @@ class AnalogLink(CircuitLink):
     self.voltage_limits = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
-    self.description = "<b>voltage</b>: {voltage}V <b>of limits</b>: {voltage_limits}V\n" + \
-                       "<b>current</b>: {current_drawn}A <b>of limits</b>: {current_limits}A\n" + \
-                       "<b>sink impedance</b>: {sink_impedance}Ω, <b>source impedance</b>: {source_impedance}Ω"
+    self.description = DescriptionString(
+      "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
+      "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
+      "\n<b>sink impedance</b>: ", DescriptionString.FormatUnits(self.sink_impedance, "Ω"),
+      ", <b>source impedance</b>: ", DescriptionString.FormatUnits(self.source_impedance, "Ω"))
 
   def contents(self) -> None:
     super().contents()

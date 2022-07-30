@@ -97,16 +97,15 @@ message HierarchyBlock {
 
   edgir.common.Metadata meta = 127;
 
-  message variable2 {
-    edgir.ref.LocalPath param = 1;
+  message Parameter {
+    edgir.ref.LocalPath path = 1;
     string unit = 2;
   }
 
   message StringDescriptionElement {
      oneof ElementType {
        string text = 1;
-       string variable = 2;
-       variable2 var = 3;
+       Parameter param = 2;
      }
   }
   repeated StringDescriptionElement description = 1;
@@ -140,10 +139,15 @@ message Link {
 
   edgir.common.Metadata meta = 127;
 
+  message Parameter {
+    edgir.ref.LocalPath path = 1;
+    string unit = 2;
+  }
+
   message StringDescriptionElement {
     oneof ElementType {
       string text = 1;
-      string variable = 2;
+      Parameter param = 2;
     }
   }
   repeated StringDescriptionElement description = 1;

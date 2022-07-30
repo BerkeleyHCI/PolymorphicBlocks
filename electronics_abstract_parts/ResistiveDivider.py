@@ -4,6 +4,7 @@ from math import log10, ceil
 from typing import List, Tuple
 
 from edg_core import *
+from edg_core.Blocks import DescriptionString
 from electronics_model import Common, Passive
 from . import AnalogFilter, DiscreteApplication, Resistor, Filter
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
@@ -76,8 +77,11 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
 
     self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
-    self.description = "<b>ratio:</b> {actual_ratio} <b>of spec:</b> {ratio} \n" + \
-                       "<b>impedance:</b> {actual_impedance}Ω <b>of spec:</b> {impedance}Ω"
+    self.description = DescriptionString(
+      "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
+      "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
@@ -141,9 +145,11 @@ class BaseVoltageDivider(Filter, Block):
     self.assign(self.input.current_draw, self.output.link().current_drawn)
     # TODO also model static current draw into gnd
 
-    self.description = "<b>ratio:</b> {actual_ratio} <b>of spec:</b> {ratio} \n" + \
-                       "<b>impedance:</b> {actual_impedance}Ω <b>of spec:</b> {impedance}Ω"
-
+    self.description = DescriptionString(
+      "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
+      "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(impedance, "Ω"))
 
 class VoltageDivider(BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal

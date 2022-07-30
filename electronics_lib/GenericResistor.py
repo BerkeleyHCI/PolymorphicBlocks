@@ -1,4 +1,6 @@
 from typing import List, Tuple
+
+from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
@@ -21,8 +23,9 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
 
-    self.description = "<b>resistance:</b> {resistance}Ω \n" + \
-                       "<b>power rating</b> {power}W"
+    self.description = DescriptionString(
+      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"),
+      "\n<b>power rating:</b> ", DescriptionString.FormatUnits(self.power, "W"))
 
 
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,

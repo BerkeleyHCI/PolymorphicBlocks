@@ -1,5 +1,7 @@
 from typing import NamedTuple, Dict, Optional
 import math
+
+from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
@@ -47,8 +49,11 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
     self.selected_voltage_rating = self.Parameter(RangeExpr())
 
-    self.description = "<b>capacitance:</b> {selected_nominal_capacitance}F <b>of spec:</b> {capacitance} \n" + \
-                       "<b>voltage rating</b> {selected_voltage_rating} <b>of spec:</b> {voltage}V"
+    self.description = DescriptionString(
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.selected_nominal_capacitance, "F"),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.capacitance, "F"),
+      "\n<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.selected_voltage_rating, "V"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.voltage, "V"))
 
   class SmtCeramicCapacitorGenericPackageSpecs(NamedTuple):
     name: str # package name

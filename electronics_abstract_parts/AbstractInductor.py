@@ -1,5 +1,6 @@
 from typing import Optional, cast
 
+from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
@@ -24,9 +25,10 @@ class Inductor(PassiveComponent):
     # TODO: in the future, when we consider efficiency - for now, use current ratings
     # self.resistance_dc = self.Parameter(RangeExpr())
 
-    self.description = "<b>spec inductance:</b> {inductance}H \n" + \
-                       "<b>spec current:</b> {current}A \n" + \
-                       "<b>spec frequency:</b> {frequency}Hz"
+    self.description = DescriptionString(
+      "<b>spec inductance:</b> ", DescriptionString.FormatUnits(self.inductance, "H"),
+      "\n<b>spec current:</b> ", DescriptionString.FormatUnits(self.current, "A"),
+      "\n<b>spec frequency:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"))
 
 
 @abstract_block
@@ -77,9 +79,13 @@ class TableInductor(InductorStandardPinning, PartsTableFootprint, GeneratorBlock
     self.actual_current_rating = self.Parameter(RangeExpr())
     self.actual_frequency_rating = self.Parameter(RangeExpr())
 
-    self.description = "<b>inductance:</b> {actual_inductance}H <b>of spec</b> {inductance}H\n" +\
-                       "<b>current rating:</b> {actual_current_rating}A <b>of spec:</b> {current}A\n" +\
-                       "<b>frequency rating:</b> {actual_frequency_rating}Hz <b>of spec:</b> {frequency}Hz"
+    self.description = DescriptionString(
+      "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.inductance, "H"),
+      "\n<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.current, "A"),
+      "\n<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"))
 
   def select_part(self, inductance: Range, current: Range, frequency: Range,
                   part_spec: str, footprint_spec: str) -> None:
