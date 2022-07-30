@@ -159,7 +159,7 @@ BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
 
 class DescriptionStringElts():
   @abstractmethod
-  def set_elt_proto(self, pb):
+  def set_elt_proto(self, pb, ref_map=None):
     raise NotImplementedError
 
 
@@ -202,7 +202,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._elaboration_state = BlockElaborationState.init
 
-    self.description = ""   # additional string field to be displayed as part of the tooltip for blocks
+    self.description = DescriptionString("")   # additional string field to be displayed as part of the tooltip for blocks
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
@@ -330,9 +330,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     description = self.description
     if isinstance(description, DescriptionString):
       pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
-    elif isinstance(description, str):
-      message = pb.description.add()
-      message.text = description
 
     return pb
 

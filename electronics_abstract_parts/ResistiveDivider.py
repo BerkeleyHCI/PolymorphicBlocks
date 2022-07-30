@@ -145,12 +145,6 @@ class BaseVoltageDivider(Filter, Block):
     self.assign(self.input.current_draw, self.output.link().current_drawn)
     # TODO also model static current draw into gnd
 
-    self.description = DescriptionString(
-      "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
-      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
-      "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(impedance, "Ω"))
-
 class VoltageDivider(BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
