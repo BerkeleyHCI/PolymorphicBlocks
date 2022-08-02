@@ -1,14 +1,14 @@
 package edg.compiler
 
 import edg.IrPort
-import edg.util.{Errorable, timeExec}
+import edg.util.{Errorable, QueueStream, timeExec}
 import edg.wir.Library
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
 import edgrpc.hdl.{hdl => edgrpc}
 
-import java.io.{File, InputStream, PipedInputStream, PipedOutputStream}
+import java.io.{File, InputStream}
 import scala.collection.mutable
 
 
@@ -22,9 +22,9 @@ class ProtobufStdioSubprocess
   val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
   protected val process = new ProcessBuilder(args: _*).start()
 
-  protected val outputSource = new PipedOutputStream()
-  val outputStream = new PipedInputStream(outputSource)  // the stdout stream minus the protobuf comms
-
+  // this provides a consistent Stream interface for both stdout and stderr
+  // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
+  val outputStream = new QueueStream()
   val errorStream = process.getErrorStream  // the raw error stream from the process
 
   def write(message: RequestType): Unit = {
@@ -40,15 +40,15 @@ class ProtobufStdioSubprocess
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
       val nextByte = process.getInputStream.read()
-      if (nextByte == kHeaderMagicByte) {
+     if (nextByte == kHeaderMagicByte) {
         doneReadingStdout = true
       } else if (nextByte < 0) {
         throw new ProtobufSubprocessException()
       } else {
-        outputSource.write(nextByte)
+       outputStream.write(nextByte)
       }
     }
-    outputSource.flush()
+
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
@@ -67,10 +67,10 @@ class ProtobufStdioSubprocess
       if (nextByte < 0) {
         doneReadingStdout = true
       } else {
-        outputSource.write(nextByte)
+        outputStream.write(nextByte)
       }
     }
-    outputSource.flush()
+
     process.waitFor()
     process.exitValue()
   }
