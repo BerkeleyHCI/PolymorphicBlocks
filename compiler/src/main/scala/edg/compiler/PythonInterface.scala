@@ -15,11 +15,15 @@ import scala.collection.mutable
 class ProtobufSubprocessException() extends Exception()
 
 
+object ProtobufStdioSubprocess {
+  val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
+}
+
+
 class ProtobufStdioSubprocess
     [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
     args: Seq[String]) {
-  val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
   protected val process = new ProcessBuilder(args: _*).start()
 
   // this provides a consistent Stream interface for both stdout and stderr
@@ -40,7 +44,7 @@ class ProtobufStdioSubprocess
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
       val nextByte = process.getInputStream.read()
-     if (nextByte == kHeaderMagicByte) {
+     if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
         doneReadingStdout = true
       } else if (nextByte < 0) {
         throw new ProtobufSubprocessException()
@@ -63,7 +67,7 @@ class ProtobufStdioSubprocess
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
       val nextByte = process.getInputStream.read()
-      require(nextByte != kHeaderMagicByte)
+      require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
       if (nextByte < 0) {
         doneReadingStdout = true
       } else {

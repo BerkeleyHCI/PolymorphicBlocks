@@ -46,7 +46,6 @@ class ScalaCompilerInstance:
         print("Using development JAR")
       elif os.path.exists(self.PRECOMPIED_RELPATH):
         jar_path = self.PRECOMPIED_RELPATH
-        print("Using precompiled JAR")
       else:
         raise ValueError("No EDG Compiler JAR found")
 

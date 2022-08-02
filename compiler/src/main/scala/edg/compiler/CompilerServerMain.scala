@@ -1,5 +1,6 @@
 package edg.compiler
 
+import edg.util.StreamUtils
 import edgrpc.compiler.{compiler => edgcompiler}
 import edgrpc.compiler.compiler.{CompilerRequest, CompilerResult}
 import edg.wir.{IndirectDesignPath, Refinements}
@@ -40,8 +41,7 @@ object CompilerServerMain {
     } catch {
       case e: Throwable =>
         val sw = new StringWriter()
-        val pw = new PrintWriter(sw)
-        e.printStackTrace(pw)
+        e.printStackTrace(new PrintWriter(sw))
         edgcompiler.CompilerResult(error = sw.toString)
     }
   }
@@ -52,14 +52,25 @@ object CompilerServerMain {
     pyLib.withPythonInterface(pyIf) {
       while (true) {
         val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
-        request match {
+        val result = request match {
           case Some(request) =>
-            val result = compile(request, pyLib)
-            result.writeDelimitedTo(System.out)
-            System.out.flush()
+            compile(request, pyLib)
           case None => // end of stream
             System.exit(0)
+            throw new NotImplementedError()  // provides a return type, shouldn't ever happen
         }
+
+        // forward stdout and stderr output
+        StreamUtils.forAvailable(pyIf.processOutputStream) { data =>
+          System.out.print(new String(data))
+        }
+        StreamUtils.forAvailable(pyIf.processErrorStream) { data =>
+          System.err.print(new String(data))
+        }
+
+        System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
+        result.writeDelimitedTo(System.out)
+        System.out.flush()
       }
     }
   }
