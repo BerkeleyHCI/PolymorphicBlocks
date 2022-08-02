@@ -57,7 +57,8 @@ class ProtobufStdioSubprocess
     responseOpt.get
   }
 
-  def shutdown(): Unit = {
+  // Shuts down the stream and returns the exit value
+  def shutdown(): Int = {
     process.getOutputStream.close()
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
@@ -70,6 +71,8 @@ class ProtobufStdioSubprocess
       }
     }
     outputSource.flush()
+    process.waitFor()
+    process.exitValue()
   }
 }
 
@@ -170,7 +173,7 @@ class PythonInterface(serverFile: File) {
     result
   }
 
-  def shutdown(): Unit = {
+  def shutdown(): Int = {
     process.shutdown()
   }
 }
