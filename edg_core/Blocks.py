@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from abc import abstractmethod
 from enum import Enum
 from itertools import chain
