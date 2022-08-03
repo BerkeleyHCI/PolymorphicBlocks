@@ -10,7 +10,8 @@ import java.io.File
 
 class PythonInterfaceTest extends AnyFlatSpec {
   "Python Interface" should "make basic connections" in {
-    val pyIf = new PythonInterface(new File("PolymorphicBlocks/HdlInterfaceService.py"))
+    val pyIf = new PythonInterface(new File("../HdlInterfaceService.py"))
     pyIf.indexModule("edg_core").getClass should equal(classOf[Errorable.Success[Seq[LibraryPath]]])
+    pyIf.shutdown() should equal(0)
   }
 }

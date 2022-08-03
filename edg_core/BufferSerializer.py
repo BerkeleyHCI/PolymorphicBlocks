@@ -5,6 +5,7 @@ import struct
 
 
 MessageType = TypeVar('MessageType', bound=protobuf.message.Message)
+kHeaderMagicByte = b'\xfe'
 
 
 class BufferSerializer(Generic[MessageType]):
@@ -19,6 +20,7 @@ class BufferSerializer(Generic[MessageType]):
     from google.protobuf.internal.encoder import _VarintBytes  # type: ignore
     # from https://cwiki.apache.org/confluence/display/GEODE/Delimiting+Protobuf+Messages
     serialized = message.SerializeToString()
+    self.buffer.write(kHeaderMagicByte)
     self.buffer.write(_VarintBytes(len(serialized)))
     self.buffer.write(serialized)
     self.buffer.flush()
@@ -32,9 +34,19 @@ class BufferDeserializer(Generic[MessageType]):
   def __init__(self, message_type: Type[MessageType], buffer: IO[bytes]):
     self.message_type = message_type
     self.buffer = buffer
+    self.stdout_buffer = b''
 
   # Returns the next message from the buffer
   def read(self) -> Optional[MessageType]:
+    while True:
+      new = self.buffer.read(1)
+      if not new:
+        return None
+      elif new == kHeaderMagicByte:
+        break
+      else:
+        self.stdout_buffer += new
+
     from google.protobuf.internal.decoder import _DecodeVarint32  # type: ignore
     # from https://cwiki.apache.org/confluence/display/GEODE/Delimiting+Protobuf+Messages
     current = b''
@@ -58,3 +70,8 @@ class BufferDeserializer(Generic[MessageType]):
     message.ParseFromString(current)
 
     return message
+
+  def read_stdout(self) -> bytes:
+    old_buffer = self.stdout_buffer
+    self.stdout_buffer = b''
+    return old_buffer

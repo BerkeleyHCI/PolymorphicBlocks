@@ -36,6 +36,7 @@ class ProtobufStdioSubprocess
       throw new ProtobufSubprocessException()
     }
 
+    process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
     message.writeDelimitedTo(process.getOutputStream)
     process.getOutputStream.flush()
   }

@@ -51,6 +51,9 @@ object CompilerServerMain {
     val pyLib = new PythonInterfaceLibrary()
     pyLib.withPythonInterface(pyIf) {
       while (true) {
+        val expectedMagicByte = System.in.read()
+        require(expectedMagicByte == ProtobufStdioSubprocess.kHeaderMagicByte || expectedMagicByte < 0)
+
         val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
         val result = request match {
           case Some(request) =>
@@ -63,9 +66,11 @@ object CompilerServerMain {
         // forward stdout and stderr output
         StreamUtils.forAvailable(pyIf.processOutputStream) { data =>
           System.out.print(new String(data))
+          System.out.flush()
         }
         StreamUtils.forAvailable(pyIf.processErrorStream) { data =>
           System.err.print(new String(data))
+          System.err.flush()
         }
 
         System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
