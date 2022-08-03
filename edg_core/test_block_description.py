@@ -1,5 +1,6 @@
 import unittest
 
+import edgir
 from . import *
 from .Blocks import DescriptionString
 
@@ -20,5 +21,8 @@ class DescriptionBlockProtoTestCase(unittest.TestCase):
         self.assertEqual(len(pb.description), 3)
 
         self.assertEqual(pb.description[0].text, 'Test variable = ')
+        expected_ref = edgir.LocalPath()
+        expected_ref.steps.add().name = 'variable'
+        self.assertEqual(pb.description[1].param.path, expected_ref)
         self.assertEqual(pb.description[1].param.unit, 'Units')
         self.assertEqual(pb.description[2].text, '.')

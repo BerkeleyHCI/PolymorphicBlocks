@@ -202,7 +202,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._elaboration_state = BlockElaborationState.init
 
-    self.description = DescriptionString("")   # additional string field to be displayed as part of the tooltip for blocks
+    self.description: Optional[DescriptionString] = None   # additional string field to be displayed as part of the tooltip for blocks
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
@@ -328,6 +328,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     description = self.description
+    assert(description is None or isinstance(description, DescriptionString))
     if isinstance(description, DescriptionString):
       pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
 
