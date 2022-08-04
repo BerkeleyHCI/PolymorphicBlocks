@@ -22,15 +22,17 @@ class BufferSerializerTestCase(unittest.TestCase):
     assert 127 < pb2.ByteSize() <= 255
 
     bytes = buffer.getbuffer().tobytes()
-    self.assertEqual(len(bytes), 1 + len(pb1.SerializeToString()) + 2 + len(pb2.SerializeToString()))
+    self.assertEqual(len(bytes), 1 + 1 + len(pb1.SerializeToString()) + 1 + 2 + len(pb2.SerializeToString()))
 
-    pb2pos = 1 + len(pb1.SerializeToString())
+    pb2pos = 2 + len(pb1.SerializeToString())
     pb2len = len(pb2.SerializeToString())
-    self.assertEqual(bytes[0], len(pb1.SerializeToString()))
-    self.assertEqual(bytes[1:pb2pos], pb1.SerializeToString())
-    self.assertEqual(bytes[pb2pos], pb2len & 0x7f | 0x80)
-    self.assertEqual(bytes[pb2pos + 1], pb2len >> 7 & 0x7f)
-    self.assertEqual(bytes[pb2pos + 2:], pb2.SerializeToString())
+    self.assertEqual(bytes[0], 0xfe)
+    self.assertEqual(bytes[1], len(pb1.SerializeToString()))
+    self.assertEqual(bytes[2:pb2pos], pb1.SerializeToString())
+    self.assertEqual(bytes[pb2pos], 0xfe)
+    self.assertEqual(bytes[pb2pos + 1], pb2len & 0x7f | 0x80)
+    self.assertEqual(bytes[pb2pos + 2], pb2len >> 7 & 0x7f)
+    self.assertEqual(bytes[pb2pos + 3:], pb2.SerializeToString())
 
 
 class BufferDeserializerTestCase(unittest.TestCase):
@@ -45,15 +47,17 @@ class BufferDeserializerTestCase(unittest.TestCase):
     assert pb1.ByteSize() <= 127
     assert 127 < pb2.ByteSize() <= 255
 
-    buffer = io.BytesIO(b'\x00' * (1 + len(pb1.SerializeToString()) + 2 + len(pb2.SerializeToString())))
+    buffer = io.BytesIO(b'\x00' * (1 + 1 + len(pb1.SerializeToString()) + 1 + 2 + len(pb2.SerializeToString())))
     bytes = buffer.getbuffer()
-    pb2pos = 1 + len(pb1.SerializeToString())
+    pb2pos = 1 + 1 + len(pb1.SerializeToString())
     pb2len = len(pb2.SerializeToString())
-    bytes[0] = len(pb1.SerializeToString())
-    bytes[1:pb2pos] = pb1.SerializeToString()
-    bytes[pb2pos] = pb2len & 0x7f | 0x80
-    bytes[pb2pos + 1] = pb2len >> 7 & 0x7f
-    bytes[pb2pos + 2:] = pb2.SerializeToString()
+    bytes[0] = 0xfe
+    bytes[1] = len(pb1.SerializeToString())
+    bytes[2:pb2pos] = pb1.SerializeToString()
+    bytes[pb2pos] = 0xfe
+    bytes[pb2pos + 1] = pb2len & 0x7f | 0x80
+    bytes[pb2pos + 2] = pb2len >> 7 & 0x7f
+    bytes[pb2pos + 3:] = pb2.SerializeToString()
 
     deserializer = BufferDeserializer(edgir.ValueLit, buffer)
     pb_deserialized = deserializer.read()

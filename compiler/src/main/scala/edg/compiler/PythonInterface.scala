@@ -1,17 +1,23 @@
 package edg.compiler
 
-import collection.mutable
+import edg.IrPort
+import edg.util.{Errorable, QueueStream, timeExec}
+import edg.wir.Library
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
 import edgrpc.hdl.{hdl => edgrpc}
-import edg.util.{Errorable, timeExec}
-import edg.wir.Library
-import edg.IrPort
-import java.io.{BufferedReader, File, InputStreamReader}
+
+import java.io.{File, InputStream}
+import scala.collection.mutable
 
 
-class ProtobufSubprocessException(msg: String) extends Exception(msg)
+class ProtobufSubprocessException() extends Exception()
+
+
+object ProtobufStdioSubprocess {
+  val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
+}
 
 
 class ProtobufStdioSubprocess
@@ -20,32 +26,58 @@ class ProtobufStdioSubprocess
     args: Seq[String]) {
   protected val process = new ProcessBuilder(args: _*).start()
 
+  // this provides a consistent Stream interface for both stdout and stderr
+  // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
+  val outputStream = new QueueStream()
+  val errorStream = process.getErrorStream  // the raw error stream from the process
+
   def write(message: RequestType): Unit = {
     if (!process.isAlive) {  // quick check before we try to write to a dead process
-      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
-      throw new ProtobufSubprocessException(error)
+      throw new ProtobufSubprocessException()
     }
 
+    process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
     message.writeDelimitedTo(process.getOutputStream)
     process.getOutputStream.flush()
   }
 
   def read(): ResponseType = {
+    var doneReadingStdout: Boolean = false
+    while (!doneReadingStdout) {
+      val nextByte = process.getInputStream.read()
+     if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
+        doneReadingStdout = true
+      } else if (nextByte < 0) {
+        throw new ProtobufSubprocessException()
+      } else {
+       outputStream.write(nextByte)
+      }
+    }
+
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
-      val error = new BufferedReader(new InputStreamReader(process.getErrorStream)).lines().toArray().mkString("\n")
-      throw new ProtobufSubprocessException(error)
-    } else {  // read is more of a synchronization barrier, so stderr is checked and forwarded here
-      if (process.getErrorStream.available() > 0) {  // note readNBytes not available until Java 1.9
-        val stdErrMsg = new mutable.StringBuilder()
-        while (process.getErrorStream.available() > 0) {
-          stdErrMsg.append(process.getErrorStream.read().toChar)
-        }
-        System.err.print(stdErrMsg.toString())
-      }
+      throw new ProtobufSubprocessException()
     }
     responseOpt.get
+  }
+
+  // Shuts down the stream and returns the exit value
+  def shutdown(): Int = {
+    process.getOutputStream.close()
+    var doneReadingStdout: Boolean = false
+    while (!doneReadingStdout) {
+      val nextByte = process.getInputStream.read()
+      require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
+      if (nextByte < 0) {
+        doneReadingStdout = true
+      } else {
+        outputStream.write(nextByte)
+      }
+    }
+
+    process.waitFor()
+    process.exitValue()
   }
 }
 
@@ -59,12 +91,23 @@ class PythonInterface(serverFile: File) {
 //  protected def debug(msg: => String): Unit = println(msg)
   protected def debug(msg: => String): Unit = { }
 
-  protected val process = Errorable.Success(new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
+  protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
-    Seq("python", serverFile.getAbsolutePath)))
+    Seq("python", "-u", serverFile.getAbsolutePath))  // in unbuffered mode
+  val processOutputStream: InputStream = process.outputStream
+  val processErrorStream: InputStream = process.errorStream
 
 
-  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = process.map { process =>
+  // Hooks to implement when certain actions happen
+  def onLibraryRequest(element: ref.LibraryPath): Unit = {}
+  def onLibraryRequestComplete(element: ref.LibraryPath,
+                               result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]): Unit = {}
+  def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
+  def onElaborateGeneratorRequestComplete(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue],
+                                          result: Errorable[elem.HierarchyBlock]): Unit = {}
+
+
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
@@ -73,11 +116,13 @@ class PythonInterface(serverFile: File) {
       reply.getIndexModule.indexed
     }
     debug(s"PyIf:indexModule $module (${reqTime} ms)")
-    reply
+    Errorable.Success(reply)
   }
 
   def libraryRequest(element: ref.LibraryPath):
-      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = process.flatMap { process =>
+      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
+    onLibraryRequest(element)
+
     val request = edgrpc.LibraryRequest(
       element=Some(element)
     )
@@ -88,7 +133,7 @@ class PythonInterface(serverFile: File) {
       reply.getGetLibraryElement
     }
 
-    reply.result match {
+    val result = reply.result match {
       case edgrpc.LibraryResponse.Result.Element(elem) =>
         debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= ... (${reqTime} ms)")
         Errorable.Success((elem, reply.refinements))
@@ -99,10 +144,14 @@ class PythonInterface(serverFile: File) {
         debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= empty (${reqTime} ms)")
         Errorable.Error("empty response")
     }
+    onLibraryRequestComplete(element, result)
+    result
   }
 
   def elaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]):
-      Errorable[elem.HierarchyBlock] = process.flatMap { process =>
+      Errorable[elem.HierarchyBlock] = {
+    onElaborateGeneratorRequest(element, values)
+
     val request = edgrpc.GeneratorRequest(
       element=Some(element),
       values=values.map { case (valuePath, valueValue) =>
@@ -118,12 +167,19 @@ class PythonInterface(serverFile: File) {
       val reply = process.read()
       reply.getElaborateGenerator
     }
+
     debug(s"PyIf:generatorRequest ${element.getTarget.getName} (${reqTime} ms)")
-    reply.result match {
+    val result = reply.result match {
       case edgrpc.GeneratorResponse.Result.Generated(elem) => Errorable.Success(elem)
       case edgrpc.GeneratorResponse.Result.Error(err) => Errorable.Error(err)
       case edgrpc.GeneratorResponse.Result.Empty => Errorable.Error("empty response")
     }
+    onElaborateGeneratorRequestComplete(element, values, result)
+    result
+  }
+
+  def shutdown(): Int = {
+    process.shutdown()
   }
 }
 

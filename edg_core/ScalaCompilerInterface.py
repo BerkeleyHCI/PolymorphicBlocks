@@ -2,6 +2,7 @@ from typing import Optional, Any, Type, Iterable, Union
 
 import os
 import subprocess
+import sys
 
 import edgir
 import edgrpc
@@ -46,7 +47,6 @@ class ScalaCompilerInstance:
         print("Using development JAR")
       elif os.path.exists(self.PRECOMPIED_RELPATH):
         jar_path = self.PRECOMPIED_RELPATH
-        print("Using precompiled JAR")
       else:
         raise ValueError("No EDG Compiler JAR found")
 
@@ -80,6 +80,10 @@ class ScalaCompilerInstance:
 
     self.request_serializer.write(request)
     result = self.response_deserializer.read()
+
+    sys.stdout.buffer.write(self.response_deserializer.read_stdout())
+    sys.stdout.buffer.flush()
+
     assert result is not None
     if not result.HasField('design'):
       raise CompilerCheckError(f"no compiled result, with error {result.error}")

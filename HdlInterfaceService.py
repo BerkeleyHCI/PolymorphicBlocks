@@ -11,6 +11,11 @@ from edg_core import BufferDeserializer, BufferSerializer
 # even if nothing else in core depends on that test code
 from blinky_skeleton import *
 
+
+# In some cases stdout seems to buffer excessively, in which case starting python with -u seems to work
+# https://stackoverflow.com/a/35467658/5875811
+
+
 if __name__ == '__main__':
   server = HdlInterface()
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
@@ -34,4 +39,5 @@ if __name__ == '__main__':
     else:
       raise RuntimeError(f"Unknown request {request}")
 
+    sys.stdout.buffer.write(stdin_deserializer.read_stdout())
     stdout_serializer.write(response)
