@@ -4,7 +4,7 @@ from typing import *
 
 import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock, Connection
+from .Blocks import BaseBlock, Connection, DescriptionString
 from .Core import Refable, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
@@ -38,6 +38,7 @@ class Link(BaseBlock[edgir.Link]):
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb)
+    pb = self._populate_def_proto_description(pb)
     # specifically ignore the port initializers
 
     # actually generate the links and connects

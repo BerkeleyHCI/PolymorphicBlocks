@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import *
 from edg_core import *
+from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitPortBridge, CircuitLink, CircuitPortAdapter
 from .Units import Volt, Amp, Ohm
 
@@ -21,6 +22,12 @@ class VoltageLink(CircuitLink):
     self.voltage_limits = self.Parameter(RangeExpr())
     self.current_drawn = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
+      "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"))
 
   def contents(self) -> None:
     super().contents()

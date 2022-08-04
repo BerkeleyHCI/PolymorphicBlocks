@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, List
 import math
 
+from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
@@ -18,6 +19,8 @@ class UnpolarizedCapacitor(PassiveComponent):
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
+    self.description = DescriptionString(
+      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"))
 
 
 @abstract_block
@@ -217,6 +220,10 @@ class DecouplingCapacitor(DiscreteApplication):
     self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
+
+    self.description = DescriptionString(
+      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.cap.capacitance, "F"))
+
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
       'DecouplingCapacitor':

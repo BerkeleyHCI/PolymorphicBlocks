@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Union, Tuple
 from edg_core import *
+from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
 from .Units import Volt
@@ -33,6 +34,14 @@ class DigitalLink(CircuitLink):
     self.pulldown_capable = self.Parameter(BoolExpr())
     self.has_low_signal_driver = self.Parameter(BoolExpr())
     self.has_high_signal_driver = self.Parameter(BoolExpr())
+
+    self.description = DescriptionString(
+      "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
+      "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
+      " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
+      "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "Ω"),
+      ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "Ω"))
 
   def contents(self):
     super().contents()

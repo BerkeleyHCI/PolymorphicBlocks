@@ -73,6 +73,18 @@ message PortLike {
   }
 }
 
+message Parameter {
+  edgir.ref.LocalPath path = 1;
+  string unit = 2;
+}
+
+message StringDescriptionElement {
+  oneof ElementType {
+    string text = 1;
+    Parameter param = 2;
+  }
+}
+
 message HierarchyBlock {
   map<string, edgir.init.ValInit>   params = 10;
   // Refinements may introduce new parameters which would not be assigned a value in the parent class.
@@ -96,6 +108,8 @@ message HierarchyBlock {
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
 
   edgir.common.Metadata meta = 127;
+
+  repeated StringDescriptionElement description = 1;
 }
 
 message Generator {
@@ -125,6 +139,8 @@ message Link {
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;
+
+  repeated StringDescriptionElement description = 1;
 }
 
 message LinkArray {

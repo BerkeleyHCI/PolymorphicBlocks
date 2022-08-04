@@ -155,6 +155,39 @@ class BlockElaborationState(Enum):
 
 
 BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
+
+class DescriptionStringElts():
+  @abstractmethod
+  def set_elt_proto(self, pb, ref_map=None):
+    raise NotImplementedError
+
+
+class DescriptionString():
+  def __init__(self, *elts: Union[str, DescriptionStringElts]):
+    self.elts = elts
+
+  def add_to_proto(self, pb, ref_map):
+    for elt in self.elts:
+      if isinstance(elt, DescriptionStringElts):
+        elt.set_elt_proto(pb, ref_map)
+      elif isinstance(elt, str):
+        new_phrase = pb.description.add()
+        new_phrase.text = elt
+    return pb
+
+  class FormatUnits(DescriptionStringElts):
+    ref: ConstraintExpr
+    units: str
+    def __init__(self, ref: ConstraintExpr, units: str):
+      self.ref = ref
+      self.units = units
+
+    def set_elt_proto(self, pb, ref_map):
+      new_phrase = pb.description.add()
+      new_phrase.param.path.CopyFrom(ref_map[self.ref])
+      new_phrase.param.unit = self.units
+
+
 @non_library
 class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   """Base block that has ports (IOs), parameters, and constraints between them.
@@ -167,6 +200,8 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     super().__init__()
 
     self._elaboration_state = BlockElaborationState.init
+
+    self.description: Optional[DescriptionString] = None   # additional string field to be displayed as part of the tooltip for blocks
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
@@ -287,6 +322,14 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         else:
           raise ValueError(f"unknown non-optional port type {port}")
         self._namespace_order.append(f'(reqd){name}')
+
+    return pb
+
+  def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+    description = self.description
+    assert(description is None or isinstance(description, DescriptionString))
+    if isinstance(description, DescriptionString):
+      pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
 
     return pb
 
