@@ -73,6 +73,18 @@ message PortLike {
   }
 }
 
+message Parameter {
+  edgir.ref.LocalPath path = 1;
+  string unit = 2;
+}
+
+message StringDescriptionElement {
+  oneof ElementType {
+    string text = 1;
+    Parameter param = 2;
+  }
+}
+
 message HierarchyBlock {
   map<string, edgir.init.ValInit>   params = 10;
   // Refinements may introduce new parameters which would not be assigned a value in the parent class.
@@ -97,17 +109,6 @@ message HierarchyBlock {
 
   edgir.common.Metadata meta = 127;
 
-  message Parameter {
-    edgir.ref.LocalPath path = 1;
-    string unit = 2;
-  }
-
-  message StringDescriptionElement {
-     oneof ElementType {
-       string text = 1;
-       Parameter param = 2;
-     }
-  }
   repeated StringDescriptionElement description = 1;
 }
 
@@ -139,17 +140,6 @@ message Link {
 
   edgir.common.Metadata meta = 127;
 
-  message Parameter {
-    edgir.ref.LocalPath path = 1;
-    string unit = 2;
-  }
-
-  message StringDescriptionElement {
-    oneof ElementType {
-      string text = 1;
-      Parameter param = 2;
-    }
-  }
   repeated StringDescriptionElement description = 1;
 }
 

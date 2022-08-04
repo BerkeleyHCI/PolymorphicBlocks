@@ -247,6 +247,39 @@ class PortLike(google.protobuf.message.Message):
     def WhichOneof(self, oneof_group: typing_extensions.Literal["is",b"is"]) -> typing.Optional[typing_extensions.Literal["undefined","lib_elem","port","array","bundle"]]: ...
 global___PortLike = PortLike
 
+class Parameter(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    PATH_FIELD_NUMBER: builtins.int
+    UNIT_FIELD_NUMBER: builtins.int
+    @property
+    def path(self) -> edgir.ref_pb2.LocalPath: ...
+    unit: typing.Text
+    def __init__(self,
+        *,
+        path: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
+        unit: typing.Text = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["path",b"path"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["path",b"path","unit",b"unit"]) -> None: ...
+global___Parameter = Parameter
+
+class StringDescriptionElement(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    TEXT_FIELD_NUMBER: builtins.int
+    PARAM_FIELD_NUMBER: builtins.int
+    text: typing.Text
+    @property
+    def param(self) -> global___Parameter: ...
+    def __init__(self,
+        *,
+        text: typing.Text = ...,
+        param: typing.Optional[global___Parameter] = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["ElementType",b"ElementType"]) -> typing.Optional[typing_extensions.Literal["text","param"]]: ...
+global___StringDescriptionElement = StringDescriptionElement
+
 class HierarchyBlock(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     class ParamsEntry(google.protobuf.message.Message):
@@ -339,37 +372,6 @@ class HierarchyBlock(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class Parameter(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        PATH_FIELD_NUMBER: builtins.int
-        UNIT_FIELD_NUMBER: builtins.int
-        @property
-        def path(self) -> edgir.ref_pb2.LocalPath: ...
-        unit: typing.Text
-        def __init__(self,
-            *,
-            path: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
-            unit: typing.Text = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["path",b"path"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["path",b"path","unit",b"unit"]) -> None: ...
-
-    class StringDescriptionElement(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        TEXT_FIELD_NUMBER: builtins.int
-        PARAM_FIELD_NUMBER: builtins.int
-        text: typing.Text
-        @property
-        def param(self) -> global___HierarchyBlock.Parameter: ...
-        def __init__(self,
-            *,
-            text: typing.Text = ...,
-            param: typing.Optional[global___HierarchyBlock.Parameter] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["ElementType",b"ElementType"]) -> typing.Optional[typing_extensions.Literal["text","param"]]: ...
-
     PARAMS_FIELD_NUMBER: builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
@@ -430,7 +432,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     @property
-    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___HierarchyBlock.StringDescriptionElement]: ...
+    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
     def __init__(self,
         *,
         params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
@@ -445,7 +447,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         generator: typing.Optional[global___Generator] = ...,
         is_abstract: builtins.bool = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
-        description: typing.Optional[typing.Iterable[global___HierarchyBlock.StringDescriptionElement]] = ...,
+        description: typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["generator",b"generator","meta",b"meta","prerefine_class",b"prerefine_class","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","description",b"description","generator",b"generator","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
@@ -553,37 +555,6 @@ class Link(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class Parameter(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        PATH_FIELD_NUMBER: builtins.int
-        UNIT_FIELD_NUMBER: builtins.int
-        @property
-        def path(self) -> edgir.ref_pb2.LocalPath: ...
-        unit: typing.Text
-        def __init__(self,
-            *,
-            path: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
-            unit: typing.Text = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["path",b"path"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["path",b"path","unit",b"unit"]) -> None: ...
-
-    class StringDescriptionElement(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        TEXT_FIELD_NUMBER: builtins.int
-        PARAM_FIELD_NUMBER: builtins.int
-        text: typing.Text
-        @property
-        def param(self) -> global___Link.Parameter: ...
-        def __init__(self,
-            *,
-            text: typing.Text = ...,
-            param: typing.Optional[global___Link.Parameter] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["ElementType",b"ElementType"]) -> typing.Optional[typing_extensions.Literal["text","param"]]: ...
-
     PARAMS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     LINKS_FIELD_NUMBER: builtins.int
@@ -613,7 +584,7 @@ class Link(google.protobuf.message.Message):
         """
         pass
     @property
-    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___Link.StringDescriptionElement]: ...
+    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
     def __init__(self,
         *,
         params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
@@ -623,7 +594,7 @@ class Link(google.protobuf.message.Message):
         self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
         superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
         meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
-        description: typing.Optional[typing.Iterable[global___Link.StringDescriptionElement]] = ...,
+        description: typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","description",b"description","links",b"links","meta",b"meta","params",b"params","ports",b"ports","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
