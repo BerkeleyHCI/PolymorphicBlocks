@@ -1,5 +1,6 @@
 from collections import namedtuple
 from typing import *
+import zlib  # for deterministic hash
 
 class Block(NamedTuple):
   footprint: str
@@ -22,23 +23,26 @@ def gen_header() -> str:
 """2. Generating Blocks"""
 
 def gen_block_comp(block_name: str) -> str:
-    return '(comp (ref {})'.format(block_name)
+    return f'(comp (ref "{block_name}")'
 
 def gen_block_value(block_value: str) -> str:
-    return '(value "{}")'.format(block_value)
+    return f'(value "{block_value}")'
 
 def gen_block_footprint(block_footprint: str) -> str:
-    return '(footprint {})'.format(block_footprint)
+    return f'(footprint "{block_footprint}")'
 
-def gen_block_tstamp(block_name: str) -> str:
-    return '(tstamp {}))'.format(block_name)
+def gen_block_tstamp(block_path: List[str]) -> str:
+    blockpath_hash = f"{zlib.adler32(str.encode('.'.join(block_path))):08x}"
+    return f'(tstamps "{blockpath_hash}"))'
 
 def gen_block_sheetpath(sheetpath: List[str]) -> str:
-  if sheetpath:
-    sheetpath_str = '/' + '/'.join(sheetpath) + '/'
-  else:
-    sheetpath_str = '/'
-  return '(sheetpath (names {}) (tstamps {}))'.format(sheetpath_str, sheetpath_str)
+  sheetpath_hash = [f"{zlib.adler32(str.encode(sheetpath_elt)):08x}" for sheetpath_elt in sheetpath]
+  sheetpath_str = '/' + '/'.join(sheetpath)
+  sheetpath_hash_str = '/' + '/'.join(sheetpath_hash)
+  if sheetpath:  # need to add trailing /
+    sheetpath_str = sheetpath_str + '/'
+    sheetpath_hash_str = sheetpath_hash_str + '/'
+  return f'(sheetpath (names "{sheetpath_str}") (tstamps "{sheetpath_hash_str}"))'
 
 def block_exp(dict: Dict[str, Block]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
@@ -57,7 +61,11 @@ def block_exp(dict: Dict[str, Block]) -> str:
         """
         result = '(components' 
         for (block_name, block) in dict.items():
-            result += '\n' + gen_block_comp(block_name) + '\n' + gen_block_value(block.value) + '\n' + gen_block_footprint(block.footprint) + '\n' + gen_block_sheetpath(block.path[:-1]) + '\n' + gen_block_tstamp(block.path[-1])
+            result += '\n' + gen_block_comp(block_name) + '\n' +\
+                      "  " + gen_block_value(block.value) + '\n' + \
+                      "  " + gen_block_footprint(block.footprint) + '\n' + \
+                      "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
+                      "  " + gen_block_tstamp(block.path)
         return result + ')'
 
 ###############################################################################################################################################################################################
