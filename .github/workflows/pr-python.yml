@@ -68,4 +68,6 @@ jobs:
       run: rm electronics_lib/test_inductor.py
     - name: unittest (electronics_lib)
       run: python -m unittest discover -s electronics_lib -t .
-    # examples also not tested because of dependency on Digikey data files
+    # only run the JLC examples until we have non-restricted parts tables
+    - name: unittest (partial examples)
+      run: python -m unittest examples.test_tofarray examples.test_ledmatrix
