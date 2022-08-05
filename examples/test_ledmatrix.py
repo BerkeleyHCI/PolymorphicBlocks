@@ -86,6 +86,7 @@ class LedMatrixTest(JlcBoardTop):
   """
   def contents(self) -> None:
     super().contents()
+    
 
     self.usb = self.Block(UsbCReceptacle())
 
