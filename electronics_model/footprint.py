@@ -44,6 +44,17 @@ def gen_block_sheetpath(sheetpath: List[str]) -> str:
     sheetpath_hash_str = sheetpath_hash_str + '/'
   return f'(sheetpath (names "{sheetpath_str}") (tstamps "{sheetpath_hash_str}"))'
 
+def gen_block_prop_sheetname(block_path: List[str]) -> str:
+  return f'(property (name "Sheetname") (value "{".".join(block_path[:-1])}"))'
+
+def gen_block_prop_sheetfile(block_path: List[str]) -> str:
+
+  if len(block_path) >= 2:
+    value = block_path[-2]
+  else:
+    value = ""
+  return f'(property (name "Sheetfile") (value "{value}"))'
+
 def block_exp(dict: Dict[str, Block]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
@@ -64,6 +75,8 @@ def block_exp(dict: Dict[str, Block]) -> str:
             result += '\n' + gen_block_comp(block_name) + '\n' +\
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
+                      "  " + gen_block_prop_sheetname(block.path) + '\n' + \
+                      "  " + gen_block_prop_sheetfile(block.path) + '\n' + \
                       "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
                       "  " + gen_block_tstamp(block.path)
         return result + ')'
