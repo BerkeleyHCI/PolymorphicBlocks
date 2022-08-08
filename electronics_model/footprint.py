@@ -33,7 +33,7 @@ def gen_block_footprint(block_footprint: str) -> str:
     return f'(footprint "{block_footprint}")'
 
 def gen_block_tstamp(block_path: List[str]) -> str:
-    blockpath_hash = f"{zlib.adler32(str.encode('.'.join(block_path))):08x}"
+    blockpath_hash = f"{zlib.adler32(str.encode(block_path[-1])):08x}"
     return f'(tstamps "{blockpath_hash}"))'
 
 def gen_block_sheetpath(sheetpath: List[str]) -> str:
