@@ -156,9 +156,12 @@ class BundleNetlistTestCase(unittest.TestCase):
       Pin('slave2', '3'),
     })
 
-    self.assertEqual(net.blocks['master'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiMaster', ['master']))
-    self.assertEqual(net.blocks['slave1'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiSlave', ['slave1']))
-    self.assertEqual(net.blocks['slave2'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiSlave', ['slave2']))
+    self.assertEqual(net.blocks['master'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiMaster',
+                                                  ['master'], ['TestFakeSpiMaster']))
+    self.assertEqual(net.blocks['slave1'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiSlave',
+                                                  ['slave1'], ['TestFakeSpiSlave']))
+    self.assertEqual(net.blocks['slave2'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'WeirdSpiSlave',
+                                                  ['slave2'], ['TestFakeSpiSlave']))
 
   def test_uart_netlist(self) -> None:
     net = self.generate_net(TestUartCircuit)
@@ -171,8 +174,10 @@ class BundleNetlistTestCase(unittest.TestCase):
       Pin('a', '2'),
       Pin('b', '1')
     })
-    self.assertEqual(net.blocks['a'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['a']))
-    self.assertEqual(net.blocks['b'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['b']))
+    self.assertEqual(net.blocks['a'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
+                                             ['a'], ['TestFakeUartBlock']))
+    self.assertEqual(net.blocks['b'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
+                                             ['b'], ['TestFakeUartBlock']))
 
   def test_can_netlist(self) -> None:
     net = self.generate_net(TestCanCircuit)
@@ -187,6 +192,9 @@ class BundleNetlistTestCase(unittest.TestCase):
       Pin('node2', '2'),
       Pin('node3', '2')
     })
-    self.assertEqual(net.blocks['node1'], FBlock('Resistor_SMD:R_0603_1608Metric', '120', ['node1']))
-    self.assertEqual(net.blocks['node2'], FBlock('Resistor_SMD:R_0603_1608Metric', '120', ['node2']))
-    self.assertEqual(net.blocks['node3'], FBlock('Resistor_SMD:R_0603_1608Metric', '120', ['node3']))
+    self.assertEqual(net.blocks['node1'], FBlock('Resistor_SMD:R_0603_1608Metric', '120',
+                                                 ['node1'], ['TestFakeCanBlock']))
+    self.assertEqual(net.blocks['node2'], FBlock('Resistor_SMD:R_0603_1608Metric', '120',
+                                                 ['node2'], ['TestFakeCanBlock']))
+    self.assertEqual(net.blocks['node3'], FBlock('Resistor_SMD:R_0603_1608Metric', '120',
+                                                 ['node3'], ['TestFakeCanBlock']))

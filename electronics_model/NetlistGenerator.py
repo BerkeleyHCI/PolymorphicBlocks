@@ -30,6 +30,7 @@ Blocks = Dict[TransformUtil.Path, Tuple[str, str]]  # path -> footprint, value
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
+ClassPaths = Dict[TransformUtil.Path, List[str]]  # Path -> class names
 Hierarchy = Dict[TransformUtil.Path, str]  # path -> classname
 class NetlistCollect(TransformUtil.Transform):
   def __init__(self, design: CompiledDesign):
@@ -37,6 +38,7 @@ class NetlistCollect(TransformUtil.Transform):
     self.edges: Edges = {}
     self.assert_connected: AssertConnected = []
     self.short_paths: Names = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
+    self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
     self.hierarchy: Hierarchy = {}
     self.pins: Set[TransformUtil.Path] = set()
     self.names: Names = {}
@@ -48,6 +50,7 @@ class NetlistCollect(TransformUtil.Transform):
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
     short_path = self.short_paths[path]
+    class_path = self.class_paths[path]
 
     if 'error' in block.meta.members.node:
       raise InvalidNetlistBlockException(f"attempt to netlist with error block at {path}")
@@ -62,9 +65,12 @@ class NetlistCollect(TransformUtil.Transform):
       # Consolidate single-net link ports into just the link
       for name, _ in block.ports.items():
         self.short_paths[path.append_port(name)] = short_path
+        self.class_paths[path.append_port(name)] = class_path
     else:
-      for name, _ in block.ports.items():
+      for name, port in block.ports.items():
         self.short_paths[path.append_port(name)] = short_path.append_port(name)
+        if (port.HasField('port')):
+          self.class_paths[path.append_port(name)] = class_path + [port.port.self_class.]
 
     for name, _ in block.links.items():
       self.short_paths[path.append_link(name)] = short_path.append_link(name)
@@ -226,7 +232,7 @@ class NetlistCollect(TransformUtil.Transform):
   def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
     self.process_blocklike(context.path, link)
 
-  def run(self) -> Tuple[Blocks, Edges, AssertConnected, Names, Hierarchy, Names]:
+  def run(self) -> Tuple[Blocks, Edges, AssertConnected, Names, ClassPaths, Hierarchy, Names]:
     self.transform_design(self.design.design)
 
     # Sanity check to ensure all pins exist
@@ -236,7 +242,7 @@ class NetlistCollect(TransformUtil.Transform):
         assert pin_dst in self.pins, f"missing net edge dst pin {pin_dst}"
 
     return (self.blocks, self.edges, self.assert_connected,
-            self.short_paths, self.hierarchy, self.names)
+            self.short_paths, self.class_paths, self.hierarchy, self.names)
 
 
 def path_to_pin(path: TransformUtil.Path) -> kicad.Pin:
@@ -254,7 +260,7 @@ class Netlist(NamedTuple):
 class NetlistGenerator:
   def generate(self, design: CompiledDesign) -> Netlist:
     # TODO another algorithm is for each block, return its footprints and connected nets, and merge nets incrementally
-    blocks, edges, assert_connected, short_paths, hierarchy, names = NetlistCollect(design).run()
+    blocks, edges, assert_connected, short_paths, class_paths, hierarchy, names = NetlistCollect(design).run()
 
     seen: Set[TransformUtil.Path] = set()
     nets: List[Set[TransformUtil.Path]] = []
@@ -318,7 +324,7 @@ class NetlistGenerator:
     named_nets = {name_net(set([name_pin(pin) for pin in net])): net for net in nets}
 
     return Netlist(
-      {str(names[block]): kicad.Block(footprint, value, list(short_paths[block].blocks))
+      {str(names[block]): kicad.Block(footprint, value, list(short_paths[block].blocks), class_paths[block])
         for block, (footprint, value) in blocks.items()},
       {name: set([path_to_pin(names[pin])
         for pin in net if pin in names]) for name, net in named_nets.items()},
