@@ -178,9 +178,9 @@ class NetlistTestCase(unittest.TestCase):
       Pin('sink', '2')
     })
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['TestFakeSource']))
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                ['sink'], ['TestFakeSink']))
+                                                ['sink'], ['electronics_model.test_netlist.TestFakeSink']))
 
   def test_multisink_netlist(self) -> None:
     net = self.generate_net(TestMultisinkCircuit)
@@ -196,11 +196,11 @@ class NetlistTestCase(unittest.TestCase):
       Pin('sink2', '2')
     })
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['TestFakeSource']))
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
     self.assertEqual(net.blocks['sink1'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                 ['sink1'], ['TestFakeSink']))
+                                                 ['sink1'], ['electronics_model.test_netlist.TestFakeSink']))
     self.assertEqual(net.blocks['sink2'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                 ['sink2'], ['TestFakeSink']))
+                                                 ['sink2'], ['electronics_model.test_netlist.TestFakeSink']))
 
   def test_multinet_netlist(self) -> None:
     net = self.generate_net(TestMultinetCircuit)
@@ -219,11 +219,11 @@ class NetlistTestCase(unittest.TestCase):
       Pin('sink', '2')
     })
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['TestFakeSource']))
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
     self.assertEqual(net.blocks['adapter'], FBlock('Package_TO_SOT_SMD:SOT-223-3_TabPin2', 'LD1117V33',
-                                                   ['adapter'], ['TestFakeAdapter']))
+                                                   ['adapter'], ['electronics_model.test_netlist.TestFakeAdapter']))
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                ['sink'], ['TestFakeSink']))
+                                                ['sink'], ['electronics_model.test_netlist.TestFakeSink']))
 
   def test_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestHierarchyCircuit)
@@ -237,9 +237,9 @@ class NetlistTestCase(unittest.TestCase):
       Pin('sink', '2')
     })
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['TestFakeSource']))
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
     self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                ['sink'], ['TestFakeSinkHierarchy']))
+                                                ['sink'], ['electronics_model.test_netlist.TestFakeSinkHierarchy']))
 
   def test_dual_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestDualHierarchyCircuit)
@@ -255,10 +255,12 @@ class NetlistTestCase(unittest.TestCase):
       Pin('sink.block2', '2')
     })
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['TestFakeSource']))
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
     self.assertEqual(net.blocks['sink.block1'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
                                                        ['sink', 'block1'],
-                                                       ['TestFakeDualSinkHierarchy', 'TestFakeSink']))
+                                                       ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
+                                                        'electronics_model.test_netlist.TestFakeSink']))
     self.assertEqual(net.blocks['sink.block2'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
                                                        ['sink', 'block2'],
-                                                       ['TestFakeDualSinkHierarchy', 'TestFakeSink']))
+                                                       ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
+                                                        'electronics_model.test_netlist.TestFakeSink']))

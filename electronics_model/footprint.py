@@ -80,7 +80,7 @@ def block_exp(dict: Dict[str, Block]) -> str:
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
-                      "  " + gen_block_prop_sheetfile(block.path) + '\n' + \
+                      "  " + gen_block_prop_sheetfile(block.class_path) + '\n' + \
                       "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
                       "  " + gen_block_tstamp(block.path)
         return result + ')'
