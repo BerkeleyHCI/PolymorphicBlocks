@@ -5,8 +5,6 @@ from contextlib import suppress
 from edg_core import Block, ScalaCompiler, CompiledDesign
 from electronics_model import footprint, NetlistGenerator
 
-from .SchematicStubGenerator import write_schematic_stubs
-
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str,
                   errors_fatal: bool = True) -> CompiledDesign:
@@ -31,8 +29,6 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str,
   netlist_string = footprint.generate_netlist(netlist.blocks, netlist.nets)
   with open(netlist_filename, 'w', encoding='utf-8') as net_file:
     net_file.write(netlist_string)
-
-  write_schematic_stubs(netlist, target_dir, target_name)
 
   return compiled
 

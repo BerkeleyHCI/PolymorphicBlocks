@@ -87,8 +87,12 @@ class NetlistTestCase(unittest.TestCase):
       Pin('source', '2'),
       Pin('sink.device', '2')
     })
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF', ['source']))
-    self.assertEqual(net.blocks['sink.device'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k', ['sink', 'device']))
+    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
+                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
+    self.assertEqual(net.blocks['sink.device'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
+                                                       ['sink', 'device'],
+                                                       ['electronics_model.test_multipack_netlist.TestPackedSink',
+                                                        'electronics_model.test_netlist.TestFakeSink']))
 
   def test_invalid_netlist(self) -> None:
     from .NetlistGenerator import InvalidPackingException
