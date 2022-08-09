@@ -12,24 +12,6 @@ import "edgir/elem.proto";
 import "edgir/lit.proto";
 
 
-message ModuleName {
-  string name = 1;
-}
-
-message LibraryRequest {
-  edgir.ref.LibraryPath element = 2;  // library element asked for
-}
-
-message GeneratorRequest {
-  edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
-
-  message Value {
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-  repeated Value values = 4;
-}
-
 message Refinements {
   message Subclass {
     oneof source {
@@ -53,8 +35,16 @@ message Refinements {
   repeated Value values = 2;
 }
 
+message ModuleName {
+  string name = 1;
+}
+
 message IndexResponse {
   repeated edgir.ref.LibraryPath indexed = 1;
+}
+
+message LibraryRequest {
+  edgir.ref.LibraryPath element = 2;  // library element asked for
 }
 
 message LibraryResponse {
@@ -65,11 +55,40 @@ message LibraryResponse {
   Refinements refinements = 3;  // only valid if element is a top-level block, and not error
 }
 
+message GeneratorRequest {
+  edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
+
+  message Value {
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
+  }
+  repeated Value values = 4;
+}
+
 message GeneratorResponse {
   oneof result {
     edgir.elem.HierarchyBlock generated = 1;
     string error = 2;  // TODO source locators
   }
+}
+
+message BackendRequest {
+  string backend_class_name = 1;  // class name of the backend to run
+  edgir.schema.Design design = 2;
+}
+
+message BackendResponse {
+  message Result {
+    edgir.ref.LocalPath path = 1;  // path of corresponding element in design tree
+    oneof result {
+      string text = 2;  // for now, only text supported, for KiCad netlisting
+    }
+  }
+  repeated Result results = 1;
+}
+
+message ErrorResponse {  // catch all error response
+  string error = 1;
 }
 
 message HdlRequest {
@@ -85,5 +104,7 @@ message HdlResponse {
     IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
+
+    ErrorResponse error = 99;
   }
 }
