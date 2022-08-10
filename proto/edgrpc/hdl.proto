@@ -97,6 +97,7 @@ message BackendResponse {
 
 message ErrorResponse {  // catch all error response
   string error = 1;
+  string traceback = 2;
 }
 
 message HdlRequest {

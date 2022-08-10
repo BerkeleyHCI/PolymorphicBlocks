@@ -2,7 +2,7 @@
 from typing import cast
 
 import edgir
-from edg_core.HdlInterfaceServer import LibraryElementResolver
+from HdlInterfaceService import LibraryElementResolver
 import edg_core
 import edg
 from edg_core.Builder import builder

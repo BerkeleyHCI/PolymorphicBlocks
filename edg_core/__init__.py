@@ -27,7 +27,6 @@ from .Builder import builder
 from . import TransformUtil
 from .BaseBackend import BaseBackend
 
-from .HdlInterfaceServer import HdlInterface
 from .BufferSerializer import BufferDeserializer, BufferSerializer
 from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign, CompilerCheckError
 from .Refinements import Refinements

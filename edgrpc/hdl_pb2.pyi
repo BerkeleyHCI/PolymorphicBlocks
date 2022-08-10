@@ -284,12 +284,15 @@ class ErrorResponse(google.protobuf.message.Message):
     """catch all error response"""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     ERROR_FIELD_NUMBER: builtins.int
+    TRACEBACK_FIELD_NUMBER: builtins.int
     error: typing.Text
+    traceback: typing.Text
     def __init__(self,
         *,
         error: typing.Text = ...,
+        traceback: typing.Text = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["error",b"error"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["error",b"error","traceback",b"traceback"]) -> None: ...
 global___ErrorResponse = ErrorResponse
 
 class HdlRequest(google.protobuf.message.Message):
