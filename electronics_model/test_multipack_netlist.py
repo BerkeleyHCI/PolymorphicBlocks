@@ -2,9 +2,9 @@ import unittest
 
 from typing import Type
 from edg_core import *
+from .NetlistGenerator import NetlistTransform
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-from .NetlistGenerator import NetlistGenerator
 from .CircuitPackingBlock import PackedVoltageSource
 
 
@@ -74,7 +74,7 @@ class TestInvalidPackedDevices(DesignTop):
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
-    return NetlistGenerator().generate(compiled)
+    return NetlistTransform(compiled).run()
 
   def test_packed_netlist(self) -> None:
     net = self.generate_net(TestPackedDevices)

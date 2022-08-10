@@ -2,11 +2,13 @@ import unittest
 
 from typing import Type
 from edg_core import *
-import electronics_model
+from .CircuitBlock import FootprintBlock
+from .CanPort import CanDiffPort
+from .UartPort import UartPort
+from .SpiPort import SpiMaster, SpiSlave
+from .DigitalPorts import DigitalSource, DigitalSink
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-from .NetlistGenerator import Netlist
-
-from . import *
+from .NetlistGenerator import NetlistTransform, Netlist
 
 
 class TestFakeSpiMaster(FootprintBlock):
@@ -127,7 +129,7 @@ class BundleNetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]) -> Netlist:
     # TODO dedup w/ test_netlist
     compiled = ScalaCompiler.compile(design)
-    return NetlistGenerator().generate(compiled)
+    return NetlistTransform(compiled).run()
 
   def test_spi_netlist(self) -> None:
     net = self.generate_net(TestSpiCircuit)
