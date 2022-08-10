@@ -114,7 +114,7 @@ message HdlResponse {
     IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
-    BackendResponse backend_results = 4;
+    BackendResponse run_backend = 4;
 
     ErrorResponse error = 99;
   }

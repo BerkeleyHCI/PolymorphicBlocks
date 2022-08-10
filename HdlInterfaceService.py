@@ -4,17 +4,9 @@ import sys
 from types import ModuleType
 from typing import Set, Dict, Type, Optional, Tuple, TypeVar, cast
 
-import edg_core
 import edgir
 import edgrpc
-from edg_core import BufferDeserializer, BufferSerializer
-
-# This magic line of code makes the reloading in HdlInterfaceServer not break.
-# Otherwise, for some reason, it sees duplicate modules.
-# I don't know why this works, or what the root cause is, but this makes things work...
-# Possibly because even the test case code in edg_core getting rolled back causes issues?
-# even if nothing else in core depends on that test code
-from blinky_skeleton import *
+from edg_core import *
 
 
 # Index of module(s) recursively, and providing protobuf LibraryPath to class resolution.
@@ -24,8 +16,8 @@ class LibraryElementResolver:
     self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
 
     # Every time we reload, we need to get a fresh handle to the relevant base classes
-    self.LibraryElementType = edg_core.LibraryElement
-    self.PortType = edg_core.Port
+    self.LibraryElementType = LibraryElement
+    self.PortType = Port
 
   def load_module(self, module: ModuleType) -> None:
     """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
@@ -124,6 +116,8 @@ if __name__ == '__main__':
           generator_obj, f"in generate for {request.elaborate_generator.element}",
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
+      elif request.HasField('run_backend'):
+        ...
       else:
         raise RuntimeError(f"Unknown request {request}")
     except BaseException as e:
