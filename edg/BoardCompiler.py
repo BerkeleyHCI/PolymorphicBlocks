@@ -1,9 +1,9 @@
-from typing import Type
-
 import os
 from contextlib import suppress
+from typing import Type
+
 from edg_core import Block, ScalaCompiler, CompiledDesign
-from electronics_model import footprint, NetlistBackend
+from electronics_model import NetlistBackend
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str) -> CompiledDesign:
