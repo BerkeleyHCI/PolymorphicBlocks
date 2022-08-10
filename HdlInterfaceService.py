@@ -117,14 +117,14 @@ if __name__ == '__main__':
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
       elif request.HasField('run_backend'):
-        backend_split = request.run_backend.backend_class_name.split('')
+        backend_split = request.run_backend.backend_class_name.split('.')
         backend_module = importlib.import_module('.'.join(backend_split[:-1]))
         assert inspect.ismodule(backend_module)
         backend_class = getattr(backend_module, backend_split[-1])
         assert issubclass(backend_class, BaseBackend)
         backend = backend_class()
 
-        results = backend.run(request.run_backend.design)
+        results = backend.run(CompiledDesign.from_backend_request(request.run_backend))
         for path, result in results:
           response_result = response.run_backend.results.add()
           response_result.path.CopyFrom(path)
@@ -136,6 +136,7 @@ if __name__ == '__main__':
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st
       response.error.error = repr(e)
       response.error.traceback = "".join(traceback.TracebackException.from_exception(e).format())
+      # also print it, to preserve the usual behavior of errors in Python
       traceback.print_exc()
 
     sys.stdout.buffer.write(stdin_deserializer.read_stdout())

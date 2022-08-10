@@ -3,7 +3,7 @@ package edg.compiler
 import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.util.{Errorable, QueueStream, timeExec}
-import edg.wir.Library
+import edg.wir.{DesignPath, IndirectDesignPath, Library}
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
@@ -94,6 +94,10 @@ class PythonInterface(serverFile: File) {
   val processOutputStream: InputStream = process.outputStream
   val processErrorStream: InputStream = process.errorStream
 
+  def shutdown(): Int = {
+    process.shutdown()
+  }
+
 
   // Hooks to implement when certain actions happen
   def onLibraryRequest(element: ref.LibraryPath): Unit = {}
@@ -175,8 +179,39 @@ class PythonInterface(serverFile: File) {
     result
   }
 
-  def shutdown(): Int = {
-    process.shutdown()
+
+  def onRunBackend(backend: String): Unit = {}
+
+  def onRunBackendComplete(backend: String,
+                           result: Errorable[Map[DesignPath, String]]): Unit = {}
+
+  def runBackend(backend: String, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
+      Errorable[Map[DesignPath, String]] = {
+    onRunBackend(backend)
+
+    val request = edgrpc.BackendRequest(
+      backendClassName=backend, design=Some(design),
+      solvedValues=solvedValues.map { case (path, value) =>
+        edgrpc.BackendRequest.Value(path=Some(path.toLocalPath), value=Some(value.toLit))
+      }.toSeq
+    )
+    val (reply, reqTime) = timeExec {
+      process.write(edgrpc.HdlRequest(
+        request = edgrpc.HdlRequest.Request.RunBackend(value=request)))
+      process.read()
+    }
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.RunBackend(result) =>
+        Errorable.Success(result.results.map { result =>
+          DesignPath() ++ result.getPath -> result.getText
+        }.toMap)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while running backend $backend: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while running backend $backend: invalid response")
+    }
+    onRunBackendComplete(backend, result)
+    result
   }
 }
 
