@@ -1,4 +1,5 @@
 import os
+import inspect
 from contextlib import suppress
 from typing import Type
 
@@ -35,9 +36,6 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
 def compile_board_inplace(design: Type[Block]) -> CompiledDesign:
   """Compiles a board and writes the results in a sub-directory
   where the module containing the top-level is located"""
-  import inspect
-  import os
-
   compiled = compile_board(
     design,
     os.path.join(os.path.dirname(inspect.getfile(design)), design.__module__.split(".")[-1]),
