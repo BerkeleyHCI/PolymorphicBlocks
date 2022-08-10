@@ -117,7 +117,18 @@ if __name__ == '__main__':
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
       elif request.HasField('run_backend'):
-        ...
+        backend_split = request.run_backend.backend_class_name.split('')
+        backend_module = importlib.import_module('.'.join(backend_split[:-1]))
+        assert inspect.ismodule(backend_module)
+        backend_class = getattr(backend_module, backend_split[-1])
+        assert issubclass(backend_class, BaseBackend)
+        backend = backend_class()
+
+        results = backend.run(request.run_backend.design)
+        for path, result in results:
+          response_result = response.run_backend.results.add()
+          response_result.path.CopyFrom(path)
+          response_result.text = result
       else:
         raise RuntimeError(f"Unknown request {request}")
     except BaseException as e:
