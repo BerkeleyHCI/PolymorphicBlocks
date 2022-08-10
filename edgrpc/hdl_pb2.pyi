@@ -207,6 +207,9 @@ class GeneratorResponse(google.protobuf.message.Message):
 global___GeneratorResponse = GeneratorResponse
 
 class BackendRequest(google.protobuf.message.Message):
+    """Runs a backend - something that generates fabrication artifacts from a compiled design tree
+    eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
+    """
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     BACKEND_CLASS_NAME_FIELD_NUMBER: builtins.int
     DESIGN_FIELD_NUMBER: builtins.int
@@ -273,6 +276,7 @@ class HdlRequest(google.protobuf.message.Message):
     INDEX_MODULE_FIELD_NUMBER: builtins.int
     GET_LIBRARY_ELEMENT_FIELD_NUMBER: builtins.int
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
+    RUN_BACKEND_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___ModuleName:
         """returns an index of IR elements in a Python module"""
@@ -285,15 +289,18 @@ class HdlRequest(google.protobuf.message.Message):
     def elaborate_generator(self) -> global___GeneratorRequest:
         """returns the elaborated IR"""
         pass
+    @property
+    def run_backend(self) -> global___BackendRequest: ...
     def __init__(self,
         *,
         index_module: typing.Optional[global___ModuleName] = ...,
         get_library_element: typing.Optional[global___LibraryRequest] = ...,
         elaborate_generator: typing.Optional[global___GeneratorRequest] = ...,
+        run_backend: typing.Optional[global___BackendRequest] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","get_library_element",b"get_library_element","index_module",b"index_module","request",b"request"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","get_library_element",b"get_library_element","index_module",b"index_module","request",b"request"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["request",b"request"]) -> typing.Optional[typing_extensions.Literal["index_module","get_library_element","elaborate_generator"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","get_library_element",b"get_library_element","index_module",b"index_module","request",b"request","run_backend",b"run_backend"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","get_library_element",b"get_library_element","index_module",b"index_module","request",b"request","run_backend",b"run_backend"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["request",b"request"]) -> typing.Optional[typing_extensions.Literal["index_module","get_library_element","elaborate_generator","run_backend"]]: ...
 global___HdlRequest = HdlRequest
 
 class HdlResponse(google.protobuf.message.Message):
@@ -301,6 +308,7 @@ class HdlResponse(google.protobuf.message.Message):
     INDEX_MODULE_FIELD_NUMBER: builtins.int
     GET_LIBRARY_ELEMENT_FIELD_NUMBER: builtins.int
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
+    BACKEND_RESULTS_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___IndexResponse:
@@ -311,15 +319,18 @@ class HdlResponse(google.protobuf.message.Message):
     @property
     def elaborate_generator(self) -> global___GeneratorResponse: ...
     @property
+    def backend_results(self) -> global___BackendResponse: ...
+    @property
     def error(self) -> global___ErrorResponse: ...
     def __init__(self,
         *,
         index_module: typing.Optional[global___IndexResponse] = ...,
         get_library_element: typing.Optional[global___LibraryResponse] = ...,
         elaborate_generator: typing.Optional[global___GeneratorResponse] = ...,
+        backend_results: typing.Optional[global___BackendResponse] = ...,
         error: typing.Optional[global___ErrorResponse] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","error",b"error","get_library_element",b"get_library_element","index_module",b"index_module","response",b"response"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator",b"elaborate_generator","error",b"error","get_library_element",b"get_library_element","index_module",b"index_module","response",b"response"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["response",b"response"]) -> typing.Optional[typing_extensions.Literal["index_module","get_library_element","elaborate_generator","error"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["backend_results",b"backend_results","elaborate_generator",b"elaborate_generator","error",b"error","get_library_element",b"get_library_element","index_module",b"index_module","response",b"response"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["backend_results",b"backend_results","elaborate_generator",b"elaborate_generator","error",b"error","get_library_element",b"get_library_element","index_module",b"index_module","response",b"response"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["response",b"response"]) -> typing.Optional[typing_extensions.Literal["index_module","get_library_element","elaborate_generator","backend_results","error"]]: ...
 global___HdlResponse = HdlResponse

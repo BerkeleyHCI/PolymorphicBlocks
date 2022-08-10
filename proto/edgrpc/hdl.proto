@@ -72,6 +72,8 @@ message GeneratorResponse {
   }
 }
 
+// Runs a backend - something that generates fabrication artifacts from a compiled design tree
+// eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
 message BackendRequest {
   string backend_class_name = 1;  // class name of the backend to run
   edgir.schema.Design design = 2;
@@ -96,6 +98,7 @@ message HdlRequest {
     ModuleName index_module = 1;  // returns an index of IR elements in a Python module
     LibraryRequest get_library_element = 2;  // returns the IR for a library element
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
+    BackendRequest run_backend = 4;
   }
 }
 
@@ -104,6 +107,7 @@ message HdlResponse {
     IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
+    BackendResponse backend_results = 4;
 
     ErrorResponse error = 99;
   }
