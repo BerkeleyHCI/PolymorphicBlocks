@@ -81,7 +81,7 @@ class ScalaCompilerInstance:
     request = edgrpc.CompilerRequest(
       modules=[block.__module__],
       design=edgir.Design(
-        contents=builder.elaborate_toplevel(block_obj, f"in elaborating top design block {block}"))
+        contents=builder.elaborate_toplevel(block_obj))
     )
     if isinstance(block_obj, DesignTop):
       refinements = block_obj.refinements() + refinements

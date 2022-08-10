@@ -64,10 +64,10 @@ LibraryElementType = TypeVar('LibraryElementType', bound=LibraryElement)
 def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementType, edgir.Library.NS.Val]:
   obj = elt_cls()
   if isinstance(obj, Block):
-    block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {elt_cls}")
+    block_proto = builder.elaborate_toplevel(obj)
     return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore
   elif isinstance(obj, Link):
-    link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {elt_cls}")
+    link_proto = builder.elaborate_toplevel(obj)
     assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
     return obj, edgir.Library.NS.Val(link=link_proto)  # type: ignore
   elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         generator_obj = generator_type()
 
         response.elaborate_generator.generated.CopyFrom(builder.elaborate_toplevel(
-          generator_obj, f"in generate for {request.elaborate_generator.element}",
+          generator_obj,
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
       elif request.HasField('run_backend'):
