@@ -41,21 +41,10 @@ class ErrorableTest extends AnyFlatSpec with Matchers {
     fail2 should equal(Errorable.Error("failure2"))
   }
 
-  it should "chain successes on branching" in {
-    val original1 = Errorable(BigInt(1), "failure1")
-    val original2 = Errorable(BigInt(2), "failure2")
-    val combined = (original1 + original2).map("add") { case (val1, val2) =>
-      val1 + val2
-    }
-    combined should equal(Errorable.Success(BigInt(3)))
-  }
-
-  it should "preserve first failure on branching" in {
-    val original1 = Errorable(null.asInstanceOf[BigInt], "failure1")
-    val original2 = Errorable(BigInt(2), "failure2")
-    val combined = (original1 + original2).map("add") { case (val1, val2) =>
-      val1 + val2
-    }
-    combined should equal(Errorable.Error("failure1"))
+  it should "map error messages" in {
+    val ok = Errorable(BigInt(1), "ok").mapErr(msg => f"context1: $msg")
+    ok should equal(Errorable.Success(BigInt(1)))
+    val bad = Errorable(None, "failure").mapErr(msg => f"context2: $msg")
+    bad should equal(Errorable.Error("context2: failure"))
   }
 }

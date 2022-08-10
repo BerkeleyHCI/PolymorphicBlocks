@@ -38,34 +38,9 @@ sealed trait Errorable[+T] {
   def mapToString(fn: T => String): String = mapToStringOrElse(fn, identity)
   def mapToStringOrElse(fn: T => String, errFn: String => String): String
 
-  // Checks if some property of the contained value is true, otherwise convert to error with message
-  def require(errMsg: => String)(fn: T => Boolean): Errorable[T] = {
-    flatMap(errMsg) { contained =>
-      if (fn(contained)) {
-        Some(contained)
-      } else {
-        None
-      }
-    }
-  }
-
-  // If the contained object is an instance of V, cast it to V, otherwise convert to error with message
-  def mapInstanceOf[V](errMsg: => String)(implicit tag: ClassTag[V]) : Errorable[V] = {
-    // Need the implicit tag so this generates a proper runtime check
-    flatMap(errMsg) {
-      case obj: V => Some(obj)
-      case obj => None
-    }
-  }
-
-  def +[T2](other: Errorable[T2]): Errorable[(T, T2)] = {
-    (this, other) match {
-      case (Errorable.Success(thisVal), Errorable.Success(otherVal)) =>
-        Errorable.Success((thisVal, otherVal))
-      case (thisErr @ Errorable.Error(_), _) => thisErr
-      case (_, otherErr @ Errorable.Error(_)) => otherErr
-    }
-  }
+  // Applies a transformation on the error message (if this is an error).
+  // Useful for adding context to error messages.
+  def mapErr(errFn: String => String): Errorable[T]
 }
 
 
@@ -94,6 +69,10 @@ object Errorable {
     override def mapToStringOrElse(fn: T => String, errFn: String => String): String = {
       fn(obj)
     }
+
+    override def mapErr(errFn: String => String): Errorable[T] = {
+      this
+    }
   }
   case class Error(msg: String) extends Errorable[Nothing] {
     override def get: Nothing = throw new NoSuchElementException(s"Errorable.Error get ($msg)")
@@ -114,24 +93,26 @@ object Errorable {
     override def mapToStringOrElse(fn: Nothing => String, errFn: String => String): String = {
       errFn(msg)
     }
-  }
 
-  def apply[T](obj: Option[T], errMsg: => String): Errorable[T] = {
-    if (obj == null) {  // in case a null goes down this path
-      Error(errMsg)
-    } else {
-      obj match {
-        case Some(obj) => Success(obj)
-        case None => Error(errMsg)
-      }
+    override def mapErr(errFn: String => String): Errorable[Nothing] = {
+      Error(errFn(msg))
     }
   }
 
+  def apply[T](obj: Option[T], errMsg: => String): Errorable[T] = {
+    require(obj != null)  // as a guard, the user should fix this and make sure Option cannot be null
+    obj match {
+      case Some(obj) => Success(obj)
+      case None => Error(errMsg)
+    }
+  }
+
+  // Creates Success(value), except for null
   def apply[T](obj: T, errMsg: => String): Errorable[T] = {
     apply[T](obj, errMsg, null.asInstanceOf[T])
   }
 
-  def apply[T](obj: T, errMsg: => String, failureVal: T): Errorable[T] = {
+  protected def apply[T](obj: T, errMsg: => String, failureVal: T): Errorable[T] = {
     if (obj == failureVal) {
       Error(errMsg)
     } else {

@@ -1,5 +1,6 @@
 package edg.compiler
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.util.{Errorable, QueueStream, timeExec}
 import edg.wir.Library
@@ -87,10 +88,6 @@ class ProtobufStdioSubprocess
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   */
 class PythonInterface(serverFile: File) {
-  // TODO better debug toggle
-//  protected def debug(msg: => String): Unit = println(msg)
-  protected def debug(msg: => String): Unit = { }
-
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
     Seq("python", "-u", serverFile.getAbsolutePath))  // in unbuffered mode
@@ -112,11 +109,16 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.IndexModule(value=request)))
-      val reply = process.read()
-      reply.getIndexModule.indexed
+      process.read()
     }
-    debug(s"PyIf:indexModule $module (${reqTime} ms)")
-    Errorable.Success(reply)
+    reply.response match {
+      case edgrpc.HdlResponse.Response.IndexModule(result) =>
+        Errorable.Success(result.indexed)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while indexing $module: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while indexing $module: invalid response")
+    }
   }
 
   def libraryRequest(element: ref.LibraryPath):
@@ -129,20 +131,15 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
-      val reply = process.read()
-      reply.getGetLibraryElement
+      process.read()
     }
-
-    val result = reply.result match {
-      case edgrpc.LibraryResponse.Result.Element(elem) =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= ... (${reqTime} ms)")
-        Errorable.Success((elem, reply.refinements))
-      case edgrpc.LibraryResponse.Result.Error(err) =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= err $err (${reqTime} ms)")
-        Errorable.Error(err)
-      case edgrpc.LibraryResponse.Result.Empty =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= empty (${reqTime} ms)")
-        Errorable.Error("empty response")
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.GetLibraryElement(result) =>
+        Errorable.Success((result.getElement, result.refinements))
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while elaborating ${element.toSimpleString}: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while elaborating ${element.toSimpleString}: invalid response")
     }
     onLibraryRequestComplete(element, result)
     result
@@ -164,15 +161,15 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
-      val reply = process.read()
-      reply.getElaborateGenerator
+      process.read()
     }
-
-    debug(s"PyIf:generatorRequest ${element.getTarget.getName} (${reqTime} ms)")
-    val result = reply.result match {
-      case edgrpc.GeneratorResponse.Result.Generated(elem) => Errorable.Success(elem)
-      case edgrpc.GeneratorResponse.Result.Error(err) => Errorable.Error(err)
-      case edgrpc.GeneratorResponse.Result.Empty => Errorable.Error("empty response")
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.ElaborateGenerator(result) =>
+        Errorable.Success(result.getGenerated)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while generating ${element.toSimpleString}: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while generating ${element.toSimpleString}: invalid response")
     }
     onElaborateGeneratorRequestComplete(element, values, result)
     result

@@ -1,6 +1,5 @@
 /** Defines messages for a service provided in Python that exposes
     HDL-to-edgir elaboration for a compiler in a different process / language.
-
 */
 
 syntax = "proto3";
@@ -35,6 +34,7 @@ message Refinements {
   repeated Value values = 2;
 }
 
+
 message ModuleName {
   string name = 1;
 }
@@ -43,17 +43,16 @@ message IndexResponse {
   repeated edgir.ref.LibraryPath indexed = 1;
 }
 
+
 message LibraryRequest {
   edgir.ref.LibraryPath element = 2;  // library element asked for
 }
 
 message LibraryResponse {
-  oneof result {
-    edgir.schema.Library.NS.Val element = 1;
-    string error = 2;  // TODO source locators
-  }
-  Refinements refinements = 3;  // only valid if element is a top-level block, and not error
+  edgir.schema.Library.NS.Val element = 1;
+  Refinements refinements = 3;  // only valid if element is a top-level block
 }
+
 
 message GeneratorRequest {
   edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
@@ -66,11 +65,9 @@ message GeneratorRequest {
 }
 
 message GeneratorResponse {
-  oneof result {
-    edgir.elem.HierarchyBlock generated = 1;
-    string error = 2;  // TODO source locators
-  }
+  edgir.elem.HierarchyBlock generated = 1;
 }
+
 
 // Runs a backend - something that generates fabrication artifacts from a compiled design tree
 // eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
@@ -95,10 +92,12 @@ message BackendResponse {
   repeated Result results = 1;
 }
 
+
 message ErrorResponse {  // catch all error response
   string error = 1;
   string traceback = 2;
 }
+
 
 message HdlRequest {
   oneof request {

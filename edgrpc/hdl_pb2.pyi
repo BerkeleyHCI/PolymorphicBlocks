@@ -130,26 +130,20 @@ global___LibraryRequest = LibraryRequest
 class LibraryResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     ELEMENT_FIELD_NUMBER: builtins.int
-    ERROR_FIELD_NUMBER: builtins.int
     REFINEMENTS_FIELD_NUMBER: builtins.int
     @property
     def element(self) -> edgir.schema_pb2.Library.NS.Val: ...
-    error: typing.Text
-    """TODO source locators"""
-
     @property
     def refinements(self) -> global___Refinements:
-        """only valid if element is a top-level block, and not error"""
+        """only valid if element is a top-level block"""
         pass
     def __init__(self,
         *,
         element: typing.Optional[edgir.schema_pb2.Library.NS.Val] = ...,
-        error: typing.Text = ...,
         refinements: typing.Optional[global___Refinements] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["element",b"element","error",b"error","refinements",b"refinements","result",b"result"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["element",b"element","error",b"error","refinements",b"refinements","result",b"result"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["result",b"result"]) -> typing.Optional[typing_extensions.Literal["element","error"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["element",b"element","refinements",b"refinements"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["element",b"element","refinements",b"refinements"]) -> None: ...
 global___LibraryResponse = LibraryResponse
 
 class GeneratorRequest(google.protobuf.message.Message):
@@ -190,20 +184,14 @@ global___GeneratorRequest = GeneratorRequest
 class GeneratorResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     GENERATED_FIELD_NUMBER: builtins.int
-    ERROR_FIELD_NUMBER: builtins.int
     @property
     def generated(self) -> edgir.elem_pb2.HierarchyBlock: ...
-    error: typing.Text
-    """TODO source locators"""
-
     def __init__(self,
         *,
         generated: typing.Optional[edgir.elem_pb2.HierarchyBlock] = ...,
-        error: typing.Text = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["error",b"error","generated",b"generated","result",b"result"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["error",b"error","generated",b"generated","result",b"result"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["result",b"result"]) -> typing.Optional[typing_extensions.Literal["generated","error"]]: ...
+    def HasField(self, field_name: typing_extensions.Literal["generated",b"generated"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["generated",b"generated"]) -> None: ...
 global___GeneratorResponse = GeneratorResponse
 
 class BackendRequest(google.protobuf.message.Message):

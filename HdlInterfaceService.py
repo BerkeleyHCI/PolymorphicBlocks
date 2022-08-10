@@ -125,6 +125,7 @@ if __name__ == '__main__':
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st
       response.error.error = repr(e)
       response.error.traceback = "".join(traceback.TracebackException.from_exception(e).format())
+      traceback.print_exc()
 
     sys.stdout.buffer.write(stdin_deserializer.read_stdout())
     stdout_serializer.write(response)
