@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Tuple, Dict
 
 import edgir
-from edg_core import CompiledDesign
+from .ScalaCompilerInterface import CompiledDesign
 
 
 class BaseBackend(metaclass=ABCMeta):

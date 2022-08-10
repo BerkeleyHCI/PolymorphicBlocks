@@ -3,7 +3,7 @@ from typing import Type
 import os
 from contextlib import suppress
 from edg_core import Block, ScalaCompiler, CompiledDesign
-from electronics_model import footprint, NetlistTransform
+from electronics_model import footprint, NetlistBackend
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str) -> CompiledDesign:
@@ -20,14 +20,14 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
     os.remove(netlist_filename)
 
   compiled = ScalaCompiler.compile(design)
-  netlist = NetlistTransform(compiled).run()
+  netlist_all = NetlistBackend().run(compiled)
+  assert len(netlist_all) == 1
 
   with open(design_filename, 'wb') as raw_file:
     raw_file.write(compiled.contents.SerializeToString())
 
-  netlist_string = footprint.generate_netlist(netlist.blocks, netlist.nets)
   with open(netlist_filename, 'w', encoding='utf-8') as net_file:
-    net_file.write(netlist_string)
+    net_file.write(netlist_all[0][1])
 
   return compiled
 

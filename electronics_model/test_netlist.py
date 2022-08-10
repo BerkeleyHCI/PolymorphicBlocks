@@ -5,7 +5,7 @@ from edg_core import *
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import VoltageSource, VoltageSink
-from .NetlistBackend import NetlistBackend
+from .NetlistGenerator import NetlistTransform
 
 
 class TestFakeSource(FootprintBlock):
@@ -164,7 +164,7 @@ class TestDualHierarchyCircuit(Block):
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
-    return NetlistBackend().run(compiled)[0][1]
+    return NetlistTransform(compiled).run()
 
   def test_basic_netlist(self) -> None:
     net = self.generate_net(TestBasicCircuit)
