@@ -1,5 +1,5 @@
 import zlib  # for deterministic hash
-from typing import NamedTuple, List, Dict, Iterable
+from typing import NamedTuple, List, Dict, Iterable, Mapping
 
 
 class Block(NamedTuple):
@@ -59,7 +59,7 @@ def gen_block_prop_sheetfile(block_path: List[str]) -> str:
     value = ""
   return f'(property (name "Sheetfile") (value "{value}"))'
 
-def block_exp(dict: Dict[str, Block]) -> str:
+def block_exp(dict: Mapping[str, Block]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -95,7 +95,7 @@ def gen_net_header(net_count: int, net_name: str) -> str:
 def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
-def net_exp(dict: Dict[str, Iterable[Pin]]) -> str:
+def net_exp(dict: Mapping[str, Iterable[Pin]]) -> str:
         """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
         Example:
@@ -123,5 +123,5 @@ def net_exp(dict: Dict[str, Iterable[Pin]]) -> str:
 
 """4. Generate Full Netlist"""
 
-def generate_netlist(blocks_dict: Dict[str, Block], nets_dict: Dict[str, Iterable[Pin]]) -> str:
+def generate_netlist(blocks_dict: Mapping[str, Block], nets_dict: Mapping[str, Iterable[Pin]]) -> str:
     return gen_header() + '\n' + block_exp(blocks_dict) + '\n' + net_exp(nets_dict) + '\n' + ')'

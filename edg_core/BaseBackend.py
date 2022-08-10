@@ -21,4 +21,4 @@ class BaseBackend(metaclass=ABCMeta):
 
   # to be implemented per backend
   @abstractmethod
-  def run(self, design: edgir.Design, values: Dict[str, edgir.LitTypes]) -> List[Tuple[edgir.LocalPath, str]]: pass
+  def run(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes]) -> List[Tuple[edgir.LocalPath, str]]: pass

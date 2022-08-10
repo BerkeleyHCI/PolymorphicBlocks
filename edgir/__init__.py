@@ -56,7 +56,7 @@ LitLeafTypes = Union[bool, float, 'Range', str]  # TODO for Range: fix me, this 
 LitTypes = Union[LitLeafTypes, List[LitLeafTypes]]
 
 
-def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
+def valuelit_to_lit(expr: ValueLit) -> LitTypes:
   if expr.HasField('boolean'):
     return expr.boolean.val
   elif expr.HasField('floating'):
@@ -72,11 +72,11 @@ def valuelit_to_lit(expr: ValueLit) -> Optional[LitTypes]:
   elif expr.HasField('array'):
     elts = [valuelit_to_lit(elt) for elt in expr.array.elts]
     if None in elts:
-      return None
+      raise ValueError(f"bad valuelit array {expr}")
     else:
       return cast(List[LitLeafTypes], elts)
   else:
-    return None
+    raise ValueError(f"bad valuelit {expr}")
 
 
 def lit_to_valuelit(value: LitTypes) -> ValueLit:
