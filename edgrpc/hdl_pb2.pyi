@@ -211,20 +211,41 @@ class BackendRequest(google.protobuf.message.Message):
     eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
     """
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    class Value(google.protobuf.message.Message):
+        """TODO dedup w/ same def in compiler.CompilerResult"""
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        PATH_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        @property
+        def path(self) -> edgir.ref_pb2.LocalPath: ...
+        @property
+        def value(self) -> edgir.lit_pb2.ValueLit: ...
+        def __init__(self,
+            *,
+            path: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
+            value: typing.Optional[edgir.lit_pb2.ValueLit] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["path",b"path","value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["path",b"path","value",b"value"]) -> None: ...
+
     BACKEND_CLASS_NAME_FIELD_NUMBER: builtins.int
     DESIGN_FIELD_NUMBER: builtins.int
+    SOLVEDVALUES_FIELD_NUMBER: builtins.int
     backend_class_name: typing.Text
     """class name of the backend to run"""
 
     @property
     def design(self) -> edgir.schema_pb2.Design: ...
+    @property
+    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___BackendRequest.Value]: ...
     def __init__(self,
         *,
         backend_class_name: typing.Text = ...,
         design: typing.Optional[edgir.schema_pb2.Design] = ...,
+        solvedValues: typing.Optional[typing.Iterable[global___BackendRequest.Value]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["design",b"design"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["backend_class_name",b"backend_class_name","design",b"design"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["backend_class_name",b"backend_class_name","design",b"design","solvedValues",b"solvedValues"]) -> None: ...
 global___BackendRequest = BackendRequest
 
 class BackendResponse(google.protobuf.message.Message):

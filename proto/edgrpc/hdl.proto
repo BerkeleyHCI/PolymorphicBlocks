@@ -77,6 +77,12 @@ message GeneratorResponse {
 message BackendRequest {
   string backend_class_name = 1;  // class name of the backend to run
   edgir.schema.Design design = 2;
+
+  message Value {  // TODO dedup w/ same def in compiler.CompilerResult
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
+  }
+  repeated Value solvedValues = 3;
 }
 
 message BackendResponse {
