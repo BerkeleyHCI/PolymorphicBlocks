@@ -20,7 +20,7 @@ class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
   nets: Mapping[str, Iterable[kicad.Pin]]  # net name: list of member pins
 
 
-Blocks = Dict[TransformUtil.Path, Tuple[str, str]]  # path -> footprint, value
+Blocks = Dict[TransformUtil.Path, kicad.Block]  # path -> Block
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
@@ -151,17 +151,23 @@ class NetlistTransform(TransformUtil.Transform):
       ]
       value_str = " - ".join(filter(None, value_comps))
 
-      self.blocks[path] = (
-        footprint_name,
-        # Uncomment one to set value field
-        # TODO this should be a user flag
-        value_str  # including manufacturer
-        # lcsc_part or ""
-        # value  # for TPs
-      )
-
       refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
       self.refdes_last[refdes_prefix] = refdes_id
+
+      self.blocks[path] = kicad.Block(
+        footprint_name,
+        refdes_prefix + str(refdes_id),
+        part_str,
+
+        # Uncomment one to set value field
+        # TODO this should be a user flag
+        value_str,  # including manufacturer
+        # lcsc_part or ""
+
+        list(path.blocks),
+        list(self.short_paths[path].blocks),
+        self.class_paths[path],
+      )
 
       # Uncomment one to set refdes type
       # TODO this should be a user flag
@@ -314,10 +320,8 @@ class NetlistTransform(TransformUtil.Transform):
     named_nets = {self.name_net(set([name_pin(pin) for pin in net])): net
                   for net in nets}
 
-    netlist_blocks = {str(self.names[block]): kicad.Block(footprint, value,
-                                                          list(self.short_paths[block].blocks),
-                                                          self.class_paths[block])
-                      for block, (footprint, value) in self.blocks.items()}
+    netlist_blocks = {str(self.names[block_path]): block
+                      for block_path, block in self.blocks.items()}
     netlist_nets = {name: set([self.path_to_pin(self.names[pin])
                                for pin in net if pin in self.names]) for name, net in named_nets.items()}
 

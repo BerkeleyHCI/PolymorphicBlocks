@@ -1,12 +1,15 @@
 import zlib  # for deterministic hash
-from typing import NamedTuple, List, Dict, Iterable, Mapping
+from typing import NamedTuple, List, Iterable, Mapping
 
 
 class Block(NamedTuple):
   footprint: str
-  value: str
-  path: List[str]  # path not including this footprint
-  class_path: List[str]  #
+  refdes: str
+  part: str
+  value: str  # gets written directly to footprint
+  full_path: List[str]  # short path to this footprint
+  path: List[str]  # short path to this footprint
+  class_path: List[str]  # classes on short path to this footprint
 
 class Pin(NamedTuple):
   block_name: str
@@ -59,7 +62,19 @@ def gen_block_prop_sheetfile(block_path: List[str]) -> str:
     value = ""
   return f'(property (name "Sheetfile") (value "{value}"))'
 
-def block_exp(dict: Mapping[str, Block]) -> str:
+def gen_block_prop_path(block_path: List[str]) -> str:
+  return f'(property (name "edg_path") (value "{".".join(block_path)}"))'
+
+def gen_block_prop_shortpath(block_path: List[str]) -> str:
+  return f'(property (name "edg_short_path") (value "{".".join(block_path)}"))'
+
+def gen_block_prop_refdes(refdes: str) -> str:
+  return f'(property (name "edg_refdes") (value "{refdes}"))'
+
+def gen_block_prop_part(part: str) -> str:
+  return f'(property (name "edg_part") (value "{part}"))'
+
+def block_exp(block_dict: Mapping[str, Block]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -75,12 +90,16 @@ def block_exp(dict: Mapping[str, Block]) -> str:
 
         """
         result = '(components' 
-        for (block_name, block) in dict.items():
+        for block_name, block in block_dict.items():
             result += '\n' + gen_block_comp(block_name) + '\n' +\
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
                       "  " + gen_block_prop_sheetfile(block.class_path) + '\n' + \
+                      "  " + gen_block_prop_path(block.full_path) + '\n' + \
+                      "  " + gen_block_prop_shortpath(block.path) + '\n' + \
+                      "  " + gen_block_prop_refdes(block.refdes) + '\n' + \
+                      "  " + gen_block_prop_part(block.part) + '\n' + \
                       "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
                       "  " + gen_block_tstamp(block.path)
         return result + ')'
