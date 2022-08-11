@@ -13,7 +13,7 @@ import java.io.{File, InputStream}
 import scala.collection.mutable
 
 
-class ProtobufSubprocessException() extends Exception()
+class ProtobufSubprocessException(msg: String) extends Exception(msg)
 
 
 object ProtobufStdioSubprocess {
@@ -34,7 +34,7 @@ class ProtobufStdioSubprocess
 
   def write(message: RequestType): Unit = {
     if (!process.isAlive) {  // quick check before we try to write to a dead process
-      throw new ProtobufSubprocessException()
+      throw new ProtobufSubprocessException("process died")
     }
 
     process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
@@ -46,10 +46,10 @@ class ProtobufStdioSubprocess
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
       val nextByte = process.getInputStream.read()
-     if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
+      if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
         doneReadingStdout = true
       } else if (nextByte < 0) {
-        throw new ProtobufSubprocessException()
+        throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte")
       } else {
        outputStream.write(nextByte)
       }
@@ -58,7 +58,7 @@ class ProtobufStdioSubprocess
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
-      throw new ProtobufSubprocessException()
+      throw new ProtobufSubprocessException("process died")
     }
     responseOpt.get
   }
