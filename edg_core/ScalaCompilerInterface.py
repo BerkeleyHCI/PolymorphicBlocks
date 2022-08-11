@@ -105,6 +105,7 @@ class ScalaCompilerInstance:
     return CompiledDesign.from_compiler_result(result)
 
   def close(self):
+    assert self.process is not None
     self.process.stdin.close()
     self.process.stdout.close()
     if self.suppress_stderr:
