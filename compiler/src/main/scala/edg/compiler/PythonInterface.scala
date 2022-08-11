@@ -17,7 +17,7 @@ class ProtobufSubprocessException(msg: String) extends Exception(msg)
 
 
 object ProtobufStdioSubprocess {
-  val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
+  val kHeaderMagicByte = 0xfe
 }
 
 
@@ -32,9 +32,22 @@ class ProtobufStdioSubprocess
   val outputStream = new QueueStream()
   val errorStream = process.getErrorStream  // the raw error stream from the process
 
+  protected def readStreamAvailable(stream: InputStream): String = {
+    var available = stream.available()
+    val outputBuilder = new mutable.StringBuilder()
+    while (available > 0) {
+      val array = new Array[Byte](available)
+      stream.read(array)
+      outputBuilder.append(new String(array))
+      available = stream.available()
+    }
+    outputBuilder.toString
+  }
+
   def write(message: RequestType): Unit = {
     if (!process.isAlive) {  // quick check before we try to write to a dead process
-      throw new ProtobufSubprocessException("process died")
+      throw new ProtobufSubprocessException("process died" +
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
     }
 
     process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
@@ -49,7 +62,8 @@ class ProtobufStdioSubprocess
       if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
         doneReadingStdout = true
       } else if (nextByte < 0) {
-        throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte")
+        throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
+            s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
       } else {
        outputStream.write(nextByte)
       }
@@ -58,7 +72,8 @@ class ProtobufStdioSubprocess
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
-      throw new ProtobufSubprocessException("process died")
+      throw new ProtobufSubprocessException("process died" +
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
     }
     responseOpt.get
   }
