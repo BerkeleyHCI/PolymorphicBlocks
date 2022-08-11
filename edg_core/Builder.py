@@ -34,7 +34,7 @@ class Builder:
     else:
       return self.stack[-1]
 
-  def elaborate_toplevel(self, block: BaseBlock, exc_prefix: str, *,
+  def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
     assert self.get_curr_context() is None

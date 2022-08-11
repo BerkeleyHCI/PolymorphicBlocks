@@ -2,18 +2,17 @@ import os
 import unittest
 
 from typing import Type
-from edg_core import *
-import electronics_model
 from . import *
 from . import test_netlist
 from . import footprint as kicad
+from .NetlistGenerator import NetlistTransform
 
 
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
-    net = NetlistGenerator().generate(compiled)
-    return kicad.generate_netlist(net.blocks, net.nets)
+    netlist = NetlistTransform(compiled).run()
+    return kicad.generate_netlist(netlist.blocks, netlist.nets)
 
   def test_basic_kicad(self):
     with open(os.path.splitext(os.path.basename(__file__))[0] + '_basic.net', 'w') as f:

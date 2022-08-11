@@ -1,6 +1,5 @@
 /** Defines messages for a service provided in Python that exposes
     HDL-to-edgir elaboration for a compiler in a different process / language.
-
 */
 
 syntax = "proto3";
@@ -11,24 +10,6 @@ import "edgir/ref.proto";
 import "edgir/elem.proto";
 import "edgir/lit.proto";
 
-
-message ModuleName {
-  string name = 1;
-}
-
-message LibraryRequest {
-  edgir.ref.LibraryPath element = 2;  // library element asked for
-}
-
-message GeneratorRequest {
-  edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
-
-  message Value {
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-  repeated Value values = 4;
-}
 
 message Refinements {
   message Subclass {
@@ -53,30 +34,77 @@ message Refinements {
   repeated Value values = 2;
 }
 
+
+message ModuleName {
+  string name = 1;
+}
+
 message IndexResponse {
   repeated edgir.ref.LibraryPath indexed = 1;
 }
 
+
+message LibraryRequest {
+  edgir.ref.LibraryPath element = 2;  // library element asked for
+}
+
 message LibraryResponse {
-  oneof result {
-    edgir.schema.Library.NS.Val element = 1;
-    string error = 2;  // TODO source locators
+  edgir.schema.Library.NS.Val element = 1;
+  Refinements refinements = 3;  // only valid if element is a top-level block
+}
+
+
+message GeneratorRequest {
+  edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
+
+  message Value {
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
   }
-  Refinements refinements = 3;  // only valid if element is a top-level block, and not error
+  repeated Value values = 4;
 }
 
 message GeneratorResponse {
-  oneof result {
-    edgir.elem.HierarchyBlock generated = 1;
-    string error = 2;  // TODO source locators
-  }
+  edgir.elem.HierarchyBlock generated = 1;
 }
+
+
+// Runs a backend - something that generates fabrication artifacts from a compiled design tree
+// eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
+message BackendRequest {
+  string backend_class_name = 1;  // class name of the backend to run
+  edgir.schema.Design design = 2;
+
+  message Value {  // TODO dedup w/ same def in compiler.CompilerResult
+    edgir.ref.LocalPath path = 1;
+    edgir.lit.ValueLit value = 2;
+  }
+  repeated Value solvedValues = 3;
+}
+
+message BackendResponse {
+  message Result {
+    edgir.ref.LocalPath path = 1;  // path of corresponding element in design tree
+    oneof result {
+      string text = 2;  // for now, only text supported, for KiCad netlisting
+    }
+  }
+  repeated Result results = 1;
+}
+
+
+message ErrorResponse {  // catch all error response
+  string error = 1;
+  string traceback = 2;
+}
+
 
 message HdlRequest {
   oneof request {
     ModuleName index_module = 1;  // returns an index of IR elements in a Python module
     LibraryRequest get_library_element = 2;  // returns the IR for a library element
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
+    BackendRequest run_backend = 4;
   }
 }
 
@@ -85,5 +113,8 @@ message HdlResponse {
     IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
+    BackendResponse run_backend = 4;
+
+    ErrorResponse error = 99;
   }
 }

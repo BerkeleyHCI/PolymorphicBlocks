@@ -1,8 +1,9 @@
 package edg.compiler
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.util.{Errorable, QueueStream, timeExec}
-import edg.wir.Library
+import edg.wir.{DesignPath, IndirectDesignPath, Library}
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
@@ -12,11 +13,11 @@ import java.io.{File, InputStream}
 import scala.collection.mutable
 
 
-class ProtobufSubprocessException() extends Exception()
+class ProtobufSubprocessException(msg: String) extends Exception(msg)
 
 
 object ProtobufStdioSubprocess {
-  val kHeaderMagicByte = 0xfe  // currently only for Python -> Scala
+  val kHeaderMagicByte = 0xfe
 }
 
 
@@ -31,9 +32,22 @@ class ProtobufStdioSubprocess
   val outputStream = new QueueStream()
   val errorStream = process.getErrorStream  // the raw error stream from the process
 
+  protected def readStreamAvailable(stream: InputStream): String = {
+    var available = stream.available()
+    val outputBuilder = new mutable.StringBuilder()
+    while (available > 0) {
+      val array = new Array[Byte](available)
+      stream.read(array)
+      outputBuilder.append(new String(array))
+      available = stream.available()
+    }
+    outputBuilder.toString
+  }
+
   def write(message: RequestType): Unit = {
     if (!process.isAlive) {  // quick check before we try to write to a dead process
-      throw new ProtobufSubprocessException()
+      throw new ProtobufSubprocessException("process died" +
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
     }
 
     process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
@@ -45,10 +59,11 @@ class ProtobufStdioSubprocess
     var doneReadingStdout: Boolean = false
     while (!doneReadingStdout) {
       val nextByte = process.getInputStream.read()
-     if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
+      if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
         doneReadingStdout = true
       } else if (nextByte < 0) {
-        throw new ProtobufSubprocessException()
+        throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
+            s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
       } else {
        outputStream.write(nextByte)
       }
@@ -57,7 +72,8 @@ class ProtobufStdioSubprocess
     val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
 
     if (!process.isAlive) {
-      throw new ProtobufSubprocessException()
+      throw new ProtobufSubprocessException("process died" +
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
     }
     responseOpt.get
   }
@@ -86,16 +102,16 @@ class ProtobufStdioSubprocess
   * them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   */
-class PythonInterface(serverFile: File) {
-  // TODO better debug toggle
-//  protected def debug(msg: => String): Unit = println(msg)
-  protected def debug(msg: => String): Unit = { }
-
+class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
-    Seq("python", "-u", serverFile.getAbsolutePath))  // in unbuffered mode
+    Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath))  // in unbuffered mode
   val processOutputStream: InputStream = process.outputStream
   val processErrorStream: InputStream = process.errorStream
+
+  def shutdown(): Int = {
+    process.shutdown()
+  }
 
 
   // Hooks to implement when certain actions happen
@@ -112,11 +128,16 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.IndexModule(value=request)))
-      val reply = process.read()
-      reply.getIndexModule.indexed
+      process.read()
     }
-    debug(s"PyIf:indexModule $module (${reqTime} ms)")
-    Errorable.Success(reply)
+    reply.response match {
+      case edgrpc.HdlResponse.Response.IndexModule(result) =>
+        Errorable.Success(result.indexed)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while indexing $module: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while indexing $module: invalid response")
+    }
   }
 
   def libraryRequest(element: ref.LibraryPath):
@@ -129,20 +150,15 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {  // TODO plumb refinements through
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
-      val reply = process.read()
-      reply.getGetLibraryElement
+      process.read()
     }
-
-    val result = reply.result match {
-      case edgrpc.LibraryResponse.Result.Element(elem) =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= ... (${reqTime} ms)")
-        Errorable.Success((elem, reply.refinements))
-      case edgrpc.LibraryResponse.Result.Error(err) =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= err $err (${reqTime} ms)")
-        Errorable.Error(err)
-      case edgrpc.LibraryResponse.Result.Empty =>
-        debug(s"PyIf:libraryRequest ${element.getTarget.getName} <= empty (${reqTime} ms)")
-        Errorable.Error("empty response")
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.GetLibraryElement(result) =>
+        Errorable.Success((result.getElement, result.refinements))
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while elaborating ${element.toSimpleString}: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while elaborating ${element.toSimpleString}: invalid response")
     }
     onLibraryRequestComplete(element, result)
     result
@@ -164,22 +180,53 @@ class PythonInterface(serverFile: File) {
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
         request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
-      val reply = process.read()
-      reply.getElaborateGenerator
+      process.read()
     }
-
-    debug(s"PyIf:generatorRequest ${element.getTarget.getName} (${reqTime} ms)")
-    val result = reply.result match {
-      case edgrpc.GeneratorResponse.Result.Generated(elem) => Errorable.Success(elem)
-      case edgrpc.GeneratorResponse.Result.Error(err) => Errorable.Error(err)
-      case edgrpc.GeneratorResponse.Result.Empty => Errorable.Error("empty response")
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.ElaborateGenerator(result) =>
+        Errorable.Success(result.getGenerated)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while generating ${element.toSimpleString}: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while generating ${element.toSimpleString}: invalid response")
     }
     onElaborateGeneratorRequestComplete(element, values, result)
     result
   }
 
-  def shutdown(): Int = {
-    process.shutdown()
+
+  def onRunBackend(backend: String): Unit = {}
+
+  def onRunBackendComplete(backend: String,
+                           result: Errorable[Map[DesignPath, String]]): Unit = {}
+
+  def runBackend(backend: String, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
+      Errorable[Map[DesignPath, String]] = {
+    onRunBackend(backend)
+
+    val request = edgrpc.BackendRequest(
+      backendClassName=backend, design=Some(design),
+      solvedValues=solvedValues.map { case (path, value) =>
+        edgrpc.BackendRequest.Value(path=Some(path.toLocalPath), value=Some(value.toLit))
+      }.toSeq
+    )
+    val (reply, reqTime) = timeExec {
+      process.write(edgrpc.HdlRequest(
+        request = edgrpc.HdlRequest.Request.RunBackend(value=request)))
+      process.read()
+    }
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.RunBackend(result) =>
+        Errorable.Success(result.results.map { result =>
+          DesignPath() ++ result.getPath -> result.getText
+        }.toMap)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while running backend $backend: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while running backend $backend: invalid response")
+    }
+    onRunBackendComplete(backend, result)
+    result
   }
 }
 

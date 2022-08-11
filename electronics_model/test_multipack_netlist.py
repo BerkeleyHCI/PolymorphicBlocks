@@ -2,9 +2,9 @@ import unittest
 
 from typing import Type
 from edg_core import *
+from .NetlistGenerator import NetlistTransform
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-from .NetlistGenerator import NetlistGenerator
 from .CircuitPackingBlock import PackedVoltageSource
 
 
@@ -74,7 +74,7 @@ class TestInvalidPackedDevices(DesignTop):
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
-    return NetlistGenerator().generate(compiled)
+    return NetlistTransform(compiled).run()
 
   def test_packed_netlist(self) -> None:
     net = self.generate_net(TestPackedDevices)
@@ -87,10 +87,11 @@ class NetlistTestCase(unittest.TestCase):
       Pin('source', '2'),
       Pin('sink.device', '2')
     })
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', '1uF',
-                                                  ['source'], ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink.device'], FBlock('Resistor_SMD:R_0603_1608Metric', '1k',
-                                                       ['sink', 'device'],
+    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                                                  ['source'], ['source'],
+                                                  ['electronics_model.test_netlist.TestFakeSource']))
+    self.assertEqual(net.blocks['sink.device'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                                                       ['sink', 'device'], ['sink', 'device'],
                                                        ['electronics_model.test_multipack_netlist.TestPackedSink',
                                                         'electronics_model.test_netlist.TestFakeSink']))
 

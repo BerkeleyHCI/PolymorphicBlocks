@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from .ScalaCompilerInterface import ScalaCompiler
+from .ScalaCompilerInterface import ScalaCompiler, ScalaCompilerInstance
 
 
 class TestGeneratorAssign(Block):
@@ -202,6 +202,8 @@ class GeneratorFailure(GeneratorBlock):
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    # TODO some way to check the messages are plumbed through?
+    # if we don't suppress the output, the error from the generator propagates to the test console
+    compiler = ScalaCompilerInstance(suppress_stderr=True)
     with self.assertRaises(CompilerCheckError) as context:
-      ScalaCompiler.compile(TestGeneratorFailure)
+      compiler.compile(TestGeneratorFailure)
+    compiler.close()  # if we don't close it, we get a ResourceWarning

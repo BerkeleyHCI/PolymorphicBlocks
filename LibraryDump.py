@@ -2,7 +2,7 @@
 from typing import cast
 
 import edgir
-from edg_core.HdlInterfaceServer import LibraryElementResolver
+from HdlInterfaceService import LibraryElementResolver
 import edg_core
 import edg
 from edg_core.Builder import builder
@@ -20,11 +20,11 @@ if __name__ == '__main__':
     obj = cls()
     if isinstance(obj, edg_core.Block):
       print(f"Elaborating block {name}")
-      block_proto = builder.elaborate_toplevel(obj, f"in elaborating library block {cls}")
+      block_proto = builder.elaborate_toplevel(obj)
       pb.root.members[name].hierarchy_block.CopyFrom(block_proto)
     elif isinstance(obj, edg_core.Link):
       print(f"Elaborating link {name}")
-      link_proto = builder.elaborate_toplevel(obj, f"in elaborating library link {cls}")
+      link_proto = builder.elaborate_toplevel(obj)
       assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
       pb.root.members[name].link.CopyFrom(link_proto)
     elif isinstance(obj, edg_core.Bundle):  # TODO: note Bundle extends Port, so this must come first
