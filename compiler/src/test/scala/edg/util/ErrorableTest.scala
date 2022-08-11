@@ -15,11 +15,9 @@ class ErrorableTest extends AnyFlatSpec with Matchers {
   }
 
   it should "report null as failure by default" in {
+    // without .asInstanceOf[BigInt], this dispatches into the Option case and requires() out
     val err = Errorable(null.asInstanceOf[BigInt], "failure1")
     err should equal(Errorable.Error("failure1"))
-
-    val errUnwrapped = Errorable(null, "failure1")
-    errUnwrapped should equal(Errorable.Error("failure1"))
   }
 
   it should "unpack Option by default" in {

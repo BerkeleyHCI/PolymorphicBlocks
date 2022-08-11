@@ -46,8 +46,9 @@ class ScalaCompilerInstance:
   PRECOMPIED_RELPATH = "compiler/edg-compiler-precompiled.jar"
   DEV_RELPATH = "compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
 
-  def __init__(self):
+  def __init__(self, *, suppress_stderr: bool = False):
     self.process: Optional[Any] = None
+    self.suppress_stderr = suppress_stderr
     self.request_serializer: Optional[BufferSerializer[edgrpc.CompilerRequest]] = None
     self.response_deserializer: Optional[BufferDeserializer[edgrpc.CompilerResult]] = None
 
@@ -64,7 +65,9 @@ class ScalaCompilerInstance:
       self.process = subprocess.Popen(
         ['java', '-jar', jar_path],
         stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE)
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE if self.suppress_stderr else None
+      )
 
       assert self.process.stdin is not None
       self.request_serializer = BufferSerializer[edgrpc.CompilerRequest](self.process.stdin)
@@ -102,7 +105,11 @@ class ScalaCompilerInstance:
     return CompiledDesign.from_compiler_result(result)
 
   def close(self):
-    pass
+    self.process.stdin.close()
+    self.process.stdout.close()
+    if self.suppress_stderr:
+      self.process.stderr.close()
+    self.process.wait()
 
 
 ScalaCompiler = ScalaCompilerInstance()
