@@ -13,6 +13,7 @@ from .MultipackBlock import PackedBlockArray, MultipackBlock
 from .PortBlocks import PortBridge, PortAdapter
 from .Array import Vector
 from .PortTag import PortTag, Input, Output, InOut
+from .Blocks import DescriptionString
 
 from .Range import Range
 

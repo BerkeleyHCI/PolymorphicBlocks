@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, List
 import math
 
-from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
@@ -19,9 +18,16 @@ class UnpolarizedCapacitor(PassiveComponent):
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
-    self.description = DescriptionString(
-      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"))
 
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"), "\n",
+      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
+    )
 
 @abstract_block
 class Capacitor(UnpolarizedCapacitor):
@@ -61,13 +67,6 @@ class TableCapacitor(Capacitor):
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
-
-  @init_in_parent
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-
-    self.actual_capacitance = self.Parameter(RangeExpr())
-    self.actual_voltage_rating = self.Parameter(RangeExpr())
 
 
 @abstract_block
