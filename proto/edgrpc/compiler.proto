@@ -13,7 +13,6 @@ import "edgrpc/hdl.proto";
 
 
 message CompilerRequest {
-  repeated string modules = 1;
   edgir.schema.Design design = 2;
   edgrpc.hdl.Refinements refinements = 3;
 }

@@ -72,7 +72,7 @@ message GeneratorResponse {
 // Runs a backend - something that generates fabrication artifacts from a compiled design tree
 // eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
 message BackendRequest {
-  string backend_class_name = 1;  // class name of the backend to run
+  edgir.ref.LibraryPath backend = 1;
   edgir.schema.Design design = 2;
 
   message Value {  // TODO dedup w/ same def in compiler.CompilerResult

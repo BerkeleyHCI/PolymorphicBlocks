@@ -64,14 +64,15 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
     raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
 
-QnameClassType = TypeVar('QnameClassType')
-def class_from_qname(qname: str, expected_superclass: Type[QnameClassType]) -> Type[QnameClassType]:
-  qname_split = qname.split('.')
-  qname_module = importlib.import_module('.'.join(qname_split[:-1]))
-  assert inspect.ismodule(qname_module)
-  qname_class = getattr(qname_module, qname_split[-1])
-  assert issubclass(qname_class, expected_superclass)
-  return qname_class
+LibraryClassType = TypeVar('LibraryClassType')
+def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[LibraryClassType]) -> \
+    Type[LibraryClassType]:
+  elt_split = elt.target.name.split('.')
+  elt_module = importlib.import_module('.'.join(elt_split[:-1]))
+  assert inspect.ismodule(elt_module)
+  cls = getattr(elt_module, elt_split[-1])
+  assert issubclass(cls, expected_superclass)
+  return cls
 
 
 # In some cases stdout seems to buffer excessively, in which case starting python with -u seems to work
@@ -94,16 +95,16 @@ if __name__ == '__main__':
                    for indexed in library.index_module(module)]
         response.index_module.indexed.extend(indexed)
       elif request.HasField('get_library_element'):
-        cls = class_from_qname(request.get_library_element.element.target.name,
-                               LibraryElement)  # type: ignore
+        cls = class_from_library(request.get_library_element.element,
+                                LibraryElement)  # type: ignore
         obj, obj_proto = elaborate_class(cls)
 
         response.get_library_element.element.CopyFrom(obj_proto)
         if isinstance(obj, DesignTop):
           obj.refinements().populate_proto(response.get_library_element.refinements)
       elif request.HasField('elaborate_generator'):
-        generator_type = class_from_qname(request.elaborate_generator.element.target.name,
-                                          GeneratorBlock)
+        generator_type = class_from_library(request.elaborate_generator.element,
+                                            GeneratorBlock)
         generator_obj = generator_type()
 
         response.elaborate_generator.generated.CopyFrom(builder.elaborate_toplevel(
@@ -111,8 +112,8 @@ if __name__ == '__main__':
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
       elif request.HasField('run_backend'):
-        backend_class = class_from_qname(request.run_backend.backend_class_name,
-                                         BaseBackend)  # type: ignore
+        backend_class = class_from_library(request.run_backend.backend,
+                                           BaseBackend)  # type: ignore
         backend = backend_class()
 
         results = backend.run(CompiledDesign.from_backend_request(request.run_backend))
