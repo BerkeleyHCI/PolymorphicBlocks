@@ -2,28 +2,23 @@ import importlib
 import inspect
 import sys
 from types import ModuleType
-from typing import Set, Dict, Type, Optional, Tuple, TypeVar, cast
+from typing import Set, Type, Tuple, TypeVar, cast
 
 import edgir
 import edgrpc
 from edg_core import *
 
 
-# Index of module(s) recursively, and providing protobuf LibraryPath to class resolution.
-class LibraryElementResolver:
+class LibraryElementIndexer:
+  """Indexer for libraries, recursively searches modules and their LibraryElements."""
   def __init__(self):
     self.seen_modules: Set[ModuleType] = set()
-    self.lib_class_map: Dict[str, Type[LibraryElement]] = {}
+    self.seen_elements: Set[Type[LibraryElement]] = set()
 
-    # Every time we reload, we need to get a fresh handle to the relevant base classes
-    self.LibraryElementType = LibraryElement
-    self.PortType = Port
-
-  def load_module(self, module: ModuleType) -> None:
-    """Loads a module and indexes the contained library elements so they can be accesed by LibraryPath.
-    Avoids re-loading previously loaded modules with cacheing.
-    """
+  def index_module(self, module: ModuleType) -> Set[Type[LibraryElement]]:
+    assert not self.seen_elements and not self.seen_modules
     self._search_module(module)
+    return self.seen_elements
 
   def _search_module(self, module: ModuleType) -> None:
     # avoid repeated work and re-indexing modules
@@ -37,27 +32,18 @@ class LibraryElementResolver:
       if inspect.ismodule(member):  # recurse into visible modules
         self._search_module(member)
 
-      if inspect.isclass(member) and issubclass(member, self.LibraryElementType) \
+      if inspect.isclass(member) and issubclass(member, LibraryElement) \
+          and member not in self.seen_elements \
           and (member, 'non_library') not in member._elt_properties:  # process elements
-        name = member._static_def_name()
-        if name in self.lib_class_map:
-          assert self.lib_class_map[name] == member, f"different redefinition of {name} in {module.__name__}"
-          continue  # don't need to re-index
+        self.seen_elements.add(member)
 
         for mro in member.mro():
           self._search_module(importlib.import_module(mro.__module__))
 
-        if issubclass(member, self.PortType):  # TODO for some reason, Links not in __init__ are sometimes not found
+        if issubclass(member, Port):  # TODO for some reason, Links not in __init__ are sometimes not found
           obj = member()  # TODO can these be class definitions?
           if hasattr(obj, 'link_type'):
             self._search_module(importlib.import_module(obj.link_type.__module__))
-
-        self.lib_class_map[name] = member
-
-  def class_from_path(self, path: edgir.LibraryPath) -> Optional[Type[LibraryElement]]:
-    """Assuming modules have been loaded, retrieves a LibraryElement class by LibraryPath."""
-    dict_key = path.target.name
-    return self.lib_class_map.get(dict_key, None)
 
 
 LibraryElementType = TypeVar('LibraryElementType', bound=LibraryElement)
@@ -78,10 +64,19 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
     raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
 
+QnameClassType = TypeVar('QnameClassType')
+def class_from_qname(qname: str, expected_superclass: Type[QnameClassType]) -> Type[QnameClassType]:
+  qname_split = qname.split('.')
+  qname_module = importlib.import_module('.'.join(qname_split[:-1]))
+  assert inspect.ismodule(qname_module)
+  qname_class = getattr(qname_module, qname_split[-1])
+  assert issubclass(qname_class, expected_superclass)
+  return qname_class
+
+
 # In some cases stdout seems to buffer excessively, in which case starting python with -u seems to work
 # https://stackoverflow.com/a/35467658/5875811
 if __name__ == '__main__':
-  library = LibraryElementResolver()  # dummy empty resolver
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 
@@ -94,22 +89,21 @@ if __name__ == '__main__':
     try:
       if request.HasField('index_module'):
         module = importlib.import_module(request.index_module.name)
-        library.load_module(module)
-        indexed = [edgir.LibraryPath(target=edgir.LocalStep(name=indexed))
-                   for indexed in library.lib_class_map.keys()]
+        library = LibraryElementIndexer()
+        indexed = [edgir.LibraryPath(target=edgir.LocalStep(name=indexed._static_def_name()))
+                   for indexed in library.index_module(module)]
         response.index_module.indexed.extend(indexed)
       elif request.HasField('get_library_element'):
-        cls = library.class_from_path(request.get_library_element.element)
-        assert cls is not None, f"no class {request.get_library_element.element}"
+        cls = class_from_qname(request.get_library_element.element.target.name,
+                               LibraryElement)  # type: ignore
         obj, obj_proto = elaborate_class(cls)
 
         response.get_library_element.element.CopyFrom(obj_proto)
         if isinstance(obj, DesignTop):
           obj.refinements().populate_proto(response.get_library_element.refinements)
       elif request.HasField('elaborate_generator'):
-        generator_type = library.class_from_path(request.elaborate_generator.element)
-        assert generator_type is not None, f"no generator {request.elaborate_generator.element}"
-        assert issubclass(generator_type, GeneratorBlock)
+        generator_type = class_from_qname(request.elaborate_generator.element.target.name,
+                                          GeneratorBlock)
         generator_obj = generator_type()
 
         response.elaborate_generator.generated.CopyFrom(builder.elaborate_toplevel(
@@ -117,11 +111,8 @@ if __name__ == '__main__':
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
       elif request.HasField('run_backend'):
-        backend_split = request.run_backend.backend_class_name.split('.')
-        backend_module = importlib.import_module('.'.join(backend_split[:-1]))
-        assert inspect.ismodule(backend_module)
-        backend_class = getattr(backend_module, backend_split[-1])
-        assert issubclass(backend_class, BaseBackend)
+        backend_class = class_from_qname(request.run_backend.backend_class_name,
+                                         BaseBackend)  # type: ignore
         backend = backend_class()
 
         results = backend.run(CompiledDesign.from_backend_request(request.run_backend))
