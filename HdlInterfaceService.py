@@ -96,7 +96,7 @@ if __name__ == '__main__':
         response.index_module.indexed.extend(indexed)
       elif request.HasField('get_library_element'):
         cls = class_from_library(request.get_library_element.element,
-                                LibraryElement)  # type: ignore
+                                 LibraryElement)  # type: ignore
         obj, obj_proto = elaborate_class(cls)
 
         response.get_library_element.element.CopyFrom(obj_proto)
