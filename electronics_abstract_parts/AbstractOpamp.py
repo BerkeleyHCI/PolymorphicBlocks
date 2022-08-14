@@ -1,6 +1,7 @@
 from math import ceil, log10
 from typing import List, Tuple
 
+from electronics_model import *
 from electronics_abstract_parts import Resistor, Capacitor
 from .Categories import *
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
@@ -89,7 +90,16 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.output = self.Port(AnalogSource.empty(), [Output])
     self.reference = self.Port(AnalogSink.empty())
 
+    self.amplification = self.ArgParameter(amplification)
+
     self.generator(self.generate_resistors, amplification, impedance, series, tolerance)
+
+    self.actual_amplification = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>amplification:</b> ", DescriptionString.FormatUnits(self.actual_amplification, ""),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
+    )
 
   def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
@@ -113,6 +123,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.connect(self.reference, self.r2.b.as_analog_sink(
       impedance=self.r1.actual_resistance + self.r2.actual_resistance
     ))
+
+    self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))
 
 
 class DifferentialValues(ESeriesRatioValue):
