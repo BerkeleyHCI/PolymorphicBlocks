@@ -91,6 +91,9 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
+    # TODO there should be a way to add the part number here without duplicating
+    # the description string in the main superclass
+
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
                   part_spec: str, footprint_spec: str) -> None:
     # Pre-filter out by the static parameters
@@ -220,9 +223,7 @@ class DecouplingCapacitor(DiscreteApplication):
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
-    self.description = DescriptionString(
-      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.cap.capacitance, "F"))
-
+    # TODO there should be a way to forward the description string of the inner element
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
       'DecouplingCapacitor':

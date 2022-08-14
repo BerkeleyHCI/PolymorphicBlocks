@@ -21,6 +21,12 @@ class DcDcConverter(PowerConditioner):
     self.require(self.pwr_out.voltage_out.within(self.output_voltage),
                  "Output voltage must be within spec")
 
+    self.description = DescriptionString(
+      "<b>output voltage:</b> ", DescriptionString.FormatUnits(self.pwr_out.voltage_out, "V"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.output_voltage, "V"), "\n",
+      "<b>input voltage:</b> ", DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V")
+    )
+
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
