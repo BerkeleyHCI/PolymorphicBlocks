@@ -191,6 +191,13 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
 
     self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance)
 
+    self.ratio = self.ArgParameter(ratio)
+    self.actual_ratio = self.Parameter(RangeExpr())
+    self.description = DescriptionString(
+      "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio, "")
+    )
+
   def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
     r1_resistance, rf_resistance = calculator.find(DifferentialValues(ratio, input_impedance))
@@ -207,6 +214,7 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     self.rg = self.Block(Resistor(
       resistance=Range.from_tolerance(rf_resistance, tolerance)
     ))
+    self.assign(self.actual_ratio, self.rf.actual_resistance / self.r1.actual_resistance)
 
     self.connect(self.input_negative, self.r1.a.as_analog_sink(
       # TODO very simplified and probably very wrong
@@ -297,6 +305,13 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
 
     self.generator(self.generate_components, factor, capacitance, series, tolerance)
 
+    self.factor = self.ArgParameter(factor)
+    self.actual_factor = self.Parameter(RangeExpr())
+    self.description = DescriptionString(
+      "<b>factor:</b> ", DescriptionString.FormatUnits(self.actual_factor, ""),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor, "")
+    )
+
   def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
     sel_resistance, sel_capacitance = calculator.find(IntegratorValues(factor, capacitance))
@@ -308,6 +323,8 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
       capacitance=Range.from_tolerance(sel_capacitance, tolerance),
       voltage=self.output.link().voltage
     ))
+
+    self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)
 
     self.connect(self.input, self.r.a.as_analog_sink(
       # TODO very simplified and probably very wrong
