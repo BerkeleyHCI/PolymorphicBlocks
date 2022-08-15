@@ -44,6 +44,18 @@ class RobotDriver(JlcBoardTop):
 
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
 
+    self.motor_driver = self.Block(L293dd())
+    self.connect(self.vusb, self.motor_driver.vss)
+    self.connect(self.vusb, self.motor_driver.vs)
+    self.connect(self.mcu.gnd, self.motor_driver.gnd)
+
+    self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
+    self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
+    self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
+    self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
+    self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
+    self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+
     # Misc board
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
