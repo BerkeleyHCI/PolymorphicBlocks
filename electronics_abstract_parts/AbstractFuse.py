@@ -27,7 +27,7 @@ class Fuse(DiscreteComponent, DiscreteApplication):
 
     self.description = DescriptionString(
       "<b>trip current:</b> ", DescriptionString.FormatUnits(self.actual_trip_current, "A"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.trip_current, "A"), "\n",
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.trip_current, "A")
     )
 
 
