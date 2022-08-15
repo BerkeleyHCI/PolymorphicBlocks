@@ -25,6 +25,11 @@ class Fuse(DiscreteComponent, DiscreteApplication):
     self.require(self.actual_trip_current.within(self.trip_current),
                  "fuse rating not within specified rating")
 
+    self.description = DescriptionString(
+      "<b>trip current:</b> ", DescriptionString.FormatUnits(self.actual_trip_current, "A"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.trip_current, "A")
+    )
+
 
 @abstract_block
 class PptcFuse(Fuse):

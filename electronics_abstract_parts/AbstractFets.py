@@ -49,10 +49,25 @@ class Fet(DiscreteSemiconductor):
 
     self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
     self.actual_drain_current_rating = self.Parameter(RangeExpr())
+    self.actual_gate_voltage_rating = self.Parameter(RangeExpr())
     self.actual_gate_drive = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>Vds:</b> ", DescriptionString.FormatUnits(self.actual_drain_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.drain_voltage, "V"), "\n",
+      "<b>Ids:</b> ", DescriptionString.FormatUnits(self.actual_drain_current_rating, "A"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.drain_current, "A"), "\n",
+      "<b>Vgs,max:</b> ", DescriptionString.FormatUnits(self.actual_gate_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.gate_voltage, "V"), "\n",
+      "<b>Vgs,th:</b> ", DescriptionString.FormatUnits(self.actual_gate_drive, "V"), "\n",
+      "<b>Rds,on:</b> ", DescriptionString.FormatUnits(self.actual_rds_on, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.rds_on, "Ω"), "\n"
+      "<b>Pmax:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
+    )
 
 
 @abstract_block
@@ -124,6 +139,7 @@ class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorB
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
+    self.assign(self.actual_gate_voltage_rating, part[self.VGS_RATING])
     self.assign(self.actual_gate_drive, part[self.VGS_DRIVE])
     self.assign(self.actual_rds_on, part[self.RDS_ON])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
@@ -228,6 +244,7 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
+    self.assign(self.actual_gate_voltage_rating, part[self.VGS_RATING])
     self.assign(self.actual_gate_drive, part[self.VGS_DRIVE])
     self.assign(self.actual_rds_on, part[self.RDS_ON])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
