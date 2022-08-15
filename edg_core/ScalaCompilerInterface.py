@@ -82,7 +82,6 @@ class ScalaCompilerInstance:
 
     block_obj = block()
     request = edgrpc.CompilerRequest(
-      modules=[block.__module__],
       design=edgir.Design(
         contents=builder.elaborate_toplevel(block_obj))
     )
