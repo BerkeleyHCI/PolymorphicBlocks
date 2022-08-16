@@ -82,7 +82,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
 
 
 class LedMatrixTest(JlcBoardTop):
-  """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LEX matrix generator.
+  """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LED matrix generator.
   """
   def contents(self) -> None:
     super().contents()
