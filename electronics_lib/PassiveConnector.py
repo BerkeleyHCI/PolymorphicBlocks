@@ -74,3 +74,19 @@ class MolexSl(PassiveConnector, FootprintBlock):
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_Molex:Molex_SL_171971-00{length:02d}_1x{length:02d}_P2.54mm_Vertical',
             "Molex", f"171971-00{length:02d}_1x{length:02d}")
+
+
+@abstract_block
+class Fpc050(PassiveConnector):
+  """Abstract base class for 0.50mm pitch FPC connectors."""
+
+
+@abstract_block
+class HiroseFh12sh(Fpc050, FootprintBlock):
+  """Hirose FH12 FFC/FPC connector, 0.50mm pitch horizontal bottom contacts."""
+  allowed_pins = (2, 25)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_Molex:Molex_SL_171971-00{length:02d}_1x{length:02d}_P2.54mm_Vertical',
+            "Molex", f"171971-00{length:02d}_1x{length:02d}")
+
+    Hirose_FH12-6S-0.5SH_1x06-1MP_P0.50mm_Horizontal
