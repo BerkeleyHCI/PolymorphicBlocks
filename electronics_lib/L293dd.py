@@ -40,10 +40,10 @@ class L293dd_Device(DiscreteChip, FootprintBlock):
                     self.out4.is_connected().then_else(self.out4.link().current_drawn, 0*mAmp(tol=0))
                     )
 
-        self.require(self.out1.is_connected().implies(self.in1.is_connected() and self.en1.is_connected()))
-        self.require(self.out2.is_connected().implies(self.in2.is_connected() and self.en1.is_connected()))
-        self.require(self.out3.is_connected().implies(self.in3.is_connected() and self.en2.is_connected()))
-        self.require(self.out4.is_connected().implies(self.in4.is_connected() and self.en2.is_connected()))
+        self.require(self.out1.is_connected().implies(self.in1.is_connected() & self.en1.is_connected()))
+        self.require(self.out2.is_connected().implies(self.in2.is_connected() & self.en1.is_connected()))
+        self.require(self.out3.is_connected().implies(self.in3.is_connected() & self.en2.is_connected()))
+        self.require(self.out4.is_connected().implies(self.in4.is_connected() & self.en2.is_connected()))
 
     def contents(self) -> None:
         self.footprint(
