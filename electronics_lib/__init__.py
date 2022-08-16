@@ -28,6 +28,7 @@ from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 
 from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK, MolexSl
+from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 
 from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal

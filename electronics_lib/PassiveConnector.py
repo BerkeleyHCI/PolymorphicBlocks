@@ -80,8 +80,18 @@ class Fpc050(PassiveConnector):
 
 
 @abstract_block
-class HiroseFh12(Fpc050, FootprintBlock):
-  """Hirose FH12 FFC/FPC connector, 0.50mm pitch horizontal bottom contacts."""
+class Fpc050Top(Fpc050):
+  """Abstract base class for top-contact FPC connectors."""
+
+
+@abstract_block
+class Fpc050Bottom(Fpc050):
+  """Abstract base class for top-contact FPC connectors."""
+
+
+@abstract_block
+class HiroseFh12sh(Fpc050, FootprintBlock):
+  """Hirose FH12 SH FFC/FPC connector, 0.50mm pitch horizontal bottom contacts."""
   # positions the FH12 exists in, per https://www.hirose.com/product/series/FH12
   _fh12_positions = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 26, 28, 29,
                      30, 32, 33, 34, 35, 36, 40, 42, 45, 49, 50, 53, 60}
@@ -92,3 +102,18 @@ class HiroseFh12(Fpc050, FootprintBlock):
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
             "Hirose", f"FH12-{length}S-0.5SH")
+
+
+@abstract_block
+class Te1734839(Fpc050, FootprintBlock):
+  """TE x-1734839 FFC/FPC connector, 0.50mm pitch horizontal bottom contacts."""
+  # positions the FH12 exists in, per https://www.hirose.com/product/series/FH12
+  _fh12_positions = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 26, 28, 29,
+                     30, 32, 33, 34, 35, 36, 40, 42, 45, 49, 50, 53, 60}
+  # positions for which there are KiCad footprints
+  _kicad_positions = {6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 26, 28,
+                      30, 32, 33, 34, 35, 36, 40, 45, 50, 53}
+  allowed_positions = _fh12_positions.intersection(_kicad_positions)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_FFC-FPC:TE_{length // 10}-1734839-{length % 10}_1x{length:02d}-1MP_P0.5mm_Horizontal',
+            "TE Connectivity", f"{length // 10}-1734839-{length % 10}")
