@@ -2,7 +2,7 @@
 from typing import cast
 
 import edgir
-from HdlInterfaceService import LibraryElementResolver
+from HdlInterfaceService import LibraryElementIndexer
 import edg_core
 import edg
 from edg_core.Builder import builder
@@ -11,12 +11,13 @@ from edg_core.Builder import builder
 OUTPUT_FILE = "library.edg"
 
 if __name__ == '__main__':
-  library = LibraryElementResolver()
-  library.load_module(edg)
+  library = LibraryElementIndexer()
+  indexed = library.index_module(edg)
   pb = edgir.Library()
 
   count = 0
-  for (name, cls) in library.lib_class_map.items():
+  for cls in indexed:
+    name = cls._static_def_name()
     obj = cls()
     if isinstance(obj, edg_core.Block):
       print(f"Elaborating block {name}")

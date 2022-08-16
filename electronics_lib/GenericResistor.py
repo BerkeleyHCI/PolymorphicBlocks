@@ -23,11 +23,6 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
 
-    self.description = DescriptionString(
-      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"),
-      "\n<b>power rating:</b> ", DescriptionString.FormatUnits(self.power, "W"))
-
-
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
                       footprint_spec: str) -> None:
     if series == 0:  # exact, not matched to E-series

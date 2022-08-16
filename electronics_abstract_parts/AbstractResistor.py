@@ -1,6 +1,5 @@
 from typing import Optional, cast
 
-from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
@@ -23,10 +22,11 @@ class Resistor(PassiveComponent):
     self.actual_power_rating = self.Parameter(RangeExpr())
 
     self.description = DescriptionString(
-      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"),
-      " <b>of spec</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
-      "\n<b>power:</b> ", DescriptionString.FormatUnits(self.power, "W"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"))
+      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"), "\n",
+      "<b>power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
+    )
 
 
 @abstract_block

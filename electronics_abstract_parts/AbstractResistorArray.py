@@ -1,4 +1,4 @@
-from typing import Optional, cast, List
+from typing import List
 
 from electronics_model import *
 from .AbstractResistor import Resistor
@@ -28,10 +28,20 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     self.resistances = self.PackedParameter(self.elements.params_array(lambda x: x.resistance))
     self.powers = self.PackedParameter(self.elements.params_array(lambda x: x.power))
 
+    self.actual_count = self.Parameter(IntExpr())
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())  # per element
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
+
+    self.description = DescriptionString(  # TODO better support for array typed
+      "<b>count:</b> ", DescriptionString.FormatUnits(self.actual_count, ""),  # TODO unitless
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.count, ""), "\n",
+      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
+      " <b>of specs</b> ", DescriptionString.FormatUnits(self.resistances, "Ω"), "\n",
+      "<b>element power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.powers, "W")
+    )
 
 
 @abstract_block
@@ -110,6 +120,7 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
       self.a.append_elt(Passive(), str(i))
       self.b.append_elt(Passive(), str(i))
 
+    self.assign(self.actual_count, part[self.COUNT])
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
     self.assign(self.actual_resistance, part[self.RESISTANCE])

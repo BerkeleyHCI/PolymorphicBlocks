@@ -17,23 +17,19 @@ DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class CompilerRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    MODULES_FIELD_NUMBER: builtins.int
     DESIGN_FIELD_NUMBER: builtins.int
     REFINEMENTS_FIELD_NUMBER: builtins.int
-    @property
-    def modules(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     @property
     def design(self) -> edgir.schema_pb2.Design: ...
     @property
     def refinements(self) -> edgrpc.hdl_pb2.Refinements: ...
     def __init__(self,
         *,
-        modules: typing.Optional[typing.Iterable[typing.Text]] = ...,
         design: typing.Optional[edgir.schema_pb2.Design] = ...,
         refinements: typing.Optional[edgrpc.hdl_pb2.Refinements] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["design",b"design","refinements",b"refinements"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["design",b"design","modules",b"modules","refinements",b"refinements"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["design",b"design","refinements",b"refinements"]) -> None: ...
 global___CompilerRequest = CompilerRequest
 
 class CompilerResult(google.protobuf.message.Message):
