@@ -40,7 +40,7 @@ class UsbAReceptacle(UsbConnector, FootprintBlock):
 
 
 class UsbCReceptacle_Device(FootprintBlock, JlcPart):
-  """"Raw" USB Type-C Receptacle
+  """Raw USB Type-C Receptacle
   Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
   up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
   @init_in_parent
@@ -109,6 +109,8 @@ class UsbCReceptacle(UsbConnector, GeneratorBlock):
   def generate(self, pwr_connected: bool, cc_connected: bool) -> None:
     if cc_connected:  # if CC externally connected, connect directly to USB port
       self.connect(self.cc, self.conn.cc)
+      self.require(self.cc.is_connected().implies(self.pwr.is_connected()),
+                   "USB power not used when CC connected")
     elif pwr_connected:  # otherwise generate the pulldown resistors for USB2 mode
       (self.cc_pull, ), _ = self.chain(self.conn.cc, self.Block(UsbCcPulldownResistor()))
       self.connect(self.cc_pull.gnd, self.gnd)
