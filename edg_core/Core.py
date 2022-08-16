@@ -161,7 +161,6 @@ class Refable():
 
   def __bool__(self) -> bool:
     raise ValueError("bool-ing a Refable is almost certainly a mistake. "
-                     "Note: remember to wrap parameters in self.get(...) if accessing values in generators. "
                      "Note: 'and' and 'or' do not work on BoolExpr, use '&' or '|' instead.")
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict['Refable', edgir.LocalPath]:

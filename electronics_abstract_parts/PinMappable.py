@@ -1,6 +1,6 @@
 import itertools
 from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable, Dict
+from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable, Dict, Set
 
 from electronics_model import *
 
@@ -170,7 +170,7 @@ class UserAssignmentDict:
     """Given a list of parsed assignment specs [([named path], resource/pin)], extracts the first component of the
     path as the dict key, and remaps each entry to only contain the path postfix.
     If the path is empty, it gets mapped to the empty-string key, preserving the empty path."""
-    root_assigns = set[str]()
+    root_assigns: Set[str] = set()
     dict_out: Dict[str, List[Tuple[List[str], str]]] = {}
     for (named_path, pin) in assignment_spec_list:
       if not named_path:
@@ -188,7 +188,7 @@ class UserAssignmentDict:
   def __init__(self, elts: Dict[str, List[Tuple[List[str], str]]], name: List[str]):
     self.elts = elts
     self.name = name
-    self.marked = set[str]()
+    self.marked: Set[str] = set()
 
   def contains_elt(self, elt: str) -> bool:
     """Returns whether an element is still in the dict, without marking the element as read."""
