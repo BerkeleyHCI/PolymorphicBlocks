@@ -40,8 +40,8 @@ class DigitalLink(CircuitLink):
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
       "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
-      "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "Ω"),
-      ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "Ω"))
+      "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "V"),
+      ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "V"))
 
   def contents(self):
     super().contents()
