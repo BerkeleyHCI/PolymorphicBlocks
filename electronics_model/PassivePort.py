@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeVar, Type, Dict
+
 from edg_core import *
 
 from .Units import Volt, Amp
@@ -138,6 +140,34 @@ class Passive(CircuitPort[PassiveLink]):
                           PassiveAdapterDigitalSource, PassiveAdapterDigitalSink, PassiveAdapterDigitalBidir,
                           PassiveAdapterDigitalSingleSource,
                           PassiveAdapterAnalogSource, PassiveAdapterAnalogSink]
+
+  AdaptTargetType = TypeVar('AdaptTargetType', bound=CircuitPort)
+  def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
+    # this is an experimental style that takes a port that has initializers but is not bound
+    # and automatically creates an adapter from it, by matching the port parameter fields
+    # with the adapter constructor argument fields by name
+    import inspect
+    adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
+      DigitalSink: PassiveAdapterDigitalSink,
+      DigitalSource: PassiveAdapterDigitalSource,
+      DigitalBidir: PassiveAdapterDigitalBidir,
+    }
+    assert isinstance(that, Port), 'adapter target must be port'
+    assert not that._is_bound(), 'adapter target must be model only'
+    assert that.__class__ in adapter_type_map, f'no adapter to {that.__class__}'
+    adapter_cls = adapter_type_map[that.__class__]
+
+    # map initializers from that to constructor args
+    adapter_init_params = inspect.signature(adapter_cls.__init__).parameters
+    adapter_init_kwargs = {}  # make everything kwargs for simplicity
+    for arg_name, arg_param in list(adapter_init_params.items())[1:]:  # discard 0=self
+      assert arg_param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD),\
+        "*args, **kwargs not supported"
+      that_initializer = that._parameters[arg_name].initializer
+      assert that_initializer is not None
+      adapter_init_kwargs[arg_name] = that_initializer
+
+    return self._convert(adapter_cls(**adapter_init_kwargs))
 
   def as_voltage_source(self, **kwargs) -> VoltageSource:
     return self._convert(PassiveAdapterVoltageSource(**kwargs))

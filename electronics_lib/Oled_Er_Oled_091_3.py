@@ -1,39 +1,47 @@
-from typing import *
 from electronics_abstract_parts import *
 from electronics_lib import Fpc050
 
 
 class Er_Oled_091_3_Device(DiscreteChip):
-    """15-pin FPC connector for the ER-OLED-0.91-3* device
+    """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
+    internal DC/DC
     https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""
     def __init__(self) -> None:
         super().__init__()
         # TODO IO models and whatnot
         self.conn = self.Block(Fpc050(length=15))
 
-        self.vcc = self.Export(self.conn.pins.allocate('15').as_voltage_source(
+        self.vcc = self.Export(self.conn.pins.allocate('15').adapt_to(VoltageSource(
+            voltage_out=(6.4, 9),
+            current_limits=0*mAmp(tol=0)  # external draw not allowed, probably does 10-16mA
+        )))
+        self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
+            voltage_limits=(1.65, 4)*Volt,  # use the absolute maximum upper limit to allow tolerance on 3.3v
+            current_draw=(1, 300)*uAmp
+        )))
+        self.vbat = self.Export(self.conn.pins.allocate('5').adapt_to(VoltageSink(
+            voltage_limits=(3.3, 4.2)*Volt,  # using SSD1306 datasheet; OLED datasheet is more restrictive
+            current_draw=(23, 29)*mAmp
+        )))
+        self.vss = self.Export(self.conn.pins.allocate('6').adapt_to(Ground()), [Common])
 
-        ))
-        self.vdd = self.Export(self.conn.pins.allocate('7').as_voltage_sink(
+        din_model = DigitalSink.from_supply(
+            self.vss, self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
+            input_threshold_factor=(0.2, 0.8)
+        )
 
-        ))
-        self.vbat = self.Export(self.conn.pins.allocate('5').as_voltage_sink(
+        self.spi = self.Port(SpiSlave.empty())
+        self.connect(self.spi.sck, self.conn.pins.allocate('11').adapt_to(din_model))
+        self.connect(self.spi.mosi, self.conn.pins.allocate('12').adapt_to(din_model))
+        self.spi.miso.not_connected()
 
-        ))
-        self.vss = self.Export(self.conn.pins.allocate('6').as_ground(), [Common])
+        self.dc = self.Export(self.conn.pins.allocate('10').adapt_to(din_model))
+        self.res = self.Export(self.conn.pins.allocate('9').adapt_to(din_model))
+        self.cs = self.Export(self.conn.pins.allocate('8').adapt_to(din_model))
 
         self.vcomh = self.Export(self.conn.pins.allocate('14'))
         self.iref = self.Export(self.conn.pins.allocate('13'))
-
-        self.spi = self.Port(SpiSlave.empty())
-        self.connect(self.spi.sck, self.conn.pins.allocate('11').as_digital_sink())
-        self.connect(self.spi.mosi, self.conn.pins.allocate('12').as_digital_sink())
-        self.spi.miso.not_connected()
-
-        self.dc = self.Export(self.conn.pins.allocate('10').as_digital_sink())
-        self.res = self.Export(self.conn.pins.allocate('9').as_digital_sink())
-        self.cs = self.Export(self.conn.pins.allocate('8').as_digital_sink())
-
         self.c2p = self.Export(self.conn.pins.allocate('1'))
         self.c2n = self.Export(self.conn.pins.allocate('2'))
         self.c1p = self.Export(self.conn.pins.allocate('3'))
