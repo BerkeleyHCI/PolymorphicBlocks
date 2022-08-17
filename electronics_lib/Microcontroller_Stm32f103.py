@@ -267,8 +267,8 @@ class UsbDpPullUp(Block):
     self.usb = self.Port(UsbPassivePort.empty(), [InOut])
 
     self.dp = self.Block(Resistor(resistance))
-    self.connect(self.dp.a.as_voltage_sink(), self.pwr)
-    self.connect(self.usb.dp, self.dp.b.as_digital_bidir())  # ideal
+    self.connect(self.dp.a.adapt_to(VoltageSink()), self.pwr)
+    self.connect(self.usb.dp, self.dp.b.adapt_to(DigitalBidir()))  # ideal
     self.usb.dm.init_from(DigitalBidir())  # ideal
 
 

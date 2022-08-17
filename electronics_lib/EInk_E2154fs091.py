@@ -114,11 +114,11 @@ class E2154fs091(EInk):
     self.boot_cap = self.Block(Capacitor(
       capacitance=(4.7, float('inf'))*uFarad, voltage=(0, 16)*Volt  # lower-bounded so it can be derated
     ))
-    self.connect(self.pwr, self.boost_ind.a.as_voltage_sink())
+    self.connect(self.pwr, self.boost_ind.a.adapt_to(VoltageSink()))
     self.connect(self.boost_ind.b, self.boost_sw.drain, self.boot_cap.pos)
     self.connect(self.boost_sw.gate, self.ic.gdr)
     self.connect(self.boost_sw.source, self.boost_res.a, self.ic.rese)
-    self.connect(self.boost_res.b.as_voltage_sink(), self.gnd)
+    self.connect(self.boost_res.b.adapt_to(VoltageSink()), self.gnd)
 
     self.vdd_cap0 = self.Block(DecouplingCapacitor(capacitance=0.11*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
     self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
@@ -146,14 +146,14 @@ class E2154fs091(EInk):
     self.connect(self.ic.vcom, self.vcom_cap.pos)
 
     self.connect(self.gnd,
-                 self.vslr_cap.neg.as_voltage_sink(),
-                 self.vdhr_cap.neg.as_voltage_sink(),
-                 self.vddd_cap.neg.as_voltage_sink(),
-                 self.vdh_cap.neg.as_voltage_sink(),
-                 self.vgh_cap.neg.as_voltage_sink(),
-                 self.vdl_cap.neg.as_voltage_sink(),
-                 self.vgl_cap.neg.as_voltage_sink(),
-                 self.vcom_cap.neg.as_voltage_sink())
+                 self.vslr_cap.neg.adapt_to(Ground()),
+                 self.vdhr_cap.neg.adapt_to(Ground()),
+                 self.vddd_cap.neg.adapt_to(Ground()),
+                 self.vdh_cap.neg.adapt_to(Ground()),
+                 self.vgh_cap.neg.adapt_to(Ground()),
+                 self.vdl_cap.neg.adapt_to(Ground()),
+                 self.vgl_cap.neg.adapt_to(Ground()),
+                 self.vcom_cap.neg.adapt_to(Ground()))
 
     diode_model = Diode(
       reverse_voltage=(0, 25)*Volt, current=(0, 2)*Amp, voltage_drop=(0, 0.4)*Volt,
@@ -168,4 +168,4 @@ class E2154fs091(EInk):
     self.connect(self.vgl_dio.cathode, self.boot_cap.neg)
     self.boot_dio = self.Block(diode_model)
     self.connect(self.boot_cap.neg, self.boot_dio.anode)
-    self.connect(self.boot_dio.cathode.as_voltage_sink(), self.gnd)
+    self.connect(self.boot_dio.cathode.adapt_to(Ground()), self.gnd)

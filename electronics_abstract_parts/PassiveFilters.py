@@ -46,9 +46,9 @@ class PullupDelayRc(DigitalFilter, Block):
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
                                    voltage=self.input.link().voltage))
 
-    self.connect(self.input, self.rc.input.as_voltage_sink())
-    self.io = self.Export(self.rc.output.as_digital_pull_high_from_supply(self.input), [Output])
-    self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])
+    self.connect(self.input, self.rc.input.adapt_to(VoltageSink()))
+    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.input)), [Output])
+    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
   def connected(self, io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
@@ -69,17 +69,17 @@ class DigitalLowPassRc(DigitalFilter, Block):
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
                                    voltage=self.input.link().voltage))
-    self.connect(self.input, self.rc.input.as_digital_sink(
+    self.connect(self.input, self.rc.input.adapt_to(DigitalSink(
       current_draw=RangeExpr()
-    ))
-    self.connect(self.output, self.rc.output.as_digital_source(
+    )))
+    self.connect(self.output, self.rc.output.adapt_to(DigitalSource(
       current_limits=RangeExpr.ALL,
       voltage_out=self.input.link().voltage,
       output_thresholds=self.input.link().output_thresholds
-    ))
+    )))
     self.assign(self.input.current_draw, self.output.link().current_drawn)
 
-    self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])
+    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
 
 class LowPassRcDac(AnalogFilter, Block):
@@ -97,13 +97,13 @@ class LowPassRcDac(AnalogFilter, Block):
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
                                    voltage=self.input.link().voltage))
-    self.connect(self.input, self.rc.input.as_digital_sink(
+    self.connect(self.input, self.rc.input.adapt_to(DigitalSink(
       current_draw=self.output.link().current_drawn
-    ))
-    self.connect(self.output, self.rc.output.as_analog_source(
+    )))
+    self.connect(self.output, self.rc.output.adapt_to(AnalogSource(
       current_limits=RangeExpr.ALL,
       voltage_out=self.input.link().voltage,
       impedance=impedance  # TODO use selected resistance from RC filter
-    ))
+    )))
 
-    self.gnd = self.Export(self.rc.gnd.as_ground(), [Common])
+    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])

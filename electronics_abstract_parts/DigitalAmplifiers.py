@@ -40,17 +40,17 @@ class HighSideSwitch(Block):
       frequency=self.frequency,
       drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
     ))
-    self.connect(self.pre.source.as_ground(), self.gnd)
-    self.connect(self.pre.gate.as_digital_sink(
+    self.connect(self.pre.source.adapt_to(Ground()), self.gnd)
+    self.connect(self.pre.gate.adapt_to(DigitalSink(
       current_draw=(0, 0) * Amp  # TODO model pullup resistor current
       # no voltage limits or threshold, those are constraints to pass into the FETs
-    ), self.control)
+    )), self.control)
 
     self.pull = self.Block(Resistor(
       resistance=pull_resistance,
       power=(0, pull_power_max)
     ))
-    self.connect(self.pull.a.as_voltage_sink(), self.pwr)
+    self.connect(self.pull.a.adapt_to(VoltageSink()), self.pwr)
 
     self.drv = self.Block(SwitchFet.PFet(
       drain_voltage=pwr_voltage,
@@ -63,15 +63,17 @@ class HighSideSwitch(Block):
       drive_current=(-1 * pwr_voltage.lower() / pull_resistance.upper(),
                      pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs
     ))
-    self.connect(self.drv.source.as_voltage_sink(
+    self.connect(self.drv.source.adapt_to(VoltageSink(
       current_draw=self.output.link().current_drawn
-    ), self.pwr)
-    self.connect(self.drv.drain.as_digital_source(
+    )), self.pwr)
+    self.connect(self.drv.drain.adapt_to(DigitalSource(
       voltage_out=(0, self.pwr.link().voltage.upper()),
       # no current limits, current draw is set by the connected load
       output_thresholds=(0, self.pwr.link().voltage.upper()),
-    ), self.output)
-    self.connect(self.pre.drain.as_digital_source(), self.drv.gate.as_digital_sink(), self.pull.b.as_digital_bidir())
+    )), self.output)
+    self.connect(self.pre.drain.adapt_to(DigitalSource()),
+                 self.drv.gate.adapt_to(DigitalSink()),
+                 self.pull.b.adapt_to(DigitalBidir()))
 
 
 class HalfBridgeNFet(Block):
@@ -118,23 +120,23 @@ class HalfBridgeNFet(Block):
       frequency=self.frequency,
       drive_current=self.gate_low.link().current_limits  # TODO this is kind of a max drive current
     ))
-    self.connect(self.gnd, self.low.source.as_ground())
-    self.connect(self.gate_low, self.low.gate.as_digital_sink(
+    self.connect(self.gnd, self.low.source.adapt_to(Ground()))
+    self.connect(self.gate_low, self.low.gate.adapt_to(DigitalSink(
       current_draw=(0, 0)*Amp  # voltage limits and thresholds are passed through to the FETs
-    ))
+    )))
     self.connect(self.output,
-                 self.low.drain.as_digital_bidir(
+                 self.low.drain.adapt_to(DigitalBidir(
                    voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
                    current_limits=(-1 * self.low.drain_current.upper(), self.high.drain_current.upper()),
                    output_thresholds=(self.gnd.link().voltage.upper(), self.pwr.link().voltage.lower())
-                 ),
-                 self.high.source.as_digital_bidir(
+                 )),
+                 self.high.source.adapt_to(DigitalBidir(
                    # unmodeled, the parameters are modeled by the low side FET
-                 ))
-    self.connect(self.gate_high, self.high.gate.as_digital_sink(
+                 )))
+    self.connect(self.gate_high, self.high.gate.adapt_to(DigitalSink(
       current_draw=(0, 0)*Amp  # voltage limits and thresholds are passed through to the FETs
-    ))
-    self.connect(self.pwr, self.high.drain.as_voltage_sink(
+    )))
+    self.connect(self.pwr, self.high.drain.VoltageSink(
       current_draw=(0,  # from sink/source current to source only
                     self.output.link().current_drawn.upper().max(-1 * self.output.link().current_drawn.lower()))
     ))

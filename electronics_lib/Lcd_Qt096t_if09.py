@@ -69,11 +69,11 @@ class Qt096t_if09(Lcd, Block):
     super().contents()
 
     self.led_res = self.Block(Resistor(resistance=100*Ohm(tol=0.05)))  # TODO dynamic sizing, power
-    self.connect(self.led_res.a.as_digital_sink(
+    self.connect(self.led_res.a.adapt_to(DigitalSink(
       # no voltage limits, since the resistor is autogen'd
       input_thresholds=(3, 3),  # TODO more accurate model
       current_draw=(16, 20) * mAmp  # TODO user-configurable?
-    ), self.led)
+    )), self.led)
     self.connect(self.led_res.b, self.device.leda)
     self.connect(self.spi.sck, self.device.scl)
     self.connect(self.spi.mosi, self.device.sda)

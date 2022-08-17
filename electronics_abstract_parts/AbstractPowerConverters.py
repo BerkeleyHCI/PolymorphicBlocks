@@ -190,13 +190,14 @@ class BuckConverterPowerPath(GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
-    self.connect(self.switch, self.inductor.a.as_voltage_sink(
+    self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn*dutycycle))
-    self.connect(self.pwr_out, self.inductor.b.as_voltage_source(
+      current_draw=self.pwr_out.link().current_drawn*dutycycle
+    )))
+    self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=self.current_limits
-    ))
+    )))
 
     # TODO pick a single worst-case DC
     input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
@@ -303,12 +304,14 @@ class BoostConverterPowerPath(GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
-    self.connect(self.pwr_in, self.inductor.a.as_voltage_sink(
+    self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)))
-    self.connect(self.switch, self.inductor.b.as_voltage_sink(
+      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
+    )))
+    self.connect(self.switch, self.inductor.b.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)))
+      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
+    )))
 
     input_capacitance = Range.from_lower((output_current.upper / effective_dutycycle.lower) * (1 - effective_dutycycle.lower) /
                                          (frequency.lower * input_voltage_ripple))

@@ -144,7 +144,7 @@ class UsbDeviceCReceptacle(UsbDeviceConnector):
     self.connect(self.usb, self.port.usb)
 
     (self.cc_pull, ), _ = self.chain(self.port.cc, self.Block(UsbCcPulldownResistor()))
-    self.connect(self.gnd, self.port.gnd, self.port.shield.as_ground(), self.cc_pull.gnd)
+    self.connect(self.gnd, self.port.gnd, self.port.shield.adapt_to(Ground()), self.cc_pull.gnd)
 
 
 class UsbCcPulldownResistor(Block):

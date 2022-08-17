@@ -64,6 +64,8 @@ class Er_Oled_091_3(Lcd, Block):
     def contents(self):
         super().contents()
 
+        self.connect(self.pwr, self.device.vbat)
+
         self.c1_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 6.3)*Volt))
         self.connect(self.c1_cap.pos, self.device.c1p)
         self.connect(self.c1_cap.neg, self.device.c1n)
@@ -72,11 +74,10 @@ class Er_Oled_091_3(Lcd, Block):
         self.connect(self.c2_cap.neg, self.device.c2n)
         self.vcomh_cap = self.Block(Capacitor(2.2*uFarad(tol=0.2), (0, 16)*Volt))
         self.connect(self.vcomh_cap.pos, self.device.vcomh)
-        self.connect(self.vcomh_cap.neg.as_ground(), self.gnd)
-
+        self.connect(self.vcomh_cap.neg.adapt_to(Ground()), self.gnd)
         self.iref_res = self.Block(Resistor(resistance=560*kOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
-        self.connect(self.iref_res.b.as_ground(), self.gnd)
+        self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
         self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

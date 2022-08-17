@@ -78,7 +78,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
 
       self.connect(self.ios.append_elt(DigitalSink.empty(), str(index)),
-                   passive_io.as_digital_sink(current_draw=(sink_current, source_current)))
+                   passive_io.adapt_to(DigitalSink(current_draw=(sink_current, source_current))))
 
 
 class LedMatrixTest(JlcBoardTop):

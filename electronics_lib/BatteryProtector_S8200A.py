@@ -87,4 +87,4 @@ class BatteryProtector_S8200A(Block):
 
     self.vm_res = self.Block(
       SeriesPowerResistor(2 * kOhm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))
-    ).connected(self.gnd_out, self.ic.vm.as_voltage_sink())
+    ).connected(self.gnd_out, self.ic.vm.adapt_to(VoltageSink()))

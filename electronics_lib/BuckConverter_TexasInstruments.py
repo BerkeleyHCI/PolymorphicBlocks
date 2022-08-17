@@ -56,8 +56,8 @@ class Tps561201(DiscreteBuckConverter):
       self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.2.4
 
       self.vbst_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 6) * Volt))
-      self.connect(self.vbst_cap.neg.as_voltage_sink(), self.ic.sw)
-      self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
+      self.connect(self.vbst_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
+      self.connect(self.vbst_cap.pos.adapt_to(VoltageSink()), self.ic.vbst)
 
       # TODO: the control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
       self.power_path = imp.Block(BuckConverterPowerPath(
@@ -133,14 +133,14 @@ class Tps54202h(DiscreteBuckConverter):
       self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.3.1, "optional"?
 
       self.boot_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 6) * Volt))
-      self.connect(self.boot_cap.neg.as_voltage_sink(), self.ic.sw)
-      self.connect(self.boot_cap.pos.as_voltage_sink(), self.ic.boot)
+      self.connect(self.boot_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
+      self.connect(self.boot_cap.pos.adapt_to(VoltageSink()), self.ic.boot)
 
       # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
       # a pull-up resistor isn't used because
       self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0*Amp(tol=0)))
-      self.connect(self.pwr_in, self.en_res.a.as_voltage_sink())
-      self.connect(self.en_res.b.as_digital_source(), self.ic.en)
+      self.connect(self.pwr_in, self.en_res.a.adapt_to(VoltageSink()))
+      self.connect(self.en_res.b.adapt_to(DigitalSource()), self.ic.en)
 
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
