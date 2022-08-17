@@ -139,7 +139,7 @@ class MultimeterCurrentDriver(Block):
 
       self.sw = imp.Block(AnalogMuxer()).mux_to(  # enable switch
         [fet_source_node, self.amp.out],
-        self.fet.gate.as_analog_sink()
+        self.fet.gate.adapt_to(AnalogSink())
       )
       self.connect(self.enable, self.sw.control.allocate())
 
@@ -185,14 +185,14 @@ class FetPowerGate(Block):
       drain_current=(0, max_current),
       gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
     ))
-    self.connect(self.pwr_in, self.pwr_fet.source.as_voltage_sink(
+    self.connect(self.pwr_in, self.pwr_fet.source.adapt_to(VoltageSink(
       current_draw=self.pwr_out.link().current_drawn,
       voltage_limits=RangeExpr.ALL,
-    ))
-    self.connect(self.pwr_fet.drain.as_voltage_source(
+    )))
+    self.connect(self.pwr_fet.drain.adapt_to(VoltageSource(
       voltage_out = self.pwr_in.link().voltage,
       current_limits=RangeExpr.ALL,
-    ), self.pwr_out)
+    )), self.pwr_out)
 
     self.amp_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary

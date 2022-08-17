@@ -47,17 +47,17 @@ class GatedEmitterFollower(Block):
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
-    self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
+    self.connect(self.pwr, self.high_fet.drain.adapt_to(VoltageSink(
       current_draw=self.current,
       voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
         self.low_fet.actual_drain_voltage_rating)
-    ))
-    self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
-    output_driver = self.high_fet.source.as_voltage_source(
+    )))
+    self.connect(self.gnd, self.low_fet.drain.adapt_to(VoltageSink()))
+    output_driver = self.high_fet.source.adapt_to(VoltageSource(
       voltage_out=self.pwr.link().voltage,
       current_limits=self.current
-    )
-    self.connect(output_driver, self.low_fet.source.as_voltage_sink(),
+    ))
+    self.connect(output_driver, self.low_fet.source.adapt_to(VoltageSink()),
                  self.out)
 
     # TODO all the analog parameter modeling

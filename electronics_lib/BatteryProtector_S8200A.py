@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 
 
 class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.vss = self.Port(Ground())
@@ -16,7 +16,7 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
     self.co = self.Port(Passive())
 
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-6',
@@ -75,14 +75,14 @@ class BatteryProtector_S8200A(Block):
     ).connected(self.ic.vss, self.ic.vdd)
 
     # do fet
-    self.connect(self.ic.vss, self.do_fet.source.as_ground())
+    self.connect(self.ic.vss, self.do_fet.source.adapt_to(Ground()))
     self.connect(self.ic.do, self.do_fet.gate)
 
     # do co
     self.connect(self.do_fet.drain, self.co_fet.drain)
 
     # co fet
-    self.connect(self.gnd_out, self.co_fet.source.as_ground_source())
+    self.connect(self.gnd_out, self.co_fet.source.adapt_to(GroundSource()))
     self.connect(self.ic.co, self.co_fet.gate)
 
     self.vm_res = self.Block(

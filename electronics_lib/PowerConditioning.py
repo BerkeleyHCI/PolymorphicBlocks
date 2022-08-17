@@ -101,7 +101,7 @@ class BufferedSupply(PowerConditioner):
         voltage_out=(0, self.pwr.link().voltage.upper()),
         impedance=0*Ohm(tol=0)
       )))
-      self.connect(self.amp.out, self.fet.gate.as_analog_sink())
+      self.connect(self.amp.out, self.fet.gate.adapt_to(AnalogSink()))
 
     self.cap = self.Block(Supercap())
     self.connect(self.sc_out, self.cap.pos)
