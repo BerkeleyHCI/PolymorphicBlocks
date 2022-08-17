@@ -8,7 +8,7 @@ class CanAdapter(BoardTop):
     super().contents()
 
     # USB Domain
-    self.usb = self.Block(UsbDeviceCReceptacle())
+    self.usb = self.Block(UsbCReceptacle())
 
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
