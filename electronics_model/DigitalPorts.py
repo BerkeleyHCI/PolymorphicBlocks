@@ -262,7 +262,6 @@ class DigitalSource(DigitalBase):
                pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.bridge_type = DigitalSourceBridge
-    self.adapter_types = [DigitalSourceAdapterVoltageSource]
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))

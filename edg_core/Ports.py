@@ -130,7 +130,6 @@ class Port(BasePort, Generic[PortLinkType]):
     self._link_instance: Optional[PortLinkType] = None
     self.bridge_type: Optional[Type[PortBridge]] = None
     self._bridge_instance: Optional[PortBridge] = None  # internal only
-    self.adapter_types: List[Type[PortAdapter]] = []
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore

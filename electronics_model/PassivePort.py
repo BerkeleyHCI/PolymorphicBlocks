@@ -43,11 +43,14 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
   @init_in_parent
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
-               output_thresholds: RangeLike = Default(RangeExpr.ALL)):
+               output_thresholds: RangeLike = Default(RangeExpr.ALL),
+               pullup_capable: BoolLike = Default(False),
+               pulldown_capable: BoolLike = Default(False)):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits,
-                                       output_thresholds=output_thresholds))
+                                       output_thresholds=output_thresholds,
+                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
 
 
 class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
@@ -130,83 +133,38 @@ class PassiveBridge(CircuitPortBridge):
 
 
 class Passive(CircuitPort[PassiveLink]):
+  adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
+    VoltageSource: PassiveAdapterVoltageSource,
+    VoltageSink: PassiveAdapterVoltageSink,
+    DigitalSink: PassiveAdapterDigitalSink,
+    DigitalSource: PassiveAdapterDigitalSource,
+    DigitalSingleSource: PassiveAdapterDigitalSingleSource,
+    DigitalBidir: PassiveAdapterDigitalBidir,
+    AnalogSink: PassiveAdapterAnalogSink,
+    AnalogSource: PassiveAdapterAnalogSource
+  }
+
   """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
   def __init__(self) -> None:
     super().__init__()
 
     self.link_type = PassiveLink
     self.bridge_type = PassiveBridge
-    self.adapter_types = [PassiveAdapterVoltageSource, PassiveAdapterVoltageSink,
-                          PassiveAdapterDigitalSource, PassiveAdapterDigitalSink, PassiveAdapterDigitalBidir,
-                          PassiveAdapterDigitalSingleSource,
-                          PassiveAdapterAnalogSource, PassiveAdapterAnalogSink]
 
   AdaptTargetType = TypeVar('AdaptTargetType', bound=CircuitPort)
   def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
     # this is an experimental style that takes a port that has initializers but is not bound
     # and automatically creates an adapter from it, by matching the port parameter fields
     # with the adapter constructor argument fields by name
-    import inspect
-    adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
-      VoltageSource: PassiveAdapterVoltageSource,
-      VoltageSink: PassiveAdapterVoltageSink,
-      DigitalSink: PassiveAdapterDigitalSink,
-      DigitalSource: PassiveAdapterDigitalSource,
-      DigitalBidir: PassiveAdapterDigitalBidir,
-    }
     assert isinstance(that, Port), 'adapter target must be port'
     assert not that._is_bound(), 'adapter target must be model only'
-    assert that.__class__ in adapter_type_map, f'no adapter to {that.__class__}'
-    adapter_cls = adapter_type_map[that.__class__]
+    assert that.__class__ in self.adapter_type_map, f'no adapter to {that.__class__}'
+    adapter_cls = self.adapter_type_map[that.__class__]
 
     # map initializers from that to constructor args
     adapter_init_kwargs = {}  # make everything kwargs for simplicity
     for param_name, param in that._parameters.items():
-      assert param.initializer is not None
+      assert param.initializer is not None, f"missing initializer for {param_name}"
       adapter_init_kwargs[param_name] = param.initializer
 
     return self._convert(adapter_cls(**adapter_init_kwargs))
-
-  def as_voltage_source(self, **kwargs) -> VoltageSource:
-    return self._convert(PassiveAdapterVoltageSource(**kwargs))
-
-  def as_voltage_sink(self, **kwargs) -> VoltageSink:
-    return self._convert(PassiveAdapterVoltageSink(**kwargs))
-
-  def as_ground(self, current_draw: RangeLike = Default(RangeExpr.ZERO)) -> VoltageSink:
-    return self._convert(PassiveAdapterVoltageSink(voltage_limits=(0, 0) * Volt, current_draw=current_draw))
-
-  def as_ground_source(self) -> VoltageSource:
-    return self._convert(PassiveAdapterVoltageSource(voltage_out=(0, 0) * Volt))
-
-  def as_digital_source(self, **kwargs) -> DigitalSource:
-    return self._convert(PassiveAdapterDigitalSource(**kwargs))
-
-  def as_digital_sink(self, **kwargs) -> DigitalSink:
-    return self._convert(PassiveAdapterDigitalSink(**kwargs))
-
-  def as_digital_bidir(self, **kwargs) -> DigitalBidir:
-    return self._convert(PassiveAdapterDigitalBidir(**kwargs))
-
-  def as_digital_single_source(self, **kwargs) -> DigitalSingleSource:
-    return self._convert(PassiveAdapterDigitalSingleSource(**kwargs))
-
-  def as_digital_pull_high_from_supply(self, pos: VoltageSink) -> DigitalSingleSource:
-    return self._convert(PassiveAdapterDigitalSingleSource(
-      voltage_out=pos.link().voltage,
-      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      pullup_capable=True
-    ))
-
-  def as_digital_pull_low_from_supply(self, neg: VoltageSink) -> DigitalSingleSource:
-    return self._convert(PassiveAdapterDigitalSingleSource(
-      voltage_out=neg.link().voltage,
-      output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      pulldown_capable=True
-    ))
-
-  def as_analog_source(self, **kwargs) -> AnalogSource:
-    return self._convert(PassiveAdapterAnalogSource(**kwargs))
-
-  def as_analog_sink(self, **kwargs) -> AnalogSink:
-    return self._convert(PassiveAdapterAnalogSink(**kwargs))
