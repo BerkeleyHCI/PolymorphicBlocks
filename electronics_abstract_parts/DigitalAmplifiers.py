@@ -136,7 +136,7 @@ class HalfBridgeNFet(Block):
     self.connect(self.gate_high, self.high.gate.adapt_to(DigitalSink(
       current_draw=(0, 0)*Amp  # voltage limits and thresholds are passed through to the FETs
     )))
-    self.connect(self.pwr, self.high.drain.VoltageSink(
+    self.connect(self.pwr, self.high.drain.adapt_to(VoltageSink(
       current_draw=(0,  # from sink/source current to source only
                     self.output.link().current_drawn.upper().max(-1 * self.output.link().current_drawn.lower()))
-    ))
+    )))

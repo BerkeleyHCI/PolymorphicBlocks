@@ -70,14 +70,13 @@ class DigitalLowPassRc(DigitalFilter, Block):
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
                                    voltage=self.input.link().voltage))
     self.connect(self.input, self.rc.input.adapt_to(DigitalSink(
-      current_draw=RangeExpr()
+      current_draw=self.output.link().current_drawn
     )))
     self.connect(self.output, self.rc.output.adapt_to(DigitalSource(
       current_limits=RangeExpr.ALL,
       voltage_out=self.input.link().voltage,
       output_thresholds=self.input.link().output_thresholds
     )))
-    self.assign(self.input.current_draw, self.output.link().current_drawn)
 
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 

@@ -8,7 +8,7 @@ class Er_Oled_091_3_Device(DiscreteChip):
     https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""
     def __init__(self) -> None:
         super().__init__()
-        # TODO IO models and whatnot
+
         self.conn = self.Block(Fpc050(length=15))
 
         self.vcc = self.Export(self.conn.pins.allocate('15').adapt_to(VoltageSource(
@@ -19,8 +19,12 @@ class Er_Oled_091_3_Device(DiscreteChip):
             voltage_limits=(1.65, 4)*Volt,  # use the absolute maximum upper limit to allow tolerance on 3.3v
             current_draw=(1, 300)*uAmp
         )))
+        # this provides a way to modify the minimum Vbat, which apparently works lower than the datasheet specification
+        # and is needed to drive both Vbat and Vdd off of a common 3.3v supply
+        # default of 3.3 is using SSD1306 datasheet v1.6, the panel datasheet is more restrictive
+        self.vbat_min = self.Parameter(FloatExpr(3.3*Volt))
         self.vbat = self.Export(self.conn.pins.allocate('5').adapt_to(VoltageSink(
-            voltage_limits=(3.3, 4.2)*Volt,  # using SSD1306 datasheet; OLED datasheet is more restrictive
+            voltage_limits=(self.vbat_min, 4.2*Volt),
             current_draw=(23, 29)*mAmp
         )))
         self.vss = self.Export(self.conn.pins.allocate('6').adapt_to(Ground()), [Common])

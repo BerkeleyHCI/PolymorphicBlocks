@@ -92,7 +92,8 @@ class Fpc050Bottom(Fpc050):
 
 
 class HiroseFh12sh(Fpc050Bottom, FootprintBlock):
-  """Hirose FH12 SH FFC/FPC connector, 0.50mm pitch horizontal bottom contacts."""
+  """Hirose FH12 SH FFC/FPC connector, 0.50mm pitch horizontal bottom contacts.
+  Mostly footprint-compatible with TE 1775333-8, which is cheaper."""
   # positions the FH12 exists in, per https://www.hirose.com/product/series/FH12
   _fh12_pins = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 26, 28, 29,
                      30, 32, 33, 34, 35, 36, 40, 42, 45, 49, 50, 53, 60}

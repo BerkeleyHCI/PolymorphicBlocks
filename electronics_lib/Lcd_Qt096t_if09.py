@@ -1,54 +1,38 @@
 from typing import *
 from electronics_abstract_parts import *
+from electronics_lib import Fpc050
 
 
-class Qt096t_if09_Device(DiscreteChip, FootprintBlock):
+class Qt096t_if09_Device(DiscreteChip):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vdd = self.Port(VoltageSink(
+    self.conn = self.Block(Fpc050(length=8))
+
+    # both Vdd and VddI
+    self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
       voltage_limits=(2.5, 4.8) * Volt,  # 2.75v typ
       current_draw=(0.02, 2.02) * mAmp  # ST7735S Table 7.3, IDDI + IDD, typ - max
-    ))
-    self.gnd = self.Port(Ground())
+    )))
+    self.gnd = self.Export(self.conn.pins.allocate('2').adapt_to(Ground()))
 
-    io_model = DigitalBidir.from_supply(
+    io_model = DigitalSink.from_supply(
       self.gnd, self.vdd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       current_draw=0*mAmp(tol=0),
-      current_limits=0*mAmp(tol=0),
       input_threshold_factor=(0.3, 0.7),
-      output_threshold_factor=(0.2, 0.8)
     )
-    self.reset = self.Port(DigitalSink.from_bidir(io_model))
-    self.rs = self.Port(DigitalSink.from_bidir(io_model))
-    self.cs = self.Port(DigitalSink.from_bidir(io_model))
-    self.sda = self.Port(io_model)
-    self.scl = self.Port(DigitalSink.from_bidir(io_model))
+    self.reset = self.Export(self.conn.pins.allocate('3').adapt_to(io_model))
+    # data / command selection pin
+    self.rs = self.Export(self.conn.pins.allocate('4').adapt_to(io_model))
+    self.cs = self.Export(self.conn.pins.allocate('8').adapt_to(io_model))
 
-    self.leda = self.Port(Passive())  # TODO maybe something else?
+    self.spi = self.Port(SpiSlave.empty())
+    self.connect(self.spi.sck, self.conn.pins.allocate('6').adapt_to(io_model))  # scl
+    self.connect(self.spi.mosi, self.conn.pins.allocate('5').adapt_to(io_model))  # sda
+    self.spi.miso.not_connected()
 
-  def contents(self):
-    super().contents()
-
-    pinning: Dict[str, CircuitPort] = {
-      '1': self.leda,
-      '2': self.gnd,
-      '3': self.reset,
-      '4': self.rs,  # data / command selection pin
-      '5': self.sda,
-      '6': self.scl,
-      '7': self.vdd,  # both Vdd and VddI
-      '8': self.cs,
-    }
-
-    self.footprint(
-      'U', 'Connector_FFC-FPC:Hirose_FH12-8S-0.5SH_1x08-1MP_P0.50mm_Horizontal',
-      pinning,
-      part='QT096T_IF09, FH12-8S-0.5SH(55)'  # TODO multiple parts
-    )
-    # Mostly footprint compatible with TE 1775333-8, which is significantly cheaper
-
+    self.leda = self.Export(self.conn.pins.allocate('1'))  # TODO maybe something else?
 
 
 class Qt096t_if09(Lcd, Block):
@@ -62,7 +46,7 @@ class Qt096t_if09(Lcd, Block):
     self.reset = self.Export(self.device.reset)
     self.rs = self.Export(self.device.rs)
     self.cs = self.Export(self.device.cs)
-    self.spi = self.Port(SpiSlave(DigitalBidir.empty()))
+    self.spi = self.Export(self.device.spi)
     self.led = self.Port(DigitalSink().empty())
 
   def contents(self):
@@ -75,9 +59,5 @@ class Qt096t_if09(Lcd, Block):
       current_draw=(16, 20) * mAmp  # TODO user-configurable?
     )), self.led)
     self.connect(self.led_res.b, self.device.leda)
-    self.connect(self.spi.sck, self.device.scl)
-    self.connect(self.spi.mosi, self.device.sda)
 
     self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
-
-    self.spi.miso.not_connected()
