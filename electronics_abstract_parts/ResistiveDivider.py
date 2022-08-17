@@ -124,7 +124,7 @@ class BaseVoltageDivider(Filter, Block):
     self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
-    self.input = self.Port(VoltageSink(), [Input])  # forward declaration only
+    self.input = self.Port(VoltageSink().empty(), [Input])  # forward declaration only
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
       voltage_out=(self.input.link().voltage.lower() * self.div.actual_ratio.lower(),
                    self.input.link().voltage.upper() * self.div.actual_ratio.upper()),

@@ -153,7 +153,7 @@ class SeriesPowerResistor(DiscreteApplication):
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
 
-    self.pwr_in = self.Port(VoltageSink(), [Power, Input])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink().empty(), [Power, Input])  # forward declaration
     self.pwr_out = self.Export(self.res.b.adapt_to(VoltageSource(
       voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
       current_limits=self.current_limits
