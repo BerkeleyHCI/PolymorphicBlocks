@@ -497,10 +497,10 @@ class MultimeterTest(JlcBoardTop):
         (['gate', 'ctl_diode', 'require_basic_part'], False),
         (['gate', 'btn_diode', 'require_basic_part'], False),
         (['usb_esd', 'require_basic_part'], False),
+        (['data_usb', 'conn', 'require_basic_part'], False),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
-        (UsbCReceptacle, ['require_basic_part'], False),
         (TestPoint, ['require_basic_part'], False),
         (Tpa2005d1_Device, ['require_basic_part'], False),
         (SmtRgbLed, ['require_basic_part'], False),
