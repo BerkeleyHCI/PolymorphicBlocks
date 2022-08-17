@@ -160,14 +160,10 @@ class Passive(CircuitPort[PassiveLink]):
     adapter_cls = adapter_type_map[that.__class__]
 
     # map initializers from that to constructor args
-    adapter_init_params = inspect.signature(adapter_cls.__init__).parameters
     adapter_init_kwargs = {}  # make everything kwargs for simplicity
-    for arg_name, arg_param in list(adapter_init_params.items())[1:]:  # discard 0=self
-      assert arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD),\
-        "only positional and keyword args supported for initializer, *args and **kwargs not supported"
-      that_initializer = that._parameters[arg_name].initializer
-      assert that_initializer is not None
-      adapter_init_kwargs[arg_name] = that_initializer
+    for param_name, param in that._parameters.items():
+      assert param.initializer is not None
+      adapter_init_kwargs[param_name] = param.initializer
 
     return self._convert(adapter_cls(**adapter_init_kwargs))
 
