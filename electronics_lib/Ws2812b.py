@@ -6,7 +6,7 @@ class Ws2812b(DiscreteChip, FootprintBlock):
         super().__init__()
         self.vdd = self.Port(VoltageSink(
             voltage_limits=(3.7, 5.3) * Volt,
-            current_draw=(0.6, 0.6 + 12 * 3) * mAmp)
+            current_draw=(0.6, 0.6 + 12*3) * mAmp)
         )
         self.gnd = self.Port(Ground())
         self.din = self.Port(DigitalSink.from_supply(
@@ -16,7 +16,7 @@ class Ws2812b(DiscreteChip, FootprintBlock):
         )
         self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
-            current_limits=0 * mAmp),
+            current_limits=0*mAmp(tol=0)),
             optional=True
         )
 
@@ -49,16 +49,11 @@ class Ws2812bArray(GeneratorBlock):
     def generate(self, count: int):
         self.led = ElementDict[Ws2812b]()
 
-        last_led = self.led["0"] = self.Block(Ws2812b())
-        self.connect(self.din, last_led.din)
-        self.connect(self.vdd, last_led.vdd)
-        self.connect(self.gnd, last_led.gnd)
-
-        for led_i in range(1, count):
+        last_signal_pin: Port[DigitalLink] = self.din
+        for led_i in range(count):
             led = self.led[str(led_i)] = self.Block(Ws2812b())
-            self.connect(last_led.dout, led.din)
+            self.connect(last_signal_pin, led.din)
             self.connect(self.vdd, led.vdd)
             self.connect(self.gnd, led.gnd)
-            last_led = led
-
-        self.connect(self.dout, last_led.dout)
+            last_signal_pin = led.dout
+        self.connect(self.dout, last_signal_pin)

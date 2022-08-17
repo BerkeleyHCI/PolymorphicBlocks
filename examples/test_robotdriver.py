@@ -2,7 +2,19 @@ import unittest
 from typing import List, Dict
 
 from edg import *
-from electronics_lib.Ws2812b import Ws2812b, Ws2812bArray
+
+class LipoConnector(Battery, FootprintBlock):
+  @init_in_parent
+  def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
+               actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
+    super().__init__(voltage, *args, **kwargs)
+    self.conn = self.Block(PassiveConnector())
+    self.connect(self.gnd, self.conn.pins.allocate('1').as_ground_source())
+    self.connect(self.pwr, self.conn.pins.allocate('2').as_voltage_source(
+      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+      current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
+    ))
+    self.assign(self.actual_capacity, (2, 3.6)*Amp)
 
 
 class RobotDriver(JlcBoardTop):
@@ -11,20 +23,20 @@ class RobotDriver(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
+    self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.vbatt = self.connect(self.batt.pwr)
+    self.gnd = self.connect(self.batt.gnd)
 
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
 
     # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.vusb,
+        self.vbatt,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -40,24 +52,27 @@ class RobotDriver(JlcBoardTop):
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
 
-      # maximum current draw that is still within the column sink capability of the ESP32
+      self.tof = imp.Block(Vl53l0xArray(3))
+      (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
+        self.mcu.i2c.allocate('i2c'),
+        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
+        self.tof.i2c)
+      self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
-
-    self.motor_driver = self.Block(L293dd())
-    self.connect(self.vusb, self.motor_driver.vss)
-    self.connect(self.vusb, self.motor_driver.vs)
-    self.connect(self.mcu.gnd, self.motor_driver.gnd)
-
-    self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
-    self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
-    self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
-    self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
-    self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
-    self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+    # self.motor_driver = self.Block(L293dd())
+    # self.connect(self.vbatt, self.motor_driver.vss)
+    # self.connect(self.vbatt, self.motor_driver.vs)
+    # self.connect(self.mcu.gnd, self.motor_driver.gnd)
+    #
+    # self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
+    # self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
+    # self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
+    # self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
+    # self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
+    # self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
-    self.connect(self.ws2812bArray.vdd, self.vusb)
+    self.connect(self.ws2812bArray.vdd, self.vbatt)
     self.connect(self.ws2812bArray.gnd, self.gnd)
     self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
 
@@ -68,10 +83,11 @@ class RobotDriver(JlcBoardTop):
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
+    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap2204k),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -87,6 +103,7 @@ class RobotDriver(JlcBoardTop):
       class_values=[
         (TestPoint, ['require_basic_part'], False),
         (ResistorArray, ['require_basic_part'], False),
+        (Vl53l0x_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),
