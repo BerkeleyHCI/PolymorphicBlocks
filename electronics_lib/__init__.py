@@ -63,6 +63,7 @@ from .DacSpi_Mcp4901 import Mcp4921
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
 from .Lcd_Qt096t_if09 import Qt096t_if09
+from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2

@@ -56,7 +56,7 @@ class Er_Oled_091_3(Lcd, Block):
         self.device = self.Block(Er_Oled_091_3_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.res = self.Export(self.device.res)
+        self.reset = self.Export(self.device.res)
         self.spi = self.Export(self.device.spi)
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.dc)
