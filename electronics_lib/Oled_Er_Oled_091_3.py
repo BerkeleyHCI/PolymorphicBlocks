@@ -26,8 +26,8 @@ class Er_Oled_091_3_Device(DiscreteChip):
         self.iref = self.Export(self.conn.pins.allocate('13'))
 
         self.spi = self.Port(SpiSlave.empty())
-        self.connect(self.spi.sck, self.conn.pins.allocate('11').as_digital_sink)
-        self.connect(self.spi.mosi, self.conn.pins.allocate('12').as_digital_sink)
+        self.connect(self.spi.sck, self.conn.pins.allocate('11').as_digital_sink())
+        self.connect(self.spi.mosi, self.conn.pins.allocate('12').as_digital_sink())
         self.spi.miso.not_connected()
 
         self.dc = self.Export(self.conn.pins.allocate('10').as_digital_sink())
@@ -46,7 +46,7 @@ class Er_Oled_091_3(Lcd, Block):
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Oled_091_3_Device())
-        self.gnd = self.Export(self.device.gnd, [Common])
+        self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
         self.res = self.Export(self.device.res)
         self.spi = self.Export(self.device.spi)
