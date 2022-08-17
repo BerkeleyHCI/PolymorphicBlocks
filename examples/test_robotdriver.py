@@ -2,7 +2,7 @@ import unittest
 from typing import List, Dict
 
 from edg import *
-
+from electronics_lib.Ws2812b import Ws2812b, Ws2812bArray
 
 
 class RobotDriver(JlcBoardTop):
@@ -55,6 +55,12 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
     self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
     self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+
+    self.ws2812bArray = self.Block(Ws2812bArray(5))
+    self.connect(self.ws2812bArray.vdd, self.vusb)
+    self.connect(self.ws2812bArray.gnd, self.gnd)
+    self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
+
 
     # Misc board
     self.duck = self.Block(DuckLogo())
