@@ -144,8 +144,8 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library, refinements=Refinements(
-      classValues = Map(LibraryPath("superclassBlock") -> Seq(
-        (Ref("superParam"), IntValue(5))),
+      classValues = Map(LibraryPath("superclassBlock") -> Map(
+        Ref("superParam") -> IntValue(5)),
       )),
       expectedDesign=Some(expected))
     compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(5)))
