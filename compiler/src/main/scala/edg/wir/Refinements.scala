@@ -3,14 +3,30 @@ package edg.wir
 import edgir.ref.ref
 import edgrpc.hdl.hdl
 import edg.compiler.{ExprEvaluate, ExprValue}
+import edg.util.MapUtils
 
 
 case class Refinements(
   classRefinements: Map[ref.LibraryPath, ref.LibraryPath] = Map(),
   instanceRefinements: Map[DesignPath, ref.LibraryPath] = Map(),
-  classValues: Map[ref.LibraryPath, Seq[(ref.LocalPath, ExprValue)]] = Map(),  // class -> (internal path, value)
+  classValues: Map[ref.LibraryPath, Map[ref.LocalPath, ExprValue]] = Map(),  // class -> (internal path -> value)
   instanceValues: Map[DesignPath, ExprValue] = Map()
-)
+) {
+  // Append another set of refinements on top of this one, erroring out in case of a conflict
+  def ++(that: Refinements): Refinements = {
+    val combinedClassValues = (classValues.toSeq ++ that.classValues.toSeq)  // this one is merge-able one level down
+        .groupBy(_._1)
+        .map { case (className, classPathValues) =>
+      className -> MapUtils.mergeMapSafe(classPathValues.map(_._2):_*)
+    }
+    Refinements(
+      classRefinements=MapUtils.mergeMapSafe(classRefinements, that.classRefinements),
+      instanceRefinements=MapUtils.mergeMapSafe(instanceRefinements, that.instanceRefinements),
+      classValues=combinedClassValues,
+      instanceValues=MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
+    )
+  }
+}
 
 
 object Refinements {
@@ -26,7 +42,7 @@ object Refinements {
     val classValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.ClsParam(clsParam) =>
         clsParam.getCls -> (clsParam.getParamPath -> ExprEvaluate.evalLiteral(value.getValue))
-    } }.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
+    } }.groupBy(_._1).view.mapValues(_.map(_._2).toMap).toMap
 
     val instanceValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.Path(path) =>

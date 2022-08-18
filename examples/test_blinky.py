@@ -61,7 +61,7 @@ class TestBlinkySimpleChain(BoardTop):
 class TestBlinkyBroken(BoardTop):
   def contents(self):
     super().contents()
-    self.usb = self.Block(UsbDeviceCReceptacle())
+    self.usb = self.Block(UsbCReceptacle())
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
 
@@ -82,7 +82,7 @@ class TestBlinkyBroken(BoardTop):
 class TestBlinkyFlattened(BoardTop):
   def contents(self):
     super().contents()
-    self.usb = self.Block(UsbDeviceCReceptacle())
+    self.usb = self.Block(UsbCReceptacle())
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
 
@@ -158,7 +158,7 @@ class Mcp9700(Block):
 class TestBlinkyComplete(BoardTop):
   def contents(self):
     super().contents()
-    self.usb = self.Block(UsbDeviceCReceptacle())
+    self.usb = self.Block(UsbCReceptacle())
 
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)

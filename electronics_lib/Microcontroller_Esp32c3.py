@@ -220,9 +220,8 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       self.io8_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
       self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
+      # by default instantiate a programming switch, TODO option to disable as a config
+      (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io9)
 
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
-
-      # IO9 left open - to be manually shorted with tweezers, to save space
-      # TODO: alternative programming headers that include IO9?

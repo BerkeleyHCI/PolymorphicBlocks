@@ -83,6 +83,7 @@ class Xc9142(DiscreteBoostConverter):
         self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
         self.pwr_out.link().current_drawn, self.ic.vout.current_limits,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
                                                        rated_current=self.ic.vout.current_limits.lower())
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)

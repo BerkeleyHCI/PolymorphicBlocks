@@ -63,7 +63,9 @@ class Tps561201(DiscreteBuckConverter):
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=1.2*Amp)
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
+                                                       rated_current=1.2*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
@@ -145,7 +147,9 @@ class Tps54202h(DiscreteBuckConverter):
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 2)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=2*Amp)
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
+                                                       rated_current=2*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
