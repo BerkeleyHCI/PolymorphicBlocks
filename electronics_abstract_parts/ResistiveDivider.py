@@ -3,9 +3,7 @@ from __future__ import annotations
 from math import log10, ceil
 from typing import List, Tuple
 
-from edg_core import *
-from edg_core.Blocks import DescriptionString
-from electronics_model import Common, Passive
+from electronics_model import *
 from . import AnalogFilter, DiscreteApplication, Resistor, Filter
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
@@ -126,24 +124,22 @@ class BaseVoltageDivider(Filter, Block):
     self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
-    self.input = self.Export(self.div.top.as_voltage_sink(
-      current_draw=RangeExpr(),
-      voltage_limits=RangeExpr.ALL
-    ), [Input])
-    self.output = self.Export(self.div.center.as_analog_source(
+    self.input = self.Port(VoltageSink().empty(), [Input])  # forward declaration only
+    self.output = self.Export(self.div.center.adapt_to(AnalogSource(
       voltage_out=(self.input.link().voltage.lower() * self.div.actual_ratio.lower(),
                    self.input.link().voltage.upper() * self.div.actual_ratio.upper()),
       current_limits=RangeExpr.ALL,
       impedance=self.div.actual_impedance
-    ), [Output])
-    self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
+    )), [Output])
+    self.connect(self.input, self.div.top.adapt_to(VoltageSink(
+      current_draw=self.output.link().current_drawn,
+      voltage_limits=RangeExpr.ALL
+    )))
+    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
 
     self.actual_ratio = self.Parameter(RangeExpr(self.div.actual_ratio))
     self.actual_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
     self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
-
-    self.assign(self.input.current_draw, self.output.link().current_drawn)
-    # TODO also model static current draw into gnd
 
 class VoltageDivider(BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
@@ -190,16 +186,16 @@ class SignalDivider(AnalogFilter, Block):
     super().__init__()
 
     self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
-    self.input = self.Export(self.div.top.as_analog_sink(
-      impedance=self.div.actual_series_impedance,
-      current_draw=RangeExpr(),
-      voltage_limits=RangeExpr.ALL
-    ), [Input])
-    self.output = self.Export(self.div.center.as_analog_source(
+    self.input = self.Port(AnalogSink.empty(), [Input])  # forward declaration
+    self.output = self.Export(self.div.center.adapt_to(AnalogSource(
       voltage_out=(self.input.link().voltage.lower() * self.div.actual_ratio.lower(),
                    self.input.link().voltage.upper() * self.div.actual_ratio.upper()),
       current_limits=RangeExpr.ALL,
       impedance=self.div.actual_impedance
-    ), [Output])
-    self.gnd = self.Export(self.div.bottom.as_ground(), [Common])
-    self.assign(self.input.current_draw, self.output.link().current_drawn)
+    )), [Output])
+    self.connect(self.input, self.div.top.adapt_to(AnalogSink(
+      impedance=self.div.actual_series_impedance,
+      current_draw=self.output.link().current_drawn,
+      voltage_limits=RangeExpr.ALL
+    )))
+    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])

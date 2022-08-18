@@ -13,13 +13,13 @@ class CanConnector(Connector):
     self.differential = self.Port(CanDiffPort().empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('2').as_voltage_source(
+    self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
-    ))
-    self.connect(self.gnd, self.conn.pins.allocate('3').as_ground_source())
-    self.connect(self.differential.canh, self.conn.pins.allocate('4').as_digital_source())
-    self.connect(self.differential.canl, self.conn.pins.allocate('5').as_digital_source())
+    )))
+    self.connect(self.gnd, self.conn.pins.allocate('3').adapt_to(GroundSource()))
+    self.connect(self.differential.canh, self.conn.pins.allocate('4').adapt_to(DigitalSource()))
+    self.connect(self.differential.canl, self.conn.pins.allocate('5').adapt_to(DigitalSource()))
 
 
 class TofArrayTest(JlcBoardTop):

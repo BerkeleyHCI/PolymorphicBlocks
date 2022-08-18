@@ -104,8 +104,8 @@ class PullupResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.pwr = self.Export(self.res.a.as_voltage_sink(), [Power])
-    self.io = self.Export(self.res.b.as_digital_pull_high_from_supply(self.pwr), [InOut])
+    self.pwr = self.Export(self.res.a.adapt_to(VoltageSink()), [Power])
+    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [InOut])
 
   def connected(self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PullupResistor':
@@ -125,8 +125,8 @@ class PulldownResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.gnd = self.Export(self.res.a.as_ground(), [Common])
-    self.io = self.Export(self.res.b.as_digital_pull_low_from_supply(self.gnd), [InOut])
+    self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
+    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)), [InOut])
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PulldownResistor':
@@ -153,15 +153,15 @@ class SeriesPowerResistor(DiscreteApplication):
              self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
     ))
 
-    self.pwr_in = self.Export(self.res.a.as_voltage_sink(
-      voltage_limits=(-float('inf'), float('inf')),
-      current_draw=RangeExpr()
-    ), [Power, Input])
-    self.pwr_out = self.Export(self.res.b.as_voltage_source(
+    self.pwr_in = self.Port(VoltageSink().empty(), [Power, Input])  # forward declaration
+    self.pwr_out = self.Export(self.res.b.adapt_to(VoltageSource(
       voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
       current_limits=self.current_limits
-    ), [Output])
-    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+    )), [Output])
+    self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
+      voltage_limits=(-float('inf'), float('inf')),
+      current_draw=self.pwr_out.link().current_drawn
+    )))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':

@@ -20,6 +20,7 @@ class BaseBoardTop(DesignTop):
 
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
+        (Fpc050, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, Keystone5015),
 

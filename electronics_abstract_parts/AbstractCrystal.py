@@ -110,4 +110,5 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
     self.cap_b = self.Block(cap_model)
     self.connect(self.cap_a.pos, self.crystal.a)
     self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.gnd, self.cap_a.neg.as_ground(), self.cap_b.neg.as_ground())
+    self.connect(self.gnd, self.cap_a.neg.adapt_to(Ground()),
+                 self.cap_b.neg.adapt_to(Ground()))

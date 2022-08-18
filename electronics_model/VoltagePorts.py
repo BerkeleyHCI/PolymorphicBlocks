@@ -155,7 +155,6 @@ class VoltageSource(VoltageBase):
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.bridge_type = VoltageSourceBridge
-    self.adapter_types = [VoltageSinkAdapterDigitalSource, VoltageSinkAdapterAnalogSource]
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))

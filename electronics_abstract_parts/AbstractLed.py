@@ -63,12 +63,12 @@ class IndicatorLed(Light):
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
                   self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
 
-    self.connect(self.signal, self.package.a.as_digital_sink(
+    self.connect(self.signal, self.package.a.adapt_to(DigitalSink(
       current_draw=self.signal.link().voltage / self.res.actual_resistance
-    ))
+    )))
 
     self.connect(self.res.a, self.package.k)
-    self.connect(self.res.b.as_ground(), self.gnd)
+    self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
 
 @abstract_block
@@ -100,14 +100,14 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
       resistance=(self.signal.link().voltage.upper() / self.current_draw.upper(),
                   self.signal.link().output_thresholds.upper() / self.current_draw.lower())))
 
-    self.connect(self.package.a.as_voltage_sink(
+    self.connect(self.package.a.adapt_to(VoltageSink(
       current_draw=self.signal.link().voltage / self.res.actual_resistance
-    ), self.pwr)
+    )), self.pwr)
 
     self.connect(self.res.a, self.package.k)
-    self.connect(self.res.b.as_digital_sink(
+    self.connect(self.res.b.adapt_to(DigitalSink(
       current_draw=-self.signal.link().voltage / self.res.actual_resistance
-    ), self.signal)
+    )), self.signal)
 
 
 class IndicatorSinkLedArray(Light, GeneratorBlock):
@@ -151,11 +151,11 @@ class VoltageIndicatorLed(Light):
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
                   self.signal.link().voltage.lower() / self.target_current_draw.lower())))
 
-    self.connect(self.signal, self.package.a.as_voltage_sink(
+    self.connect(self.signal, self.package.a.adapt_to(VoltageSink(
       current_draw=self.signal.link().voltage / self.res.actual_resistance
-    ))
+    )))
     self.connect(self.res.a, self.package.k)
-    self.connect(self.res.b.as_ground(), self.gnd)
+    self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
 
 # TODO should there be some kind of abstract LED class, that works for both CA and CC type LEDs?
@@ -195,21 +195,21 @@ class IndicatorSinkRgbLed(Light):
     self.connect(self.red_res.a, self.package.k_red)
     self.connect(self.green_res.a, self.package.k_green)
     self.connect(self.blue_res.a, self.package.k_blue)
-    self.connect(self.red_res.b.as_digital_sink(
+    self.connect(self.red_res.b.adapt_to(DigitalSink(
       current_draw=(-1 * signal_red.link().voltage.upper() / self.red_res.actual_resistance.lower(), 0)
-    ), signal_red)
-    self.connect(self.green_res.b.as_digital_sink(
+    )), signal_red)
+    self.connect(self.green_res.b.adapt_to(DigitalSink(
       current_draw=(-1 * signal_green.link().voltage.upper() / self.green_res.actual_resistance.lower(), 0)
-    ), signal_green)
-    self.connect(self.blue_res.b.as_digital_sink(
+    )), signal_green)
+    self.connect(self.blue_res.b.adapt_to(DigitalSink(
       current_draw=(-1 * signal_blue.link().voltage.upper() / self.blue_res.actual_resistance.lower(), 0)
-    ), signal_blue)
+    )), signal_blue)
 
-    self.connect(self.pwr, self.package.a.as_voltage_sink(
+    self.connect(self.pwr, self.package.a.adapt_to(VoltageSink(
       current_draw=signal_red.current_draw * -1 +
                    signal_green.current_draw * -1 +
                    signal_blue.current_draw * -1
-    ))
+    )))
 
 
 class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):

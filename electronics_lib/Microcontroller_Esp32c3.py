@@ -177,10 +177,10 @@ class EspProgrammingHeader(ProgrammingConnector):
     self.uart = self.Port(UartPort.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('1').as_voltage_sink())
-    self.connect(self.uart.tx, self.conn.pins.allocate('2').as_digital_source())
-    self.connect(self.uart.rx, self.conn.pins.allocate('3').as_digital_sink())
-    self.connect(self.gnd, self.conn.pins.allocate('4').as_voltage_sink())
+    self.connect(self.pwr, self.conn.pins.allocate('1').adapt_to(VoltageSink()))
+    self.connect(self.uart.tx, self.conn.pins.allocate('2').adapt_to(DigitalSource()))
+    self.connect(self.uart.rx, self.conn.pins.allocate('3').adapt_to(DigitalSink()))
+    self.connect(self.gnd, self.conn.pins.allocate('4').adapt_to(Ground()))
 
 
 class PulldownJumper(Block):
@@ -191,8 +191,8 @@ class PulldownJumper(Block):
     self.io = self.Port(DigitalSource.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.io, self.conn.pins.allocate('1').as_digital_source())
-    self.connect(self.gnd, self.conn.pins.allocate('2').as_voltage_sink())
+    self.connect(self.io, self.conn.pins.allocate('1').adapt_to(DigitalSource()))
+    self.connect(self.gnd, self.conn.pins.allocate('2').adapt_to(VoltageSink()))
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):

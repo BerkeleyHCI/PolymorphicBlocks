@@ -68,7 +68,7 @@ class Lm4871(IntegratedCircuit):
       capacitance=1.0*uFarad(tol=0.2),
       voltage=self.pwr.link().voltage  # TODO actually half the voltage, but needs const prop
     ))
-    self.connect(self.gnd, self.byp_cap.neg.as_ground())
+    self.connect(self.gnd, self.byp_cap.neg.adapt_to(Ground()))
 
     self.sig_cap = self.Block(Capacitor(  # TODO replace with dc-block filter
       capacitance=0.47*uFarad(tol=0.2),
@@ -80,10 +80,10 @@ class Lm4871(IntegratedCircuit):
     self.fb_res = self.Block(Resistor(
       resistance=20*kOhm(tol=0.2)
     ))
-    self.connect(self.sig, self.sig_cap.neg.as_analog_sink())
+    self.connect(self.sig, self.sig_cap.neg.adapt_to(AnalogSink()))
     self.connect(self.sig_cap.pos, self.sig_res.a)
     self.connect(self.sig_res.b, self.fb_res.a, self.ic.inm)
-    self.connect(self.spk.a, self.ic.vo1, self.fb_res.b.as_analog_sink())
+    self.connect(self.spk.a, self.ic.vo1, self.fb_res.b.adapt_to(AnalogSink()))
     self.connect(self.spk.b, self.ic.vo2)
 
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
@@ -179,15 +179,15 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
 
     self.inp_cap = self.Block(in_cap_model)
     self.inp_res = self.Block(in_res_model)
-    self.connect(self.sig, self.inp_cap.neg.as_analog_sink())
+    self.connect(self.sig, self.inp_cap.neg.adapt_to(AnalogSink()))
     self.connect(self.inp_cap.pos, self.inp_res.a)
-    self.connect(self.inp_res.b.as_analog_source(), self.ic.inp)
+    self.connect(self.inp_res.b.adapt_to(AnalogSource()), self.ic.inp)
 
     self.inn_cap = self.Block(in_cap_model)
     self.inn_res = self.Block(in_res_model)
-    self.connect(self.gnd, self.inn_cap.neg.as_ground())
+    self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
     self.connect(self.inn_cap.pos, self.inn_res.a)
-    self.connect(self.inn_res.b.as_analog_source(), self.ic.inn)
+    self.connect(self.inn_res.b.adapt_to(AnalogSource()), self.ic.inn)
 
     self.connect(self.spk.a, self.ic.vo1)
     self.connect(self.spk.b, self.ic.vo2)
@@ -209,5 +209,9 @@ class ConnectorSpeaker(Speaker):
 
     self.conn = self.Block(PassiveConnector())
 
-    self.connect(self.input.a, self.conn.pins.allocate('1').as_analog_sink(impedance=impedance))
-    self.connect(self.input.b, self.conn.pins.allocate('2').as_analog_sink(impedance=impedance))
+    self.connect(self.input.a, self.conn.pins.allocate('1').adapt_to(AnalogSink(
+      impedance=impedance)
+    ))
+    self.connect(self.input.b, self.conn.pins.allocate('2').adapt_to(AnalogSink(
+      impedance=impedance)
+    ))

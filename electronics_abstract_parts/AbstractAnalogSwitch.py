@@ -96,11 +96,11 @@ class AnalogMuxer(GeneratorBlock):
     self.control = self.Export(self.device.control)
 
     self.inputs = self.Port(Vector(AnalogSink.empty()))
-    self.out = self.Export(self.device.com.as_analog_source(
+    self.out = self.Export(self.device.com.adapt_to(AnalogSource(
       voltage_out=self.inputs.hull(lambda x: x.link().voltage),
       current_limits=self.device.analog_current_limits,  # this device only, current draw propagated
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
-    ))
+    )))
 
     self.generator(self.generate, self.inputs.allocated())
 
@@ -109,11 +109,11 @@ class AnalogMuxer(GeneratorBlock):
     for elt in elts:
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
-        self.device.inputs.allocate(elt).as_analog_sink(
+        self.device.inputs.allocate(elt).adapt_to(AnalogSink(
           voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
           current_draw=self.out.link().current_drawn,
           impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
-        ))
+        )))
 
   def mux_to(self, inputs: Optional[List[Port[AnalogLink]]] = None,
              output: Optional[Port[AnalogLink]] = None) -> 'AnalogMuxer':
@@ -136,11 +136,11 @@ class AnalogDemuxer(GeneratorBlock):
     self.control = self.Export(self.device.control)
 
     self.outputs = self.Port(Vector(AnalogSource.empty()))
-    self.input = self.Export(self.device.com.as_analog_sink(
+    self.input = self.Export(self.device.com.adapt_to(AnalogSink(
       voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
       current_draw=self.outputs.hull(lambda x: x.link().current_drawn),
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
-    ))
+    )))
 
     self.generator(self.generate, self.outputs.allocated())
 
@@ -149,11 +149,11 @@ class AnalogDemuxer(GeneratorBlock):
     for elt in elts:
       self.connect(
         self.outputs.append_elt(AnalogSource().empty(), elt),
-        self.device.inputs.allocate(elt).as_analog_source(
+        self.device.inputs.allocate(elt).adapt_to(AnalogSource(
           voltage_out=self.input.link().voltage,
           current_limits=self.device.analog_current_limits,  # this device only, voltages propagated
           impedance=self.input.link().source_impedance + self.device.analog_on_resistance
-        ))
+        )))
 
   def demux_to(self, input: Optional[Port[AnalogLink]] = None,
                    outputs: Optional[List[Port[AnalogLink]]] = None) -> 'AnalogDemuxer':
