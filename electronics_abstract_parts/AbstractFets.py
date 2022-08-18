@@ -21,11 +21,11 @@ class Fet(DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
   @staticmethod
-  def NFet(*args, **kwargs):
+  def NFet(*args, **kwargs) -> 'Fet':
     return Fet(*args, **kwargs, channel='N')
 
   @staticmethod
-  def PFet(*args, **kwargs):
+  def PFet(*args, **kwargs) -> 'Fet':
     return Fet(*args, **kwargs, channel='P')
 
   @init_in_parent

@@ -120,7 +120,7 @@ class UsbCReceptacle(UsbConnector, GeneratorBlock):
                    "when CC not connected, port restricted to USB 2.0 current")
 
     # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
-    self.connect(self.gnd, self.conn.shield.as_ground())
+    self.connect(self.gnd, self.conn.shield.adapt_to(Ground()))
 
 
 @abstract_block

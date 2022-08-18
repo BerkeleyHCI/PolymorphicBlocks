@@ -24,15 +24,17 @@ class SwdSourceBitBang(Block):
     self.swo_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
 
     # TODO simplify using DigitalSeriesResistor(?) and chain
-    self.connect(self.reset_res.a.as_digital_sink(), self.reset_in)
-    self.connect(self.reset_res.b.as_digital_source(), self.swd.reset)
-    self.connect(self.swclk_res.a.as_digital_sink(), self.swclk_in)
-    self.connect(self.swclk_res.b.as_digital_source(), self.swd.swclk)
-    self.connect(self.swdio_drv_res.a.as_digital_sink(), self.swdio_in)
-    self.connect(self.swdio_res.a.as_digital_bidir(), self.swdio_drv_res.b.as_digital_bidir(), self.swdio_out)
-    self.connect(self.swdio_res.b.as_digital_sink(), self.swd.swdio)
-    self.connect(self.swo_res.a.as_digital_source(), self.swo_out)
-    self.connect(self.swo_res.b.as_digital_sink(), self.swd.swo)
+    self.connect(self.reset_res.a.adapt_to(DigitalSink()), self.reset_in)
+    self.connect(self.reset_res.b.adapt_to(DigitalSource()), self.swd.reset)
+    self.connect(self.swclk_res.a.adapt_to(DigitalSink()), self.swclk_in)
+    self.connect(self.swclk_res.b.adapt_to(DigitalSource()), self.swd.swclk)
+    self.connect(self.swdio_drv_res.a.adapt_to(DigitalSink()), self.swdio_in)
+    self.connect(self.swdio_res.a.adapt_to(DigitalBidir()),
+                 self.swdio_drv_res.b.adapt_to(DigitalBidir()),
+                 self.swdio_out)
+    self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
+    self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
+    self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swd.swo)
 
 
 class Debugger(BoardTop):
@@ -74,7 +76,7 @@ class Debugger(BoardTop):
       self.tdi_res = imp.Block(Resistor(22*Ohm(tol=0.05)))
 
       self.connect(self.target_drv.swd, self.target.swd)
-      self.connect(self.tdi_res.b.as_digital_source(), self.target.tdi)
+      self.connect(self.tdi_res.b.adapt_to(DigitalSource()), self.target.tdi)
 
       self.sw_usb = imp.Block(DigitalSwitch())
 
@@ -92,7 +94,7 @@ class Debugger(BoardTop):
     self.connect(self.mcu.gpio.allocate('target_swdio_in'), self.target_drv.swdio_in)
     self.connect(self.mcu.gpio.allocate('target_reset'), self.target_drv.reset_in)
     self.connect(self.mcu.gpio.allocate('target_swo'), self.target_drv.swo_out)
-    self.connect(self.mcu.gpio.allocate('target_tdi'), self.tdi_res.a.as_digital_source())
+    self.connect(self.mcu.gpio.allocate('target_tdi'), self.tdi_res.a.adapt_to(DigitalSource()))
 
     self.connect(self.mcu.gpio.allocate('lcd_led'), self.lcd.led)
     self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
