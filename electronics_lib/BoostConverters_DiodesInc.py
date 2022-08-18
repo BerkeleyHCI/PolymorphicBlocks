@@ -57,7 +57,9 @@ class Ap3012(DiscreteBoostConverter):
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 0.5)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=0.5*Amp)
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
+                                                       rated_current=0.5*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
