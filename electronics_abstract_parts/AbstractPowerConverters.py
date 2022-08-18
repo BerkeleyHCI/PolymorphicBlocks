@@ -69,8 +69,8 @@ class LinearRegulatorDevice(DiscreteChip):
 @abstract_block
 class DcDcSwitchingConverter(DcDcConverter):
   @staticmethod
-  def _calculate_ripple(output_current: RangeLike, *, rated_current: Optional[FloatLike] = None,
-                        ripple_ratio: RangeLike = Default((0.2, 0.5))) -> RangeExpr:
+  def _calculate_ripple(output_current: RangeLike, ripple_ratio: RangeLike, *,
+                        rated_current: Optional[FloatLike] = None) -> RangeExpr:
     """
     Calculates the target inductor ripple current (with parameters - concrete values not necessary)
     given the output current draw, and optionally a non-default ripple ratio and rated current.
