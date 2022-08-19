@@ -1,9 +1,9 @@
 import unittest
-from typing import List, Dict
 
 from edg import *
 
-class LipoConnector(Battery, FootprintBlock):
+
+class LipoConnector(Battery):
   @init_in_parent
   def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
                actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
@@ -16,6 +16,32 @@ class LipoConnector(Battery, FootprintBlock):
       current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
     )))
     self.assign(self.actual_capacity, (2, 3.6)*Amp)
+
+
+class MotorConnector(Block):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+
+    self.a = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink(
+      current_draw=(-600, 600)*mAmp
+    )))
+    self.b = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
+      current_draw=(-600, 600)*mAmp
+    )))
+
+
+class PwmConnector(Block):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PinHeader254())
+
+    self.pwm = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink()),
+                           [Input])
+    self.pwr = self.Export(self.conn.pins.allocate('2').adapt_to(VoltageSink()),
+                           [Power])
+    self.gnd = self.Export(self.conn.pins.allocate('3').adapt_to(Ground()),
+                           [Common])
 
 
 class RobotDriver(JlcBoardTop):
@@ -50,29 +76,47 @@ class RobotDriver(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
-
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      self.i2c = self.mcu.i2c.allocate('i2c')
 
       self.tof = imp.Block(Vl53l0xArray(3))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
-        self.mcu.i2c.allocate('i2c'),
+        self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
-      self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
+
+      self.expander = imp.Block(Pcf8574())
+      self.connect(self.i2c, self.expander.i2c)
+      # TODO use pin assign util for IO expanders
+      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('0'))
+      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('1'))
+      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('2'))
 
       self.lcd = imp.Block(Er_Oled_091_3())
+      self.connect(self.mcu.spi.allocate('spi'), self.lcd.spi)
+      self.connect(self.lcd.cs, self.expander.io.allocate())
+      self.connect(self.lcd.reset, self.expander.io.allocate())
+      self.connect(self.lcd.dc, self.expander.io.allocate())
 
     self.motor_driver = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver.pwr)
     self.connect(self.gnd, self.motor_driver.gnd)
-
-    # self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
-    # self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
-    # self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
-    # self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
-    # self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
-    # self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+    self.connect(self.mcu.gpio.allocate('motor_ain1'), self.motor_driver.ain1)
+    self.connect(self.mcu.gpio.allocate('motor_ain2'), self.motor_driver.ain2)
+    self.connect(self.mcu.gpio.allocate('motor_bin1'), self.motor_driver.bin1)
+    self.connect(self.mcu.gpio.allocate('motor_bin2'), self.motor_driver.bin2)
     self.connect(self.motor_driver.sleep, self.batt.pwr.as_digital_source())
+
+    self.m1 = self.Block(MotorConnector())
+    self.connect(self.m1.a, self.motor_driver.aout1)
+    self.connect(self.m1.b, self.motor_driver.aout2)
+    self.m2 = self.Block(MotorConnector())
+    self.connect(self.m2.a, self.motor_driver.bout1)
+    self.connect(self.m2.b, self.motor_driver.bout2)
+
+    self.servo = self.Block(PwmConnector())
+    self.connect(self.vbatt, self.servo.pwr)
+    self.connect(self.gnd, self.servo.gnd)
+    self.connect(self.mcu.gpio.allocate(), self.servo.pwm)
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
@@ -87,6 +131,8 @@ class RobotDriver(JlcBoardTop):
 
   def refinements(self) -> Refinements:
     from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
+    from electronics_lib.MotorDriver_Drv8833 import Drv8833_Device
+    from electronics_lib.IoExpander_Pcf8574 import Pcf8574_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
@@ -94,7 +140,7 @@ class RobotDriver(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'sw1=18',
+          'spi.miso=NC',
         ]),
 
         (['mcu', 'ic', 'require_basic_part'], False),
@@ -110,6 +156,8 @@ class RobotDriver(JlcBoardTop):
         (TestPoint, ['require_basic_part'], False),
         (ResistorArray, ['require_basic_part'], False),
         (Vl53l0x_Device, ['require_basic_part'], False),
+        (Drv8833_Device, ['require_basic_part'], False),
+        (Pcf8574_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),

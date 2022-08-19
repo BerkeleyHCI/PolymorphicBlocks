@@ -206,6 +206,7 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic)
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
