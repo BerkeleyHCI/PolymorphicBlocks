@@ -13,9 +13,9 @@ class LipoConnector(Battery):
     self.connect(self.gnd, self.conn.pins.allocate('1').adapt_to(GroundSource()))
     self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
-      current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
+      current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
     )))
-    self.assign(self.actual_capacity, (2, 3.6)*Amp)
+    self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
 
 
 class MotorConnector(Block):
