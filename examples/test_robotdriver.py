@@ -9,11 +9,12 @@ class LipoConnector(Battery, FootprintBlock):
                actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.gnd, self.conn.pins.allocate('1').as_ground_source())
-    self.connect(self.pwr, self.conn.pins.allocate('2').as_voltage_source(
+
+    self.connect(self.gnd, self.conn.pins.allocate('1').adapt_to(GroundSource()))
+    self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
-    ))
+    )))
     self.assign(self.actual_capacity, (2, 3.6)*Amp)
 
 
@@ -59,17 +60,19 @@ class RobotDriver(JlcBoardTop):
         self.tof.i2c)
       self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
-    # self.motor_driver = self.Block(L293dd())
-    # self.connect(self.vbatt, self.motor_driver.vss)
-    # self.connect(self.vbatt, self.motor_driver.vs)
-    # self.connect(self.mcu.gnd, self.motor_driver.gnd)
-    #
-    # self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
-    # self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
-    # self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
-    # self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
-    # self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
-    # self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+    self.motor_driver = self.Block(L293dd())
+    self.connect(self.vbatt, self.motor_driver.vss)
+    self.connect(self.vbatt, self.motor_driver.vs)
+    self.connect(self.mcu.gnd, self.motor_driver.gnd)
+
+    self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
+    self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
+    self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
+    self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
+    self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
+    self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+
+    self.lcd = self.Block(Er_Oled_091_3())
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
