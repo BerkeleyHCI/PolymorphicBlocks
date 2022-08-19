@@ -38,7 +38,7 @@ class RobotDriver(JlcBoardTop):
     ) as imp:
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.vbatt,
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
@@ -62,10 +62,9 @@ class RobotDriver(JlcBoardTop):
 
       self.lcd = imp.Block(Er_Oled_091_3())
 
-    self.motor_driver = self.Block(L293dd())
-    self.connect(self.vbatt, self.motor_driver.vss)
-    self.connect(self.vbatt, self.motor_driver.vs)
-    self.connect(self.mcu.gnd, self.motor_driver.gnd)
+    self.motor_driver = self.Block(Drv8833())
+    self.connect(self.vbatt, self.motor_driver.pwr)
+    self.connect(self.gnd, self.motor_driver.gnd)
 
     # self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
     # self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
@@ -73,6 +72,7 @@ class RobotDriver(JlcBoardTop):
     # self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
     # self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
     # self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+    self.connect(self.motor_driver.sleep, self.batt.pwr.as_digital_source())
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
@@ -104,6 +104,7 @@ class RobotDriver(JlcBoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
         (['reg_3v3', 'power_path', 'inductor', 'require_basic_part'], False),
+        (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),

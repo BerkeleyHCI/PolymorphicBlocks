@@ -84,4 +84,5 @@ from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, Mount
 from .Mechanicals import MountingHole_NoPad_M2_5
 from .Mechanicals import JlcToolingHole
 
-from .L293dd import L293dd
+from .MotorDriver_L293dd import L293dd
+from .MotorDriver_Drv8833 import Drv8833
