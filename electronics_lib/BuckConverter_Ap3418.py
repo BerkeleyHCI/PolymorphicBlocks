@@ -58,7 +58,8 @@ class Ap3418(DiscreteBuckConverter):
         inductor_current_ripple=self._calculate_ripple(
           self.pwr_out.link().current_drawn,
           self.ripple_current_factor,
-          rated_current=1.5*Amp)
+          rated_current=1.5*Amp),
+        dutycycle_limit=(0, 1)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

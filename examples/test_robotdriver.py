@@ -148,6 +148,7 @@ class RobotDriver(JlcBoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
         (['reg_3v3', 'power_path', 'inductor', 'require_basic_part'], False),
+        (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
         (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
       ],
       class_values=[
