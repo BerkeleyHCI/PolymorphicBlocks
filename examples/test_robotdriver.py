@@ -87,15 +87,13 @@ class RobotDriver(JlcBoardTop):
       self.expander = imp.Block(Pcf8574())
       self.connect(self.i2c, self.expander.i2c)
       # TODO use pin assign util for IO expanders
-      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('0'))
-      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('1'))
-      self.connect(self.expander.io.allocate(), self.tof.xshut.allocate('2'))
+      self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
 
       self.lcd = imp.Block(Er_Oled_091_3())
       self.connect(self.mcu.spi.allocate('spi'), self.lcd.spi)
-      self.connect(self.lcd.cs, self.expander.io.allocate())
-      self.connect(self.lcd.reset, self.expander.io.allocate())
-      self.connect(self.lcd.dc, self.expander.io.allocate())
+      self.connect(self.lcd.cs, self.expander.io.allocate('lcd_cs'))
+      self.connect(self.lcd.reset, self.expander.io.allocate('lcd_reset'))
+      self.connect(self.lcd.dc, self.expander.io.allocate('lcd_dc'))
 
     self.motor_driver = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver.pwr)

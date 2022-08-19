@@ -1,10 +1,13 @@
+from itertools import chain
+from typing import Dict, List
+
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Pcf8574_Device(DiscreteChip, FootprintBlock, JlcPart):
-  def __init__(self) -> None:
-    super().__init__()
+class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, GeneratorBlock):
+  def __init__(self, **kwags) -> None:
+    super().__init__(**kwags)
     self.gnd = self.Port(Ground())
     self.vdd = self.Port(VoltageSink(  # same between TI and NXP versions
       voltage_limits=(2.5, 6)*Volt,
@@ -21,51 +24,66 @@ class Pcf8574_Device(DiscreteChip, FootprintBlock, JlcPart):
     )
     self.i2c = self.Port(I2cSlave(i2c_model))
 
-    dout_model = DigitalSource.from_supply(  # same between TI and NXP versions
-      self.gnd, self.vdd,
-      current_limits=(-25, 0.3)*mAmp  # highly limited sourcing current
-    )
-    self.p = self.Port(Vector(DigitalSource().empty()), optional=True)
-    for i in range(8):
-      self.p.append_elt(dout_model, str(i))
+    self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-  def contents(self) -> None:
+    self.generator(self.generate, self.pin_assigns, self.io.allocated())
+
+  def generate(self, assignments: List[str], io_allocates: List[str]) -> None:
+    dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
+      self.gnd, self.vdd,
+      current_limits=(-25, 0.3)*mAmp,  # highly limited sourcing current
+      voltage_limit_tolerance=(-0.5, 0.5)*Volt,
+      input_threshold_factor=(0.3, 0.7)
+    )
+
+    pinmaps = PinMapUtil([
+      PinResource('4', {'P0': dout_model}),
+      PinResource('5', {'P1': dout_model}),
+      PinResource('6', {'P2': dout_model}),
+      PinResource('7', {'P3': dout_model}),
+      PinResource('9', {'P4': dout_model}),
+      PinResource('10', {'P5': dout_model}),
+      PinResource('11', {'P6': dout_model}),
+      PinResource('12', {'P7': dout_model}),
+    ])
+
+    ic_pins: Dict[str, CircuitPort] = {
+      '1': self.gnd,  # A0
+      '2': self.gnd,  # A1
+      '3': self.gnd,  # A2
+      '8': self.gnd,
+      # '13': self.int,
+      '14': self.i2c.scl,
+      '15': self.i2c.sda,
+      '16': self.vdd,
+    }
+
+    allocated = pinmaps.allocate([(DigitalBidir, io_allocates)], assignments)
+    io_pins: Dict[str, CircuitPort] = {
+      allocation.pin: self.io.append_elt(dout_model, allocation.name)  # type: ignore
+      for allocation in allocated}
+    self.generator_set_allocation(allocated)
+
     self.footprint(
       'U', 'Package_SO:SOIC-16W_7.5x10.3mm_P1.27mm',
-      {
-        '1': self.gnd,  # A0
-        '2': self.gnd,  # A1
-        '3': self.gnd,  # A2
-        '4': self.p['0'],
-        '5': self.p['1'],
-        '6': self.p['2'],
-        '7': self.p['3'],
-        '8': self.gnd,
-        '9': self.p['4'],
-        '10': self.p['5'],
-        '11': self.p['6'],
-        '12': self.p['7'],
-        # '13': self.int,
-        '14': self.i2c.scl,
-        '15': self.i2c.sda,
-        '16': self.vdd,
-      },
+      dict(chain(ic_pins.items(), io_pins.items())),
       mfr='NXP', part='PCF8574AT',
       datasheet='https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf'
     )
     self.assign(self.lcsc_part, "C86832")
 
 
-class Pcf8574(Block):
+class Pcf8574(PinMappable):
   """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
   def __init__(self) -> None:
     super().__init__()
-    self.ic = self.Block(Pcf8574_Device())
+    self.ic = self.Block(Pcf8574_Device(pin_assigns=self.pin_assigns))
     self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.i2c = self.Export(self.ic.i2c)
-    self.io = self.Export(self.ic.p)
+    self.io = self.Export(self.ic.io)
 
   def contents(self) -> None:
     super().contents()
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
     self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
