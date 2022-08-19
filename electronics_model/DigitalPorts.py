@@ -299,8 +299,9 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
     elif voltage_limit_tolerance is not None:
       voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
                       RangeExpr._to_expr_type(voltage_limit_tolerance)
-    else:
-      raise ValueError("no voltage limit specified")
+    else:  # generic default
+      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
+                      RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
     if input_threshold_factor is not None:
