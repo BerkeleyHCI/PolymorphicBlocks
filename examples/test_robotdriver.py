@@ -67,12 +67,12 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.vbatt, self.motor_driver.vs)
     self.connect(self.mcu.gnd, self.motor_driver.gnd)
 
-    self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
-    self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
-    self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
-    self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
-    self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
-    self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
+    # self.connect(self.mcu.gpio.allocate('enable1'), self.motor_driver.en1)
+    # self.connect(self.mcu.gpio.allocate('enable2'), self.motor_driver.en2)
+    # self.connect(self.mcu.gpio.allocate('motor1'), self.motor_driver.in1)
+    # self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
+    # self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
+    # self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
@@ -90,7 +90,7 @@ class RobotDriver(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
-        (['reg_3v3'], Ap2204k),
+        (['reg_3v3'], Ap3418),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -100,8 +100,10 @@ class RobotDriver(JlcBoardTop):
         (['mcu', 'ic', 'require_basic_part'], False),
         (['reg_3v3', 'ic', 'require_basic_part'], False),
         (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['usb', 'require_basic_part'], False),
+
+        # JLC does not have frequency specs, must be checked TODO
+        (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['reg_3v3', 'power_path', 'inductor', 'require_basic_part'], False),
       ],
       class_values=[
         (TestPoint, ['require_basic_part'], False),

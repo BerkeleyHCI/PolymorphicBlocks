@@ -11,10 +11,7 @@ class Ap3418_Device(DiscreteChip, FootprintBlock):
       current_draw=self.sw.link().current_drawn  # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
-    self.en = self.Port(DigitalSink(  # must be connected, floating is disable
-      voltage_limits=(-0.3, self.pwr_in.link().voltage+0.3) * Volt
-    ))
+    self.fb = self.Port(AnalogSink(impedance=(10, float('inf')) * MOhm))  # based on input current spec
 
   def contents(self) -> None:
     super().contents()
@@ -46,25 +43,22 @@ class Ap3418(DiscreteBuckConverter):
       self.ic = imp.Block(Ap3418_Device())
 
       self.fb = imp.Block(FeedbackVoltageDivider(
-        output_voltage=(0.749, 0.787) * Volt,
-        impedance=(1, 10) * kOhm,
+        output_voltage=(0.588, 0.612) * Volt,
+        impedance=(10, 100) * kOhm,
         assumed_input_voltage=self.output_voltage
       ))
       self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
       self.connect(self.fb.input, self.pwr_out)
       self.connect(self.fb.output, self.ic.fb)
 
-      self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.2.4
-
-      self.vbst_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 6) * Volt))
-      self.connect(self.vbst_cap.neg.as_voltage_sink(), self.ic.sw)
-      self.connect(self.vbst_cap.pos.as_voltage_sink(), self.ic.vbst)
-
       # TODO: the control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
-        self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=1.2*Amp)
+        self.pwr_out.link().current_drawn, (0, 1.5)*Amp,
+        inductor_current_ripple=self._calculate_ripple(
+          self.pwr_out.link().current_drawn,
+          self.ripple_current_factor,
+          rated_current=1.5*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
