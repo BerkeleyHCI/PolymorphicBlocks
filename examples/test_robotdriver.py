@@ -135,6 +135,10 @@ class RobotDriver(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
         (['reg_3v3'], Ap3418),
+
+        (['batt', 'conn'], JstPhK),
+        (['m1', 'conn'], JstPhK),
+        (['m2', 'conn'], JstPhK),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
