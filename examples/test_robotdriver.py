@@ -60,6 +60,8 @@ class RobotDriver(JlcBoardTop):
         self.tof.i2c)
       self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
+      self.lcd = imp.Block(Er_Oled_091_3())
+
     self.motor_driver = self.Block(L293dd())
     self.connect(self.vbatt, self.motor_driver.vss)
     self.connect(self.vbatt, self.motor_driver.vs)
@@ -71,8 +73,6 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.mcu.gpio.allocate('motor2'), self.motor_driver.in2)
     self.connect(self.mcu.gpio.allocate('motor3'), self.motor_driver.in3)
     self.connect(self.mcu.gpio.allocate('motor4'), self.motor_driver.in4)
-
-    self.lcd = self.Block(Er_Oled_091_3())
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
