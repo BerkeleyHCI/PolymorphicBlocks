@@ -95,6 +95,12 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.lcd.reset, self.expander.io.allocate('lcd_reset'))
       self.connect(self.lcd.dc, self.expander.io.allocate('lcd_dc'))
 
+      # IMU
+      self.imu = imp.Block(Imu_Lsm6ds3trc())
+      self.connect(self.v3v3.as_digital_source(), self.imu.cs)
+      self.connect(self.v3v3.as_digital_source(), self.imu.sa0)
+      self.connect(self.expander.i2c, self.imu.i2c)
+
     self.motor_driver = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver.pwr)
     self.connect(self.gnd, self.motor_driver.gnd)
@@ -116,11 +122,11 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.allocate('pwm'), self.servo.pwm)
 
+    # LED ARRAY
     self.ws2812bArray = self.Block(Ws2812bArray(5))
-    self.connect(self.ws2812bArray.vdd, self.vbatt)
-    self.connect(self.ws2812bArray.gnd, self.gnd)
+    self.connect(self.vbatt, self.ws2812bArray.vdd)
+    self.connect(self.gnd, self.ws2812bArray.gnd)
     self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
-
 
     # Misc board
     self.duck = self.Block(DuckLogo())
