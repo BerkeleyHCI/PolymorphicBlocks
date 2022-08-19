@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from . import PassiveConnector
 from .JlcPart import JlcPart
 
 
@@ -58,6 +59,50 @@ class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
     )
     self.assign(self.lcsc_part, "C91199")
     self.assign(self.actual_basic_part, False)
+
+
+class Vl53l0x_Connector(Block):
+  """Connector to an external VL53L0X breakout board.
+  Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
+  This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.conn = self.Block(PassiveConnector(length=6))
+    self.vdd = self.Export(self.conn.pins.allocate('1').adapt_to(VoltageSink(
+      voltage_limits=(2.6, 3.5) * Volt,
+      current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
+    )), [Power])
+    self.vss = self.Export(self.conn.pins.allocate('2').adapt_to(Ground()), [Common])
+
+    # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
+    # This model assumes that IOVDD = Vdd
+    dio_model = DigitalBidir(
+      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
+      current_draw=(0, 0),
+      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
+      current_limits=Range.all(),  # TODO not given
+      input_thresholds=(0.3 * self.vdd.link().voltage.upper(),
+                        0.7 * self.vdd.link().voltage.upper()),
+      output_thresholds=(0, self.vdd.link().voltage.upper()),
+    )
+    self.xshut = self.Export(self.conn.pins.allocate('6').adapt_to(
+      DigitalSink.from_bidir(dio_model)
+    ))
+    self.gpio1 = self.Export(self.conn.pins.allocate('5').adapt_to(
+      DigitalSource.from_bidir(dio_model)
+    ), optional=True)
+
+    i2c_model = DigitalBidir(
+      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
+      current_draw=(0, 0),
+      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
+      current_limits=Range.all(),  # TODO not given
+      input_thresholds=(0.6, 1.12),  # this differs from the GPIO model
+      output_thresholds=(0, self.vdd.link().voltage.upper()),
+    )
+    self.i2c = self.Port(I2cSlave.empty())
+    self.connect(self.i2c.scl, self.conn.pins.allocate('3').adapt_to(i2c_model))
+    self.connect(self.i2c.sda, self.conn.pins.allocate('4').adapt_to(i2c_model))
 
 
 class Vl53l0x(Block):
