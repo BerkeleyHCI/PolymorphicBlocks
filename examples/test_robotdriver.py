@@ -114,7 +114,7 @@ class RobotDriver(JlcBoardTop):
     self.servo = self.Block(PwmConnector())
     self.connect(self.vbatt, self.servo.pwr)
     self.connect(self.gnd, self.servo.gnd)
-    self.connect(self.mcu.gpio.allocate(), self.servo.pwm)
+    self.connect(self.mcu.gpio.allocate('pwm'), self.servo.pwm)
 
     self.ws2812bArray = self.Block(Ws2812bArray(5))
     self.connect(self.ws2812bArray.vdd, self.vbatt)
