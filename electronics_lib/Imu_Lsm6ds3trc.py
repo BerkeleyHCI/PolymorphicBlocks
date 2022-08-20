@@ -6,7 +6,7 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock):
         super().__init__()
         self.vdd = self.Port(VoltageSink(
             voltage_limits=(1.71, 3.6)*Volt,
-            current_draw=(0.29, 0.9)*mAmp  # typical values for low-power and high-performance modes
+            current_draw=(3*uAmp, 0.9*mAmp)  # typical values for low-power and high-performance modes
         ))
         self.vddio = self.Port(VoltageSink(
             voltage_limits=(1.62*Volt, self.vdd.voltage_limits.upper()+0.1)
@@ -15,9 +15,10 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock):
 
         # TODO figure out how to initialize pins
         din_model = DigitalBidir.from_supply(
-            self.gnd, self.vdd,
-            current_limits=(-3, 0)*mAmp,
-            input_threshold_abs=(0.3, self.vddio.voltage_limits.upper()+0.3)
+            self.gnd, self.vddio,
+            voltage_limit_abs=(0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
+            current_limits=(0, 4)*mAmp,
+            input_threshold_factor=(0.3, 0.7)
         )
         self.i2c = self.Port(I2cSlave(din_model))
 
@@ -45,7 +46,7 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock):
                 '14': self.i2c.sda,
             },
             mfr='STMicroelectronics', part='LSM6DS3TR-C',
-            datasheet='https://datasheet.lcsc.com/lcsc/2102261805_STMicroelectronics-LSM6DS3TR-C_C967633.pdf'
+            datasheet='https://www.st.com/resource/en/datasheet/lsm6ds3tr-c.pdf'
         )
 
 
