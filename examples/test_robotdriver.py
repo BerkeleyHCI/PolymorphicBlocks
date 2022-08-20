@@ -97,8 +97,6 @@ class RobotDriver(JlcBoardTop):
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
-      self.connect(self.v3v3.as_digital_source(), self.imu.cs)
-      self.connect(self.v3v3.as_digital_source(), self.imu.sa0)
       self.connect(self.expander.i2c, self.imu.i2c)
 
     self.motor_driver = self.Block(Drv8833())
