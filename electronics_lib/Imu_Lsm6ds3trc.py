@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock):
+class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(
@@ -48,6 +49,8 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock):
             mfr='STMicroelectronics', part='LSM6DS3TR-C',
             datasheet='https://www.st.com/resource/en/datasheet/lsm6ds3tr-c.pdf'
         )
+        self.assign(self.lcsc_part, 'C967633')
+        self.assign(self.actual_basic_part, False)
 
 
 class Imu_Lsm6ds3trc(Block):

@@ -165,6 +165,8 @@ class RobotDriver(JlcBoardTop):
         (Vl53l0x_Device, ['require_basic_part'], False),
         (Drv8833_Device, ['require_basic_part'], False),
         (Pcf8574_Device, ['require_basic_part'], False),
+        (Ws2812b, ['require_basic_part'], False),
+        (Imu_Lsm6ds3trc_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),

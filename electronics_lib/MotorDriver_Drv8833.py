@@ -69,7 +69,7 @@ class Drv8833_Device(DiscreteChip, FootprintBlock, JlcPart):
       mfr='Texas Instruments', part='DRV8833PWP',  # also compatible w/ PW package (no GND pad)
       datasheet='https://www.ti.com/lit/ds/symlink/drv8833.pdf'
     )
-    self.assign(self.lcsc_part, "C50506")
+    self.assign(self.lcsc_part, 'C50506')
 
 
 class Drv8833(Block):

@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Ap3418_Device(DiscreteChip, FootprintBlock):
+class Ap3418_Device(DiscreteChip, FootprintBlock, JlcPart):
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -27,10 +28,12 @@ class Ap3418_Device(DiscreteChip, FootprintBlock):
       mfr='Diodes Incorporated', part='AP3418',
       datasheet='https://www.diodes.com/assets/Datasheets/AP3418.pdf'
     )
+    self.assign(self.lcsc_part, 'C500769')
+    self.assign(self.actual_basic_part, False)
 
 
 class Ap3418(DiscreteBuckConverter):
-  """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
+  """Adjustable synchronous buck converter in SOT-23-5 with integrated switch"""
   def contents(self):
     super().contents()
 

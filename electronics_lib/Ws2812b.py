@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Ws2812b(DiscreteChip, FootprintBlock):
+class Ws2812b(DiscreteChip, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(
@@ -32,6 +33,12 @@ class Ws2812b(DiscreteChip, FootprintBlock):
             mfr='Worldsemi', part='WS2812B',
             datasheet='https://datasheet.lcsc.com/lcsc/2106062036_Worldsemi-WS2812B-B-W_C2761795.pdf'
         )
+        # this is actually the WS2812E-V5 which shares similar specs to the B version,
+        # but brighter reed and weaker blue and is available for JLC's economy assembly process
+        # note, XL-5050RGBC-WS2812B is package compatible but the digital logic thresholds are relative to Vdd
+        # and Vih at 0.65 Vddmax = 5.5v is 3.575, which is not compatible with the B version
+        self.assign(self.lcsc_part, 'C2920042')
+        self.assign(self.actual_basic_part, False)
 
 
 class Ws2812bArray(GeneratorBlock):
