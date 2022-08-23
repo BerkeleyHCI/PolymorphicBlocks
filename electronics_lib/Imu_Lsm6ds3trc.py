@@ -17,7 +17,8 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock, JlcPart):
         # TODO figure out how to initialize pins
         din_model = DigitalBidir.from_supply(
             self.gnd, self.vddio,
-            voltage_limit_abs=(0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
+            voltage_limit_abs=(-0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
+            # datasheet states abs volt to be [0.3, VDD_IO+0.3], likely a typo
             current_limits=(0, 4)*mAmp,
             input_threshold_factor=(0.3, 0.7)
         )
@@ -66,5 +67,5 @@ class Imu_Lsm6ds3trc(Block):
 
     def contents(self):
         super().contents()
-        self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.1))).connected(self.gnd, self.ic.vdd)
-        self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.1))).connected(self.gnd, self.ic.vddio)
+        self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+        self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)
