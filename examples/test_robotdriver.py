@@ -132,7 +132,6 @@ class RobotDriver(JlcBoardTop):
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
     from electronics_lib.MotorDriver_Drv8833 import Drv8833_Device
     from electronics_lib.IoExpander_Pcf8574 import Pcf8574_Device
     return super().refinements() + Refinements(
