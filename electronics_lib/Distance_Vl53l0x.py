@@ -3,55 +3,46 @@ from . import PassiveConnector
 from .JlcPart import JlcPart
 
 
-# Because we have both the chip + application circuit and the connector versions of the device,
-# the shared definitions are here
-# TODO is there a better way to model this?
-def make_vl53l0x_vdd_model() -> VoltageSink:
-  return VoltageSink(
-    voltage_limits=(2.6, 3.5) * Volt,
-    current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
-  )
-
-def make_vl53l0x_gpio_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> DigitalBidir:
-  return DigitalBidir.from_supply(
-    vss, vdd,
-    voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
-    input_threshold_factor=(0.3, 0.7),
-  )
-
-def make_vl53l0x_i2d_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> I2cSlave:
-  return I2cSlave(DigitalBidir.from_supply(
-    vss, vdd,
-    voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
-    input_threshold_abs=(0.6, 1.12),
-  ))
-
-
-class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.vdd = self.Port(VoltageSink(
+class Vl53l0x_DeviceBase():
+  """Shared common definitions for VL53L0x devices"""
+  @staticmethod
+  def _vdd_model() -> VoltageSink:
+    return VoltageSink(
       voltage_limits=(2.6, 3.5) * Volt,
       current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
-    ), [Power])
-    self.vss = self.Port(Ground(), [Common])
+    )
 
+  @staticmethod
+  def _gpio_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> DigitalBidir:
     # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
     # This model assumes that IOVDD = Vdd
-    dio_model = DigitalBidir.from_supply(
-      self.vss, self.vdd,
+    return DigitalBidir.from_supply(
+      vss, vdd,
       voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
       input_threshold_factor=(0.3, 0.7),
     )
-    self.xshut = self.Port(DigitalSink.from_bidir(dio_model))
-    self.gpio1 = self.Port(dio_model, optional=True)
 
-    self.i2c = self.Port(I2cSlave(DigitalBidir.from_supply(
-      self.vss, self.vdd,
+  @staticmethod
+  def _i2c_io_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> DigitalBidir:
+    return DigitalBidir.from_supply(
+      vss, vdd,
       voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
       input_threshold_abs=(0.6, 1.12),
-    )), [Output])
+    )
+
+
+class Vl53l0x_Device(Vl53l0x_DeviceBase, DiscreteChip, JlcPart, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.vdd = self.Port(self._vdd_model(), [Power])
+    self.vss = self.Port(Ground(), [Common])
+
+    gpio_model = self._gpio_model(self.vss, self.vdd)
+    self.xshut = self.Port(DigitalSink.from_bidir(gpio_model))
+    self.gpio1 = self.Port(gpio_model, optional=True)
+
+    self.i2c = self.Port(I2cSlave(self._i2c_io_model(self.vss, self.vdd)), [Output])
 
   def contents(self):
     super().contents()
@@ -78,65 +69,50 @@ class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Vl53l0xConnector(Block):
+@abstract_block
+class Vl53l0x(Block):
+  """Abstract base class for VL53L0x application circuits"""
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink().empty(), [Power])
+    self.gnd = self.Port(Ground().empty(), [Common])
+
+    self.i2c = self.Port(I2cSlave.empty())
+    self.xshut = self.Port(DigitalSink.empty())  # MUST be driven
+    self.gpio1 = self.Port(DigitalBidir.empty(), optional=True)
+
+
+class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x):
   """Connector to an external VL53L0X breakout board.
   Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
   def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(PassiveConnector(length=6))
-    self.vdd = self.Export(self.conn.pins.allocate('1').adapt_to(VoltageSink(
-      voltage_limits=(2.6, 3.5) * Volt,
-      current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
-    )), [Power])
-    self.vss = self.Export(self.conn.pins.allocate('2').adapt_to(Ground()), [Common])
+    self.connect(self.pwr, self.conn.pins.allocate('1').adapt_to(self._vdd_model()))
+    self.connect(self.gnd, self.conn.pins.allocate('2').adapt_to(Ground()))
 
-    # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
-    # This model assumes that IOVDD = Vdd
-    dio_model = DigitalBidir(
-      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
-      current_draw=(0, 0),
-      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
-      current_limits=Range.all(),  # TODO not given
-      input_thresholds=(0.3 * self.vdd.link().voltage.upper(),
-                        0.7 * self.vdd.link().voltage.upper()),
-      output_thresholds=(0, self.vdd.link().voltage.upper()),
-    )
-    self.xshut = self.Export(self.conn.pins.allocate('6').adapt_to(
-      DigitalSink.from_bidir(dio_model)
-    ))
-    self.gpio1 = self.Export(self.conn.pins.allocate('5').adapt_to(
-      DigitalSource.from_bidir(dio_model)
-    ), optional=True)
+    gpio_model = self._gpio_model(self.gnd, self.pwr)
+    self.connect(self.xshut, self.conn.pins.allocate('6').adapt_to(gpio_model))
+    self.connect(self.gpio1, self.conn.pins.allocate('5').adapt_to(gpio_model))
 
-    i2c_model = DigitalBidir(
-      voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
-      current_draw=(0, 0),
-      voltage_out=(0, self.vdd.link().voltage.lower()),  # TODO: assumed
-      current_limits=Range.all(),  # TODO not given
-      input_thresholds=(0.6, 1.12),  # this differs from the GPIO model
-      output_thresholds=(0, self.vdd.link().voltage.upper()),
-    )
-    self.i2c = self.Port(I2cSlave.empty())
-    self.connect(self.i2c.scl, self.conn.pins.allocate('3').adapt_to(i2c_model))
-    self.connect(self.i2c.sda, self.conn.pins.allocate('4').adapt_to(i2c_model))
+    i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
+    self.connect(self.i2c.scl, self.conn.pins.allocate('3').adapt_to(i2c_io_model))
+    self.connect(self.i2c.sda, self.conn.pins.allocate('4').adapt_to(i2c_io_model))
 
 
-class Vl53l0x(Block):
+class Vl53l0xApplication(Vl53l0x):
   """Board-mount laser ToF sensor"""
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.ic = self.Block(Vl53l0x_Device())
-    self.pwr = self.Export(self.ic.vdd, [Power])
-    self.gnd = self.Export(self.ic.vss, [Common])
-
-    self.i2c = self.Export(self.ic.i2c)
-    self.xshut = self.Export(self.ic.xshut)  # MUST be driven
-    self.gpio1 = self.Export(self.ic.gpio1, optional=True)
-
   def contents(self):
     super().contents()
+    self.ic = self.Block(Vl53l0x_Device())
+    self.connect(self.pwr, self.ic.vdd)
+    self.connect(self.gnd, self.ic.vss)
+
+    self.connect(self.i2c, self.ic.i2c)
+    self.connect(self.xshut, self.ic.xshut)  # MUST be driven
+    self.connect(self.gpio1, self.ic.gpio1)
 
     # Datasheet Figure 3, two decoupling capacitors
     self.vdd_cap = ElementDict[DecouplingCapacitor]()

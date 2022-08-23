@@ -140,9 +140,7 @@ class RobotDriver(JlcBoardTop):
         (['mcu'], Esp32c3_Wroom02),
         (['reg_3v3'], Ap3418),
 
-        (['batt', 'conn'], JstPhK),
-        (['m1', 'conn'], JstPhK),
-        (['m2', 'conn'], JstPhK),
+        (['mcu', 'uart0', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -169,7 +167,8 @@ class RobotDriver(JlcBoardTop):
         (Imu_Lsm6ds3trc_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
-        (PassiveConnector, PinHeader254),
+        (PassiveConnector, JstPhK),  # Use JST PH unless otherwise specified
+        (Vl53l0x, Vl53l0xConnector)
       ],
     )
 

@@ -25,6 +25,8 @@ class BaseBoardTop(DesignTop):
         (TestPoint, Keystone5015),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+
+        (Vl53l0x, Vl53l0xApplication)
       ],
     )
 
