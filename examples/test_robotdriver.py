@@ -160,7 +160,6 @@ class RobotDriver(JlcBoardTop):
       class_values=[
         (TestPoint, ['require_basic_part'], False),
         (ResistorArray, ['require_basic_part'], False),
-        (Vl53l0x_Device, ['require_basic_part'], False),
         (Drv8833_Device, ['require_basic_part'], False),
         (Pcf8574_Device, ['require_basic_part'], False),
         (Ws2812b, ['require_basic_part'], False),
