@@ -430,7 +430,7 @@ class MultimeterTest(JlcBoardTop):
         (['measure', 'range', 'switch'], AnalogSwitchTree),
         (['driver', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], GenericChipResistor),
-        (['spk', 'conn'], JstPhK),
+        (['spk', 'conn'], JstPhKVertical),
 
         (['driver', 'fet'], DigikeyFet),
         (['driver', 'diode'], DigikeySmtDiode),

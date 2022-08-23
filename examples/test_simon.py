@@ -112,7 +112,7 @@ class TestSimon(BoardTop):
         ]),
       ],
       instance_refinements=[
-        (['spk', 'conn'], JstPhK),
+        (['spk', 'conn'], JstPhKVertical),
       ],
       class_refinements=[
         (Speaker, ConnectorSpeaker),
