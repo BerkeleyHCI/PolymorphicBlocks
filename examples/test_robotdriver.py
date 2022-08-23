@@ -86,7 +86,7 @@ class RobotDriver(JlcBoardTop):
 
       self.expander = imp.Block(Pcf8574())
       self.connect(self.i2c, self.expander.i2c)
-      # TODO use pin assign util for IO expanders
+      # # TODO use pin assign util for IO expanders
       self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
 
       self.lcd = imp.Block(Er_Oled_091_3())
@@ -100,7 +100,7 @@ class RobotDriver(JlcBoardTop):
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
-      self.connect(self.expander.i2c, self.imu.i2c)
+      self.connect(self.i2c, self.imu.i2c)
 
     self.motor_driver1 = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver1.pwr)
@@ -183,9 +183,10 @@ class RobotDriver(JlcBoardTop):
         (Pcf8574_Device, ['require_basic_part'], False),
         (Ws2812b, ['require_basic_part'], False),
         (Imu_Lsm6ds3trc_Device, ['require_basic_part'], False),
+        (JstPhSmVerticalJlc, ['require_basic_part'], False),
       ],
       class_refinements=[
-        (PassiveConnector, JstPhK),  # Use JST PH unless otherwise specified
+        (PassiveConnector, JstPhSmVerticalJlc),  # default connector series unless otherwise specified
         (Vl53l0x, Vl53l0xConnector)
       ],
     )

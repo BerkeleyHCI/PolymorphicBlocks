@@ -138,7 +138,7 @@ class TofArrayTest(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Stm32f103_48),
         (['reg_3v3'], Ldl1117),  # TBD find one that is in stock
-        (['spk', 'conn'], JstPhK),
+        (['spk', 'conn'], JstPhKVertical),
         (['can', 'conn'], MolexSl),
       ],
       instance_values=[
