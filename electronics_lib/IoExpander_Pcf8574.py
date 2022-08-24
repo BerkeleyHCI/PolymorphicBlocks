@@ -6,7 +6,8 @@ from .JlcPart import JlcPart
 
 
 class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, GeneratorBlock):
-  def __init__(self, **kwags) -> None:
+  @init_in_parent
+  def __init__(self, addr_lsb: IntLike, **kwags) -> None:
     super().__init__(**kwags)
     self.gnd = self.Port(Ground())
     self.vdd = self.Port(VoltageSink(  # same between TI and NXP versions
@@ -14,7 +15,7 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
       current_draw=(2.5, 100)*uAmp  # TODO propagate current draw from loads
     ))
 
-    # TODO support configurable address?
+    self.addr_lsb = self.ArgParameter(addr_lsb)
 
     i2c_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
@@ -26,15 +27,18 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
 
     self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-    self.generator(self.generate, self.pin_assigns, self.io.allocated())
+    self.generator(self.generate, self.addr_lsb, self.pin_assigns, self.io.allocated())
 
-  def generate(self, assignments: List[str], io_allocates: List[str]) -> None:
+  def generate(self, addr_lsb: int, assignments: List[str], io_allocates: List[str]) -> None:
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
       current_limits=(-25, 0.3)*mAmp,  # highly limited sourcing current
       voltage_limit_tolerance=(-0.5, 0.5)*Volt,
       input_threshold_factor=(0.3, 0.7)
     )
+
+    self.require((self.addr_lsb < 8) & (self.addr_lsb >= 0), "addr_lsb must be within [0, 8)")
+
 
     pinmaps = PinMapUtil([
       PinResource('4', {'P0': dout_model}),
@@ -75,9 +79,10 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
 
 class Pcf8574(PinMappable):
   """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
-  def __init__(self) -> None:
+  @init_in_parent
+  def __init__(self, addr_lsb: IntLike = Default(0)) -> None:
     super().__init__()
-    self.ic = self.Block(Pcf8574_Device(pin_assigns=self.pin_assigns))
+    self.ic = self.Block(Pcf8574_Device(addr_lsb=addr_lsb, pin_assigns=self.pin_assigns))
     self.pwr = self.Export(self.ic.vdd, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.i2c = self.Export(self.ic.i2c)
