@@ -421,7 +421,6 @@ class MultimeterTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Xc9142),

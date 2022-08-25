@@ -132,8 +132,6 @@ class TofArrayTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
