@@ -153,16 +153,6 @@ class LedMatrixTest(JlcBoardTop):
           'led_6=10',
           'sw1=18',
         ]),
-
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['usb', 'conn', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (ResistorArray, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),
