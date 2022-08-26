@@ -10,7 +10,7 @@ from .JlcPart import JlcPart
 class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
   """Base class for ESP32 series microcontrollrs with WiFi and Bluetooth (classic and LE)
 
-  Chip datasheet: hhttps://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
   """
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
