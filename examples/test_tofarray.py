@@ -132,8 +132,6 @@ class TofArrayTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
@@ -159,18 +157,6 @@ class TofArrayTest(JlcBoardTop):
           'tof_xshut_3=3',
           'tof_xshut_4=2',
         ]),
-
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['usb', 'conn', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (SmtRgbLed, ['require_basic_part'], False),
-        (Vl53l0x_Device, ['require_basic_part'], False),
-        (Tpa2005d1_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

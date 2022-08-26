@@ -6,9 +6,11 @@ from electronics_abstract_parts import *
 
 @abstract_block
 class JlcPart(Block):
-  """Provides additional data fields for JLCPCB parts for their SMT service."""
+  """Provides additional data fields for JLCPCB parts for their SMT service.
+  By default, this does not check for basic parts, but that can be changed in refinements.
+  """
   @init_in_parent
-  def __init__(self, require_basic_part: BoolLike = True):
+  def __init__(self, require_basic_part: BoolLike = False):
     super().__init__()
     self.lcsc_part = self.Parameter(StringExpr())
     self.actual_basic_part = self.Parameter(BoolExpr())
