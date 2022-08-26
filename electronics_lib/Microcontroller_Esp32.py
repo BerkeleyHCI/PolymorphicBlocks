@@ -32,7 +32,7 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
     )
 
     # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
-    # self.en = self.Port(dio_model)  # needs external pullup
+    self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
     # self.io2 = self.Port(dio_model)  # needs external pullup
     # self.io8 = self.Port(dio_model)  # needs external pullup, may control prints
     # self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
@@ -67,12 +67,45 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
       # current_draw=(0, 0) * Amp,
       # TODO: impedance / leakage - not specified by datasheet
     )
+    dac_model = AnalogSource(
+      # voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
+      # current_draw=(0, 0) * Amp,
+      # TODO: impedance / leakage - not specified by datasheet
+    )
 
     # uart_model = UartPort(DigitalBidir.empty())
     # spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
     # i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
 
-    return PinMapUtil([  # section 2.2
+    return PinMapUtil([  # section 2.2, table 1
+      # VDD3P3_RTC
+      PinResource('SENSOR_VP', {'GPIO36': dio_model, 'ADC1_CH0': adc_model}),  # also RTC_GPIO
+      PinResource('SENSOR_CAPP', {'GPIO37': dio_model, 'ADC1_CH1': adc_model}),  # also RTC_GPIO
+      PinResource('SENSOR_CAPN', {'GPIO38': dio_model, 'ADC1_CH2': adc_model}),  # also RTC_GPIO
+      PinResource('SENSOR_VN', {'GPIO39': dio_model, 'ADC1_CH3': adc_model}),  # also RTC_GPIO
+
+      PinResource('VDET_1', {'GPIO34': dio_model, 'ADC1_CH6': adc_model}),  # also RTC_GPIO
+      PinResource('VDET_2', {'GPIO35': dio_model, 'ADC1_CH7': adc_model}),  # also RTC_GPIO
+      PinResource('32K_XP', {'GPIO32': dio_model, 'ADC1_CH4': adc_model}),  # also RTC_GPIO, 32K_XP
+      PinResource('32K_XP', {'GPIO33': dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
+
+      PinResource('GPIO25', {'GPIO25': dio_model, 'ADC2_CH8': adc_model, 'DAC_1': dac_model}),  # also RTC_GPIO
+      PinResource('GPIO26', {'GPIO26': dio_model, 'ADC2_CH9': adc_model, 'DAC_2': dac_model}),  # also RTC_GPIO
+      PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
+
+      PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
+      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO
+      PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
+      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO
+
+      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO
+      PinResource('GPIO0', {'GPIO0': dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO
+      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
+
+      # VDD_SDIO
+
+      
+
       # PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
       # PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
       # # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
