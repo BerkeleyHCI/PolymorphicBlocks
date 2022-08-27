@@ -68,7 +68,7 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
 
 
 class Mcp3561(Block):
-  """MCP3561R up-to-24-bit delta-sigma ADC with interrnal voltage reference.
+  """MCP3561R up-to-24-bit delta-sigma ADC with internal voltage reference.
   """
   def __init__(self) -> None:
     super().__init__()
@@ -87,10 +87,10 @@ class Mcp3561(Block):
     super().contents()
 
     self.avdd_res = self.Block(SeriesPowerResistor(
-      10*Ohm(tol=0.05), (0, 2.5)*mAmp
+      10*Ohm(tol=0.05)
     )).connected(self.pwra, self.ic.avdd)
     self.dvdd_res = self.Block(SeriesPowerResistor(
-      10*Ohm(tol=0.05), (0, 2.5)*mAmp
+      10*Ohm(tol=0.05)
     )).connected(self.pwr, self.ic.dvdd)
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),

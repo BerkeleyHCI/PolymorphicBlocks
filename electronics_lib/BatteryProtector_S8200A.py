@@ -65,7 +65,7 @@ class BatteryProtector_S8200A(Block):
     super().contents()
 
     self.vdd_res = self.Block(
-      SeriesPowerResistor(330 * Ohm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))  # while 330 is preferred, the actual acceptable range is 150-1k
+      SeriesPowerResistor(330 * Ohm(tol=0.10))  # while 330 is preferred, the actual acceptable range is 150-1k
     ).connected(self.pwr_in, self.ic.vdd)
 
     self.connect(self.pwr_in, self.pwr_out)
@@ -86,5 +86,5 @@ class BatteryProtector_S8200A(Block):
     self.connect(self.ic.co, self.co_fet.gate)
 
     self.vm_res = self.Block(
-      SeriesPowerResistor(2 * kOhm(tol=0.10), (0 * uAmp, self.ic.vdd.current_draw.upper()))
+      SeriesPowerResistor(2 * kOhm(tol=0.10))
     ).connected(self.gnd_out, self.ic.vm.adapt_to(VoltageSink()))
