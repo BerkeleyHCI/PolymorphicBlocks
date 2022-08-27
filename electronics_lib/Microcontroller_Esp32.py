@@ -103,27 +103,25 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
       PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
 
       # VDD_SDIO
+      PinResource('GPIO16', {'GPIO16': dio_model}),
+      PinResource('GPIO17', {'GPIO17': dio_model}),
+      PinResource('SD_DATA_2', {'GPIO9': dio_model}),
+      PinResource('SD_DATA_3', {'GPIO10': dio_model}),
+      PinResource('SD_CMD', {'GPIO11': dio_model}),
+      PinResource('SD_CLK', {'GPIO6': dio_model}),
+      PinResource('SD_DATA_0', {'GPIO7': dio_model}),
+      PinResource('SD_DATA_1', {'GPIO8': dio_model}),
 
-      
+      # VDD_3P3_CPU
+      PinResource('GPIO5', {'GPIO5': dio_model}),
+      PinResource('GPIO18', {'GPIO18': dio_model}),
+      PinResource('GPIO23', {'GPIO23': dio_model}),
+      PinResource('GPIO19', {'GPIO19': dio_model}),
+      PinResource('GPIO22', {'GPIO22': dio_model}),
+      PinResource('U0RXD', {'GPIO3': dio_model}),
+      PinResource('U0TXD', {'GPIO1': dio_model}),
+      PinResource('GPIO21', {'GPIO21': dio_model}),
 
-      # PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
-      # PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
-      # # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
-      # PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH3': adc_model}),
-      # PinResource('MTMS', {'GPIO4': dio_model, 'ADC1_CH4': adc_model}),
-      # PinResource('MTDI', {'GPIO5': dio_model, 'ADC2_CH0': adc_model}),
-      # PinResource('MTCK', {'GPIO6': dio_model}),
-      # PinResource('MTDO', {'GPIO7': dio_model}),
-      # # PinResource('GPIO8', {'GPIO8': dio_model}),  # boot pin, non-allocatable
-      # # PinResource('GPIO9', {'GPIO9': dio_model}),  # boot pin, non-allocatable
-      # PinResource('GPIO10', {'GPIO10': dio_model}),
-      # PinResource('VDD_SPI', {'GPIO11': dio_model}),
-      # # SPI pins skipped - internal to the modules supported so far
-      # PinResource('GPIO18', {'GPIO18': dio_model}),
-      # PinResource('GPIO19', {'GPIO19': dio_model}),
-      # # PinResource('GPIO20', {'GPIO20': dio_model}),  # boot pin, non-allocatable
-      # # PinResource('GPIO21', {'GPIO21': dio_model}),  # boot pin, non-allocatable
-      #
       # # peripherals in section 3.11
       # # PeripheralFixedResource('U0', uart_model, {  # programming pin, non-allocatable
       # #   'txd': ['GPIO21'], 'rxd': ['GPIO20']
