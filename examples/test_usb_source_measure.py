@@ -234,23 +234,20 @@ class SourceMeasureControl(Block):
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
 
-      (self.isen, ), _ = self.chain(
-        self.driver.out,
-        imp.Block(CurrentSenseResistor(resistance=0.1*Ohm(tol=0.01), current_limits=self.current)),
-        self.out)
-      self.imeas = imp.Block(DifferentialAmplifier(
-        ratio=Range.from_tolerance(1, 0.05),
-        input_impedance=10*kOhm(tol=0.05)))
-      self.connect(self.imeas.input_positive, self.isen.sense_in)
-      self.connect(self.imeas.input_negative, self.isen.sense_out)
-      self.connect(self.imeas.output_reference, self.ref_center)
-      self.connect(self.imeas.output, self.measured_current,
+      self.imeas = imp.Block(OpampCurrentSensor(
+        resistance=0.1*Ohm(tol=0.01), current=self.current,
+        ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
+      ))
+      self.connect(self.driver.out, self.imeas.pwr_in)
+      self.connect(self.imeas.pwr_out, self.out)
+      self.connect(self.imeas.ref, self.ref_center)
+      self.connect(self.imeas.out, self.measured_current,
                    self.err_source.actual, self.err_sink.actual)
 
       self.vmeas = imp.Block(DifferentialAmplifier(
         ratio=Range.from_tolerance(1/22, 0.05),
         input_impedance=220*kOhm(tol=0.05)))
-      self.connect(self.vmeas.input_positive, self.isen.pwr_out.as_analog_source())
+      self.connect(self.vmeas.input_positive, self.imeas.pwr_out.as_analog_source())
       # TODO FIX ME - less jank bridging
       from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
       self.gnd_adapter = self.Block(VoltageSinkAdapterAnalogSource())
@@ -402,9 +399,9 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
-        (['control', 'imeas', 'amp'], Opa197),
+        (['control', 'imeas', 'amp', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'isen', 'res', 'res'], GenericChipResistor),  # big one not from JLC
+        (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], DigikeyFet),
         (['control', 'driver', 'high_fet'], DigikeyFet),
