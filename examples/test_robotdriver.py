@@ -84,7 +84,7 @@ class RobotDriver(JlcBoardTop):
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
 
-      self.expander = imp.Block(Pcf8574())
+      self.expander = imp.Block(Pcf8574(0))
       self.connect(self.i2c, self.expander.i2c)
       # # TODO use pin assign util for IO expanders
       self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
@@ -95,7 +95,7 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.lcd.reset, self.expander.io.allocate('lcd_reset'))
       self.connect(self.lcd.dc, self.expander.io.allocate('lcd_dc'))
 
-      self.motor_expander = imp.Block(Pcf8574())
+      self.motor_expander = imp.Block(Pcf8574(5))
       self.connect(self.i2c, self.motor_expander.i2c)
 
       # IMU

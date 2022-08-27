@@ -39,7 +39,6 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
 
     self.require((self.addr_lsb < 8) & (self.addr_lsb >= 0), "addr_lsb must be within [0, 8)")
 
-
     pinmaps = PinMapUtil([
       PinResource('4', {'P0': dout_model}),
       PinResource('5', {'P1': dout_model}),
@@ -52,9 +51,9 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
     ])
 
     ic_pins: Dict[str, CircuitPort] = {
-      '1': self.gnd,  # A0
-      '2': self.gnd,  # A1
-      '3': self.gnd,  # A2
+      '1': self.vdd if addr_lsb & 1 else self.gnd,  # A0
+      '2': self.vdd if addr_lsb & 2 else self.gnd,  # A1
+      '3': self.vdd if addr_lsb & 4 else self.gnd,  # A2
       '8': self.gnd,
       # '13': self.int,
       '14': self.i2c.scl,
