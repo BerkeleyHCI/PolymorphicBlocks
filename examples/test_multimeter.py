@@ -421,7 +421,6 @@ class MultimeterTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Xc9142),
@@ -488,22 +487,9 @@ class MultimeterTest(JlcBoardTop):
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
-
-        # (['prot_5v', 'diode', 'require_basic_part'], False),  # use the big boy Zener
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['prot_analog', 'diode', 'require_basic_part'], False),
-
-        (['gate', 'ctl_diode', 'require_basic_part'], False),
-        (['gate', 'btn_diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['data_usb', 'conn', 'require_basic_part'], False),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
-        (TestPoint, ['require_basic_part'], False),
-        (Tpa2005d1_Device, ['require_basic_part'], False),
-        (SmtRgbLed, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),

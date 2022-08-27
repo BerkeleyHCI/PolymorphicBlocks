@@ -452,17 +452,6 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
-
-        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['control', 'err_source', 'diode', 'require_basic_part'], False),
-        (['control', 'err_sink', 'diode', 'require_basic_part'], False),
-        (['pwr_usb', 'conn', 'require_basic_part'], False),
-        (['data_usb', 'conn', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (SmtRgbLed, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
