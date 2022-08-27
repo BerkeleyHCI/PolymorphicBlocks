@@ -47,6 +47,7 @@ from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
+from .Microcontroller_Esp32 import Esp32_Wroom_32
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle
