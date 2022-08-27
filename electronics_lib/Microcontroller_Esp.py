@@ -5,6 +5,7 @@ from .PassiveConnector import PassiveConnector
 
 
 class EspProgrammingHeader(ProgrammingConnector):
+  """Programming header for ESP32 series, matching the pinning in the reference schematics."""
   def __init__(self) -> None:
     super().__init__()
 
@@ -15,8 +16,9 @@ class EspProgrammingHeader(ProgrammingConnector):
 
     self.conn = self.Block(PassiveConnector())
     self.connect(self.pwr, self.conn.pins.allocate('1').adapt_to(VoltageSink()))
-    self.connect(self.uart.tx, self.conn.pins.allocate('2').adapt_to(DigitalSource()))
-    self.connect(self.uart.rx, self.conn.pins.allocate('3').adapt_to(DigitalSink()))
+    # RXD, TXD reversed to reflect the programmer's side view
+    self.connect(self.uart.rx, self.conn.pins.allocate('2').adapt_to(DigitalSource()))
+    self.connect(self.uart.tx, self.conn.pins.allocate('3').adapt_to(DigitalSink()))
     self.connect(self.gnd, self.conn.pins.allocate('4').adapt_to(Ground()))
 
 
