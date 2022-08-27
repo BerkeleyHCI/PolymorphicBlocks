@@ -235,7 +235,7 @@ class SourceMeasureControl(Block):
       self.low_en = self.Export(self.driver.low_en)
 
       self.imeas = imp.Block(OpampCurrentSensor(
-        resistance=0.1*Ohm(tol=0.01), current=self.current,
+        resistance=0.1*Ohm(tol=0.01),
         ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
       self.connect(self.driver.out, self.imeas.pwr_in)
@@ -261,6 +261,9 @@ class SourceMeasureControl(Block):
 class UsbSourceMeasureTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
+
+    # overall design parameters
+    CURRENT_RATING = (0, 3)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
@@ -310,7 +313,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
-        current=(0, 3)*Amp,
+        current=CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
       ))
       self.connect(self.v3v3, self.control.pwr_logic)
@@ -380,9 +383,11 @@ class UsbSourceMeasureTest(JlcBoardTop):
       self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.gnd, self.outn.port.adapt_to(VoltageSink()))
+    self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
-    self.connect(self.outp.port.adapt_to(VoltageSink()), self.control.out)
+    self.connect(self.outp.port.adapt_to(VoltageSink(
+      current_draw=CURRENT_RATING
+    )), self.control.out)
 
     # TODO next revision: add high precision ADCs
 

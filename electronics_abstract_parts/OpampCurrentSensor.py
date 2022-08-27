@@ -4,7 +4,7 @@ from electronics_model import *
 
 class OpampCurrentSensor(Block):
   @init_in_parent
-  def __init__(self, resistance: RangeExpr, ratio: RangeExpr, input_impedance: RangeExpr):
+  def __init__(self, resistance: RangeLike, ratio: RangeLike, input_impedance: RangeLike):
     super().__init__()
 
     self.sense = self.Block(CurrentSenseResistor(
