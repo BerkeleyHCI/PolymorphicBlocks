@@ -156,13 +156,13 @@ class SeriesPowerResistor(DiscreteApplication):
              current_draw.upper() * current_draw.upper() * self.resistance.upper())
     ))
 
-    self.connect(self.pwr_out, self.res.b.adapt_to(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-      current_limits=Range.all()
-    )))
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.res.b.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+      current_limits=Range.all()
     )))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
