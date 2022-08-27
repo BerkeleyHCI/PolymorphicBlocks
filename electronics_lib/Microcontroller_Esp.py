@@ -17,8 +17,8 @@ class EspProgrammingHeader(ProgrammingConnector):
     self.conn = self.Block(PassiveConnector())
     self.connect(self.pwr, self.conn.pins.allocate('1').adapt_to(VoltageSink()))
     # RXD, TXD reversed to reflect the programmer's side view
-    self.connect(self.uart.rx, self.conn.pins.allocate('2').adapt_to(DigitalSource()))
-    self.connect(self.uart.tx, self.conn.pins.allocate('3').adapt_to(DigitalSink()))
+    self.connect(self.uart.rx, self.conn.pins.allocate('2').adapt_to(DigitalSink()))
+    self.connect(self.uart.tx, self.conn.pins.allocate('3').adapt_to(DigitalSource()))
     self.connect(self.gnd, self.conn.pins.allocate('4').adapt_to(Ground()))
 
 
