@@ -184,7 +184,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     # pins 17-22 NC
 
     'GPIO4': '26',
-    'GPIO16': '27',
+    'GPIO16': '27',  # for QSPI PSRAM variants this cannot be used
     'GPIO17': '28',
     'GPIO5': '29',
     'GPIO18': '30',
@@ -221,7 +221,9 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
 
 
 class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
-  """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
+  """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
+  NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
+  """
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic = self.Block(Esp32_Wroom_32_Device(pin_assigns=self.pin_assigns))
