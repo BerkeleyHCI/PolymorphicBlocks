@@ -2,7 +2,8 @@ import unittest
 
 from electronics_abstract_parts import Resistor
 from electronics_model import *
-from .AbstractOpamp import Amplifier, Opamp
+from .AbstractOpamp import Opamp
+from .OpampCircuits import Amplifier
 
 
 # TODO DEDUP w/ one from test_passive_common
