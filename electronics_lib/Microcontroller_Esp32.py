@@ -2,8 +2,8 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
+from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
@@ -42,8 +42,8 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
 
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
-    self.io0 = self.Port(dio_model)  # default pullup (SPI boot), set low to download boot
-    self.io2 = self.Port(dio_model)  # default pulldown (enable download boot), ignored during SPI boot
+    self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
+    self.io2 = self.Port(dio_model, optional=True)  # default pulldown (enable download boot), ignored during SPI boot
 
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
@@ -56,8 +56,8 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
       'GPIO2': self.io2,
       # 'MTDO': ...,  # disconnected, internally pulled up for strapping - U0TXD active
       # 'MTDI': ...,  # disconnected, internally pulled down for strapping - 3.3v LDO
-      'U0RXD': self.uart0.rxd,
-      'U0TXD': self.uart0.txd,
+      'U0RXD': self.uart0.rx,
+      'U0TXD': self.uart0.tx,
     })
 
     self.abstract_pinmaps = self.mappable_ios(dio_model, sdio_model, self.gnd, self.pwr)
@@ -71,7 +71,7 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
 
   @staticmethod
   def mappable_ios(dio_model: DigitalBidir, sdio_model: DigitalBidir,
-                   gnd: VoltageSource, pwr: VoltageSource) -> PinMapUtil:
+                   gnd: VoltageSink, pwr: VoltageSink) -> PinMapUtil:
     adc_model = AnalogSink.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
     dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
 
@@ -162,23 +162,37 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
 
     'GPIO0': '25',
     'GPIO2': '24',
-    'MTDO': '23',  # aka GPIO15
-    'MTDI': '14',  # aka GPIO12
+    # 'MTDO': '23',  # aka GPIO15
+    # 'MTDI': '14',  # aka GPIO12
     'U0RXD': '34',
     'U0TXD': '35',
   }
 
   RESOURCE_PIN_REMAP = {
-    # 'MTMS': '3',  # GPIO4
-    # 'MTDI': '4',  # GPIO5
-    # 'MTCK': '5',  # GPIO6
-    # 'MTDO': '6',  # GPIO7
-    # 'GPIO10': '10',
-    # 'GPIO18': '13',
-    # 'GPIO19': '14',
-    # 'GPIO3': '15',
-    # 'GPIO1': '17',
-    # 'GPIO0': '18',
+    'SENSOR_VP': '4',
+    'SENSOR_VN': '5',
+    'GPIO34': '6',
+    'GPIO35': '7',
+    'GPIO32': '8',
+    'GPIO33': '9',
+    'GPIO25': '10',
+    'GPIO26': '11',
+    'GPIO27': '12',
+    'GPIO14': '13',
+
+    'GPIO13': '16',
+    # pins 17-22 NC
+
+    'GPIO4': '26',
+    'GPIO16': '27',
+    'GPIO17': '28',
+    'GPIO5': '29',
+    'GPIO18': '30',
+    'GPIO19': '31',
+    # pin 32 NC
+    'GPIO21': '33',
+    'GPIO22': '36',
+    'GPIO23': '37',
   }
 
   def generate(self, assignments: List[str],
@@ -223,19 +237,14 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      # Note strapping pins (section 2.4 of chip datasheet - TODO)
+      self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
+      self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
-      # self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
-      # self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
-      #
-      # # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
-      # # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
-      # # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      # self.io8_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
-      # self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
-      # self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
-      # # by default instantiate a programming switch, TODO option to disable as a config
-      # (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io9)
-      #
-      # self.uart0 = imp.Block(EspProgrammingHeader())
-      # self.connect(self.uart0.uart, self.ic.uart0)
+      # strapping pins are by default pulled to SPI boot, and can be reconfigured to download boot
+      self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
+
+      # by default instantiate a programming switch, TODO option to disable as a config
+      (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io0)
+
+      self.uart0 = imp.Block(EspProgrammingHeader())
+      self.connect(self.uart0.uart, self.ic.uart0)

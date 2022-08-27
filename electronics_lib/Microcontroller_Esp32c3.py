@@ -2,8 +2,8 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
+from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
@@ -166,33 +166,6 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
 
-
-class EspProgrammingHeader(ProgrammingConnector):
-  def __init__(self) -> None:
-    super().__init__()
-
-    # TODO: should these also act as sources?
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
-    self.uart = self.Port(UartPort.empty(), [Output])
-
-    self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('1').adapt_to(VoltageSink()))
-    self.connect(self.uart.tx, self.conn.pins.allocate('2').adapt_to(DigitalSource()))
-    self.connect(self.uart.rx, self.conn.pins.allocate('3').adapt_to(DigitalSink()))
-    self.connect(self.gnd, self.conn.pins.allocate('4').adapt_to(Ground()))
-
-
-class PulldownJumper(Block):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.io = self.Port(DigitalSource.empty(), [Output])
-
-    self.conn = self.Block(PassiveConnector())
-    self.connect(self.io, self.conn.pins.allocate('1').adapt_to(DigitalSource()))
-    self.connect(self.gnd, self.conn.pins.allocate('2').adapt_to(VoltageSink()))
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
