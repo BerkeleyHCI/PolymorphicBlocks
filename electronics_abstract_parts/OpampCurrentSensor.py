@@ -3,6 +3,10 @@ from electronics_model import *
 
 
 class OpampCurrentSensor(Block):
+  """Current sensor block using a resistive sense element and an opamp-based differential amplifier.
+  For a positive current (flowing from pwr_in -> pwr_out), this generates a positive voltage on the output.
+  Output reference can be floating (eg, at Vdd/2) to allow bidirectional current sensing.
+  """
   @init_in_parent
   def __init__(self, resistance: RangeLike, ratio: RangeLike, input_impedance: RangeLike):
     super().__init__()
