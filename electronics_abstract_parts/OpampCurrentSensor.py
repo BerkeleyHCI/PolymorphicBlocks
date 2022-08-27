@@ -4,12 +4,11 @@ from electronics_model import *
 
 class OpampCurrentSensor(Block):
   @init_in_parent
-  def __init__(self, resistance: RangeExpr, current: RangeExpr, ratio: RangeExpr, input_impedance: RangeExpr):
+  def __init__(self, resistance: RangeExpr, ratio: RangeExpr, input_impedance: RangeExpr):
     super().__init__()
 
     self.sense = self.Block(CurrentSenseResistor(
-      resistance=resistance,
-      current_limits=current
+      resistance=resistance
     ))
     self.pwr_in = self.Export(self.sense.pwr_in)
     self.pwr_out = self.Export(self.sense.pwr_out)

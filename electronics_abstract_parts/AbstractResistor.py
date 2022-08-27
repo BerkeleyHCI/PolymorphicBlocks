@@ -141,23 +141,25 @@ class PulldownResistor(DiscreteApplication):
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
-  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
     self.resistance = self.ArgParameter(resistance)
-    self.current_limits = self.ArgParameter(current_limits)
+
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+    current_draw = self.pwr_out.link().current_drawn
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
-      power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
-             self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
+      power=(current_draw.lower() * current_draw.lower() * self.resistance.lower(),
+             current_draw.upper() * current_draw.upper() * self.resistance.upper())
     ))
 
-    self.pwr_in = self.Port(VoltageSink().empty(), [Power, Input])  # forward declaration
-    self.pwr_out = self.Export(self.res.b.adapt_to(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
-      current_limits=self.current_limits
-    )), [Output])
+    self.connect(self.pwr_out, self.res.b.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+      current_limits=Range.all()
+    )))
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
       voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
@@ -177,10 +179,10 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TOD
 class CurrentSenseResistor(DiscreteApplication):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
-  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.res = self.Block(SeriesPowerResistor(resistance, current_limits))
+    self.res = self.Block(SeriesPowerResistor(resistance))
     self.pwr_in = self.Export(self.res.pwr_in, [Input])
     self.pwr_out = self.Export(self.res.pwr_out, [Output])
 
