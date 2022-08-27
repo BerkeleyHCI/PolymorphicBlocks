@@ -213,7 +213,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     self.assign(self.lcsc_part, 'C701342')
     self.assign(self.actual_basic_part, False)
     self.footprint(
-      'U', 'ESP32-WROOM-32E',
+      'U', 'RF_Module:ESP32-WROOM-32',
       dict(chain(system_pins.items(), io_pins.items())),
       mfr='Espressif Systems', part='ESP32-WROOM-32',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf',
