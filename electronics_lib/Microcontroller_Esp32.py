@@ -16,42 +16,51 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
     super().__init__(**kwargs)
 
     self.pwr.init_from(VoltageSink(
-      # voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
-      # current_draw=(0.001, 335) * mAmp  # section 4.6, from power off to RF active
+      voltage_limits=(3.0, 3.6)*Volt,  # section 5.2, table 14, most restrictive limits
+      current_draw=(0.001, 370) * mAmp  # from power off (table 8) to RF working (WRROM datasheet table 9)
       # # TODO propagate current consumption from IO ports
     ))
     self.gnd.init_from(Ground())
 
-    self.dio_model = dio_model = DigitalBidir.from_supply(  # table 4.4
-      # self.gnd, self.pwr,
-      # voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-      # current_limits=(-28, 40)*mAmp,
-      # current_draw=(0, 0)*Amp,
-      # input_threshold_factor=(0.25, 0.75),
-      # pullup_capable=True, pulldown_capable=True,
+    self.dio_model = dio_model = DigitalBidir.from_supply(  # section 5.2, table 15
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      current_limits=(-28, 40)*mAmp,
+      current_draw=(0, 0)*Amp,
+      input_threshold_factor=(0.25, 0.75),
+      pullup_capable=True, pulldown_capable=True,
+    )
+    sdio_model = DigitalBidir.from_supply(  # section 5.2, table 15, for SDIO power domain pins
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      current_limits=(-28, 20)*mAmp,  # reduced sourcing capability
+      current_draw=(0, 0)*Amp,
+      input_threshold_factor=(0.25, 0.75),
+      pullup_capable=True, pulldown_capable=True,
     )
 
-    # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
-    # self.io2 = self.Port(dio_model)  # needs external pullup
-    # self.io8 = self.Port(dio_model)  # needs external pullup, may control prints
-    # self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
+
+    # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
+    self.io0 = self.Port(dio_model)  # default pullup (SPI boot), set low to download boot
+    self.io2 = self.Port(dio_model)  # default pulldown (enable download boot), ignored during SPI boot
 
     # similarly, the programming UART is fixed and allocated separately
-    # self.uart0 = self.Port(UartPort(dio_model), optional=True)
+    self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
     self.system_pinmaps = VariantPinRemapper({
-      # 'Vdd': self.pwr,
-      # 'Vss': self.gnd,
-      # 'EN': self.en,
-      # 'GPIO2': self.io2,
-      # 'GPIO8': self.io8,
-      # 'GPIO9': self.io9,
-      # 'TXD': self.uart0.tx,
-      # 'RXD': self.uart0.rx,
+      'Vdd': self.pwr,
+      'Vss': self.gnd,
+      'CHIP_PU': self.chip_pu,
+      'GPIO0': self.io0,
+      'GPIO2': self.io2,
+      # 'MTDO': ...,  # disconnected, internally pulled up for strapping - U0TXD active
+      # 'MTDI': ...,  # disconnected, internally pulled down for strapping - 3.3v LDO
+      'U0RXD': self.uart0.rxd,
+      'U0TXD': self.uart0.txd,
     })
 
-    self.abstract_pinmaps = self.mappable_ios(dio_model)
+    self.abstract_pinmaps = self.mappable_ios(dio_model, sdio_model, self.gnd, self.pwr)
 
     # TODO add JTAG support
 
@@ -61,21 +70,15 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
                    self.usb.allocated())
 
   @staticmethod
-  def mappable_ios(dio_model: DigitalBidir) -> PinMapUtil:
-    adc_model = AnalogSink(
-      # voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
-      # current_draw=(0, 0) * Amp,
-      # TODO: impedance / leakage - not specified by datasheet
-    )
-    dac_model = AnalogSource(
-      # voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
-      # current_draw=(0, 0) * Amp,
-      # TODO: impedance / leakage - not specified by datasheet
-    )
+  def mappable_ios(dio_model: DigitalBidir, sdio_model: DigitalBidir,
+                   gnd: VoltageSource, pwr: VoltageSource) -> PinMapUtil:
+    adc_model = AnalogSink.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
+    dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
 
-    # uart_model = UartPort(DigitalBidir.empty())
-    # spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
-    # i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
+    uart_model = UartPort(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
+    i2c_model = I2cMaster(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
+    can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
 
     return PinMapUtil([  # section 2.2, table 1
       # VDD3P3_RTC
@@ -94,23 +97,23 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
       PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
 
       PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
-      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO
+      # PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, strapping pin
       PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
-      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO
+      # PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, strapping pin
 
-      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO
-      PinResource('GPIO0', {'GPIO0': dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO
+      # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO, strapping pin
+      # PinResource('GPIO0', {'GPIO0': dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO, strapping pin
       PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
 
       # VDD_SDIO
-      PinResource('GPIO16', {'GPIO16': dio_model}),
-      PinResource('GPIO17', {'GPIO17': dio_model}),
-      PinResource('SD_DATA_2', {'GPIO9': dio_model}),
-      PinResource('SD_DATA_3', {'GPIO10': dio_model}),
-      PinResource('SD_CMD', {'GPIO11': dio_model}),
-      PinResource('SD_CLK', {'GPIO6': dio_model}),
-      PinResource('SD_DATA_0', {'GPIO7': dio_model}),
-      PinResource('SD_DATA_1', {'GPIO8': dio_model}),
+      PinResource('GPIO16', {'GPIO16': sdio_model}),
+      PinResource('GPIO17', {'GPIO17': sdio_model}),
+      PinResource('SD_DATA_2', {'GPIO9': sdio_model}),
+      PinResource('SD_DATA_3', {'GPIO10': sdio_model}),
+      PinResource('SD_CMD', {'GPIO11': sdio_model}),
+      PinResource('SD_CLK', {'GPIO6': sdio_model}),
+      PinResource('SD_DATA_0', {'GPIO7': sdio_model}),
+      PinResource('SD_DATA_1', {'GPIO8': sdio_model}),
 
       # VDD_3P3_CPU
       PinResource('GPIO5', {'GPIO5': dio_model}),
@@ -118,20 +121,24 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
       PinResource('GPIO23', {'GPIO23': dio_model}),
       PinResource('GPIO19', {'GPIO19': dio_model}),
       PinResource('GPIO22', {'GPIO22': dio_model}),
-      PinResource('U0RXD', {'GPIO3': dio_model}),
-      PinResource('U0TXD', {'GPIO1': dio_model}),
+      # PinResource('U0RXD', {'GPIO3': dio_model}),  # for programming, technically reallocatable
+      # PinResource('U0TXD', {'GPIO1': dio_model}),  # for programming, technically reallocatable
       PinResource('GPIO21', {'GPIO21': dio_model}),
 
-      # # peripherals in section 3.11
-      # # PeripheralFixedResource('U0', uart_model, {  # programming pin, non-allocatable
-      # #   'txd': ['GPIO21'], 'rxd': ['GPIO20']
-      # # }),
-      # PeripheralAnyResource('U1', uart_model),
-      # PeripheralAnyResource('I2C', i2c_model),
-      # PeripheralAnyResource('SPI2', spi_model),
-      # PeripheralFixedResource('USB', UsbDevicePort.empty(), {
-      #   'dp': ['GPIO19'], 'dm': ['GPIO18']
-      # }),
+      # section 4.2, table 12: peripheral pin assignments
+      # note LED and motor PWMs can be assigned to any pin
+      # PeripheralAnyResource('U0', uart_model),  # for programming, technically reallocatable
+      PeripheralAnyResource('U1', uart_model),
+      PeripheralAnyResource('U2', uart_model),
+
+      PeripheralAnyResource('I2CEXT0', i2c_model),
+      PeripheralAnyResource('I2CEXT1', i2c_model),
+
+      # PeripheralAnyResource('SPI', spi_model),  # for flash, non-allocatable
+      PeripheralAnyResource('HSPI', spi_model),
+      PeripheralAnyResource('VSPI', spi_model),
+
+      PeripheralAnyResource('TWAI', can_model),
     ])
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
@@ -149,14 +156,16 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    # 'Vdd': '1',
-    # 'Vss': ['9', '19'],  # 19 is EP
-    # 'EN': '2',
-    # 'GPIO2': '16',
-    # 'GPIO8': '7',
-    # 'GPIO9': '8',
-    # 'RXD': '11',  # RXD, GPIO20
-    # 'TXD': '12',  # TXD, GPIO21
+    'Vdd': '2',
+    'Vss': ['1', '15', '38', '39'],  # 39 is EP
+    'CHIP_PU': '3',  # aka EN
+
+    'GPIO0': '25',
+    'GPIO2': '24',
+    'MTDO': '23',  # aka GPIO15
+    'MTDI': '14',  # aka GPIO12
+    'U0RXD': '34',
+    'U0TXD': '35',
   }
 
   RESOURCE_PIN_REMAP = {
@@ -214,6 +223,8 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      # Note strapping pins (section 2.4 of chip datasheet - TODO)
+
       # self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
       # self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
       #
