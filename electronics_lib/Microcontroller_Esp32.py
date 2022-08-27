@@ -67,7 +67,7 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
     self.generator(self.generate, self.pin_assigns,
                    self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated())
+                   self.can.allocated())
 
   @staticmethod
   def mappable_ios(dio_model: DigitalBidir, sdio_model: DigitalBidir,
@@ -147,7 +147,7 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
   def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str]) -> None: ...
+               can_allocates: List[str]) -> None: ...
 
 
 class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
@@ -198,12 +198,12 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
   def generate(self, assignments: List[str],
                gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str]) -> None:
+               can_allocates: List[str]) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates),
+      (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates), (UartPort, uart_allocates),
+      (CanControllerPort, can_allocates),
       (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
     self.generator_set_allocation(allocated)
