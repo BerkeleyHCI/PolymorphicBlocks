@@ -183,7 +183,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "RobotDriver.net",
+      "netlist": "../RobotDriver.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""

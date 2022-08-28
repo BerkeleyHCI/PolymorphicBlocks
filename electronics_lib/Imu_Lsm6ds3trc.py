@@ -30,7 +30,7 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock, JlcPart):
 
     def contents(self) -> None:
         self.footprint(
-            'U', 'Package_LGA:LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y',
+            'U', 'Package_LGA:Bosch_LGA-14_3x2.5mm_P0.5mm',
             {
                 '1': self.gnd,  # sa0
                 '2': self.gnd,  # not used in mode 1
