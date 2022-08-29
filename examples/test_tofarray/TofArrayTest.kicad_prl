@@ -64,11 +64,11 @@
       35,
       36
     ],
-    "visible_layers": "001ffff_80000001",
-    "zone_display_mode": 1
+    "visible_layers": "000ffff_80000001",
+    "zone_display_mode": 0
   },
   "meta": {
-    "filename": "RobotDriver.kicad_prl",
+    "filename": "TofArrayTest.kicad_prl",
     "version": 3
   },
   "project": {
