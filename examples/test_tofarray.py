@@ -110,7 +110,7 @@ class TofArrayTest(JlcBoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
-    self.lemurr = self.Block(LemurLogo())
+    self.lemur = self.Block(LemurLogo())
 
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())

@@ -147,6 +147,7 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
 
     # Misc board
+    self.lemur = self.Block(LemurLogo())
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
