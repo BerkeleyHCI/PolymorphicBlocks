@@ -193,6 +193,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
     constProp.setForcedValue(path.asIndirect, value, "path refinement")
   }
+  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
 
   // Primarily used for unit tests, TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
@@ -487,11 +488,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    refinements.classValues.foreach {  case (classPath, refinements) =>
+    refinements.classValues.foreach { case (classPath, refinements) =>
       if (library.isSubclassOf(refinedLibraryPath, classPath)) {
-        refinements.foreach{ case (subpath, value) =>
-          constProp.setForcedValue(path.asIndirect ++ subpath, value,
-            s"${refinedLibraryPath.getTarget.getName} class refinement")
+        refinements.foreach { case (subpath, value) =>
+          if (!refinementInstanceValuePaths.contains(path ++ subpath)) {  // instance values supersede class values
+            constProp.setForcedValue(path.asIndirect ++ subpath, value,
+              s"${refinedLibraryPath.getTarget.getName} class refinement")
+          }
         }
       }
     }
