@@ -193,24 +193,10 @@ class RobotDriver(JlcBoardTop):
           'motor_bin1=7',
         ]),
 
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_3v3', 'power_path', 'inductor', 'require_basic_part'], False),
         (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
         (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
-      ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (ResistorArray, ['require_basic_part'], False),
-        (Drv8833_Device, ['require_basic_part'], False),
-        (Pcf8574_Device, ['require_basic_part'], False),
-        (Ws2812b, ['require_basic_part'], False),
-        (Imu_Lsm6ds3trc_Device, ['require_basic_part'], False),
-        (JstPhSmVerticalJlc, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, JstPhSmVerticalJlc),  # default connector series unless otherwise specified

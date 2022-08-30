@@ -65,6 +65,7 @@ class JlcBoardTop(BaseBoardTop):
         (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
+        (Opamp, Lmv321),
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts
         (JlcResistor, ['require_basic_part'], True),

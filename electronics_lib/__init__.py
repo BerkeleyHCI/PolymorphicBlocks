@@ -26,6 +26,7 @@ from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
+from .Opamp_Lmv321 import Lmv321
 
 from .PassiveConnector import PassiveConnector, PinHeader254
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl

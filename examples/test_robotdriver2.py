@@ -13,7 +13,14 @@ class RobotDriver2(JlcBoardTop):
 
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-    self.vbatt = self.connect(self.batt.pwr)
+    # actually on the 3V3 domain but need the battery output here
+    self.isense = self.Block(OpampCurrentSensor(
+      resistance=0.1*Ohm(tol=0.01),
+      ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
+    ))
+    self.connect(self.isense.pwr_in, self.batt.pwr)
+    self.vbatt = self.connect(self.isense.pwr_out)
+
     self.gnd = self.connect(self.batt.gnd)
 
     self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
@@ -39,7 +46,7 @@ class RobotDriver2(JlcBoardTop):
       self.mcu = imp.Block(IoController())
       self.i2c = self.mcu.i2c.allocate('i2c')
 
-      self.tof = imp.Block(Vl53l0xArray(3))
+      self.tof = imp.Block(Vl53l0xArray(2))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
@@ -56,6 +63,12 @@ class RobotDriver2(JlcBoardTop):
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
       self.connect(self.i2c, self.imu.i2c)
+
+      # Current sensor
+      self.connect(self.isense.pwr, self.v3v3)
+      self.connect(self.isense.gnd, self.gnd)
+      self.connect(self.isense.ref, self.batt.gnd.as_analog_source())
+      self.connect(self.isense.out, self.mcu.adc.allocate('isense'))
 
     self.motor_driver1 = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver1.pwr)
@@ -129,25 +142,15 @@ class RobotDriver2(JlcBoardTop):
           # 'ledArray=17',
           # 'pwm=18',
         ]),
-
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
+        # (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),  # TODO see JlcResistor refinement
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_3v3', 'power_path', 'inductor', 'require_basic_part'], False),
         (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
         (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
       ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (ResistorArray, ['require_basic_part'], False),
-        (Drv8833_Device, ['require_basic_part'], False),
-        (Pcf8574_Device, ['require_basic_part'], False),
-        (Ws2812b, ['require_basic_part'], False),
-        (Imu_Lsm6ds3trc_Device, ['require_basic_part'], False),
-        (JstPhSmVerticalJlc, ['require_basic_part'], False),
+      class_values=[  # TODO hack until instance values supersede class values
+        (JlcResistor, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, JstPhSmVerticalJlc),  # default connector series unless otherwise specified
