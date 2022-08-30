@@ -100,7 +100,7 @@ class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprint, Generator
     part = parts.first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
 
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
@@ -160,7 +160,7 @@ class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint,
     part = parts.first(f"no zener diodes in Vz={zener_voltage} V")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
 
     self.assign(self.actual_zener_voltage, part[self.ZENER_VOLTAGE])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])

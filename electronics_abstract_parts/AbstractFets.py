@@ -135,7 +135,7 @@ class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorB
     part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
@@ -240,7 +240,7 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
     part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
 
     self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
     self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])

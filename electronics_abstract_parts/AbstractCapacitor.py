@@ -134,7 +134,7 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
     part = parts.first(f"no single capacitor in {capacitance} F, {voltage} V")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
     self.assign(self.actual_derated_capacitance, part[self.DERATED_CAPACITANCE])
@@ -169,7 +169,7 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
     part = parts.first(f"no parallel capacitor in {capacitance} F, {voltage} V")
 
     self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER_COL]}")
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])
     self.assign(self.actual_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])

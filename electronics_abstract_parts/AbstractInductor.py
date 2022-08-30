@@ -93,7 +93,7 @@ class TableInductor(InductorStandardPinning, PartsTableFootprint, GeneratorBlock
     part = parts.first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
 
     self.assign(self.actual_inductance, part[self.INDUCTANCE])
     self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
