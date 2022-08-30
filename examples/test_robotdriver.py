@@ -187,8 +187,8 @@ class RobotDriver(JlcBoardTop):
         ]),
 
         (['motor_expander', 'pin_assigns'], [
-          'motor_ain1=4',
-          'motor_ain2=5',
+          'motor_ain2=4',
+          'motor_ain1=5',
           'motor_bin2=6',
           'motor_bin1=7',
         ]),
