@@ -47,7 +47,10 @@ class Drv8833_Device(DiscreteChip, FootprintBlock, JlcPart):
 
   def contents(self) -> None:
     self.footprint(
-      'U', 'Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm_ThermalVias',
+      'U', 'Package_SO:TSSOP-16-1EP_4.4x5mm_P0.65mm_EP3x3mm_ThermalVias',
+      # note: the above has 0.3mm thermal vias while
+      # Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm_ThermalVias
+      # has 0.2mm which is below minimums for some fabs
       {
         '1': self.nsleep,
         '2': self.aout1,
