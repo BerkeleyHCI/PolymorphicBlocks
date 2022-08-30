@@ -119,8 +119,6 @@ class RobotDriver2(JlcBoardTop):
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
-    from electronics_lib.MotorDriver_Drv8833 import Drv8833_Device
-    from electronics_lib.IoExpander_Pcf8574 import Pcf8574_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32_Wroom_32),
@@ -142,15 +140,12 @@ class RobotDriver2(JlcBoardTop):
           # 'ledArray=17',
           # 'pwm=18',
         ]),
-        # (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),  # TODO see JlcResistor refinement
+        (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
         (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
         (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
-      ],
-      class_values=[  # TODO hack until instance values supersede class values
-        (JlcResistor, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, JstPhSmVerticalJlc),  # default connector series unless otherwise specified
