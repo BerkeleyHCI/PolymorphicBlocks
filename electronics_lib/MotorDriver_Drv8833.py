@@ -68,6 +68,7 @@ class Drv8833_Device(DiscreteChip, FootprintBlock, JlcPart):
         '14': self.vint,
         '15': self.ain2,
         '16': self.ain1,
+        '17': self.gnd,  # exposed pad
       },
       mfr='Texas Instruments', part='DRV8833PWP',  # also compatible w/ PW package (no GND pad)
       datasheet='https://www.ti.com/lit/ds/symlink/drv8833.pdf'
