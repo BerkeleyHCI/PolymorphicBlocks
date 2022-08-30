@@ -488,7 +488,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    refinements.classValues.foreach {  case (classPath, refinements) =>
+    refinements.classValues.foreach { case (classPath, refinements) =>
       if (library.isSubclassOf(refinedLibraryPath, classPath)) {
         refinements.foreach { case (subpath, value) =>
           if (!refinementInstanceValuePaths.contains(path ++ subpath)) {  // instance values supersede class values
