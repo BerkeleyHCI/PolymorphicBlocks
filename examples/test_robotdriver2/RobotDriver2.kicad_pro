@@ -188,7 +188,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "../RobotDriver2.net",
-      "specctra_dsn": "",
+      "specctra_dsn": "RobotDriver2.dsn",
       "step": "",
       "vrml": ""
     },
