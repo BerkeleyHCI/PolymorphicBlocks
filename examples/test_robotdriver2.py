@@ -129,16 +129,31 @@ class RobotDriver2(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           'spi.miso=NC',
-          # 'i2c.sda=3',
-          # 'i2c.scl=4',
-          # 'spi.sck=5',
-          # 'spi.mosi=6',
-          # 'motor_ain2=10',
-          # 'motor_ain1=13',
-          # 'motor_bin2=14',
-          # 'motor_bin1=15',
-          # 'ledArray=17',
-          # 'pwm=18',
+          'i2c.scl=13',
+          'i2c.sda=12',
+
+          'lcd_cs=11',
+          'lcd_reset=10',
+          'lcd_dc=9',
+          'spi.sck=8',
+          'spi.mosi=7',
+
+          'tof_xshut_1=6',
+          'tof_xshut_0=5',
+
+          'ledArray=4',
+
+          'isense=16',
+
+          'motor_2a1=26',
+          'motor_2a2=27',
+          'motor_2b2=28',
+          'motor_2b1=29',
+          'motor_1a1=30',
+          'motor_1a2=31',
+          'motor_1b2=33',
+          'motor_1b1=36',
+          'pwm=37',
         ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
 
