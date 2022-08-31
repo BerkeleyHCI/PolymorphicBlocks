@@ -24,6 +24,8 @@ PART_ROTATIONS = {
   'C86832': -90,  # PCF8574 IO expander
   'C500769': -90,  # AP3418 buck converter
   'C50506': -90,  # DRV8833 dual motor driver
+  'C701342': -90,  # ESP32
+  'C7972': 180,  # LMV opamp
 }
 
 

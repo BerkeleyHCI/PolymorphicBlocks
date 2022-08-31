@@ -16,7 +16,7 @@ class RobotDriver2(JlcBoardTop):
     # actually on the 3V3 domain but need the battery output here
     self.isense = self.Block(OpampCurrentSensor(
       resistance=0.1*Ohm(tol=0.01),
-      ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
+      ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
     ))
     self.connect(self.isense.pwr_in, self.batt.pwr)
     self.vbatt = self.connect(self.isense.pwr_out)
