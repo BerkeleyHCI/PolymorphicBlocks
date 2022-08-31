@@ -30,7 +30,7 @@ class Lmv321_Device(DiscreteChip, FootprintBlock, JlcPart):
         '2': self.vss,
         '3': self.vinn,
         '4': self.vout,
-        '6': self.vcc,
+        '5': self.vcc,
       },
       mfr='Texas Instruments', part='LMV321',
       datasheet='https://www.ti.com/lit/ds/symlink/lmv321.pdf'

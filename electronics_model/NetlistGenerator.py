@@ -161,8 +161,8 @@ class NetlistTransform(TransformUtil.Transform):
 
         # Uncomment one to set value field
         # TODO this should be a user flag
-        value_str,  # including manufacturer
-        # lcsc_part or ""
+        # value_str,  # including manufacturer
+        lcsc_part or "",
 
         list(path.blocks),
         list(self.short_paths[path].blocks),
@@ -171,8 +171,8 @@ class NetlistTransform(TransformUtil.Transform):
 
       # Uncomment one to set refdes type
       # TODO this should be a user flag
-      # self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
-      self.names[path] = self.short_paths[path]
+      self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
+      # self.names[path] = self.short_paths[path]
 
       for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
         pin_path = path.append_port(pin_name)
