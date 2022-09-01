@@ -170,10 +170,6 @@ object CompilerError {
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements()) {
-  def readableLibraryPath(path: ref.LibraryPath): String = {  // TODO refactor to shared utils?
-    path.getTarget.getName
-  }
-
   // Working design tree data structure
   private val root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
