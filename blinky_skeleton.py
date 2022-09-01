@@ -53,8 +53,11 @@ class BlinkyExample(BoardTop):
         self.test = self.Block(MyKicadBlock())
         self.res1 = self.Block(Resistor())
         self.res2 = self.Block(Resistor())
+        self.cap1 = self.Block(DecouplingCapacitor())
         self.connect(self.res2.a, self.res1.a)
-        self.connect(self.res1.b, self.res2.b)
+        # self.connect(self.res1.b, self.res2.b)
+        portList = [self.res1.b, self.res2.b]
+        self.connect(*portList)
 
     def contents(self) -> None:
         super().contents()

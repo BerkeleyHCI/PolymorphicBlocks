@@ -12,12 +12,41 @@ class MyKicadBlock(Block):
         super().contents()
 
         # self.my_port = self.Port(...)
-        # self.import_kicad('C:\\Users\\Nathan Nguyendinh\\Documents\\PCB Files\\EDG-IDE Simple Circuit\\EDG-IDE Simple Circuit.net')  # user facing interface
+        self.import_kicad('C:\\Users\\Nathan Nguyendinh\\Documents\\PCB Files\\EDG-IDE Simple Circuit\\EDG-IDE Simple Circuit.net')
 
-        netlist = parse_netlist('C:\\Users\\Nathan Nguyendinh\\Documents\\PCB Files\\EDG-IDE Simple Circuit\\EDG-IDE Simple Circuit.net')
+        # netlist = parse_netlist('C:\\Users\\Nathan Nguyendinh\\Documents\\PCB Files\\EDG-IDE Simple Circuit\\EDG-IDE Simple Circuit.net')
+        # print(netlist.parts[0].desc)
+        #
+        # for part in netlist.parts:
+        #     if part.desc == 'Unpolarized capacitor':
+        #         setattr(self, part.ref, self.Block(UnpolarizedCapacitor()))
+        #     if part.desc == 'Resistor':
+        #         setattr(self, part.ref, self.Block(Resistor()))
+        #
+        # for net in netlist.nets:
+        #     portList = []
+        #     for pin in net.pins:
+        #         component = getattr(self, pin.ref)
+        #         if pin.num == "1":
+        #             portList.append(component.a)
+        #         else:
+        #             portList.append(component.b)
+        #         print("add to port list " + pin.ref + " pin " + pin.num)
+        #     self.connect(*portList)
+
+        # self.connect(self.R1.a, self.R2.a)
+        # self.connect(getattr(self, netlist.nets[1].pins[0].ref).b, getattr(self, netlist.nets[1].pins[1].ref).b)
+        # portList = [getattr(self, netlist.nets[1].pins[0].ref).b, getattr(self, netlist.nets[1].pins[1].ref).b]
+        # self.connect(*portList)
+
+        # for each net:
+        #     Define all the ports and put into list
+        #     Connect all ports with splat var args connect line of code
+
+    def import_kicad(self, filepath: str):  # internal implementation
+
+        netlist = parse_netlist(filepath)
         print(netlist.parts[0].desc)
-        # if netlist.parts[0].desc == 'Unpolarized capacitor':
-        #     self.cap = self.Block(UnpolarizedCapacitor())
 
         for part in netlist.parts:
             if part.desc == 'Unpolarized capacitor':
@@ -26,7 +55,15 @@ class MyKicadBlock(Block):
                 setattr(self, part.ref, self.Block(Resistor()))
 
         for net in netlist.nets:
-
+            portList = []
+            for pin in net.pins:
+                component = getattr(self, pin.ref)
+                if pin.num == "1":
+                    portList.append(component.a)
+                else:
+                    portList.append(component.b)
+                print("add to port list " + pin.ref + " pin " + pin.num)
+            self.connect(*portList)
 
 
 
