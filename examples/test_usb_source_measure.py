@@ -47,17 +47,17 @@ class GatedEmitterFollower(Block):
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
-    self.connect(self.pwr, self.high_fet.drain.as_voltage_sink(
+    self.connect(self.pwr, self.high_fet.drain.adapt_to(VoltageSink(
       current_draw=self.current,
       voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
         self.low_fet.actual_drain_voltage_rating)
-    ))
-    self.connect(self.gnd, self.low_fet.drain.as_voltage_sink())
-    output_driver = self.high_fet.source.as_voltage_source(
+    )))
+    self.connect(self.gnd, self.low_fet.drain.adapt_to(VoltageSink()))
+    output_driver = self.high_fet.source.adapt_to(VoltageSource(
       voltage_out=self.pwr.link().voltage,
       current_limits=self.current
-    )
-    self.connect(output_driver, self.low_fet.source.as_voltage_sink(),
+    ))
+    self.connect(output_driver, self.low_fet.source.adapt_to(VoltageSink()),
                  self.out)
 
     # TODO all the analog parameter modeling
@@ -76,10 +76,10 @@ class GatedEmitterFollower(Block):
 
       self.connect(self.high_fet.source, self.high_res.a)
       self.connect(self.low_fet.source, self.low_res.a)
-      self.connect(self.high_res.b.as_analog_source(), self.high_gate.apull)
-      self.connect(self.low_res.b.as_analog_source(), self.low_gate.apull)
-      self.connect(self.high_gate.aout, self.high_fet.gate.as_analog_sink())
-      self.connect(self.low_gate.aout, self.low_fet.gate.as_analog_sink())
+      self.connect(self.high_res.b.adapt_to(AnalogSource()), self.high_gate.apull)
+      self.connect(self.low_res.b.adapt_to(AnalogSource()), self.low_gate.apull)
+      self.connect(self.high_gate.aout, self.high_fet.gate.adapt_to(AnalogSink()))
+      self.connect(self.low_gate.aout, self.low_fet.gate.adapt_to(AnalogSink()))
 
 
 class ErrorAmplifier(GeneratorBlock):
@@ -127,16 +127,16 @@ class ErrorAmplifier(GeneratorBlock):
     self.rbot = self.Block(Resistor(
       resistance=Range.from_tolerance(bottom_resistance, tolerance)
     ))
-    self.connect(self.target, self.rtop.a.as_analog_sink(
+    self.connect(self.target, self.rtop.a.adapt_to(AnalogSink(
       impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
-    ))
-    self.connect(self.actual, self.rbot.a.as_analog_sink(
+    )))
+    self.connect(self.actual, self.rbot.a.adapt_to(AnalogSink(
       impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
-    ))
-    self.connect(self.amp.inp, self.rtop.b.as_analog_source(
+    )))
+    self.connect(self.amp.inp, self.rtop.b.adapt_to(AnalogSource(
       voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
       impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
-    ), self.rbot.b.as_analog_sink())  # a side contains aggregate params, b side is dummy
+    )), self.rbot.b.adapt_to(AnalogSink()))  # a side contains aggregate params, b side is dummy
 
     self.rout = self.Block(Resistor(
       resistance=output_resistance
@@ -151,26 +151,26 @@ class ErrorAmplifier(GeneratorBlock):
         reverse_recovery_time=(0, 500)*nSecond  # arbitrary for "fast recovery"
       ))
       if diode_spec == 'source':
-        self.connect(self.amp.out, self.diode.anode.as_analog_sink(
+        self.connect(self.amp.out, self.diode.anode.adapt_to(AnalogSink(
           impedance=self.rout.actual_resistance + self.output.link().sink_impedance
-        ))
-        resistor_output_port = self.diode.cathode.as_analog_source(
+        )))
+        resistor_output_port = self.diode.cathode.adapt_to(AnalogSource(
           impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
-        )
+        ))
       elif diode_spec == 'sink':
-        self.connect(self.amp.out, self.diode.cathode.as_analog_sink(
+        self.connect(self.amp.out, self.diode.cathode.adapt_to(AnalogSink(
           impedance=self.rout.actual_resistance + self.output.link().sink_impedance
-        ))
-        resistor_output_port = self.diode.anode.as_analog_source(
+        )))
+        resistor_output_port = self.diode.anode.adapt_to(AnalogSource(
           impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
-        )
+        ))
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
-    self.connect(resistor_output_port, self.rout.a.as_analog_sink())
-    self.connect(self.output, self.rout.b.as_analog_source(
+    self.connect(resistor_output_port, self.rout.a.adapt_to(AnalogSink()))
+    self.connect(self.output, self.rout.b.adapt_to(AnalogSource(
       voltage_out=self.amp.out.link().voltage,
       impedance=self.rout.actual_resistance
-    ), self.amp.inn)
+    )), self.amp.inn)
 
 
 class SourceMeasureControl(Block):
@@ -234,23 +234,20 @@ class SourceMeasureControl(Block):
       self.high_en = self.Export(self.driver.high_en)
       self.low_en = self.Export(self.driver.low_en)
 
-      (self.isen, ), _ = self.chain(
-        self.driver.out,
-        imp.Block(CurrentSenseResistor(resistance=0.1*Ohm(tol=0.01), current_limits=self.current)),
-        self.out)
-      self.imeas = imp.Block(DifferentialAmplifier(
-        ratio=Range.from_tolerance(1, 0.05),
-        input_impedance=10*kOhm(tol=0.05)))
-      self.connect(self.imeas.input_positive, self.isen.sense_in)
-      self.connect(self.imeas.input_negative, self.isen.sense_out)
-      self.connect(self.imeas.output_reference, self.ref_center)
-      self.connect(self.imeas.output, self.measured_current,
+      self.imeas = imp.Block(OpampCurrentSensor(
+        resistance=0.1*Ohm(tol=0.01),
+        ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
+      ))
+      self.connect(self.driver.out, self.imeas.pwr_in)
+      self.connect(self.imeas.pwr_out, self.out)
+      self.connect(self.imeas.ref, self.ref_center)
+      self.connect(self.imeas.out, self.measured_current,
                    self.err_source.actual, self.err_sink.actual)
 
       self.vmeas = imp.Block(DifferentialAmplifier(
         ratio=Range.from_tolerance(1/22, 0.05),
         input_impedance=220*kOhm(tol=0.05)))
-      self.connect(self.vmeas.input_positive, self.isen.pwr_out.as_analog_source())
+      self.connect(self.vmeas.input_positive, self.imeas.pwr_out.as_analog_source())
       # TODO FIX ME - less jank bridging
       from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
       self.gnd_adapter = self.Block(VoltageSinkAdapterAnalogSource())
@@ -264,6 +261,9 @@ class SourceMeasureControl(Block):
 class UsbSourceMeasureTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
+
+    # overall design parameters
+    CURRENT_RATING = (0, 3)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
@@ -313,7 +313,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
-        current=(0, 3)*Amp,
+        current=CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
       ))
       self.connect(self.v3v3, self.control.pwr_logic)
@@ -383,9 +383,11 @@ class UsbSourceMeasureTest(JlcBoardTop):
       self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.gnd, self.outn.port.as_voltage_sink())
+    self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
-    self.connect(self.outp.port.as_voltage_sink(), self.control.out)
+    self.connect(self.outp.port.adapt_to(VoltageSink(
+      current_draw=CURRENT_RATING
+    )), self.control.out)
 
     # TODO next revision: add high precision ADCs
 
@@ -402,9 +404,9 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
-        (['control', 'imeas', 'amp'], Opa197),
+        (['control', 'imeas', 'amp', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'isen', 'res', 'res'], GenericChipResistor),  # big one not from JLC
+        (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], DigikeyFet),
         (['control', 'driver', 'high_fet'], DigikeyFet),
@@ -452,16 +454,6 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
-
-        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['control', 'err_source', 'diode', 'require_basic_part'], False),
-        (['control', 'err_sink', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (UsbCReceptacle, ['require_basic_part'], False),  # both top-side
-        (SmtRgbLed, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

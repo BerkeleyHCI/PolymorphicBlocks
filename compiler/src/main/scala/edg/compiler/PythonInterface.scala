@@ -195,17 +195,17 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
   }
 
 
-  def onRunBackend(backend: String): Unit = {}
+  def onRunBackend(backend: ref.LibraryPath): Unit = {}
 
-  def onRunBackendComplete(backend: String,
+  def onRunBackendComplete(backend: ref.LibraryPath,
                            result: Errorable[Map[DesignPath, String]]): Unit = {}
 
-  def runBackend(backend: String, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
+  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
       Errorable[Map[DesignPath, String]] = {
     onRunBackend(backend)
 
     val request = edgrpc.BackendRequest(
-      backendClassName=backend, design=Some(design),
+      backend=Some(backend), design=Some(design),
       solvedValues=solvedValues.map { case (path, value) =>
         edgrpc.BackendRequest.Value(path=Some(path.toLocalPath), value=Some(value.toLit))
       }.toSeq

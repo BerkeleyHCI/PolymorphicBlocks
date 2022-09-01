@@ -40,8 +40,8 @@ class DigitalLink(CircuitLink):
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
       "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
-      "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "Ω"),
-      ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "Ω"))
+      "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "V"),
+      ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "V"))
 
   def contents(self):
     super().contents()
@@ -134,17 +134,26 @@ class DigitalSink(DigitalBase):
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
                   voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
                   current_draw: RangeLike = Default(RangeExpr.ZERO),
+                  input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
-    if input_threshold_abs is not None:
-      input_threshold_abs = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
-      return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-        voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
-                       RangeExpr._to_expr_type(voltage_limit_tolerance),
-        current_draw=current_draw,
-        input_thresholds=input_threshold_abs
-      )
+    input_threshold: RangeLike
+    if input_threshold_factor is not None:
+      assert input_threshold_abs is None, "can only specify one input threshold type"
+      input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
+      input_threshold = (input_threshold_factor.lower() * pos.link().voltage.lower(),
+                         input_threshold_factor.upper() * pos.link().voltage.upper())
+    elif input_threshold_abs is not None:
+      assert input_threshold_factor is None, "can only specify one input threshold type"
+      input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
     else:
       raise ValueError("no input threshold specified")
+
+    return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
+      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
+                      RangeExpr._to_expr_type(voltage_limit_tolerance),
+      current_draw=current_draw,
+      input_thresholds=input_threshold
+    )
 
   @staticmethod
   def from_bidir(model: DigitalBidir) -> DigitalSink:
@@ -253,7 +262,6 @@ class DigitalSource(DigitalBase):
                pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.bridge_type = DigitalSourceBridge
-    self.adapter_types = [DigitalSourceAdapterVoltageSource]
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))

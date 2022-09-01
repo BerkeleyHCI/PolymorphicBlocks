@@ -1,6 +1,5 @@
 from typing import Optional, cast
 
-from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
@@ -23,10 +22,11 @@ class Resistor(PassiveComponent):
     self.actual_power_rating = self.Parameter(RangeExpr())
 
     self.description = DescriptionString(
-      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"),
-      " <b>of spec</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
-      "\n<b>power:</b> ", DescriptionString.FormatUnits(self.power, "W"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"))
+      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"), "\n",
+      "<b>power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
+    )
 
 
 @abstract_block
@@ -104,8 +104,8 @@ class PullupResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.pwr = self.Export(self.res.a.as_voltage_sink(), [Power])
-    self.io = self.Export(self.res.b.as_digital_pull_high_from_supply(self.pwr), [InOut])
+    self.pwr = self.Export(self.res.a.adapt_to(VoltageSink()), [Power])
+    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [InOut])
 
   def connected(self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PullupResistor':
@@ -125,8 +125,8 @@ class PulldownResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
-    self.gnd = self.Export(self.res.a.as_ground(), [Common])
-    self.io = self.Export(self.res.b.as_digital_pull_low_from_supply(self.gnd), [InOut])
+    self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
+    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)), [InOut])
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PulldownResistor':
@@ -141,27 +141,29 @@ class PulldownResistor(DiscreteApplication):
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
-  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
     self.resistance = self.ArgParameter(resistance)
-    self.current_limits = self.ArgParameter(current_limits)
+
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+    current_draw = self.pwr_out.link().current_drawn
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
-      power=(self.current_limits.lower() * self.current_limits.lower() * self.resistance.lower(),
-             self.current_limits.upper() * self.current_limits.upper() * self.resistance.upper())
+      power=(current_draw.lower() * current_draw.lower() * self.resistance.lower(),
+             current_draw.upper() * current_draw.upper() * self.resistance.upper())
     ))
 
-    self.pwr_in = self.Export(self.res.a.as_voltage_sink(
+    self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
       voltage_limits=(-float('inf'), float('inf')),
-      current_draw=RangeExpr()
-    ), [Power, Input])
-    self.pwr_out = self.Export(self.res.b.as_voltage_source(
-      voltage_out=self.pwr_in.link().voltage - self.current_limits * self.resistance,
-      current_limits=self.current_limits
-    ), [Output])
-    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+      current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.res.b.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+      current_limits=Range.all()
+    )))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
@@ -177,10 +179,10 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TOD
 class CurrentSenseResistor(DiscreteApplication):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
-  def __init__(self, resistance: RangeLike, current_limits: RangeLike) -> None:
+  def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
-    self.res = self.Block(SeriesPowerResistor(resistance, current_limits))
+    self.res = self.Block(SeriesPowerResistor(resistance))
     self.pwr_in = self.Export(self.res.pwr_in, [Input])
     self.pwr_out = self.Export(self.res.pwr_out, [Output])
 

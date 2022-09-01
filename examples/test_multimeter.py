@@ -59,7 +59,7 @@ class MultimeterAnalog(Block):
     super().contents()
 
     self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
-    self.connect(self.res.a.as_analog_sink(), self.input_positive)
+    self.connect(self.res.a.adapt_to(AnalogSink()), self.input_positive)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -71,12 +71,12 @@ class MultimeterAnalog(Block):
         100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
         Range(float('inf'), float('inf'))  # 1:1 step, open circuit
       ]))
-      self.connect(self.range.input.as_analog_sink(), self.input_negative)
-      self.connect(self.res.b.as_analog_source(
+      self.connect(self.range.input.adapt_to(AnalogSink()), self.input_negative)
+      self.connect(self.res.b.adapt_to(AnalogSource(
         voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
         current_limits=(-10, 10)*mAmp,
         impedance=1*mOhm(tol=0)
-      ), self.range.com.as_analog_sink(), self.output)
+      )), self.range.com.adapt_to(AnalogSink()), self.output)
 
       self.connect(self.select, self.range.control)
 
@@ -123,23 +123,23 @@ class MultimeterCurrentDriver(Block):
         100*kOhm(tol=0.01),  # 10 uA range
         1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
       ]))
-      self.connect(self.pwr, self.range.input.as_voltage_sink(
+      self.connect(self.pwr, self.range.input.adapt_to(VoltageSink(
         current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
-      ))
-      fet_source_node = self.fet.source.as_analog_sink()
+      )))
+      fet_source_node = self.fet.source.adapt_to(AnalogSink())
       self.connect(
         self.amp.inn,
         fet_source_node,
-        self.range.com.as_analog_source(
+        self.range.com.adapt_to(AnalogSource(
           voltage_out=(0, max_in_voltage),
           impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
-        ))
+        )))
 
       self.connect(self.select, self.range.control)
 
       self.sw = imp.Block(AnalogMuxer()).mux_to(  # enable switch
         [fet_source_node, self.amp.out],
-        self.fet.gate.as_analog_sink()
+        self.fet.gate.adapt_to(AnalogSink())
       )
       self.connect(self.enable, self.sw.control.allocate())
 
@@ -150,9 +150,9 @@ class MultimeterCurrentDriver(Block):
       reverse_recovery_time=RangeExpr.ALL
     ))
     self.connect(self.fet.drain, self.diode.anode)
-    self.connect(self.diode.cathode.as_analog_sink(  # TODO should be analog source
+    self.connect(self.diode.cathode.adapt_to(AnalogSink(  # TODO should be analog source
       voltage_limits=self.voltage_rating
-    ), self.output)
+    )), self.output)
 
 
 class FetPowerGate(Block):
@@ -179,20 +179,20 @@ class FetPowerGate(Block):
     self.pull_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
     ))
-    self.connect(self.pwr_in, self.pull_res.a.as_voltage_sink())
+    self.connect(self.pwr_in, self.pull_res.a.adapt_to(VoltageSink()))
     self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=(0, max_voltage),
       drain_current=(0, max_current),
       gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
     ))
-    self.connect(self.pwr_in, self.pwr_fet.source.as_voltage_sink(
+    self.connect(self.pwr_in, self.pwr_fet.source.adapt_to(VoltageSink(
       current_draw=self.pwr_out.link().current_drawn,
       voltage_limits=RangeExpr.ALL,
-    ))
-    self.connect(self.pwr_fet.drain.as_voltage_source(
+    )))
+    self.connect(self.pwr_fet.drain.adapt_to(VoltageSource(
       voltage_out = self.pwr_in.link().voltage,
       current_limits=RangeExpr.ALL,
-    ), self.pwr_out)
+    )), self.pwr_out)
 
     self.amp_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
@@ -202,7 +202,8 @@ class FetPowerGate(Block):
       drain_current=(0, 0),  # effectively no current
       gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
     ))
-    self.connect(self.control, self.amp_fet.gate.as_digital_sink(), self.amp_res.a.as_digital_sink())  # TODO more modeling here?
+    self.connect(self.control, self.amp_fet.gate.adapt_to(DigitalSink()),
+                 self.amp_res.a.adapt_to(DigitalSink()))  # TODO more modeling here?
 
     self.ctl_diode = self.Block(Diode(
       reverse_voltage=(0, max_voltage),
@@ -218,14 +219,14 @@ class FetPowerGate(Block):
     ))
     self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
     self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
-    self.connect(self.gnd, self.amp_fet.source.as_ground(), self.amp_res.b.as_ground(),
-                 self.btn.b.as_ground())
+    self.connect(self.gnd, self.amp_fet.source.adapt_to(Ground()), self.amp_res.b.adapt_to(Ground()),
+                 self.btn.b.adapt_to(Ground()))
 
-    self.connect(self.btn_diode.anode.as_digital_single_source(
+    self.connect(self.btn_diode.anode.adapt_to(DigitalSingleSource(
       voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
       output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
       low_signal_driver=True
-    ), self.btn_out)
+    )), self.btn_out)
 
     self.connect(self.pull_res.b, self.ctl_diode.anode, self.pwr_fet.gate, self.amp_fet.drain)
 
@@ -362,17 +363,17 @@ class MultimeterTest(JlcBoardTop):
         inputs=[self.gnd_src.dst, self.ref_buf.output]
       )
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
-        self.inn_mux.out, self.inn.port.as_analog_source())
+        self.inn_mux.out, self.inn.port.adapt_to(AnalogSource()))
 
       self.connect(self.mcu.gpio.allocate_vector('inn_control'), self.inn_mux.control)
 
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())
-      inp_port = self.inp.port.as_analog_source(
+      inp_port = self.inp.port.adapt_to(AnalogSource(
         voltage_out=VOLTAGE_RATING,
         current_limits=(0, 10)*mAmp,
         impedance=(0, 100)*Ohm,
-      )
+      ))
 
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
       adc_spi = self.mcu.spi.allocate('adc_spi')
@@ -420,7 +421,6 @@ class MultimeterTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg_5v'], Xc9142),
@@ -487,22 +487,9 @@ class MultimeterTest(JlcBoardTop):
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_5v', 'power_path', 'inductor', 'require_basic_part'], False),
-
-        # (['prot_5v', 'diode', 'require_basic_part'], False),  # use the big boy Zener
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['prot_analog', 'diode', 'require_basic_part'], False),
-
-        (['gate', 'ctl_diode', 'require_basic_part'], False),
-        (['gate', 'btn_diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
-        (UsbCReceptacle, ['require_basic_part'], False),
-        (TestPoint, ['require_basic_part'], False),
-        (Tpa2005d1_Device, ['require_basic_part'], False),
-        (SmtRgbLed, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050Nl),

@@ -59,6 +59,20 @@ class Diode(BaseDiode):
     self.voltage_drop = self.ArgParameter(voltage_drop)
     self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
 
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+    self.actual_current_rating = self.Parameter(RangeExpr())
+    self.actual_voltage_drop = self.Parameter(RangeExpr())
+    self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>Vr:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.reverse_voltage, "V"), "\n",
+      "<b>If:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
+      "<b>Vf:</b> ", DescriptionString.FormatUnits(self.actual_voltage_drop, "V"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.voltage_drop, "V")
+    )
+
 
 @abstract_block
 class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
@@ -72,11 +86,6 @@ class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprint, Generator
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
                    self.reverse_recovery_time, self.part, self.footprint_spec)
-
-    self.actual_voltage_rating = self.Parameter(RangeExpr())
-    self.actual_current_rating = self.Parameter(RangeExpr())
-    self.actual_voltage_drop = self.Parameter(RangeExpr())
-    self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
   def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
                   reverse_recovery_time: Range, part_spec: str, footprint_spec: str) -> None:
@@ -122,6 +131,15 @@ class ZenerDiode(BaseDiode, DiscreteSemiconductor):
 
     self.zener_voltage = self.ArgParameter(zener_voltage)
 
+    self.actual_zener_voltage = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "zener voltage=", DescriptionString.FormatUnits(self.actual_zener_voltage, "V"),
+      " <b>of spec:</b>", DescriptionString.FormatUnits(self.zener_voltage, "V"), "\n",
+      "power=", DescriptionString.FormatUnits(self.actual_power_rating, "W")
+    )
+
 
 @abstract_block
 class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
@@ -132,9 +150,6 @@ class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint,
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.zener_voltage, self.part, self.footprint_spec)
-
-    self.actual_zener_voltage = self.Parameter(RangeExpr())
-    self.actual_power_rating = self.Parameter(RangeExpr())
 
   def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
     parts = self._get_table().filter(lambda row: (
@@ -177,8 +192,8 @@ class ProtectionZenerDiode(DiscreteApplication):
   def contents(self):
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
-    self.connect(self.diode.cathode.as_voltage_sink(
+    self.connect(self.diode.cathode.adapt_to(VoltageSink(
       voltage_limits=(0, self.voltage.lower()),
       current_draw=(0, 0)*Amp  # TODO should be leakage current
-    ), self.pwr)
-    self.connect(self.diode.anode.as_voltage_sink(), self.gnd)
+    )), self.pwr)
+    self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)

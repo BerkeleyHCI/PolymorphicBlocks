@@ -27,9 +27,9 @@ class DigitalSwitch(DiscreteApplication):
     self.package = self.Block(Switch(current=self.out.link().current_limits,
                                      voltage=self.out.link().voltage))
 
-    self.connect(self.out, self.package.a.as_digital_single_source(
+    self.connect(self.out, self.package.a.adapt_to(DigitalSingleSource(
       voltage_out=self.gnd.link().voltage,
       output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
       pulldown_capable=False, low_signal_driver=True
-    ))
-    self.connect(self.gnd, self.package.b.as_ground())
+    )))
+    self.connect(self.gnd, self.package.b.adapt_to(Ground()))

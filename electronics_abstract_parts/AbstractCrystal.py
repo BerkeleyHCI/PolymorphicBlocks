@@ -12,14 +12,20 @@ class Crystal(DiscreteComponent):
     super().__init__()
 
     self.frequency = self.ArgParameter(frequency)
+    self.actual_frequency = self.Parameter(RangeExpr())
     self.actual_capacitance = self.Parameter(FloatExpr())
 
-    self.crystal = self.Port(CrystalPort.empty(), [InOut])  # set by subclass
-    self.gnd = self.Port(Ground.empty(), [Common])
+    self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
+    self.gnd = self.Port(Ground(), [Common])
 
+    self.description = DescriptionString(
+      "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F")
+    )
 
 @abstract_block
-class CapacitorStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
+class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
       '1': block.crystal.a,
@@ -37,7 +43,7 @@ class CapacitorStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
 
 
 @abstract_block
-class TableCrystal(CapacitorStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 
@@ -57,8 +63,7 @@ class TableCrystal(CapacitorStandardPinning, PartsTableFootprint, GeneratorBlock
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, len(parts))
-    self.crystal.init_from(CrystalPort(part[self.FREQUENCY]))
-    self.gnd.init_from(Ground())
+    self.assign(self.actual_frequency, part[self.FREQUENCY])
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
 
     self._make_footprint(part)
@@ -105,4 +110,5 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
     self.cap_b = self.Block(cap_model)
     self.connect(self.cap_a.pos, self.crystal.a)
     self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.gnd, self.cap_a.neg.as_ground(), self.cap_b.neg.as_ground())
+    self.connect(self.gnd, self.cap_a.neg.adapt_to(Ground()),
+                 self.cap_b.neg.adapt_to(Ground()))

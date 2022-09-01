@@ -21,10 +21,6 @@ object CompilerServerMain {
   }
 
   def compile(request: CompilerRequest, library: PythonInterfaceLibrary): CompilerResult = {
-    request.modules.foreach { module =>
-      library.indexModule(module)
-    }
-
     try {
       val refinements = Refinements(request.getRefinements)
       val compiler = new Compiler(request.getDesign, library, refinements)

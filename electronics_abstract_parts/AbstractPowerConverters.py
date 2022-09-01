@@ -21,6 +21,12 @@ class DcDcConverter(PowerConditioner):
     self.require(self.pwr_out.voltage_out.within(self.output_voltage),
                  "Output voltage must be within spec")
 
+    self.description = DescriptionString(
+      "<b>output voltage:</b> ", DescriptionString.FormatUnits(self.pwr_out.voltage_out, "V"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.output_voltage, "V"), "\n",
+      "<b>input voltage:</b> ", DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V")
+    )
+
 
 @abstract_block
 class LinearRegulator(DcDcConverter):
@@ -63,8 +69,8 @@ class LinearRegulatorDevice(DiscreteChip):
 @abstract_block
 class DcDcSwitchingConverter(DcDcConverter):
   @staticmethod
-  def _calculate_ripple(output_current: RangeLike, *, rated_current: Optional[FloatLike] = None,
-                        ripple_ratio: RangeLike = Default((0.2, 0.5))) -> RangeExpr:
+  def _calculate_ripple(output_current: RangeLike, ripple_ratio: RangeLike, *,
+                        rated_current: Optional[FloatLike] = None) -> RangeExpr:
     """
     Calculates the target inductor ripple current (with parameters - concrete values not necessary)
     given the output current draw, and optionally a non-default ripple ratio and rated current.
@@ -138,8 +144,11 @@ class BuckConverterPowerPath(GeneratorBlock):
     self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.output_voltage = output_voltage
-    self.current_limits = current_limits
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.current_limits = self.ArgParameter(current_limits)
+    self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
@@ -147,6 +156,14 @@ class BuckConverterPowerPath(GeneratorBlock):
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
+
+    self.description = DescriptionString(
+      "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
+      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
+      "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
+      " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
+      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
+    )
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
                         output_current: Range, inductor_current_ripple: Range,
@@ -173,13 +190,14 @@ class BuckConverterPowerPath(GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
-    self.connect(self.switch, self.inductor.a.as_voltage_sink(
+    self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn*dutycycle))
-    self.connect(self.pwr_out, self.inductor.b.as_voltage_source(
+      current_draw=self.pwr_out.link().current_drawn*dutycycle
+    )))
+    self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=self.current_limits
-    ))
+    )))
 
     # TODO pick a single worst-case DC
     input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
@@ -239,8 +257,11 @@ class BoostConverterPowerPath(GeneratorBlock):
     self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.output_voltage = output_voltage
-    self.current_limits = current_limits
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.current_limits = self.ArgParameter(current_limits)
+    self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
@@ -248,6 +269,14 @@ class BoostConverterPowerPath(GeneratorBlock):
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
+
+    self.description = DescriptionString(
+      "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
+      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
+      "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
+      " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
+      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
+    )
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
                         output_current: Range, inductor_current_ripple: Range,
@@ -275,12 +304,14 @@ class BoostConverterPowerPath(GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
-    self.connect(self.pwr_in, self.inductor.a.as_voltage_sink(
+    self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)))
-    self.connect(self.switch, self.inductor.b.as_voltage_sink(
+      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
+    )))
+    self.connect(self.switch, self.inductor.b.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)))
+      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
+    )))
 
     input_capacitance = Range.from_lower((output_current.upper / effective_dutycycle.lower) * (1 - effective_dutycycle.lower) /
                                          (frequency.lower * input_voltage_ripple))

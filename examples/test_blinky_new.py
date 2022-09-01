@@ -264,8 +264,8 @@ class Ref_Bh1620fvc(Block):
 
     self.require(rload.within((1, 1000)*kOhm))
     self.load = self.Block(Resistor(resistance=rload))
-    self.connect(self.vout, self.load.a.as_analog_sink())
-    self.connect(self.gnd, self.load.b.as_ground())
+    self.connect(self.vout, self.load.a.adapt_to(AnalogSink()))
+    self.connect(self.gnd, self.load.b.adapt_to(Ground()))
 
   def contents(self) -> None:
     super().contents()

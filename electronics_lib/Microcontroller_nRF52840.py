@@ -364,10 +364,10 @@ class Mdbt50q_UsbSeriesResistor(Block):
     self.usb_outer = self.Port(UsbDevicePort().empty())
     self.res_dp = self.Block(Resistor(27*Ohm(tol=0.01)))
     self.res_dm = self.Block(Resistor(27*Ohm(tol=0.01)))
-    self.connect(self.usb_inner.dp, self.res_dp.a.as_digital_bidir())  # TODO propagate params - needs bridge mechanism
-    self.connect(self.usb_outer.dp, self.res_dp.b.as_digital_bidir())
-    self.connect(self.usb_inner.dm, self.res_dm.a.as_digital_bidir())
-    self.connect(self.usb_outer.dm, self.res_dm.b.as_digital_bidir())
+    self.connect(self.usb_inner.dp, self.res_dp.a.adapt_to(DigitalBidir()))  # TODO propagate params - needs bridge mechanism
+    self.connect(self.usb_outer.dp, self.res_dp.b.adapt_to(DigitalBidir()))
+    self.connect(self.usb_inner.dm, self.res_dm.a.adapt_to(DigitalBidir()))
+    self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
 class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):

@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, List
 import math
 
-from edg_core.Blocks import DescriptionString
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
@@ -19,9 +18,16 @@ class UnpolarizedCapacitor(PassiveComponent):
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
-    self.description = DescriptionString(
-      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"))
 
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+    self.description = DescriptionString(
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"), "\n",
+      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
+    )
 
 @abstract_block
 class Capacitor(UnpolarizedCapacitor):
@@ -62,13 +68,6 @@ class TableCapacitor(Capacitor):
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  @init_in_parent
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-
-    self.actual_capacitance = self.Parameter(RangeExpr())
-    self.actual_voltage_rating = self.Parameter(RangeExpr())
-
 
 @abstract_block
 class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
@@ -91,6 +90,9 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
                    self.part, self.footprint_spec)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
+
+    # TODO there should be a way to add the part number here without duplicating
+    # the description string in the main superclass
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
                   part_spec: str, footprint_spec: str) -> None:
@@ -216,14 +218,15 @@ class DecouplingCapacitor(DiscreteApplication):
     super().__init__()
 
     self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
-    self.gnd = self.Export(self.cap.neg.as_voltage_sink(), [Common])
-    self.pwr = self.Export(self.cap.pos.as_voltage_sink(), [Power])
+    self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
+      voltage_limits=self.cap.actual_voltage_rating + self.gnd.link().voltage,
+      current_draw=0*Amp(tol=0)
+    )), [Power])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
-    self.description = DescriptionString(
-      "<b>spec capacitance:</b> ", DescriptionString.FormatUnits(self.cap.capacitance, "F"))
-
+    # TODO there should be a way to forward the description string of the inner element
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
       'DecouplingCapacitor':

@@ -13,13 +13,13 @@ class CanConnector(Connector):
     self.differential = self.Port(CanDiffPort().empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('2').as_voltage_source(
+    self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
-    ))
-    self.connect(self.gnd, self.conn.pins.allocate('3').as_ground_source())
-    self.connect(self.differential.canh, self.conn.pins.allocate('4').as_digital_source())
-    self.connect(self.differential.canl, self.conn.pins.allocate('5').as_digital_source())
+    )))
+    self.connect(self.gnd, self.conn.pins.allocate('3').adapt_to(GroundSource()))
+    self.connect(self.differential.canh, self.conn.pins.allocate('4').adapt_to(DigitalSource()))
+    self.connect(self.differential.canl, self.conn.pins.allocate('5').adapt_to(DigitalSource()))
 
 
 class TofArrayTest(JlcBoardTop):
@@ -132,8 +132,6 @@ class TofArrayTest(JlcBoardTop):
 
 
   def refinements(self) -> Refinements:
-    from electronics_lib.Distance_Vl53l0x import Vl53l0x_Device
-    from electronics_lib.Speakers import Tpa2005d1_Device
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
@@ -159,18 +157,6 @@ class TofArrayTest(JlcBoardTop):
           'tof_xshut_3=3',
           'tof_xshut_4=2',
         ]),
-
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['usb', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (SmtRgbLed, ['require_basic_part'], False),
-        (Vl53l0x_Device, ['require_basic_part'], False),
-        (Tpa2005d1_Device, ['require_basic_part'], False),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),

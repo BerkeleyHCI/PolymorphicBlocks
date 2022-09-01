@@ -2,8 +2,8 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
+from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
@@ -57,7 +57,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     # TODO add JTAG support
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
+                   self.gpio.allocated(), self.adc.allocated(),
                    self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
                    self.usb.allocated())
 
@@ -108,7 +108,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               gpio_allocates: List[str], adc_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str]) -> None: ...
 
@@ -143,7 +143,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
   }
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
+               gpio_allocates: List[str], adc_allocates: List[str],
                spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
                usb_allocates: List[str]) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
@@ -151,7 +151,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
       (UartPort, uart_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (AnalogSink, adc_allocates), (DigitalBidir, gpio_allocates),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -166,33 +166,6 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
 
-
-class EspProgrammingHeader(ProgrammingConnector):
-  def __init__(self) -> None:
-    super().__init__()
-
-    # TODO: should these also act as sources?
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
-    self.uart = self.Port(UartPort.empty(), [Output])
-
-    self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('1').as_voltage_sink())
-    self.connect(self.uart.tx, self.conn.pins.allocate('2').as_digital_source())
-    self.connect(self.uart.rx, self.conn.pins.allocate('3').as_digital_sink())
-    self.connect(self.gnd, self.conn.pins.allocate('4').as_voltage_sink())
-
-
-class PulldownJumper(Block):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.io = self.Port(DigitalSource.empty(), [Output])
-
-    self.conn = self.Block(PassiveConnector())
-    self.connect(self.io, self.conn.pins.allocate('1').as_digital_source())
-    self.connect(self.gnd, self.conn.pins.allocate('2').as_voltage_sink())
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
@@ -220,9 +193,8 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
       self.io8_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
       self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
+      # by default instantiate a programming switch, TODO option to disable as a config
+      (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io9)
 
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
-
-      # IO9 left open - to be manually shorted with tweezers, to save space
-      # TODO: alternative programming headers that include IO9?

@@ -36,7 +36,9 @@ from .AbstractFets import SwitchFet, TableSwitchFet
 from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch
 from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, DigitalSwitch
-from .AbstractOpamp import Opamp, OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
+from .AbstractOpamp import Opamp
+from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
+from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
 from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter

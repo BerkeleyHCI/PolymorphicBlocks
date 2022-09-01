@@ -39,10 +39,13 @@ class UsbAReceptacle(UsbConnector, FootprintBlock):
     )
 
 
-class UsbCReceptacle(UsbConnector, FootprintBlock, JlcPart):
+class UsbCReceptacle_Device(FootprintBlock, JlcPart):
+  """Raw USB Type-C Receptacle
+  Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
+  up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
   @init_in_parent
-  def __init__(self, voltage_out: RangeExpr = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
-               current_limits: RangeExpr = UsbConnector.USB2_CURRENT_LIMITS,
+  def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
+               current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
                cc_pullup_capable: BoolLike = Default(False)) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
@@ -88,6 +91,38 @@ class UsbCReceptacle(UsbConnector, FootprintBlock, JlcPart):
     )
 
 
+class UsbCReceptacle(UsbConnector, GeneratorBlock):
+  """USB Type-C Receptacle that automatically generates the CC resistors if CC is not connected."""
+  @init_in_parent
+  def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
+               current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS) -> None:
+    super().__init__()
+
+    self.conn = self.Block(UsbCReceptacle_Device(voltage_out=voltage_out, current_limits=current_limits))
+    self.pwr = self.Export(self.conn.pwr, optional=True)
+    self.gnd = self.Export(self.conn.gnd)
+    self.usb = self.Export(self.conn.usb, optional=True)
+    self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
+
+    self.generator(self.generate, self.pwr.is_connected(), self.cc.is_connected())
+
+  def generate(self, pwr_connected: bool, cc_connected: bool) -> None:
+    if cc_connected:  # if CC externally connected, connect directly to USB port
+      self.connect(self.cc, self.conn.cc)
+      self.require(self.cc.is_connected().implies(self.pwr.is_connected()),
+                   "USB power not used when CC connected")
+    elif pwr_connected:  # otherwise generate the pulldown resistors for USB2 mode
+      (self.cc_pull, ), _ = self.chain(self.conn.cc, self.Block(UsbCcPulldownResistor()))
+      self.connect(self.cc_pull.gnd, self.gnd)
+      self.require(self.pwr.voltage_out == UsbConnector.USB2_VOLTAGE_RANGE,
+                   "when CC not connected, port restricted to USB 2.0 voltage")
+      self.require(self.pwr.current_limits == UsbConnector.USB2_CURRENT_LIMITS,
+                   "when CC not connected, port restricted to USB 2.0 current")
+
+    # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
+    self.connect(self.gnd, self.conn.shield.adapt_to(Ground()))
+
+
 @abstract_block
 class UsbDeviceConnector(UsbConnector):
   """Abstract base class for a USB 2.0 device-side port connector"""
@@ -128,23 +163,6 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
       mfr='Molex', part='105017-0001',
       datasheet='https://www.molex.com/pdm_docs/sd/1050170001_sd.pdf'
     )
-
-
-class UsbDeviceCReceptacle(UsbDeviceConnector):
-  """Implementation of a USB device using a Type-C receptacle as a upstream-facing port.
-  Includes pull-down resistors on the CC pins so a Type-C downstream-facing port can supply the default 5v power.
-  High speed pins are left open."""
-  def __init__(self) -> None:
-    super().__init__()
-
-  def contents(self) -> None:
-    # TODO for a UFP we expect a pull-up on the CC lines on the DFP side
-    self.port = self.Block(UsbCReceptacle(cc_pullup_capable=True))
-    self.connect(self.pwr, self.port.pwr)
-    self.connect(self.usb, self.port.usb)
-
-    (self.cc_pull, ), _ = self.chain(self.port.cc, self.Block(UsbCcPulldownResistor()))
-    self.connect(self.gnd, self.port.gnd, self.port.shield.as_ground(), self.cc_pull.gnd)
 
 
 class UsbCcPulldownResistor(Block):

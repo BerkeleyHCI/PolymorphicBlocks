@@ -128,6 +128,16 @@ class AnalogSink(AnalogBase):
 
 
 class AnalogSource(AnalogBase):
+  @staticmethod
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+                  current_limits: RangeLike = Default(RangeExpr.ALL),
+                  impedance: RangeLike = Default(RangeExpr.ZERO)):
+    return AnalogSource(
+      voltage_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
+      current_limits=current_limits,
+      impedance=impedance
+    )
+
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:

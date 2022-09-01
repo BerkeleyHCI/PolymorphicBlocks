@@ -28,6 +28,7 @@ from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 
 from .PassiveConnector import PassiveConnector, PinHeader254, JstPhK, MolexSl
+from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 
 from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
@@ -46,9 +47,10 @@ from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
+from .Microcontroller_Esp32 import Esp32_Wroom_32
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
-from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle, UsbDeviceCReceptacle
+from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle
 from .UsbPorts import UsbEsdDiode, Tpd2e009, Esda5v3l
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
@@ -62,6 +64,7 @@ from .DacSpi_Mcp4901 import Mcp4921
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
 from .Lcd_Qt096t_if09 import Qt096t_if09
+from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2

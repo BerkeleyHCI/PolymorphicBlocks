@@ -36,7 +36,7 @@ class VoltageTestPoint(Block):
     super().__init__()
     self.io = self.Port(VoltageSink().empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
-    self.connect(self.io, self.tp.io.as_voltage_sink())
+    self.connect(self.io, self.tp.io.adapt_to(VoltageSink()))
 
   def connected(self, io: Port[VoltageLink]) -> 'VoltageTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
@@ -49,7 +49,7 @@ class DigitalTestPoint(Block):
     super().__init__()
     self.io = self.Port(DigitalSink().empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
-    self.connect(self.io, self.tp.io.as_digital_sink())
+    self.connect(self.io, self.tp.io.adapt_to(DigitalSink()))
 
   def connected(self, io: Port[DigitalLink]) -> 'DigitalTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
@@ -62,7 +62,7 @@ class AnalogTestPoint(Block):
     super().__init__()
     self.io = self.Port(AnalogSink().empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
-    self.connect(self.io, self.tp.io.as_analog_sink())
+    self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
 
   def connected(self, io: Port[AnalogLink]) -> 'AnalogTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)

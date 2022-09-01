@@ -20,6 +20,7 @@ class BaseBoardTop(DesignTop):
 
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
+        (Fpc050, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, Keystone5015),
 
@@ -29,12 +30,7 @@ class BaseBoardTop(DesignTop):
 
 
 class BoardTop(BaseBoardTop):
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_values=[
-        (JlcPart, ['require_basic_part'], False),  # for non-JLC boards, we don't care about this
-      ]
-    )
+  pass
 
 
 class JlcBoardTop(BaseBoardTop):
@@ -61,5 +57,9 @@ class JlcBoardTop(BaseBoardTop):
         (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
+      ],
+      class_values=[  # realistically only RCs are going to likely be basic parts
+        (JlcResistor, ['require_basic_part'], True),
+        (JlcCapacitor, ['require_basic_part'], True),
       ],
     )

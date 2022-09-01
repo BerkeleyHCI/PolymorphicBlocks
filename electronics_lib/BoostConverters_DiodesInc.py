@@ -57,7 +57,9 @@ class Ap3012(DiscreteBoostConverter):
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 0.5)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn, rated_current=0.5*Amp)
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
+                                                       rated_current=0.5*Amp)
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
@@ -68,8 +70,8 @@ class Ap3012(DiscreteBoostConverter):
         voltage_drop=(0, 0.4)*Volt,
         reverse_recovery_time=(0, 500) * nSecond  # guess from Digikey's classification for "fast recovery"
       ))
-      self.connect(self.ic.sw, self.rect.anode.as_voltage_sink())
-      self.connect(self.pwr_out, self.rect.cathode.as_voltage_source(
+      self.connect(self.ic.sw, self.rect.anode.adapt_to(VoltageSink()))
+      self.connect(self.pwr_out, self.rect.cathode.adapt_to(VoltageSource(
         voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
         current_limits=(0, 0.5)*Amp  # TODO proper switch current modeling?
-      ))
+      )))

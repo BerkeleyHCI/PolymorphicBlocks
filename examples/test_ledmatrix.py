@@ -62,7 +62,7 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         else:
           connect_passive_io(row, led.a)
 
-    # generate the adapters andconnect the internal passive IO to external typed IO
+    # generate the adapters and connect the internal passive IO to external typed IO
     for index, passive_io in passive_ios.items():
       # if there is a cathode resistor attached to this index, then include the sunk current
       if index < cols:
@@ -78,11 +78,11 @@ class CharlieplexedLedMatrix(GeneratorBlock):
         source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
 
       self.connect(self.ios.append_elt(DigitalSink.empty(), str(index)),
-                   passive_io.as_digital_sink(current_draw=(sink_current, source_current)))
+                   passive_io.adapt_to(DigitalSink(current_draw=(sink_current, source_current))))
 
 
 class LedMatrixTest(JlcBoardTop):
-  """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LEX matrix generator.
+  """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LED matrix generator.
   """
   def contents(self) -> None:
     super().contents()
@@ -153,16 +153,6 @@ class LedMatrixTest(JlcBoardTop):
           'led_6=10',
           'sw1=18',
         ]),
-
-        (['mcu', 'ic', 'require_basic_part'], False),
-        (['reg_3v3', 'ic', 'require_basic_part'], False),
-        (['prot_3v3', 'diode', 'require_basic_part'], False),
-        (['usb_esd', 'require_basic_part'], False),
-        (['usb', 'require_basic_part'], False),
-      ],
-      class_values=[
-        (TestPoint, ['require_basic_part'], False),
-        (ResistorArray, ['require_basic_part'], False),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),
