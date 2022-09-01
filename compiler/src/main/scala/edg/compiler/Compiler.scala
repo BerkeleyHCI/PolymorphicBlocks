@@ -82,7 +82,7 @@ object ElaborateRecord {
   */
 case class PartialCompile(
   blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
-  params: Seq[DesignPath] = Seq()  // do not propagate values into these params
+  params: Seq[DesignPath] = Seq()  // do not propagate values into these params (assignments are discarded)
 )
 
 
@@ -117,6 +117,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
+  // Tracks ElaborateRecord that are ready, but held by partial compilation
+  private val heldElaboratePending = mutable.ListBuffer[ElaborateRecord]()
 
   // Design parameters solving (constraint evaluation) and assertions
   private val constProp = new ConstProp() {
@@ -158,7 +160,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     val pendingErrors = elaboratePending.getMissing.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
-    }.toSeq
+    }.toSeq ++ heldElaboratePending.map { missingNode =>
+      CompilerError.Unelaborated(missingNode, Set())
+    }
 
     errors.toSeq ++ constProp.getErrors ++ pendingErrors ++ assertionErrors
   }
@@ -1229,7 +1233,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
-              elaborateBlock(blockPath)
+              if (partial.blocks.contains(blockPath)) {  // in the partial case, just move it into the held pending
+                heldElaboratePending.append(elaborateRecord)
+              } else {
+                elaborateBlock(blockPath)
+              }
               elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Link(linkPath) =>
               elaborateLink(linkPath)
