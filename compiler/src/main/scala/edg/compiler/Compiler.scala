@@ -77,6 +77,15 @@ object ElaborateRecord {
 }
 
 
+/** Configuration for partial compilation, where the compiler intentionally leaves some design subtre
+  * unelaboated, eg as a template for design space exploration.
+  */
+case class PartialCompile(
+  blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
+  params: Seq[DesignPath] = Seq()  // do not propagate values into these params
+)
+
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   * TODO also needs a Python interface for generators, somewhere.
   *
@@ -98,7 +107,7 @@ object ElaborateRecord {
   * It is intentional to allow a link-side port to access the CONNECTED_LINK, as a mechanism to access inner links.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
-               refinements: Refinements=Refinements()) {
+               refinements: Refinements=Refinements(), partial: PartialCompile=PartialCompile()) {
   // Working design tree data structure
   private val root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
@@ -123,14 +132,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Primarily used for unit tests, TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
-  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]()  // containing block, name, expr
-
   // Supplemental elaboration data structures
   private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
   linkParams.put(DesignPath(), Seq())  // empty path means disconnected
   private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
+  // TODO this duplicates data in the design tree, assertion checking can be a post-compile pass
+  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]() // containing block, name, expr
+  // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
