@@ -16,7 +16,10 @@ object ElaborateRecord {
   sealed trait ElaborateTask extends ElaborateRecord  // an elaboration task that can be run
   sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency source
 
-  case class Block(blockPath: DesignPath) extends ElaborateTask  // even when done, still may only be a generator
+  // step 1/2 for blocks: replaces library reference blocks with the concrete block from the library
+  case class ExpandBlock(blockPath: DesignPath) extends ElaborateTask
+  // step 2/2 for blocks, when generators are ready: processes the subtree (including connects and assigns)
+  case class Block(blockPath: DesignPath) extends ElaborateTask
   case class Link(linkPath: DesignPath) extends ElaborateTask
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
@@ -402,10 +405,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  // Given a block library at some path, expand it and return the instantiated block.
+  // Given a block library at some path, expand it and link it in the parent.
+  // Does not elaborate the internals (including connections / assertions / assignments), which is
+  // a separate phase that (for generators) may be gated on additional parameters.
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
-  protected def expandBlock(path: DesignPath, block: wir.BlockLibrary): wir.Block = {
+  protected def expandBlock(path: DesignPath): Unit = {
+    val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
     val libraryPath = block.target
 
     val (refinedLibraryPath, unrefinedType) = refinements.instanceRefinements.get(path) match {
@@ -481,7 +487,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
       case _ => Seq()
     }
-    elaboratePending.addNode(ElaborateRecord.Block(path), deps)
 
     newBlock
   }
@@ -589,8 +594,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-      val innerBlockElaborated = expandBlock(path + innerBlockName, innerBlock.asInstanceOf[wir.BlockLibrary])
-      block.elaborate(innerBlockName, innerBlockElaborated)
+      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), Seq())
+
     }
 
     block.getLinks.foreach {
