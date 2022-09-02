@@ -480,15 +480,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePort(path + portName, newBlock, port)
     }
 
-    val deps = newBlock match {
-      case newBlock: wir.Generator =>
-        newBlock.getDependencies.map { depPath =>
-          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-        }
-      case _ => Seq()
-    }
+    val (parentPath, blockName) = path.split
+    val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
+    parent.elaborate(blockName, newBlock)
 
-    newBlock
+    // TODO instead of directly elaborating, add it as a separate step dependent on generators
+    // This is currently needed while connect algo refactoring is in progrerss to only break one thing at a time.
+//    val deps = newBlock match {
+//      case newBlock: wir.Generator =>
+//        newBlock.getDependencies.map { depPath =>
+//          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+//        }
+//      case _ => Seq()
+//    }
+//    elaboratePending.addNode(ElaborateRecord.ExpandBlock(path), deps)
   }
 
   // Given a link library at some path, expand it and return the instantiated block.
@@ -594,8 +599,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), Seq())
+//      elaboratePending.addNode(ElaborateRecord.ExpandBlock(path + innerBlockName), Seq())
 
+      // TODO don't directly expand inner blocks
+      expandBlock(path + innerBlockName)
+
+      val deps = innerBlock match {
+        case innerBlock: wir.Generator =>
+          innerBlock.getDependencies.map { depPath =>
+            ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+          }
+        case _ => Seq()
+      }
+      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), deps)
     }
 
     block.getLinks.foreach {
@@ -610,6 +626,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Set IsConnected and generate constraint expansion records
     import edg.ExprBuilder.ValueExpr
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
+//      val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
+//      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
+
+//        innerBlockTemplate.ports.foreach { case (portName, port) =>
+//        import edgir.elem.elem
+//        val portPostfix = Seq(innerBlockName, portName)
+//        port.is match {
+//          case _: elem.PortLike.Is.Array =>  // array case: connectivity delayed to lowering
       innerBlock.asInstanceOf[wir.Block].getPorts.foreach { case (portName, port) =>
         val portPostfix = Seq(innerBlockName, portName)
         port match {
@@ -1237,12 +1261,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
-            case elaborateRecord@ElaborateRecord.Block(blockPath) =>
+            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
               if (partial.blocks.contains(blockPath)) {  // in the partial case, just move it into the held pending
                 heldElaboratePending.append(elaborateRecord)
               } else {
-                elaborateBlock(blockPath)
+                expandBlock(blockPath)
               }
+              elaboratePending.setValue(elaborateRecord, None)
+            case elaborateRecord@ElaborateRecord.Block(blockPath) =>
+              elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Link(linkPath) =>
               elaborateLink(linkPath)
