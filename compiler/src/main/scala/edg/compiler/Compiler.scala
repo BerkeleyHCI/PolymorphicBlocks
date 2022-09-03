@@ -246,6 +246,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             Seq()
           case port: wir.PortArray =>
             Seq(postfix.head) ++ resolveRecursive(port.getPorts(postfix.head), postfix.tail)
+          case _: wir.PortLibrary =>
+            throw new IllegalArgumentException
         }
       }
       val blockLike = resolve(blockPath).asInstanceOf[wir.HasMutablePorts]
@@ -259,26 +261,24 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             BooleanValue(true),
             s"$containerPath.$constrName")
-          println(s"connected: ${containerPath.asIndirect ++ portPostfix}")
         case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
           val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
           constProp.addDirectedEquality(
             containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             exportedToTop.asIndirect + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
-          println(s"exported: ${containerPath.asIndirect ++ portPostfix}  <=  $exportedToTop")
         case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
-          val tunnelPortPostfix = exported.getExteriorPort.getRef.steps.map(_.getName)  // as block, port(s)
-          val exportedToTop = exteriorTopPort(containerPath + tunnelPortPostfix.head, tunnelPortPostfix.tail)
+          // Since the exterior port refers to a child block of the current container,
+          // it would not have been elaborated yet so we cannot inspect into it.
+          // This relies on tunnel exports being simple (port to port, not port to inner port).
           constProp.addDirectedEquality(
             containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            exportedToTop.asIndirect + IndirectStep.IsConnected,
+            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
         case None =>
           constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             BooleanValue(false),
             s"${containerPath ++ portPostfix}.(not connected)")
-          println(s"disconnected: ${containerPath.asIndirect ++ portPostfix}")
 
           // TODO refactor this out, connected-ness and ConnectedLink should be centralized
           val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
@@ -583,7 +583,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def runGenerator(path: DesignPath, generator: wir.Generator): Unit = {
     val reqParamValues = generator.getDependencies.map { reqParam =>
-      reqParam -> constProp.getValue(path.asIndirect ++ reqParam).get
+      reqParam -> constProp.getValue(path.asIndirect ++ reqParam).getOrElse(
+        throw new IllegalArgumentException(f"missing param ${path.asIndirect ++ reqParam}"))
     }
 
     // Run generator and plug in
@@ -874,7 +875,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO refactor this out, ConnectedLink needs to be centralized
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
-        println(s"link set ${portPath}")
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
         connectedLink.put(portPath, path)
       case port: wir.PortArray =>
