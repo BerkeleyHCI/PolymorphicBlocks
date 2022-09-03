@@ -130,7 +130,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
   for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
-    constProp.setForcedValue(path.asIndirect, value, "path refinement")
+    constProp.setForcedValue(path, value, "path refinement")
   }
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
 
@@ -237,21 +237,17 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // This should only be used for exports, on the outer port, which must have been fully elaborated.
     def exteriorTopPort(blockPath: DesignPath, portPostfix: Seq[String]): DesignPath = {
       // Returns the deepest applicable postfix, starting from a port
-      def resolveRecursive(port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
+      def resolveRecursive(portPath: DesignPath, port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
         port match {
-          case _: wir.Port =>
-            require(postfix.isEmpty, f"can't path into port")
-            Seq()
-          case _: wir.Bundle =>
+          case _: wir.Port | _: wir.Bundle | _: wir.PortLibrary =>  // don't recurse into these
+            // note that libraries in arrays may not yet have been elaborated
             Seq()
           case port: wir.PortArray =>
-            Seq(postfix.head) ++ resolveRecursive(port.getPorts(postfix.head), postfix.tail)
-          case _: wir.PortLibrary =>
-            throw new IllegalArgumentException
+            Seq(postfix.head) ++ resolveRecursive(portPath + postfix.head, port.getPorts(postfix.head), postfix.tail)
         }
       }
       val blockLike = resolve(blockPath).asInstanceOf[wir.HasMutablePorts]
-      containerPath + portPostfix.head ++ resolveRecursive(blockLike.getPorts(portPostfix.head), portPostfix.tail)
+      containerPath + portPostfix.head ++ resolveRecursive(blockPath + portPostfix.head, blockLike.getPorts(portPostfix.head), portPostfix.tail)
     }
 
     port match {
@@ -452,7 +448,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       if (library.isSubclassOf(refinedLibraryPath, classPath)) {
         refinements.foreach { case (subpath, value) =>
           if (!refinementInstanceValuePaths.contains(path ++ subpath)) {  // instance values supersede class values
-            constProp.setForcedValue(path.asIndirect ++ subpath, value,
+            constProp.setForcedValue(path ++ subpath, value,
               s"${refinedLibraryPath.getTarget.getName} class refinement")
           }
         }

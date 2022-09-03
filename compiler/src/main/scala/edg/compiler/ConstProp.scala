@@ -64,6 +64,8 @@ class ConstProp {
   val forcedParams = mutable.Set[IndirectDesignPath]()
 
   // Equality, two entries per equality edge (one per direction / target)
+  // This is a very special case, only used for port parameter propagations, and perhaps
+  // even that can be replaced with  directed assignments
   val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Overassigns, for error tracking
@@ -191,16 +193,17 @@ class ConstProp {
   /** Sets a value directly, and ignores subsequent assignments.
     * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
     */
-  def setForcedValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
+  def setForcedValue(target: DesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    require(!params.nodeDefinedAt(target), s"forced value must be set before assigns, prior ${paramSource(target)}")
+    val targetIndirect = target.asIndirect
+    require(!params.nodeDefinedAt(targetIndirect), s"forced value must be set before assigns, prior ${paramSource(targetIndirect)}")
 
-    params.setValue(target, value)
-    paramSource.put(target, paramSourceRecord)
-    forcedParams += target
-    onParamSolved(target, value)
-    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
-      propagateEquality(constrTargetEquals, target, value)
+    params.setValue(targetIndirect, value)
+    paramSource.put(targetIndirect, paramSourceRecord)
+    forcedParams += targetIndirect
+    onParamSolved(targetIndirect, value)
+    for (constrTargetEquals <- equality.getOrElse(targetIndirect, mutable.Buffer())) {
+      propagateEquality(constrTargetEquals, targetIndirect, value)
     }
 
     update()
