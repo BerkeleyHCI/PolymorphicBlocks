@@ -38,13 +38,25 @@ case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: exp
 case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set(),
                             equals: mutable.Set[IndirectDesignPath] = mutable.Set())
 
+
+sealed trait ConnectedLinkRecord  // a record in the connected link directed graph
+object ConnectedLinkRecord {
+  // a connection that is directly to a link, with the graph value being the path to the link itself
+  case class ConnectedLink(port: DesignPath) extends ConnectedLinkRecord
+  // for a connect that isn't directly to a link, lowers into ConnectedLink once the final destination is known
+  case class Connected(port: DesignPath, nextPortToLink: DesignPath) extends ConnectedLinkRecord
+  // an assign record that is dependent on connected link(s) being available
+  case class Assign(record: AssignRecord) extends ConnectedLinkRecord
+}
+
+
 /**
   * Parameter propagation, evaluation, and resolution associated with a single design.
   * General philosophy: this should not refer to any particular design instance, so the design can continue to be
   * transformed (though those transformations must be strictly additive with regards to assignments and assertions)
   *
-  * Handling aliased ports / indirect references (eg, link-side ports, CONNECTED_LINK):
-  * addEquality must be called between the individual parameters and will immediately propagate.
+  * This class resolves CONNECTED_LINK references once the connections are known, though
+  * parameters on connected ports must be manually propagated via addEquality.
   * addEquality is idempotent and may be repeated.
   */
 class ConstProp {
@@ -57,6 +69,8 @@ class ConstProp {
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
+
+  val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
   // Params that have a forced/override value, which must be set before any assign statements are parsed
   // TODO how to handle constraints on parameters from an outer component?
@@ -78,31 +92,9 @@ class ConstProp {
   //
   def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
 
-
   //
-  // API methods
+  // Processing Code
   //
-  def addDeclaration(target: DesignPath, decl: init.ValInit): Unit = {
-    require(!paramTypes.isDefinedAt(target), s"redeclaration of $target")
-    val paramType = decl.`val` match {
-      case init.ValInit.Val.Floating(_) => classOf[FloatValue]
-      case init.ValInit.Val.Integer(_) => classOf[IntValue]
-      case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
-      case init.ValInit.Val.Text(_) => classOf[TextValue]
-      case init.ValInit.Val.Range(_) => classOf[RangeType]
-      case init.ValInit.Val.Array(arrayType) => arrayType.`val` match {
-        case init.ValInit.Val.Floating(_) => classOf[ArrayValue[FloatValue]]
-        case init.ValInit.Val.Integer(_) => classOf[ArrayValue[IntValue]]
-        case init.ValInit.Val.Boolean(_) => classOf[ArrayValue[BooleanValue]]
-        case init.ValInit.Val.Text(_) => classOf[ArrayValue[TextValue]]
-        case init.ValInit.Val.Range(_) => classOf[ArrayValue[RangeType]]
-        case _ => throw new NotImplementedError(s"Unknown init array-type $decl")
-      }
-      case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
-    }
-    paramTypes.put(target, paramType)
-  }
-
   // Repeated does propagations as long as there is work to do, including both array available and param available.
   protected def update(): Unit = {
     while (params.getReady.nonEmpty) {
@@ -135,6 +127,39 @@ class ConstProp {
         propagateEquality(dstEquals, dst, value)
       }
     }
+  }
+
+  //
+  // API methods
+  //
+  def addDeclaration(target: DesignPath, decl: init.ValInit): Unit = {
+    require(!paramTypes.isDefinedAt(target), s"redeclaration of $target")
+    val paramType = decl.`val` match {
+      case init.ValInit.Val.Floating(_) => classOf[FloatValue]
+      case init.ValInit.Val.Integer(_) => classOf[IntValue]
+      case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
+      case init.ValInit.Val.Text(_) => classOf[TextValue]
+      case init.ValInit.Val.Range(_) => classOf[RangeType]
+      case init.ValInit.Val.Array(arrayType) => arrayType.`val` match {
+        case init.ValInit.Val.Floating(_) => classOf[ArrayValue[FloatValue]]
+        case init.ValInit.Val.Integer(_) => classOf[ArrayValue[IntValue]]
+        case init.ValInit.Val.Boolean(_) => classOf[ArrayValue[BooleanValue]]
+        case init.ValInit.Val.Text(_) => classOf[ArrayValue[TextValue]]
+        case init.ValInit.Val.Range(_) => classOf[ArrayValue[RangeType]]
+        case _ => throw new NotImplementedError(s"Unknown init array-type $decl")
+      }
+      case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
+    }
+    paramTypes.put(target, paramType)
+  }
+
+  def setConnectedLink(linkPath: DesignPath, portPath: DesignPath): Unit = {
+    connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(portPath), linkPath)
+  }
+
+  def setConnection(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
+    connectedLink.addNode(ConnectedLinkRecord.Connected(toBlockPortPath, toLinkPortPath),
+      Seq(ConnectedLinkRecord.ConnectedLink(toLinkPortPath)))
   }
 
   /**
