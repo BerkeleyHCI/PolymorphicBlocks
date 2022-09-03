@@ -620,10 +620,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       // TODO don't directly expand inner blocks
       expandBlock(path + innerBlockName)
 
-      val deps = innerBlock match {
+      val actualInnerBlock = resolveBlock(path + innerBlockName)
+      val deps = actualInnerBlock match {  // needs the expanded block to check generator data
         case innerBlock: wir.Generator =>
           innerBlock.getDependencies.map { depPath =>
-            ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+            ElaborateRecord.ParamValue(path.asIndirect + innerBlockName ++ depPath)
           }
         case _ => Seq()
       }
