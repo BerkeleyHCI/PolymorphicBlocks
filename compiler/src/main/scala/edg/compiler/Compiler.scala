@@ -232,6 +232,26 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
     val constraintExpr = constraint.map { case (constrName, constr) => (constrName, constr.expr) }
 
+    // Returns the topmost port for some port path that may be an inner port of a bundle.
+    // Returns array components (but never the array itself), but does not return bundle components.
+    // This should only be used for exports, on the outer port, which must have been fully elaborated.
+    def exteriorTopPort(blockPath: DesignPath, portPostfix: Seq[String]): DesignPath = {
+      // Returns the deepest applicable postfix, starting from a port
+      def resolveRecursive(port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
+        port match {
+          case _: wir.Port =>
+            require(postfix.isEmpty, f"can't path into port")
+            Seq()
+          case _: wir.Bundle =>
+            Seq()
+          case port: wir.PortArray =>
+            Seq(postfix.head) ++ resolveRecursive(port.getPorts(postfix.head), postfix.tail)
+        }
+      }
+      val blockLike = resolve(blockPath).asInstanceOf[wir.HasMutablePorts]
+      containerPath + portPostfix.head ++ resolveRecursive(blockLike.getPorts(portPostfix.head), portPostfix.tail)
+    }
+
     port match {
       case _: wir.Bundle | _: wir.Port => constraintExpr match {
         case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
@@ -241,25 +261,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             s"$containerPath.$constrName")
           println(s"connected: ${containerPath.asIndirect ++ portPostfix}")
         case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
+          val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
           constProp.addDirectedEquality(
             containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            // PROBLEM: need to address array ports
-            containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected,
+            exportedToTop.asIndirect + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
-          println(s"exported: ${containerPath.asIndirect ++ portPostfix}  <=  ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
-          constProp.getValue(containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected) match {
-            case None => throw new Exception(f"bad path ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
-            case _ =>
-          }
+          println(s"exported: ${containerPath.asIndirect ++ portPostfix}  <=  $exportedToTop")
         case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
+          val tunnelPortPostfix = exported.getExteriorPort.getRef.steps.map(_.getName)  // as block, port(s)
+          val exportedToTop = exteriorTopPort(containerPath + tunnelPortPostfix.head, tunnelPortPostfix.tail)
           constProp.addDirectedEquality(
             containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected,
+            exportedToTop.asIndirect + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
-          constProp.getValue(containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected) match {
-            case None => throw new Exception(f"bad path ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
-            case _ =>
-          }
         case None =>
           constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             BooleanValue(false),

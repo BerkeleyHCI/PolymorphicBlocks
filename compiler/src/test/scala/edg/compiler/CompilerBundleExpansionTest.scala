@@ -219,6 +219,8 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
+      equal(None)  // inner ports should not have connected status
 
     // Check the CONNECTED_LINK propagation
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + "outerParam") should
@@ -248,5 +250,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(BooleanValue(false)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
+      equal(None)  // inner ports should not have connected status
   }
 }
