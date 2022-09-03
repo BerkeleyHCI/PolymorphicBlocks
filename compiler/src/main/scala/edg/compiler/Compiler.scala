@@ -214,11 +214,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     toLinkPort match {
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getPorts.keys) {
-          constProp.addEquality(connect.toLinkPortPath.asIndirect + IndirectStep.IsConnected,
-            connect.toLinkPortPath.asIndirect + portName + IndirectStep.IsConnected)
-          constProp.addEquality(connect.toBlockPortPath.asIndirect + IndirectStep.IsConnected,
-            connect.toBlockPortPath.asIndirect + portName + IndirectStep.IsConnected)
-
           elaboratePending.addNode(
             ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName),
             Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
@@ -235,27 +230,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                                         constraint: Option[(String, expr.ValueExpr)]): Unit = {
     val port = resolvePort(containerPath ++ portPostfix)
     val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
-    val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints]  // block or link
     val constraintExpr = constraint.map { case (constrName, constr) => (constrName, constr.expr) }
-
-    def recursiveSetNotConnected(portPath: DesignPath, port: wir.PortLike): Unit = {
-      constProp.setValue(portPath.asIndirect + IndirectStep.IsConnected,
-        BooleanValue(false),
-        s"${containerPath ++ portPostfix}.(not connected)")
-      portBlock match {
-        case _: wir.Block =>
-          connectedLink.put(portPath, DesignPath())
-          elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
-      }
-      port match {
-        case port: wir.Bundle =>
-          port.getPorts.foreach { case (innerIndex, innerPort) =>
-            recursiveSetNotConnected(portPath + innerIndex, innerPort)
-          }
-        case _ =>  // no recursion at leaf
-      }
-    }
 
     port match {
       case _: wir.Bundle | _: wir.Port => constraintExpr match {
@@ -264,16 +239,34 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
             BooleanValue(true),
             s"$containerPath.$constrName")
+          println(s"connected: ${containerPath.asIndirect ++ portPostfix}")
         case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-          constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+          constProp.addDirectedEquality(
+            containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
+          println(s"exported: ${containerPath.asIndirect ++ portPostfix}  <=  ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
+          constProp.getValue(containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected) match {
+            case None => throw new Exception(f"bad path ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
+            case _ =>
+          }
         case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
-          constProp.addDirectedEquality(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+          constProp.addDirectedEquality(
+            containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
+          constProp.getValue(containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected) match {
+            case None => throw new Exception(f"bad path ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
+            case _ =>
+          }
         case None =>
-          recursiveSetNotConnected(containerPath ++ portPostfix, port)
+          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            BooleanValue(false),
+            s"${containerPath ++ portPostfix}.(not connected)")
+          println(s"disconnected: ${containerPath.asIndirect ++ portPostfix}")
+
+          connectedLink.put(containerPath ++ portPostfix, DesignPath())
+          elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
         case Some((_, _)) => throw new IllegalArgumentException
       }
       case _: wir.PortLibrary => throw new IllegalArgumentException
@@ -860,19 +853,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     link.getLinks.foreach { case (innerLinkName, innerLink) =>
       val innerLinkElaborated = expandLink(path + innerLinkName, innerLink.asInstanceOf[wir.LinkLibrary])
       link.elaborate(innerLinkName, innerLinkElaborated)
-    }
-
-    def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
-      case _: wir.Port | _: wir.Bundle =>
-        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        connectedLink.put(portPath, path)
-      case port: wir.PortArray =>
-        port.getPorts.foreach { case (subPortName, subPort) =>
-          setConnectedLink(portPath + subPortName, subPort)
-        }
-    }
-    for ((portName, port) <- link.getPorts) {
-      setConnectedLink(path + portName, port)
     }
 
     // Aggregate by inner link ports
