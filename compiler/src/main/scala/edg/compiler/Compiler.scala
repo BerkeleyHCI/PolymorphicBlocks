@@ -243,6 +243,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
           constProp.addDirectedEquality(
             containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+            // PROBLEM: need to address array ports
             containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName + IndirectStep.IsConnected,
             containerPath, s"$containerPath.$constrName")
           println(s"exported: ${containerPath.asIndirect ++ portPostfix}  <=  ${containerPath.asIndirect + exported.getExteriorPort.getRef.steps.head.getName}")
@@ -265,8 +266,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             s"${containerPath ++ portPostfix}.(not connected)")
           println(s"disconnected: ${containerPath.asIndirect ++ portPostfix}")
 
-          connectedLink.put(containerPath ++ portPostfix, DesignPath())
-          elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
+          // TODO refactor this out, connected-ness and ConnectedLink should be centralized
+          val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
+          portBlock match {
+            case _: wir.Block =>
+              connectedLink.put(containerPath ++ portPostfix, DesignPath())
+              elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
+            case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
+          }
+
         case Some((_, _)) => throw new IllegalArgumentException
       }
       case _: wir.PortLibrary => throw new IllegalArgumentException
@@ -848,6 +856,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   protected def elaborateLink(path: DesignPath): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
     val link = resolveLink(path).asInstanceOf[wir.Link]
+
+    // TODO refactor this out, ConnectedLink needs to be centralized
+    def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
+      case _: wir.Port | _: wir.Bundle =>
+        println(s"link set ${portPath}")
+        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
+        connectedLink.put(portPath, path)
+      case port: wir.PortArray =>
+        port.getPorts.foreach { case (subPortName, subPort) =>
+          setConnectedLink(portPath + subPortName, subPort)
+        }
+    }
+    for ((portName, port) <- link.getPorts) {
+      setConnectedLink(path + portName, port)
+    }
 
     // Queue up sub-trees that need elaboration
     link.getLinks.foreach { case (innerLinkName, innerLink) =>
