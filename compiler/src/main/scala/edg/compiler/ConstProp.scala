@@ -97,18 +97,33 @@ class ConstProp {
   //
   // Repeated does propagations as long as there is work to do, including both array available and param available.
   protected def update(): Unit = {
-    while (params.getReady.nonEmpty) {
-      val constrTarget = params.getReady.head
-      val assign = paramAssign(constrTarget)
-      new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
-        case ExprResult.Result(result) =>
-          params.setValue(constrTarget, result)
-          onParamSolved(constrTarget, result)
-          for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
-            propagateEquality(constrTargetEquals, constrTarget, result)
-          }
-        case ExprResult.Missing(missing) =>
-          params.addNode(constrTarget, missing.toSeq, update=true)
+    while (params.getReady.nonEmpty || connectedLink.getReady.nonEmpty) {
+      if (connectedLink.getReady.nonEmpty) {
+        val ready = connectedLink.getReady.head
+        ready match {
+          case ConnectedLinkRecord.Connected(port, nextPortToLink) =>  // propagate connected link
+            connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(port),
+              connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(nextPortToLink)).get)
+          case ConnectedLinkRecord.Assign(record) =>
+
+          case _ => throw new IllegalArgumentException()
+        }
+        connectedLink.setValue(ready, DesignPath())
+      }
+
+      if (params.getReady.nonEmpty) {
+        val constrTarget = params.getReady.head
+        val assign = paramAssign(constrTarget)
+        new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
+          case ExprResult.Result(result) =>
+            params.setValue(constrTarget, result)
+            onParamSolved(constrTarget, result)
+            for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
+              propagateEquality(constrTargetEquals, constrTarget, result)
+            }
+          case ExprResult.Missing(missing) =>
+            params.addNode(constrTarget, missing.toSeq, update = true)
+        }
       }
     }
   }
@@ -181,18 +196,8 @@ class ConstProp {
     val assign = AssignRecord(target, root, targetExpr, sourceLocator)
     paramAssign.put(target, assign)
     paramSource.put(target, paramSourceRecord)
-
-    new ExprEvaluatePartial(this, root).map(targetExpr) match {
-      case ExprResult.Result(result) =>
-        params.setValue(target, result)
-        onParamSolved(target, result)
-        for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
-          propagateEquality(constrTargetEquals, target, result)
-        }
-      case ExprResult.Missing(missing) =>
-        params.addNode(target, missing.toSeq)  // explicitly not an update
-    }
-
+    params.addNode(target, Seq())  // first add is not update=True, actual processing happens in update()
+    
     update()
   }
 
