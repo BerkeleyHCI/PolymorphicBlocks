@@ -316,13 +316,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignment(
         blockPath.asIndirect ++ assign.dst.get,
-        blockPath, assign.src.get, constrName) // TODO add sourcelocators
+        assign.src.get, blockPath, constrName) // TODO add sourcelocators
       true
     case expr.ValueExpr.Expr.AssignTunnel(assign) =>
       // same as normal assign case, but would not enforce locality of references
       constProp.addAssignment(
         blockPath.asIndirect ++ assign.dst.get,
-        blockPath, assign.src.get, constrName) // TODO add sourcelocators
+        assign.src.get, blockPath, constrName) // TODO add sourcelocators
       true
     case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
@@ -442,8 +442,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
-          constProp.addAssignment(path.asIndirect + refinedNewParam, path, refinedDefault,
-            s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
+          constProp.addAssignment(path.asIndirect + refinedNewParam, refinedDefault,
+            path, s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
     }

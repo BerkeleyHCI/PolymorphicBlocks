@@ -207,9 +207,9 @@ class ConstProp {
   /**
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
-  def addAssignment(target: IndirectDesignPath,
-                    root: DesignPath, targetExpr: expr.ValueExpr,
-                    constrName: String = "", sourceLocator: SourceLocator = new SourceLocator()): Unit = {
+  def addAssignment(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
+                    root: DesignPath, constrName: String = "",
+                    sourceLocator: SourceLocator = new SourceLocator()): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     if (forcedParams.contains(target)) {
       return  // ignore forced params
@@ -233,7 +233,7 @@ class ConstProp {
     */
   def setValue(target: IndirectDesignPath, value: ExprValue,
                root: DesignPath = DesignPath(), constrName: String = "setValue"): Unit = {
-    addAssignment(target, root, ExprBuilder.ValueExpr.Literal(value.toLit), constrName)
+    addAssignment(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
@@ -265,7 +265,7 @@ class ConstProp {
     val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
     require(sourcePrefix == pathPrefix)
     val sourceExpr = ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix))
-    addAssignment(target, root, sourceExpr, constrName=constrName)
+    addAssignment(target, sourceExpr, root, constrName=constrName)
   }
 
   /**

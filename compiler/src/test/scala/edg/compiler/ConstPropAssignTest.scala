@@ -34,8 +34,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
     constProp.addAssignment(IndirectDesignPath() + "b",
-      DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a"))
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
+      DesignPath()
     )
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
@@ -45,12 +45,12 @@ class ConstPropAssignTest extends AnyFlatSpec {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
     constProp.addAssignment(IndirectDesignPath() + "b",
-      DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a"))
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
+      DesignPath()
     )
     constProp.addAssignment(IndirectDesignPath() + "c",
-      DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5), ValueExpr.Ref("b"))
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5), ValueExpr.Ref("b")),
+      DesignPath()
     )
 
     constProp.setValue(IndirectDesignPath() + "a", IntValue(2))
@@ -111,16 +111,19 @@ class ConstPropAssignTest extends AnyFlatSpec {
   it should "handle evaluations on both side of assignments, delayed" in {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
-    constProp.addAssignment(IndirectDesignPath() + "b", DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2), ValueExpr.Ref("a"))
+    constProp.addAssignment(IndirectDesignPath() + "b",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2), ValueExpr.Ref("a")),
+      DesignPath()
     )
     constProp.addEquality(IndirectDesignPath() + "b", IndirectDesignPath() + "b1")
     constProp.addEquality(IndirectDesignPath() + "b2", IndirectDesignPath() + "b")
-    constProp.addAssignment(IndirectDesignPath() + "c1", DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("b1"))
+    constProp.addAssignment(IndirectDesignPath() + "c1",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("b1")),
+      DesignPath()
     )
-    constProp.addAssignment(IndirectDesignPath() + "c2", DesignPath(),
-      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(4), ValueExpr.Ref("b2"))
+    constProp.addAssignment(IndirectDesignPath() + "c2",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(4), ValueExpr.Ref("b2")),
+      DesignPath()
     )
     constProp.getValue(IndirectDesignPath() + "b") should equal(None)
     constProp.getValue(IndirectDesignPath() + "b1") should equal(None)
@@ -128,8 +131,9 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "c1") should equal(None)
     constProp.getValue(IndirectDesignPath() + "c2") should equal(None)
 
-    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
-      ValueExpr.Literal(1)
+    constProp.addAssignment(IndirectDesignPath() + "a",
+      ValueExpr.Literal(1),
+      DesignPath()
     )
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(3)))

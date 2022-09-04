@@ -21,23 +21,26 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
-      ValueExpr.Literal(1)
+    constProp.addAssignment(IndirectDesignPath() + "a",
+      ValueExpr.Literal(1),
+      DesignPath()
     )
     constProp.getUnsolved should equal(Set(
       DesignPath() + "b",
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "b", DesignPath(),
-      ValueExpr.Literal(1)
+    constProp.addAssignment(IndirectDesignPath() + "b",
+      ValueExpr.Literal(1),
+      DesignPath()
     )
     constProp.getUnsolved should equal(Set(
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "c", DesignPath(),
-      ValueExpr.Literal(1)
+    constProp.addAssignment(IndirectDesignPath() + "c",
+      ValueExpr.Literal(1),
+      DesignPath()
     )
     constProp.getUnsolved should equal(Set())
   }
