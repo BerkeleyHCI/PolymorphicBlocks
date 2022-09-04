@@ -1029,7 +1029,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         record.containerPath, "array connect link ELEMENTS from block-side ELEMENTS")
     }
     if (constProp.getValue(record.target).get != constProp.getValue(record.source).get) {
-      errors.append(CompilerError.InconsistentLinkArrayElements(record.target, record.source))
+      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath, record.target, record.source))
     }
   }
 
