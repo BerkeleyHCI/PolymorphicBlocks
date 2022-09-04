@@ -229,11 +229,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     constraintExpr match {
       case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
         require(container.isInstanceOf[wir.Block])
-        constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+        constProp.addAssignValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           BooleanValue(true), containerPath, s"$containerPath.$constrName")
       case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
         val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
-        constProp.addDirectedEquality(
+        constProp.addAssignEqual(
           containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           exportedToTop.asIndirect + IndirectStep.IsConnected,
           containerPath, s"$containerPath.$constrName")
@@ -241,12 +241,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         // Since the exterior port refers to a child block of the current container,
         // it would not have been elaborated yet so we cannot inspect into it.
         // This relies on tunnel exports being simple (port to port, not port to inner port).
-        constProp.addDirectedEquality(
+        constProp.addAssignEqual(
           containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
           containerPath, s"$containerPath.$constrName")
       case None =>
-        constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+        constProp.addAssignValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           BooleanValue(false), containerPath, s"${containerPath ++ portPostfix}.(not connected)")
 
       case Some((_, _)) => throw new IllegalArgumentException
@@ -287,11 +287,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
-        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
         processParamDeclarations(path, port)
       case port: wir.Bundle =>
-        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getPorts) {
@@ -299,7 +299,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         }
       case port: wir.PortArray =>
         if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
-          constProp.setValue(path.asIndirect + IndirectStep.Elements,
+          constProp.addAssignValue(path.asIndirect + IndirectStep.Elements,
             ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))),
             containerPath, "block-defined elements")
         }
@@ -314,13 +314,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def processParamConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
                              constrValue: expr.ValueExpr): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
-      constProp.addAssignment(
+      constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
         assign.src.get, blockPath, constrName) // TODO add sourcelocators
       true
     case expr.ValueExpr.Expr.AssignTunnel(assign) =>
       // same as normal assign case, but would not enforce locality of references
-      constProp.addAssignment(
+      constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
         assign.src.get, blockPath, constrName) // TODO add sourcelocators
       true
@@ -442,7 +442,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
-          constProp.addAssignment(path.asIndirect + refinedNewParam, refinedDefault,
+          constProp.addAssignExpr(path.asIndirect + refinedNewParam, refinedDefault,
             path, s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
@@ -458,7 +458,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
     processParamDeclarations(path, newBlock)
 
@@ -493,7 +493,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val newLink = new wir.Link(linkPb)
 
     // Elaborate ports and parameters
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
     processParamDeclarations(path, newLink)
 
@@ -504,7 +504,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // For link-side port arrays: set ALLOCATED -> ELEMENTS and allow it to expand later
     newLink.getPorts.collect { case (portName, port: wir.PortArray) =>
       require(!port.portsSet) // links can't have fixed array elts
-      constProp.addDirectedEquality(
+      constProp.addAssignEqual(
         path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
           path, s"$portName (link array-from-connects)")
     }
@@ -535,7 +535,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // For all arrays, size ELEMENTS directly from ALLOCATED
     model.getPorts.collect { case (portName, port: wir.PortArray) =>
-      constProp.addDirectedEquality(
+      constProp.addAssignEqual(
         path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
         path, s"$portName (link-array array-from-connects)")
     }
@@ -560,7 +560,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
           val portArray = generator.getPorts(portName).asInstanceOf[wir.PortArray]
-          constProp.setValue(path.asIndirect + portName + IndirectStep.Elements,
+          constProp.addAssignValue(path.asIndirect + portName + IndirectStep.Elements,
             ArrayValue(portArray.getPorts.keys.toSeq.map(TextValue(_))),
             path, "generator-defined elements")
           // the rest was already handled when elaboratePorts on the generator stub
@@ -630,10 +630,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
                 case expr.ValueExpr.Expr.ExportedArray(exported) =>  // note internal port is portPostfix
                   val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
-                  constProp.addDirectedEquality(path.asIndirect ++ extPostfix + IndirectStep.Elements,
+                  constProp.addAssignEqual(path.asIndirect ++ extPostfix + IndirectStep.Elements,
                     path.asIndirect ++ portPostfix + IndirectStep.Elements,
                     path, constrName)
-                  constProp.addDirectedEquality(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  constProp.addAssignEqual(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                     path.asIndirect ++ extPostfix + IndirectStep.Allocated,
                     path, constrName)
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
@@ -678,7 +678,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
                   path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
@@ -722,7 +722,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
                   path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
@@ -774,7 +774,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   expandArrayTasks)
 
               case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
                   path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
@@ -887,7 +887,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
                   path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
@@ -923,7 +923,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
-        constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size),
+        constProp.addAssignValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size),
           path, "elements-defined count")
         elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None) // resolved in initPortsFromModel
         portName -> portElements
@@ -933,19 +933,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     link.getModelPorts.foreach {
       case (portName, port: wir.PortArray) =>
         linkPortArrayElements(portName).foreach { index =>
-          constProp.addDirectedEquality(
+          constProp.addAssignEqual(
             path.asIndirect + portName + index + IndirectStep.Elements,
             path.asIndirect + IndirectStep.Elements,
             path, s"$portName.$index (link-array ports-from-elts)")
         }
         linkElements.foreach { elementIndex =>
-          constProp.addDirectedEquality(
+          constProp.addAssignEqual(
             path.asIndirect + elementIndex + portName + IndirectStep.Allocated,
             path.asIndirect + portName + IndirectStep.Elements,
             path, s"$elementIndex.$portName (link-array inner-port-array from outer-elts)")
         }
       case (portName, port) =>
-        constProp.addDirectedEquality(
+        constProp.addAssignEqual(
           path.asIndirect + portName + IndirectStep.Elements,
           path.asIndirect + IndirectStep.Elements,
           path, s"$portName (link-array ports-from-elts)")
@@ -1009,7 +1009,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
     // since this only adds child ports to arrays (instead of creating the array in the parent),
     // we don't set the ElaborateRecord.Port(...) here
-    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size),
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size),
       path, "elements-defined count")
   }
 
@@ -1142,7 +1142,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case None => freeIndices.next().toString
     }
 
-    constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
+    constProp.addAssignValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
       ArrayValue(allocatedIndices.map(TextValue(_))),
       record.parent, "allocated")
   }

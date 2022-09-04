@@ -56,9 +56,9 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
-    constProp.setValue(IndirectDesignPath() + "ref", IntValue(0))
-    constProp.setValue(IndirectDesignPath() + "ref1", IntValue(1))
-    constProp.setValue(IndirectDesignPath() + "ref2", IntValue(2))
+    constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(0))
+    constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
+    constProp.addAssignValue(IndirectDesignPath() + "ref2", IntValue(2))
 
     evalTest.map(
       ValueExpr.Ref("ref")
@@ -73,7 +73,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
-    constProp.setValue(IndirectDesignPath() + "ref1", IntValue(1))
+    constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
 
     evalTest.map(
       ValueExpr.BinOp(expr.BinaryExpr.Op.ADD, ValueExpr.Ref("ref1"), ValueExpr.Ref("ref2"))
@@ -92,7 +92,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
 
-    constProp.setValue(IndirectDesignPath() + "cond", BooleanValue(true))
+    constProp.addAssignValue(IndirectDesignPath() + "cond", BooleanValue(true))
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref1")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref2")))
   }
@@ -100,7 +100,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   it should "resolve if-then-else with only the branch taken available" in {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
-    constProp.setValue(IndirectDesignPath() + "ref", IntValue(42))
+    constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(42))
 
     evalTest.map(
       ValueExpr.IfThenElse(ValueExpr.Literal(true), ValueExpr.Ref("ref"), ValueExpr.Ref("bad"))
@@ -119,7 +119,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "container" + IndirectStep.Elements)))
 
-    constProp.setValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
+    constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
       ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
     evalTest.map(
       mapExtractExpr
@@ -129,7 +129,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       IndirectDesignPath() + "container" + "2" + "inner",
     )))
 
-    constProp.setValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(1))
+    constProp.addAssignValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(1))
     evalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(
@@ -142,11 +142,11 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
-    constProp.setValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
+    constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
       ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
-    constProp.setValue(IndirectDesignPath() + "container" + "0" + "inner", IntValue(1))
-    constProp.setValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(2))
-    constProp.setValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))
+    constProp.addAssignValue(IndirectDesignPath() + "container" + "0" + "inner", IntValue(1))
+    constProp.addAssignValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(2))
+    constProp.addAssignValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))
 
     evalTest.map(
       ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"))

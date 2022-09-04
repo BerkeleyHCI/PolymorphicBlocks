@@ -207,7 +207,7 @@ class ConstProp {
   /**
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
-  def addAssignment(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
+  def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
                     root: DesignPath, constrName: String = "",
                     sourceLocator: SourceLocator = new SourceLocator()): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
@@ -231,9 +231,21 @@ class ConstProp {
 
   /** Sets a value directly (without the expr), convenience wrapper around addAssignment
     */
-  def setValue(target: IndirectDesignPath, value: ExprValue,
-               root: DesignPath = DesignPath(), constrName: String = "setValue"): Unit = {
-    addAssignment(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
+  def addAssignValue(target: IndirectDesignPath, value: ExprValue,
+                     root: DesignPath = DesignPath(), constrName: String = ""): Unit = {
+    addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
+  }
+
+  /**
+    * Adds a directed assignment (param1 <- param2), checking for root reachability
+    */
+  def addAssignEqual(target: IndirectDesignPath, source: IndirectDesignPath,
+                     root: DesignPath, constrName: String = ""): Unit = {
+    val pathPrefix = root.asIndirect.toLocalPath.steps
+    val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
+    require(sourcePrefix == pathPrefix)
+    addAssignExpr(target, ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix)),
+      root, constrName=constrName)
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
@@ -253,19 +265,6 @@ class ConstProp {
     }
 
     update()
-  }
-
-  /**
-    * Adds a directed equality (param1 <- param2) and propagates as needed
-    */
-  def addDirectedEquality(target: IndirectDesignPath, source: IndirectDesignPath, root: DesignPath,
-                          constrName: String = ""): Unit = {
-    require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
-    val pathPrefix = root.asIndirect.toLocalPath.steps
-    val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
-    require(sourcePrefix == pathPrefix)
-    val sourceExpr = ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix))
-    addAssignment(target, sourceExpr, root, constrName=constrName)
   }
 
   /**

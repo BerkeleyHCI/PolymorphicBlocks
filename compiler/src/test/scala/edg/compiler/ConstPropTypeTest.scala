@@ -21,7 +21,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "a",
+    constProp.addAssignExpr(IndirectDesignPath() + "a",
       ValueExpr.Literal(1),
       DesignPath()
     )
@@ -30,7 +30,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "b",
+    constProp.addAssignExpr(IndirectDesignPath() + "b",
       ValueExpr.Literal(1),
       DesignPath()
     )
@@ -38,7 +38,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "c",
+    constProp.addAssignExpr(IndirectDesignPath() + "c",
       ValueExpr.Literal(1),
       DesignPath()
     )
