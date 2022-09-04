@@ -252,13 +252,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           BooleanValue(false),
           s"${containerPath ++ portPostfix}.(not connected)")
 
-        // TODO refactor this out, connected-ness and ConnectedLink should be centralized
-        val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
-        portBlock match {
-          case _: wir.Block =>
-          case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
-        }
-
       case Some((_, _)) => throw new IllegalArgumentException
     }
   }
