@@ -36,6 +36,8 @@ object ElaborateRecord {
   // Created but never run for abstract blocks with abstract port array.
   case class ElaboratePortArray(path: DesignPath) extends ElaborateTask
 
+  case class Port(path: DesignPath) extends ElaborateDependency  // when expanded
+
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
   // The next tasks are a series for array connection
@@ -294,6 +296,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.PortArray => port  // no instantiation needed
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }
+    elaboratePending.setValue(ElaborateRecord.Port(path), None)
 
     // Process and recurse as needed
     instantiated match {
@@ -355,7 +358,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           require(!isInLink)
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
-            Seq()
+            Seq(ElaborateRecord.Port(blockPath ++ linkPort))
           )
           constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
           true
@@ -366,13 +369,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           if (!isInLink) {
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
-              Seq()
+              Seq(ElaborateRecord.Port(blockPath ++ extPort))
             )
             constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
-          } else {  // for links, the external port faces to the block, so args must be flipped
+          } else {  // for links, the internal port is towards the inner link, so the args are flipped
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
-              Seq()
+              Seq(ElaborateRecord.Port(blockPath ++ intPort))
             )
             constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
           }
@@ -384,7 +387,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           require(!isInLink)
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
-            Seq()
+            Seq(ElaborateRecord.Port(blockPath ++ extPort))
           )
           constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           true
@@ -1024,6 +1027,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     for ((childPortName, childPort) <- port.getPorts) {
       elaboratePort(path + childPortName, port, childPort)
     }
+    // since this only adds child ports to arrays (instead of creating the array in the parent),
+    // we don't set the ElaborateRecord.Port(...) here
     constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size))
   }
 
