@@ -162,11 +162,8 @@ class GeneratorBlock(Block):
 
     for (i, req_param) in enumerate(reqs):
       assert isinstance(req_param.binding, InitParamBinding) or \
-             (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding, NameBinding))
-              and ((req_param.binding.src._parent is self) or
-                   (isinstance(req_param.binding.src, Link) and  # for link.name()
-                    isinstance(req_param.binding.src._parent, BasePort) and
-                    req_param.binding.src._parent._block_parent() is self))), \
+             (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding))
+              and req_param.binding.src._parent is self), \
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
