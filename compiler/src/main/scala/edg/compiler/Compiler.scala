@@ -230,8 +230,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
         require(container.isInstanceOf[wir.Block])
         constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-          BooleanValue(true),
-          s"$containerPath.$constrName")
+          BooleanValue(true), containerPath, s"$containerPath.$constrName")
       case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
         val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
         constProp.addDirectedEquality(
@@ -248,8 +247,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           containerPath, s"$containerPath.$constrName")
       case None =>
         constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-          BooleanValue(false),
-          s"${containerPath ++ portPostfix}.(not connected)")
+          BooleanValue(false), containerPath, s"${containerPath ++ portPostfix}.(not connected)")
 
       case Some((_, _)) => throw new IllegalArgumentException
     }
@@ -263,7 +261,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Elaborates the port, mutating it in-place. Recursive.
-  protected def elaboratePort(path: DesignPath, container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
+  protected def elaboratePort(path: DesignPath, containerPath: DesignPath,
+                              container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
     // Instantiate as needed
     val instantiated = port match {
       case port: wir.PortLibrary =>
@@ -288,19 +287,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
-        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+          containerPath, "name")
         processParamDeclarations(path, port)
       case port: wir.Bundle =>
-        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+        constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+          containerPath, "name")
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getPorts) {
-          elaboratePort(path + childPortName, port, childPort)
+          elaboratePort(path + childPortName, containerPath, port, childPort)
         }
       case port: wir.PortArray =>
         if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
           constProp.setValue(path.asIndirect + IndirectStep.Elements,
             ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))),
-          "defined by block")
+            containerPath, "block-defined elements")
         }
         elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(  // does recursive elaboration + LENGTH
           ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
@@ -457,13 +458,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+      path, "name")
     processParamDeclarations(path, newBlock)
 
-    // Port elaboration includes setting data source for ELEMENTS, which must run pre-generate
-    // to avoid over-assignment for ELEMENTS
     newBlock.getPorts.foreach { case (portName, port) =>
-      elaboratePort(path + portName, newBlock, port)
+      elaboratePort(path + portName, path, newBlock, port)
     }
 
     // TODO instead of directly elaborating, add it as a separate step dependent on generators
@@ -493,11 +493,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val newLink = new wir.Link(linkPb)
 
     // Elaborate ports and parameters
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+      path, "name")
     processParamDeclarations(path, newLink)
 
     newLink.getPorts.foreach { case (portName, port) =>
-      elaboratePort(path + portName, newLink, port)
+      elaboratePort(path + portName, path, newLink, port)
     }
 
     // For link-side port arrays: set ALLOCATED -> ELEMENTS and allow it to expand later
@@ -560,7 +561,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         generatedPorts.foreach { portName =>
           val portArray = generator.getPorts(portName).asInstanceOf[wir.PortArray]
           constProp.setValue(path.asIndirect + portName + IndirectStep.Elements,
-            ArrayValue(portArray.getPorts.keys.toSeq.map(TextValue(_))))
+            ArrayValue(portArray.getPorts.keys.toSeq.map(TextValue(_))),
+            path, "generator-defined elements")
           // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
@@ -676,7 +678,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                  path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
                   ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
@@ -719,7 +722,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                  path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
                   ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
@@ -770,7 +774,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   expandArrayTasks)
 
               case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                  path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
                   ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
@@ -882,7 +887,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   resolveAllocateTask))
 
               case PortConnections.NotConnected =>
-                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()))
+                constProp.setValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
+                  path, "not connected")
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
                   ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
@@ -917,7 +923,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
           constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
-        constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size))
+        constProp.setValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size),
+          path, "elements-defined count")
         elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None) // resolved in initPortsFromModel
         portName -> portElements
     }
@@ -998,11 +1005,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       port.setPorts(childPortLibraries)
     }
     for ((childPortName, childPort) <- port.getPorts) {
-      elaboratePort(path + childPortName, port, childPort)
+      elaboratePort(path + childPortName, path, port, childPort)
     }
     // since this only adds child ports to arrays (instead of creating the array in the parent),
     // we don't set the ElaborateRecord.Port(...) here
-    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size))
+    constProp.setValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size),
+      path, "elements-defined count")
   }
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
@@ -1135,7 +1143,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     }
 
     constProp.setValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Allocated,
-      ArrayValue(allocatedIndices.map(TextValue(_))))
+      ArrayValue(allocatedIndices.map(TextValue(_))),
+      record.parent, "allocated")
   }
 
   // Once all connects to a link-array port are aggregated, rewrite the ALLOCATEs with concrete indices.

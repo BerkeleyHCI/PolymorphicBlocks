@@ -229,24 +229,11 @@ class ConstProp {
     update()
   }
 
-  /** Sets a value directly (without the expr)
+  /** Sets a value directly (without the expr), convenience wrapper around addAssignment
     */
-  def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
-    require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
-    val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
-    if (params.nodeDefinedAt(target)) {
-      val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
-      record.assigns.add(paramSourceRecord)
-      return  // first set "wins"
-    }
-    params.setValue(target, value)
-    paramSource.put(target, paramSourceRecord)
-    onParamSolved(target, value)
-    for (constrTargetEquals <- equality.getOrElse(target, mutable.Buffer())) {
-      propagateEquality(constrTargetEquals, target, value)
-    }
-
-    update()
+  def setValue(target: IndirectDesignPath, value: ExprValue,
+               root: DesignPath = DesignPath(), constrName: String = "setValue"): Unit = {
+    addAssignment(target, root, ExprBuilder.ValueExpr.Literal(value.toLit), constrName)
   }
 
   /** Sets a value directly, and ignores subsequent assignments.
