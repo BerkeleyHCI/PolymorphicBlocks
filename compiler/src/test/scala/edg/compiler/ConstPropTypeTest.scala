@@ -42,18 +42,6 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp.getUnsolved should equal(Set())
   }
 
-  it should "getUnsolved ignoring indirect paths" in {
-    val constProp = new ConstProp()
-    constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
-    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
-      ValueExpr.Literal(1)
-    )
-    constProp.addAssignment(IndirectDesignPath() + "port" + IndirectStep.ConnectedLink + "param", DesignPath(),
-      ValueExpr.Literal(1)
-    )
-    constProp.getUnsolved should equal(Set())
-  }
-
   it should "return declared types" in {
     val constProp = new ConstProp()
     constProp.addDeclaration(DesignPath() + "int", ValInit.Integer)

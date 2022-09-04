@@ -374,7 +374,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
-          constProp.setConnectedLink(blockPath ++ linkPort, blockPath ++ blockPort)
+          constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -391,7 +391,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
             )
-            constProp.setConnectedLink(blockPath ++ intPort, blockPath ++ extPort)
+            constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
           }
           true
         case _ => false  // anything with allocates is not processed
@@ -869,6 +869,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _: wir.Port | _: wir.Bundle =>
         elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
         connectedLink.put(portPath, path)
+        constProp.setConnectedLink(path, portPath)
       case port: wir.PortArray =>
         port.getPorts.foreach { case (subPortName, subPort) =>
           setConnectedLink(portPath + subPortName, subPort)

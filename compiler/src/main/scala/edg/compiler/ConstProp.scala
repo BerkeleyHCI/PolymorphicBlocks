@@ -318,8 +318,8 @@ class ConstProp {
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     resolveConnectedLink(param) match {
-      case ConnectedLinkResult.ResolvedPath(path) => params.getValue(param)
-      case ConnectedLinkResult.MissingConnectedLink(_) => None
+      case ConnectedLinkResult.ResolvedPath(path) => params.getValue(path)
+      case ConnectedLinkResult.MissingConnectedLink(missing) => None
     }
 
   }
