@@ -153,8 +153,6 @@ class GeneratorBlock(Block):
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
     :param reqs: required parameters, the value of which are passed to the generator function
     """
-    from .Link import Link
-
     assert callable(fn), f"fn {fn} must be a method (callable)"
     assert self._generator is None, f"redefinition of generator, multiple generators not allowed"
 

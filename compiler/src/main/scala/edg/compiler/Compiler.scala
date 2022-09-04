@@ -206,7 +206,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   protected def resolvePortConnectivity(containerPath: DesignPath, portPostfix: Seq[String],
                                         constraint: Option[(String, expr.ValueExpr)]): Unit = {
-    val port = resolvePort(containerPath ++ portPostfix)
     val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
     val constraintExpr = constraint.map { case (constrName, constr) => (constrName, constr.expr) }
 
@@ -228,43 +227,39 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       containerPath + portPostfix.head ++ resolveRecursive(blockPath + portPostfix.head, blockLike.getPorts(portPostfix.head), portPostfix.tail)
     }
 
-    port match {
-      case _: wir.Bundle | _: wir.Port => constraintExpr match {
-        case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
-          require(container.isInstanceOf[wir.Block])
-          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            BooleanValue(true),
-            s"$containerPath.$constrName")
-        case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
-          val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
-          constProp.addDirectedEquality(
-            containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            exportedToTop.asIndirect + IndirectStep.IsConnected,
-            containerPath, s"$containerPath.$constrName")
-        case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
-          // Since the exterior port refers to a child block of the current container,
-          // it would not have been elaborated yet so we cannot inspect into it.
-          // This relies on tunnel exports being simple (port to port, not port to inner port).
-          constProp.addDirectedEquality(
-            containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
-            containerPath, s"$containerPath.$constrName")
-        case None =>
-          constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-            BooleanValue(false),
-            s"${containerPath ++ portPostfix}.(not connected)")
+    constraintExpr match {
+      case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
+        require(container.isInstanceOf[wir.Block])
+        constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          BooleanValue(true),
+          s"$containerPath.$constrName")
+      case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
+        val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
+        constProp.addDirectedEquality(
+          containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          exportedToTop.asIndirect + IndirectStep.IsConnected,
+          containerPath, s"$containerPath.$constrName")
+      case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
+        // Since the exterior port refers to a child block of the current container,
+        // it would not have been elaborated yet so we cannot inspect into it.
+        // This relies on tunnel exports being simple (port to port, not port to inner port).
+        constProp.addDirectedEquality(
+          containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
+          containerPath, s"$containerPath.$constrName")
+      case None =>
+        constProp.setValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          BooleanValue(false),
+          s"${containerPath ++ portPostfix}.(not connected)")
 
-          // TODO refactor this out, connected-ness and ConnectedLink should be centralized
-          val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
-          portBlock match {
-            case _: wir.Block =>
-            case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
-          }
+        // TODO refactor this out, connected-ness and ConnectedLink should be centralized
+        val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
+        portBlock match {
+          case _: wir.Block =>
+          case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
+        }
 
-        case Some((_, _)) => throw new IllegalArgumentException
-      }
-      case _: wir.PortLibrary => throw new IllegalArgumentException
-      case _: wir.PortArray => throw new IllegalArgumentException  // must be lowered before
+      case Some((_, _)) => throw new IllegalArgumentException
     }
   }
 
@@ -465,27 +460,20 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       new wir.Generator(blockPb, unrefinedType)
     }
 
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
-    processParamDeclarations(path, newBlock)
-
-    newBlock.getPorts.foreach { case (portName, port) =>  // all other cases, elaborate in place
-      elaboratePort(path + portName, newBlock, port)
-    }
-
     val (parentPath, blockName) = path.split
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
     // TODO instead of directly elaborating, add it as a separate step dependent on generators
-    // This is currently needed while connect algo refactoring is in progrerss to only break one thing at a time.
-//    val deps = newBlock match {
-//      case newBlock: wir.Generator =>
-//        newBlock.getDependencies.map { depPath =>
-//          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
-//        }
-//      case _ => Seq()
-//    }
-//    elaboratePending.addNode(ElaborateRecord.ExpandBlock(path), deps)
+    // This is currently needed while connect algo refactoring is in progress to only break one thing at a time.
+    val deps = newBlock match {
+      case newBlock: wir.Generator =>
+        newBlock.getDependencies.map { depPath =>
+          ElaborateRecord.ParamValue(path.asIndirect ++ depPath)
+        }
+      case _ => Seq()
+    }
+    elaboratePending.addNode(ElaborateRecord.Block(path), deps)
   }
 
   // Given a link library at some path, expand it and return the instantiated block.
@@ -589,22 +577,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case _ =>  // ignored
     }
 
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    processParamDeclarations(path, block)
+
+    block.getPorts.foreach { case (portName, port) => // all other cases, elaborate in place
+      elaboratePort(path + portName, block, port)
+    }
+
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-//      elaboratePending.addNode(ElaborateRecord.ExpandBlock(path + innerBlockName), Seq())
-
-      // TODO don't directly expand inner blocks
-      expandBlock(path + innerBlockName)
-
-      val actualInnerBlock = resolveBlock(path + innerBlockName)
-      val deps = actualInnerBlock match {  // needs the expanded block to check generator data
-        case innerBlock: wir.Generator =>
-          innerBlock.getDependencies.map { depPath =>
-            ElaborateRecord.ParamValue(path.asIndirect + innerBlockName ++ depPath)
-          }
-        case _ => Seq()
-      }
-      elaboratePending.addNode(ElaborateRecord.Block(path + innerBlockName), deps)
+      elaboratePending.addNode(ElaborateRecord.ExpandBlock(path + innerBlockName), Seq())
     }
 
     block.getLinks.foreach {
@@ -619,18 +601,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Set IsConnected and generate constraint expansion records
     import edg.ExprBuilder.ValueExpr
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-//      val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
-//      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
+      val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
+      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
 
-//        innerBlockTemplate.ports.foreach { case (portName, port) =>
-//        import edgir.elem.elem
-//        val portPostfix = Seq(innerBlockName, portName)
-//        port.is match {
-//          case _: elem.PortLike.Is.Array =>  // array case: connectivity delayed to lowering
-      innerBlock.asInstanceOf[wir.Block].getPorts.foreach { case (portName, port) =>
+        innerBlockTemplate.ports.foreach { case (portName, port) =>
+        import edgir.elem.elem
         val portPostfix = Seq(innerBlockName, portName)
-        port match {
-          case _: wir.PortArray =>  // array case: connectivity delayed to lowering
+        port.is match {
+          case _: elem.PortLike.Is.Array =>  // array case: connectivity delayed to lowering
             connectedConstraints.connectionsByBlockPort(portPostfix) match {
               case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
                 case expr.ValueExpr.Expr.ConnectedArray(connected) =>
