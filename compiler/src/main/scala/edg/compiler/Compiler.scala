@@ -164,7 +164,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   //
   elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())
   require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
-  processParamDeclarations(DesignPath(), root)
 
   // Hook method to be overridden, eg for status
   //
