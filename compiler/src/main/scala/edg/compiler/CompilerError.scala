@@ -59,6 +59,12 @@ object CompilerError {
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
   }
 
+  case class InconsistentLinkArrayElements(linkElements: IndirectDesignPath,
+                                           blockPortElements: IndirectDesignPath) extends CompilerError {
+    override def toString: String =
+      s"Inconsistent link array elements: $linkElements, $blockPortElements"
+  }
+
   // TODO should this be an error? Currently a debugging tool
   case class EmptyRange(param: IndirectDesignPath, root: DesignPath, constrName: String,
                         value: expr.ValueExpr) extends CompilerError

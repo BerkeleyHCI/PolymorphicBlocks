@@ -42,6 +42,11 @@ object ElaborateRecord {
 
   // The next tasks are a series for array connection
 
+  // This assigns a link's elements from the first ELEMENTS defined, then asserts subsequent ELEMENTS are equal.
+  // Requires: source param is defined.
+  case class AssignLinkElements(target: IndirectDesignPath, source: IndirectDesignPath, containerPath: DesignPath)
+      extends ElaborateTask
+
   // Defines the ALLOCATED for the port array, by aggregating all the connected ports.
   // Requires: ELEMENTS of all incoming connections defined.
   case class ResolveArrayAllocated(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
@@ -614,11 +619,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                     case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
                     case _ => throw new IllegalArgumentException
                   }
-
-                  constProp.addEquality(path.asIndirect ++ portPostfix + IndirectStep.Elements,
-                    path.asIndirect + linkPortPostfix.head + IndirectStep.Elements)  // use link's ELEMENTS
-                  constProp.addEquality(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                    path.asIndirect ++ portPostfix + IndirectStep.Elements)  // TODO can this be directed?
+                  val linkElements = path.asIndirect + linkPortPostfix.head + IndirectStep.Elements
+                  val blockPortElements = path.asIndirect ++ portPostfix + IndirectStep.Elements
+                  elaboratePending.addNode(ElaborateRecord.AssignLinkElements(
+                    linkElements, blockPortElements, path),
+                    Seq(ElaborateRecord.ParamValue(blockPortElements)))
+                  constProp.addAssignEqual(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    linkElements,
+                    path, "array connect ALLOCATED from link ELEMENTS")
 
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                   // Note: actual expansion task set on the link side
@@ -1013,6 +1021,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       path, "elements-defined count")
   }
 
+  // Sets the link's ELEMENTS from the first block-side port (source) ELEMENTS available,
+  // and checks that block-side port ELEMENTS are consistent.
+  protected def assignLinkElements(record: ElaborateRecord.AssignLinkElements): Unit = {
+    if (constProp.getValue(record.target).isEmpty) {
+      constProp.addAssignEqual(record.target, record.source,
+        record.containerPath, "array connect link ELEMENTS from block-side ELEMENTS")
+    }
+    if (constProp.getValue(record.target).get != constProp.getValue(record.source).get) {
+      errors.append(CompilerError.InconsistentLinkArrayElements(record.target, record.source))
+    }
+  }
+
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections.
   protected def expandArrayConnections(record: ElaborateRecord.ExpandArrayConnections): Unit = {
@@ -1262,6 +1282,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               elaboratePortArray(elaborateRecord.path)
               elaboratePending.setValue(elaborateRecord, None)
 
+            case elaborateRecord: ElaborateRecord.AssignLinkElements =>
+              assignLinkElements(elaborateRecord)
+              elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord: ElaborateRecord.ExpandArrayConnections =>
               expandArrayConnections(elaborateRecord)
               elaboratePending.setValue(elaborateRecord, None)
