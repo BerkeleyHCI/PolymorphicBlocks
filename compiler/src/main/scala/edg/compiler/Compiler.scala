@@ -200,16 +200,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       )
     }
 
-    val linkPath = connectedLink(connect.toLinkPortPath)  // must have ben set with ConnectedLink
-    connectedLink.put(connect.toBlockPortPath, linkPath)  // propagate CONNECTED_LINK params
-    val allParams = linkParams(linkPath) :+ IndirectStep.Name
-    for (linkParam <- allParams) {  // generate CONNECTED_LINK equalities
-      constProp.addEquality(
-        connect.toBlockPortPath.asIndirect + IndirectStep.ConnectedLink + linkParam,
-        linkPath.asIndirect + linkParam,
-      )
-    }
-
     // Add sub-ports to the elaboration dependency graph, as appropriate
     toLinkPort match {
       case toLinkPort: wir.Bundle =>
@@ -218,6 +208,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName),
             Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
           )
+          constProp.setConnection(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName)
         }
       case toLinkPort => // everything else ignored
     }
@@ -383,6 +374,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
           )
+          constProp.setConnectedLink(blockPath ++ linkPort, blockPath ++ blockPort)
           true
         case _ => false  // anything with allocates is not processed
       }
@@ -393,11 +385,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
             )
+            constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           } else {  // for links, the external port faces to the block, so args must be flipped
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
               Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
             )
+            constProp.setConnectedLink(blockPath ++ intPort, blockPath ++ extPort)
           }
           true
         case _ => false  // anything with allocates is not processed
@@ -409,6 +403,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
             Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
           )
+          constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           true
         case _ => false  // anything with allocates is not processed
       }

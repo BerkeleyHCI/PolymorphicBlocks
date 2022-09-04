@@ -45,8 +45,13 @@ object ConnectedLinkRecord {
   case class ConnectedLink(port: DesignPath) extends ConnectedLinkRecord
   // for a connect that isn't directly to a link, lowers into ConnectedLink once the final destination is known
   case class Connected(port: DesignPath, nextPortToLink: DesignPath) extends ConnectedLinkRecord
-  // an assign record that is dependent on connected link(s) being available
-  case class Assign(record: AssignRecord) extends ConnectedLinkRecord
+}
+
+
+sealed trait ConnectedLinkResult  // a result for resolving connected links
+object ConnectedLinkResult {
+  case class ResolvedPath(path: IndirectDesignPath) extends ConnectedLinkResult
+  case class MissingConnectedLink(port: DesignPath) extends ConnectedLinkResult
 }
 
 
@@ -67,6 +72,7 @@ class ConstProp {
 
   // Assign statements are added to the dependency graph only when arrays are ready
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
+  // CONNECTED_LINK does to an empty value and indicates that the path was resolved in that data structure
   val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
 
@@ -92,38 +98,54 @@ class ConstProp {
   //
   def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
 
+
+  // For some path, return the concrete path resolving CONNECTED_LINK as applicable
+  def resolveConnectedLink(path: IndirectDesignPath): ConnectedLinkResult = {
+    path.splitConnectedLink match {
+      case Some((connected, postfix)) =>
+        connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(connected)) match {
+          case Some(connectedLinkPath) =>
+            resolveConnectedLink(connectedLinkPath.asIndirect ++ postfix)
+          case None =>
+            ConnectedLinkResult.MissingConnectedLink(connected)
+        }
+      case None => ConnectedLinkResult.ResolvedPath(path)
+    }
+  }
+
   //
   // Processing Code
   //
   // Repeated does propagations as long as there is work to do, including both array available and param available.
   protected def update(): Unit = {
-    while (params.getReady.nonEmpty || connectedLink.getReady.nonEmpty) {
-      if (connectedLink.getReady.nonEmpty) {
-        val ready = connectedLink.getReady.head
-        ready match {
-          case ConnectedLinkRecord.Connected(port, nextPortToLink) =>  // propagate connected link
-            connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(port),
-              connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(nextPortToLink)).get)
-          case ConnectedLinkRecord.Assign(record) =>
-
-          case _ => throw new IllegalArgumentException()
-        }
-        connectedLink.setValue(ready, DesignPath())
+    while (connectedLink.getReady.nonEmpty) {
+      val ready = connectedLink.getReady.head
+      ready match {
+        case ConnectedLinkRecord.Connected(port, nextPortToLink) => // propagate connected link
+          connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(port),
+            connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(nextPortToLink)).get)
+          params.setValue(port.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false))  // dummy value
+        case _ => throw new IllegalArgumentException()
       }
+      connectedLink.setValue(ready, DesignPath())
+    }
 
-      if (params.getReady.nonEmpty) {
-        val constrTarget = params.getReady.head
-        val assign = paramAssign(constrTarget)
-        new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
-          case ExprResult.Result(result) =>
-            params.setValue(constrTarget, result)
-            onParamSolved(constrTarget, result)
-            for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
-              propagateEquality(constrTargetEquals, constrTarget, result)
-            }
-          case ExprResult.Missing(missing) =>
-            params.addNode(constrTarget, missing.toSeq, update = true)
-        }
+    while (params.getReady.nonEmpty) {
+      val constrTarget = params.getReady.head
+      val assign = paramAssign(constrTarget)
+      new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
+        case ExprResult.Result(result) =>
+          params.setValue(constrTarget, result)
+          onParamSolved(constrTarget, result)
+          for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
+            propagateEquality(constrTargetEquals, constrTarget, result)
+          }
+        case ExprResult.Missing(missing) =>  // account for CONNECTED_LINK prefix
+          val missingCorrected = missing.map { path => resolveConnectedLink(path) match {
+            case ConnectedLinkResult.ResolvedPath(path) => path
+            case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
+          } }
+          params.addNode(constrTarget, missingCorrected.toSeq, update = true)
       }
     }
   }
@@ -170,11 +192,16 @@ class ConstProp {
 
   def setConnectedLink(linkPath: DesignPath, portPath: DesignPath): Unit = {
     connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(portPath), linkPath)
+    params.setValue(portPath.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false))  // dummy value
+
+    update()
   }
 
   def setConnection(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
     connectedLink.addNode(ConnectedLinkRecord.Connected(toBlockPortPath, toLinkPortPath),
       Seq(ConnectedLinkRecord.ConnectedLink(toLinkPortPath)))
+
+    update()
   }
 
   /**
@@ -183,6 +210,7 @@ class ConstProp {
   def addAssignment(target: IndirectDesignPath,
                     root: DesignPath, targetExpr: expr.ValueExpr,
                     constrName: String = "", sourceLocator: SourceLocator = new SourceLocator()): Unit = {
+    require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     if (forcedParams.contains(target)) {
       return  // ignore forced params
     }
@@ -197,13 +225,14 @@ class ConstProp {
     paramAssign.put(target, assign)
     paramSource.put(target, paramSourceRecord)
     params.addNode(target, Seq())  // first add is not update=True, actual processing happens in update()
-    
+
     update()
   }
 
   /** Sets a value directly (without the expr)
     */
   def setValue(target: IndirectDesignPath, value: ExprValue, constrName: String = "setValue"): Unit = {
+    require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
     if (params.nodeDefinedAt(target)) {
       val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
@@ -244,6 +273,7 @@ class ConstProp {
     */
   def addDirectedEquality(target: IndirectDesignPath, source: IndirectDesignPath, root: DesignPath,
                           constrName: String = ""): Unit = {
+    require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val pathPrefix = root.asIndirect.toLocalPath.steps
     val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
     require(sourcePrefix == pathPrefix)
@@ -257,6 +287,8 @@ class ConstProp {
     * TODO: detect cycles
     */
   def addEquality(param1: IndirectDesignPath, param2: IndirectDesignPath): Unit = {
+    require(param1.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
+    require(param2.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     equality.getOrElseUpdate(param1, mutable.Buffer()) += param2
     equality.getOrElseUpdate(param2, mutable.Buffer()) += param1
 
@@ -285,7 +317,11 @@ class ConstProp {
     * Can be used to check if parameters are resolved yet by testing against None.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
-    params.getValue(param)
+    resolveConnectedLink(param) match {
+      case ConnectedLinkResult.ResolvedPath(path) => params.getValue(param)
+      case ConnectedLinkResult.MissingConnectedLink(_) => None
+    }
+
   }
   def getValue(param: DesignPath): Option[ExprValue] = {
     // TODO should this be an implicit conversion?
