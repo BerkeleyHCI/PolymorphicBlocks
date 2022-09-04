@@ -100,7 +100,7 @@ class ConstProp {
 
 
   // For some path, return the concrete path resolving CONNECTED_LINK as applicable
-  def resolveConnectedLink(path: IndirectDesignPath): ConnectedLinkResult = {
+  protected def resolveConnectedLink(path: IndirectDesignPath): ConnectedLinkResult = {
     path.splitConnectedLink match {
       case Some((connected, postfix)) =>
         connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(connected)) match {
@@ -326,6 +326,10 @@ class ConstProp {
   def getValue(param: DesignPath): Option[ExprValue] = {
     // TODO should this be an implicit conversion?
     getValue(param.asIndirect)
+  }
+
+  def getConnectedLink(port: DesignPath): Option[DesignPath] = {
+    connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(port))
   }
 
   /**

@@ -38,12 +38,6 @@ object ElaborateRecord {
 
   case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
 
-  // Set when the connection from the link's port to portPath have been elaborated, or for link ports
-  // when the link has been elaborated.
-  // When this is completed, connectedLink for the port and linkParams for the link will be set.
-  // Never set for port arrays.
-  case class ConnectedLink(portPath: DesignPath) extends ElaborateDependency
-
   // The next tasks are a series for array connection
 
   // Defines the ALLOCATED for the port array, by aggregating all the connected ports.
@@ -134,13 +128,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
 
-  // Primarily used for unit tests, TODO clean up this API?
-  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
-
   // Supplemental elaboration data structures
-  private val linkParams = SingleWriteHashMap[DesignPath, Seq[IndirectStep]]()  // link path -> list of params
-  linkParams.put(DesignPath(), Seq())  // empty path means disconnected
-  private val connectedLink = SingleWriteHashMap[DesignPath, DesignPath]()  // port -> connected link path
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
   // TODO this duplicates data in the design tree, assertion checking can be a post-compile pass
@@ -206,15 +194,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
         for (portName <- toLinkPort.getPorts.keys) {
           elaboratePending.addNode(
             ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName),
-            Seq(ElaborateRecord.ConnectedLink(connect.toLinkPortPath + portName))
+            Seq()
           )
           constProp.setConnection(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName)
         }
       case toLinkPort => // everything else ignored
     }
-
-    // Register port as finished
-    elaboratePending.setValue(ElaborateRecord.ConnectedLink(connect.toBlockPortPath), None)
   }
 
   protected def resolvePortConnectivity(containerPath: DesignPath, portPostfix: Seq[String],
@@ -271,8 +256,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           val portBlock = resolve(containerPath + portPostfix.head).asInstanceOf[wir.HasMutableConstraints] // block or link
           portBlock match {
             case _: wir.Block =>
-              connectedLink.put(containerPath ++ portPostfix, DesignPath())
-              elaboratePending.setValue(ElaborateRecord.ConnectedLink(containerPath ++ portPostfix), None)
             case _: wir.Link | _: wir.LinkArray =>  // links set these on all ports, so this is ignored here. TODO: unify code paths?
           }
 
@@ -372,7 +355,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           require(!isInLink)
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
-            Seq(ElaborateRecord.ConnectedLink(blockPath ++ linkPort))
+            Seq()
           )
           constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
           true
@@ -383,13 +366,13 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           if (!isInLink) {
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
-              Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+              Seq()
             )
             constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           } else {  // for links, the external port faces to the block, so args must be flipped
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
-              Seq(ElaborateRecord.ConnectedLink(blockPath ++ intPort))
+              Seq()
             )
             constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
           }
@@ -401,7 +384,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           require(!isInLink)
           elaboratePending.addNode(
             ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
-            Seq(ElaborateRecord.ConnectedLink(blockPath ++ extPort))
+            Seq()
           )
           constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           true
@@ -519,7 +502,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports and parameters
     constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
     processParamDeclarations(path, newLink)
-    linkParams.put(path, linkPb.params.keys.toSeq.map(IndirectStep.Element(_)))
 
     newLink.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, newLink, port)
@@ -867,8 +849,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     // TODO refactor this out, ConnectedLink needs to be centralized
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port | _: wir.Bundle =>
-        elaboratePending.setValue(ElaborateRecord.ConnectedLink(portPath), None)
-        connectedLink.put(portPath, path)
         constProp.setConnectedLink(path, portPath)
       case port: wir.PortArray =>
         port.getPorts.foreach { case (subPortName, subPort) =>
@@ -1330,7 +1310,11 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     new ExprEvaluatePartial(constProp, root).map(value)
   }
 
+
+  // Primarily used for unit tests, TODO clean up this API?
+  private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
+
   def getParamValue(param: IndirectDesignPath): Option[ExprValue] = constProp.getValue(param)
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
-  def getConnectedLink(port: DesignPath): Option[DesignPath] = connectedLink.get(port)
+  def getConnectedLink(port: DesignPath): Option[DesignPath] = constProp.getConnectedLink(port)
 }
