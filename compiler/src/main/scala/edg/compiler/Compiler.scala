@@ -299,7 +299,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.PortArray =>
         if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
           constProp.setValue(path.asIndirect + IndirectStep.Elements,
-            ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))))
+            ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))),
+          "defined by block")
         }
         elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(  // does recursive elaboration + LENGTH
           ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
@@ -456,6 +457,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
+    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
+    processParamDeclarations(path, newBlock)
+
+    // Port elaboration includes setting data source for ELEMENTS, which must run pre-generate
+    // to avoid over-assignment for ELEMENTS
+    newBlock.getPorts.foreach { case (portName, port) =>
+      elaboratePort(path + portName, newBlock, port)
+    }
+
     // TODO instead of directly elaborating, add it as a separate step dependent on generators
     // This is currently needed while connect algo refactoring is in progress to only break one thing at a time.
     val deps = newBlock match {
@@ -567,13 +577,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     block match {
       case block: wir.Generator => runGenerator(path, block)
       case _ =>  // ignored
-    }
-
-    constProp.setValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString))
-    processParamDeclarations(path, block)
-
-    block.getPorts.foreach { case (portName, port) => // all other cases, elaborate in place
-      elaboratePort(path + portName, block, port)
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
