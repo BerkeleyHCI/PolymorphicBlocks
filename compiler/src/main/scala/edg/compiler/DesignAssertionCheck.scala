@@ -10,16 +10,23 @@ import scala.collection.SeqMap
 
 /** Evaluates all assertions and returns those that aren't valid or are missing parameters
   */
-class DesignAssertionCheck(constProp: ConstProp) extends
+class DesignAssertionCheck(compiler: Compiler) extends
     DesignMap[Unit, Seq[CompilerError.AssertionError], Seq[CompilerError.AssertionError]] {
   def mapConstraint(containingPath: DesignPath, constrName: String, constr: expr.ValueExpr):
       Option[CompilerError.AssertionError] = {
-    new ExprEvaluatePartial(constProp, containingPath).map(constr) match {
-      case ExprResult.Result(BooleanValue(true)) => None
-      case ExprResult.Result(result) =>
-        Some(CompilerError.FailedAssertion(containingPath, constrName, constr, result))
-      case ExprResult.Missing(missing) =>
-        Some(CompilerError.MissingAssertion(containingPath, constrName, constr, missing))
+    constr.expr match {
+      case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
+           expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
+           expr.ValueExpr.Expr.IfThenElse(_) | expr.ValueExpr.Expr.Ref(_) |
+           expr.ValueExpr.Expr.Literal(_) =>
+        compiler.evaluateExpr(containingPath, constr) match {
+          case ExprResult.Result(BooleanValue(true)) => None
+          case ExprResult.Result(result) =>
+            Some(CompilerError.FailedAssertion(containingPath, constrName, constr, result))
+          case ExprResult.Missing(missing) =>
+            Some(CompilerError.MissingAssertion(containingPath, constrName, constr, missing))
+        }
+      case _ => None  // non-assertions ignored
     }
   }
 
