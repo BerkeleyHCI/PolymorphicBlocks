@@ -72,7 +72,7 @@ class ConstProp {
 
   // Assign statements are added to the dependency graph only when arrays are ready
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
-  // CONNECTED_LINK does to an empty value and indicates that the path was resolved in that data structure
+  // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
   val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
 
@@ -85,7 +85,7 @@ class ConstProp {
 
   // Equality, two entries per equality edge (one per direction / target)
   // This is a very special case, only used for port parameter propagations, and perhaps
-  // even that can be replaced with  directed assignments
+  // even that can be replaced with directed assignments
   val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Overassigns, for error tracking
