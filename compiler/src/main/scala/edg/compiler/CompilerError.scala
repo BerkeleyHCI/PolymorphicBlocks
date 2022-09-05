@@ -48,13 +48,14 @@ object CompilerError {
     override def toString: String = s"Abstract block: $path (of type ${blockType.toSimpleString})"
   }
 
+  sealed trait AssertionError extends CompilerError
   case class FailedAssertion(root: DesignPath, constrName: String,
-                             value: expr.ValueExpr, result: ExprValue) extends CompilerError {
+                             value: expr.ValueExpr, result: ExprValue) extends AssertionError {
     override def toString: String =
       s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
   }
   case class MissingAssertion(root: DesignPath, constrName: String,
-                              value: expr.ValueExpr, missing: Set[IndirectDesignPath]) extends CompilerError {
+                              value: expr.ValueExpr, missing: Set[IndirectDesignPath]) extends AssertionError {
     override def toString: String =
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
   }

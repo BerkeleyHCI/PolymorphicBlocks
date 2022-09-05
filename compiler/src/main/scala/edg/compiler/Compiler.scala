@@ -127,31 +127,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Supplemental elaboration data structures
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
-  // TODO this duplicates data in the design tree, assertion checking can be a post-compile pass
-  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr)]() // containing block, name, expr
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val assertionErrors = assertions.flatMap { case (root, constrName, value) =>
-      new ExprEvaluatePartial(constProp, root).map(value) match {
-        case ExprResult.Result(BooleanValue(true)) => None
-        case ExprResult.Result(result) =>
-          Some(CompilerError.FailedAssertion(root, constrName, value, result))
-        case ExprResult.Missing(missing) =>
-          Some(CompilerError.MissingAssertion(root, constrName, value, missing))
-      }
-    }.toSeq
-
     val pendingErrors = elaboratePending.getMissing.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq ++ heldElaboratePending.map { missingNode =>
       CompilerError.Unelaborated(missingNode, Set())
     }
 
-    errors.toSeq ++ constProp.getErrors ++ pendingErrors ++ assertionErrors
+    errors.toSeq ++ constProp.getErrors ++ pendingErrors
   }
 
   // Seed the elaboration record with the root design
@@ -305,8 +293,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Attempts to process a parameter constraint, returning true if it is a matching constraint
-  def processParamConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
-                             constrValue: expr.ValueExpr): Boolean = constrValue.expr match {
+  def processAssignConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
+                              constrValue: expr.ValueExpr): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
@@ -317,16 +305,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
         assign.src.get, blockPath, constrName)
-      true
-    case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
-        expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
-        expr.ValueExpr.Expr.IfThenElse(_) =>  // raw ValueExprs interpreted as assertions
-      assertions += ((blockPath, constrName, constr))
-      true
-    case expr.ValueExpr.Expr.Ref(target)  // IsConnected also treated as assertion
-      if target.steps.last.step.isReservedParam
-          && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
-      assertions += ((blockPath, constrName, constr))
       true
     case _ => false
   }
@@ -810,7 +788,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
-      processParamConstraint(path, constrName, constr, constr)
+      processAssignConstraint(path, constrName, constr, constr)
       processConnectedConstraint(path, constrName, constr, false)
     }
   }
@@ -906,7 +884,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
-      processParamConstraint(path, constrName, constr, constr)
+      processAssignConstraint(path, constrName, constr, constr)
       processConnectedConstraint(path, constrName, constr, true)
     }
   }
