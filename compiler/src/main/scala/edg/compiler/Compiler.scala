@@ -91,24 +91,13 @@ case class PartialCompile(
 
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
-  * TODO also needs a Python interface for generators, somewhere.
   *
   * During the compilation process, internal data structures are mutated.
   *
   * Port parameters are propagated by expanding connect and export statements between connected ports
   * into equalities between all contained parameters.
-  * This expansion triggers when both ports are fully elaborated, and checks the structures of both ends
-  * for equivalence.
-  *
-  * CONNECTED_LINK parameters are propagated by expanding from the link's top-level port outward.
-  * Expansion triggers at the link-side top-level port (by ref matching), or when the towards-innermost-link
-  * (or towards-outermost-block) port is expanded.
-  * A list of link params is kept in a hashmap indexed by ports, as they are expanded.
-  *
-  * Alternative: fetch links from library (using the port type) to get params to expand.
-  * Problem: a bit more restrictive than what can be expressed in a block - but should be a common interface.
-  *
-  * It is intentional to allow a link-side port to access the CONNECTED_LINK, as a mechanism to access inner links.
+  * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
+  * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements(), partial: PartialCompile=PartialCompile()) {
