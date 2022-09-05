@@ -236,8 +236,7 @@ class ConstProp {
     addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
   }
 
-  /**
-    * Adds a directed assignment (param1 <- param2), checking for root reachability
+  /** Adds a directed assignment (param1 <- param2), checking for root reachability
     */
   def addAssignEqual(target: IndirectDesignPath, source: IndirectDesignPath,
                      root: DesignPath, constrName: String): Unit = {
@@ -251,20 +250,11 @@ class ConstProp {
   /** Sets a value directly, and ignores subsequent assignments.
     * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
     */
-  def setForcedValue(target: DesignPath, value: ExprValue, constrName: String = "forcedValue"): Unit = {
-    val paramSourceRecord = (DesignPath(), constrName, ExprBuilder.ValueExpr.Literal(value.toLit))
+  def setForcedValue(target: DesignPath, value: ExprValue, constrName: String): Unit = {
     val targetIndirect = target.asIndirect
     require(!params.nodeDefinedAt(targetIndirect), s"forced value must be set before assigns, prior ${paramSource(targetIndirect)}")
-
-    params.setValue(targetIndirect, value)
-    paramSource.put(targetIndirect, paramSourceRecord)
+    addAssignValue(targetIndirect, value, DesignPath(), constrName)
     forcedParams += targetIndirect
-    onParamSolved(targetIndirect, value)
-    for (constrTargetEquals <- equality.getOrElse(targetIndirect, mutable.Buffer())) {
-      propagateEquality(constrTargetEquals, targetIndirect, value)
-    }
-
-    update()
   }
 
   /**
