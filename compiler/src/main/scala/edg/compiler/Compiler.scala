@@ -310,23 +310,23 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
-        assign.src.get, blockPath, constrName) // TODO add sourcelocators
+        assign.src.get, blockPath, constrName)
       true
     case expr.ValueExpr.Expr.AssignTunnel(assign) =>
       // same as normal assign case, but would not enforce locality of references
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
-        assign.src.get, blockPath, constrName) // TODO add sourcelocators
+        assign.src.get, blockPath, constrName)
       true
     case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
         expr.ValueExpr.Expr.IfThenElse(_) =>  // raw ValueExprs interpreted as assertions
-      assertions += ((blockPath, constrName, constr))  // TODO add source locators
+      assertions += ((blockPath, constrName, constr))
       true
     case expr.ValueExpr.Expr.Ref(target)  // IsConnected also treated as assertion
       if target.steps.last.step.isReservedParam
           && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
-      assertions += ((blockPath, constrName, constr))  // TODO add source locators
+      assertions += ((blockPath, constrName, constr))
       true
     case _ => false
   }
