@@ -15,6 +15,8 @@ import org.scalatest.matchers.should.Matchers._
 class ExprEvaluatePartialTest extends AnyFlatSpec {
   behavior of "ExprEvaluatePartial"
 
+  import ConstPropImplicit._
+
   val emptyConstProp = new ConstProp()
 
   it should "handle basic expressions without references" in {

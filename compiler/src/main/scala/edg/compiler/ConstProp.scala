@@ -208,7 +208,7 @@ class ConstProp {
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
-                    root: DesignPath, constrName: String = "",
+                    root: DesignPath, constrName: String,
                     sourceLocator: SourceLocator = new SourceLocator()): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     if (forcedParams.contains(target)) {
@@ -232,7 +232,7 @@ class ConstProp {
   /** Sets a value directly (without the expr), convenience wrapper around addAssignment
     */
   def addAssignValue(target: IndirectDesignPath, value: ExprValue,
-                     root: DesignPath = DesignPath(), constrName: String = ""): Unit = {
+                     root: DesignPath, constrName: String): Unit = {
     addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
   }
 
@@ -240,7 +240,7 @@ class ConstProp {
     * Adds a directed assignment (param1 <- param2), checking for root reachability
     */
   def addAssignEqual(target: IndirectDesignPath, source: IndirectDesignPath,
-                     root: DesignPath, constrName: String = ""): Unit = {
+                     root: DesignPath, constrName: String): Unit = {
     val pathPrefix = root.asIndirect.toLocalPath.steps
     val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
     require(sourcePrefix == pathPrefix)

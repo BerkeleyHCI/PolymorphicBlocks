@@ -10,6 +10,8 @@ import edg.ExprBuilder._
 class ConstPropTypeTest extends AnyFlatSpec {
   behavior of "ConstProp with types and declarations"
 
+  import ConstPropImplicit._
+
   it should "getUnsolved of declared types" in {
     val constProp = new ConstProp()
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
@@ -22,8 +24,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "a",
-      ValueExpr.Literal(1),
-      DesignPath()
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
       DesignPath() + "b",
@@ -31,16 +32,14 @@ class ConstPropTypeTest extends AnyFlatSpec {
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "b",
-      ValueExpr.Literal(1),
-      DesignPath()
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
       DesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "c",
-      ValueExpr.Literal(1),
-      DesignPath()
+      ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
   }
