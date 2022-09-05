@@ -173,7 +173,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Seq("a", "b", "c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
-      compiler.getValue(IndirectDesignPath() + s"source" + "port" + elementIndex + IndirectStep.IsConnected) should
+      compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.IsConnected) should
           equal(Some(BooleanValue(true)))
     }
     Seq("0", "1").foreach { sinkIndex =>

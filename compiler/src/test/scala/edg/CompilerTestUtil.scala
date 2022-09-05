@@ -1,6 +1,6 @@
 package edg
 
-import edg.compiler.Compiler
+import edg.compiler.{Compiler, PartialCompile}
 import edg.wir.{EdgirLibrary, Refinements}
 import edgir.schema.schema.{Design, Library}
 import org.scalatest.flatspec.AnyFlatSpec

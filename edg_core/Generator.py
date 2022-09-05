@@ -151,22 +151,15 @@ class GeneratorBlock(Block):
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
-    :param reqs: required parameters, the value of which is made available to the generator
-    :param req_ports: required ports, which can have their .is_connected() and .link().name() value obtained
-    :param targets: list of ports and blocks the generator may connect to, to avoid generating initializers
+    :param reqs: required parameters, the value of which are passed to the generator function
     """
-    from .Link import Link
-
     assert callable(fn), f"fn {fn} must be a method (callable)"
     assert self._generator is None, f"redefinition of generator, multiple generators not allowed"
 
     for (i, req_param) in enumerate(reqs):
       assert isinstance(req_param.binding, InitParamBinding) or \
-             (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding, NameBinding))
-              and ((req_param.binding.src._parent is self) or
-                   (isinstance(req_param.binding.src, Link) and  # for link.name()
-                    isinstance(req_param.binding.src._parent, BasePort) and
-                    req_param.binding.src._parent._block_parent() is self))), \
+             (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding))
+              and req_param.binding.src._parent is self), \
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
