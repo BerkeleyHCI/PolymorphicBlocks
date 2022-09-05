@@ -139,14 +139,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
   // TODO this duplicates data in the design tree, assertion checking can be a post-compile pass
-  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr, SourceLocator)]() // containing block, name, expr
+  private val assertions = mutable.Buffer[(DesignPath, String, expr.ValueExpr)]() // containing block, name, expr
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val assertionErrors = assertions.flatMap { case (root, constrName, value, sourceLocator) =>
+    val assertionErrors = assertions.flatMap { case (root, constrName, value) =>
       new ExprEvaluatePartial(constProp, root).map(value) match {
         case ExprResult.Result(BooleanValue(true)) => None
         case ExprResult.Result(result) =>
@@ -332,12 +332,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     case expr.ValueExpr.Expr.Binary(_) | expr.ValueExpr.Expr.BinarySet(_) |
         expr.ValueExpr.Expr.Unary(_) | expr.ValueExpr.Expr.UnarySet(_) |
         expr.ValueExpr.Expr.IfThenElse(_) =>  // raw ValueExprs interpreted as assertions
-      assertions += ((blockPath, constrName, constr, SourceLocator.empty))  // TODO add source locators
+      assertions += ((blockPath, constrName, constr))  // TODO add source locators
       true
     case expr.ValueExpr.Expr.Ref(target)  // IsConnected also treated as assertion
       if target.steps.last.step.isReservedParam
           && target.steps.last.getReservedParam == ref.Reserved.IS_CONNECTED =>
-      assertions += ((blockPath, constrName, constr, SourceLocator.empty))  // TODO add source locators
+      assertions += ((blockPath, constrName, constr))  // TODO add source locators
       true
     case _ => false
   }

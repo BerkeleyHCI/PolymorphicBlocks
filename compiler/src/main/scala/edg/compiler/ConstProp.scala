@@ -33,7 +33,7 @@ class AdjacencyMatrix[T](mat: Map[T, Iterable[T]]) {
 }
 
 
-case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr, source: SourceLocator)
+case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr)
 
 case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set(),
                             equals: mutable.Set[IndirectDesignPath] = mutable.Set())
@@ -208,8 +208,7 @@ class ConstProp {
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
-                    root: DesignPath, constrName: String,
-                    sourceLocator: SourceLocator = new SourceLocator()): Unit = {
+                    root: DesignPath, constrName: String): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     if (forcedParams.contains(target)) {
       return  // ignore forced params
@@ -221,7 +220,7 @@ class ConstProp {
       return  // first set "wins"
     }
 
-    val assign = AssignRecord(target, root, targetExpr, sourceLocator)
+    val assign = AssignRecord(target, root, targetExpr)
     paramAssign.put(target, assign)
     paramSource.put(target, paramSourceRecord)
     params.addNode(target, Seq())  // first add is not update=True, actual processing happens in update()
