@@ -25,9 +25,8 @@ object CompilerServerMain {
       val refinements = Refinements(request.getRefinements)
       val compiler = new Compiler(request.getDesign, library, refinements)
       val compiled = compiler.compile()
-      val structuralChecker = new DesignStructuralValidate()
-      val refChecker = new DesignRefsValidate()
-      val errors = compiler.getErrors() ++ structuralChecker.map(compiled) ++ refChecker.validate(compiled)
+      val errors = compiler.getErrors() ++ new DesignAssertionCheck(compiler).map(compiled) ++
+        new DesignStructuralValidate().map(compiled) ++ new DesignRefsValidate().validate(compiled)
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
         error = errors.mkString("\n"),
