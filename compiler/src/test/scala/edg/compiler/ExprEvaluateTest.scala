@@ -238,4 +238,27 @@ class ExprEvaluateTest extends AnyFlatSpec {
         ValueExpr.Literal(4), ValueExpr.Literal(3))
     ) should equal(IntValue(3))
   }
+
+  it should "handle array unary set ops" in {
+    import edgir.expr.expr.UnarySetExpr.Op
+    import edg.ExprBuilder.Literal
+    evalTest.map(
+      ValueExpr.UnarySetOp(Op.FLATTEN, ValueExpr.Literal(Seq(
+        Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
+        Literal.Array(Seq(Literal.Integer(2))),
+        Literal.Array(Seq(Literal.Integer(3), Literal.Integer(4), Literal.Integer(5))),
+      )))
+    ) should equal(ArrayValue(Seq(IntValue(0), IntValue(1), IntValue(2), IntValue(3), IntValue(4), IntValue(5))))
+  }
+
+  it should "handle array-value (broadcast) ops" in {
+    import edgir.expr.expr.BinarySetExpr.Op
+    import edg.ExprBuilder.Literal
+    evalTest.map(
+      ValueExpr.BinSetOp(Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.Range(1, 11))),
+        ValueExpr.Literal(100, 200)
+      )
+    ) should equal(ArrayValue(Seq(RangeValue(100, 210), RangeValue(101, 211))))
+  }
 }
