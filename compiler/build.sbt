@@ -1,4 +1,4 @@
-import scalapb.compiler.Version.{scalapbVersion}
+import scalapb.compiler.Version.scalapbVersion
 
 name := "edg-compiler"
 
