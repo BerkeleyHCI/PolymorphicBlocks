@@ -249,6 +249,15 @@ class ExprEvaluateTest extends AnyFlatSpec {
         Literal.Array(Seq(Literal.Integer(3), Literal.Integer(4), Literal.Integer(5))),
       )))
     ) should equal(ArrayValue(Seq(IntValue(0), IntValue(1), IntValue(2), IntValue(3), IntValue(4), IntValue(5))))
+
+    assertThrows[IllegalArgumentException] {  // can't mix and match types
+      evalTest.map(
+        ValueExpr.UnarySetOp(Op.FLATTEN, ValueExpr.Literal(Seq(
+          Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
+          Literal.Array(Seq(Literal.Boolean(true))),
+        )))
+      )
+    }
   }
 
   it should "handle array-value (broadcast) ops" in {

@@ -157,6 +157,12 @@ object ArrayValue {
       case _ => throw new ClassCastException("expr was not array of text")
     }
   }
+
+  object ExtractArray {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Seq[ExprValue]]] = seqMapOption(vals.values) {
+      case ArrayValue(elts) => elts
+    }
+  }
 }
 
 case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {

@@ -326,6 +326,15 @@ object ExprEvaluate {
         case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
       }
 
+      case (Op.FLATTEN, vals) => vals match {
+        case ArrayValue.Empty(_) => ArrayValue(Seq())
+        case ArrayValue.ExtractArray(arrayElts) =>
+          val flatElts = arrayElts.flatten
+          require(flatElts.forall(_.getClass == flatElts.head.getClass))
+          ArrayValue(flatElts)
+        case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
+      }
+
       case _ => throw new ExprEvaluateException(s"Unknown unary set op in ${unarySet.op} $vals from $unarySet")
     }
   }
