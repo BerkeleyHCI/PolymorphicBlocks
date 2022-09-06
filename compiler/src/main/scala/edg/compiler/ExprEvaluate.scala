@@ -185,29 +185,36 @@ object ExprEvaluate {
     }
   }
 
-  def evalBinarySet(binarySet: expr.BinarySetExpr, lhsset: ExprValue, rhs: ExprValue): ExprValue = {
+  def evalBinarySet(binarySet: expr.BinarySetExpr, lhs: ExprValue, rhs: ExprValue): ExprValue = {
     import expr.BinarySetExpr.Op
     binarySet.op match {
       // Note promotion rules: range takes precedence, then float, then int
       // TODO: can we deduplicate these cases to delegate them to evalBinary?
-      case Op.ADD => (lhsset, rhs) match {
+      case Op.ADD => (lhs, rhs) match {
         case (ArrayValue.ExtractRange(arrayElts), rhs: RangeType) =>
           val resultElts = arrayElts.map { arrayElt =>
             evalBinary(expr.BinaryExpr(op = expr.BinaryExpr.Op.ADD), arrayElt, rhs)
           }
           ArrayValue(resultElts)
-        case _ => throw new ExprEvaluateException(s"Unknown binary set operand types in $lhsset ${binarySet.op} $rhs from $binarySet")
+        case _ => throw new ExprEvaluateException(s"Unknown binary set operand types in $lhs ${binarySet.op} $rhs from $binarySet")
       }
-      case Op.MULT => (lhsset, rhs) match {
+      case Op.MULT => (lhs, rhs) match {
         case (ArrayValue.ExtractRange(arrayElts), rhs: RangeType) =>
           val resultElts = arrayElts.map { arrayElt =>
             evalBinary(expr.BinaryExpr(op = expr.BinaryExpr.Op.MULT), arrayElt, rhs)
           }
           ArrayValue(resultElts)
-        case _ => throw new ExprEvaluateException(s"Unknown binary set operand types in $lhsset ${binarySet.op} $rhs from $binarySet")
+        case _ => throw new ExprEvaluateException(s"Unknown binary set operand types in $lhs ${binarySet.op} $rhs from $binarySet")
+      }
+      case Op.CONCAT => (lhs, rhs) match {
+        case (lhs: TextValue, ArrayValue.ExtractText(rhsElts)) =>
+          ArrayValue(rhsElts.map { rhsElt => TextValue(lhs.value + rhsElt) })
+        case (ArrayValue.ExtractText(lhsElts), rhs: TextValue) =>
+          ArrayValue(lhsElts.map { lhsElt => TextValue(lhsElt + rhs.value) })
+        case _ => throw new ExprEvaluateException(s"Unknown binary set operand types in $lhs ${binarySet.op} $rhs from $binarySet")
       }
 
-      case _ => throw new ExprEvaluateException(s"Unknown binary op in $lhsset ${binarySet.op} $rhs from $binarySet")
+      case _ => throw new ExprEvaluateException(s"Unknown binary op in $lhs ${binarySet.op} $rhs from $binarySet")
     }
   }
 
