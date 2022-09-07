@@ -90,6 +90,18 @@ case class PartialCompile(
 )
 
 
+// Utility class that provides a namespace for suggestedName, including a shared default naming pool for where
+// suggestedName is not haven.
+class AssignNamer() {
+  val freeIndices = LazyList.from(0).iterator
+
+  def name(suggestedName: Option[String]): String = suggestedName match {
+    case Some(suggestedName) => suggestedName
+    case None => freeIndices.next().toString
+  }
+}
+
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   *
   * During the compilation process, internal data structures are mutated.
@@ -153,15 +165,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Actual compilation methods
   //
-
-  // Helper method that replaces Nones with a number, used for giving a default suggestedName when none is given.
-  protected def numberNones(input: Seq[Option[String]]): Seq[String] = {
-    val freeIndices = LazyList.from(0).iterator
-    input.map {
-      case Some(suggestedName) => suggestedName
-      case None => freeIndices.next().toString
-    }
-  }
 
   // Elaborate a connection (either a connect or export), by generating bidirectional equality constraints
   // including link parameters (through CONNECTED_LINK) and IS_CONNECTED.
@@ -653,7 +656,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
               case PortConnections.AllocatedTunnelExport(connects) =>
                 // similar to AllocatedConnect case, except only with single-element connects
-                val connectNames = numberNones(connects.map { case (suggestedName, _, _) => suggestedName })
+                val namer = new AssignNamer()
+                val connectNames = connects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
                   path, ""
@@ -699,7 +703,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)  // flattening (array-array w/o LinkArray) connections currently not used
-                val connectNames = numberNones(singleConnects.map { case (suggestedName, _, _) => suggestedName })
+                val namer = new AssignNamer()
+                val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
                   path, ""
@@ -740,7 +745,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 require(singleConnects.isEmpty)  // link arrays cannot have single connects on ports
                 // array ports on link arrays are nested two deep, first (outer, resolved here) by connects
                 // then (inner, resolved separately) by the link's ELEMENTS
-                val suggestedNames = numberNones(arrayConnects.map { case (suggestedName, _, _) => suggestedName })
+                val namer = new AssignNamer()
+                val suggestedNames = arrayConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ExprBuilder.ValueExpr.LiteralArrayText(suggestedNames),
                   path, ""
@@ -850,16 +856,16 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _: wir.PortArray => // array case: ignored, handled in lowering
             connectedConstraints.connectionsByLinkPort(portPostfix, true) match {
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                val connectNames = numberNones(singleConnects.map { case (suggestedName, _, _) => suggestedName })
+                val namer = new AssignNamer()
+                val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
-                val arrayConnectTermss = arrayConnects.zipWithIndex.map { case ((suggestedName, _, constr), i) =>
-                  require(suggestedName.isEmpty, "suggested name disallowed on link exports")
+                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
                   val ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) = constr.getExportedArray.getExteriorPort
                   val allocatedVals = ValueExpr.Ref(ref.LocalPath(steps=
                     extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
                         ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
                   ))
-                  val allocatedName = ValueExpr.Literal(i.toString + "_")
+                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
                   ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
