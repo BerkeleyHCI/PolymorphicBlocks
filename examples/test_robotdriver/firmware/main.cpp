@@ -17,6 +17,7 @@ void setup() {
   Serial.println(WiFi.softAPIP());
   server.begin();
 }
+
 void loop() {
   WiFiClient client = server.available();   // listen for incoming clients
   if (client) {
