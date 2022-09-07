@@ -738,7 +738,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(singleConnects.isEmpty)  // link arrays cannot have single connects on ports
-                // link-side of array connected treated as a unit
+                // array ports on link arrays are nested two deep, first (outer, resolved here) by connects
+                // then (inner, resolved separately) by the link's ELEMENTS
                 val suggestedNames = numberNones(arrayConnects.map { case (suggestedName, _, _) => suggestedName })
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ExprBuilder.ValueExpr.LiteralArrayText(suggestedNames),
