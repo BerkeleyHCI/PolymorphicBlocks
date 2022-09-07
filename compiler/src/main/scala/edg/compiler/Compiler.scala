@@ -1,7 +1,6 @@
 package edg.compiler
 
 import edg.EdgirUtils._
-import edg.ExprBuilder.ValueExpr
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir._
 import edg.{ExprBuilder, wir}
@@ -853,13 +852,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 val connectNames = numberNones(singleConnects.map { case (suggestedName, _, _) => suggestedName })
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
-                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
+                val arrayConnectTermss = arrayConnects.zipWithIndex.map { case ((suggestedName, _, constr), i) =>
                   require(suggestedName.isEmpty, "suggested name disallowed on link exports")
                   val ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) = constr.getExportedArray.getExteriorPort
-                  ValueExpr.Ref(ref.LocalPath(steps=
+                  val allocatedVals = ValueExpr.Ref(ref.LocalPath(steps=
                     extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
                         ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
                   ))
+                  val allocatedName = ValueExpr.Literal(i.toString + "_")
+                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
