@@ -5,25 +5,16 @@ from electronics_abstract_parts import Resistor, Capacitor
 from electronics_model import Ohm, Passive
 
 
-class MyKicadBlock(Block):
-    def __init__(self) -> None:
-        super().__init__()
+class KiCadSchematicBlock(Block):
 
-        self.PORT_A = self.Port(Passive())
-        self.PORT_B = self.Port(Passive())
-    def contents(self) -> None:
-        super().contents()
-
-        self.import_kicad('C:\\Users\\Nathan Nguyendinh\\Documents\\PCB Files\\EDG-IDE Simple Circuit\\EDG-IDE Simple Circuit.net')
-
-    def import_kicad(self, filepath: str):  # internal implementation
+    def import_kicad(self, filepath: str):
 
         netlist = parse_netlist(filepath)
 
         for part in netlist.parts:
             setattr(self, part.ref, self.make_block_from_mapping(part))
 
-        for net in netlist.nets:
+        for net_num, net in enumerate(netlist.nets):
             portlist = []
             for pin in net.pins:
                 component = getattr(self, pin.ref)
@@ -40,8 +31,14 @@ class MyKicadBlock(Block):
 
             if hasattr(self, net.name):
                 portlist.append(getattr(self, net.name))
+                setattr(self, net.name + "_link", self.connect(*portlist))
+                # Because we can't have port and link with same name, append "_link" to port name
 
-            self.connect(*portlist)
+            elif net.name[0] == '/':
+                setattr(self, net.name[1:], self.connect(*portlist))
+
+            else:
+                setattr(self, net.name, self.connect(*portlist))
 
     def make_block_from_mapping(self, part) -> Block:
 
