@@ -159,7 +159,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val freeIndices = LazyList.from(0).iterator
     input.map {
       case Some(suggestedName) => suggestedName
-      case None => freeIndices.next.toString
+      case None => freeIndices.next().toString
     }
   }
 
@@ -652,12 +652,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
               case PortConnections.AllocatedTunnelExport(connects) =>
-                // similar to AllocateDConnect case, except only with single-element connects
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, connects.map(_._2), Seq(), false)
-                elaboratePending.addNode(setAllocatedTask, Seq())
+                // similar to AllocatedConnect case, except only with single-element connects
+                val connectNames = numberNones(connects.map { case (suggestedName, _, _) => suggestedName })
+                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
+                  path, ""
+                )
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
@@ -735,11 +738,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
             connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(singleConnects.isEmpty)  // link arrays cannot have single connects on ports
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(setAllocatedTask, Seq(
-                  ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)))
+                // link-side of array connected treated as a unit
+                val suggestedNames = numberNones(arrayConnects.map { case (suggestedName, _, _) => suggestedName })
+                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ExprBuilder.ValueExpr.LiteralArrayText(suggestedNames),
+                  path, ""
+                )
                 val resolveAllocateTask = ElaborateRecord.RewriteArrayAllocate(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveAllocateTask, Seq(setAllocatedTask))
+                elaboratePending.addNode(resolveAllocateTask, Seq())
                 val expandArrayTasks = arrayConnects.map { case (allocated, constrName, constr) =>
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                   val blockPortPostfix = constr.getConnectedArray.getBlockPort match {
