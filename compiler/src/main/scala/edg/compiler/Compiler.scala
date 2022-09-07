@@ -639,18 +639,54 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
               }
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                val arrayDeps = arrayConnects.map { case (allocated, constrName, constr) =>  // link elements required
-                  val ValueExpr.RefAllocate(linkPostfix, _) = constr.getConnectedArray.getLinkPort
-                  ElaborateRecord.ParamValue(path.asIndirect + linkPostfix.head + IndirectStep.Elements)
+//                val arrayDeps = arrayConnects.map { case (allocated, constrName, constr) =>  // link elements required
+//                  val ValueExpr.RefAllocate(linkPostfix, _) = constr.getConnectedArray.getLinkPort
+//                  ElaborateRecord.ParamValue(path.asIndirect + linkPostfix.head + IndirectStep.Elements)
+//                }
+//                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
+//                elaboratePending.addNode(setAllocatedTask, arrayDeps)
+
+                val namer = new AssignNamer()
+                val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
+                val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
+                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
+                  val allocatedVals = constr.expr match {
+                    case expr.ValueExpr.Expr.ExportedArray(exported) =>
+                      val ValueExpr.Ref(extPortArray) = exported.getExteriorPort
+                      ValueExpr.Ref(ref.LocalPath(steps =
+                        extPortArray.map(step => ref.LocalStep(step = ref.LocalStep.Step.Name(step))) :+
+                            ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ALLOCATED))
+                      ))
+                    case expr.ValueExpr.Expr.ConnectedArray(connected) => connected.getLinkPort match {
+                      case ValueExpr.RefAllocate(linkPath, _) =>
+                        ValueExpr.Ref(ref.LocalPath(steps = Seq(
+                          ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
+                          ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
+                        )))
+                      case ValueExpr.Ref(linkPath) =>  // exactly the same as the RefAllocate case
+                        ValueExpr.Ref(ref.LocalPath(steps = Seq(
+                          ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
+                          ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
+                        )))
+                      case _ => throw new IllegalArgumentException
+                    }
+                    case _ => throw new IllegalArgumentException
+                  }
+                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
+                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(setAllocatedTask, arrayDeps)
+                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
+                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)),
+                  path, ""
+                )
+
                 val expandArrayConnectTasks = arrayConnects.map { case (allocated, constrName, constr) =>
                   ElaborateRecord.ExpandArrayConnections(path, constrName)
                 }
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++ expandArrayConnectTasks :+ setAllocatedTask)
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++ expandArrayConnectTasks)
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
