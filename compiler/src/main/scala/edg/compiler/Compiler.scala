@@ -1,6 +1,7 @@
 package edg.compiler
 
 import edg.EdgirUtils._
+import edg.ExprBuilder.ValueExpr
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir._
 import edg.{ExprBuilder, wir}
@@ -850,13 +851,22 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
           case _: wir.PortArray => // array case: ignored, handled in lowering
             connectedConstraints.connectionsByLinkPort(portPostfix, true) match {
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                val deps = arrayConnects.map { case (allocated, constrName, constr) =>
-                  val extPostfix = constr.getExportedArray.getExteriorPort match {
-                    case ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) => extPostfix
-                    case extPort => throw new IllegalArgumentException(s"unknown exported exterior $extPort")
-                  }
-                  ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Allocated)
+                val connectNames = numberNones(singleConnects.map { case (suggestedName, _, _) => suggestedName })
+                val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
+                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
+                  require(suggestedName.isEmpty, "suggested name disallowed on link exports")
+                  val ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) = constr.getExportedArray.getExteriorPort
+                  ValueExpr.Ref(ref.LocalPath(steps=
+                    extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
+                        ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
+                  ))
                 }
+                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
+                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)),
+                  path, ""
+                )
+
                 arrayConnects.foreach { case (allocated, constrName, constr) =>
                   val extPostfix = constr.getExportedArray.getExteriorPort match {
                     case ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) => extPostfix
@@ -869,9 +879,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                     ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
                   ))
                 }
-
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
-                elaboratePending.addNode(setAllocatedTask, deps)
 
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
                 elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))

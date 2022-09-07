@@ -55,6 +55,10 @@ object ExprBuilder {
       expr = expr.ValueExpr.Expr.IfThenElse(expr.IfThenElseExpr(cond = Some(cond), tru = Some(tru), fal = Some(fal)))
     )
 
+    def Array(elts: Seq[expr.ValueExpr]): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.Array(value=expr.ArrayExpr(elts))
+    )
+
     object MapExtract {
       def apply(container: ref.LocalPath, path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
         expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)), path = Some(path)))
