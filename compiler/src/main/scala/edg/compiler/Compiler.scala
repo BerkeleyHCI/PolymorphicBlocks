@@ -3,7 +3,7 @@ package edg.compiler
 import edg.EdgirUtils._
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir._
-import edg.wir
+import edg.{ExprBuilder, wir}
 import edgir.expr.expr
 import edgir.ref.ref
 import edgir.schema.schema
@@ -153,6 +153,15 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Actual compilation methods
   //
+
+  // Helper method that replaces Nones with a number, used for giving a default suggestedName when none is given.
+  protected def numberNones(input: Seq[Option[String]]): Seq[String] = {
+    val freeIndices = LazyList.from(0).iterator
+    input.map {
+      case Some(suggestedName) => suggestedName
+      case None => freeIndices.next.toString
+    }
+  }
 
   // Elaborate a connection (either a connect or export), by generating bidirectional equality constraints
   // including link parameters (through CONNECTED_LINK) and IS_CONNECTED.
@@ -687,11 +696,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
               case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
                 require(arrayConnects.isEmpty)  // flattening (array-array w/o LinkArray) connections currently not used
-                val setAllocatedTask = ElaborateRecord.ResolveArrayAllocated(path, portPostfix, singleConnects.map(_._2), Seq(), false)
-                elaboratePending.addNode(setAllocatedTask, Seq())
+                val connectNames = numberNones(singleConnects.map { case (suggestedName, _, _) => suggestedName })
+                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
+                  path, ""
+                )
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) :+ setAllocatedTask)
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false)
                 elaboratePending.addNode(resolveConnectedTask, Seq(
                   resolveAllocateTask))

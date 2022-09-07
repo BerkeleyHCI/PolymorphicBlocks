@@ -25,6 +25,10 @@ object ExprBuilder {
 
     def Literal(value: Seq[lit.ValueLit]): expr.ValueExpr = Literal(ExprBuilder.Literal.Array(value))
 
+    def LiteralArrayText(value: Seq[String]): expr.ValueExpr = {
+      Literal(ExprBuilder.Literal.Array(value.map(ExprBuilder.Literal.Text)))
+    }
+
     def Literal(valueMin: Float, valueMax: Float): expr.ValueExpr =
       Literal(ExprBuilder.Literal.Range(valueMin, valueMax))
 

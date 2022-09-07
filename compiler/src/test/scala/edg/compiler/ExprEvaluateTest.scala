@@ -273,12 +273,12 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(
       ValueExpr.BinSetOp(Op.CONCAT,
         ValueExpr.Literal("pre"),
-        ValueExpr.Literal(Seq(Literal.Text("a"), Literal.Text("b")))
+        ValueExpr.LiteralArrayText(Seq("a", "b"))
       )
     ) should equal(ArrayValue(Seq(TextValue("prea"), TextValue("preb"))))
     evalTest.map(
       ValueExpr.BinSetOp(Op.CONCAT,
-        ValueExpr.Literal(Seq(Literal.Text("a"), Literal.Text("b"))),
+        ValueExpr.LiteralArrayText(Seq("a", "b")),
         ValueExpr.Literal("post")
       )
     ) should equal(ArrayValue(Seq(TextValue("apost"), TextValue("bpost"))))
