@@ -2,7 +2,7 @@ from kinparse import parse_netlist
 
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor
-from electronics_model import Ohm, Passive
+from electronics_model import Ohm
 
 
 class KiCadSchematicBlock(Block):
@@ -39,6 +39,8 @@ class KiCadSchematicBlock(Block):
 
             else:
                 setattr(self, net.name, self.connect(*portlist))
+
+        return
 
     def make_block_from_mapping(self, part) -> Block:
 
