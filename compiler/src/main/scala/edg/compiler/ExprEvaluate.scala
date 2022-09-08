@@ -90,6 +90,7 @@ object ExprEvaluate {
         case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs == rhs)
         case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs == rhs)
         case (TextValue(lhs), TextValue(rhs)) => BooleanValue(lhs == rhs)
+        case (ArrayValue(lhs), ArrayValue(rhs)) => BooleanValue(lhs == rhs)
         case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
       }
       // TODO dedup w/ above?
@@ -103,6 +104,7 @@ object ExprEvaluate {
         case (FloatPromotable(lhs), FloatPromotable(rhs)) => BooleanValue(lhs != rhs)
         case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs != rhs)
         case (TextValue(lhs), TextValue(rhs)) => BooleanValue(lhs != rhs)
+        case (ArrayValue(lhs), ArrayValue(rhs)) => BooleanValue(lhs != rhs)
         case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
       }
 

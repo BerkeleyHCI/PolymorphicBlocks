@@ -31,6 +31,9 @@ class I2cTest(DesignTop):
     self.device2 = self.Block(I2cDeviceBlock(2))
     self.link = self.connect(self.master.port, self.pull.port, self.device1.port, self.device2.port)
 
+    # TODO this is probably reversed because of dict (non)ordering
+    self.require(self.master.port.link().addresses == [2, 1], unchecked=True)
+
 
 class I2cNoPullTest(DesignTop):
   def __init__(self):
@@ -52,9 +55,7 @@ class I2cConflictTest(DesignTop):
 
 class I2cTestCase(unittest.TestCase):
   def test_i2c(self) -> None:
-    compiled = ScalaCompiler.compile(I2cTest)
-    self.assertEqual(compiled.get_value(['link', 'addresses']),
-                     [2, 1])  # TODO this is probably reversed because of dict (non)ordering
+    ScalaCompiler.compile(I2cTest)
 
   def test_i2c_nopull(self) -> None:
     with self.assertRaises(CompilerCheckError):
