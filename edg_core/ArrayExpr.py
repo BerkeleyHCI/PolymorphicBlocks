@@ -78,7 +78,7 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
 
   def __init__(self, initializer=None):
     super().__init__(initializer)
-    self._elt_sample: ArrayWrappedType = self._elt_type()._new_bind(SampleElementBinding())
+    self._elt_sample: ArrayEltType = self._elt_type()._new_bind(SampleElementBinding())
 
   def _create_unary_set_op(self, op: Union[NumericOp, BoolOp, RangeSetOp, EqOp]) -> ArrayEltType:
     return self._elt_type._new_bind(UnarySetOpBinding(self, op))

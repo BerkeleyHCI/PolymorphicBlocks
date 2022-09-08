@@ -92,9 +92,18 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(
       edgir.AssignLit(['range_init'], Range(-4.2, -1.3)),
       self.pb.constraints["(init)range_init"])
+    expected_assign = edgir.ValueExpr()
+    expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_init']))
+    expected_array = expected_assign.assign.src.array
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(True))
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
     self.assertEqual(
-      edgir.AssignLit(['array_init'], [False, True, False]),
+      expected_assign,
       self.pb.constraints["(init)array_init"])
+    expected_assign = edgir.ValueExpr()
+    expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_empty']))
+    expected_assign.assign.src.array.SetInParent()
     self.assertEqual(
-      edgir.AssignLit(['array_empty'], []),
+      expected_assign,
       self.pb.constraints["(init)array_empty"])
