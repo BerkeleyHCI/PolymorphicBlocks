@@ -220,6 +220,23 @@ class RangeBuilderBinding(Binding):
     pb.binary.rhs.CopyFrom(self.upper._expr_to_proto(ref_map))
     return pb
 
+
+class ArrayBinding(LiteralBinding):
+  def __repr__(self) -> str:
+    return f"Array({self.values})"
+
+  def __init__(self, values: Sequence[ConstraintExpr]):
+    super().__init__()
+    self.values = values
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.array.SetInParent()
+    for value in self.values:
+      pb.array.vals.add().CopyFrom(value._expr_to_proto(ref_map))
+    return pb
+
+
 class UnaryOpBinding(Binding):
   def __repr__(self) -> str:
     return f"UnaryOp({self.op}, ...)"
