@@ -4,7 +4,7 @@ from typing import *
 
 import edgir
 from .Binding import ArrayLiteralBinding, StringLiteralBinding, RangeLiteralBinding, FloatLiteralBinding, \
-  BoolLiteralBinding, IntLiteralBinding
+  BoolLiteralBinding, IntLiteralBinding, EqOp
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
   NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, StringExpr, IntExpr
@@ -66,8 +66,15 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     else:
       raise TypeError(f"unknown ConstraintExpr type for wrapped param {elt}")
 
-  def _create_unary_set_op(self, op: Union[NumericOp, BoolOp, RangeSetOp]) -> ArrayEltType:
+  def __init__(self, initializer=None):
+    super().__init__(initializer)
+    self._elt_sample: ConstraintExpr
+
+  def _create_unary_set_op(self, op: Union[NumericOp, BoolOp, RangeSetOp, EqOp]) -> ArrayEltType:
     return self._elt_type._new_bind(UnarySetOpBinding(self, op))
+
+  def all_unique(self) -> BoolExpr:
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_unique))
 
   def sum(self) -> ArrayEltType:
     return self._create_unary_set_op(NumericOp.sum)
@@ -101,8 +108,7 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     else:
       raise TypeError(f"op arg to ArrayBoolExpr must be ArrayBoolLike, got {input} of type {type(input)}")
 
-
-  def __init__(self, initializer = None):
+  def __init__(self, initializer=None):
     super().__init__(initializer)
     self._elt_sample = BoolExpr()._new_bind(SampleElementBinding())
 
@@ -129,6 +135,10 @@ class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
     else:
       raise TypeError(f"op arg to ArrayIntExpr must be ArrayIntLike, got {input} of type {type(input)}")
 
+  def __init__(self, initializer=None):
+    super().__init__(initializer)
+    self._elt_sample = IntExpr()._new_bind(SampleElementBinding())
+
 
 ArrayFloatLike = Union['ArrayFloatExpr', List[FloatLike]]
 class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
@@ -146,6 +156,10 @@ class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
     else:
       raise TypeError(f"op arg to ArrayFloatExpr must be ArrayFloatLike, got {input} of type {type(input)}")
 
+  def __init__(self, initializer=None):
+    super().__init__(initializer)
+    self._elt_sample = FloatExpr()._new_bind(SampleElementBinding())
+
 
 ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
 class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
@@ -162,6 +176,10 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
       return cls()._bind(ArrayLiteralBinding(elt_bindings))
     else:
       raise TypeError(f"op arg to ArrayRangeExpr must be ArrayRangeLike, got {input} of type {type(input)}")
+
+  def __init__(self, initializer=None):
+    super().__init__(initializer)
+    self._elt_sample = RangeExpr()._new_bind(SampleElementBinding())
 
   def _create_binary_set_op(self,
                             lhs: ConstraintExpr,
@@ -195,3 +213,7 @@ class ArrayStringExpr(ArrayExpr[StringExpr, List[str], ArrayStringLike]):
       return cls()._bind(ArrayLiteralBinding(elt_bindings))
     else:
       raise TypeError(f"op arg to ArrayStringExpr must be ArrayStringLike, got {input} of type {type(input)}")
+
+  def __init__(self, initializer=None):
+    super().__init__(initializer)
+    self._elt_sample = StringExpr()._new_bind(SampleElementBinding())
