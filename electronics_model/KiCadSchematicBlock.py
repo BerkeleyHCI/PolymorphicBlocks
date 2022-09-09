@@ -1,5 +1,4 @@
-from kinparse import parse_netlist
-
+from kinparse import parse_netlist  # type: ignore
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor
 from electronics_model import Ohm
