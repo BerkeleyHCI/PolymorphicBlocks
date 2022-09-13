@@ -22,7 +22,7 @@ class BaseBoardTop(DesignTop):
 
         (Fpc050, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
-        (TestPoint, Keystone5015),
+        (TestPoint, TeRc),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
       ],
@@ -57,6 +57,7 @@ class JlcBoardTop(BaseBoardTop):
         (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
+        (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts
         (JlcResistor, ['require_basic_part'], True),
