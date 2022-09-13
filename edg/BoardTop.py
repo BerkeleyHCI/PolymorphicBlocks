@@ -66,6 +66,7 @@ class JlcBoardTop(BaseBoardTop):
 
         (UsbEsdDiode, Esda5v3l),
         (Opamp, Lmv321),
+        (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts
         (JlcResistor, ['require_basic_part'], True),
