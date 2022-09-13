@@ -14,6 +14,10 @@ object ExprResult {
 }
 
 
+/** Evaluates an expression, returning either missing references of the result (if all references available).
+  * The missing set may increase as more parameters are solved, because some expressions have dynamic references.
+  * For example, if-then-else additionally depends on either true or false subexprs once the condition is known.
+  */
 class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprResult] {
   override def mapLiteral(literal: lit.ValueLit): ExprResult =
     ExprResult.Result(ExprEvaluate.evalLiteral(literal))

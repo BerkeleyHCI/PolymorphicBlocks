@@ -8,7 +8,7 @@ from typing import *
 import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
-from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr
+from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
@@ -383,21 +383,20 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)
 
-  def require(self, constraint: BoolExpr, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
-    if not isinstance(constraint, BoolExpr):
-      raise TypeError(f"constraint to constrain(...) must be BoolExpr, got {constraint} of type {type(constraint)}")
+  def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
+    constraint_typed = BoolExpr._to_expr_type(constraint)
     if not isinstance(name, (str, type(None))):
       raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
 
     if not unchecked:  # before we have const prop need to manually set nested params
-      self._check_constraint(constraint)
+      self._check_constraint(constraint_typed)
 
-    self._constraints.register(constraint)
+    self._constraints.register(constraint_typed)
 
     if name:  # TODO unify naming API with everything else?
-      self.manager.add_element(name, constraint)
+      self.manager.add_element(name, constraint_typed)
 
-    return constraint
+    return constraint_typed
 
   ConstrType = TypeVar('ConstrType')
   def assign(self, target: ConstraintExpr[ConstrType, Any],

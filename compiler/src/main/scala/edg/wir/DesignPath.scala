@@ -106,6 +106,20 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
     ref.LocalPath(steps=steps.map(_.asLocalStep))
   }
 
+  // if this starts with CONNECTED_LINK, returns the split as the CONNECTED_LINK portion (including
+  // the CONNECTED_LINK) and the postfix as a LocalPath
+  def splitConnectedLink: Option[(DesignPath, ref.LocalPath)] = {
+    steps.indexOf(IndirectStep.ConnectedLink) match {
+      case index if index >= 0 =>
+        val (connectedLinkSteps, postfixSteps) = steps.splitAt(index + 1)
+        val portSteps = connectedLinkSteps.init.map { _.asInstanceOf[IndirectStep.Element].name }
+        Some((DesignPath(portSteps), ref.LocalPath(steps=postfixSteps.map(_.asLocalStep))))
+      case _ => None
+    }
+  }
+
+  def init: IndirectDesignPath = IndirectDesignPath(steps.init)
+
   override def toString = steps.map(_.toString).mkString(".")
 }
 

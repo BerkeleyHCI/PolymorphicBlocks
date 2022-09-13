@@ -86,10 +86,6 @@ object ArrayValue {
     Some(builder.toList)
   }
 
-  def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[T]] = {
-    Some(vals.values)
-  }
-
   object Empty {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Unit] = {
       if (vals.values.isEmpty) {

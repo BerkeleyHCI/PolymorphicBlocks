@@ -74,7 +74,6 @@ class ScalaCompilerInstance:
       assert self.process.stdout is not None
       self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
 
-
   def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
     self.check_started()
     assert self.request_serializer is not None

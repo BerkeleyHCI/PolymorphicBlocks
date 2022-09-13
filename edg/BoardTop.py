@@ -22,7 +22,7 @@ class BaseBoardTop(DesignTop):
 
         (Fpc050, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
-        (TestPoint, Keystone5015),
+        (TestPoint, TeRc),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
 
