@@ -4,6 +4,17 @@
 #include <WiFiAP.h>
 
 
+const int motorA1 = 18;
+const int motorA2 = 10;
+const int motorB1 = 3;
+const int motorB2 = 19;
+
+const int ledArrayData = 1;
+
+
+bool state = false;  // false=off, true=on
+
+
 // Wifi code adapted from https://dronebotworkshop.com/esp32-intro/
 const char *ssid = "RobotDriverAP";
 const char *password = "password";
@@ -13,9 +24,17 @@ WiFiServer server(80);
 void setup() {
   Serial.begin(115200);
   Serial.println("Robot Driver " __DATE__ " " __TIME__);
-  WiFi.softAP(ssid, password);
+  WiFi.softAP(ssid);
   Serial.println(WiFi.softAPIP());
   server.begin();
+
+  pinMode(motorA1, OUTPUT);
+  pinMode(motorA2, OUTPUT);
+  pinMode(motorB1, OUTPUT);
+  pinMode(motorB2, OUTPUT);
+
+  digitalWrite(motorB1, 1);
+  digitalWrite(motorB2, 0);
 }
 
 void loop() {
@@ -38,8 +57,12 @@ void loop() {
 
             // the content of the HTTP response follows the header:
             // TODO relevant code
-            client.print("<a href=\"/1\">Pattern 1</a><br>");
-            client.print("<a href=\"/2\">Pattern 2</a><br>");
+            if (state) {
+              client.print("ON<br/>");
+            } else {
+              client.print("OFF<br/>");
+            }
+            client.print("<a href=\"/tog\">Toggle</a><br>");
 
             // The HTTP response ends with another blank line:
             client.println();
@@ -52,8 +75,15 @@ void loop() {
           currentLine += c;      // add it to the end of the currentLine
         }
 
-        if (currentLine.endsWith("GET /1")) {
-          // TODO relevant code
+        if (currentLine.endsWith("GET /tog")) {
+          if (!state) {
+            digitalWrite(motorA1, 1);
+            digitalWrite(motorA2, 0);
+          } else {
+            digitalWrite(motorA1, 0);
+            digitalWrite(motorA2, 0);
+          }
+          state = !state;
         }
       }
     }
