@@ -200,6 +200,7 @@ class RobotDriver2(JlcBoardTop):
           'tof_xshut_1=11',
           'tof_xshut_2=12',
         ]),
+        (['isense', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
 
         # JLC does not have frequency specs, must be checked TODO
