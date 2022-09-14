@@ -93,7 +93,7 @@ class RobotDriver2(JlcBoardTop):
       for i in range(4):
         (self.led[i], ), _ = self.chain(self.expander.io.allocate('led'+str(i)), imp.Block(IndicatorLed()))
 
-    # SPEAKER DOMAIN
+    # SPEAKER AND LOW POWER VBATT DOMAIN
     with self.implicit_connect(
             ImplicitConnect(self.vbatt, [Power]),
             ImplicitConnect(self.gnd, [Common]),
@@ -104,26 +104,11 @@ class RobotDriver2(JlcBoardTop):
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
-      # # limit the total power draw - speaker will only operate at partial power
-      # (self.spk_pwr, ), _ = self.chain(
-      #   self.vbatt,
-      #   self.Block(ForcedVoltageCurrentDraw((0, 0.05)*Amp)),
-      #   self.spk_drv.pwr
-      # )
-
-    # VBATT LOW POWER DOMAIN
-    with self.implicit_connect(
-            ImplicitConnect(self.vbatt, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      # LED ARRAY
       self.ws2812bArray = imp.Block(Ws2812bArray(5))
       self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
 
-      # Additional LED Connector
       self.led_pixel = imp.Block(LedConnector())
       self.connect(self.ws2812bArray.dout, self.led_pixel.din)
-
 
     # MOTORS AND SERVOS
     with self.implicit_connect(
