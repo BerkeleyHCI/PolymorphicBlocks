@@ -39,7 +39,7 @@ class RobotDriver2(JlcBoardTop):
 
     self.gnd = self.connect(self.batt.gnd)
 
-    self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
+    self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.isense.pwr_out)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
 
     # POWER
@@ -89,9 +89,8 @@ class RobotDriver2(JlcBoardTop):
       # # TODO use pin assign util for IO expanders
       self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
 
-      self.led = ElementDict[IndicatorSinkLed]()
-      for i in range(4):
-        (self.led[i], ), _ = self.chain(self.expander.io.allocate('led'+str(i)), imp.Block(IndicatorLed()))
+      self.leds = imp.Block(IndicatorSinkLedArray(4))
+      self.connect(self.expander.io.allocate_vector('led'), self.leds.signals)
 
     # SPEAKER AND LOW POWER VBATT DOMAIN
     with self.implicit_connect(
@@ -154,6 +153,13 @@ class RobotDriver2(JlcBoardTop):
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
+  def multipack(self) -> None:
+    self.led_res = self.PackedBlock(ResistorArray())
+    self.pack(self.led_res.elements.allocate('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.led_res.elements.allocate('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.led_res.elements.allocate('2'), ['leds', 'led[2]', 'res'])
+    self.pack(self.led_res.elements.allocate('3'), ['leds', 'led[3]', 'res'])
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -192,10 +198,10 @@ class RobotDriver2(JlcBoardTop):
           'pwm=37',
         ]),
         (['expander', 'pin_assigns'], [
-          'led0=4',
-          'led1=5',
-          'led2=6',
-          'led3=7',
+          'led_0=4',
+          'led_1=5',
+          'led_2=6',
+          'led_3=7',
           'tof_xshut_0=10',
           'tof_xshut_1=11',
           'tof_xshut_2=12',
