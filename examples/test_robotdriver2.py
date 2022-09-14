@@ -3,6 +3,20 @@ import unittest
 from edg import *
 from .test_robotdriver import LipoConnector, MotorConnector, PwmConnector
 
+class LedConnector(Block):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+    led_current = 36.6
+    num_leds = 0
+
+    self.vdd = self.Export(self.conn.pins.allocate('1').adapt_to(VoltageSink(
+      current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp)),
+      [Power])
+    self.din = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
+      current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp
+    )))
+    self.gnd = self.Export(self.conn.pins.allocate('3').adapt_to(Ground()), [Common])
 
 class RobotDriver2(JlcBoardTop):
   """Variant of robot driver that uses a ESP32 (non-C) chip and includes a few more blocks
@@ -46,13 +60,11 @@ class RobotDriver2(JlcBoardTop):
       self.mcu = imp.Block(IoController())
       self.i2c = self.mcu.i2c.allocate('i2c')
 
-      self.tof = imp.Block(Vl53l0xArray(2))
+      self.tof = imp.Block(Vl53l0xArray(3))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
-
-      self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
 
       self.lcd = imp.Block(Er_Oled_091_3())
       self.connect(self.mcu.spi.allocate('spi'), self.lcd.spi)
@@ -69,6 +81,15 @@ class RobotDriver2(JlcBoardTop):
       self.connect(self.isense.gnd, self.gnd)
       self.connect(self.isense.ref, self.batt.gnd.as_analog_source())
       self.connect(self.isense.out, self.mcu.adc.allocate('isense'))
+
+      self.expander = imp.Block(Pcf8574(0))
+      self.connect(self.i2c, self.expander.i2c)
+      # # TODO use pin assign util for IO expanders
+      self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
+
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        (self.led[i], ), _ = self.chain(self.expander.io.allocate('led'+str(i)), imp.Block(IndicatorLed()))
 
     self.motor_driver1 = self.Block(Drv8833())
     self.connect(self.vbatt, self.motor_driver1.pwr)
@@ -92,7 +113,7 @@ class RobotDriver2(JlcBoardTop):
     self.connect(self.mcu.gpio.allocate('motor_2a2'), self.motor_driver2.ain2)
     self.connect(self.mcu.gpio.allocate('motor_2b1'), self.motor_driver2.bin1)
     self.connect(self.mcu.gpio.allocate('motor_2b2'), self.motor_driver2.bin2)
-    self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.batt.pwr.as_digital_source())
+    self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
 
     self.m2_a = self.Block(MotorConnector())
     self.connect(self.m2_a.a, self.motor_driver2.aout1)
@@ -111,6 +132,12 @@ class RobotDriver2(JlcBoardTop):
     self.connect(self.vbatt, self.ws2812bArray.vdd)
     self.connect(self.gnd, self.ws2812bArray.gnd)
     self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
+
+    # Additional LED Connector
+    self.led_pixel = self.Block(LedConnector())
+    self.connect(self.vbatt, self.led_pixel.vdd)
+    self.connect(self.gnd, self.led_pixel.gnd)
+    self.connect(self.mcu.gpio.allocate('ledConnector'), self.led_pixel.din)
 
     # Misc board
     self.lemur = self.Block(LemurLogo())
@@ -138,9 +165,6 @@ class RobotDriver2(JlcBoardTop):
           'spi.sck=8',
           'spi.mosi=7',
 
-          'tof_xshut_1=6',
-          'tof_xshut_0=5',
-
           'ledArray=4',
 
           'isense=16',
@@ -163,8 +187,9 @@ class RobotDriver2(JlcBoardTop):
         (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
       ],
       class_refinements=[
-        (PassiveConnector, JstPhSmVerticalJlc),  # default connector series unless otherwise specified
-        (Vl53l0x, Vl53l0xConnector)
+        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+        (Vl53l0x, Vl53l0xConnector),
+        (TestPoint, TeRc),
       ],
     )
 
