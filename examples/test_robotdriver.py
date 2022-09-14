@@ -23,10 +23,10 @@ class MotorConnector(Block):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
-    self.a = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink(
+    self.a = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
       current_draw=(-600, 600)*mAmp
     )))
-    self.b = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
+    self.b = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink(
       current_draw=(-600, 600)*mAmp
     )))
 
