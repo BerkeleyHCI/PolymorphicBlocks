@@ -161,8 +161,8 @@ class NetlistTransform(TransformUtil.Transform):
 
         # Uncomment one to set value field
         # TODO this should be a user flag
-        # value_str,  # including manufacturer
-        lcsc_part or "",
+        value_str,  # including manufacturer
+        # lcsc_part or "",
 
         list(path.blocks),
         list(self.short_paths[path].blocks),

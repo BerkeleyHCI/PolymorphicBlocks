@@ -89,7 +89,7 @@ class RobotDriver2(JlcBoardTop):
       # # TODO use pin assign util for IO expanders
       self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
 
-      self.led = ElementDict[IndicatorLed]()
+      self.led = ElementDict[IndicatorSinkLed]()
       for i in range(4):
         (self.led[i], ), _ = self.chain(self.expander.io.allocate('led'+str(i)), imp.Block(IndicatorLed()))
 
