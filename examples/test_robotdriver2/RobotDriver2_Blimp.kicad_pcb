@@ -549,7 +549,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp 18abd9ab-4cc0-4e34-a2cf-8f69b018d952)
-    (at 97.5 57.65)
+    (at 100.5 48)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -986,7 +986,7 @@
 
   (footprint "edg:Indicator_IdDots_4" (layer "F.Cu")
     (tedit 5D81DE50) (tstamp 44abf1fd-ca3e-4a41-b2e6-4c0cf8ee07e0)
-    (at 183.006295 90.5)
+    (at 149 117)
     (property "Sheetfile" "")
     (property "Sheetname" "")
     (property "edg_part" "")
@@ -1211,7 +1211,7 @@
 
   (footprint "edg:Indicator_LeadFree" (layer "F.Cu")
     (tedit 5D7F301C) (tstamp 5c95f388-d86b-4f52-895e-308811a08aa8)
-    (at 183.006295 87.5)
+    (at 149 114.5)
     (property "Sheetfile" "")
     (property "Sheetname" "")
     (property "edg_part" "")
@@ -1339,7 +1339,7 @@
 
   (footprint "edg:Symbol_LemurSmall" (layer "F.Cu")
     (tedit 62A272CA) (tstamp 6aa35552-9d3e-4e58-bb90-daeccef8f5b3)
-    (at 183 76.5)
+    (at 136.5 115)
     (descr "Converted using: svg2mod -i small.svg -o lemur_small.kicad_mod -c -f 0.2")
     (tags "svg2mod")
     (property "Sheetfile" "")
@@ -2126,7 +2126,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp 71f68ead-1dd8-4591-8ba7-c7957e93ed28)
-    (at 97.5 106.375)
+    (at 100.5 113.5)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -3785,7 +3785,7 @@
 
   (footprint "edg:Symbol_Duckling" (layer "F.Cu")
     (tedit 5D8A7175) (tstamp b34c2480-6750-4232-9bf6-b4c120c2d8f7)
-    (at 183.006295 83.280624)
+    (at 142 115.5)
     (descr "Duckling")
     (property "Sheetfile" "")
     (property "Sheetname" "")
@@ -5713,7 +5713,7 @@
   (gr_text "SPK" (at 171.5 56.19) (layer "F.SilkS") (tstamp 33548307-757f-492a-a565-0da2b384570e)
     (effects (font (size 1.5 1) (thickness 0.15)) (justify left))
   )
-  (gr_text "EDG Robot Driver Board v1b\nDucky Lin\nNathan Nguyendinh\nKai Jun Tay" (at 166 95.5) (layer "F.SilkS") (tstamp 34d57a6b-8ddd-4777-a45a-e76c333b2a91)
+  (gr_text "EDG Robot Driver Board v2a\nDucky Lin\nNathan Nguyendinh\nKai Jun Tay" (at 162.5 115) (layer "F.SilkS") (tstamp 34d57a6b-8ddd-4777-a45a-e76c333b2a91)
     (effects (font (size 0.9 0.9) (thickness 0.15)))
   )
   (gr_text "SCL" (at 144 85) (layer "F.SilkS") (tstamp 50ecb0bc-f224-4385-b73d-3a64bc6e3249)
