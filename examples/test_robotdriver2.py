@@ -165,16 +165,18 @@ class RobotDriver2(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           'spi.miso=NC',
-          'i2c.scl=13',
-          'i2c.sda=12',
+          'i2c.scl=16',
+          'i2c.sda=14',
 
-          'lcd_cs=11',
-          # 'lcd_reset=10',
-          # 'lcd_dc=9',
-          'spi.sck=8',
-          # 'spi.mosi=7',
+          'spk=11',  # only 10 and 11 are DAC out
 
-          # 'ledArray=4',
+          'lcd_cs=13',
+          'lcd_reset=12',
+          'lcd_dc=10',
+          'spi.sck=9',
+          'spi.mosi=8',
+
+          'ledArray=23',
 
           'isense=4',  # use an input only pin
 
@@ -186,7 +188,17 @@ class RobotDriver2(JlcBoardTop):
           'motor_1a2=31',
           'motor_1b2=33',
           'motor_1b1=36',
+
           'pwm=37',
+        ]),
+        (['expander', 'pin_assigns'], [
+          'led0=4',
+          'led1=5',
+          'led2=6',
+          'led3=7',
+          'tof_xshut_0=10',
+          'tof_xshut_1=11',
+          'tof_xshut_2=12',
         ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
 
