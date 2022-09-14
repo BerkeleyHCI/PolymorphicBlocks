@@ -3,6 +3,7 @@ import unittest
 from edg import *
 from .test_robotdriver import LipoConnector, MotorConnector, PwmConnector
 
+
 class LedConnector(Block):
   def __init__(self):
     super().__init__()
@@ -18,6 +19,7 @@ class LedConnector(Block):
     )))
     self.gnd = self.Export(self.conn.pins.allocate('3').adapt_to(Ground()), [Common])
 
+
 class RobotDriver2(JlcBoardTop):
   """Variant of robot driver that uses a ESP32 (non-C) chip and includes a few more blocks
   to use the extra available IOs
@@ -29,8 +31,8 @@ class RobotDriver2(JlcBoardTop):
 
     # actually on the 3V3 domain but need the battery output here
     self.isense = self.Block(OpampCurrentSensor(
-      resistance=0.1*Ohm(tol=0.01),
-      ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
+      resistance=0.05*Ohm(tol=0.01),
+      ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
     ))
     self.connect(self.isense.pwr_in, self.batt.pwr)
     self.vbatt = self.connect(self.isense.pwr_out)
@@ -91,53 +93,75 @@ class RobotDriver2(JlcBoardTop):
       for i in range(4):
         (self.led[i], ), _ = self.chain(self.expander.io.allocate('led'+str(i)), imp.Block(IndicatorLed()))
 
-    self.motor_driver1 = self.Block(Drv8833())
-    self.connect(self.vbatt, self.motor_driver1.pwr)
-    self.connect(self.gnd, self.motor_driver1.gnd)
-    self.connect(self.mcu.gpio.allocate('motor_1a1'), self.motor_driver1.ain1)
-    self.connect(self.mcu.gpio.allocate('motor_1a2'), self.motor_driver1.ain2)
-    self.connect(self.mcu.gpio.allocate('motor_1b1'), self.motor_driver1.bin1)
-    self.connect(self.mcu.gpio.allocate('motor_1b2'), self.motor_driver1.bin2)
+    # SPEAKER DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.vbatt, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+        self.mcu.dac.allocate('spk'),
+        self.Block(AnalogTestPoint()),
+        imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
+        self.Block(Speaker()))
 
-    self.m1_a = self.Block(MotorConnector())
-    self.connect(self.m1_a.a, self.motor_driver1.aout1)
-    self.connect(self.m1_a.b, self.motor_driver1.aout2)
-    self.m1_b = self.Block(MotorConnector())
-    self.connect(self.m1_b.a, self.motor_driver1.bout1)
-    self.connect(self.m1_b.b, self.motor_driver1.bout2)
+      # # limit the total power draw - speaker will only operate at partial power
+      # (self.spk_pwr, ), _ = self.chain(
+      #   self.vbatt,
+      #   self.Block(ForcedVoltageCurrentDraw((0, 0.05)*Amp)),
+      #   self.spk_drv.pwr
+      # )
 
-    self.motor_driver2 = self.Block(Drv8833())
-    self.connect(self.vbatt, self.motor_driver2.pwr)
-    self.connect(self.gnd, self.motor_driver2.gnd)
-    self.connect(self.mcu.gpio.allocate('motor_2a1'), self.motor_driver2.ain1)
-    self.connect(self.mcu.gpio.allocate('motor_2a2'), self.motor_driver2.ain2)
-    self.connect(self.mcu.gpio.allocate('motor_2b1'), self.motor_driver2.bin1)
-    self.connect(self.mcu.gpio.allocate('motor_2b2'), self.motor_driver2.bin2)
-    self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
+    # VBATT LOW POWER DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.vbatt, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      # LED ARRAY
+      self.ws2812bArray = imp.Block(Ws2812bArray(5))
+      self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
 
-    self.m2_a = self.Block(MotorConnector())
-    self.connect(self.m2_a.a, self.motor_driver2.aout1)
-    self.connect(self.m2_a.b, self.motor_driver2.aout2)
-    self.m2_b = self.Block(MotorConnector())
-    self.connect(self.m2_b.a, self.motor_driver2.bout1)
-    self.connect(self.m2_b.b, self.motor_driver2.bout2)
+      # Additional LED Connector
+      self.led_pixel = imp.Block(LedConnector())
+      self.connect(self.ws2812bArray.dout, self.led_pixel.din)
+
+
+    # MOTORS AND SERVOS
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.motor_driver1 = imp.Block(Drv8833())
+      self.connect(self.vbatt, self.motor_driver1.pwr)
+      self.connect(self.mcu.gpio.allocate('motor_1a1'), self.motor_driver1.ain1)
+      self.connect(self.mcu.gpio.allocate('motor_1a2'), self.motor_driver1.ain2)
+      self.connect(self.mcu.gpio.allocate('motor_1b1'), self.motor_driver1.bin1)
+      self.connect(self.mcu.gpio.allocate('motor_1b2'), self.motor_driver1.bin2)
+
+      self.m1_a = self.Block(MotorConnector())
+      self.connect(self.m1_a.a, self.motor_driver1.aout1)
+      self.connect(self.m1_a.b, self.motor_driver1.aout2)
+      self.m1_b = self.Block(MotorConnector())
+      self.connect(self.m1_b.a, self.motor_driver1.bout1)
+      self.connect(self.m1_b.b, self.motor_driver1.bout2)
+
+      self.motor_driver2 = imp.Block(Drv8833())
+      self.connect(self.vbatt, self.motor_driver2.pwr)
+      self.connect(self.mcu.gpio.allocate('motor_2a1'), self.motor_driver2.ain1)
+      self.connect(self.mcu.gpio.allocate('motor_2a2'), self.motor_driver2.ain2)
+      self.connect(self.mcu.gpio.allocate('motor_2b1'), self.motor_driver2.bin1)
+      self.connect(self.mcu.gpio.allocate('motor_2b2'), self.motor_driver2.bin2)
+      self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
+
+      self.m2_a = self.Block(MotorConnector())
+      self.connect(self.m2_a.a, self.motor_driver2.aout1)
+      self.connect(self.m2_a.b, self.motor_driver2.aout2)
+      self.m2_b = self.Block(MotorConnector())
+      self.connect(self.m2_b.a, self.motor_driver2.bout1)
+      self.connect(self.m2_b.b, self.motor_driver2.bout2)
 
     self.servo = self.Block(PwmConnector())
     self.connect(self.vbatt, self.servo.pwr)
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.allocate('pwm'), self.servo.pwm)
-
-    # LED ARRAY
-    self.ws2812bArray = self.Block(Ws2812bArray(5))
-    self.connect(self.vbatt, self.ws2812bArray.vdd)
-    self.connect(self.gnd, self.ws2812bArray.gnd)
-    self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
-
-    # Additional LED Connector
-    self.led_pixel = self.Block(LedConnector())
-    self.connect(self.vbatt, self.led_pixel.vdd)
-    self.connect(self.gnd, self.led_pixel.gnd)
-    self.connect(self.mcu.gpio.allocate('ledConnector'), self.led_pixel.din)
 
     # Misc board
     self.lemur = self.Block(LemurLogo())
@@ -160,14 +184,14 @@ class RobotDriver2(JlcBoardTop):
           'i2c.sda=12',
 
           'lcd_cs=11',
-          'lcd_reset=10',
-          'lcd_dc=9',
+          # 'lcd_reset=10',
+          # 'lcd_dc=9',
           'spi.sck=8',
-          'spi.mosi=7',
+          # 'spi.mosi=7',
 
-          'ledArray=4',
+          # 'ledArray=4',
 
-          'isense=16',
+          'isense=4',  # use an input only pin
 
           'motor_2a1=26',
           'motor_2a2=27',
@@ -190,6 +214,7 @@ class RobotDriver2(JlcBoardTop):
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (Vl53l0x, Vl53l0xConnector),
         (TestPoint, TeRc),
+        (Speaker, ConnectorSpeaker),
       ],
     )
 

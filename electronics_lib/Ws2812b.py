@@ -50,7 +50,7 @@ class Ws2812bArray(GeneratorBlock):
         self.din = self.Port(DigitalSink.empty(), [Input])
         self.dout = self.Port(DigitalSource.empty(), optional=True)
         self.vdd = self.Port(VoltageSink.empty(), [Power])
-        self.gnd = self.Port(Ground.empty())
+        self.gnd = self.Port(Ground.empty(), [Common])
         self.generator(self.generate, count)
 
     def generate(self, count: int):
