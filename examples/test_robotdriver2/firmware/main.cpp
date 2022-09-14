@@ -17,16 +17,16 @@ const int motor2A2 = 16;
 const int motor2B1 = 5;
 const int motor2B2 = 17;
 
-const int ledArrayData = 36;
+// const int ledArrayData = 36;
 
 // const int lcdReset = 25;
 // const int lcdDc = 33;
 // const int lcdCs = 26;
 // const int lcdSpiSck = 32;
 // const int lcdSpiMosi = 35;
-Adafruit_SSD1306 display(128, 32,
-  35, 32,  // MOSI, SCK
-  33, 25, 26);  // DC, reset, CS
+// Adafruit_SSD1306 display(128, 32,
+//   35, 32,  // MOSI, SCK
+//   33, 25, 26);  // DC, reset, CS
 
 bool state = false;  // false=off, true=on
 bool displayInverted = false;  // false=off, true=on
@@ -54,18 +54,18 @@ void setup() {
   pinMode(motor2B1, OUTPUT);
   pinMode(motor2B2, OUTPUT);
 
-  if(!display.begin(SSD1306_SWITCHCAPVCC)) {
-    while(true) {
-      Serial.println(F("SSD1306 allocation failed"));
-    }    
-  }
-  display.clearDisplay();
+  // if(!display.begin(SSD1306_SWITCHCAPVCC)) {
+  //   while(true) {
+  //     Serial.println(F("SSD1306 allocation failed"));
+  //   }    
+  // }
+  // display.clearDisplay();
 
   // Test single pixel
-  display.drawPixel(10, 10, SSD1306_WHITE);
-  display.display();
+  // display.drawPixel(10, 10, SSD1306_WHITE);
+  // display.display();
 
-  analogWrite(motor1A1, 0.1);
+  analogWrite(motor1A1, 32);
   digitalWrite(motor1A2, 0);
 
 }
@@ -73,10 +73,10 @@ void setup() {
 void loop() {
   Serial.println("loop");
 
-  display.invertDisplay(displayInverted);
-  display.display();
+  // display.invertDisplay(displayInverted);
+  // display.display();
 
-  displayInverted = !displayInverted;
+  // displayInverted = !displayInverted;
 
   WiFiClient client = server.available();   // listen for incoming clients
   if (client) {
