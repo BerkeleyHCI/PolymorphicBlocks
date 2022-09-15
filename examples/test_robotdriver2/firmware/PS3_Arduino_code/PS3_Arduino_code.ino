@@ -17,26 +17,6 @@ const int resolution = 8; // range of [0-255]
 int player = 0;
 int battery = 0;
 
-void setMotor1A(int PWM) {    // range [0-255]
-
-    if (PWM > 0) 
-  {
-    digitalWrite(motor1A2, 0);
-    ledcWrite(0, abs(PWM));
-  }
-
-  else if (PWM < 0)
-  {
-    digitalWrite(motor1A1, 0);
-    ledcWrite(1, abs(PWM));
-  }
-  else
-  {
-    digitalWrite(motor1A1, 0);
-    digitalWrite(motor1A2, 0);
-  }
-}
-
 void notify()
 {
   //---------------------- Battery events ---------------------
@@ -51,6 +31,7 @@ void notify()
     else if ( battery == ps3_status_battery_shutdown ) Serial.println("SHUTDOWN");
     else Serial.println("UNDEFINED");
   }
+
 }
 
 void onConnect() {
@@ -74,21 +55,9 @@ void setup()
   ledcAttachPin(motor1A1, 0);
   ledcAttachPin(motor1A2, 1);
   ledcAttachPin(motor1B1, 2);
-  ledcAttachPin(motor1B2, 3);
-  ledcAttachPin(motor1A1, 4);
-  ledcAttachPin(motor2A2, 5);
-  ledcAttachPin(motor2B1, 6);
-  ledcAttachPin(motor2B2, 7);
 
   // configure LED PWM functionalitites
   ledcSetup(0, freq, resolution);
-  ledcSetup(1, freq, resolution);
-  ledcSetup(2, freq, resolution);
-  ledcSetup(3, freq, resolution);
-  ledcSetup(4, freq, resolution);
-  ledcSetup(5, freq, resolution);
-  ledcSetup(6, freq, resolution);
-  ledcSetup(7, freq, resolution);
 
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
@@ -102,26 +71,26 @@ void loop()
   if (!Ps3.isConnected())
     return;
 
-  if (Ps3.data.analog.stick.ly < 0)   // Pulling the stick up makes ly -> negative
-  {
-    digitalWrite(motor1A2, 0);
-    ledcWrite(0, abs(Ps3.data.analog.stick.ly / 2));
-    Serial.println("FORWARD");
-  }
+    if (Ps3.data.analog.stick.ly < 0)   // Pulling the stick up makes ly -> negative
+    {
+      digitalWrite(motor1A2, 0);
+      ledcWrite(0, abs(Ps3.data.analog.stick.ly / 2));
+      Serial.println("FORWARD");
+    }
 
-  else if (Ps3.data.analog.stick.ly > 0)
-  {
-    digitalWrite(motor1A1, 0);
-    ledcWrite(1, abs(Ps3.data.analog.stick.ly / 2));
-    Serial.println("BACKWARD");
-  }
-  else
-  {
-    digitalWrite(motor1A1, 0);
-    digitalWrite(motor1A2, 0);
-    Serial.println("BRAKE");
-  }
+    else if (Ps3.data.analog.stick.ly > 0)
+    {
+      digitalWrite(motor1A1, 0);
+      ledcWrite(1, abs(Ps3.data.analog.stick.ly / 2));
+      Serial.println("BACKWARD");
+    }
+    else
+    {
+      digitalWrite(motor1A1, 0);
+      digitalWrite(motor1A2, 0);
+      Serial.println("BRAKE");
+    }
 
 
-  delay(10);
+  delay(500);
 }
