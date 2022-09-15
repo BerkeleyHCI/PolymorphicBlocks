@@ -17,6 +17,46 @@ const int resolution = 8; // range of [0-255]
 int player = 0;
 int battery = 0;
 
+void setMotor1A (int PWM) {
+
+  if (PWM > 0)
+  {
+    digitalWrite(motor1A2, 0);
+    ledcWrite(0, abs(PWM));
+  }
+  else if (PWM < 0)
+  {
+    digitalWrite(motor1A1, 0);
+    ledcWrite(1, abs(PWM));
+  }
+  else
+  {
+    digitalWrite(motor1A1, 0);
+    digitalWrite(motor1A2, 0);
+  }
+  
+}
+
+void setMotor1B (int PWM) {
+
+  if (PWM > 0)
+  {
+    digitalWrite(motor1B2, 0);
+    ledcWrite(2, abs(PWM));
+  }
+  else if (PWM < 0)
+  {
+    digitalWrite(motor1B1, 0);
+    ledcWrite(3, abs(PWM));
+  }
+  else
+  {
+    digitalWrite(motor1B1, 0);
+    digitalWrite(motor1B2, 0);
+  }
+  
+}
+
 void notify()
 {
   //---------------------- Battery events ---------------------
@@ -71,25 +111,25 @@ void loop()
   if (!Ps3.isConnected())
     return;
 
-    if (Ps3.data.analog.stick.ly < 0)   // Pulling the stick up makes ly -> negative
-    {
-      digitalWrite(motor1A2, 0);
-      ledcWrite(0, abs(Ps3.data.analog.stick.ly / 2));
-      Serial.println("FORWARD");
-    }
+  if (Ps3.data.analog.stick.ly < 0)   // Pulling the stick up makes ly -> negative
+  {
+    digitalWrite(motor1A2, 0);
+    ledcWrite(0, abs(Ps3.data.analog.stick.ly / 2));  // Analog stick ranges from [-128,127] i think
+    Serial.println("FORWARD");
+  }
 
-    else if (Ps3.data.analog.stick.ly > 0)
-    {
-      digitalWrite(motor1A1, 0);
-      ledcWrite(1, abs(Ps3.data.analog.stick.ly / 2));
-      Serial.println("BACKWARD");
-    }
-    else
-    {
-      digitalWrite(motor1A1, 0);
-      digitalWrite(motor1A2, 0);
-      Serial.println("BRAKE");
-    }
+  else if (Ps3.data.analog.stick.ly > 0)
+  {
+    digitalWrite(motor1A1, 0);
+    ledcWrite(1, abs(Ps3.data.analog.stick.ly / 2));
+    Serial.println("BACKWARD");
+  }
+  else
+  {
+    digitalWrite(motor1A1, 0);
+    digitalWrite(motor1A2, 0);
+    Serial.println("BRAKE");
+  }
 
 
   delay(500);
