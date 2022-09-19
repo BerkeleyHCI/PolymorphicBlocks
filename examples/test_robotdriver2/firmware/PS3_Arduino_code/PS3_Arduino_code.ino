@@ -22,6 +22,11 @@ int turn = 0;
 int left_PWM = 0;
 int right_PWM = 0;
 
+// PWM acceleration
+const int acceleration = 5;
+int prev_left_PWM;
+int prev_right_PWM;
+
 int limitPWM (int PWM) {
 
   if (abs(PWM) > 255)
@@ -32,6 +37,17 @@ int limitPWM (int PWM) {
   {
     return 0;
   }
+}
+
+void applyAccleration (int *PWM, int *prev_PWM) {
+
+  if (abs(*PWM - *prev_PWM) > acceleration)
+  {
+    *PWM = *PWM + acceleration * (*PWM - *prev_PWM) / abs(*PWM - *prev_PWM);
+  }
+
+  *prev_PWM = *PWM;
+
 }
 
 void setMotor1A (int PWM) {
@@ -135,11 +151,14 @@ void loop()
   if (!Ps3.isConnected())
     return;
 
-  forward = -1 * Ps3.data.analog.stick.ly;
+  forward = Ps3.data.analog.stick.ly;
   turn = Ps3.data.analog.stick.lx;
 
-  left_PWM = (forward + turn) / 4;
-  right_PWM = (forward - turn) / 4;
+  left_PWM = (forward + turn) / 3;
+  right_PWM = (forward - turn) / 3;
+
+  applyAccleration(&left_PWM, &prev_left_PWM);
+  applyAccleration(&right_PWM, &prev_right_PWM);
 
   setMotor1A(left_PWM);
   setMotor1B(right_PWM);
