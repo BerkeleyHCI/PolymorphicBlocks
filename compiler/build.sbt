@@ -1,10 +1,10 @@
-import scalapb.compiler.Version.{scalapbVersion}
+import scalapb.compiler.Version.scalapbVersion
 
 name := "edg-compiler"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.13.4"
+scalaVersion := "2.13.8"
 
 scalacOptions += "-deprecation"
 

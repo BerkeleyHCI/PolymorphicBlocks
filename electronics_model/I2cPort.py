@@ -14,6 +14,9 @@ class I2cLink(Link):
     self.master = self.Port(I2cMaster(DigitalBidir.empty()))
     self.devices = self.Port(Vector(I2cSlave(DigitalBidir.empty())))
 
+    self.addresses = self.Parameter(ArrayIntExpr(self.devices.flatten(lambda x: x.addresses)))
+    self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
+
     # this is assigned by some bridges, otherwise left uninitialized
     self.has_pull = self.Parameter(BoolExpr(self.pull.is_connected()))
     self.pull_scl_voltage = self.pull.scl.voltage_out
@@ -55,7 +58,8 @@ class I2cMaster(Bundle[I2cLink]):
 
 
 class I2cSlave(Bundle[I2cLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+  def __init__(self, model: Optional[DigitalBidir] = None, addresses: ArrayIntLike = []) -> None:
+    """Addresses specified excluding the R/W bit (as a 7-bit number)"""
     super().__init__()
     self.link_type = I2cLink
     self.bridge_type = I2cSlaveBridge
@@ -66,14 +70,16 @@ class I2cSlave(Bundle[I2cLink]):
     self.sda = self.Port(model)
 
     self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies
+    self.addresses = self.Parameter(ArrayIntExpr(addresses))
 
 
 class I2cSlaveBridge(PortBridge):
   def __init__(self) -> None:
     super().__init__()
 
-    self.outer_port = self.Port(I2cSlave(DigitalBidir.empty()))
+    self.outer_port = self.Port(I2cSlave.empty())
     self.inner_link = self.Port(I2cMaster(DigitalBidir.empty(), self.outer_port.link().has_pull))
+    self.outer_port.init_from(I2cSlave(DigitalBidir.empty(), self.inner_link.link().addresses))
 
   def contents(self) -> None:
     super().contents()

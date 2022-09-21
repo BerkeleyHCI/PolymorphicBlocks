@@ -140,6 +140,11 @@ message UnarySetExpr {
 
      Pointwise Invert */
     INVERT = 21;
+
+    // Flatten[A] : Set[Set[A]] -> Set[A]
+    // Given an array of array of elements, flattens the inner array.
+    // Alternatively stated, concatenates all of the elements of the outer arrary
+    FLATTEN = 30;
   }
   Op op = 1;
   ValueExpr vals = 4;
@@ -269,6 +274,11 @@ message BinarySetExpr {
              :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
      */
     MULT = 12;
+
+    // String concatenate operator
+    // Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
+    //             : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
+    CONCAT = 20;
   }
   Op op = 1;
   ValueExpr lhset = 2;
