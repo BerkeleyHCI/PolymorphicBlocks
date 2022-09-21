@@ -20,6 +20,7 @@ public:
     digitalWrite(out1_, 0);
     digitalWrite(out2_, 0);
     ledcSetup(ledc_, kPwmFreq, kPwmBits);
+    ledcWrite(ledc_, 0);
     ledcAttachPin(out1_, ledc_);  
   }
 
@@ -56,11 +57,6 @@ LedcMotor motor2B(5, 17, 3);
 // PWM Properties
 int player = 0;
 int battery = 0;
-
-int forward = 0;
-int turn = 0;
-int left_PWM = 0;
-int right_PWM = 0;
 
 // PWM acceleration
 const int acceleration = 5;
@@ -133,12 +129,12 @@ void setup()
 }
 
 void loop() {
-  if (!Ps3.isConnected()) {
-    forward = Ps3.data.analog.stick.ly;
-    turn = Ps3.data.analog.stick.lx;
+  if (Ps3.isConnected()) {
+    int forward = Ps3.data.analog.stick.ly;
+    int turn = Ps3.data.analog.stick.lx;
 
-    left_PWM = forward * 3 / 2 + turn;
-    right_PWM = forward * 3 / 2 - turn;
+    int left_PWM = forward * 3 / 2 + turn;
+    int right_PWM = forward * 3 / 2 - turn;
 
     applyAccleration(&left_PWM, &prev_left_PWM);
     applyAccleration(&right_PWM, &prev_right_PWM);
@@ -146,21 +142,20 @@ void loop() {
     motor1A.setPwm(limitPwm(left_PWM));
     motor1B.setPwm(limitPwm(right_PWM));
 
-    up = Ps3.data.analog.stick.ry;
-    roll = Ps3.data.analog.stick.rx;
+    int up = Ps3.data.analog.stick.ry;
+    int roll = Ps3.data.analog.stick.rx;
 
-    left_up_PWM = up * 3 / 2 + roll;
-    right_up_PWM = up * 3 / 2 - roll;
+    int left_up_PWM = up * 3 / 2 + roll;
+    int right_up_PWM = up * 3 / 2 - roll;
 
     applyAccleration(&left_up_PWM, &prev_left_up_PWM);
     applyAccleration(&right_up_PWM, &prev_right_up_PWM);
 
-    Serial.printf("Motors: % 3i % 3i    % 3i % 3i\n", left_PWM, right_PWM, left_up_PWM, right_up_PWM);
     motor2A.setPwm(limitPwm(left_up_PWM));
     motor2B.setPwm(limitPwm(right_up_PWM));
-  }
 
-  delay(50);
+    Serial.printf("Motors: % 3i % 3i    % 3i % 3i\n", left_PWM, right_PWM, left_up_PWM, right_up_PWM);
+  }
 
   for (int j = 0; j < 5; j++) {
 		for (int i = 0; i < LEDS_COUNT; i++) {
@@ -168,6 +163,7 @@ void loop() {
 		}
     strip.show();
     Serial.printf("now at color %i\n", j);
-		delay(delayval);
 	}
+
+  delay(50);
 }
