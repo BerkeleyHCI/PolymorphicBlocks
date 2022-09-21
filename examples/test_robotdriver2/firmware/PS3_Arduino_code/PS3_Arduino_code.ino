@@ -71,7 +71,7 @@ int prev_left_PWM;
 int prev_right_PWM;
 
 
-const int kPwmLimit = 127;
+const int kPwmLimit = 191;
 
 int limitPwm (int pwm) {
   if (abs(pwm) > kPwmLimit) {
@@ -139,8 +139,8 @@ void loop() {
   forward = Ps3.data.analog.stick.ly;
   turn = Ps3.data.analog.stick.lx;
 
-  left_PWM = forward + turn;
-  right_PWM = forward - turn;
+  left_PWM = forward * 3 / 2 + turn;
+  right_PWM = forward * 3 / 2 - turn;
 
   applyAccleration(&left_PWM, &prev_left_PWM);
   applyAccleration(&right_PWM, &prev_right_PWM);
