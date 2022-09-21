@@ -229,12 +229,12 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
     val expectedLinkConstraints = Map(
       "sourceAExport" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
       "sourceBExport" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
-      "sinkAExport.0" -> Constraint.Exported(Ref("sinks", "0", "a"), Ref("a", "sinks", "0")),
-      "sinkAExport.1" -> Constraint.Exported(Ref("sinks", "1", "a"), Ref("a", "sinks", "1")),
-      "sinkAExport.2" -> Constraint.Exported(Ref("sinks", "2", "a"), Ref("a", "sinks", "2")),
-      "sinkBExport.0" -> Constraint.Exported(Ref("sinks", "0", "b"), Ref("b", "sinks", "0")),
-      "sinkBExport.1" -> Constraint.Exported(Ref("sinks", "1", "b"), Ref("b", "sinks", "1")),
-      "sinkBExport.2" -> Constraint.Exported(Ref("sinks", "2", "b"), Ref("b", "sinks", "2")),
+      "sinkAExport.0" -> Constraint.Exported(Ref("sinks", "0", "a"), Ref("a", "sinks", "0_0")),
+      "sinkAExport.1" -> Constraint.Exported(Ref("sinks", "1", "a"), Ref("a", "sinks", "0_1")),
+      "sinkAExport.2" -> Constraint.Exported(Ref("sinks", "2", "a"), Ref("a", "sinks", "0_2")),
+      "sinkBExport.0" -> Constraint.Exported(Ref("sinks", "0", "b"), Ref("b", "sinks", "0_0")),
+      "sinkBExport.1" -> Constraint.Exported(Ref("sinks", "1", "b"), Ref("b", "sinks", "0_1")),
+      "sinkBExport.2" -> Constraint.Exported(Ref("sinks", "2", "b"), Ref("b", "sinks", "0_2")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)

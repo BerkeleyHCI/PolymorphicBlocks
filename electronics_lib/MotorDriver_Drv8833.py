@@ -55,10 +55,10 @@ class Drv8833_Device(DiscreteChip, FootprintBlock, JlcPart):
       {
         '1': self.nsleep,
         '2': self.aout1,
-        # '3': self.aisen,  # TODO at some point
+        '3': self.gnd,  # AISEN
         '4': self.aout2,
         '5': self.bout2,
-        # '6': self.bisen,  # TODO at some point
+        '6': self.gnd,  # BISEN
         '7': self.bout1,
         # '8': self.nfault,  # TODO at some point
         '9': self.bin1,

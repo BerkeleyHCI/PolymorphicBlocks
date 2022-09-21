@@ -86,10 +86,6 @@ object ArrayValue {
     Some(builder.toList)
   }
 
-  def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[T]] = {
-    Some(vals.values)
-  }
-
   object Empty {
     def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Unit] = {
       if (vals.values.isEmpty) {
@@ -159,6 +155,12 @@ object ArrayValue {
     def apply(vals: ExprValue): Seq[String] = vals match {
       case ArrayValue.ExtractText(values) => values
       case _ => throw new ClassCastException("expr was not array of text")
+    }
+  }
+
+  object ExtractArray {
+    def unapply[T <: ExprValue](vals: ArrayValue[T]): Option[Seq[Seq[ExprValue]]] = seqMapOption(vals.values) {
+      case ArrayValue(elts) => elts
     }
   }
 }

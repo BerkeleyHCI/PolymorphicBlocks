@@ -173,7 +173,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Seq("a", "b", "c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
-      compiler.getValue(IndirectDesignPath() + s"source" + "port" + elementIndex + IndirectStep.IsConnected) should
+      compiler.getValue(IndirectDesignPath() + "source" + "port" + elementIndex + IndirectStep.IsConnected) should
           equal(Some(BooleanValue(true)))
     }
     Seq("0", "1").foreach { sinkIndex =>
@@ -370,12 +370,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "source1Connect.a" -> Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
       "source1Connect.b" -> Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
       "source1Connect.c" -> Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
-      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "0"), Ref("link0", "sinks", "0", "a")),
-      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "1"), Ref("link0", "sinks", "0", "b")),
-      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "2"), Ref("link0", "sinks", "0", "c")),
-      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "3"), Ref("link1", "sinks", "0", "a")),
-      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "4"), Ref("link1", "sinks", "0", "b")),
-      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "5"), Ref("link1", "sinks", "0", "c")),
+      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "0_a"), Ref("link0", "sinks", "0", "a")),
+      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "0_b"), Ref("link0", "sinks", "0", "b")),
+      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "0_c"), Ref("link0", "sinks", "0", "c")),
+      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "1_a"), Ref("link1", "sinks", "0", "a")),
+      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "1_b"), Ref("link1", "sinks", "0", "b")),
+      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "1_c"), Ref("link1", "sinks", "0", "c")),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -390,11 +390,11 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     // Don't need to test ELEMENTS, that is out of scope
     compiler.getValue(IndirectDesignPath() + "sink" + "port" + IndirectStep.Allocated) should
         equal(Some(ArrayValue(Seq(
-          TextValue("0"), TextValue("1"), TextValue("2"),
-          TextValue("3"), TextValue("4"), TextValue("5")
+          TextValue("0_a"), TextValue("0_b"), TextValue("0_c"),
+          TextValue("1_a"), TextValue("1_b"), TextValue("1_c")
         ))))
 
-    Seq("0", "1", "2", "3", "4", "5").foreach { elementIndex =>
+    Seq("0_a", "0_b", "0_c", "1_a", "1_b", "1_c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
     }

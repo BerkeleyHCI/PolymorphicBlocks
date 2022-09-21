@@ -6,7 +6,8 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.{CompilerTestUtil, wir}
-import edg.wir.{IndirectDesignPath, IndirectStep}
+import edg.wir.{EdgirLibrary, IndirectDesignPath, IndirectStep, Refinements}
+import org.scalatest.exceptions.TestFailedException
 
 
 /** Tests compiler parameter and expression evaluation using ASSIGN constraints.
@@ -374,5 +375,47 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "ifUndef") should equal(None)
     compiler.getValue(IndirectDesignPath() + "ifTrue") should equal(Some(IntValue(45)))
     compiler.getValue(IndirectDesignPath() + "ifFalse") should equal(Some(IntValue(45)))
+  }
+
+  "Compiler on design with true assertions" should "not fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      constraints = Map(
+        "requireTrue" -> ValueExpr.Literal(true),
+      )
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+  }
+
+  "Compiler on design with false assertions" should "fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      constraints = Map(
+        "requireFalse" -> ValueExpr.Literal(false),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
+    val compiled = compiler.compile()
+    val assertionErrors = new DesignAssertionCheck(compiler).map(compiled)
+    assertionErrors.size shouldBe 1
+    assertionErrors.head.getClass shouldBe classOf[CompilerError.FailedAssertion]
+
+    an [TestFailedException] should be thrownBy testCompile(inputDesign, library)  // test the test helper code
+  }
+
+  "Compiler on design with missing assertions" should "fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      params = Map(
+        "missing" -> ValInit.Boolean,
+      ),
+      constraints = Map(
+        "requireMissing" -> ValueExpr.Ref("missing"),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
+    val compiled = compiler.compile()
+    val assertionErrors = new DesignAssertionCheck(compiler).map(compiled)
+    assertionErrors.size shouldBe 1
+    assertionErrors.head.getClass shouldBe classOf[CompilerError.MissingAssertion]
+
+    an [TestFailedException] should be thrownBy testCompile(inputDesign, library)  // test the test helper code
   }
 }

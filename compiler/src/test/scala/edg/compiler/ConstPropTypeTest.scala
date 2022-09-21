@@ -10,6 +10,8 @@ import edg.ExprBuilder._
 class ConstPropTypeTest extends AnyFlatSpec {
   behavior of "ConstProp with types and declarations"
 
+  import ConstPropImplicit._
+
   it should "getUnsolved of declared types" in {
     val constProp = new ConstProp()
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
@@ -21,7 +23,7 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
+    constProp.addAssignExpr(IndirectDesignPath() + "a",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
@@ -29,26 +31,14 @@ class ConstPropTypeTest extends AnyFlatSpec {
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "b", DesignPath(),
+    constProp.addAssignExpr(IndirectDesignPath() + "b",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
       DesignPath() + "c",
     ))
 
-    constProp.addAssignment(IndirectDesignPath() + "c", DesignPath(),
-      ValueExpr.Literal(1)
-    )
-    constProp.getUnsolved should equal(Set())
-  }
-
-  it should "getUnsolved ignoring indirect paths" in {
-    val constProp = new ConstProp()
-    constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
-    constProp.addAssignment(IndirectDesignPath() + "a", DesignPath(),
-      ValueExpr.Literal(1)
-    )
-    constProp.addAssignment(IndirectDesignPath() + "port" + IndirectStep.ConnectedLink + "param", DesignPath(),
+    constProp.addAssignExpr(IndirectDesignPath() + "c",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set())
