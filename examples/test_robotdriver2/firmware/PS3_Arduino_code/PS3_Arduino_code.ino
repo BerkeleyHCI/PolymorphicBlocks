@@ -1,5 +1,43 @@
 #include <Ps3Controller.h>
 
+
+class LedcMotor {
+public:
+  LedcMotor(int out1, int out2, int ledc) : out1_(out1), out2_(out2), ledc_(ledc) {
+  }
+
+  void setup() {
+    pinMode(out1_, OUTPUT);
+    pinMode(out2_, OUTPUT);
+    digitalWrite(out1_, 0);
+    digitalWrite(out2_, 0);
+    ledcSetup(ledc_, kPwmFreq, kPwmBits);
+    ledcAttachPin(out1_, ledc_);  
+  }
+
+  void setPwm(int pwm) {
+    if (pwm >= 0 && !fwdAttached_) {  // zero case just produces zero PWM
+      ledcDetachPin(out2_);
+      ledcAttachPin(out1_, ledc_);
+      fwdAttached_ = true;
+    } else if (pwm < 0 && fwdAttached_) {
+      ledcDetachPin(out1_);
+      ledcAttachPin(out2_, ledc_);
+      fwdAttached_ = false;
+    }
+
+    ledcWrite(ledc_, abs(pwm));
+  }
+
+protected:
+  const int out1_, out2_, ledc_;  // pin assignments for 1 and 2, and LEDC channel
+
+  const int kPwmFreq = 24000;  // fast enough to not brown out the motor drivers but out of audible range
+  const int kPwmBits = 8; // range of [0-255]
+
+  bool fwdAttached_ = true;  // is the forward direction was the last attached PWM configuration
+};
+
 // Motor Pins
 const int motor1A1 = 18;
 const int motor1A2 = 19;
@@ -10,9 +48,14 @@ const int motor2A2 = 16;
 const int motor2B1 = 5;
 const int motor2B2 = 17;
 
+LedcMotor motor1A(18, 19, 0);
+LedcMotor motor1B(22, 21, 1);
+LedcMotor motor2A(4, 16, 2);
+LedcMotor motor2B(5, 17, 3);
+
+
 // PWM Properties
-const int freq = 30000;
-const int resolution = 8; // range of [0-255]
+
 
 int player = 0;
 int battery = 0;
@@ -27,15 +70,16 @@ const int acceleration = 5;
 int prev_left_PWM;
 int prev_right_PWM;
 
-int limitPWM (int PWM) {
 
-  if (abs(PWM) > 255)
-  {
-    return 255 * PWM / abs(PWM);
-  }
-  else if (abs(PWM) < 15)
-  {
+const int kPwmLimit = 127;
+
+int limitPwm (int pwm) {
+  if (abs(pwm) > kPwmLimit) {
+    return kPwmLimit * (pwm / abs(pwm));
+  } else if (abs(pwm) < 15) {
     return 0;
+  } else {
+    return pwm;
   }
 }
 
@@ -50,51 +94,6 @@ void applyAccleration (int *PWM, int *prev_PWM) {
 
 }
 
-void setMotor1A (int PWM) {
-
-  Serial.println("Motor1A PWM:");
-  Serial.println(PWM);
-
-  if (PWM > 0)
-  {
-    digitalWrite(motor1A2, 0);
-    ledcWrite(0, abs(PWM));
-  }
-  else if (PWM < 0)
-  {
-    digitalWrite(motor1A1, 0);
-    ledcWrite(1, abs(PWM));
-  }
-  else
-  {
-    digitalWrite(motor1A1, 0);
-    digitalWrite(motor1A2, 0);
-  }
-
-}
-
-void setMotor1B (int PWM) {
-
-  Serial.println("Motor1B PWM:");
-  Serial.println(PWM);
-
-  if (PWM > 0)
-  {
-    digitalWrite(motor1B2, 0);
-    ledcWrite(2, abs(PWM));
-  }
-  else if (PWM < 0)
-  {
-    digitalWrite(motor1B1, 0);
-    ledcWrite(3, abs(PWM));
-  }
-  else
-  {
-    digitalWrite(motor1B1, 0);
-    digitalWrite(motor1B2, 0);
-  }
-
-}
 
 void notify()
 {
@@ -121,26 +120,10 @@ void setup()
 {
   Serial.begin(115200);
 
-  pinMode(motor1A1, OUTPUT);
-  pinMode(motor1A2, OUTPUT);
-  pinMode(motor1B1, OUTPUT);
-  pinMode(motor1B2, OUTPUT);
-  pinMode(motor2A1, OUTPUT);
-  pinMode(motor2A2, OUTPUT);
-  pinMode(motor2B1, OUTPUT);
-  pinMode(motor2B2, OUTPUT);
-
-  // Assign LED pins to a PWM channel
-  ledcAttachPin(motor1A1, 0);
-  ledcAttachPin(motor1A2, 1);
-  ledcAttachPin(motor1B1, 2);
-  ledcAttachPin(motor1B2, 3);
-
-  // configure LED PWM functionalitites
-  ledcSetup(0, freq, resolution);
-  ledcSetup(1, freq, resolution);
-  ledcSetup(2, freq, resolution);
-  ledcSetup(3, freq, resolution);
+  motor1A.setup();
+  motor1B.setup();
+  motor2A.setup();
+  motor2B.setup();
 
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
@@ -149,22 +132,22 @@ void setup()
   Serial.println("Ready.");
 }
 
-void loop()
-{
+void loop() {
   if (!Ps3.isConnected())
     return;
 
   forward = Ps3.data.analog.stick.ly;
   turn = Ps3.data.analog.stick.lx;
 
-  left_PWM = (forward + turn) / 2;
-  right_PWM = (forward - turn) / 2;
+  left_PWM = forward + turn;
+  right_PWM = forward - turn;
 
   applyAccleration(&left_PWM, &prev_left_PWM);
   applyAccleration(&right_PWM, &prev_right_PWM);
 
-  setMotor1A(left_PWM);
-  setMotor1B(right_PWM);
+  Serial.printf("Motors: %i %i\n", left_PWM, right_PWM);
+  motor1A.setPwm(limitPwm(left_PWM));
+  motor1B.setPwm(limitPwm(right_PWM));
 
   delay(50);
 }
