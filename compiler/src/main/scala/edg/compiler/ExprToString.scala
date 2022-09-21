@@ -88,11 +88,13 @@ class ExprToString() extends ValueExprMap[String] {
       def unapply(op: Op): Option[String] = op match {
         case Op.ADD => Some("+")
         case Op.MULT => Some("×")
+        case Op.CONCAT => None
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
     }
     object PrefixOp {
       def unapply(op: Op): Option[String] = op match {
+        case Op.CONCAT => Some("concat")
         case Op.ADD | Op.MULT => None
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
@@ -140,6 +142,7 @@ class ExprToString() extends ValueExprMap[String] {
       case Op.HULL => Some("hull")
       case Op.NEGATE => Some("negate")
       case Op.INVERT => Some("invert")
+      case Op.FLATTEN => Some("flatten")
       case Op.UNDEFINED | Op.Unrecognized(_) => None
     }
   }

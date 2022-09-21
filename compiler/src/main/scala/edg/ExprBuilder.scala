@@ -23,6 +23,12 @@ object ExprBuilder {
 
     def Literal(value: String): expr.ValueExpr = Literal(ExprBuilder.Literal.Text(value))
 
+    def Literal(value: Seq[lit.ValueLit]): expr.ValueExpr = Literal(ExprBuilder.Literal.Array(value))
+
+    def LiteralArrayText(value: Seq[String]): expr.ValueExpr = {
+      Literal(ExprBuilder.Literal.Array(value.map(ExprBuilder.Literal.Text)))
+    }
+
     def Literal(valueMin: Float, valueMax: Float): expr.ValueExpr =
       Literal(ExprBuilder.Literal.Range(valueMin, valueMax))
 
@@ -47,6 +53,10 @@ object ExprBuilder {
 
     def IfThenElse(cond: expr.ValueExpr, tru: expr.ValueExpr, fal: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.IfThenElse(expr.IfThenElseExpr(cond = Some(cond), tru = Some(tru), fal = Some(fal)))
+    )
+
+    def Array(elts: Seq[expr.ValueExpr]): expr.ValueExpr = expr.ValueExpr(
+      expr = expr.ValueExpr.Expr.Array(value=expr.ArrayExpr(elts))
     )
 
     object MapExtract {
