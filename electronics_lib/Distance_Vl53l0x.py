@@ -100,6 +100,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x):
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.allocate('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.allocate('4').adapt_to(i2c_io_model))
+    self.i2c.init_from(I2cSlave(DigitalBidir.empty(), []))
 
 
 class Vl53l0xApplication(Vl53l0x):
