@@ -138,6 +138,9 @@ void setup()
 
   // configure LED PWM functionalitites
   ledcSetup(0, freq, resolution);
+  ledcSetup(1, freq, resolution);
+  ledcSetup(2, freq, resolution);
+  ledcSetup(3, freq, resolution);
 
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
@@ -154,8 +157,8 @@ void loop()
   forward = Ps3.data.analog.stick.ly;
   turn = Ps3.data.analog.stick.lx;
 
-  left_PWM = (forward + turn) / 3;
-  right_PWM = (forward - turn) / 3;
+  left_PWM = (forward + turn) / 2;
+  right_PWM = (forward - turn) / 2;
 
   applyAccleration(&left_PWM, &prev_left_PWM);
   applyAccleration(&right_PWM, &prev_right_PWM);
