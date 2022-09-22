@@ -1,13 +1,93 @@
 #include <Ps3Controller.h>
 #include <Freenove_WS2812_Lib_for_ESP32.h>
+#include <PCF8574.h>
 
-#define LEDS_COUNT  5
-#define LEDS_PIN	15
-#define CHANNEL		0
+#define IDLE -1
+#define LEFT  1
+#define RIGHT	2
+#define FORWARD 3
+#define BACKWARD 4
 
-Freenove_ESP32_WS2812 strip = Freenove_ESP32_WS2812(LEDS_COUNT, LEDS_PIN, CHANNEL, TYPE_GRB);
-u8 m_color[5][3] = { {255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 255, 255}, {0, 0, 0} };
-int delayval = 250;
+// Freenove_ESP32_WS2812 strip = Freenove_ESP32_WS2812(LEDS_COUNT, LEDS_PIN, CHANNEL, TYPE_GRB);
+
+PCF8574 pcf8574(0x38, 12, 13);
+int expander_led0 = 4;
+int expander_led1 = 5;
+int expander_led2 = 6;
+int expander_led3 = 7;
+
+class NeoPixelArray{
+  public:
+    NeoPixelArray(int led_count, int mcu_pin) : LEDS_COUNT(led_count), LEDS_PIN(mcu_pin), CHANNEL(0) {
+      strip = Freenove_ESP32_WS2812(LEDS_COUNT, LEDS_PIN, CHANNEL, TYPE_GRB);
+      
+    }
+
+    void setup(){
+      strip.begin();
+      strip.setBrightness(10);
+
+      // start up with all lights red	
+      for (int i = 0; i < LEDS_COUNT; i++) {
+        strip.setLedColorData(i, 255, 0, 0);
+      }
+      strip.show();
+    }
+
+    void set_state(int state){
+      switch(state){
+
+        case LEFT: 
+          for (int j = 0; j < LEDS_COUNT; j++) {
+            for (int i = 0; i < LEDS_COUNT; i++) {
+              if(i == j)
+                strip.setLedColorData(i, 255, 95, 31);
+              else
+                strip.setLedColorData(i, 0, 0, 0);
+            }
+            strip.show();
+            delay(2);
+          } 
+          break;
+
+        case RIGHT: 
+          for (int j = LEDS_COUNT-1; j >= 0; j--) {
+            for (int i = LEDS_COUNT-1; i >= 0; i--) {
+              if(i == j)
+                strip.setLedColorData(i, 255, 95, 31);
+              else
+                strip.setLedColorData(i, 0, 0, 0);
+            }
+            strip.show();
+            delay(2);
+          } 
+          break;
+        
+        case 0: 
+          for (int j = 0; j < 255; j += 2) {
+            for (int i = 0; i < LEDS_COUNT; i++) {
+              strip.setLedColorData(i, strip.Wheel((i * 256 / LEDS_COUNT + j) & 255));
+            }
+            strip.show();
+            delay(2);
+          } 
+          break;
+
+        default:
+          for (int i = 0; i < LEDS_COUNT; i++) {
+            strip.setLedColorData(i, 0, 0, 0);
+          }
+          strip.show();
+      }
+    }    
+
+  protected:
+    Freenove_ESP32_WS2812 strip;  
+    const int LEDS_COUNT;
+    const int LEDS_PIN;
+    const int CHANNEL;
+
+};
 
 class LedcMotor {
 public:
@@ -67,6 +147,8 @@ int prev_right_up_PWM;
 
 const int kPwmLimit = 191;
 
+NeoPixelArray ledArray(5, 15);
+
 int limitPwm (int pwm) {
   if (abs(pwm) > kPwmLimit) {
     return kPwmLimit * (pwm / abs(pwm));
@@ -117,22 +199,49 @@ void setup()
   motor2A.setup();
   motor2B.setup();
 
+  ledArray.setup();
+
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
   Ps3.begin("b0:fc:36:5b:cf:08"); // Nathan's PS3 Controller
 
   Serial.println("Ready.");
-  
-  // LED Test
-  strip.begin();
-	strip.setBrightness(10);	
+
+  // Set pinMode to OUTPUT
+	pcf8574.pinMode(expander_led0, OUTPUT);
+  pcf8574.pinMode(expander_led1, OUTPUT);
+  pcf8574.pinMode(expander_led2, OUTPUT);
+  pcf8574.pinMode(expander_led3, OUTPUT);
+
+
+	Serial.print("Init pcf8574...");
+	if (pcf8574.begin()){
+		Serial.println("OK");
+	}else{
+		Serial.println("KO");
+	}
+
+  pcf8574.digitalWrite(expander_led0, HIGH);
+  pcf8574.digitalWrite(expander_led1, HIGH);
+  pcf8574.digitalWrite(expander_led2, HIGH);
+  pcf8574.digitalWrite(expander_led3, HIGH);
 }
+
 
 void loop() {
   if (Ps3.isConnected()) {
     int forward = Ps3.data.analog.stick.ly;
     int turn = Ps3.data.analog.stick.lx;
 
+    if(turn < 0){
+      ledArray.set_state(LEFT);
+    }
+    else if (turn > 0){
+      ledArray.set_state(RIGHT);
+    }
+    else{
+      ledArray.set_state(IDLE);
+    }
     int left_PWM = forward * 3 / 2 + turn;
     int right_PWM = forward * 3 / 2 - turn;
 
@@ -157,13 +266,8 @@ void loop() {
     Serial.printf("Motors: % 3i % 3i    % 3i % 3i\n", left_PWM, right_PWM, left_up_PWM, right_up_PWM);
   }
 
-  for (int j = 0; j < 5; j++) {
-		for (int i = 0; i < LEDS_COUNT; i++) {
-			strip.setLedColorData(i, m_color[j][0], m_color[j][1], m_color[j][2]);
-		}
-    strip.show();
-    Serial.printf("now at color %i\n", j);
-	}
-
+  else{
+    ledArray.set_state(0);
+  }
   delay(50);
 }
