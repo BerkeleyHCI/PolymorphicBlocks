@@ -778,16 +778,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 elaboratePending.addNode(resolveAllocateTask, Seq())
                 val expandArrayTasks = arrayConnects.map { case (allocated, constrName, constr) =>
                   val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                  val blockPortPostfix = constr.getConnectedArray.getBlockPort match {
-                    case ValueExpr.RefAllocate(blockPortPostfix, _) => blockPortPostfix
-                    case ValueExpr.Ref(blockPortPostfix) => blockPortPostfix
-                    case blockPort => throw new IllegalArgumentException(s"unknown block port $blockPort")
-                  }
-                  val blockArrayDep =  // block allocated connect must run first since it must be pre-expansion
-                    ElaborateRecord.ParamValue(path.asIndirect ++ blockPortPostfix + IndirectStep.Allocated)
                   elaboratePending.addNode(expandArrayTask, Seq(
                     ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements),
-                    blockArrayDep,
                     resolveAllocateTask))
                   expandArrayTask
                 }
