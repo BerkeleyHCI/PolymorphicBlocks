@@ -725,9 +725,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                   // because link ports elements are always defined by incoming connects, no waiting for elements
                   // is needed and the allocate can be rewritten here
                   block.mapConstraint(constrName) { constr =>
-                    constr.connectUpdateRef {
-                      case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                    constr.connectUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
+                      ValueExpr.Ref((portPostfix :+ allocatedName): _*)
                     }
                   }
                   allocatedName
@@ -773,10 +772,9 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                 val suggestedNames = arrayConnects.map { case (suggestedName, constrName, _) =>
                   val allocatedName = namer.name(suggestedName)
                   block.mapConstraint(constrName) { constr =>
-                      // similarly, to the regular link case, allocates can be rewritten here
-                    constr.arrayUpdateRef {
-                      case ValueExpr.RefAllocate(`portPostfix`, None) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                    // similarly, to the regular link case, allocates can be rewritten here
+                    constr.arrayUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, None) =>
+                      ValueExpr.Ref((portPostfix :+ allocatedName): _*)
                     }
                   }
                   allocatedName
