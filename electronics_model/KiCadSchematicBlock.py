@@ -1,13 +1,11 @@
 from kinparse import parse_netlist  # type: ignore
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor
-from electronics_model import Ohm
+from electronics_model import Ohm, Farad
 
 
 class KiCadSchematicBlock(Block):
-
     def import_kicad(self, filepath: str):
-
         netlist = parse_netlist(filepath)
 
         for part in netlist.parts:
@@ -15,6 +13,7 @@ class KiCadSchematicBlock(Block):
 
         for net_num, net in enumerate(netlist.nets):
             portlist = []
+
             for pin in net.pins:
                 component = getattr(self, pin.ref)
                 if isinstance(component, Resistor):
@@ -28,25 +27,23 @@ class KiCadSchematicBlock(Block):
                     else:
                         portlist.append(component.neg)
 
-            if hasattr(self, net.name):
-                portlist.append(getattr(self, net.name))
-                setattr(self, net.name + "_link", self.connect(*portlist))
-                # Because we can't have port and link with same name, append "_link" to port name
+            link_name = net.name + "_link"
 
-            elif net.name[0] == '/':
-                setattr(self, net.name[1:], self.connect(*portlist))
+            if link_name == '/':            # User-defined net labels prepend '/' to the label
+                link_name = link_name[1:]
 
-            else:
-                setattr(self, net.name, self.connect(*portlist))
-
+            setattr(self, link_name, self.connect(*portlist))
         return
 
     def make_block_from_mapping(self, part) -> Block:
-
         if part.desc == 'Unpolarized capacitor':
-            return self.Block(Capacitor())
-        if part.desc == 'Resistor':
+            if part.value == 'C':
+                raise ValueError("Capacitor must have defined capacitance")
+            else:
+                return self.Block(Capacitor(capacitance=int(part.value)*Farad(tol=0.05)))
+        elif part.desc == 'Resistor':
             if part.value == 'R':
-                return self.Block(Resistor())
+                raise ValueError("Resistor must have defined resistance")
             else:
                 return self.Block(Resistor(resistance=int(part.value)*Ohm(tol=0.05)))
+        return Block()

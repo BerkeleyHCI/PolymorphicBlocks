@@ -18,16 +18,6 @@ class KiCadBlock(KiCadSchematicBlock):
 
         self.import_kicad(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import.net"))
 
-class BlinkyExample(BoardTop):
-    def __init__(self):
-        super().__init__()
-
-        self.kicad = self.Block(KiCadBlock())
-        print("path = " + os.path.dirname(__file__))
-
-    def contents(self) -> None:
-        super().contents()
-
 
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_kicad(self):
