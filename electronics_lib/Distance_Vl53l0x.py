@@ -26,6 +26,7 @@ class Vl53l0x_Device(DiscreteChip, JlcPart, FootprintBlock):
     self.xshut = self.Port(DigitalSink.from_bidir(dio_model))
     self.gpio1 = self.Port(dio_model, optional=True)
 
+    # address not specified since they can be reassigned
     self.i2c = self.Port(I2cSlave(DigitalBidir(
       voltage_limits=(-0.5, 3.6),  # not referenced to Vdd!
       current_draw=(0, 0),

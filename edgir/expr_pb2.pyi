@@ -185,6 +185,12 @@ class UnarySetExpr(google.protobuf.message.Message):
         Pointwise Invert
         """
 
+        FLATTEN: UnarySetExpr._Op.ValueType  # 30
+        """Flatten[A] : Set[Set[A]] -> Set[A]
+        Given an array of array of elements, flattens the inner array.
+        Alternatively stated, concatenates all of the elements of the outer arrary
+        """
+
     class Op(_Op, metaclass=_OpEnumTypeWrapper):
         pass
 
@@ -272,6 +278,12 @@ class UnarySetExpr(google.protobuf.message.Message):
     :: Set (Range Float) -> Set (Range Float)
 
     Pointwise Invert
+    """
+
+    FLATTEN: UnarySetExpr.Op.ValueType  # 30
+    """Flatten[A] : Set[Set[A]] -> Set[A]
+    Given an array of array of elements, flattens the inner array.
+    Alternatively stated, concatenates all of the elements of the outer arrary
     """
 
 
@@ -546,6 +558,12 @@ class BinarySetExpr(google.protobuf.message.Message):
         :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
         """
 
+        CONCAT: BinarySetExpr._Op.ValueType  # 20
+        """String concatenate operator
+        Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
+                    : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
+        """
+
     class Op(_Op, metaclass=_OpEnumTypeWrapper):
         pass
 
@@ -562,6 +580,12 @@ class BinarySetExpr(google.protobuf.message.Message):
     :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
     :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
     :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+    """
+
+    CONCAT: BinarySetExpr.Op.ValueType  # 20
+    """String concatenate operator
+    Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
+                : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
     """
 
 

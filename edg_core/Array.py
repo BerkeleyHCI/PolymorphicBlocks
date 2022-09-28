@@ -30,6 +30,21 @@ class MapExtractBinding(Binding):
     return pb
 
 
+class FlattenBinding(Binding):
+  def __init__(self, elts: ConstraintExpr):
+    super().__init__()
+    self.elts = elts
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.elts]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
+    pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
+    return pb
+
+
 @non_library
 class BaseVector(BaseContainerPort):
   def _get_elt_sample(self) -> BasePort:
@@ -324,3 +339,10 @@ class Vector(BaseVector, Generic[VectorType]):
       raise TypeError(f"selector to hull(...) must return RangeExpr, got {param} of type {type(param)}")
 
     return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).hull()
+
+  ArrayType = TypeVar('ArrayType', bound=ArrayExpr)
+  def flatten(self, selector: Callable[[VectorType], ArrayType]) -> ArrayType:
+    param = selector(self._elt_sample)
+    assert isinstance(param, ArrayExpr), "selector to flatten must return ArrayExpr"
+    array_of_arrays = ArrayExpr.array_of_elt(param._elt_sample)._bind(MapExtractBinding(self, param))
+    return ArrayExpr.array_of_elt(param._elt_sample)._bind(FlattenBinding(array_of_arrays))  # type: ignore
