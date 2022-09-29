@@ -1,3 +1,5 @@
+from typing import Any
+
 from kinparse import parse_netlist  # type: ignore
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor
@@ -27,15 +29,19 @@ class KiCadSchematicBlock(Block):
                     else:
                         portlist.append(component.neg)
 
+            if hasattr(self, net.name):
+                portlist.append(getattr(self, net.name))
+
             link_name = net.name + "_link"
 
-            if link_name == '/':            # User-defined net labels prepend '/' to the label
+            if link_name[0] == '/':            # User-defined net labels prepend '/' to the label
                 link_name = link_name[1:]
 
             setattr(self, link_name, self.connect(*portlist))
         return
 
-    def make_block_from_mapping(self, part) -> Block:
+    def make_block_from_mapping(self, part: Any) -> Block:
+        # part is kinparse...
         if part.desc == 'Unpolarized capacitor':
             if part.value == 'C':
                 raise ValueError("Capacitor must have defined capacitance")

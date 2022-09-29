@@ -24,7 +24,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.pb = KiCadBlock()._elaborated_def_to_proto()
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1'
+        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1_link'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'C1'
@@ -32,7 +32,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, self.pb.constraints.values())
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1'
+        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1_link'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R2'
@@ -40,7 +40,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, self.pb.constraints.values())
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Net-(C1-Pad1)'
+        expected_conn.connected.link_port.ref.steps.add().name = 'Net-(C1-Pad1)_link'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R1'
@@ -48,7 +48,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, self.pb.constraints.values())
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Net-(C1-Pad1)'
+        expected_conn.connected.link_port.ref.steps.add().name = 'Net-(C1-Pad1)_link'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'C1'
@@ -56,7 +56,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, self.pb.constraints.values())
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'PORT_A_link'
+        expected_conn.connected.link_port.ref.steps.add().name = 'Net-(C1-Pad1)_link'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R2'
