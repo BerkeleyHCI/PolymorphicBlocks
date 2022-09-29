@@ -41,7 +41,7 @@ class KiCadSchematicBlock(Block):
         return
 
     def make_block_from_mapping(self, part: Any) -> Block:
-        # part is kinparse...
+        # part is schematic component from kinparse
         if part.desc == 'Unpolarized capacitor':
             if part.value == 'C':
                 raise ValueError("Capacitor must have defined capacitance")

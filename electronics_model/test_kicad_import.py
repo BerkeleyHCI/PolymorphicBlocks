@@ -64,17 +64,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, self.pb.constraints.values())
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'PORT_A_link'
-        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
-        expected_conn.connected.link_port.ref.steps.add().allocate = ''
-        expected_conn.connected.block_port.ref.steps.add().name = 'R1'
-        expected_conn.connected.block_port.ref.steps.add().name = 'a'
-        self.assertIn(expected_conn, self.pb.constraints.values())
-
-        expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'PORT_A_link'
-        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
-        expected_conn.connected.link_port.ref.steps.add().allocate = ''
-        expected_conn.connected.block_port.ref.steps.add().name = '(bridge)PORT_A'
-        expected_conn.connected.block_port.ref.steps.add().name = 'inner_link'
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'PORT_A'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'R1'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'a'
         self.assertIn(expected_conn, self.pb.constraints.values())
