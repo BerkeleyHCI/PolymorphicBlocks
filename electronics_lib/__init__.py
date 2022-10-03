@@ -1,25 +1,20 @@
 from electronics_abstract_parts import *
 
 from .JlcPart import JlcPart
-from .DigikeyPart import DigikeyTablePart
 
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .JlcResistorArray import JlcResistorArray
-from .DigikeyMlcc import DigikeyMlcc
 from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
-from .DigikeyInductor import DigikeyInductor
 from .JlcInductor import JlcInductor
 from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
 from .JlcLed import JlcLed
-from .DigikeyDiodes import DigikeySmtDiode, DigikeySmtZenerDiode
 from .JlcDiode import JlcDiode, JlcZenerDiode
-from .DigikeyFet import DigikeyFet, DigikeySwitchFet
-from .JlcFet import JlcFet
+from .JlcFet import JlcFet, JlcSwitchFet
+from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
-from .DigikeyCrystals import DigikeyCrystal
 from .JlcCrystal import JlcCrystal
 from .JlcSwitches import JlcSwitch
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1

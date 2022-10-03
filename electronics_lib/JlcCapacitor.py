@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Optional, Any, Dict
 import re
 
-from .DigikeyMlcc import *
+from electronics_abstract_parts import *
 from .JlcPart import JlcPart, JlcTablePart
 
 
