@@ -181,6 +181,8 @@ class TestDatalogger(BoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['pwr_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
         (['eink', 'boost_ind', 'frequency'], Range(0, 0)),
+        # JLC does not have gate voltage tolerance specs, and the inferred one is low
+        (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
       ]
     )
 
