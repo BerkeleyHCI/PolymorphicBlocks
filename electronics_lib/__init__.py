@@ -12,6 +12,7 @@ from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
 from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .JlcFet import JlcFet, JlcSwitchFet
+from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa
