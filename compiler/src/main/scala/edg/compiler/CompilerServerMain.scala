@@ -1,11 +1,48 @@
 package edg.compiler
 
-import edg.util.StreamUtils
+import edg.util.{Errorable, StreamUtils}
 import edgrpc.compiler.{compiler => edgcompiler}
 import edgrpc.compiler.compiler.{CompilerRequest, CompilerResult}
-import edg.wir.{IndirectDesignPath, Refinements}
+import edgrpc.hdl.{hdl => edgrpc}
+import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
+import edgir.elem.elem
+import edgir.ref.ref
+import edgir.schema.schema
 
 import java.io.{File, PrintWriter, StringWriter}
+
+
+// a PythonInterface that uses the on-event hooks to forward stderr and stdout
+// without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
+class ForwardingPythonInterface(serverFile: File)
+    extends PythonInterface(serverFile) {
+  def forwardProcessOutput(): Unit = {
+    StreamUtils.forAvailable(processOutputStream) { data =>
+      System.out.print(new String(data))
+      System.out.flush()
+    }
+    StreamUtils.forAvailable(processErrorStream) { data =>
+      System.err.print(new String(data))
+      System.err.flush()
+    }
+  }
+
+  override def onLibraryRequestComplete(element: ref.LibraryPath,
+                                        result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]): Unit = {
+    forwardProcessOutput()
+  }
+
+  override def onElaborateGeneratorRequestComplete(element: ref.LibraryPath,
+                                                   values: Map[ref.LocalPath, ExprValue],
+                                                   result: Errorable[elem.HierarchyBlock]): Unit = {
+    forwardProcessOutput()
+  }
+
+  override def onRunBackendComplete(backend: ref.LibraryPath,
+                                    result: Errorable[Map[DesignPath, String]]): Unit = {
+    forwardProcessOutput()
+  }
+}
 
 
 /** A Scala-based EDG compiler interface as a server.
@@ -42,7 +79,7 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val pyIf = new PythonInterface(new File("HdlInterfaceService.py"))  // use relative path
+    val pyIf = new ForwardingPythonInterface(new File("HdlInterfaceService.py"))  // use relative path
     val pyLib = new PythonInterfaceLibrary()
     pyLib.withPythonInterface(pyIf) {
       while (true) {
@@ -58,15 +95,7 @@ object CompilerServerMain {
             throw new NotImplementedError()  // provides a return type, shouldn't ever happen
         }
 
-        // forward stdout and stderr output
-        StreamUtils.forAvailable(pyIf.processOutputStream) { data =>
-          System.out.print(new String(data))
-          System.out.flush()
-        }
-        StreamUtils.forAvailable(pyIf.processErrorStream) { data =>
-          System.err.print(new String(data))
-          System.err.flush()
-        }
+        pyIf.forwardProcessOutput()  // in case the hooks didn't catch everything
 
         System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
         result.writeDelimitedTo(System.out)
