@@ -21,4 +21,4 @@ class InductorTestCase(unittest.TestCase):
     compiled = ScalaCompiler.compile(JlcInductorTestTop)
 
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Inductor_SMD:L_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'MGFL1608F2R2MT-LF')
+    self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'CMH160808B2R2MT')
