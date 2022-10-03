@@ -156,7 +156,7 @@ class E2154fs091(EInk):
                  self.vcom_cap.neg.adapt_to(Ground()))
 
     diode_model = Diode(
-      reverse_voltage=(0, 25)*Volt, current=(0, 2)*Amp, voltage_drop=(0, 0.4)*Volt,
+      reverse_voltage=(0, 25)*Volt, current=(0, 2)*Amp, voltage_drop=(0, 0.5)*Volt,
       reverse_recovery_time=(0, 500e-9)  # guess from Digikey's classification for "fast recovery"
     )
 

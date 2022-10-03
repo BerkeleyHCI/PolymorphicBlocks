@@ -8,15 +8,15 @@ class BaseBoardTop(DesignTop):
       class_refinements=[
         (Resistor, GenericChipResistor),
         (Capacitor, GenericMlcc),
-        (Inductor, DigikeyInductor),
+        (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),
-        (Diode, DigikeySmtDiode),
+        (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
+        (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
+        (Fet, JlcFet),  # TODO: replace with non-distributor parts list
+        (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
         (Led, SmtLed),
         (RgbLedCommonAnode, SmtRgbLed),
-        (ZenerDiode, DigikeySmtZenerDiode),
-        (Fet, DigikeyFet),
-        (SwitchFet, DigikeySwitchFet),
-        (Crystal, DigikeyCrystal),
+        (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
 
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 

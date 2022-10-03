@@ -109,6 +109,10 @@ class TestBlinkyFlattened(BoardTop):
         (['mcu'], Lpc1549_48),
         (['usb_reg'], Tps561201),
       ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['usb_reg', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
     )
 
 
@@ -189,6 +193,10 @@ class TestBlinkyComplete(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['usb_reg'], Tps561201),
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['usb_reg', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
       ],
     )
 
