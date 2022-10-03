@@ -42,7 +42,12 @@ class NewBlinkyBuck(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class NewBlinkyRefactored(BoardTop):
@@ -70,7 +75,12 @@ class NewBlinkyRefactored(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class Ref_Lf21215tmr_Device(FootprintBlock):
@@ -165,7 +175,12 @@ class NewBlinkyMagsense(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class NewBlinkyLightsense(BoardTop):
@@ -208,7 +223,12 @@ class NewBlinkyLightsense(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ], class_refinements=[
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+      class_refinements=[
         (Opamp, Mcp6001),
       ])
 
