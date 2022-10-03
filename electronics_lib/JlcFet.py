@@ -28,7 +28,7 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
                                  PartsTableUtil.parse_value(match.group(5), 'V')),
        TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'W')),
-       TableFet.GATE_CHARGE: Range.zero_to_upper(float('inf')),  # not specified, user must manually check
+       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
     # Some of them have the power entry later, for whatever reason
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
@@ -43,7 +43,7 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
                                  PartsTableUtil.parse_value(match.group(4), 'V')),
        TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(5), 'W')),
-       TableFet.GATE_CHARGE: Range.zero_to_upper(float('inf')),  # not specified, user must manually check
+       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
   ]
 
