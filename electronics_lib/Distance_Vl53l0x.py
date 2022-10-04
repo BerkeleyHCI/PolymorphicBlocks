@@ -1,5 +1,5 @@
 from electronics_abstract_parts import *
-from . import PassiveConnector
+from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
