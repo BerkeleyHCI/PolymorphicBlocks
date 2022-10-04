@@ -36,9 +36,10 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
 def compile_board_inplace(design: Type[Block]) -> CompiledDesign:
   """Compiles a board and writes the results in a sub-directory
   where the module containing the top-level is located"""
+  designfile = inspect.getfile(design)
   compiled = compile_board(
     design,
-    os.path.join(os.path.dirname(inspect.getfile(design)), design.__module__.split(".")[-1]),
+    os.path.join(os.path.dirname(designfile), os.path.splitext(designfile)[0]),
     design.__name__)
 
   return compiled
