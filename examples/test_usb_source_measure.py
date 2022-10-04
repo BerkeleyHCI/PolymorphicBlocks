@@ -408,8 +408,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'vmeas', 'amp'], Opa197),
         (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
-        (['control', 'driver', 'low_fet'], DigikeyFet),
-        (['control', 'driver', 'high_fet'], DigikeyFet),
+        (['control', 'driver', 'low_fet'], CustomFet),
+        (['control', 'driver', 'high_fet'], CustomFet),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -448,9 +448,13 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
+        (['control', 'driver', 'high_fet', 'part_spec'], 'SQJ148EP-T1_GE3'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
+        (['control', 'driver', 'low_fet', 'part_spec'], 'SQJ431EP-T1_GE3'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),

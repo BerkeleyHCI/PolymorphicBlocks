@@ -431,8 +431,8 @@ class MultimeterTest(JlcBoardTop):
         (['measure', 'res'], GenericChipResistor),
         (['spk', 'conn'], JstPhK),
 
-        (['driver', 'fet'], DigikeyFet),
-        (['driver', 'diode'], DigikeySmtDiode),
+        (['driver', 'fet'], CustomFet),
+        (['driver', 'diode'], CustomDiode),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -476,6 +476,11 @@ class MultimeterTest(JlcBoardTop):
 
         # pin footprints to re-select parts with newer parts tables
         (['driver', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['driver', 'fet', 'manufacturer_spec'], 'Infineon Technologies'),
+        (['driver', 'fet', 'part_spec'], 'BSR92PH6327XTSA1'),
+        (['driver', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
+        (['driver', 'diode', 'manufacturer_spec'], 'Micro Commercial Co'),
+        (['driver', 'diode', 'part_spec'], 'GS1G-LTP'),
         (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
         (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
         (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2

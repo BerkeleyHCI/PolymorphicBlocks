@@ -78,7 +78,7 @@ class TestSimon(BoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
-        driver = self.btn_drv[i] = imp.Block(HighSideSwitch(frequency=(0.1, 10) * kHertz))
+        driver = self.btn_drv[i] = imp.Block(HighSideSwitch(frequency=(0.1, 1) * kHertz))
         self.connect(self.mcu.gpio.allocate(f'btn_drv{i}'), driver.control)
         if i == 0:  # only one draws current, since we assume only one will be lit at any point in time
           self.connect(driver.output, self.btn[i].led_a)
@@ -110,6 +110,8 @@ class TestSimon(BoardTop):
           'btn_drv3=11',
           'btn_sw3=12',
         ]),
+        # JLC does not have frequency specs, must be checked TODO
+        (['pwr', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
       ],
       instance_refinements=[
         (['spk', 'conn'], JstPhK),
