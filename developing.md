@@ -1,20 +1,14 @@
 # Developer Documentation
 
-## Overview
 
+## Overview
 This project consists of two (and a half) major parts:
-- The frontend (user-facing) HDL, written in Python, living in `edg_core/`.
+- The frontend (user-facing) HDL, written in Python, living in the top-level folders like `edg_core/`.
+  This _elaborates_ user-written HDL into an internal hierarchical block-diagram representation on a block-by-block, single-level-deep basis.
   - This also includes the electronics model and libraries build atop the core, in `electronics_model/`, `electronics_abstract_parts/`, and `electronics_lib/`.
 - The compiler, written in Scala, living in `compiler/`.
-- And the intermediate representation (defining the core blocks, ports, links, and expressions model in a language-independent form), written in protobuf, living in `edgir/`.
-
-## Compiling the Compiler
-
-**This section is mandatory if building from source, we currently do not include pre-compiled compiler binaries.**
-
-1. [Download and install sbt](https://www.scala-sbt.org/download.html), a build tool or Scala.
-2. In the repository root directory, run `sbt assembly` to compile the compiler JAR file.
-   - The unit tests are written to look for the JAR file where sbt places outputs from assembly.
+  This _compiles_ together a whole design, starting at the top-level block and dropping in sub-blocks (recursively), invoking generators, and resolving parameters. 
+- The intermediate representation (defining the core hierarchical block diagram model - blocks, ports, links, and expressions - in a language-independent form), written in protobuf, living in `proto/`.
 
 
 ## Quick Reference Commands
@@ -24,22 +18,20 @@ This project has optional static typing annotations for Python which can be chec
 If you have mypy installed (you may also need the type stubs for protobuf: `pip install mypy-protobuf`), you can typecheck code using:
 
 ```
-mypy --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples
+mypy .
 ```
 
 Or faster, with mypy in daemon mode:
 ```
-dmypy run -- --follow-imports=error --check-untyped-defs -p edg_core -p electronics_model -p electronics_abstract_parts -p electronics_lib -p edg -p examples
+dmypy run -- --follow-imports=error .
 ```
 
-Or, using the [Mypy plugin for Intellij](https://plugins.jetbrains.com/plugin/13348-mypy-official-), but adding `--check-untyped-defs` to the [configuration](https://github.com/dropbox/mypy-PyCharm-plugin#configuration).
+Or, using the [Mypy plugin for Intellij](https://plugins.jetbrains.com/plugin/13348-mypy-official-).
 
 Note: since mypy currently doesn't infer return types (see mypy issue 4409), some defs might be incomplete, so the type check is leaky and we can't currently use `--disallow-incomplete-defs` or `--disallow-untyped-defs`.
 If that doesn't get resolved, we might go through and manually annotate all return types. 
 
 ### Unit testing
-**IMPORTANT**: this requires the [compiler JAR file to be compiled](#compiling-the-compiler).
-
 ```
 python -m unittest discover
 ```
@@ -49,12 +41,19 @@ Or, to run tests for a specific package (eg, `edg_core` in this command):
 python -m unittest discover -s edg_core -t .
 ```
 
-**PROTIP**: run both by combining the commands with `&&`
+**PROTIP**: run both static type checking and unit testing by combining the commands with `&&`
+
+### Compiling the Compiler
+A pre-compiled compiler JAR is included.
+If you have not modified any of the .scala files, you do not need to recompile the compiler.
+
+1. [Download and install sbt](https://www.scala-sbt.org/download.html), a build tool or Scala.
+2. In the `compiler/` folder, run `sbt assembly` to compile the compiler JAR file.
+   The system will automatically prefer the locally built JAR file over the pre-compiled JAR and indicate its use through the console.
+3. Optionally, to commit a new pre-compiled JAR, move the newly compiled JAR from `compiler/target/scala-*/edg-compiler-assembly-*-SNAPSHOT.jar` to `compiler/edg-compiler-precompiled.jar`.
 
 
-## Setup
-
-## Code Architecture
+## Frontend Architecture
 _Some documentation may be out of date._
 
 ### Core
