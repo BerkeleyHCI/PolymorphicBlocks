@@ -9,7 +9,7 @@ In conventional schematic tools, such a design could be a flat schematic, consis
 Many modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy1.png)
 In this example, the LED-resistor subcircuit is contained within a block, which can be manipulated as a unit, and exposes ports (circles on the diagram) while encapsulating internal pins.
-(note: in tools with this feature, the subcircuit is usually presented in its own sheet, instead of having its contents displayed in the block)
+(note: in mainstream schematic tools with this feature, the subcircuit is usually presented in its own sheet, instead of having its contents displayed in the block)
 
 Generalizing this model, components are blocks too, and component pins are also block ports:
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy2.png)
@@ -20,13 +20,16 @@ The main concepts our model extends on top of the simple hierarchy blocks above 
 For example, a digital IO, like `digital[0]` in the example above, would have parameters like input voltage tolerance, output voltage range, and logic thresholds.
 This allows for a more powerful design correctness check (think ERC++), and provides a foundation for generators.
 
-**Links** are connections between ports, which defines how parameters propagate between those ports and any constraints on them.
+**Generators** allow a block's internal contents to be constructed by code, possibly based on parameters on it and its ports.
+For example, the `IndicatorLed` block automatically sizes the resistor based on the input voltage on the `sig` pin, and the DC-DC converter block automatically sizes inductors and capacitors based on the target output voltage and current.
+
+Finally, in the internal model (mainly relevant for compiler writers and library builders), the connections between ports expand into **links** which defines how parameters propagate between those ports and any constraints on them.
 Continuing the digital IO example, the link would check the output thresholds against the input thresholds, and provide the worst-case voltage levels given all connected drivers.
 These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_full.png)
 
-Finally, **generators** allow a block's internal contents to be constructed by code, possibly based on parameters on it and its ports.
-For example, the `IndicatorLed` block might automatically size the resistor based on the input voltage on the `sig` pin, or a DC-DC converter might automatically size inductors and capacitors based on the expected output voltage and current.
+> In the user-facing HDL design model, links are inferred based on the types of connected ports and not explicit.
+> Being aware of links can be useful for debugging, but this is mainly relevant for compiler writers and library builders.
 
 We'll put these concepts into practice in the rest of this tutorial by building a variation of the blinky example above, then defining a custom part.
 
