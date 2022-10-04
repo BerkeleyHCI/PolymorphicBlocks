@@ -56,13 +56,13 @@ Circuit Design Features
   - ... including buck and boost converters that automatically run component sizing calculations.
   - ... including some analog circuits like resistive dividers, low-pass RCs, and certain opamp topologies.
 - Common subcircuit blocks that implement the datasheet application circuits:
-  - ... including microcontrollers, like the LPC1549 and STM32F103, and supporting manual (but checked) pin assignment.
+  - ... including microcontrollers, like STM32F103, ESP32 modules, and nRF52840 modules, and supporting manual (but checked) pin assignment.
   - ... including a USB Type C receptacle (USB 2.0 type), so you can't forget the CC pull-down resistors.
 
 Layout Integration Features
-- Stable netlists, allowing in-progress board layouts to be updated from modified HDL.
+- Stable netlists for KiCad 6.0, allowing in-progress board layouts to be updated from modified HDL.
   - Note: this depends on stable names in the HDL. We've got some thoughts for a more powerful version of this, though.
-- Support for hierarchy tools in [Kicad Action Plugins](https://github.com/MitjaNemec/Kicad_action_plugins), including layout save/restore and replicate. 
+  - Hierarchical support, including for KiCad's builtin Select Hierarchical Sheet and the [Replicate Layout plugin](https://github.com/MitjaNemec/ReplicateLayout).
 
 
 ## Setup
