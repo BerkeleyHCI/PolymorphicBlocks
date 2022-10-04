@@ -57,6 +57,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        pip install protobuf
+        pip install protobuf kinparse
     - name: unittest
       run: python -m unittest discover
+      
