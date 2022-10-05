@@ -17,19 +17,13 @@ class NewBlinkyOvervolt(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(IoController())
+    self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gpio.allocate(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
     self.usb = self.Block(UsbCReceptacle())
     self.connect(self.usb.pwr, self.mcu.pwr)
     self.connect(self.mcu.gnd, self.usb.gnd)
-
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      instance_refinements=[
-        (['mcu'], Stm32f103_48),
-      ])
 
 
 class NewBlinkyBuck(BoardTop):
@@ -303,6 +297,8 @@ class Ref_Bh1620fvc(Block):
 
 class BlinkyNewTestCase(unittest.TestCase):
   def test_design_broken(self) -> None:
+    with self.assertRaises(CompilerCheckError):
+      compile_board_inplace(NewBlinkyBasic)
     with self.assertRaises(CompilerCheckError):
       compile_board_inplace(NewBlinkyOvervolt)
 
