@@ -104,7 +104,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elt_sample = tpe._bind(self)
     self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
-    self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
+    self._requests: List[Tuple[Optional[str], BasePort]] = []  # used to track request / request_vector for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
     self._requested = ArrayStringExpr()._bind(AllocatedBinding(self))
@@ -138,7 +138,7 @@ class Vector(BaseVector, Generic[VectorType]):
       raise ValueError(f"no name for {subelt}")
     elif builder.get_enclosing_block() is block_parent._parent:
       # in block enclosing the block defining this port (allocate required)
-      for (i, (suggested_name, allocate_elt)) in enumerate(self._allocates):
+      for (i, (suggested_name, allocate_elt)) in enumerate(self._requests):
         if subelt is allocate_elt:
           if suggested_name is not None:
             return suggested_name
@@ -174,7 +174,7 @@ class Vector(BaseVector, Generic[VectorType]):
        (self._requested, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
       *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
-        for (suggested_name, elt) in self._allocates]
+        for (suggested_name, elt) in self._requests]
     )
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
@@ -237,7 +237,7 @@ class Vector(BaseVector, Generic[VectorType]):
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = type(self._tpe).empty()._bind(self)
-    self._allocates.append((suggested_name, allocated))
+    self._requests.append((suggested_name, allocated))
     return allocated
 
   @deprecated(reason="renamed to request_vector")
@@ -258,7 +258,7 @@ class Vector(BaseVector, Generic[VectorType]):
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = Vector(type(self._tpe).empty())._bind(self)
-    self._allocates.append((suggested_name, allocated))
+    self._requests.append((suggested_name, allocated))
     return allocated
 
   def length(self) -> IntExpr:
