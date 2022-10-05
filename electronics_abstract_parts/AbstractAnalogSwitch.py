@@ -30,7 +30,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
-    self.generator(self.generate, self.inputs.allocated(), switch_size)
+    self.generator(self.generate, self.inputs.requested(), switch_size)
 
   def generate(self, elts: List[str], switch_size: int):
     import math
@@ -63,11 +63,11 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
         for sw_port_i in range(switch_size):
           port_i = sw_i * switch_size + sw_port_i
           if port_i < len(ports):
-            self.connect(sw.inputs.allocate(str(sw_port_i)), ports[port_i])
+            self.connect(sw.inputs.request(str(sw_port_i)), ports[port_i])
         new_ports.append(sw.com)
 
         for (i, control_io) in enumerate(stage_control_ios):
-          self.connect(sw.control.allocate(str(i)), control_io)
+          self.connect(sw.control.request(str(i)), control_io)
 
       ports = new_ports
       switch_stage += 1
@@ -102,14 +102,14 @@ class AnalogMuxer(GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     )))
 
-    self.generator(self.generate, self.inputs.allocated())
+    self.generator(self.generate, self.inputs.requested())
 
   def generate(self, elts: List[str]):
     self.inputs.defined()
     for elt in elts:
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
-        self.device.inputs.allocate(elt).adapt_to(AnalogSink(
+        self.device.inputs.request(elt).adapt_to(AnalogSink(
           voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
           current_draw=self.out.link().current_drawn,
           impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
@@ -119,7 +119,7 @@ class AnalogMuxer(GeneratorBlock):
              output: Optional[Port[AnalogLink]] = None) -> 'AnalogMuxer':
     if inputs is not None:
       for i, input_port in enumerate(inputs):
-        cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.allocate(str(i)))
+        cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.request(str(i)))
     if output is not None:
       cast(Block, builder.get_enclosing_block()).connect(output, self.out)
     return self
@@ -142,14 +142,14 @@ class AnalogDemuxer(GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     )))
 
-    self.generator(self.generate, self.outputs.allocated())
+    self.generator(self.generate, self.outputs.requested())
 
   def generate(self, elts: List[str]):
     self.outputs.defined()
     for elt in elts:
       self.connect(
         self.outputs.append_elt(AnalogSource().empty(), elt),
-        self.device.inputs.allocate(elt).adapt_to(AnalogSource(
+        self.device.inputs.request(elt).adapt_to(AnalogSource(
           voltage_out=self.input.link().voltage,
           current_limits=self.device.analog_current_limits,  # this device only, voltages propagated
           impedance=self.input.link().source_impedance + self.device.analog_on_resistance
@@ -159,7 +159,7 @@ class AnalogDemuxer(GeneratorBlock):
                    outputs: Optional[List[Port[AnalogLink]]] = None) -> 'AnalogDemuxer':
     if outputs is not None:
       for i, output in enumerate(outputs):
-        cast(Block, builder.get_enclosing_block()).connect(output, self.outputs.allocate(str(i)))
+        cast(Block, builder.get_enclosing_block()).connect(output, self.outputs.request(str(i)))
     if input is not None:
       cast(Block, builder.get_enclosing_block()).connect(input, self.input)
     return self

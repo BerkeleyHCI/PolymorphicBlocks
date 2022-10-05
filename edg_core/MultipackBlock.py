@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+from deprecated import deprecated
 
 from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
@@ -55,7 +56,11 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
     clone._elt_sample = self._tpe._bind(parent)
     return clone
 
+  @deprecated(reason="renamed to request")
   def allocate(self, suggested_name: Optional[str] = None) -> PackedBlockAllocate:
+    return self.request(suggested_name)
+
+  def request(self, suggested_name: Optional[str] = None) -> PackedBlockAllocate:
     """External API, to request a new instance for an array element / packed part."""
     assert self._parent is not None, "no parent set, cannot allocate"
     return PackedBlockAllocate(self, suggested_name)
