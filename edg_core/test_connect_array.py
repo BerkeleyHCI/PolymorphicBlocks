@@ -17,11 +17,11 @@ class TestBlockSinkElasticArray(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.sinks = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.sinks.allocated())
+    self.generator(self.generate, self.sinks.requested())
 
-  def generate(self, allocateds: List[str]):
-    for allocated in allocateds:
-      self.sinks.append_elt(TestPortSink(), allocated)
+  def generate(self, requests: List[str]):
+    for request in requests:
+      self.sinks.append_elt(TestPortSink(), request)
 
 
 class ArrayConnectBlock(Block):
@@ -76,8 +76,8 @@ class ArrayAllocatedConnectBlock(Block):
     self.source1 = self.Block(TestBlockSourceFixedArray())
     self.source2 = self.Block(TestBlockSourceFixedArray())
     self.sink = self.Block(TestBlockSinkElasticArray())
-    self.test_net1 = self.connect(self.source1.sources, self.sink.sinks.allocate_vector())
-    self.test_net2 = self.connect(self.source2.sources, self.sink.sinks.allocate_vector())
+    self.test_net1 = self.connect(self.source1.sources, self.sink.sinks.request_vector())
+    self.test_net2 = self.connect(self.source2.sources, self.sink.sinks.request_vector())
 
 
 class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):

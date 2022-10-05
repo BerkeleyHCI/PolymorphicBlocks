@@ -13,13 +13,13 @@ class CanConnector(Connector):
     self.differential = self.Port(CanDiffPort().empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
-    self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
+    self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     )))
-    self.connect(self.gnd, self.conn.pins.allocate('3').adapt_to(GroundSource()))
-    self.connect(self.differential.canh, self.conn.pins.allocate('4').adapt_to(DigitalSource()))
-    self.connect(self.differential.canl, self.conn.pins.allocate('5').adapt_to(DigitalSource()))
+    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(GroundSource()))
+    self.connect(self.differential.canh, self.conn.pins.request('4').adapt_to(DigitalSource()))
+    self.connect(self.differential.canl, self.conn.pins.request('5').adapt_to(DigitalSource()))
 
 
 class TofArrayTest(JlcBoardTop):
@@ -65,23 +65,23 @@ class TofArrayTest(JlcBoardTop):
       self.mcu = imp.Block(IoController())
 
       (self.sw1, ), self.sw1_chain = self.chain(
-        imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+        imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
       # realistically it would be cleaner for the RGB to be separate, but this demonstrates packing
       (self.leds, ), self.leds_chain = self.chain(
-        imp.Block(IndicatorSinkLedArray(self.tof_count + 3)), self.mcu.gpio.allocate_vector('leds'))
+        imp.Block(IndicatorSinkLedArray(self.tof_count + 3)), self.mcu.gpio.request_vector('leds'))
 
       self.tof = imp.Block(Vl53l0xArray(self.tof_count))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
-        self.mcu.i2c.allocate('i2c'),
+        self.mcu.i2c.request('i2c'),
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
-      self.connect(self.mcu.gpio.allocate_vector('tof_xshut'), self.tof.xshut)
+      self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
-        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
       (self.tp_can, self.xcvr, self.can_esd), self.can_chain = self.chain(
-        self.mcu.can.allocate('can'), imp.Block(CanControllerTestPoint()),
+        self.mcu.can.request('can'), imp.Block(CanControllerTestPoint()),
         imp.Block(Sn65hvd230()), imp.Block(CanEsdDiode()), self.can.differential
       )
 
@@ -90,7 +90,7 @@ class TofArrayTest(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.tp_spk, self.spk_dac, self.tp_spk_in, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.gpio.allocate('spk'),
+        self.mcu.gpio.request('spk'),
         imp.Block(DigitalTestPoint()),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
         imp.Block(AnalogTestPoint()),
@@ -114,16 +114,16 @@ class TofArrayTest(JlcBoardTop):
 
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.res1.elements.allocate('0'), ['leds', 'led[0]', 'res'])
-    self.pack(self.res1.elements.allocate('1'), ['leds', 'led[1]', 'res'])
-    self.pack(self.res1.elements.allocate('2'), ['rgb', 'device', 'red_res'])
-    self.pack(self.res1.elements.allocate('3'), ['rgb', 'device', 'green_res'])
+    self.pack(self.res1.elements.request('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.res1.elements.request('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.res1.elements.request('2'), ['rgb', 'device', 'red_res'])
+    self.pack(self.res1.elements.request('3'), ['rgb', 'device', 'green_res'])
 
     self.res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.res2.elements.allocate('0'), ['rgb', 'device', 'blue_res'])
-    self.pack(self.res2.elements.allocate('1'), ['leds', 'led[2]', 'res'])
-    self.pack(self.res2.elements.allocate('2'), ['leds', 'led[3]', 'res'])
-    self.pack(self.res2.elements.allocate('3'), ['leds', 'led[4]', 'res'])
+    self.pack(self.res2.elements.request('0'), ['rgb', 'device', 'blue_res'])
+    self.pack(self.res2.elements.request('1'), ['leds', 'led[2]', 'res'])
+    self.pack(self.res2.elements.request('2'), ['leds', 'led[3]', 'res'])
+    self.pack(self.res2.elements.request('3'), ['leds', 'led[4]', 'res'])
 
     self.rgb = self.PackedBlock(IndicatorSinkPackedRgbLed())
     self.pack(self.rgb.red, ['leds', 'led[5]'])

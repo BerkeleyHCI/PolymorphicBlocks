@@ -29,25 +29,25 @@ class CanAdapter(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
-      (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.allocate('can'), imp.Block(Iso1050dub()))
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(Iso1050dub()))
 
-      (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw_usb'))
-      (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw_can'))
+      (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_usb'))
+      (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_can'))
 
       self.lcd = imp.Block(Qt096t_if09())
 
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_can = imp.Block(IndicatorSinkRgbLed())
 
-    self.connect(self.mcu.gpio.allocate('lcd_led'), self.lcd.led)
-    self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
-    self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
-    self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
-    self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
+    self.connect(self.mcu.gpio.request('lcd_led'), self.lcd.led)
+    self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
+    self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
+    self.connect(self.mcu.spi.request('lcd_spi'), self.lcd.spi)  # MISO unused
+    self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
 
-    self.connect(self.mcu.gpio.allocate_vector('rgb_usb'), self.rgb_usb.signals)
-    self.connect(self.mcu.gpio.allocate_vector('rgb_can'), self.rgb_can.signals)
+    self.connect(self.mcu.gpio.request_vector('rgb_usb'), self.rgb_usb.signals)
+    self.connect(self.mcu.gpio.request_vector('rgb_can'), self.rgb_can.signals)
 
     # Isolated CAN Domain
     # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
