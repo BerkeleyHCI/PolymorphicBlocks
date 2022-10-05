@@ -11,14 +11,14 @@ class NewBlinkyOvervolt(BoardTop):
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gpio.allocate(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
-    self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
-    self.connect(self.jack.pwr, self.mcu.pwr)
-    self.connect(self.mcu.gnd, self.jack.gnd)
+    self.usb = self.Block(UsbCReceptacle())
+    self.connect(self.usb.pwr, self.mcu.pwr)
+    self.connect(self.mcu.gnd, self.usb.gnd)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Stm32f103_48),
       ])
 
 
@@ -30,17 +30,17 @@ class NewBlinkyBuck(BoardTop):
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gpio.allocate(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
-    self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
-    self.connect(self.mcu.gnd, self.jack.gnd)
+    self.usb = self.Block(UsbCReceptacle())
+    self.connect(self.mcu.gnd, self.usb.gnd)
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-    self.connect(self.jack.pwr, self.buck.pwr_in)
-    self.connect(self.jack.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.connect(self.usb.gnd, self.buck.gnd)
     self.connect(self.mcu.pwr, self.buck.pwr_out)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Stm32f103_48),
         (['buck'], Tps561201),
       ],
       instance_values=[
@@ -54,14 +54,14 @@ class NewBlinkyRefactored(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
+    self.usb = self.Block(UsbCReceptacle())
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-    self.connect(self.jack.pwr, self.buck.pwr_in)
-    self.connect(self.jack.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.connect(self.usb.gnd, self.buck.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.jack.gnd, [Common]),
+        ImplicitConnect(self.usb.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -73,7 +73,7 @@ class NewBlinkyRefactored(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Stm32f103_48),
         (['buck'], Tps561201),
       ],
       instance_values=[
@@ -150,10 +150,10 @@ class NewBlinkyMagsense(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
+    self.usb = self.Block(UsbCReceptacle())
     self.buck = self.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-    self.vin = self.connect(self.jack.pwr, self.buck.pwr_in)
-    self.gnd = self.connect(self.jack.gnd, self.buck.gnd)
+    self.vin = self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.gnd = self.connect(self.usb.gnd, self.buck.gnd)
     self.v3v3 = self.connect(self.buck.pwr_out)
 
     with self.implicit_connect(
@@ -173,7 +173,7 @@ class NewBlinkyMagsense(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Stm32f103_48),
         (['buck'], Tps561201),
       ],
       instance_values=[
@@ -221,7 +221,7 @@ class NewBlinkyLightsense(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Stm32f103_48),
         (['buck'], Tps561201),
       ],
       instance_values=[
