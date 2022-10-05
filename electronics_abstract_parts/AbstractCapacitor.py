@@ -220,7 +220,7 @@ class DecouplingCapacitor(DiscreteApplication):
     self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
     self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
     self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
-      voltage_limits=self.cap.actual_voltage_rating + self.gnd.link().voltage,
+      voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
       current_draw=0*Amp(tol=0)
     )), [Power])
 
