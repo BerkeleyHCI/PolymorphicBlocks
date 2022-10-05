@@ -6,11 +6,14 @@ from edg import *
 class NewBlinkyBasic(BoardTop):
   def contents(self) -> None:
     super().contents()
+    self.led2 = self.Block(IndicatorLed())
 
+    self.usb = self.Block(UsbCReceptacle())
     self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gpio.allocate(), self.led.signal)
-    self.connect(self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.mcu.pwr)
+    self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.mcu.gpio.request(), self.led.signal)
 
 
 class NewBlinkyOvervolt(BoardTop):

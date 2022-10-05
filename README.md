@@ -66,11 +66,11 @@ Layout Integration Features
 
 
 ## Setup
-You will need a Python 3.7+ installation with the protobuf package and a recent Java JRE or JDK.
+You will need a Python 3.7+ installation with the `protobuf` and `kinparse` packages and a recent Java JRE or JDK.
 
 The packages can be installed using `pip`:
 ```python
-pip install protobuf
+pip install protobuf kinparse
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 
