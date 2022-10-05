@@ -3,6 +3,16 @@ import unittest
 from edg import *
 
 
+class NewBlinkyBasic(BoardTop):
+  def contents(self) -> None:
+    super().contents()
+
+    self.mcu = self.Block(Stm32f103_48())
+    self.led = self.Block(IndicatorLed())
+    self.connect(self.mcu.gpio.allocate(), self.led.signal)
+    self.connect(self.mcu.gnd, self.led.gnd)
+
+
 class NewBlinkyOvervolt(BoardTop):
   def contents(self) -> None:
     super().contents()
