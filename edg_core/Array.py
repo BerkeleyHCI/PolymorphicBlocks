@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 from typing import *
+from deprecated import deprecated
 
 import edgir
 from .Binding import LengthBinding, AllocatedBinding
@@ -106,7 +107,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._allocated = ArrayStringExpr()._bind(AllocatedBinding(self))
+    self._requested = ArrayStringExpr()._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -170,7 +171,7 @@ class Vector(BaseVector, Generic[VectorType]):
 
     return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
       [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
-       (self._allocated, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
+       (self._requested, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
       *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
         for (suggested_name, elt) in self._allocates]
@@ -218,7 +219,11 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elts[suggested_name] = tpe._bind(self)
     return self._elts[suggested_name]
 
+  @deprecated(reason="renamed to request")
   def allocate(self, suggested_name: Optional[str] = None) -> VectorType:
+    return self.request(suggested_name)
+
+  def request(self, suggested_name: Optional[str] = None) -> VectorType:
     """Returns a new port of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
@@ -235,7 +240,11 @@ class Vector(BaseVector, Generic[VectorType]):
     self._allocates.append((suggested_name, allocated))
     return allocated
 
+  @deprecated(reason="renamed to request_vector")
   def allocate_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
+    return self.request_vector(suggested_name)
+
+  def request_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
     """Returns a new dynamic-length, array-port slice of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
@@ -255,8 +264,12 @@ class Vector(BaseVector, Generic[VectorType]):
   def length(self) -> IntExpr:
     return self._length
 
+  @deprecated(reason="renamed to requested")
   def allocated(self) -> ArrayStringExpr:
-    return self._allocated
+    return self.requested()
+
+  def requested(self) -> ArrayStringExpr:
+    return self._requested
 
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
