@@ -12,7 +12,7 @@ class TestBlinkyBasic(BoardTop):
 
     self.led = self.Block(IndicatorLed())
     self.connect(self.mcu.gnd, self.led.gnd)
-    self.connect(self.mcu.gpio.allocate(), self.led.signal)
+    self.connect(self.mcu.gpio.request(), self.led.signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -32,8 +32,8 @@ class TestBlinkySimple(BoardTop):
       self.led = imp.Block(IndicatorLed())
       self.sw = imp.Block(DigitalSwitch())
 
-    self.connect(self.mcu.gpio.allocate(), self.led.signal)
-    self.connect(self.sw.out, self.mcu.gpio.allocate())
+    self.connect(self.mcu.gpio.request(), self.led.signal)
+    self.connect(self.sw.out, self.mcu.gpio.request())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -50,8 +50,8 @@ class TestBlinkySimpleChain(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.mcu.gnd, [Common]),
     ) as imp:
-      (self.led, ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
+      (self.led, ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -100,8 +100,8 @@ class TestBlinkyFlattened(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.led, ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
+      (self.led, ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -183,10 +183,10 @@ class TestBlinkyComplete(BoardTop):
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(8):
-        (self.led[i], ), _ = self.chain(self.mcu.gpio.allocate(), imp.Block(IndicatorLed()))
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
 
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate())
-      (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.adc.allocate())
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
+      (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.adc.request())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

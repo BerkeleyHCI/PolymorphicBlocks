@@ -127,8 +127,8 @@ class TopMultipackArrayDesign(DesignTop):
 
   def multipack(self):
     self.packed = self.Block(MultipackArrayBlockSink())
-    self.pack(self.packed.sinks.allocate('1'), ['sink1'])
-    self.pack(self.packed.sinks.allocate('2'), ['sink2', 'inner'])
+    self.pack(self.packed.sinks.request('1'), ['sink1'])
+    self.pack(self.packed.sinks.request('2'), ['sink2', 'inner'])
 
 
 class TopMultipackArrayDesignTestCase(unittest.TestCase):

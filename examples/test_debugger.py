@@ -85,27 +85,27 @@ class Debugger(BoardTop):
       self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
       self.rgb_tgt = imp.Block(IndicatorSinkRgbLed())
 
-    self.connect(self.mcu.usb.allocate(), self.usb.usb)
+    self.connect(self.mcu.usb.request(), self.usb.usb)
 
-    self.connect(self.mcu.gpio.allocate('target_reg_en'), self.target_reg.en)
+    self.connect(self.mcu.gpio.request('target_reg_en'), self.target_reg.en)
 
-    self.connect(self.mcu.gpio.allocate('target_swclk'), self.target_drv.swclk_in)  # TODO BMP uses pin 15
-    self.connect(self.mcu.gpio.allocate('target_swdio_out'), self.target_drv.swdio_out)
-    self.connect(self.mcu.gpio.allocate('target_swdio_in'), self.target_drv.swdio_in)
-    self.connect(self.mcu.gpio.allocate('target_reset'), self.target_drv.reset_in)
-    self.connect(self.mcu.gpio.allocate('target_swo'), self.target_drv.swo_out)
-    self.connect(self.mcu.gpio.allocate('target_tdi'), self.tdi_res.a.adapt_to(DigitalSource()))
+    self.connect(self.mcu.gpio.request('target_swclk'), self.target_drv.swclk_in)  # TODO BMP uses pin 15
+    self.connect(self.mcu.gpio.request('target_swdio_out'), self.target_drv.swdio_out)
+    self.connect(self.mcu.gpio.request('target_swdio_in'), self.target_drv.swdio_in)
+    self.connect(self.mcu.gpio.request('target_reset'), self.target_drv.reset_in)
+    self.connect(self.mcu.gpio.request('target_swo'), self.target_drv.swo_out)
+    self.connect(self.mcu.gpio.request('target_tdi'), self.tdi_res.a.adapt_to(DigitalSource()))
 
-    self.connect(self.mcu.gpio.allocate('lcd_led'), self.lcd.led)
-    self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
-    self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
-    self.connect(self.mcu.spi.allocate('lcd_spi'), self.lcd.spi)  # MISO unused
-    self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
+    self.connect(self.mcu.gpio.request('lcd_led'), self.lcd.led)
+    self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
+    self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
+    self.connect(self.mcu.spi.request('lcd_spi'), self.lcd.spi)  # MISO unused
+    self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
 
-    self.connect(self.mcu.gpio.allocate_vector('rgb_usb'), self.rgb_usb.signals)
-    self.connect(self.mcu.gpio.allocate_vector('rgb_tgt'), self.rgb_tgt.signals)
+    self.connect(self.mcu.gpio.request_vector('rgb_usb'), self.rgb_usb.signals)
+    self.connect(self.mcu.gpio.request_vector('rgb_tgt'), self.rgb_tgt.signals)
 
-    self.connect(self.mcu.gpio.allocate('sw_usb'), self.sw_usb.out)
+    self.connect(self.mcu.gpio.request('sw_usb'), self.sw_usb.out)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

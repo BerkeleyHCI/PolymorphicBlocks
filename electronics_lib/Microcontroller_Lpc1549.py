@@ -22,9 +22,9 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
     self.swd = self.Port(SwdTargetPort().empty())
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
+                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested(), self.can.requested(), self.swd.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -173,16 +173,16 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
   PART: str  # part name for footprint(...)
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+      (UartPort, uart_requests), (CanControllerPort, can_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -345,7 +345,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
+    self.generator(self.generate, self.can.requested(), self.usb.requested())
 
   def contents(self):
     super().contents()
@@ -378,8 +378,8 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
                                                 imp.Block(Lpc1549SwdPull()),
                                                 self.ic.swd)
 
-  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
-    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+  def generate(self, can_requested: List[str], usb_requested: List[str]) -> None:
+    if can_requested or usb_requested:  # tighter frequency tolerances from CAN and USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xtal)

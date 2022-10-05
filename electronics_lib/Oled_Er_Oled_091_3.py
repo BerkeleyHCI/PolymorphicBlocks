@@ -11,11 +11,11 @@ class Er_Oled_091_3_Device(DiscreteChip):
 
         self.conn = self.Block(Fpc050(length=15))
 
-        self.vcc = self.Export(self.conn.pins.allocate('15').adapt_to(VoltageSource(
+        self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9),
             current_limits=0*mAmp(tol=0)  # external draw not allowed, probably does 10-16mA
         )))
-        self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
+        self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
             voltage_limits=(1.65, 4)*Volt,  # use the absolute maximum upper limit to allow tolerance on 3.3v
             current_draw=(1, 300)*uAmp
         )))
@@ -23,11 +23,11 @@ class Er_Oled_091_3_Device(DiscreteChip):
         # and is needed to drive both Vbat and Vdd off of a common 3.3v supply
         # default of 3.3 is using SSD1306 datasheet v1.6, the panel datasheet is more restrictive
         self.vbat_min = self.Parameter(FloatExpr(3.3*Volt))
-        self.vbat = self.Export(self.conn.pins.allocate('5').adapt_to(VoltageSink(
+        self.vbat = self.Export(self.conn.pins.request('5').adapt_to(VoltageSink(
             voltage_limits=(self.vbat_min, 4.2*Volt),
             current_draw=(23, 29)*mAmp
         )))
-        self.vss = self.Export(self.conn.pins.allocate('6').adapt_to(Ground()), [Common])
+        self.vss = self.Export(self.conn.pins.request('6').adapt_to(Ground()), [Common])
 
         din_model = DigitalSink.from_supply(
             self.vss, self.vdd,
@@ -36,20 +36,20 @@ class Er_Oled_091_3_Device(DiscreteChip):
         )
 
         self.spi = self.Port(SpiSlave.empty())
-        self.connect(self.spi.sck, self.conn.pins.allocate('11').adapt_to(din_model))
-        self.connect(self.spi.mosi, self.conn.pins.allocate('12').adapt_to(din_model))
+        self.connect(self.spi.sck, self.conn.pins.request('11').adapt_to(din_model))
+        self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))
         self.spi.miso.not_connected()
 
-        self.dc = self.Export(self.conn.pins.allocate('10').adapt_to(din_model))
-        self.res = self.Export(self.conn.pins.allocate('9').adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.allocate('8').adapt_to(din_model))
+        self.dc = self.Export(self.conn.pins.request('10').adapt_to(din_model))
+        self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
+        self.cs = self.Export(self.conn.pins.request('8').adapt_to(din_model))
 
-        self.vcomh = self.Export(self.conn.pins.allocate('14'))
-        self.iref = self.Export(self.conn.pins.allocate('13'))
-        self.c2p = self.Export(self.conn.pins.allocate('1'))
-        self.c2n = self.Export(self.conn.pins.allocate('2'))
-        self.c1p = self.Export(self.conn.pins.allocate('3'))
-        self.c1n = self.Export(self.conn.pins.allocate('4'))
+        self.vcomh = self.Export(self.conn.pins.request('14'))
+        self.iref = self.Export(self.conn.pins.request('13'))
+        self.c2p = self.Export(self.conn.pins.request('1'))
+        self.c2n = self.Export(self.conn.pins.request('2'))
+        self.c1p = self.Export(self.conn.pins.request('3'))
+        self.c1n = self.Export(self.conn.pins.request('4'))
 
 
 class Er_Oled_091_3(Lcd, Block):

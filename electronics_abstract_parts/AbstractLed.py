@@ -234,9 +234,9 @@ class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
     self.blue_pwr = self.PackedExport(self.blue.pwr)
 
     self.pwr = self.Block(PackedVoltageSource())
-    self.connect(self.pwr.pwr_ins.allocate('red'), self.red_pwr)
-    self.connect(self.pwr.pwr_ins.allocate('green'), self.green_pwr)
-    self.connect(self.pwr.pwr_ins.allocate('blue'), self.blue_pwr)
+    self.connect(self.pwr.pwr_ins.request('red'), self.red_pwr)
+    self.connect(self.pwr.pwr_ins.request('green'), self.green_pwr)
+    self.connect(self.pwr.pwr_ins.request('blue'), self.blue_pwr)
 
     self.red_current = self.PackedParameter(self.red.current_draw)
     self.green_current = self.PackedParameter(self.green.current_draw)
@@ -245,6 +245,6 @@ class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
 
     self.device = self.Block(IndicatorSinkRgbLed(target_current))
     self.connect(self.device.pwr, self.pwr.pwr_out)
-    self.connect(self.device.signals.allocate('red'), self.red_sig)
-    self.connect(self.device.signals.allocate('green'), self.green_sig)
-    self.connect(self.device.signals.allocate('blue'), self.blue_sig)
+    self.connect(self.device.signals.request('red'), self.red_sig)
+    self.connect(self.device.signals.request('green'), self.green_sig)
+    self.connect(self.device.signals.request('blue'), self.blue_sig)

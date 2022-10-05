@@ -11,7 +11,7 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.allocated())
+    self.generator(self.generate, self.ports.requested())
 
   def generate(self, elements: List[str]) -> None:
     assert elements == ['0', 'named', '1'], f"bad elements {elements}"
@@ -28,9 +28,9 @@ class TestGeneratorElements(Block):
     self.source0 = self.Block(TestBlockSource(1.0))
     self.source1 = self.Block(TestBlockSource(1.0))
     self.source2 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate())
-    self.connect(self.source1.port, self.block.ports.allocate('named'))
-    self.connect(self.source2.port, self.block.ports.allocate())
+    self.connect(self.source0.port, self.block.ports.request())
+    self.connect(self.source1.port, self.block.ports.request('named'))
+    self.connect(self.source2.port, self.block.ports.request())
 
 
 class TestGeneratorPortVector(unittest.TestCase):
@@ -55,7 +55,7 @@ class GeneratorInnerBlockInvalid(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.allocated())
+    self.generator(self.generate, self.ports.requested())
 
   def generate(self, elements: List[str]) -> None:
     self.ports.append_elt(TestPortSink(), 'haha')
@@ -67,7 +67,7 @@ class TestGeneratorElementsInvalid(Block):
     self.block = self.Block(GeneratorInnerBlockInvalid())
 
     self.source0 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate('nope'))
+    self.connect(self.source0.port, self.block.ports.request('nope'))
 
 
 class TestGeneratorPortVectorInvalid(unittest.TestCase):
@@ -91,9 +91,9 @@ class GeneratorWrapperTest(Block):  # same as TestGeneratorElements, but creatin
     self.source0 = self.Block(TestBlockSource(1.0))
     self.source1 = self.Block(TestBlockSource(1.0))
     self.source2 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate())
-    self.connect(self.source1.port, self.block.ports.allocate('named'))
-    self.connect(self.source2.port, self.block.ports.allocate())
+    self.connect(self.source0.port, self.block.ports.request())
+    self.connect(self.source1.port, self.block.ports.request('named'))
+    self.connect(self.source2.port, self.block.ports.request())
 
 
 class TestGeneratorWrapper(unittest.TestCase):
@@ -137,7 +137,7 @@ class GeneratorArrayParamTop(Block):
 
     self.source = self.Block(TestBlockSource(1.0))
     self.connect(self.source.port,
-                 self.block.ports.allocate(), self.block.ports.allocate(), self.block.ports.allocate())
+                 self.block.ports.request(), self.block.ports.request(), self.block.ports.request())
 
 
 class TestGeneratorArrayParam(unittest.TestCase):

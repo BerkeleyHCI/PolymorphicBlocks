@@ -51,8 +51,8 @@ class TestBlockPortVectorConnect(Block):
     self.sink = self.Block(TestBlockPortVectorBase())
     self.source0 = self.Block(TestBlockSource())
     self.source1 = self.Block(TestBlockSource())
-    self.conn0 = self.connect(self.source0.source, self.sink.vector.allocate())
-    self.conn1 = self.connect(self.source1.source, self.sink.vector.allocate())
+    self.conn0 = self.connect(self.source0.source, self.sink.vector.request())
+    self.conn1 = self.connect(self.source1.source, self.sink.vector.request())
 
 
 class TestBlockPortVectorConstraint(TestBlockPortVectorBase):
