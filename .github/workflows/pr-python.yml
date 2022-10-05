@@ -40,7 +40,7 @@ jobs:
 
     - name: install mypy
       run: |
-        pip install mypy types-protobuf
+        pip install mypy types-protobuf types-Deprecated
     - name: mypy
       run: |
         mypy --install-types .
@@ -57,7 +57,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        pip install protobuf kinparse
+        pip install protobuf kinparse Deprecated
     - name: unittest
       run: python -m unittest discover
       
