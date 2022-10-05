@@ -319,6 +319,8 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
       self.connect(self.usb_pull.pwr, self.pwr)
       self.connect(usb_port, self.usb_pull.usb)
+    else:
+      self.usb.defined()
 
 
 class Stm32f103_48(Stm32f103Base):
