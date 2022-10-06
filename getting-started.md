@@ -142,11 +142,17 @@ self.led = self.Block(IndicatorLed())
 > `self.Block(...)` creates a sub-block in `self` (the current hierarchy block being defined).
 > It must be assigned to an instance variable (in this case, `mcu`), which is used as the name sub-block.
 
-> In the IDE, you can also search for relevant blocks in the Library Browser by typing in the Filter textbox:
-> ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
-> You can then instantiate the block at the current caret location by double-clicking the library entry, or right-clicking and choosing the Insert option.
+> You can also insert blocks through graphical operations in the IDE.
+> 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
+> 2. Search for the relevant block in the Library Browser by using the Filter textbox:
+>    ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
+> 3. Double-click the library entry.
+>    - Alternatively, you can also right-click to show other available actions. 
+> 4. In the text prompt, give the new block a name.
+> 5. The block should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
+>    - The hatched fill in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile. 
 >
-> The icons have these meanings:
+> The library icons have these meanings:
 > - ![Folder](docs/intellij_icons/AllIcons.Nodes.Folder.svg) (category): this "block" is actually a category organizer and should not be instantiated.
 > - ![Abstract Type](docs/intellij_icons/AllIcons.Hierarchy.Subtypes.dark.svg) (abstract type): this block is an abstract type.
 >   Abstract blocks will be discussed more later. 
@@ -164,6 +170,17 @@ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 > `self.connect(...)` connects all the argument ports together. 
 > Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
 
+> You can also connect ports through graphical operations in the IDE.
+> 1. Again, start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
+> 2. Double click any of the ports you want to connect.
+>    This starts a connection operation, which dims out the ports that cannot be connected.
+> 3. Select (single clock) on all the other ports you want to connect.
+>    - The order in which you select additional ports determines the order of the ports in the generated code.
+> 4. Double-click anywhere (within a block) to make the connections.
+>    - You can also cancel the connect operation by double-clicking anywhere (within a block) without additional ports selected, or through the right-click menu.
+> 5. Optionally, in the text prompt. give the connection a name.
+> 6. The connection should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
+
 Then, we need to get a new digital pin from the microcontroller and connect it to the LED's signal line, by **adding these connect statements**:
 ```python
 self.connect(self.mcu.gpio.request(), self.led.signal)
@@ -175,6 +192,8 @@ self.connect(self.mcu.gpio.request(), self.led.signal)
 > The optional `pin=` argument can be used to force the IO to be tied to a particular microcontroller pin, which could make layout easier.
 >
 > > TODO: in theory, we would want to only ask for a DigitalSource, since the LED pin doesn't need input capabilities, but currently port types are treated as _invariant_ (subtyping relations are ignored) so the exact type presented by the microcontroller is required.  
+
+
 
 ### Generating and Compiler GUI
 To generate your design, **run your file**:
