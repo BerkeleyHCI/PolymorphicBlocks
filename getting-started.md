@@ -114,7 +114,7 @@ Try building the example now:
   If all worked, this should create a folder `PolymorphicNlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
 - **If using the IDE**: look for the run icon ![run icon](docs/ide/ide_run_button.png) in the gutter (with the line numbers) next to `class BlinkyExample`.
   1. Click it
-  2. Then from the menu, click the Run option.
+  2. Then from the menu, click the Run option.  
      ![run menu](docs/ide/ide_run_blinky_menu.png)
      > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10**.
   3. The design should build, and you should get a run log that looks something like:
@@ -126,7 +126,7 @@ Try building the example now:
      Wrote netlist to [...]
      ```
   4. Unlike the command-line option, this generates a netlist in the same directory as `blinky_skeleton.py`.
-     In the IDE, you can configure where this goes via the run options at the top right:
+     In the IDE, you can configure where this goes via the run options at the top right:  
      ![run menu](docs/ide/ide_run_config.png)
 
 
@@ -144,7 +144,7 @@ self.led = self.Block(IndicatorLed())
 
 > You can also insert blocks through graphical operations in the IDE.
 > 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
-> 2. Search for the relevant block in the Library Browser by using the Filter textbox:
+> 2. Search for the relevant block in the Library Browser by using the Filter textbox:  
 >    ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
 > 3. Double-click the library entry.
 >    - Alternatively, you can also right-click to show other available actions. 
@@ -157,6 +157,13 @@ self.led = self.Block(IndicatorLed())
 > - ![Abstract Type](docs/intellij_icons/AllIcons.Hierarchy.Subtypes.dark.svg) (abstract type): this block is an abstract type.
 >   Abstract blocks will be discussed more later. 
 > - Most will not have an icon, which means that they're none of the above. These blocks can be instantiated.
+
+If you're using the IDE, once you recompile the block diagram should look like:  
+![Blink diagram with blocks only](docs/ide/ide_blinky_blocks.png)
+
+As the design is incomplete, it is expected that you will get errors.
+The red ports indicate ports that need to be connected, but aren't.
+We'll fix that next.
 
 ### Connecting blocks
 Blocks alone aren't very interesting, and they must be connected to be useful.
@@ -181,57 +188,37 @@ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 > 5. Optionally, in the text prompt. give the connection a name.
 > 6. The connection should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
 
-Then, we need to get a new digital pin from the microcontroller and connect it to the LED's signal line, by **adding these connect statements**:
+If you're using the IDE, once you recompile the block diagram should look like:  
+![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
+
+Then, we need to connect the LED to a GPIO on the microcontroller, by **adding this connect statements**.
+
 ```python
-self.connect(self.mcu.gpio.request(), self.led.signal)
+self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
-> Microcontrollers have a `new_io(type, [pin=...])` method that returns a fresh IO of the specified type.
-> Here, we ask the microcontroller for a digital bidirectional port.
-> This presents the mirocontroller with the abstraction of a grab-bag of ports.
->
-> The optional `pin=` argument can be used to force the IO to be tied to a particular microcontroller pin, which could make layout easier.
->
-> > TODO: in theory, we would want to only ask for a DigitalSource, since the LED pin doesn't need input capabilities, but currently port types are treated as _invariant_ (subtyping relations are ignored) so the exact type presented by the microcontroller is required.  
+
+> Microcontroller GPIOs (and other IOs like SPI and UART) are port arrays, which are dynamically sized.
+> Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
+> `request(...)` takes an optional name parameter, the meaning of which depends on the block.
+> For microcontrollers, this name can be used later to manually assign pins to simplify layout.
+> 
+> Port arrays behave differently when viewed externally (as we're going here) and internally (for library builders).
+> Internal usage of port arrays will be covered later in the library building section.
+
+> Port array requests are a recent feature and are currently not supported with graphical operations in the IDE.
+> This can only be done by writing textual HDL, for now.
+
+Recompiling in the IDE yields this block diagram:  
+![Block diagrams with connections](docs/ide/ide_blinky_connect.png)
 
 
+## Fixing and Cleaning Blinky
 
-### Generating and Compiler GUI
-To generate your design, **run your file**:
-```
-mypy blinky_skeleton.py && python blinky_skeleton.py 
-```
-This creates / updates the folder `examples/blinky_example` and its contents. 
+While the design is now structurally complete, you'll still get errors in the form of failed assertions.
+Assertions are checks run by the electronics model - in this case, it understands that the STM32 has a maximum voltage rating of 3.3v, while USB is providing 5v.
 
-> mypy is an optional type checker for Python that uses type annotations (such as the `-> None` in the example `def contents` line).
-> Like modern statically-typed languages (for example, Java, C++, and Scala), this catches certain bugs fast (without needing to encounter the bug during runtime - or even run code at all), and can speed up the development loop.
-> Here, this will catch syntax errors and passing in the wrong type of object into a function (for example, a Block where a Port is expected).
-> Note that it will not catch all bugs, some of which are only checked at runtime (in particular, it does not understand which Ports can be `connect`ed together, only that `connect` must take Ports).
->
-> The `python blinky_skeleton.py` is what actually runs the generator.
-
-You can also **run the compiler GUI / block diagram visualizer on the generated .edg file**:
-```
-python compiler_gui.py examples/blinky_example/design_raw.edg
-```
-If everything worked, something like this should come up, with the hierarchical block diagram of your design on the left side:
-
-![Blinky Hierarchy Block Diagram](docs/compiler_gui.png)
-
-You can navigate the design hierarchy in the compiler GUI by clicking on blocks, ports, and links in the block diagram, and selecting elements in the Design Tree.
-In the Design Tree, black text indicates a block for which where are no choices to be made, yellow text indicates a block for which choices must be made (under-defined), green text indicates a block for which a choice has been made (and can still be modified), and red text indicates some kind of error.
-With a block selected, choices are listed in the Block Refinements (currently selected one in bold).
-All the current choices made, including default ones, are listed in the Selected Refinements.
-Choices are saved to disk and persist when you close and re-open the compiler GUI.
-
-Parameters of the currently selected blocks, its ports, and connected links, are shown (and available for inspection) in the Detail panel.
-
-### Layout
-A KiCad netlist would have been generated in `examples/blinky_example/netlist.net`, and can be imported to a KiCad PCB design.
-This is updated every time you run `blinky_skeleton.py` or make a choice in the compuler GUI. 
-> This tutorial focuses on getting to a netlist from your circuit generator, so board layout is out of scope.
-> If you're not familiar with KiCad and want to learn more, check out out the [beginners tutorial by SparkFun](https://learn.sparkfun.com/tutorials/beginners-guide-to-kicad/all) or [KiCad's index of tutorials](https://kicad-pcb.org/help/tutorials/).
->
-> Sufficient supplemental data (such as stub / dummy schematic files) to interoperate with the hierarchical utilities in [Kicad actions plugins](https://github.com/MitjaNemec/Kicad_action_plugins) such as save/load hierarchy and replicate hierarchy. 
+If you're in the IDE, you can inspect the power line by mousing over it:  
+![Block diagrams with connections](docs/ide/ide_blinky_inspect.png)
 
 
 ## Expanding and Cleaning up Blinky
