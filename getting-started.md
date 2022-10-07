@@ -252,7 +252,6 @@ If you're in the IDE, errors will show up in the compilation log and in the erro
 You can also inspect the details of the power connection by mousing over it:   
 ![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
-
 ### Adding a Buck Converter
 To run the STM32 within its rated voltage limits, we'll need something to lower the 5v from USB to the common 3.3v power expected by modern devices.
 Here, we'll choose to use a buck converter, a high-efficiency DC-DC switching converter.
@@ -365,6 +364,22 @@ Similarly, mousing over the other components like the resistors and capacitors s
 
 To zoom out, double-click on the topmost block.
 
+## KiCad Import
+
+This full design can now be imported into KiCad. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
+
+In the KiCad PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
+KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
+![Blinky layout with default placement](docs/blinky_kicad.png)
+
+The block hierarchy will appear to KiCad as a sheet hierarchy.
+You can, for example, right click one of the footprints > Select > Items in Same Hierarchical Sheet, and it will select all footprints in that sub-block.
+Some external hierarchical plugins like [Replicate Layout](https://github.com/MitjaNemec/ReplicateLayout) also work.
+
+As you continue to write HDL, both generated refdes and tstamp are stable, allowing you to update a partial layout with a new netlist.
+**Both are tied to the hierarchical path, so if those change, then both refdes and tstamp will change.**
+When you're near ready for production, you can toggle traditional refdes generation (R1, R2, instead of current hierarchical path).
+
 
 ## Expanding Blinky
 _In this section, we will add a tactile switch and three more LEDs._
@@ -455,7 +470,6 @@ with self.implicit_connect(
 
 Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
 **Move the microcontroller, switch, and LED instantiation into the scope, and delete their power and ground connections**:
-_Remember that the buck converter is outside the implicit scope because it takes 5v and must be connected separately_
 
 ```python
 self.buck = self.Block(BuckConverter())
@@ -468,6 +482,8 @@ with self.implicit_connect(
   self.connect(self.mcu.gpio.request('sw'), self.sw.out)
   ...
 ```
+
+Remember that the buck converter is outside the implicit scope because it takes 5v and must be connected separately.
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
