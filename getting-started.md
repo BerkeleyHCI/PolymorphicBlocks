@@ -505,37 +505,59 @@ with self.implicit_connect(
 
 ### Chain Connects
 Another shorthand is for chained connections of blocks with inline declarations of blocks.
-We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:
+We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:  
 ```python
-(self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
-(self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
+(self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+...
+(self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 ```
+
 `chain` takes blocks and ports as arguments, from left to right as inputs to outputs, and does `connects` to chain them together.
 The first argument is treated as the initial input, and the last element is treated as the final output.
 Blocks in the middle (if any) have the previous link connected to their `Input`-tagged ports and present their `Output`-tagged ports for the next element, or attach their `InOut`-tagged port to the previous link which is also presented to the next element.
 
-> As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram: 
+`chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
+The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
+
+> As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram:
 > ![Chain Connects Example](docs/chain.png)
 > The chain starts at Port1.
 > Block1 and Block2 have both an Input and Output port, so the chain goes "through" those blocks.
 > Block3 has an InOut port, so it is attached to the previous connection, but the chain goes not go "through" it.
-> Because Block4 is the last in the chain, it only needs an Input port. 
+> Because Block4 is the last in the chain, it only needs an Input port.
 
-Inline-declared blocks can also use implicit scopes, as in the blinky chain code example above.
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>
+>       with self.implicit_connect(
+>           ImplicitConnect(self.buck.pwr_out, [Power]),
+>           ImplicitConnect(self.buck.gnd, [Common]),
+>       ) as imp:
+>         self.mcu = imp.Block(Stm32f103_48())
+>
+>         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+>
+>         self.led = ElementDict[IndicatorLed]()
+>         for i in range(4):
+>           (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ])
+>   ```
+> </details>
 
-`chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
-The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
-
-> For reference, the complete block definition using `implicit_connect` and `chain` looks like: 
-> ```python
-> self.mcu = self.Block(Nucleo_F303k8())
-> 
-> with self.implicit_connect(
->     ImplicitConnect(self.mcu.gnd, [Common]),
-> ) as imp:
->   (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
->   (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-> ```
 
 ## Changing the Microcontroller
 _In this section, we move away from the socketed microcontroller dev board, replacing it with a discrete microcontroller subcircuit directly onto the PCB, and add supporting components like power inputs and converters._
