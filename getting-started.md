@@ -171,7 +171,8 @@ self.led = self.Block(IndicatorLed())
 > - Most will not have an icon, which means that they're none of the above. These blocks can be instantiated.
 
 If you're using the IDE, once you recompile the block diagram should look like:  
-![Blink diagram with blocks only](docs/ide/ide_blinky_blocks.png)
+![Blink diagram with blocks only](docs/ide/ide_blinky_blocks.png)  
+With something on your screen now, you can zoom in and out of the visualization using the mousewheel, or pan by clicking and dragging.
 
 As the design is incomplete, it is expected that you will get errors.
 The red ports indicate ports that need to be connected, but aren't.
@@ -209,16 +210,16 @@ Then, we need to connect the LED to a GPIO on the microcontroller, by **adding t
 self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
-> Microcontroller GPIOs (and other IOs like SPI and UART) are port arrays, which are dynamically sized.
+> Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
 > Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
 > `request(...)` takes an optional name parameter, the meaning of which depends on the block.
 > For microcontrollers, this name can be used later to manually assign pins to simplify layout.
 > 
-> Port arrays behave differently when viewed externally (as we're going here) and internally (for library builders).
+> Port arrays behave differently when viewed externally (as we're doing here) and internally (for library builders).
 > Internal usage of port arrays will be covered later in the library building section.
 
-> Port array requests are a recent feature and are currently not supported with graphical operations in the IDE.
-> This can only be done by writing textual HDL, for now.
+> Port arrays are a recent feature and are not supported yet with graphical operations in the IDE.
+> This can only be done by writing textual HDL... for now.
 
 Recompiling in the IDE yields this block diagram:  
 ![Fully connected block diagram](docs/ide/ide_blinky_connect.png)
@@ -239,6 +240,10 @@ Recompiling in the IDE yields this block diagram:
 >   ```
 > </details>
 
+
+## Fixing Blinky
+_In this section, we will explore and fix the remaining compiler errors to get to a clean design._
+
 While the design is now structurally complete, we still have errors in the form of failed assertions.
 Assertions are checks on the electronics model, in this case it's detecting a voltage incompatibility between the USB's 5v out and the STM32's 3.3v tolerant power inputs.
 
@@ -248,9 +253,7 @@ You can also inspect the details of the power connection by mousing over it:
 ![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
 
-## Fixing Blinky
-_In this section, we will fix those errors by adding a power converter._
-
+### Adding a Buck Converter
 To run the STM32 within its rated voltage limits, we'll need something to lower the 5v from USB to the common 3.3v power expected by modern devices.
 Here, we'll choose to use a buck converter, a high-efficiency DC-DC switching converter.
 **Repeat the add block flow** with a `BuckConverter` block, **then connect its power (between the USB and the microcontroller) and ground**.
@@ -290,7 +293,7 @@ Abstract blocks are useful for two reasons:
    For example, saying that we want a buck converter by instantiating a buck converter is more intuitive than directly instantiating, for example, a TPS561201 block.
 
 Unlike in software, we can instantiate abstract blocks here, but they won't actually place down a useful circuit.
-We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the `BoardTop` class**.
+We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the top-level design class**.
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
@@ -330,7 +333,7 @@ Recompiling in the IDE yields this block diagram and no errors:
 >       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
 >       self.mcu = self.Block(Stm32f103_48())
 >       self.led = self.Block(IndicatorLed())
->       self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd, self.buck.gnd)
+>       self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
 >       self.connect(self.usb.pwr, self.buck.pwr_in)
 >       self.connect(self.buck.pwr_out, self.mcu.pwr)
 >       self.connect(self.mcu.gpio.request('led'), self.led.signal)
@@ -344,7 +347,6 @@ Recompiling in the IDE yields this block diagram and no errors:
 > </details>
 
 ### Deeper Inspection
-
 One major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 Here, we were able to place down a buck converter - a non-trivial subcircuit - with just one line of code.
 The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `BuckConverter` block.
@@ -359,56 +361,147 @@ The implementation uses a feedback voltage divider, and if you mouseover this it
 The converter's output voltage reflects the actual expected output voltage, accounting for resistor tolerance and the chip's feedback reference tolerance.  
 ![Buck converter input capacitor](docs/ide/ide_buck_fb.png)
 
-Similarly, you can mouseover other components like the resistors and capacitors to view their details.
+Similarly, mousing over the other components like the resistors and capacitors shows their details.
 
-To zoom out, you double-click on the topmost block.
+To zoom out, double-click on the topmost block.
 
 
 ## Expanding Blinky
 _In this section, we will add a tactile switch and three more LEDs._
 
 ### Adding a Switch
-The simplest way would be to, following the example of the LED, instantiate a switch and connect its IO and ground, by **adding these lines in your block**:
+A tactile switch with a digital output can be instantiated as `DigitalSwitch()` which has an `out` port.
+Using what you've learned above, instantiate a switch and connect it to the microcontroller.
+
+### Arraying LEDs
+While you certainly can copy-paste the above LED instantiation 4 times, that's no fun given that we're in a programming language with `for` loops.
+
+**Replace your single LED instantiation and connections with**:
 ```python
-self.sw = self.Block(DigitalSwitch())
-self.connect(self.mcu.gnd, self.sw.gnd)
-self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
+self.led = ElementDict[IndicatorLed]()
+for i in range(4):
+  self.led[i] = self.Block(IndicatorLed())
+  self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+  self.connect(self.usb.gnd, self.led[i].gnd)
 ```
 
+> ElementDict creates a naming space that is an extension of the parent and is needed to give a unique, arrayed name for the LED being created.
+> The square brackets provide the type parameter for the value type, which is necessary when using static analysis tools like mypy.
 
-## Cleaning Up Blinky 
+> The IDE cannot produce code that programmatically generates hardware.
+> In general, code offers you a lot more power than can be achieved through the GUI
+> 
+> However, the visualizer will run fine.
+
+Recompiling in the IDE yields this block diagram:  
+![Blinky with switch and LED array block diagram](docs/ide/ide_ledarray.png)
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.mcu = self.Block(Stm32f103_48())
+>       self.led = self.Block(IndicatorLed())
+>       self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>       self.connect(self.buck.pwr_out, self.mcu.pwr)
+> 
+>       self.sw = self.Block(DigitalSwitch())
+>       self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+>       self.connect(self.usb.gnd, self.sw.gnd)
+>
+>       self.led = ElementDict[IndicatorLed]()
+>       for i in range(4):
+>         self.led[i] = self.Block(IndicatorLed())
+>         self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+>         self.connect(self.usb.gnd, self.led[i].gnd)
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ])
+>   ```
+> </details>
+
+
+## Syntactic sugar
+_Syntactic sugar refers to syntax within programming languages that makes things more usable._
+_In this section, we clean up the prior example by consolidating some repetitive connections through implicit scopes._
+
+> Similar to arraying LEDs, the IDE does not have any special support for generating these operations.
+> However, the visualizer will continue to run fine.
 
 ### Implicit Connections
-However, recognizing that some connections are very common, we provide the idea of an implicit connection scope to automatically make them.
-You can **replace your existing LED and switch instantiations and their ground connections with**:
+Because some connections (like power and ground) are very common, the HDL provides the idea of an implicit connection scope to automatically make them when a block is instantiated.
+In our example, we can get rid of the explicit power and ground connections.
+Start by **adding an implicit scope** to tie Power-tagged ports to `self.buck.pwr_out` and Common- (ground) tagged ports to `self.buck.gnd`:
 ```python
 with self.implicit_connect(
-    ImplicitConnect(self.mcu.gnd, [Common]),
+    ImplicitConnect(self.buck.pwr_out, [Power]),
+    ImplicitConnect(self.buck.gnd, [Common]),
 ) as imp:
-  self.led = imp.Block(IndicatorLed())
-  self.sw = imp.Block(DigitalSwitch())
+  ...
 ```
-The above code defines an implicit connection scope `imp`, with one `ImplicitConnect` rule that connects all ports with the tag `Common` to `self.mcu.gnd`.
-Tags are associated with ports in the block being connected (in this case, `DigitalSwitch` and `IndicatorLed`), and `imp.Block` both instantiates a Block and makes all the implicit connections.
-To prevent errors, all ports with tags are required, so if a port has a tag, it must be either implicitly connected (through `imp.Block`) or explicitly connected (through `connect`), otherwise it will error.
 
-Common tags are:
-- `Power`: general positive voltage rail (without a specific voltage)
-- `Common`: ground connection
+> When blocks define ports, they can associate tags with them to specify implicit connectivity.
+> To prevent errors, all ports with tags are required to be connected, either implicitly (as in this section) or explicitly (through `connect` statements).
+> `Power` (for a general positive voltage rail) and `Common` (for ground) are the most common tags.
 
-> For reference, the complete block definition using `implicit_connect` looks like:
-> ```python
-> self.mcu = self.Block(Nucleo_F303k8())
-> 
-> with self.implicit_connect(
->     ImplicitConnect(self.mcu.gnd, [Common]),
-> ) as imp:
->   self.led = imp.Block(IndicatorLed())
->   self.sw = imp.Block(DigitalSwitch())
-> 
-> self.connect(self.mcu.new_io(DigitalBidir), self.led.signal)
-> self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
-> ```
+Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
+**Move the microcontroller, switch, and LED instantiation into the scope, and delete their power and ground connections**:
+_Remember that the buck converter is outside the implicit scope because it takes 5v and must be connected separately_
+
+```python
+self.buck = self.Block(BuckConverter())
+with self.implicit_connect(
+    ImplicitConnect(self.usb.gnd, [Common]),
+) as imp:
+  self.mcu = imp.Block(Stm32f103_48())
+
+  self.sw = imp.Block(DigitalSwitch())
+  self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+  ...
+```
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>
+>       with self.implicit_connect(
+>           ImplicitConnect(self.buck.pwr_out, [Power]),
+>           ImplicitConnect(self.buck.gnd, [Common]),
+>       ) as imp:
+>         self.mcu = imp.Block(Stm32f103_48())
+>
+>         self.sw = imp.Block(DigitalSwitch())
+>         self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+>
+>         self.led = ElementDict[IndicatorLed]()
+>         for i in range(4):
+>           self.led[i] = imp.Block(IndicatorLed())
+>           self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ])
+>   ```
+> </details>
 
 ### Chain Connects
 Another shorthand is for chained connections of blocks with inline declarations of blocks.
@@ -444,7 +537,7 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 >   (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
 > ```
 
-## Flattening the Microcontroller
+## Changing the Microcontroller
 _In this section, we move away from the socketed microcontroller dev board, replacing it with a discrete microcontroller subcircuit directly onto the PCB, and add supporting components like power inputs and converters._
 
 Since we will be working with a bare microcontroller, it now needs power (instead of being able to supply power).
@@ -473,83 +566,7 @@ Design errors still update the generated `.edg` files (but they will refuse to n
 python compiler_gui.py examples/blinky_example/design_raw.edg
 ```
 
-## Adding a Power Converter
-So, we'll add a buck converter (step-down switching DC-DC converter) which you can instantiate by **by adding these lines after the USB port**:
-```python
-with self.implicit_connect(
-    ImplicitConnect(self.usb.pwr, [Power]),
-    ImplicitConnect(self.usb.gnd, [Common]),
-) as imp:
-  self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-```
-
-> For a simple circuit such as this, the optimal power supply may be a linear regulator or LDO - but we choose a buck converter here to demonstrate subcircuit generation and abstract blocks.
-
-BuckConverter is an abstract (in our hardware model, but not in the Python sense of being uninstantiable) base class for several different types of specific converter subcircuits.
-Abstract base class blocks define some standardized functionality and an interface set of Ports that its sub-classes (for example, a buck converter subcircuit based around a specific chip) implement.
-Using these lets your designs remain high-level, and allows lower-level decisions like the specific sub-class to use to be deferred until later (and made with the help of tools like the compiler GUI). 
-
-With the infrastructure in place, **replace the implicit power connection for the microcontroller block with**.
-```python
-ImplicitConnect(self.usb_reg.pwr_out, [Power])
-```
-
-Make sure the LED and switch instantiations and connections from the previous section are still present.
-The top-level design is now complete.
-**Re-generate your design** to re-build the .edg files, but this will fail on netlisting since the BuckConverter is abstract and no refinement has been selected:  
-```
-mypy blinky_skeleton.py && python blinky_skeleton.py
-``` 
-You can make such a selection within the compiler GUI, which (again) can be invoked with:
-```
-python compiler_gui.py examples/blinky_example/design_raw.edg
-``` 
-For this design, **pick the TPS561201 regulator refinement for the BuckConverter**, and it will generate the full subcircuit, including appropriately-sized capacitors, inductors, and feedback resistors for voltage setpoint.
-The netlist will also be updated.
-
-> For reference, the complete block definition with the USB, buck regulator, and microcontroller looks like:
-> ```python
-> self.usb = self.Block(UsbDeviceCReceptacle())
->
-> with self.implicit_connect(
->     ImplicitConnect(self.usb.pwr, [Power]),
->     ImplicitConnect(self.usb.gnd, [Common]),
-> ) as imp:
->   self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
->
-> with self.implicit_connect(
->     ImplicitConnect(self.usb_reg.pwr_out, [Power]),
->     ImplicitConnect(self.usb.gnd, [Common]),
-> ) as imp:
->   self.mcu = imp.Block(Lpc1549_48())
->   (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
->      
->   (self.led, ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
->   (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.new_io(DigitalBidir))
-> ```
-
-### Arraying LEDs
-_In this section, we introduce programmatic generation by using a for loop to instantiate multiple LEDs._
-
-If we wanted 8 LEDs, the dead-simple (though inelegant and repetitive) option might be to copy the block instantiation 8 times. 
-But, since the hardware construction functionality is actually running Python, we can use Python's control structures (such as a `for` loop) to construct hardware.
-**Replace your single LED instantiation / chain with**:
-```python
-self.led = ElementDict[IndicatorLed]()
-for i in range(8):
-  (self.led[i], ), _ = self.chain(self.mcu.new_io(DigitalBidir), imp.Block(IndicatorLed()))
-```
-> ElementDict creates a naming space that is an extension of the parent, and is needed to give a unique, arrayed name for the LED being created.
-> The square brackets provide the type parameter for the value type, which is necessary when using static analysis tools like mypy.
-
-> In practice, when used with microcontrollers, you may need a separate `connect` statement for each LED, to assign pins for ease of routing.
-
-You can see the results by re-generating your circuit and running the compiler GUI on the output:
-```
-mypy blinky_skeleton.py && python blinky_skeleton.py
-python compiler_gui.py examples/blinky_example/design_raw.edg
-``` 
 
 ## Defining Library Parts
 
-Go to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
+Continue to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
