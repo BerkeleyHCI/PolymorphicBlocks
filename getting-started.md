@@ -576,35 +576,17 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 
 
 ## Changing the Microcontroller
-_In this section, we move away from the socketed microcontroller dev board, replacing it with a discrete microcontroller subcircuit directly onto the PCB, and add supporting components like power inputs and converters._
+_Finally, let's put the finishing touches on this design by changing the microcontroller and specifying a pin assignment._
 
-Since we will be working with a bare microcontroller, it now needs power (instead of being able to supply power).
-In this case, we'll use an USB Type-C receptacle in device (upstream-facing port) mode, which you can instantiate by **adding this line to the top of the block definition**:
-```python
-self.usb = self.Block(UsbDeviceCReceptacle())
-```
+### Using the IoController Abstract Class
 
-We can then (try) connecting the microcontroller directly to the USB power output.
-**Replace the Nucleo F303K8 block with these blocks for the LPC1549 and its associated SWD programming header, and hook up the power lines**:
-```python
-with self.implicit_connect(
-    ImplicitConnect(self.usb.pwr, [Power]),
-    ImplicitConnect(self.usb.gnd, [Common]),
-) as imp:
-  self.mcu = imp.Block(Lpc1549_48())
-  (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetHeader()), self.mcu.swd)
-```
 
-If you try to run it, it will error out, since the 5v supplied by the USB power is higher than the 3.3v tolerated by the microcontroller:
-```
-mypy blinky_skeleton.py && python blinky_skeleton.py
-``` 
-Design errors still update the generated `.edg` files (but they will refuse to netlist), so you can still view the errors and debug with the compiler GUI:
-```
-python compiler_gui.py examples/blinky_example/design_raw.edg
-```
+### Explicit Pin Assignments
+
+
+
+
 
 
 ## Defining Library Parts
-
 Continue to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
