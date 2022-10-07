@@ -444,7 +444,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
