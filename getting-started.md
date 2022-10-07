@@ -535,8 +535,8 @@ Blocks in the middle (if any) have the previous link connected to their `Input`-
 `chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
 The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
 
-> As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram:
-> ![Chain Connects Example](docs/chain.png)
+> As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram:  
+> ![Chain Connects Example](docs/chain.png)  
 > The chain starts at Port1.
 > Block1 and Block2 have both an Input and Output port, so the chain goes "through" those blocks.
 > Block3 has an InOut port, so it is attached to the previous connection, but the chain goes not go "through" it.
@@ -579,13 +579,81 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 _Finally, let's put the finishing touches on this design by changing the microcontroller and specifying a pin assignment._
 
 ### Using the IoController Abstract Class
+Like the `BuckConverter`, there is actually an abstract class for microcontrollers, `IoController`.
+`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
 
+> `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
+> Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
+> This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
+
+With the abstract block in place, we can now easily change it to something else.
+Perhaps we want a microcontroller with built-in wifi, so
+**change the refinement to an `Esp32_Wroom_32`**.
+
+> If using the IDE, refinements can be changed the same way they are defined.
+> The IDE will update the existing refinement instead of inserting a new entry.
 
 ### Explicit Pin Assignments
+While `IoController` can assign peripherals like SPI pins according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
+However, it does define a `pin_assigns` parameter (as an array-of-strings) which allows specifying a pin number (on the footprint) or pin name (eg, `PC_13` - format specific to each microcontroller) for each requested pin.
 
+We can also force parameter values through the refinements system, using `instance_values`.
+Let's arbitrarily choose pins 26-29 for the LEDs.
+**Add a pin assignment for the ESP32 in the refinements section**:
+```python
+instance_values=[
+  (['mcu', 'pin_assigns'], [
+    'led0=26',
+    'led1=27',
+    'led2=28',
+    'led3=29',
+  ])
+],
+```
 
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>
+>       with self.implicit_connect(
+>           ImplicitConnect(self.buck.pwr_out, [Power]),
+>           ImplicitConnect(self.buck.gnd, [Common]),
+>       ) as imp:
+>         self.mcu = imp.Block(IoController())
+>
+>         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+>
+>         self.led = ElementDict[IndicatorLed]()
+>         for i in range(4):
+>           (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ],
+>       instance_values=[
+>         (['mcu', 'pin_assigns'], [
+>           'led0=26',
+>           'led1=27',
+>           'led2=28',
+>           'led3=29',
+>          ])
+>       ])
+>   ```
+> </details>
 
-
+And that's it for board-level design!
+You can import the netlist into KiCad if you'd like.
+Good luck with building PCBs!
 
 
 ## Defining Library Parts

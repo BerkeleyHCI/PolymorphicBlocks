@@ -37,6 +37,9 @@ class SimpleBoardTop(BaseBoardTop):
   """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
+      class_refinements=[
+        (PassiveConnector, PinHeader254),
+      ],
       class_values=[
         (JlcInductor, ['ignore_frequency'], True),
       ],
