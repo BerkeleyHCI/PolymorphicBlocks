@@ -111,7 +111,7 @@ class TestBlinkyFlattened(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], False),
+        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
     )
 
@@ -196,7 +196,7 @@ class TestBlinkyComplete(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], False),
+        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
     )
 

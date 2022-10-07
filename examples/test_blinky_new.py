@@ -233,7 +233,7 @@ class NewBlinkyLightsense(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['buck', 'power_path', 'inductor', 'ignore_frequency'], False),
+        (['buck', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
         (Opamp, Mcp6001),
