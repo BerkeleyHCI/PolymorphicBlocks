@@ -66,7 +66,7 @@ The rest of this tutorial will focus on the HDL, but will also describe how the 
 
 
 ## IDE Setup
-_Optional, if you want to use the IDE_
+_Recommended (but optional), to use the IDE._
 
 1. Download [sbt](https://www.scala-sbt.org/download.html), the Scala build tool.
 2. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
@@ -209,20 +209,151 @@ self.connect(self.mcu.gpio.request('led'), self.led.signal)
 > This can only be done by writing textual HDL, for now.
 
 Recompiling in the IDE yields this block diagram:  
-![Block diagrams with connections](docs/ide/ide_blinky_connect.png)
+![Fully connected block diagram](docs/ide/ide_blinky_connect.png)
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(BoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.mcu = self.Block(Stm32f103_48())
+>       self.led = self.Block(IndicatorLed())
+>       self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.mcu.pwr)
+>       self.connect(self.mcu.gpio.request('led'), self.led.signal)
+>   ```
+> </details>
+
+While the design is now structurally complete, we still have errors in the form of failed assertions.
+Assertions are checks on the electronics model, in this case it's detecting a voltage incompatibility between the USB's 5v out and the STM32's 3.3v tolerant power inputs.
+
+If you're in the IDE, errors will show up in the compilation log and in the errors tab:  
+![Errors tab with errors](docs/ide/ide_blinky_errors.png)  
+You can also inspect the details of the power connection by mousing over it:   
+![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
 
 ## Fixing and Cleaning Blinky
+_In this section, we will fix those errors by adding a power converter._
 
-While the design is now structurally complete, you'll still get errors in the form of failed assertions.
-Assertions are checks run by the electronics model - in this case, it understands that the STM32 has a maximum voltage rating of 3.3v, while USB is providing 5v.
+To run the STM32 within its rated voltage limits, we'll need something to lower the 5v from USB to the common 3.3v power expected by modern devices.
+Here, we'll choose to use a buck converter, a high-efficiency DC-DC switching converter.
+**Repeat the add block flow** with a `BuckConverter` block, **then connect its power (between the USB and the microcontroller) and ground**.
+```python
+self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
 
-If you're in the IDE, you can inspect the power line by mousing over it:  
-![Block diagrams with connections](docs/ide/ide_blinky_inspect.png)
+self.connect(self.usb.pwr, self.buck.pwr_in)
+self.connect(self.buck.pwr_out, self.mcu.pwr)
+self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
+```
+
+> The `BuckConverter` block is parameterized - configured by additional data specified as constructor arguments.
+> Here, we've specified a target output voltage of 3.3v.
+> 
+> Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
+> See each block's definition or documentation for what those parameters mean.
+
+> If using the IDE, make sure to select a local location for insertion.
+> This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
+> The IDE will create a block with empty parameters for you to fill.
+> 
+> You can append the buck converter's ground pin to the existing ground connect statement:
+> 1. Select the existing connect statement in the code.
+> 2. Start a connect operation at any port that is part of the existing connection.
+>    - It is not currently supported to add to an existing connection without starting the connect operation at that connection.
+> 3. Add the new port to the selection and finish the connect operation as typical.
+> 
+> The IDE does not support disconnect operations, so you'll have to edit the HDL for code that.
+> However, the IDE can help you find where the code is:
+> 1. Right click on any port in the connection, then select "Goto connect"
+
+If you try recompiling it, it will give you a bunch of errors, all stemming from the BuckConverter block being _abstract_, or not having an implementation (and hence no output voltage, which confuses everything downstream).
+Abstract blocks are useful for two reasons:
+1. It allows your design to be more general and allows you to defer implementation choices until later.
+   This is more relevant for library builders, where you may want to give the system designer the choice of, for example, whether to use a surface-mount or through-hole resistor.
+2. It can help preserve design intent more precisely and keep HDL readable.
+   For example, saying that we want a buck converter by instantiating a buck converter is more intuitive than directly instantiating, for example, a TPS561201 block.
+
+Unlike in software, we can instantiate abstract blocks here, but they won't actually place down a useful circuit.
+We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the `BoardTop` class**.
+```python
+class BlinkyExample(BoardTop):
+  def contents(self) -> None:
+    ...
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+    instance_refinements=[
+      (['buck'], Tps561201),
+    ])
+```
+
+> `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
+> You can override these with a refinement in your HDL, for example choosing `AxialResistor`.
+
+> If using the IDE, refinements can be done through the library browser.
+> 1. Select (single click) on the block you want to refine.
+> 2. In the Library Browser, search for the class you want to refine into.
+>    If you don't know, you can filter by the abstract type and see what options are under it.
+> 3. Right-click the subclass in the Library Browser, and click "Refine instance...".
+>    - Refine instance only affects the single selected block.
+>    - Refine class affects all classes of the selected block.
+>      This may be useful, for example, if you wanted to do a design-wide replacement of all generic resistors with a specific type.
+> 4. The corresponding refinement block should be inserted, or if it already exists, a new refinement entry will be added.
+
+Recompiling in the IDE yields this block diagram and no errors:  
+![Blinky with buck converter block diagram](docs/ide/ide_blinky_buck.png)
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(BoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.mcu = self.Block(Stm32f103_48())
+>       self.led = self.Block(IndicatorLed())
+>       self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>       self.connect(self.buck.pwr_out, self.mcu.pwr)
+>       self.connect(self.mcu.gpio.request('led'), self.led.signal)
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ])
+>   ```
+> </details>
+
+### Deeper Inspection
+
+One major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
+Here, we were able to place down a buck converter - a non-trivial subcircuit - with just one line of code.
+The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `BuckConverter` block.
+
+You may want to inspect the results.
+In the IDE, you can hover over the output line and see that it is at 3.3v ±4.47%.
+Why?
+You can dig into the Tps561201 by double-clicking on it:  
+![TPS561201 subcircuit](docs/ide/ide_buck_internal.png)
+
+The implementation uses a feedback voltage divider, and if you mouseover this it will show the generated ratio of 0.23.
+The converter's output voltage reflects the actual expected output voltage, accounting for resistor tolerance and the chip's feedback reference tolerance.  
+![Buck converter input capacitor](docs/ide/ide_buck_fb.png)
+
+Similarly, you can mouseover other components like the resistors and capacitors to view their details.
+
+To zoom out, you double-click on the topmost block.
 
 
-## Expanding and Cleaning up Blinky
-_In this section, we will add a tactile switch to and clean up the Blinky example and code from the last section._
+## Expanding Blinky
+_In this section, we will add a tactile switch and three more LEDs._
 
 ### Adding a Switch
 The simplest way would be to, following the example of the LED, instantiate a switch and connect its IO and ground, by **adding these lines in your block**:
@@ -231,6 +362,9 @@ self.sw = self.Block(DigitalSwitch())
 self.connect(self.mcu.gnd, self.sw.gnd)
 self.connect(self.sw.out, self.mcu.new_io(DigitalBidir))
 ```
+
+
+## Cleaning Up Blinky 
 
 ### Implicit Connections
 However, recognizing that some connections are very common, we provide the idea of an implicit connection scope to automatically make them.
