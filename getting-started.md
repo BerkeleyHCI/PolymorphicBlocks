@@ -69,16 +69,21 @@ The rest of this tutorial will focus on the HDL, but will also describe how the 
 _Recommended (but optional), to use the IDE._
 
 1. Download [sbt](https://www.scala-sbt.org/download.html), the Scala build tool.
-2. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
-3. In the `edg-ide` directory, run `sbt runIDE`.
+2. If you do not have a Java JDK installed, download and install one.
+   An open-source one is [Eclipse Temurin](https://adoptium.net/temurin/releases/?version=17).
+3. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
+4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
-4. In the IDE, open the `PolymorphicBlocks` folder as a project and configure it for Python.
+5. In the IDE, open the `PolymorphicBlocks` folder as a project.
    You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
-5. Install Python dependencies:
-   - If setting up a Pipenv environment, it will automatically fetch dependencies.
+6. Once the project loads, open `blinky_skeleton.py`, then set up the Python interpreter once the prompt shows up.
+7. Set up a Python SDK of your choice:
+   - If using a Pipenv environment, it will automatically fetch dependencies.
      You may need to install pipenv: `pip install pipenv`.
-   - If not, you can use the System Interpreter but may need to install pip dependencies: `pip install protobuf kinparse`
+   - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf kinparse Deprecated`.
+8. Open the Block Visualizer tab on the right.
+   It will be empty right now.
 
 
 ## A top-level design: Blinky
@@ -113,7 +118,8 @@ Try building the example now:
 - **If not using the IDE**: run `python blinkly_skeleton.py` from the command line.
   If all worked, this should create a folder `PolymorphicNlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
 - **If using the IDE**: look for the run icon ![run icon](docs/ide/ide_run_button.png) in the gutter (with the line numbers) next to `class BlinkyExample`.
-  1. Click it
+  1. Click it.
+     _Make sure that you're using the run icon associated with `class BlinkyExample`, not the file, and not `if __name__ == "__main__"`._
   2. Then from the menu, click the Run option.  
      ![run menu](docs/ide/ide_run_blinky_menu.png)
      > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10**.
@@ -133,7 +139,7 @@ Try building the example now:
 ### Creating the microcontroller and LED
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
-**In `# implementation here`, add this code** to instantiate the microcontroller and LED as follows:
+**In `blinky_skeleton.py`, `# you implementation here`, add this code** to instantiate the microcontroller and LED as follows:
 ```python
 self.usb = self.Block(UsbCReceptacle())
 self.mcu = self.Block(Stm32f103_48())
@@ -161,7 +167,7 @@ self.led = self.Block(IndicatorLed())
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Blink diagram with blocks only](docs/ide/ide_blinky_blocks.png)
 
-As the design is incomplete, it is expected that you will get errors.
+As the design is incomplete, **it is expected that there will be errors**.
 The red ports indicate ports that need to be connected, but aren't.
 We'll fix that next.
 
@@ -241,7 +247,8 @@ _In this section, we will fix those errors by adding a power converter._
 
 To run the STM32 within its rated voltage limits, we'll need something to lower the 5v from USB to the common 3.3v power expected by modern devices.
 Here, we'll choose to use a buck converter, a high-efficiency DC-DC switching converter.
-**Repeat the add block flow** with a `BuckConverter` block, **then connect its power (between the USB and the microcontroller) and ground**.
+**Repeat the add block flow** with a `BuckConverter` block, **then update the power (between the USB and the microcontroller) and ground connections**.
+**Make sure to delete the previous power and ground connections, otherwise it will error out from over-connection.** 
 ```python
 self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
 
@@ -268,7 +275,7 @@ self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
 > 
 > The IDE does not support disconnect operations, so you'll have to edit the HDL for code that.
 > However, the IDE can help you find where the code is:
-> 1. Right click on any port in the connection, then select "Goto connect"
+> 1. Right click on any port in the connection, then select "Goto Connect".
 
 If you try recompiling it, it will give you a bunch of errors, all stemming from the BuckConverter block being _abstract_, or not having an implementation (and hence no output voltage, which confuses everything downstream).
 Abstract blocks are useful for two reasons:
