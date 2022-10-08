@@ -372,8 +372,7 @@ Similarly, mousing over the other components like the resistors and capacitors s
 To zoom out, double-click on the topmost block.
 
 ## KiCad Import
-
-This full design can now be imported into KiCad. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
+If you have KiCad installed, you can import this full design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
 In the KiCad PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
 KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
@@ -481,7 +480,8 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 ```python
 self.buck = self.Block(BuckConverter())
 with self.implicit_connect(
-    ImplicitConnect(self.usb.gnd, [Common]),
+    ImplicitConnect(self.buck.pwr_out, [Power]),
+    ImplicitConnect(self.buck.gnd, [Common]),
 ) as imp:
   self.mcu = imp.Block(Stm32f103_48())
 
