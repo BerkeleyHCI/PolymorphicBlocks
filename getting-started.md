@@ -538,6 +538,7 @@ We could, **inside the implicit scope, replace the LED and switch instantiations
 `chain` takes blocks and ports as arguments, from left to right as inputs to outputs, and does `connects` to chain them together.
 The first argument is treated as the initial input, and the last element is treated as the final output.
 Blocks in the middle (if any) have the previous link connected to their `Input`-tagged ports and present their `Output`-tagged ports for the next element, or attach their `InOut`-tagged port to the previous link which is also presented to the next element.
+Only one pin per block may be tagged with `Input`, `Output`, and `InOut`.
 
 `chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
 The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
@@ -588,6 +589,19 @@ _Finally, let's put the finishing touches on this design by changing the microco
 ### Using the IoController Abstract Class
 Like the `BuckConverter`, there is actually an abstract class for microcontrollers, `IoController`.
 `Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
+
+```python
+class BlinkyExample(SimpleBoardTop):
+  def contents(self) -> None:
+    ...
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+    instance_refinements=[
+      ...
+      (['mcu'], Stm32f103_48),
+    ])
+```
 
 > `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
