@@ -9,7 +9,7 @@ class NewBlinkyOvervolt(BoardTop):
 
     self.mcu = self.Block(IoController())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gpio.allocate(), self.led.signal)
+    self.connect(self.mcu.gpio.request(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
     self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
     self.connect(self.jack.pwr, self.mcu.pwr)
@@ -28,7 +28,7 @@ class NewBlinkyBuck(BoardTop):
 
     self.mcu = self.Block(IoController())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gpio.allocate(), self.led.signal)
+    self.connect(self.mcu.gpio.request(), self.led.signal)
     self.connect(self.mcu.gnd, self.led.gnd)
     self.jack = self.Block(Pj_102a(voltage_out=5*Volt(tol=0.1)))
     self.connect(self.mcu.gnd, self.jack.gnd)
@@ -42,7 +42,12 @@ class NewBlinkyBuck(BoardTop):
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class NewBlinkyRefactored(BoardTop):
@@ -63,14 +68,19 @@ class NewBlinkyRefactored(BoardTop):
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
+        self.connect(self.mcu.gpio.request(), self.led[i].signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class Ref_Lf21215tmr_Device(FootprintBlock):
@@ -155,17 +165,22 @@ class NewBlinkyMagsense(BoardTop):
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
+        self.connect(self.mcu.gpio.request(), self.led[i].signal)
 
       self.sens = imp.Block(Ref_Lf21215tmr())
-      self.connect(self.mcu.gpio.allocate(), self.sens.out)
+      self.connect(self.mcu.gpio.request(), self.sens.out)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ])
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+    )
 
 
 class NewBlinkyLightsense(BoardTop):
@@ -184,31 +199,36 @@ class NewBlinkyLightsense(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
       self.esd = imp.Block(UsbEsdDiode())
-      self.connect(self.usb.usb, self.mcu.usb.allocate(), self.esd.usb)
+      self.connect(self.usb.usb, self.mcu.usb.request(), self.esd.usb)
 
       self.led = ElementDict[IndicatorLed]()
       for i in range(4):
         self.led[i] = imp.Block(IndicatorLed())
-        self.connect(self.mcu.gpio.allocate(), self.led[i].signal)
+        self.connect(self.mcu.gpio.request(), self.led[i].signal)
 
       self.als = imp.Block(Ref_Bh1620fvc(20000, (2.7, 3.0)*Volt))
       self.amp = imp.Block(OpampFollower())  # "optional", output impedance is "only" 2x larger than MCU's input
       self.connect(self.als.vout, self.amp.input)
-      self.connect(self.amp.output, self.mcu.adc.allocate())
+      self.connect(self.amp.output, self.mcu.adc.request())
 
       self.lcd = imp.Block(Qt096t_if09())
-      self.connect(self.mcu.spi.allocate(), self.lcd.spi)
-      self.connect(self.mcu.gpio.allocate(), self.lcd.cs)
-      self.connect(self.mcu.gpio.allocate(), self.lcd.rs)
-      self.connect(self.mcu.gpio.allocate(), self.lcd.reset)
-      self.connect(self.mcu.gpio.allocate(), self.lcd.led)
+      self.connect(self.mcu.spi.request(), self.lcd.spi)
+      self.connect(self.mcu.gpio.request(), self.lcd.cs)
+      self.connect(self.mcu.gpio.request(), self.lcd.rs)
+      self.connect(self.mcu.gpio.request(), self.lcd.reset)
+      self.connect(self.mcu.gpio.request(), self.lcd.led)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
         (['buck'], Tps561201),
-      ], class_refinements=[
+      ],
+      instance_values=[
+        # JLC does not have frequency specs, must be checked TODO
+        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+      ],
+      class_refinements=[
         (Opamp, Mcp6001),
       ])
 

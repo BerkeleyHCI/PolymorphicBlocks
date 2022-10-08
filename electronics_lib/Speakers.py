@@ -209,9 +209,9 @@ class ConnectorSpeaker(Speaker):
 
     self.conn = self.Block(PassiveConnector())
 
-    self.connect(self.input.a, self.conn.pins.allocate('1').adapt_to(AnalogSink(
+    self.connect(self.input.a, self.conn.pins.request('1').adapt_to(AnalogSink(
       impedance=impedance)
     ))
-    self.connect(self.input.b, self.conn.pins.allocate('2').adapt_to(AnalogSink(
+    self.connect(self.input.b, self.conn.pins.request('2').adapt_to(AnalogSink(
       impedance=impedance)
     ))

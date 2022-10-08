@@ -30,9 +30,9 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
     self.swd = self.Port(SwdTargetPort().empty())
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated(), self.swd.is_connected())
+                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested(), self.swd.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -176,9 +176,9 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], swd_connected: bool) -> None: ...
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], swd_connected: bool) -> None: ...
 
 
 class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
@@ -225,16 +225,16 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
   }
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], swd_connected: bool) -> None:
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], swd_connected: bool) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+      (UartPort, uart_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -334,16 +334,16 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
   }
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], swd_connected: bool) -> None:
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], swd_connected: bool) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+      (UartPort, uart_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -377,9 +377,9 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=self.pin_assigns))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
-    self.generator(self.generate, self.usb.allocated())
+    self.generator(self.generate, self.usb.requested())
 
-  def generate(self, usb_allocated: List[str]) -> None:
+  def generate(self, usb_requests: List[str]) -> None:
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic, excludes=[self.usb])
@@ -395,10 +395,12 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
                                    self.ic.swd)
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-    if usb_allocated:
-      assert len(usb_allocated) == 1
-      usb_allocated_name = usb_allocated[0]
-      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated_name)
+    if usb_requests:
+      assert len(usb_requests) == 1
+      usb_request_name = usb_requests[0]
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
       self.usb_res = self.Block(Mdbt50q_UsbSeriesResistor())
-      self.connect(self.ic.usb.allocate(usb_allocated_name), self.usb_res.usb_inner)
+      self.connect(self.ic.usb.request(usb_request_name), self.usb_res.usb_inner)
       self.connect(self.usb_res.usb_outer, usb_port)
+    else:
+      self.usb.defined()

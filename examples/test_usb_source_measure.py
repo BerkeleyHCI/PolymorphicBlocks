@@ -332,28 +332,28 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
-      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.allocate(), imp.Block(I2cPullup()), self.pd.i2c)
-      self.connect(self.mcu.gpio.allocate('pd_int'), self.pd.int)
+      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
+      self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
-      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
-      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw3'))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
+      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
+      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
 
       # TODO next revision: Blackberry trackball UI, speakers?
 
-      shared_spi = self.mcu.spi.allocate('spi')
+      shared_spi = self.mcu.spi.request('spi')
 
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
-      self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
+      self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
+      self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
-      self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
+      self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
 
       (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
                                      self.control.control_voltage)
@@ -371,16 +371,16 @@ class UsbSourceMeasureTest(JlcBoardTop):
                    self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
                    self.adc_v.ref, self.adc_i.ref)
 
-      self.connect(self.mcu.gpio.allocate('dac_v_cs'), self.dac_v.cs)
-      self.connect(self.mcu.gpio.allocate('dac_ip_cs'), self.dac_ip.cs)
-      self.connect(self.mcu.gpio.allocate('dac_in_cs'), self.dac_in.cs)
-      self.connect(self.mcu.gpio.allocate('adc_v_cs'), self.adc_v.cs)
-      self.connect(self.mcu.gpio.allocate('adc_i_cs'), self.adc_i.cs)
-      self.connect(self.mcu.gpio.allocate('dac_ldac'),
+      self.connect(self.mcu.gpio.request('dac_v_cs'), self.dac_v.cs)
+      self.connect(self.mcu.gpio.request('dac_ip_cs'), self.dac_ip.cs)
+      self.connect(self.mcu.gpio.request('dac_in_cs'), self.dac_in.cs)
+      self.connect(self.mcu.gpio.request('adc_v_cs'), self.adc_v.cs)
+      self.connect(self.mcu.gpio.request('adc_i_cs'), self.adc_i.cs)
+      self.connect(self.mcu.gpio.request('dac_ldac'),
                    self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
 
-      self.connect(self.mcu.gpio.allocate('high_en'), self.control.high_en)
-      self.connect(self.mcu.gpio.allocate('low_en'), self.control.low_en)
+      self.connect(self.mcu.gpio.request('high_en'), self.control.high_en)
+      self.connect(self.mcu.gpio.request('low_en'), self.control.low_en)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
@@ -408,8 +408,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'vmeas', 'amp'], Opa197),
         (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
-        (['control', 'driver', 'low_fet'], DigikeyFet),
-        (['control', 'driver', 'high_fet'], DigikeyFet),
+        (['control', 'driver', 'low_fet'], CustomFet),
+        (['control', 'driver', 'high_fet'], CustomFet),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -448,9 +448,13 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'high_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
+        (['control', 'driver', 'high_fet', 'part_spec'], 'SQJ148EP-T1_GE3'),
         (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
         # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
+        (['control', 'driver', 'low_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
+        (['control', 'driver', 'low_fet', 'part_spec'], 'SQJ431EP-T1_GE3'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),

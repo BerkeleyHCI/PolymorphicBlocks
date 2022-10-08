@@ -47,8 +47,8 @@ class TestPackedDevices(DesignTop):
 
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
-    self.pack(self.sink.elements.allocate('1'), ['sink1'])
-    self.pack(self.sink.elements.allocate('2'), ['sink2'])
+    self.pack(self.sink.elements.request('1'), ['sink1'])
+    self.pack(self.sink.elements.request('2'), ['sink2'])
 
 
 class TestInvalidPackedDevices(DesignTop):
@@ -67,8 +67,8 @@ class TestInvalidPackedDevices(DesignTop):
 
   def multipack(self) -> None:
       self.sink = self.PackedBlock(TestPackedSink())
-      self.pack(self.sink.elements.allocate('1'), ['sink1'])
-      self.pack(self.sink.elements.allocate('2'), ['sink2'])
+      self.pack(self.sink.elements.request('1'), ['sink1'])
+      self.pack(self.sink.elements.request('2'), ['sink2'])
 
 
 class NetlistTestCase(unittest.TestCase):

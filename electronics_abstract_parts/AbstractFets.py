@@ -105,7 +105,7 @@ class BaseTableFet(Fet):
   VGS_DRIVE = PartsTableColumn(Range)
   RDS_ON = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
-  GATE_CHARGE = PartsTableColumn(Range)
+  GATE_CHARGE = PartsTableColumn(Range)  # units of C
   CHANNEL = PartsTableColumn(str)  # either 'P' or 'N'
 
 

@@ -114,12 +114,12 @@ class LedMatrixTest(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
 
       # maximum current draw that is still within the column sink capability of the ESP32
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
-      self.connect(self.mcu.gpio.allocate_vector('led'), self.matrix.ios)
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -128,13 +128,13 @@ class LedMatrixTest(JlcBoardTop):
 
   def multipack(self) -> None:
     self.matrix_res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res1.elements.allocate('0'), ['matrix', 'res[0]'])
-    self.pack(self.matrix_res1.elements.allocate('1'), ['matrix', 'res[1]'])
-    self.pack(self.matrix_res1.elements.allocate('2'), ['matrix', 'res[2]'])
+    self.pack(self.matrix_res1.elements.request('0'), ['matrix', 'res[0]'])
+    self.pack(self.matrix_res1.elements.request('1'), ['matrix', 'res[1]'])
+    self.pack(self.matrix_res1.elements.request('2'), ['matrix', 'res[2]'])
 
     self.matrix_res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res2.elements.allocate('0'), ['matrix', 'res[3]'])
-    self.pack(self.matrix_res2.elements.allocate('1'), ['matrix', 'res[4]'])
+    self.pack(self.matrix_res2.elements.request('0'), ['matrix', 'res[3]'])
+    self.pack(self.matrix_res2.elements.request('1'), ['matrix', 'res[4]'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

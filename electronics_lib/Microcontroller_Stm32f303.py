@@ -191,14 +191,14 @@ class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBloc
     self.gnd = self.Port(GroundSource(), optional=True)
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.can.allocated())
+                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.can.requested())
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               can_allocates: List[str]) -> None:
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               can_requests: List[str]) -> None:
     system_pins = {
       '16': self.pwr_in,
       '19': self.pwr_5v,
@@ -209,9 +209,9 @@ class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBloc
 
     allocated = Stm32f303Base_Device.mappable_ios(self.gnd, self.pwr_3v3, self.pwr_3v3)\
       .remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-        (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-        (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-        (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+        (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+        (UartPort, uart_requests), (CanControllerPort, can_requests),
+        (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 

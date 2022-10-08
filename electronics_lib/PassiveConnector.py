@@ -20,7 +20,7 @@ class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
     self.pins = self.Port(Vector(Passive().empty()))
     self.actual_length = self.Parameter(IntExpr())
 
-    self.generator(self.generate, length, self.pins.allocated())
+    self.generator(self.generate, length, self.pins.requested())
 
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     """Returns the part footprint, manufacturer, and name given the number of pins (length).

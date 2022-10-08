@@ -478,18 +478,18 @@ class StringExpr(ConstraintExpr[str, StringLike]):
 class AssignExpr(ConstraintExpr[None, None]):
   """Assignment expression, should be an internal type"""
   @classmethod
-  def _to_expr_type(cls, input: Any) -> AssignExpr:
+  def _to_expr_type(cls, input: Any) -> NoReturn:
     raise ValueError("can't convert to AssignExpr")
 
   @classmethod
-  def _decl_to_proto(self) -> edgir.ValInit:
+  def _decl_to_proto(self) -> NoReturn:
     raise ValueError("can't create parameter from AssignExpr")
 
   @classmethod
-  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+  def _from_lit(cls, pb: edgir.ValueLit) -> NoReturn:
     raise ValueError("can't unpack AssignExpr")
 
-  def _is_lit(self) -> bool:
+  def _is_lit(self) -> NoReturn:
     raise ValueError("can't have literal AssignExpr")
 
 

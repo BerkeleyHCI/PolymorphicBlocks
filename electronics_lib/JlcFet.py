@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart, DescriptionParser
 
 
-class JlcFet(TableFet, JlcTablePart, FootprintBlock):
+class JlcBaseFet(BaseTableFet, JlcTablePart):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3L': 'Package_TO_SOT_SMD:SOT-23',
@@ -18,7 +18,7 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcFet.CHANNEL: match.group(7),
+       JlcBaseFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
@@ -28,12 +28,12 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
                                  PartsTableUtil.parse_value(match.group(5), 'V')),
        TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'W')),
-       TableFet.GATE_CHARGE: Range.all(),  # not specified, user must manually check
+       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
     # Some of them have the power entry later, for whatever reason
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcFet.CHANNEL: match.group(7),
+       JlcBaseFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
@@ -43,7 +43,7 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
                                  PartsTableUtil.parse_value(match.group(4), 'V')),
        TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(5), 'W')),
-       TableFet.GATE_CHARGE: Range.all(),  # not specified, user must manually check
+       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
   ]
 
@@ -72,3 +72,11 @@ class JlcFet(TableFet, JlcTablePart, FootprintBlock):
     super()._make_footprint(part)
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+
+
+class JlcFet(TableFet, JlcBaseFet):
+  pass
+
+
+class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
+  pass
