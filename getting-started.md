@@ -623,22 +623,22 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
 **Add a pin assignment for the ESP32 in the refinements section**:
 ```python
 class BlinkyExample(SimpleBoardTop):
-    def contents(self) -> None:
-        ...
+  def contents(self) -> None:
+    ...
 
-    def refinements(self) -> Refinements:
-        return super().refinements() + Refinements(
-            instance_refinements=[
-                ...
-            ],
-            instance_values=[
-                (['mcu', 'pin_assigns'], [
-                    'led0=26',
-                    'led1=27',
-                    'led2=28',
-                    'led3=29',
-                ])
-            ])
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+    instance_refinements=[
+      ...
+    ],
+    instance_values=[
+      (['mcu', 'pin_assigns'], [
+        'led0=26',
+        'led1=27',
+        'led2=28',
+        'led3=29',
+      ])
+    ])
 ```
 
 > <details>
