@@ -688,3 +688,10 @@ Good luck with building PCBs!
 
 ## Defining Library Parts
 Continue to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
+
+### Additional Resources
+If you want to some more complex examples of boards designed in this HDL, check out:
+- [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix.
+  Ignore the implementation of the charlieplexing LED matrix library block for now, just look at the top-leve design.
+- [Simon Game](examples/test_simon.py): an implementation of the Simon electronic game, that uses 12v dome buttons and includes the needed power conversion circuitry.
+- [CANdapter](examples/test_can_adapter.py): an USB to isolated CAN adapter, with a bunch of onboard LEDs and an LCD display.
