@@ -52,7 +52,7 @@ class NewBlinkyBuck(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['buck', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
     )
 
@@ -85,7 +85,7 @@ class NewBlinkyRefactored(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['buck', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
     )
 
@@ -185,7 +185,7 @@ class NewBlinkyMagsense(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['buck', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
     )
 
@@ -233,7 +233,7 @@ class NewBlinkyLightsense(BoardTop):
       ],
       instance_values=[
         # JLC does not have frequency specs, must be checked TODO
-        (['buck', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['buck', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
         (Opamp, Mcp6001),

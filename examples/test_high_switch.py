@@ -158,7 +158,7 @@ class TestHighSwitch(BoardTop):
           'swd.swo=PIO0_8',
         ]),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
         # JLC does not have gate charge spec, so ignore the power calc TODO
         (['light[0]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
         (['light[0]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
