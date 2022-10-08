@@ -37,7 +37,7 @@ class Ap3418(DiscreteBuckConverter):
   def contents(self):
     super().contents()
 
-    self.assign(self.frequency, 1.4*MHertz(tol=0))
+    self.assign(self.frequency, (1.12, 1.68)*MHertz)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
