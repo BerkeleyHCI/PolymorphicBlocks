@@ -167,8 +167,8 @@ Connect the LEDs to the IO pin and ground as needed.
 
 Replace the `for` loop in your top-level design with the single parameterized `LedArray` instantiation, and connect it to the microcontroller:  
 ```python
-self.leds = self.Block(LedArray(4))
-self.connect(self.mcu.gpio.request_vector('leds'), self.leds.ios)
+self.led = self.Block(LedArray(4))
+self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
 ```
 
 As shown above, port arrays can be directly connected together to make parallel connections, and we can request sub-arrays from a port array.
@@ -205,9 +205,8 @@ As a result, the single LED count parameter also drives the connection width and
 >
 >         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 >
->         self.led = ElementDict[IndicatorLed]()
->         for i in range(4):
->           (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+>         self.led = self.Block(LedArray(4))
+>         self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
 >
 >         # optionally, you may have also instantiated your magnetic sensor
 >
