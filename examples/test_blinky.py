@@ -3,220 +3,317 @@ import unittest
 from edg import *
 
 
-class TestBlinkyBasic(BoardTop):
-  def contents(self):
+class TestBlinkyIncomplete(SimpleBoardTop):
+  def contents(self) -> None:
     super().contents()
-    self.mcu = self.Block(Nucleo_F303k8())
-    self.dummy = self.Block(VoltageLoad())
-    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
-
+    self.usb = self.Block(UsbCReceptacle())
+    self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gnd, self.led.gnd)
-    self.connect(self.mcu.gpio.request(), self.led.signal)
+    self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.mcu.pwr)
+    self.connect(self.mcu.gpio.request('led'), self.led.signal)
+
+
+class TestBlinkyComplete(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.mcu = self.Block(Stm32f103_48())
+    self.led = self.Block(IndicatorLed())
+    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-    )
+      instance_refinements=[
+        (['buck'], Tps561201),
+      ])
 
 
-class TestBlinkySimple(BoardTop):
-  def contents(self):
+class TestBlinkyExpanded(SimpleBoardTop):
+  def contents(self) -> None:
     super().contents()
-    self.mcu = self.Block(Nucleo_F303k8())
-    self.dummy = self.Block(VoltageLoad())
-    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.mcu = self.Block(Stm32f103_48())
+    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.connect(self.buck.pwr_out, self.mcu.pwr)
+
+    self.sw = self.Block(DigitalSwitch())
+    self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+    self.connect(self.usb.gnd, self.sw.gnd)
+
+    self.led = ElementDict[IndicatorLed]()
+    for i in range(4):
+      self.led[i] = self.Block(IndicatorLed())
+      self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+      self.connect(self.usb.gnd, self.led[i].gnd)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['buck'], Tps561201),
+      ])
+
+
+class TestBlinkyImplicit(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.mcu.gnd, [Common]),
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
     ) as imp:
-      self.led = imp.Block(IndicatorLed())
+      self.mcu = imp.Block(Stm32f103_48())
+
       self.sw = imp.Block(DigitalSwitch())
+      self.connect(self.mcu.gpio.request('sw'), self.sw.out)
 
-    self.connect(self.mcu.gpio.request(), self.led.signal)
-    self.connect(self.sw.out, self.mcu.gpio.request())
-
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    )
-
-
-class TestBlinkySimpleChain(BoardTop):
-  def contents(self):
-    super().contents()
-    self.mcu = self.Block(Nucleo_F303k8())
-    self.dummy = self.Block(VoltageLoad())
-    self.connect(self.mcu.pwr_3v3, self.dummy.pwr)  # TODO this is a hack to define the 3v3 link
-
-    with self.implicit_connect(
-        ImplicitConnect(self.mcu.gnd, [Common]),
-    ) as imp:
-      (self.led, ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
-
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    )
-
-
-class TestBlinkyBroken(BoardTop):
-  def contents(self):
-    super().contents()
-    self.usb = self.Block(UsbCReceptacle())
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
-
-    with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.mcu = imp.Block(IoController())
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        self.led[i] = imp.Block(IndicatorLed())
+        self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
-      ]
-    )
+        (['buck'], Tps561201),
+      ])
 
 
-class TestBlinkyFlattened(BoardTop):
-  def contents(self):
+class TestBlinkyChain(SimpleBoardTop):
+  def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
     ) as imp:
-      self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
+      self.mcu = imp.Block(Stm32f103_48())
 
-    self.v3v3 = self.connect(self.usb_reg.pwr_out)
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
-    with self.implicit_connect(
-        ImplicitConnect(self.v3v3, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.mcu = imp.Block(IoController())
-
-      (self.led, ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
-        (['usb_reg'], Tps561201),
+        (['buck'], Tps561201),
+      ])
+
+
+class TestBlinkyMicro(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['buck'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
-        # JLC does not have frequency specs, must be checked TODO
-        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], True),
-      ],
-    )
+        (['mcu', 'pin_assigns'], [
+          'led0=26',
+          'led1=27',
+          'led2=28',
+          'led3=29',
+        ])
+      ])
 
 
-class Mcp9700_Device(FootprintBlock):
+class Lf21215tmr_Device(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
-    # block boundary (ports, parameters) definition here
-    self.vdd = self.Port(VoltageSink(
-      voltage_limits=(2.3, 5.5)*Volt, current_draw=(0, 15)*uAmp
-    ), [Power])
-    self.vout = self.Port(AnalogSource(
-      voltage_out=(0.1, 2), current_limits=(0, 100)*uAmp,
-      impedance=(20, 20)*Ohm
-    ), [Output])
-    self.gnd = self.Port(Ground(), [Common])
+    self.vcc = self.Port(
+      VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0.5, 2.0)*uAmp))
+    self.gnd = self.Port(Ground())
+
+    self.vout = self.Port(DigitalSource.from_supply(
+      self.gnd, self.vcc,
+      current_limits=(-9, 9)*mAmp,
+      output_threshold_offset=(0.2, -0.3)
+    ))
 
   def contents(self) -> None:
     super().contents()
-    # block implementation (subblocks, internal connections, footprint) here
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23',
       {
-        '1': self.vdd,
+        '1': self.vcc,
         '2': self.vout,
         '3': self.gnd,
       },
-      mfr='Microchip Technology', part='MCP9700T-E/TT',
-      datasheet='http://ww1.microchip.com/downloads/en/DeviceDoc/20001942G.pdf'
+      mfr='Littelfuse', part='LF21215TMR',
+      datasheet='https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf'
     )
 
 
-class Mcp9700(Block):
+class Lf21215tmr(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.ic = self.Block(Mcp9700_Device())
-    self.pwr = self.Export(self.ic.vdd, [Power])
-    self.gnd = self.Export(self.ic.gnd, [Common])
-    self.out = self.Export(self.ic.vout, [Output])
+    self.ic = self.Block(Lf21215tmr_Device())
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(VoltageSink.empty(), [Common])
+    self.out = self.Port(DigitalSource.empty())
+
+    self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
+
+    self.connect(self.ic.vcc, self.cap.pwr, self.pwr)
+    self.connect(self.ic.gnd, self.cap.gnd, self.gnd)
+    self.connect(self.ic.vout, self.out)
 
   def contents(self) -> None:
     super().contents()
-    self.vdd_cap = self.Block(DecouplingCapacitor(
-      capacitance=0.1*uFarad(tol=0.2)
-    )).connected(self.gnd, self.pwr)
 
 
-class TestBlinkyComplete(BoardTop):
-  def contents(self):
+class Lf21215tmr_Export(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.ic = self.Block(Lf21215tmr_Device())
+    self.pwr = self.Export(self.ic.vcc, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.out = self.Export(self.ic.vout)
+
+    self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
+    self.connect(self.cap.pwr, self.pwr)
+    self.connect(self.cap.gnd, self.gnd)
+
+  def contents(self) -> None:
+    super().contents()
+
+
+class TestBlinkyWithLibrary(SimpleBoardTop):
+  def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
-
-    with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.usb_reg = imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05)))
-
-    self.v3v3 = self.connect(self.usb_reg.pwr_out)
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.v3v3, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      self.led = ElementDict[IndicatorLed]()
-      for i in range(8):
-        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(), imp.Block(IndicatorLed()))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request())
-      (self.temp, ), _ = self.chain(imp.Block(Mcp9700()), self.mcu.adc.request())
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+
+      self.mag = imp.Block(Lf21215tmr())
+      self.connect(self.mcu.gpio.request('mag'), self.mag.out)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
-        (['usb_reg'], Tps561201),
+        (['buck'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
-        # JLC does not have frequency specs, must be checked TODO
-        (['usb_reg', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['mcu', 'pin_assigns'], [
+          'led0=26',
+          'led1=27',
+          'led2=28',
+          'led3=29',
+        ])
+      ])
+
+
+class TestBlinkyWithLibraryExport(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+
+      self.led = ElementDict[IndicatorLed]()
+      for i in range(4):
+        (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+
+      self.mag = imp.Block(Lf21215tmr_Export())
+      self.connect(self.mcu.gpio.request('mag'), self.mag.out)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['buck'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
       ],
-    )
+      instance_values=[
+        (['mcu', 'pin_assigns'], [
+          'led0=26',
+          'led1=27',
+          'led2=28',
+          'led3=29',
+        ])
+      ])
 
 
 class BlinkyTestCase(unittest.TestCase):
-  def test_design_basic(self) -> None:
-    compile_board_inplace(TestBlinkyBasic)
-
-  def test_design_simple(self) -> None:
-    compile_board_inplace(TestBlinkySimple)
-
-  def test_design_simple_chain(self) -> None:
-    compile_board_inplace(TestBlinkySimpleChain)
-
-  def test_design_broken(self) -> None:
+  def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
-      compile_board_inplace(TestBlinkyBroken)
-
-  def test_design_flat(self) -> None:
-    compile_board_inplace(TestBlinkyFlattened)
+      compile_board_inplace(TestBlinkyIncomplete)
 
   def test_design_complete(self) -> None:
     compile_board_inplace(TestBlinkyComplete)
+
+  def test_design_expnaded(self) -> None:
+    compile_board_inplace(TestBlinkyExpanded)
+
+  def test_design_implicit(self) -> None:
+    compile_board_inplace(TestBlinkyImplicit)
+
+  def test_design_chain(self) -> None:
+    compile_board_inplace(TestBlinkyChain)
+
+  def test_design_micro(self) -> None:
+    compile_board_inplace(TestBlinkyMicro)
+
+  def test_design_library(self) -> None:
+    compile_board_inplace(TestBlinkyWithLibrary)
+
+  def test_design_export(self) -> None:
+    compile_board_inplace(TestBlinkyWithLibraryExport)

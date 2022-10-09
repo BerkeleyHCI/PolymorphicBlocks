@@ -345,6 +345,7 @@ The sensor output can be connected to the microcontroller's GPIO.
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
 >         (['buck'], Tps561201),
+>         (['mcu'], Esp32_Wroom_32),
 >       ],
 >       instance_values=[
 >         (['mcu', 'pin_assigns'], [
