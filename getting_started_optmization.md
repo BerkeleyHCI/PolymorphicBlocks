@@ -28,10 +28,10 @@ class BlinkyExample(SimpleBoardTop):
   ...
   def multipack(self) -> None:
     self.res_pack = self.PackedBlock(ResistorArray())
-    self.pack(self.res_pack.elements.request('0'), ['led', 'led_0'])
-    self.pack(self.res_pack.elements.request('1'), ['led', 'led_1'])
-    self.pack(self.res_pack.elements.request('2'), ['led', 'led_2'])
-    self.pack(self.res_pack.elements.request('3'), ['led', 'led_4'])
+    self.pack(self.res_pack.elements.request('0'), ['led', 'led[0]', 'res'])
+    self.pack(self.res_pack.elements.request('1'), ['led', 'led[1]', 'res'])
+    self.pack(self.res_pack.elements.request('2'), ['led', 'led[2]', 'res'])
+    self.pack(self.res_pack.elements.request('3'), ['led', 'led[3]', 'res'])
 ```
 
 > `self.pack(...)` takes two arguments, the first is the part in the `PackedBlock`, and the second is the `Block` in the design hierarchy to be backed.

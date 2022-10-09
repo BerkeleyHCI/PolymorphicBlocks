@@ -185,7 +185,7 @@ class Lf21215tmr(Block):
     self.ic = self.Block(Lf21215tmr_Device())
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(VoltageSink.empty(), [Common])
+    self.gnd = self.Port(Ground.empty(), [Common])
     self.out = self.Port(DigitalSource.empty())
 
     self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
@@ -292,6 +292,102 @@ class TestBlinkyWithLibraryExport(SimpleBoardTop):
       ])
 
 
+class LedArray(GeneratorBlock):
+  @init_in_parent
+  def __init__(self, count: IntLike) -> None:
+    super().__init__()
+    self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.generator(self.generate, count)
+
+  def generate(self, count: int) -> None:
+    self.led = ElementDict[IndicatorLed]()
+    for i in range(count):
+      io = self.ios.append_elt(DigitalSink.empty())
+      self.led[i] = self.Block(IndicatorLed())
+      self.connect(io, self.led[i].signal)
+      self.connect(self.gnd, self.led[i].gnd)
+
+
+class TestBlinkyArray(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+
+      (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
+
+      # optionally, you may have also instantiated your magnetic sensor
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['buck'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], [
+          'led_0=26',
+          'led_1=27',
+          'led_2=28',
+          'led_3=29',
+        ])
+      ])
+
+
+class TestBlinkyPacked(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.buck.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.buck.pwr_out, [Power]),
+        ImplicitConnect(self.buck.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+
+      (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
+
+      # optionally, you may have also instantiated your magnetic sensor
+
+  def multipack(self) -> None:
+    self.res_pack = self.PackedBlock(ResistorArray())
+    self.pack(self.res_pack.elements.request('0'), ['led', 'led[0]', 'res'])
+    self.pack(self.res_pack.elements.request('1'), ['led', 'led[1]', 'res'])
+    self.pack(self.res_pack.elements.request('2'), ['led', 'led[2]', 'res'])
+    self.pack(self.res_pack.elements.request('3'), ['led', 'led[3]', 'res'])
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['buck'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
+      ],
+      instance_values=[
+        (['mcu', 'pin_assigns'], [
+          'led_0=26',
+          'led_1=27',
+          'led_2=28',
+          'led_3=29',
+        ])
+      ])
+
+
 class BlinkyTestCase(unittest.TestCase):
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
@@ -317,3 +413,9 @@ class BlinkyTestCase(unittest.TestCase):
 
   def test_design_export(self) -> None:
     compile_board_inplace(TestBlinkyWithLibraryExport)
+
+  def test_design_array(self) -> None:
+    compile_board_inplace(TestBlinkyArray)
+
+  def test_design_packed(self) -> None:
+    compile_board_inplace(TestBlinkyPacked)

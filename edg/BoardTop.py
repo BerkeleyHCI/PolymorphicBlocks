@@ -7,6 +7,7 @@ class BaseBoardTop(DesignTop):
     return super().refinements() + Refinements(
       class_refinements=[
         (Resistor, GenericChipResistor),
+        (ResistorArray, JlcResistorArray),  # TODO: replace with generic resistor array
         (Capacitor, GenericMlcc),
         (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),

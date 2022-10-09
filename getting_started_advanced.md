@@ -84,8 +84,8 @@ class LedArray(Block):
   @init_in_parent
   def __init__(self, count: IntLike) -> None:
     super().__init__()
-    self.ios = self.Port(Vector(DigitalSink.empty()))
-    self.gnd = self.Port(Ground())
+    self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
 ```
 
 Port arrays are a container port that contain individual ports internally.
@@ -95,18 +95,19 @@ However, from internally, we will be able to define their size, as well as get t
 > Port arrays require the port type to be undefined.
 > Since we have not defined any ports so far, this is only needed for the type and may not have additional data like parameter values.
 
+
 ## Implementation
 _In this section, we'll actually implement the circuit generator._
 
 ### Generator
 First, we will need a way to get the concrete (`int`) value for the LED count:  
 ```python
-class LedArray(Block):
+class LedArray(GeneratorBlock):
   @init_in_parent
   def __init__(self, count: IntLike) -> None:
     super().__init__()
-    self.ios = self.Port(Vector(DigitalSink.empty()))
-    self.gnd = self.Port(Ground())
+    self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
     self.generator(self.generate, count)
     
   def generate(self, count: int) -> None:
@@ -114,6 +115,7 @@ class LedArray(Block):
 ```
 
 Generators are a way to defer the implementation of the block until its parameter values are ready, then get the concrete Python version of that parameter for use in the HDL.
+Generators require the block to subclass `GeneratorBlock`.
 
 > While here we use generators as a way to get a concrete value for circuit generation (the LED count), generators can also be used to do calculations beyond the operations available with the parameters.
 > For example, while we can add two `IntExpr`s (which produces another `IntExpr`), something more complex like square root is not provided.
@@ -123,7 +125,7 @@ Generators are a way to defer the implementation of the block until its paramete
 So far, the port array is still empty, so we must define its elements.
 With the count available as an int, we can use the `for` loop structure from before:
 ```python
-class LedArray(Block):
+class LedArray(GeneratorBlock):
   ...
   
   def generate(self, count: int) -> None:
@@ -144,21 +146,21 @@ Connect the LEDs to the IO pin and ground as needed.
 >   <summary>At this point, your HDL might look like...</summary>
 >
 >   ```python
->   class LedArray(Block):
+>   class LedArray(GeneratorBlock):
 >     @init_in_parent
 >     def __init__(self, count: IntLike) -> None:
 >       super().__init__()
->       self.ios = self.Port(Vector(DigitalSink.empty()))
->       self.gnd = self.Port(Ground())
+>       self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
+>       self.gnd = self.Port(Ground.empty(), [Common])
 >       self.generator(self.generate, count)
 >   
->   def generate(self, count: int) -> None:
->       self.leds = ElementDict[IndicatorLed]()
->       for i in range(count):
->         io = self.ios.append_elt(DigitalSink.empty())
->         self.leds[i] = self.Block(IndicatorLed())
->         self.connect(io, self.leds[i].sig)
->         self.connect(self.gnd, self.leds[i].gnd)
+>     def generate(self, count: int) -> None:
+>         self.leds = ElementDict[IndicatorLed]()
+>         for i in range(count):
+>           io = self.ios.append_elt(DigitalSink.empty())
+>           self.leds[i] = self.Block(IndicatorLed())
+>           self.connect(io, self.leds[i].signal)
+>           self.connect(self.gnd, self.leds[i].gnd)
 >   ```
 > </details>
 
@@ -169,6 +171,11 @@ Replace the `for` loop in your top-level design with the single parameterized `L
 ```python
 self.led = self.Block(LedArray(4))
 self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
+```
+
+Or, since the new block has both implicit scope and chain tags:
+```python
+(self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
 ```
 
 As shown above, port arrays can be directly connected together to make parallel connections, and we can request sub-arrays from a port array.
@@ -184,6 +191,26 @@ As a result, the single LED count parameter also drives the connection width and
 > Just remember that in any array connection, there must be exactly array of defined width, and all other arrays will take their widths from that.
 > 
 > Exception, if connecting an internally-facing array as a whole: it can only be connected to exactly one other externally-facing array. 
+
+When `request_vector` is used, each element's suggested name is the sub-array's suggested name, an underscore (`_`), then the element index.
+This is slightly different than the naming we've used for pin assignment so far, so we will need to update the refinements:
+
+```python
+class BlinkyExample(SimpleBoardTop):
+  ...
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      ...
+      instance_values=[
+        (['mcu', 'pin_assigns'], [
+          'led_0=26',
+          'led_1=27',
+          'led_2=28',
+          'led_3=29',
+        ])
+      ])
+
+```
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
@@ -205,8 +232,7 @@ As a result, the single LED count parameter also drives the connection width and
 >
 >         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 >
->         self.led = self.Block(LedArray(4))
->         self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
+>         (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
 >
 >         # optionally, you may have also instantiated your magnetic sensor
 >
@@ -214,6 +240,7 @@ As a result, the single LED count parameter also drives the connection width and
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
 >         (['buck'], Tps561201),
+>         (['mcu'], Esp32_Wroom_32),
 >       ],
 >       instance_values=[
 >         (['mcu', 'pin_assigns'], [

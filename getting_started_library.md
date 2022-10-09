@@ -239,7 +239,7 @@ For the ports, because these are intermediate ports, they must not have paramete
 You can also add the implicit connection `Power` and `Common` tags
 ```python
 self.pwr = self.Port(VoltageSink.empty(), [Power])
-self.gnd = self.Port(VoltageSink.empty(), [Common])
+self.gnd = self.Port(Ground.empty(), [Common])
 self.out = self.Port(DigitalSource.empty())
 ```
 
