@@ -67,9 +67,9 @@ This defines the type of the parameter being passed but not the value.
 `@init_in_parent` is needed whenever a Block defines constructor parameters.
 
 > The expression type is a way to refer to the parameter but without giving it a concrete value.
-> This is needed since the value is resolved in the compiler, and therefore not available in the HDL to the constructor.
+> This is needed since the value is resolved in the compiler and therefore not available in the HDL to the constructor.
 > 
-> Note that the type not `IntExpr`, but `IntLike`, which also includes `int`.
+> Note that the type is not `IntExpr`, but `IntLike`, which also includes `int`.
 > This allows calling the constructor with an `int` value directly, if we just have a static parameterization.
 > However, because of the required `@init_in_parent`, the actual value seem by the constructor will be a new `IntExpr`.
 > 
@@ -113,11 +113,11 @@ class LedArray(Block):
     ...
 ```
 
-Generators are a way to defer the implementation of the block until its parameter values are ready.
+Generators are a way to defer the implementation of the block until its parameter values are ready, then get the concrete Python version of that parameter for use in the HDL.
 
 > While here we use generators as a way to get a concrete value for circuit generation (the LED count), generators can also be used to do calculations beyond the operations available with the parameters.
 > For example, while we can add two `IntExpr`s (which produces another `IntExpr`), something more complex like square root is not provided.
-> For those cases, use a generator to get the parameter's value, and then you have access to the full power of Python.
+> For those cases, use a generator to get the parameter's value, where you have access to the full power of Python.
 
 ### Port Arrays - Internal
 So far, the port array is still empty, so we must define its elements.
@@ -227,6 +227,12 @@ As a result, the single LED count parameter also drives the connection width and
 >   ```
 > </details>
 
+
 ## Board Optimization
 
 Continue to [part 4 of the tutorial](getting_started_library_optimization.md) on optimizing the board using packed components.
+
+### Additional Resources
+Check out these examples of generators:
+- [Charlieplexing LED generator](examples/test_ledmatrix.py): a much more advanced version of the LED array that minimizes IO pins to drive LEDs, by allowing one IO pin to drive both a column and row of LEDs.
+- [Buck and boost converter generators](electronics_abstract_parts/AbstractPowerConverters.py): the power path generator for these switching DC/DC converters encode well-known design equations using generators.
