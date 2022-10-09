@@ -41,6 +41,10 @@ class BlinkyExample(SimpleBoardTop):
 > The above is an example of a part array, which similar to port arrays are dynamically sized and can be `request`ed from.
 > Like port arrays, even though they are dynamically sized, there may be restrictions from what parts are available, for example you'd be hard-pressed to find an 8-resistor array anywhere.
 
+If you import this into KiCad, you should be able to see the quad-pack resistor instead of single resistors per LED.
+Here, it is shown on the bottom left, next to the switch:  
+![Packed layout with default placement](docs/packed_kicad.png)
+
 
 ## Definition
 
