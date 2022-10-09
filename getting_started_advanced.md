@@ -1,0 +1,165 @@
+# Getting Started, Part 3: Advanced Library Construction
+_In this section, we will convert the four-LED array into an n-LED array block and go through the advanced constructs of generators and port arrays._
+
+As a refresher, in the first part of the getting started tutorial, we dropped 4 LEDs directly in our top-level design sign with a `for` loop in:  
+```python
+self.led = ElementDict[IndicatorLed]()
+for i in range(4):
+  self.led[i] = self.Block(IndicatorLed())
+  ...
+```
+
+However, arrays of LEDs are common enough that they would make sense as a library block, and it would condense these three lines of code here into just one.
+
+> The IDE does not support graphical operations for programmatic constructing circuits.
+> However, you can continue to use the IDE for visualization.
+
+
+## The Naive (but Broken) Approach
+
+You might be tempted to drop the above into a Block and pipe the `int` through as a constructor argument:
+```python
+# DON'T DO THIS - THIS WON'T WORK
+class LedArray(Block):
+  def __init__(self, count: int) -> None:
+    super().__init__()
+
+    self.led = ElementDict[IndicatorLed]()
+    for i in range(count):
+      self.led[i] = self.Block(IndicatorLed())
+      ...
+```
+
+However, there's a few problems with this, which illustrates a few significant ways our HDL model differs from Python:
+- When you instantiate a block, for example with `self.Block(LedArray(4))`, it only constructs a block stub.
+  As a result, we can't pass parameters into `Blocks` that are concrete values like `int`.
+  - This structure allows the compiler to resolve the dataflow and fill out the details when the parameter values are ready, instead of forcing the user to take into account dataflow when ordering their code.
+    For example, the `IndicatorLed` generated resistor depends on its input voltage, which depends on the voltage on its signal pin, which isn't available until it's connected.
+- All IOs must be static, since classes define a single template block.
+  So we can't create different numbers of top-level IOs based on a parameter value.
+
+But, we have ways of achieving the same goals even within the above structure.
+
+
+## Interface
+_In this section, we'll define the block's interface using advanced constructs for library writers._
+_This will hopefully also illuminate how some of the existing block generators work under the hood._
+
+**Start by creating an empty block, as done previously:**
+```python
+class LedArray(Block):
+  def __init__(self) -> None:
+    super().__init__()
+```
+
+### Parameters
+First, we'll need to define the block such that it can take a parameter.
+This is actually only slight twist on the naive approach:  
+```python
+class LedArray(Block):
+  @init_in_parent
+  def __init__(self, count: IntLike) -> None:
+    super().__init__()
+```
+
+Instead of the constructor argument being a Python type that defines a value like `int`, we use an expression-type.
+This defines the type of the parameter being passed but not the value.
+`@init_in_parent` is needed whenever a Block defines constructor parameters.
+
+> The expression type is a way to refer to the parameter but without giving it a concrete value.
+> This is needed since the value is resolved in the compiler, and therefore not available in the HDL to the constructor.
+> 
+> Note that the type not `IntExpr`, but `IntLike`, which also includes `int`.
+> This allows calling the constructor with an `int` value directly, if we just have a static parameterization.
+> However, because of the required `@init_in_parent`, the actual value seem by the constructor will be a new `IntExpr`.
+> 
+> `@init_in_parent` does some processing on the function itself, for example inspecting the constructor argument list and turning those into parameters, and translating the values passed in from the constructor call into references to the block's own parameters.
+
+
+### Port Arrays - Definition
+Next, because we will have _n_ LEDs, we will need _n_ IO pins.
+While we can't define a separate top-level IO for each LED, we can define a port array IO that is dynamically sized:  
+```python
+class LedArray(Block):
+  @init_in_parent
+  def __init__(self, count: IntLike) -> None:
+    super().__init__()
+    self.ios = self.Port(Vector(DigitalSink.empty()))
+```
+
+Port arrays are a container port that contain individual ports internally.
+As we saw from Part 1, viewed externally, they have no defined size and ports can be requested from them with optional names.
+However, from internally, we will be able to define their size, as well as get the names of incoming connections.
+
+
+## Implementation
+_In this section, we'll actually implement the circuit generator._
+
+### Generator
+
+### Port Arrays - Internal
+
+### Circuit Generation
+
+
+## Putting it All Together
+
+Replace the `for` loop in your top-level design with the single parameterized `LedArray` instantiation, and connect it to the microcontroller:  
+```python
+self.leds = self.Block(LedArray(4))
+self.connect(self.mcu.gpio.request_vector('leds'), self.leds.ios)
+```
+
+As shown above, port arrays can be directly connected together to make parallel connections, and we can request sub-arrays from a port array.
+When connecting port arrays together, exactly one must define the array width, which is automatically propagated to the others in the connection.
+As a result, the single LED count parameter also drives the connection width and the pins requested from the microcontroller. 
+
+> Behavior of array connections 
+> including naming
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.buck.gnd)
+>       self.connect(self.usb.pwr, self.buck.pwr_in)
+>
+>       with self.implicit_connect(
+>           ImplicitConnect(self.buck.pwr_out, [Power]),
+>           ImplicitConnect(self.buck.gnd, [Common]),
+>       ) as imp:
+>         self.mcu = imp.Block(IoController())
+>
+>         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+>
+>         self.led = ElementDict[IndicatorLed]()
+>         for i in range(4):
+>           (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+>
+>         self.mag = imp.Block(Lf21215tmr())
+>         self.connect(self.mcu.gpio.request('mag'), self.mag.out)
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['buck'], Tps561201),
+>       ],
+>       instance_values=[
+>         (['mcu', 'pin_assigns'], [
+>           'led_0=26',
+>           'led_1=27',
+>           'led_2=28',
+>           'led_3=29',
+>          ])
+>       ])
+>   ```
+> </details>
+
+## Board Optimization
+
+Continue to [part 4 of the tutorial](getting_started_library_optimization.md) on optimizing the board using packed components.

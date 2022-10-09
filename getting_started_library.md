@@ -55,13 +55,19 @@ self.vout = self.Port(DigitalSource())
 Similar to the buck converter blocks, these ports are also parameterized.
 We will need to modify these with values from the datasheet:
 - operating supply voltage of 1.8-5.5v
-- supply current of 1.5uA (nominal)
+- supply current of 0.5-2.0uA
 - output thresholds of 0.2v (low) and (Vcc-0.3) (high)
+
+> Limits are typically modeled with recommended operating conditions (as opposed to absolute maximum ratings) where available - for example, the 1.8 - 5.5v Vcc input limit.
+> Other parameters are modeled for worst case / full range - for example, the 0.5 - 2.0uA typical current draw and the 9 mA (assumed symmetric) output current capability.
+>
+> Currently, we only model electrical characteristics - so while data like temperature range and accuracy would be useful, those are not currently modeled.
+
 
 For Vcc, **set the `voltage_limits` and `current_draw`**:
 ```python
 self.vcc = self.Port(
-  VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0, 1.5)*uAmp))
+  VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0.5, 2.0)*uAmp))
 ```
 
 For `gnd`, we have a special `Ground()` convenience constructor for voltage inputs used as ground:
@@ -71,12 +77,11 @@ self.gnd = self.Port(Ground())
 
 For `DigitalSource`, while we could write the parameters explicitly:
 ```python
-# Don't do this, see better style below!
-
+# DON'T DO THIS - BETTER STYLE BELOW
 self.vout = self.Port(DigitalSource(
   voltage_out=(self.gnd.link().voltage.lower(),
                self.vcc.link().voltage.upper()),
-  current_limits=1.5 * uAmp(tol=0),
+  current_limits=(-9, 9)*mAmp,
   output_thresholds=(self.gnd.link().voltage.upper() + 0.2 * Volt,
                      self.vcc.link().voltage.lower() - 0.3 * Volt)
 ))
@@ -86,6 +91,7 @@ there's also a wrapper `DigitalSource.from_supply` that wraps the common way of 
 ```python
 self.vout = self.Port(DigitalSource.from_supply(
   self.gnd, self.vcc,
+  current_limits=(-9, 9)*mAmp,
   output_threshold_offset=(0.2, -0.3)
 ))
 ```
@@ -108,11 +114,12 @@ self.vout = self.Port(DigitalSource.from_supply(
 >     def __init__(self) -> None:
 >       super().__init__()
 >       self.vcc = self.Port(
->         VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0, 1.5)*uAmp))
+>         VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0.5, 2.0)*uAmp))
 >       self.gnd = self.Port(Ground())
 >   
 >       self.vout = self.Port(DigitalSource.from_supply(
 >         self.gnd, self.vcc,
+>         current_limits=(-9, 9)*mAmp,
 >         output_threshold_offset=(0.2, -0.3)
 >       ))
 > 
@@ -177,11 +184,12 @@ self.footprint(
 >     def __init__(self) -> None:
 >       super().__init__()
 >       self.vcc = self.Port(
->         VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0, 1.5)*uAmp))
+>         VoltageSink(voltage_limits=(1.8, 5.5)*Volt, current_draw=(0.5, 2.0)*uAmp))
 >       self.gnd = self.Port(Ground())
 >   
 >       self.vout = self.Port(DigitalSource.from_supply(
 >         self.gnd, self.vcc,
+>         current_limits=(-9, 9)*mAmp,
 >         output_threshold_offset=(0.2, -0.3)
 >       ))
 > 
@@ -350,6 +358,5 @@ The sensor output can be connected to the microcontroller's GPIO.
 
 
 ## Advanced Library Construction
-Under Construction!
 
-Continue to [part 3 of the tutorial](getting_started_library_advanced.md) on using generators and port arrays.
+Continue to [part 3 of the tutorial](getting_started_library_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
