@@ -85,21 +85,82 @@ class LedArray(Block):
   def __init__(self, count: IntLike) -> None:
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()))
+    self.gnd = self.Port(Ground())
 ```
 
 Port arrays are a container port that contain individual ports internally.
 As we saw from Part 1, viewed externally, they have no defined size and ports can be requested from them with optional names.
 However, from internally, we will be able to define their size, as well as get the names of incoming connections.
 
+> Port arrays require the port type to be undefined.
+> Since we have not defined any ports so far, this is only needed for the type and may not have additional data like parameter values.
 
 ## Implementation
 _In this section, we'll actually implement the circuit generator._
 
 ### Generator
+First, we will need a way to get the concrete (`int`) value for the LED count:  
+```python
+class LedArray(Block):
+  @init_in_parent
+  def __init__(self, count: IntLike) -> None:
+    super().__init__()
+    self.ios = self.Port(Vector(DigitalSink.empty()))
+    self.gnd = self.Port(Ground())
+    self.generator(self.generate, count)
+    
+  def generate(self, count: int) -> None:
+    ...
+```
+
+Generators are a way to defer the implementation of the block until its parameter values are ready.
+
+> While here we use generators as a way to get a concrete value for circuit generation (the LED count), generators can also be used to do calculations beyond the operations available with the parameters.
+> For example, while we can add two `IntExpr`s (which produces another `IntExpr`), something more complex like square root is not provided.
+> For those cases, use a generator to get the parameter's value, and then you have access to the full power of Python.
 
 ### Port Arrays - Internal
+So far, the port array is still empty, so we must define its elements.
+With the count available as an int, we can use the `for` loop structure from before:
+```python
+class LedArray(Block):
+  ...
+  
+  def generate(self, count: int) -> None:
+    for i in range(count):
+      self.ios.append_elt(DigitalSink.empty())
+      ...
+```
+
+> Port array's `.append_elt(...)` takes in the same arguments as `self.Port(...)`.
+> 
+> To mark a port array as explicitly having no elements, use `.defined()`.
 
 ### Circuit Generation
+Connect the LEDs to the IO pin and ground as needed.
+`.append_elt(...)` returns the newly created port within the array, which can be used in `self.connect(...)`.
+
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class LedArray(Block):
+>     @init_in_parent
+>     def __init__(self, count: IntLike) -> None:
+>       super().__init__()
+>       self.ios = self.Port(Vector(DigitalSink.empty()))
+>       self.gnd = self.Port(Ground())
+>       self.generator(self.generate, count)
+>   
+>   def generate(self, count: int) -> None:
+>       self.leds = ElementDict[IndicatorLed]()
+>       for i in range(count):
+>         io = self.ios.append_elt(DigitalSink.empty())
+>         self.leds[i] = self.Block(IndicatorLed())
+>         self.connect(io, self.leds[i].sig)
+>         self.connect(self.gnd, self.leds[i].gnd)
+>   ```
+> </details>
 
 
 ## Putting it All Together
@@ -114,8 +175,15 @@ As shown above, port arrays can be directly connected together to make parallel 
 When connecting port arrays together, exactly one must define the array width, which is automatically propagated to the others in the connection.
 As a result, the single LED count parameter also drives the connection width and the pins requested from the microcontroller. 
 
-> Behavior of array connections 
-> including naming
+> There are several ways to connect to arrays from externally:
+> - As in the first part of the tutorial, we can request individual sub-ports.
+> - As seen here, we can request a sub-array.
+> - Or as also seen here, we can connect the array as a whole
+> 
+> For connections, only the types have to match, so you can (as done above) connect a whole array to a requested sub-array, or connect two whole arrays.
+> Just remember that in any array connection, there must be exactly array of defined width, and all other arrays will take their widths from that.
+> 
+> Exception, if connecting an internally-facing array as a whole: it can only be connected to exactly one other externally-facing array. 
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
@@ -141,8 +209,7 @@ As a result, the single LED count parameter also drives the connection width and
 >         for i in range(4):
 >           (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 >
->         self.mag = imp.Block(Lf21215tmr())
->         self.connect(self.mcu.gpio.request('mag'), self.mag.out)
+>         # optionally, you may have also instantiated your magnetic sensor
 >
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(

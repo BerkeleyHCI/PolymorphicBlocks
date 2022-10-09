@@ -247,6 +247,7 @@ self.out = self.Port(DigitalSource.empty())
 > This is different than empty parameters.
 > 
 > Having parameters in intermediate ports will cause an over-assignment error, as those parameters are simultaneously assigned from the port definition and the interior port.
+> To avoid that, we explicitly use `.empty()`.
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
