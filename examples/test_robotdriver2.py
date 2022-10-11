@@ -5,6 +5,8 @@ from .test_robotdriver import LipoConnector, MotorConnector, PwmConnector
 
 
 class LedConnector(Block):
+  """Connector for external WS2812s."""
+  # # TODO Change num_leds to the number of external WS2812s to update the current draw.
   def __init__(self):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
@@ -86,7 +88,6 @@ class RobotDriver2(JlcBoardTop):
 
       self.expander = imp.Block(Pcf8574(0))
       self.connect(self.i2c, self.expander.i2c)
-      # # TODO use pin assign util for IO expanders
       self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
 
       self.leds = imp.Block(IndicatorSinkLedArray(4))

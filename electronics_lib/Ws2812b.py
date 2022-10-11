@@ -13,7 +13,8 @@ class Ws2812b(DiscreteChip, FootprintBlock, JlcPart):
         self.din = self.Port(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.3, 0.7),
-            input_threshold_abs=(1.5, 2.3))
+            input_threshold_abs=(0.7, 2.7))
+            # note that a more restrictive input_threshold_abs of (1.5, 2.3) was used previously
         )
         self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
