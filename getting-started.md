@@ -83,6 +83,8 @@ _Recommended (but optional), to use the IDE._
 2. If you do not have a Java JDK installed, download and install one.
    An open-source one is [Eclipse Temurin](https://adoptium.net/temurin/releases/?version=17).
 3. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
+   - If using command line git: make sure to initialize submodules: `git submodule update --init --recursive`.
+   - If using GitHub Desktop: it will handle submodules for you.
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
