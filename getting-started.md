@@ -490,7 +490,11 @@ with self.implicit_connect(
 
   self.sw = imp.Block(DigitalSwitch())
   self.connect(self.mcu.gpio.request('sw'), self.sw.out)
-  ...
+
+  self.led = ElementDict[IndicatorLed]()
+  for i in range(4):
+    self.led[i] = imp.Block(IndicatorLed())
+    self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 ```
 
 Remember that the buck converter is outside the implicit scope because it takes 5v and must be connected separately.
