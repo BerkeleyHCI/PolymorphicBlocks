@@ -88,10 +88,10 @@ _Recommended (but optional), to use the IDE._
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
-5. In the IDE, open the `PolymorphicBlocks` folder as a project.
-   You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
-6. Once the project loads, open `blinky_skeleton.py`, then set up the Python interpreter once the prompt shows up.
-7. Set up a Python SDK of your choice:
+5. In the IDE, **open the `PolymorphicBlocks` folder as a project**.
+   - You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
+6. Once the project loads, open `blinky_skeleton.py`.
+7. Set up the Python interpreter once the prompt shows up, "Configure Python interpreter".
    - If using a Pipenv environment, it will automatically fetch dependencies.
      You may need to install pipenv: `pip install pipenv`.
    - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf kinparse Deprecated`.
@@ -165,6 +165,7 @@ self.led = self.Block(IndicatorLed())
 
 > You can also insert blocks through graphical operations in the IDE.
 > 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
+>    - The _caret_ the text editor's current position, common shown as a blinking vertical line.
 > 2. Search for the relevant block in the Library Browser by using the Filter textbox:  
 >    ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
 > 3. Double-click the library entry.
