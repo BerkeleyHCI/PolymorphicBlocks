@@ -13,7 +13,6 @@ args = parser.parse_args()
 PART_ROTATIONS = {
   'C87911': 180,  # USB ESD diode
   'C165948': -90,  # USB C connector
-  'C2934560': -90,  # ESP32C
   'C86781': 180,  # LD1117
   'C425057': -90,  # resistor array 750ohm 4x0603
   'C20197': -90,  # resistor array 1k 4x0603
@@ -22,6 +21,11 @@ PART_ROTATIONS = {
   'C27396': -90,  # TPA2005D1
   'C12084': -90,  # SN65HVD230DR
   'C264517': 90,  # 0606 RGB LED
+  'C86832': -90,  # PCF8574 IO expander
+  'C500769': -90,  # AP3418 buck converter
+  'C50506': -90,  # DRV8833 dual motor driver
+  'C701342': -90,  # ESP32
+  'C7972': 180,  # LMV opamp
 }
 
 

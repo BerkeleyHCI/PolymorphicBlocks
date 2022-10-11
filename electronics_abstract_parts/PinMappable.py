@@ -238,6 +238,20 @@ class PinMapUtil:
 
     remapped_resources_raw = [remap_resource(resource) for resource in self.resources]
     remapped_resources = [resource for resource in remapped_resources_raw if resource is not None]
+
+    def resource_pin(resource: BasePinMapResource) -> List[str]:
+      if isinstance(resource, PinResource):
+        return [resource.pin]
+      elif isinstance(resource, PeripheralFixedPin):
+        return list(resource.inner_allowed_pins.values())
+      elif isinstance(resource, BaseDelegatingPinMapResource):
+        return []
+      else:
+        raise NotImplementedError(f"unknown resource {resource}")
+    all_pins = itertools.chain(*[resource_pin(resource) for resource in self.resources])
+    missed_names = set(pinmap.keys()).difference(all_pins)
+    assert not missed_names, f"invalid pins in remap: {missed_names}"
+
     return PinMapUtil(remapped_resources, self.transforms)
 
   @staticmethod

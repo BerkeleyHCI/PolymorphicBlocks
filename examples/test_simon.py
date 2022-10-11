@@ -114,7 +114,7 @@ class TestSimon(BoardTop):
         (['pwr', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
       ],
       instance_refinements=[
-        (['spk', 'conn'], JstPhK),
+        (['spk', 'conn'], JstPhKVertical),
       ],
       class_refinements=[
         (Speaker, ConnectorSpeaker),

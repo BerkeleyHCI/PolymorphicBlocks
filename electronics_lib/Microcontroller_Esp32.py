@@ -82,24 +82,24 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
 
     return PinMapUtil([  # section 2.2, table 1
       # VDD3P3_RTC
-      PinResource('SENSOR_VP', {'GPIO36': dio_model, 'ADC1_CH0': adc_model}),  # also RTC_GPIO
-      PinResource('SENSOR_CAPP', {'GPIO37': dio_model, 'ADC1_CH1': adc_model}),  # also RTC_GPIO
-      PinResource('SENSOR_CAPN', {'GPIO38': dio_model, 'ADC1_CH2': adc_model}),  # also RTC_GPIO
-      PinResource('SENSOR_VN', {'GPIO39': dio_model, 'ADC1_CH3': adc_model}),  # also RTC_GPIO
+      PinResource('SENSOR_VP', {'ADC1_CH0': adc_model}),  # also input-only 'GPIO36': dio_model, RTC_GPIO
+      PinResource('SENSOR_CAPP', {'ADC1_CH1': adc_model}),  # also input-only 'GPIO37': dio_model, RTC_GPIO
+      PinResource('SENSOR_CAPN', {'ADC1_CH2': adc_model}),  # also input-only 'GPIO38': dio_model,  RTC_GPIO
+      PinResource('SENSOR_VN', {'ADC1_CH3': adc_model}),  # also input-only 'GPIO39': dio_model, RTC_GPIO
 
-      PinResource('VDET_1', {'GPIO34': dio_model, 'ADC1_CH6': adc_model}),  # also RTC_GPIO
-      PinResource('VDET_2', {'GPIO35': dio_model, 'ADC1_CH7': adc_model}),  # also RTC_GPIO
+      PinResource('VDET_1', {'ADC1_CH6': adc_model}),  # also input-only 'GPIO34': dio_model, RTC_GPIO
+      PinResource('VDET_2', {'ADC1_CH7': adc_model}),  # also input-only 'GPIO35': dio_model,  RTC_GPIO
       PinResource('32K_XP', {'GPIO32': dio_model, 'ADC1_CH4': adc_model}),  # also RTC_GPIO, 32K_XP
-      PinResource('32K_XP', {'GPIO33': dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
+      PinResource('32K_XN', {'GPIO33': dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
 
       PinResource('GPIO25', {'GPIO25': dio_model, 'ADC2_CH8': adc_model, 'DAC_1': dac_model}),  # also RTC_GPIO
       PinResource('GPIO26', {'GPIO26': dio_model, 'ADC2_CH9': adc_model, 'DAC_2': dac_model}),  # also RTC_GPIO
       PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
 
       PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
-      # PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, strapping pin
+      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, noncritical strapping pin
       PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
-      # PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, strapping pin
+      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, noncritical strapping pin
 
       # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO, strapping pin
       # PinResource('GPIO0', {'GPIO0': dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO, strapping pin
@@ -162,8 +162,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
 
     'GPIO0': '25',
     'GPIO2': '24',
-    # 'MTDO': '23',  # aka GPIO15
-    # 'MTDI': '14',  # aka GPIO12
+
     'U0RXD': '34',
     'U0TXD': '35',
   }
@@ -171,18 +170,20 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
   RESOURCE_PIN_REMAP = {
     'SENSOR_VP': '4',
     'SENSOR_VN': '5',
-    'GPIO34': '6',
-    'GPIO35': '7',
-    'GPIO32': '8',
-    'GPIO33': '9',
+    'VDET_1': '6',
+    'VDET_2': '7',
+    '32K_XP': '8',
+    '32K_XN': '9',
     'GPIO25': '10',
     'GPIO26': '11',
     'GPIO27': '12',
-    'GPIO14': '13',
+    'MTMS': '13',
+    'MTDI': '14',  # aka GPIO12
 
-    'GPIO13': '16',
+    'MTCK': '16',
     # pins 17-22 NC
 
+    'MTDO': '23',  # aka GPIO15
     'GPIO4': '26',
     'GPIO16': '27',  # for QSPI PSRAM variants this cannot be used
     'GPIO17': '28',

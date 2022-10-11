@@ -25,6 +25,8 @@ class BaseBoardTop(DesignTop):
         (TestPoint, TeRc),
 
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+
+        (Vl53l0x, Vl53l0xApplication)
       ],
     )
 
@@ -33,13 +35,19 @@ class BoardTop(BaseBoardTop):
   pass
 
 
+class JlcToolingHoles(Block):
+  def contents(self):
+    super().contents()
+    self.th1 = self.Block(JlcToolingHole())
+    self.th2 = self.Block(JlcToolingHole())
+    self.th3 = self.Block(JlcToolingHole())
+
+
 class JlcBoardTop(BaseBoardTop):
   """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
   def contents(self):
     super().contents()
-    self.jlc_th1 = self.Block(JlcToolingHole())
-    self.jlc_th2 = self.Block(JlcToolingHole())
-    self.jlc_th3 = self.Block(JlcToolingHole())
+    self.jlc_th = self.Block(JlcToolingHoles())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -57,6 +65,7 @@ class JlcBoardTop(BaseBoardTop):
         (Fet, JlcFet),
 
         (UsbEsdDiode, Esda5v3l),
+        (Opamp, Lmv321),
         (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts

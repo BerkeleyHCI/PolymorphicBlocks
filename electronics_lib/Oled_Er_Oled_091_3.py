@@ -11,11 +11,15 @@ class Er_Oled_091_3_Device(DiscreteChip):
 
         self.conn = self.Block(Fpc050(length=15))
 
-        self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
-            voltage_out=(6.4, 9),
+        self.vcc = self.Export(self.conn.pins.allocate('15').adapt_to(VoltageSource(
+            voltage_out=(6.4, 9)*Volt,
             current_limits=0*mAmp(tol=0)  # external draw not allowed, probably does 10-16mA
         )))
-        self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
+        self.vcomh = self.Export(self.conn.pins.allocate('14').adapt_to(VoltageSource(
+            voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+            current_limits=0*mAmp(tol=0)  # external draw not allowed
+        )))
+        self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
             voltage_limits=(1.65, 4)*Volt,  # use the absolute maximum upper limit to allow tolerance on 3.3v
             current_draw=(1, 300)*uAmp
         )))
@@ -44,12 +48,11 @@ class Er_Oled_091_3_Device(DiscreteChip):
         self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request('8').adapt_to(din_model))
 
-        self.vcomh = self.Export(self.conn.pins.request('14'))
-        self.iref = self.Export(self.conn.pins.request('13'))
-        self.c2p = self.Export(self.conn.pins.request('1'))
-        self.c2n = self.Export(self.conn.pins.request('2'))
-        self.c1p = self.Export(self.conn.pins.request('3'))
-        self.c1n = self.Export(self.conn.pins.request('4'))
+        self.iref = self.Export(self.conn.pins.allocate('13'))
+        self.c2p = self.Export(self.conn.pins.allocate('1'))
+        self.c2n = self.Export(self.conn.pins.allocate('2'))
+        self.c1p = self.Export(self.conn.pins.allocate('3'))
+        self.c1n = self.Export(self.conn.pins.allocate('4'))
 
 
 class Er_Oled_091_3(Lcd, Block):
@@ -76,17 +79,15 @@ class Er_Oled_091_3(Lcd, Block):
         self.c2_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 6.3)*Volt))
         self.connect(self.c2_cap.pos, self.device.c2p)
         self.connect(self.c2_cap.neg, self.device.c2n)
-        self.vcomh_cap = self.Block(Capacitor(2.2*uFarad(tol=0.2), (0, 16)*Volt))
-        self.connect(self.vcomh_cap.pos, self.device.vcomh)
-        self.connect(self.vcomh_cap.neg.adapt_to(Ground()), self.gnd)
         self.iref_res = self.Block(Resistor(resistance=560*kOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
         self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
+        self.vcomh_cap = self.Block(DecouplingCapacitor((2.2*.8, 20)*uFarad)).connected(self.gnd, self.device.vcomh)
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
         self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
         self.vcc_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
-        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
+        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=(4.7*.8, 20)*uFarad))\
             .connected(self.gnd, self.device.vcc)
