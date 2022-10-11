@@ -6,7 +6,7 @@ from .test_robotdriver import LipoConnector, MotorConnector, PwmConnector
 
 class LedConnector(Block):
   """Connector for external WS2812s."""
-  # # TODO Change num_leds to the number of external WS2812s to update the current draw.
+  # TODO Change num_leds to the number of external WS2812s to update the current draw.
   def __init__(self):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
