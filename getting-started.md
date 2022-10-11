@@ -204,7 +204,7 @@ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 > 1. Again, start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
 > 2. Double click any of the ports you want to connect.
 >    This starts a connection operation, which dims out the ports that cannot be connected.
-> 3. Select (single clock) on all the other ports you want to connect.
+> 3. Select (single click) on all the other ports you want to connect.
 >    - The order in which you select additional ports determines the order of the ports in the generated code.
 > 4. Double-click anywhere (within a block) to make the connections.
 >    - You can also cancel the connect operation by double-clicking anywhere (within a block) without additional ports selected, or through the right-click menu.
