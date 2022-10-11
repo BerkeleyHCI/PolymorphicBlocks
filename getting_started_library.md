@@ -361,4 +361,4 @@ The sensor output can be connected to the microcontroller's GPIO.
 
 ## Advanced Library Construction
 
-Continue to [part 3 of the tutorial](getting_started_library_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
+Continue to [part 3 of the tutorial](getting_started_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
