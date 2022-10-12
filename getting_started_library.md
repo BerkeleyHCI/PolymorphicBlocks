@@ -318,6 +318,15 @@ Instantiate and connect the magnetic sensor at the top level (if you haven't don
 You can put it in the implicit block to avoid the explicit power and ground `connect` statements.
 The sensor output can be connected to the microcontroller's GPIO.
 
+```python
+with self.implicit_connect(
+    ...
+) as imp:
+  ...
+  self.mag = imp.Block(Lf21215tmr())
+  self.connect(self.mcu.gpio.request('mag'), self.mag.out)
+```
+
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
 >
