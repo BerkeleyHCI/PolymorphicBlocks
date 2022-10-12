@@ -164,7 +164,8 @@ class Lf21215tmr_Device(FootprintBlock):
 > 1. Open up IntelliJ settings: main menu > File > Settings.
 > 2. In the settings panel, go to Tools > EDG IDE.
 > 3. Set the KiCad Footprint Directory.
->    - In Windows, this is `C:\Program Files\KiCad\6.0\share\kicad\footprints`
+>    - In Windows, this may be: `C:\Program Files\KiCad\6.0\share\kicad\footprints`
+> 4. Restart the IDE.
 >
 > To set the footprint from the GUI:  
 > ![KiCad tab](docs/ide/ide_kicad_magsense.png)
