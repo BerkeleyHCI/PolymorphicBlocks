@@ -167,8 +167,7 @@ class Lf21215tmr_Device(FootprintBlock):
 >    - In Windows, this may be: `C:\Program Files\KiCad\6.0\share\kicad\footprints`
 > 4. Restart the IDE.
 >
-> To set the footprint from the GUI:  
-> ![KiCad tab](docs/ide/ide_kicad_magsense.png)
+> To set the footprint from the GUI:
 > 1. Switch to the KiCad tab (from the Library Browser).
 > 2. Select the corresponding block in the block diagram.
 >    - Remember that GUI edits are only allowed on blocks that are part of the current top-level design.
@@ -187,7 +186,9 @@ class Lf21215tmr_Device(FootprintBlock):
 >    - Pin 1: `vcc`
 >    - Pin 2: `vout`
 >    - Pin 3: `gnd`
-
+> 
+> ![KiCad tab](docs/ide/ide_kicad_magsense.png)
+ 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
 >
