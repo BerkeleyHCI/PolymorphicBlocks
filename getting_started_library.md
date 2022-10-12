@@ -159,18 +159,21 @@ self.footprint(
 >    - In Windows, this is `C:\Program Files\KiCad\6.0\share\kicad\footprints`
 >
 > To set the footprint from the GUI:  
-> ![KiCad tab](docs/ide/ide_kicad_magsense.png)  
-> 1. Position the caret where you want to insert the code, such as inside `def contents()`
-> 2. Switch to the KiCad tab (from the Library Browser).
-> 3. Search for the footprint you want to use, in this case `Package_TO_SOT_SMD.pretty:SOT-23.kicad_mod`
-> 4. Double-click the footprint entry to insert the code.
+> ![KiCad tab](docs/ide/ide_kicad_magsense.png)
+> 1. Switch to the KiCad tab (from the Library Browser).
+> 2. Select the corresponding block in the block diagram.
+>    - Remember that GUI edits are only allowed on blocks that are part of the current top-level design.
+>      You may need to instantiate your block to be able to set a footprint from the GUI.
+> 3. Position the caret where you want to insert the code, such as inside `def contents()`
+> 4. Search for the footprint you want to use, in this case `Package_TO_SOT_SMD.pretty:SOT-23.kicad_mod`
+> 5. Double-click the footprint entry to insert the code.
 >    - If the caret is in an existing `self.footprint` call, it will be edited to use the new footprint
-> 5. At this point, you have an empty `footprint(...)` call.
+> 6. At this point, you have an empty `footprint(...)` call.
 >    Fill in the manufacturer, part number, and datasheet URL fields as follows:
 >    - Manufacturer: `Littelfuse`
 >    - Part: `LF21215TMR`
 >    - Datasheet: `https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf`
-> 6. Double-click on the footprint pins to set the ports.
+> 7. Double-click on the footprint pins to set the ports.
 >    Here, assign as follows:
 >    - Pin 1: `vcc`
 >    - Pin 2: `vout`
