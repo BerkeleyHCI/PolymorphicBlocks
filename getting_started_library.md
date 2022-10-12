@@ -44,9 +44,13 @@ The chip itself has three pins:
 
 Let's start by **creating a port for each** in `__init__`:
 ```python
-self.vcc = self.Port(VoltageSink())
-self.gnd = self.Port(VoltageSink())
-self.vout = self.Port(DigitalSource())
+class Lf21215tmr_Device(FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.vcc = self.Port(VoltageSink())
+    self.gnd = self.Port(VoltageSink())
+    self.vout = self.Port(DigitalSource())
+  ...
 ```
 
 > If using the IDE: ports can be instantiated through the library browser the same way as blocks are.
@@ -132,16 +136,19 @@ self.vout = self.Port(DigitalSource.from_supply(
 `FootprintBlock` defines its footprint and pin mapping (from port to footprint pin) via a `self.footprint(...)` call.
 **Add into `def contents()`**:
 ```python
-self.footprint(
-  'U', 'Package_TO_SOT_SMD:SOT-23',
-  {
-    '1': self.vcc,
-    '2': self.vout,
-    '3': self.gnd,
-  },
-  mfr='Littelfuse', part='LF21215TMR',
-  datasheet='https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf'
-)
+class Lf21215tmr_Device(FootprintBlock):
+  def contents(self) -> None:
+    super().contents()
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23',
+      {
+        '1': self.vcc,
+        '2': self.vout,
+        '3': self.gnd,
+      },
+      mfr='Littelfuse', part='LF21215TMR',
+      datasheet='https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf'
+    )
 ```
 
 > `self.footprint(...)` takes these parameters:
@@ -231,8 +238,11 @@ Since this won't be a footprint, it should extend `Block` directly, and you can 
 As indicated by the application circuit, this block would have the same ports as the device (two **VoltageSink** and one **DigitalSource**). It would have two parts, the `Lf21215tmr_Device` we just defined, and a `DecouplingCapacitor`.
 **Instantiate them both, then connect them together**.
 ```python
-self.ic = self.Block(Lf21215tmr_Device())
-self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
+class Lf21215tmr(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.ic = self.Block(Lf21215tmr_Device())
+    self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
 ```
 
 > Our design model requires a tolerance for all parts.
@@ -241,9 +251,12 @@ self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
 For the ports, because these are intermediate ports, they must not have parameters (be `empty()`).
 You can also add the implicit connection `Power` and `Common` tags
 ```python
-self.pwr = self.Port(VoltageSink.empty(), [Power])
-self.gnd = self.Port(Ground.empty(), [Common])
-self.out = self.Port(DigitalSource.empty())
+class Lf21215tmr(Block):
+  def __init__(self) -> None:
+    ...
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.out = self.Port(DigitalSource.empty())
 ```
 
 > By default, instantiating a port without parameters defaults it to ideal parameters - for example, infinite voltage tolerance and zero current draw.
@@ -283,10 +296,13 @@ An additional benefit is that the port type is inferred from the inner port, so 
 
 With this style, the ports can be rewritten as follows:
 ```python
-self.ic = self.Block(Lf21215tmr_Device())
-self.pwr = self.Export(self.ic.vcc, [Power])
-self.gnd = self.Export(self.ic.gnd, [Common])
-self.out = self.Export(self.ic.vout)
+class Lf21215tmr(Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.ic = self.Block(Lf21215tmr_Device())
+    self.pwr = self.Export(self.ic.vcc, [Power])
+    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.out = self.Export(self.ic.vout)
 ```
 
 > `Export` cannot be created from the IDE.
