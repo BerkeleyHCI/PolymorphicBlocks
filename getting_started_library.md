@@ -278,7 +278,8 @@ self.out = self.Port(DigitalSource.empty())
 
 ### Export
 Instead of creating ports, we can also use the `self.Export(...)` function to export an inner port directly.
-The main benefit is you don't need to specify repeated type information for the port, which will be inferred from the inner port.
+This effectively combines the `self.Port` for creating the port and the `self.connect` from that new port to the inner port.
+An additional benefit is that the port type is inferred from the inner port, so you don't need to repeat the specification.
 
 With this style, the ports can be rewritten as follows:
 ```python
