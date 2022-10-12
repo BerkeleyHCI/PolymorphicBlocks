@@ -137,6 +137,7 @@ self.vout = self.Port(DigitalSource.from_supply(
 **Add into `def contents()`**:
 ```python
 class Lf21215tmr_Device(FootprintBlock):
+  ...
   def contents(self) -> None:
     super().contents()
     self.footprint(
