@@ -306,6 +306,7 @@ class Lf21215tmr(Block):
     self.pwr = self.Export(self.ic.vcc, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
     self.out = self.Export(self.ic.vout)
+    ...
 ```
 
 > `Export` cannot be created from the IDE.
@@ -338,12 +339,16 @@ You can put it in the implicit block to avoid the explicit power and ground `con
 The sensor output can be connected to the microcontroller's GPIO.
 
 ```python
-with self.implicit_connect(
+class BlinkyExample(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
     ...
-) as imp:
-  ...
-  self.mag = imp.Block(Lf21215tmr())
-  self.connect(self.mcu.gpio.request('mag'), self.mag.out)
+    with self.implicit_connect(
+        ...
+    ) as imp:
+      ...
+      self.mag = imp.Block(Lf21215tmr())
+      self.connect(self.mcu.gpio.request('mag'), self.mag.out)
 ```
 
 > <details>
