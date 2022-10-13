@@ -10,8 +10,8 @@ class LipoConnector(Battery):
     super().__init__(voltage, *args, **kwargs)
     self.conn = self.Block(PassiveConnector())
 
-    self.connect(self.gnd, self.conn.pins.allocate('1').adapt_to(GroundSource()))
-    self.connect(self.pwr, self.conn.pins.allocate('2').adapt_to(VoltageSource(
+    self.connect(self.gnd, self.conn.pins.request('1').adapt_to(GroundSource()))
+    self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
     )))
@@ -23,10 +23,10 @@ class MotorConnector(Block):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
-    self.a = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
+    self.a = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
       current_draw=(-600, 600)*mAmp
     )))
-    self.b = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink(
+    self.b = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(
       current_draw=(-600, 600)*mAmp
     )))
 
@@ -36,11 +36,11 @@ class PwmConnector(Block):
     super().__init__()
     self.conn = self.Block(PinHeader254())
 
-    self.pwm = self.Export(self.conn.pins.allocate('1').adapt_to(DigitalSink()),
+    self.pwm = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink()),
                            [Input])
-    self.pwr = self.Export(self.conn.pins.allocate('2').adapt_to(VoltageSink()),
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
                            [Power])
-    self.gnd = self.Export(self.conn.pins.allocate('3').adapt_to(Ground()),
+    self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
 
 
@@ -53,13 +53,13 @@ class LedConnector(Block):
     led_current = 36.6
     num_leds = 0
 
-    self.vdd = self.Export(self.conn.pins.allocate('1').adapt_to(VoltageSink(
+    self.vdd = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
       current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp)),
       [Power])
-    self.din = self.Export(self.conn.pins.allocate('2').adapt_to(DigitalSink(
+    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
       current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp
     )))
-    self.gnd = self.Export(self.conn.pins.allocate('3').adapt_to(Ground()), [Common])
+    self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()), [Common])
 
 
 class RobotDriver(JlcBoardTop):
@@ -102,7 +102,7 @@ class RobotDriver(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
-      self.i2c = self.mcu.i2c.allocate('i2c')
+      self.i2c = self.mcu.i2c.request('i2c')
 
       self.tof = imp.Block(Vl53l0xArray(3))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
@@ -111,10 +111,10 @@ class RobotDriver(JlcBoardTop):
         self.tof.i2c)
 
       self.lcd = imp.Block(Er_Oled_091_3())
-      self.connect(self.mcu.spi.allocate('spi'), self.lcd.spi)
-      self.connect(self.lcd.cs, self.mcu.gpio.allocate('lcd_cs'))
-      self.connect(self.lcd.reset, self.mcu.gpio.allocate('lcd_reset'))
-      self.connect(self.lcd.dc, self.mcu.gpio.allocate('lcd_dc'))
+      self.connect(self.mcu.spi.request('spi'), self.lcd.spi)
+      self.connect(self.lcd.cs, self.mcu.gpio.request('lcd_cs'))
+      self.connect(self.lcd.reset, self.mcu.gpio.request('lcd_reset'))
+      self.connect(self.lcd.dc, self.mcu.gpio.request('lcd_dc'))
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
@@ -124,14 +124,14 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.isense.pwr, self.v3v3)
       self.connect(self.isense.gnd, self.gnd)
       self.connect(self.isense.ref, self.batt.gnd.as_analog_source())
-      self.connect(self.isense.out, self.mcu.adc.allocate('isense'))
+      self.connect(self.isense.out, self.mcu.adc.request('isense'))
 
       self.expander = imp.Block(Pcf8574(0))
       self.connect(self.i2c, self.expander.i2c)
-      self.connect(self.expander.io.allocate_vector('tof_xshut'), self.tof.xshut)
+      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
 
       self.leds = imp.Block(IndicatorSinkLedArray(4))
-      self.connect(self.expander.io.allocate_vector('led'), self.leds.signals)
+      self.connect(self.expander.io.request_vector('led'), self.leds.signals)
 
     # SPEAKER AND LOW POWER VBATT DOMAIN
     with self.implicit_connect(
@@ -139,13 +139,13 @@ class RobotDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.dac.allocate('spk'),
+        self.mcu.dac.request('spk'),
         self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
       self.ws2812bArray = imp.Block(Ws2812bArray(5))
-      self.connect(self.mcu.gpio.allocate('ledArray'), self.ws2812bArray.din)
+      self.connect(self.mcu.gpio.request('ledArray'), self.ws2812bArray.din)
 
       self.led_pixel = imp.Block(LedConnector())
       self.connect(self.ws2812bArray.dout, self.led_pixel.din)
@@ -156,10 +156,10 @@ class RobotDriver(JlcBoardTop):
     ) as imp:
       self.motor_driver1 = imp.Block(Drv8833())
       self.connect(self.vbatt, self.motor_driver1.pwr)
-      self.connect(self.mcu.gpio.allocate('motor_1a1'), self.motor_driver1.ain1)
-      self.connect(self.mcu.gpio.allocate('motor_1a2'), self.motor_driver1.ain2)
-      self.connect(self.mcu.gpio.allocate('motor_1b1'), self.motor_driver1.bin1)
-      self.connect(self.mcu.gpio.allocate('motor_1b2'), self.motor_driver1.bin2)
+      self.connect(self.mcu.gpio.request('motor_1a1'), self.motor_driver1.ain1)
+      self.connect(self.mcu.gpio.request('motor_1a2'), self.motor_driver1.ain2)
+      self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver1.bin1)
+      self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver1.bin2)
 
       self.m1_a = self.Block(MotorConnector())
       self.connect(self.m1_a.a, self.motor_driver1.aout1)
@@ -170,10 +170,10 @@ class RobotDriver(JlcBoardTop):
 
       self.motor_driver2 = imp.Block(Drv8833())
       self.connect(self.vbatt, self.motor_driver2.pwr)
-      self.connect(self.mcu.gpio.allocate('motor_2a1'), self.motor_driver2.ain1)
-      self.connect(self.mcu.gpio.allocate('motor_2a2'), self.motor_driver2.ain2)
-      self.connect(self.mcu.gpio.allocate('motor_2b1'), self.motor_driver2.bin1)
-      self.connect(self.mcu.gpio.allocate('motor_2b2'), self.motor_driver2.bin2)
+      self.connect(self.mcu.gpio.request('motor_2a1'), self.motor_driver2.ain1)
+      self.connect(self.mcu.gpio.request('motor_2a2'), self.motor_driver2.ain2)
+      self.connect(self.mcu.gpio.request('motor_2b1'), self.motor_driver2.bin1)
+      self.connect(self.mcu.gpio.request('motor_2b2'), self.motor_driver2.bin2)
       self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
 
       self.m2_a = self.Block(MotorConnector())
@@ -186,7 +186,7 @@ class RobotDriver(JlcBoardTop):
     self.servo = self.Block(PwmConnector())
     self.connect(self.vbatt, self.servo.pwr)
     self.connect(self.gnd, self.servo.gnd)
-    self.connect(self.mcu.gpio.allocate('pwm'), self.servo.pwm)
+    self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
 
     # Misc board
     self.lemur = self.Block(LemurLogo())
@@ -196,10 +196,10 @@ class RobotDriver(JlcBoardTop):
 
   def multipack(self) -> None:
     self.led_res = self.PackedBlock(ResistorArray())
-    self.pack(self.led_res.elements.allocate('0'), ['leds', 'led[0]', 'res'])
-    self.pack(self.led_res.elements.allocate('1'), ['leds', 'led[1]', 'res'])
-    self.pack(self.led_res.elements.allocate('2'), ['leds', 'led[2]', 'res'])
-    self.pack(self.led_res.elements.allocate('3'), ['leds', 'led[3]', 'res'])
+    self.pack(self.led_res.elements.request('0'), ['leds', 'led[0]', 'res'])
+    self.pack(self.led_res.elements.request('1'), ['leds', 'led[1]', 'res'])
+    self.pack(self.led_res.elements.request('2'), ['leds', 'led[2]', 'res'])
+    self.pack(self.led_res.elements.request('3'), ['leds', 'led[3]', 'res'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
