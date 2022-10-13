@@ -1,8 +1,11 @@
 """
 Mechanical keyboard example design.
+
 Relies on footprints from external libraries.
 In the KiCad Plugin and Content Manager, install the Keyswitch Kicad Library,
 also on GitHub here https://github.com/perigoso/keyswitch-kicad-library
+The project is set up to reference the third party library as installed by the KiCad
+Plugin Manager, it does not need to be in your global library table.
 """
 
 import unittest
