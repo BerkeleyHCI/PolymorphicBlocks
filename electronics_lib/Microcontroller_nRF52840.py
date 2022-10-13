@@ -383,6 +383,7 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic, excludes=[self.usb])
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
 

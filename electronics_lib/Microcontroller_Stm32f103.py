@@ -289,6 +289,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
       self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
       # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap

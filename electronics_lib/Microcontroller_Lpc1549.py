@@ -356,6 +356,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
       self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()

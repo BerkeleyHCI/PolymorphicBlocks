@@ -9,6 +9,13 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
     '0603': 'Resistor_SMD:R_0603_1608Metric',
     '0805': 'Resistor_SMD:R_0805_2012Metric',
     '1206': 'Resistor_SMD:R_1206_3216Metric',
+    '2010': 'Resistor_SMD:R_2010_5025Metric',
+    '2512': 'Resistor_SMD:R_2512_6332Metric',
+    'R0603': 'Resistor_SMD:R_0603_1608Metric',
+    'R0805': 'Resistor_SMD:R_0805_2012Metric',
+    'R1206': 'Resistor_SMD:R_1206_3216Metric',
+    'R2010': 'Resistor_SMD:R_2010_5025Metric',
+    'R2512': 'Resistor_SMD:R_2512_6332Metric',
   }
 
   RESISTOR_MATCHES = {
