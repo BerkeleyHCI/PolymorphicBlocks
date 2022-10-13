@@ -127,7 +127,6 @@ With the count available as an int, we can use the `for` loop structure from bef
 ```python
 class LedArray(GeneratorBlock):
   ...
-  
   def generate(self, count: int) -> None:
     for i in range(count):
       self.ios.append_elt(DigitalSink.empty())
@@ -171,7 +170,6 @@ Replace the `for` loop in your top-level design with the single parameterized `L
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
-    super().contents()
     ...
     with self.implicit_connect(
             ...
@@ -185,7 +183,6 @@ Or, since the new block has both implicit scope and chain tags:
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
-    super().contents()
     ...
     with self.implicit_connect(
             ...
