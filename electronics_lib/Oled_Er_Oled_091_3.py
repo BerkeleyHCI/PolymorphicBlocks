@@ -11,15 +11,15 @@ class Er_Oled_091_3_Device(DiscreteChip):
 
         self.conn = self.Block(Fpc050(length=15))
 
-        self.vcc = self.Export(self.conn.pins.allocate('15').adapt_to(VoltageSource(
+        self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9)*Volt,
             current_limits=0*mAmp(tol=0)  # external draw not allowed, probably does 10-16mA
         )))
-        self.vcomh = self.Export(self.conn.pins.allocate('14').adapt_to(VoltageSource(
+        self.vcomh = self.Export(self.conn.pins.request('14').adapt_to(VoltageSource(
             voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
             current_limits=0*mAmp(tol=0)  # external draw not allowed
         )))
-        self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
+        self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
             voltage_limits=(1.65, 4)*Volt,  # use the absolute maximum upper limit to allow tolerance on 3.3v
             current_draw=(1, 300)*uAmp
         )))
@@ -48,11 +48,11 @@ class Er_Oled_091_3_Device(DiscreteChip):
         self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request('8').adapt_to(din_model))
 
-        self.iref = self.Export(self.conn.pins.allocate('13'))
-        self.c2p = self.Export(self.conn.pins.allocate('1'))
-        self.c2n = self.Export(self.conn.pins.allocate('2'))
-        self.c1p = self.Export(self.conn.pins.allocate('3'))
-        self.c1n = self.Export(self.conn.pins.allocate('4'))
+        self.iref = self.Export(self.conn.pins.request('13'))
+        self.c2p = self.Export(self.conn.pins.request('1'))
+        self.c2n = self.Export(self.conn.pins.request('2'))
+        self.c1p = self.Export(self.conn.pins.request('3'))
+        self.c1n = self.Export(self.conn.pins.request('4'))
 
 
 class Er_Oled_091_3(Lcd, Block):

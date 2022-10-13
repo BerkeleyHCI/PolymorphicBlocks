@@ -27,7 +27,7 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
 
     self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-    self.generator(self.generate, self.addr_lsb, self.pin_assigns, self.io.allocated())
+    self.generator(self.generate, self.addr_lsb, self.pin_assigns, self.io.requested())
 
   def generate(self, addr_lsb: int, assignments: List[str], io_allocates: List[str]) -> None:
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
