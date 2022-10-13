@@ -297,7 +297,7 @@ Instead of creating ports, we can also use the `self.Export(...)` function to ex
 This effectively combines the `self.Port` for creating the port and the `self.connect` from that new port to the inner port.
 An additional benefit is that the port type is inferred from the inner port, so you don't need to repeat the specification.
 
-With this style, the ports can be rewritten as follows:
+With this style, the ports can be rewritten as follows (and remember to fix the capacitor connections):
 ```python
 class Lf21215tmr(Block):
   def __init__(self) -> None:
