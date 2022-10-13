@@ -252,7 +252,7 @@ class Lf21215tmr(Block):
 > We've chosen a default loose 20% tolerance for decoupling capacitors. 
 
 For the ports, because these are intermediate ports, they must not have parameters (be `empty()`).
-You can also add the implicit connection `Power` and `Common` tags
+You can also add the implicit tags `Power` and `Common` and make the connections:
 ```python
 class Lf21215tmr(Block):
   def __init__(self) -> None:
@@ -260,6 +260,10 @@ class Lf21215tmr(Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
     self.out = self.Port(DigitalSource.empty())
+
+    self.connect(self.ic.vcc, self.cap.pwr, self.pwr)
+    self.connect(self.ic.gnd, self.cap.gnd, self.gnd)
+    self.connect(self.ic.vout, self.out)
 ```
 
 > By default, instantiating a port without parameters defaults it to ideal parameters - for example, infinite voltage tolerance and zero current draw.
