@@ -169,13 +169,29 @@ Instantiate the LEDs and connect them to the IO pin and ground as needed.
 
 Replace the `for` loop in your top-level design with the single parameterized `LedArray` instantiation, and connect it to the microcontroller:  
 ```python
-self.led = self.Block(LedArray(4))
-self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
+class BlinkyExample(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    ...
+    with self.implicit_connect(
+            ...
+    ) as imp:
+      ...
+      self.led = imp.Block(LedArray(4))
+      self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
 ```
 
 Or, since the new block has both implicit scope and chain tags:
 ```python
-(self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
+class BlinkyExample(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    ...
+    with self.implicit_connect(
+            ...
+    ) as imp:
+      ...
+      (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
 ```
 
 As shown above, port arrays can be directly connected together to make parallel connections, and we can request sub-arrays from a port array.
