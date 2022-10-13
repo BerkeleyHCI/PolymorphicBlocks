@@ -139,7 +139,7 @@ class LedArray(GeneratorBlock):
 > To mark a port array as explicitly having no elements, use `.defined()`.
 
 ### Circuit Generation
-Connect the LEDs to the IO pin and ground as needed.
+Instantiate the LEDs and connect them to the IO pin and ground as needed.
 `.append_elt(...)` returns the newly created port within the array, which can be used in `self.connect(...)`.
 
 > <details>
