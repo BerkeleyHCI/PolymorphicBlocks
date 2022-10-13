@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    inkscape:export-ydpi="150.29866"
    inkscape:export-xdpi="150.29866"
    inkscape:export-filename="chain.png"
    sodipodi:docname="chain.svg"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
    id="svg8"
    version="1.1"
    viewBox="0 0 100.02953 27.985878"
    height="34.982349mm"
-   width="125.03691mm">
+   width="125.03691mm"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2">
     <marker
@@ -65,18 +65,21 @@
      inkscape:window-x="1192"
      inkscape:window-height="1537"
      inkscape:window-width="2560"
-     showgrid="true"
+     showgrid="false"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="100.32727"
-     inkscape:cx="375.83598"
-     inkscape:zoom="7.9999996"
+     inkscape:cy="67.750003"
+     inkscape:cx="289.87501"
+     inkscape:zoom="3.9999998"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
      bordercolor="#666666"
      pagecolor="#ffffff"
-     id="base">
+     id="base"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        originy="51.485876"
        originx="3.5295248"
@@ -91,7 +94,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -100,6 +103,13 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
+    <rect
+       style="fill:#ffffff;fill-opacity:0.25;stroke:none;stroke-width:0.16;stroke-linecap:round;stroke-linejoin:round"
+       id="rect982"
+       width="100.02953"
+       height="27.985884"
+       x="-3.529526"
+       y="261.10001" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
