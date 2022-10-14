@@ -139,7 +139,7 @@ Try building the example now:
      _Make sure that you're using the run icon associated with `class BlinkyExample`, not the file, and not `if __name__ == "__main__"`._
   2. Then from the menu, click the Run option.  
      ![run menu](docs/ide/ide_run_blinky_menu.png)
-     > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10**.
+     > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
   3. The design should build, and you should get a run log that looks something like:
      ```
      Starting compilation of blinky_skeleton.BlinkyExample
@@ -167,7 +167,7 @@ self.led = self.Block(IndicatorLed())
 
 > You can also insert blocks through graphical operations in the IDE.
 > 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
->    - The _caret_ the text editor's current position, common shown as a blinking vertical line.
+>    - The _caret_ refers to the text editor's current position, commonly shown as a blinking vertical line.
 >    - **Precise caret positioning is important**, since it is where code will be inserted.
 >      In particular, it must not be in `super().contents()` since code cannot be inserted in the middle of a function call, nor can it be be outside the class block.
 > 2. Search for the relevant block in the Library Browser by using the Filter textbox:  
@@ -218,7 +218,7 @@ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
 
-Then, we need to connect the LED to a GPIO on the microcontroller, by **adding this connect statements**.
+Then, we need to connect the LED to a GPIO on the microcontroller, by **adding this connect statement:**.
 
 ```python
 self.connect(self.mcu.gpio.request('led'), self.led.signal)
