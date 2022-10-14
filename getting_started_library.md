@@ -161,10 +161,11 @@ class Lf21215tmr_Device(FootprintBlock):
 > If using the IDE, the footprint and pinning can be set from the KiCad panel.
 > 
 > You will need to make sure the KiCad footprint directory is properly set.
-> 1. Open up IntelliJ settings: main menu > File > Settings.
+> 1. Open up IntelliJ settings: main menu > File > Settings (Windows) or Main > Preferences (MacOS).
 > 2. In the settings panel, go to Tools > EDG IDE.
 > 3. Set the KiCad Footprint Directory.
->    - In Windows, this may be: `C:\Program Files\KiCad\6.0\share\kicad\footprints`
+>    - On Windows, this may be: `C:\Program Files\KiCad\6.0\share\kicad\footprints`
+>    - On MacOS, this may be: `/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints`
 > 4. Restart the IDE.
 >
 > To set the footprint from the GUI:

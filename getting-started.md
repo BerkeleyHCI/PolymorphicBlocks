@@ -167,13 +167,15 @@ self.led = self.Block(IndicatorLed())
 > You can also insert blocks through graphical operations in the IDE.
 > 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
 >    - The _caret_ the text editor's current position, common shown as a blinking vertical line.
+>    - **Precise caret positioning is important**, since it is where code will be inserted.
+>      In particular, it must not be in `super().contents()` since code cannot be inserted in the middle of a function call, nor can it be be outside the class block.
 > 2. Search for the relevant block in the Library Browser by using the Filter textbox:  
 >    ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
 > 3. Double-click the library entry.
 >    - Alternatively, you can also right-click to show other available actions. 
 > 4. In the text prompt, give the new block a name.
 > 5. The block should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
->    - The hatched fill in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile. 
+>    - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile. 
 >
 > The library icons have these meanings:
 > - ![Folder](docs/intellij_icons/AllIcons.Nodes.Folder.svg) (category): this "block" is actually a category organizer and should not be instantiated.

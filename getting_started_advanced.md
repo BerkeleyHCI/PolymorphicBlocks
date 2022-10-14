@@ -134,7 +134,15 @@ class LedArray(GeneratorBlock):
 
 > Port array's `.append_elt(...)` takes in the same arguments as `self.Port(...)`.
 > 
-> To mark a port array as explicitly having no elements, use `.defined()`.
+> To mark a port array as explicitly having no elements, use `.defined()`:
+> 
+> ```python
+>   class EmptyArrayBlock(Block):
+>     def __init__(self) -> None:
+>       super().__init__()
+>       self.empty_array = self.Port(Vector(DigitalSink.empty()))
+>       self.empty_array.defined()
+> ```
 
 ### Circuit Generation
 Instantiate the LEDs and connect them to the IO pin and ground as needed.
@@ -178,7 +186,7 @@ class BlinkyExample(SimpleBoardTop):
       self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
 ```
 
-Or, since the new block has both implicit scope and chain tags:
+Or, since we added the implicit tag `Input` to the IOs port, we can use `chain` to combine the instantiation and connection:
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
