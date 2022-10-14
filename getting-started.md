@@ -8,7 +8,8 @@ In conventional schematic tools, such a design could be a flat schematic, consis
 
 Many modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy1.png)
-In this example, the LED-resistor subcircuit is contained within a block, which can be manipulated as a unit, and exposes ports (circles on the diagram) while encapsulating internal pins.
+
+In the example above, the LED-resistor subcircuit is contained within a block, which can be manipulated as a unit, and exposes ports (circles on the diagram) while encapsulating internal pins.
 (note: in mainstream schematic tools with this feature, the subcircuit is usually presented in its own sheet, instead of having its contents displayed in the block)
 
 Generalizing this model, components are blocks too, and component pins are also block ports:  
