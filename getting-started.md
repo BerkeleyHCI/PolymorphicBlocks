@@ -97,6 +97,7 @@ _Recommended (but optional), to use the IDE._
    - You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
 6. Once the project loads, open `blinky_skeleton.py`.
 7. Set up the Python interpreter once the prompt shows up, "Configure Python interpreter".
+   - Select a Python 3.7 (or later) interpreter.
    - If using a Pipenv environment, it will automatically fetch dependencies.
      You may need to install pipenv: `pip install pipenv`.
    - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf kinparse Deprecated`.
@@ -107,7 +108,7 @@ _Recommended (but optional), to use the IDE._
 ## HDL-only Setup
 _This isn't necessary if you did the IDE setup above._
 
-1. Make sure you have Python 3.7 (or later) installed.
+1. Make sure you are using Python 3.7 (or later).
 2. Install the needed dependencies.
    If using pip: `pip install protobuf kinparse Deprecated`
 
