@@ -3,15 +3,15 @@
 ## Core concepts
 The core abstraction is the hierarchical block diagram, which we will explain using an example design of a microcontroller driving an LED.
 
-In conventional schematic tools, such a design could be a flat schematic, consisting of the microcontroller module, LED, and resistor:
+In conventional schematic tools, such a design could be a flat schematic, consisting of the microcontroller module, LED, and resistor:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_flat.png)
 
-Many modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:
+Many modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy1.png)
 In this example, the LED-resistor subcircuit is contained within a block, which can be manipulated as a unit, and exposes ports (circles on the diagram) while encapsulating internal pins.
 (note: in mainstream schematic tools with this feature, the subcircuit is usually presented in its own sheet, instead of having its contents displayed in the block)
 
-Generalizing this model, components are blocks too, and component pins are also block ports:
+Generalizing this model, components are blocks too, and component pins are also block ports:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy2.png)
 
 The main concepts our model extends on top of the simple hierarchy blocks above are **parameters**, **links**, and **generators**.
@@ -25,7 +25,7 @@ For example, the `IndicatorLed` block automatically sizes the resistor based on 
 
 Finally, in the internal model (mainly relevant for compiler writers and library builders), the connections between ports expand into **links** which defines how parameters propagate between those ports and any constraints on them.
 Continuing the digital IO example, the link would check the output thresholds against the input thresholds, and provide the worst-case voltage levels given all connected drivers.
-These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:
+These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_full.png)
 
 > In the user-facing HDL design model, links are inferred based on the types of connected ports and not explicit.
