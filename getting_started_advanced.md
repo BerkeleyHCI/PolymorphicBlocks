@@ -153,12 +153,12 @@ Instantiate the LEDs and connect them to the IO pin and ground as needed.
 >       self.generator(self.generate, count)
 >   
 >     def generate(self, count: int) -> None:
->         self.leds = ElementDict[IndicatorLed]()
+>         self.led = ElementDict[IndicatorLed]()
 >         for i in range(count):
 >           io = self.ios.append_elt(DigitalSink.empty())
->           self.leds[i] = self.Block(IndicatorLed())
->           self.connect(io, self.leds[i].signal)
->           self.connect(self.gnd, self.leds[i].gnd)
+>           self.led[i] = self.Block(IndicatorLed())
+>           self.connect(io, self.led[i].signal)
+>           self.connect(self.gnd, self.led[i].gnd)
 >   ```
 > </details>
 
