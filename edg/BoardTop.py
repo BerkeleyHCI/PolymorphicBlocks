@@ -7,6 +7,7 @@ class BaseBoardTop(DesignTop):
     return super().refinements() + Refinements(
       class_refinements=[
         (Resistor, GenericChipResistor),
+        (ResistorArray, JlcResistorArray),  # TODO: replace with generic resistor array
         (Capacitor, GenericMlcc),
         (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),
@@ -35,6 +36,19 @@ class BoardTop(BaseBoardTop):
   pass
 
 
+class SimpleBoardTop(BaseBoardTop):
+  """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_refinements=[
+        (PassiveConnector, PinHeader254),
+      ],
+      class_values=[
+        (JlcInductor, ['ignore_frequency'], True),
+      ],
+    )
+    
+    
 class JlcToolingHoles(Block):
   def contents(self):
     super().contents()

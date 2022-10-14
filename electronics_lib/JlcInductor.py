@@ -45,7 +45,7 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
      lambda match: {
        TableInductor.INDUCTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
                                                       PartsTableUtil.parse_tolerance(match.group(3))),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
+       TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
      }),
@@ -53,11 +53,17 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
      lambda match: {
        TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
                                                           PartsTableUtil.parse_value(match.group(3), 'H')),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
+       TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
      }),
   ]
+
+  @init_in_parent
+  def __init__(self, *args, ignore_frequency: BoolLike = False, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.require(ignore_frequency | (self.frequency == Range.zero_to_upper(0)),
+                 "JLC inductors do not have frequency data, frequency spec must be ignored")
 
   @classmethod
   def _make_table(cls) -> PartsTable:

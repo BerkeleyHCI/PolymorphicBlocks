@@ -121,6 +121,7 @@ class BaseVoltageDivider(Filter, Block):
   def __init__(self, impedance: RangeLike) -> None:
     super().__init__()
 
+    self.impedance = self.ArgParameter(impedance)
     self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
@@ -177,6 +178,12 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
     self.require(ratio_lower <= ratio_upper,
                    "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
     self.assign(self.ratio, (ratio_lower, ratio_upper))
+
+    self.description = DescriptionString(  # TODO forward from internal?
+      "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
+      "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
 class SignalDivider(AnalogFilter, Block):

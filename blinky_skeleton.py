@@ -1,7 +1,7 @@
 from edg import *
 
 
-class BlinkyExample(BoardTop):
+class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     # your implementation here

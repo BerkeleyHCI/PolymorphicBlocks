@@ -111,7 +111,7 @@ class TestSimon(BoardTop):
           'btn_sw3=12',
         ]),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       instance_refinements=[
         (['spk', 'conn'], JstPhKVertical),
