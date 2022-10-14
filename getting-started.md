@@ -86,10 +86,13 @@ _Recommended (but optional), to use the IDE._
    An open-source one is [Eclipse Temurin](https://adoptium.net/temurin/releases/?version=17).
 3. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
    - If using command line git: make sure to initialize submodules: `git submodule update --init --recursive`.
-   - If using GitHub Desktop: it will handle submodules for you.
+   - If using GitHub Desktop: it should automatically clone submodules for you.
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
+   - If you get an error along the lines of `not found: [...]\compiler_2.13\0.1.0-SNAPSHOT\ivys\ivy.xml` or `[error] sbt.librarymanagement.ResolveException: Error downloading compiler:compiler_2.13:0.1.0-SNAPSHOT`, this is because the PolymorphicBlock submodule hasn't been cloned.
+     See the section above for instructions.
+     The IDE plugin includes the HDL compiler as part of its build and requires the PolymorphicBlocks codebase.
 5. In the IDE, **open the `PolymorphicBlocks` folder as a project**.
    - You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
 6. Once the project loads, open `blinky_skeleton.py`.
@@ -99,6 +102,14 @@ _Recommended (but optional), to use the IDE._
    - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf kinparse Deprecated`.
 8. Open the Block Visualizer tab on the right.
    It will be empty right now.
+
+
+## HDL-only Setup
+_This isn't necessary if you did the IDE setup above._
+
+1. Make sure you have Python 3.7 (or later) installed.
+2. Install the needed dependencies.
+   If using pip: `pip install protobuf kinparse Deprecated`
 
 
 ## A top-level design: Blinky
@@ -151,6 +162,8 @@ Try building the example now:
   4. Unlike the command-line option, this generates a netlist in the same directory as `blinky_skeleton.py`.
      In the IDE, you can configure where this goes via the run options at the top right:  
      ![run menu](docs/ide/ide_run_config.png)
+- If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies hasn't been installed.
+  See the [IDE setup](#ide-setup) or [HDL setup](#hdl-only-setup) sections above for instructions on installing dependencies.
 
 
 ### Creating the microcontroller and LED
