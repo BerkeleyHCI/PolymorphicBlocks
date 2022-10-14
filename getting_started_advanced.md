@@ -100,7 +100,9 @@ However, from internally, we will be able to define their size, as well as get t
 _In this section, we'll actually implement the circuit generator._
 
 ### Generator
-First, we will need a way to get the concrete (`int`) value for the LED count:  
+First, we will need a way to get the concrete (`int`) value for the LED count.
+Generators are a way to defer the implementation of the block until its parameter values are ready, then get the concrete Python version of that parameter for use in the HDL.
+**We'll change the base class in our prior code from `Block` to `GeneratorBlock` which provides this functionality**.
 ```python
 class LedArray(GeneratorBlock):
   @init_in_parent
@@ -113,9 +115,6 @@ class LedArray(GeneratorBlock):
   def generate(self, count: int) -> None:
     ...
 ```
-
-Generators are a way to defer the implementation of the block until its parameter values are ready, then get the concrete Python version of that parameter for use in the HDL.
-**Generators require the block to subclass `GeneratorBlock`**.
 
 > While here we use generators as a way to get a concrete value for circuit generation (the LED count), generators can also be used to do calculations beyond the operations available with the parameters.
 > For example, while we can add two `IntExpr`s (which produces another `IntExpr`), something more complex like square root is not provided.
