@@ -24,10 +24,7 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
 
     def contents(self) -> None:
         self.footprint(
-            'U', 'Package_SO:TSSOP-16-1EP_4.4x5mm_P0.65mm_EP3x3mm_ThermalVias',
-            # note: the above has 0.3mm thermal vias while
-            # Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm_ThermalVias
-            # has 0.2mm which is below minimums for some fabs
+            'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
             {
                 '1': self.nsleep,
                 '2': self.aout1,
@@ -47,16 +44,16 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
                 '16': self.ain1,
                 '17': self.gnd,  # exposed pad
             },
-            mfr='Texas Instruments', part='DRV8833PWP',  # also compatible w/ PW package (no GND pad)
-            datasheet='https://www.ti.com/lit/ds/symlink/drv8833.pdf'
+            mfr='Texas Instruments', part='DRV8313PWP',
+            datasheet='https://www.ti.com/lit/ds/symlink/drv8313.pdf'
         )
-        self.assign(self.lcsc_part, 'C50506')
+        self.assign(self.lcsc_part, 'C92482')
 
 
 class Drv8313(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.ic = self.Block(Drv8833_Device())
+        self.ic = self.Block(Drv8313_Device())
         self.pwr = self.Export(self.ic.vm)
         self.gnd = self.Export(self.ic.gnd, [Common])
 
