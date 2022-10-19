@@ -7,7 +7,7 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         super().__init__()
         self.vm = self.Port(VoltageSink(  # one 0.1uF capacitor per supply pin and a bulk Vm capacitor
             voltage_limits=(8, 60)*Volt,  # Table 6.3 Vm
-            current_draw=(0.5, 5)*mAmp,  # Table 6.5 Vm sleep typ to operating max
+            current_draw=RangeExpr(),
         ))
         self.v3p3 = self.Port(VoltageSource(  # internal regulator, bypass with 6.3v, 0.47uF capacitor
             voltage_out=(3.1, 3.52)*Volt,  # Table 6.5 V3P3 voltage
@@ -20,12 +20,12 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
             voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
             input_thresholds=(0.7, 2.2)
         )
-        self.en1 = self.Port(din_model)
-        self.en2 = self.Port(din_model)
-        self.en3 = self.Port(din_model)
-        self.in1 = self.Port(din_model)
-        self.in2 = self.Port(din_model)
-        self.in3 = self.Port(din_model)
+        self.en1 = self.Port(din_model, optional=True)
+        self.en2 = self.Port(din_model, optional=True)
+        self.en3 = self.Port(din_model, optional=True)
+        self.in1 = self.Port(din_model, optional=True)
+        self.in2 = self.Port(din_model, optional=True)
+        self.in3 = self.Port(din_model, optional=True)
 
         self.nreset = self.Port(din_model)
         self.nsleep = self.Port(din_model)
@@ -34,9 +34,9 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
             self.gnd, self.vm,
             current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
         )
-        self.out1 = self.Port(out_model)
-        self.out2 = self.Port(out_model)
-        self.out3 = self.Port(out_model)
+        self.out1 = self.Port(out_model, optional=True)
+        self.out2 = self.Port(out_model, optional=True)
+        self.out3 = self.Port(out_model, optional=True)
 
         pgnd_model = VoltageSink(
             voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
@@ -50,6 +50,18 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.cph = self.Port(Passive())
 
     def contents(self) -> None:
+        self.assign(self.vm.current_draw, (0.5, 5)*mAmp +  # Table 6.5 Vm sleep typ to operating max
+                    (0,  # calculate possible motor current, assuming 1/2/3 are coupled
+                     self.out1.is_connected().then_else(self.out1.link().current_drawn.abs().upper(), 0*mAmp).max(
+                     self.out2.is_connected().then_else(self.out2.link().current_drawn.abs().upper(), 0*mAmp).max(
+                     self.out3.is_connected().then_else(self.out3.link().current_drawn.abs().upper(), 0*mAmp)))
+                     ))
+
+        self.require(self.out1.is_connected() | self.out2.is_connected() | self.out3.is_connected())
+        self.require(self.out1.is_connected().implies(self.en1.is_connected() & self.in1.is_connected()))
+        self.require(self.out2.is_connected().implies(self.en2.is_connected() & self.in2.is_connected()))
+        self.require(self.out3.is_connected().implies(self.en3.is_connected() & self.in3.is_connected()))
+
         self.footprint(
             'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
             {
@@ -109,10 +121,6 @@ class Drv8313(GeneratorBlock):
         self.out1 = self.Export(self.ic.out1, optional=True)
         self.out2 = self.Export(self.ic.out2, optional=True)
         self.out3 = self.Export(self.ic.out3, optional=True)
-
-        self.require(self.out1.is_connected().implies(self.en1.is_connected() & self.in1.is_connected()))
-        self.require(self.out2.is_connected().implies(self.en2.is_connected() & self.in2.is_connected()))
-        self.require(self.out3.is_connected().implies(self.en3.is_connected() & self.in3.is_connected()))
 
         self.pgnd1 = self.Port(VoltageSink.empty(), optional=True)  # connected in the generator if used
         self.pgnd2 = self.Port(VoltageSink.empty(), optional=True)
