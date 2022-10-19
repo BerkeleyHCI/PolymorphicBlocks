@@ -16,6 +16,20 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.vcp = self.Port(Passive())  # charge pump, 16V 0.1uF capacitor to Vm
         self.gnd = self.Port(Ground())
 
+        din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
+            voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
+            input_thresholds=(0.7, 2.2)
+        )
+        self.en1 = self.Port(din_model)
+        self.en2 = self.Port(din_model)
+        self.en3 = self.Port(din_model)
+        self.in1 = self.Port(din_model)
+        self.in2 = self.Port(din_model)
+        self.in3 = self.Port(din_model)
+
+        self.nreset = self.Port(din_model)
+        self.nsleep = self.Port(din_model)
+
         out_model = DigitalSource.from_supply(
             self.gnd, self.vm,
             current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
@@ -31,20 +45,6 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.pgnd1 = self.Port(pgnd_model)
         self.pgnd2 = self.Port(pgnd_model)
         self.pgnd3 = self.Port(pgnd_model)
-
-        din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
-            voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
-            input_thresholds=(0.7, 2.2)
-        )
-        self.en1 = self.Port(din_model)
-        self.en2 = self.Port(din_model)
-        self.en3 = self.Port(din_model)
-        self.in1 = self.Port(din_model)
-        self.in2 = self.Port(din_model)
-        self.in3 = self.Port(din_model)
-
-        self.nreset = self.Port(din_model)
-        self.nsleep = self.Port(din_model)
 
         self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
         self.cph = self.Port(Passive())
@@ -90,19 +90,65 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C92482')
 
 
-class Drv8313(Block):
+class Drv8313(GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())
         self.pwr = self.Export(self.ic.vm)
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-    def contents(self) -> None:
-        super().contents()
+        self.en1 = self.Export(self.ic.en1, optional=True)
+        self.en2 = self.Export(self.ic.en2, optional=True)
+        self.en3 = self.Export(self.ic.en3, optional=True)
+        self.in1 = self.Export(self.ic.in1, optional=True)
+        self.in2 = self.Export(self.ic.in2, optional=True)
+        self.in3 = self.Export(self.ic.in3, optional=True)
+        self.nreset = self.Export(self.ic.nreset)
+        self.nsleep = self.Export(self.ic.nsleep)
 
-        # the upper tolerable range of these caps is extended to allow search flexibility when voltage derating
-        self.vm_cap = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
-        self.vint_cap = self.Block(DecouplingCapacitor((2.2*0.8, 10)*uFarad)).connected(self.gnd, self.ic.vint)
-        self.vcp_cap = self.Block(Capacitor(0.01*uFarad(tol=0.2), (0, 16)*Volt))
+        self.out1 = self.Export(self.ic.out1, optional=True)
+        self.out2 = self.Export(self.ic.out2, optional=True)
+        self.out3 = self.Export(self.ic.out3, optional=True)
+
+        self.require(self.out1.is_connected().implies(self.en1.is_connected() & self.in1.is_connected()))
+        self.require(self.out2.is_connected().implies(self.en2.is_connected() & self.in2.is_connected()))
+        self.require(self.out3.is_connected().implies(self.en3.is_connected() & self.in3.is_connected()))
+
+        self.pgnd1 = self.Port(VoltageSink.empty(), optional=True)  # connected in the generator if used
+        self.pgnd2 = self.Port(VoltageSink.empty(), optional=True)
+        self.pgnd3 = self.Port(VoltageSink.empty(), optional=True)
+
+        self.generator(self.generate,
+                       self.pgnd1.is_connected(), self.pgnd2.is_connected(), self.pgnd3.is_connected())
+
+    def generate(self, pgnd1_connected: bool, pgnd2_connected: bool, pgnd3_connected: bool):
+        self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
+        self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
+        self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
+
+        # TODO datasheet recommends 6.3v-rated cap, here we just derive it from the voltage rail
+        self.v3p3_cap = self.Block(DecouplingCapacitor(0.47*uFarad(tol=0.2))).connected(self.gnd, self.ic.vcp)
+
+        vm_voltage = self.pwr.link().voltage - self.gnd.link().voltage
+        self.cp_cap = self.Block(Capacitor(0.01*uFarad(tol=0.2), vm_voltage))
+        self.connect(self.vcp_cap.pos, self.ic.cp1)
+        self.connect(self.vcp_cap.neg, self.ic.cp2)
+
+        self.vcp_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 16)*Volt))
         self.connect(self.vcp_cap.pos, self.ic.vcp)
         self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+
+        if pgnd1_connected:  # PGND optional if external sensing used, otherwise directly ground
+            self.connect(self.ic.pgnd1, self.pgnd1)
+        else:
+            self.connect(self.ic.pgnd1, self.gnd)
+
+        if pgnd2_connected:
+            self.connect(self.ic.pgnd2, self.pgnd2)
+        else:
+            self.connect(self.ic.pgnd2, self.gnd)
+
+        if pgnd3_connected:
+            self.connect(self.ic.pgnd3, self.pgnd3)
+        else:
+            self.connect(self.ic.pgnd3, self.gnd)
