@@ -127,12 +127,12 @@ class Drv8313(GeneratorBlock):
         self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
 
         # TODO datasheet recommends 6.3v-rated cap, here we just derive it from the voltage rail
-        self.v3p3_cap = self.Block(DecouplingCapacitor(0.47*uFarad(tol=0.2))).connected(self.gnd, self.ic.vcp)
+        self.v3p3_cap = self.Block(DecouplingCapacitor(0.47*uFarad(tol=0.2))).connected(self.gnd, self.ic.v3p3)
 
         vm_voltage = self.pwr.link().voltage - self.gnd.link().voltage
         self.cp_cap = self.Block(Capacitor(0.01*uFarad(tol=0.2), vm_voltage))
-        self.connect(self.vcp_cap.pos, self.ic.cp1)
-        self.connect(self.vcp_cap.neg, self.ic.cp2)
+        self.connect(self.cp_cap.pos, self.ic.cph)
+        self.connect(self.cp_cap.neg, self.ic.cpl)
 
         self.vcp_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 16)*Volt))
         self.connect(self.vcp_cap.pos, self.ic.vcp)
