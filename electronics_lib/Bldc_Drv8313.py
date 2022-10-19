@@ -5,44 +5,84 @@ from .JlcPart import JlcPart
 class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
-        self.vm = self.Port(VoltageSink(
-            voltage_limits=(2.7, 10.8)*Volt, current_draw=RangeExpr())
-        )
-        self.gnd = self.Port(Ground())
-        self.vint = self.Port(VoltageSource(  # internal supply bypass
-            voltage_out=(0, 6.3)*Volt,  # inferred from capacitor rating, actual voltage likely lower
-            current_limits=0*mAmp(tol=0)  # external draw not allowed
+        self.vm = self.Port(VoltageSink(  # one 0.1uF capacitor per supply pin and a bulk Vm capacitor
+            voltage_limits=(8, 60)*Volt,  # Table 6.3 Vm
+            current_draw=(0.5, 5)*mAmp,  # Table 6.5 Vm sleep typ to operating max
         ))
-        self.vcp = self.Port(Passive())
+        self.v3p3 = self.Port(VoltageSource(  # internal regulator, bypass with 6.3v, 0.47uF capacitor
+            voltage_out=(3.1, 3.52)*Volt,  # Table 6.5 V3P3 voltage
+            current_limits=(0, 10)*mAmp,  # Table 6.3 max V3P3 load current
+        ))
+        self.vcp = self.Port(Passive())  # charge pump, 16V 0.1uF capacitor to Vm
+        self.gnd = self.Port(Ground())
 
-        din_model = DigitalSink(  # all pins pulled down by default
-            voltage_limits=(-0.3, 5.75)*Volt,
-            input_thresholds=(0.7, 2)
+        out_model = DigitalSource.from_supply(
+            self.gnd, self.vm,
+            current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
         )
+        self.out1 = self.Port(out_model)
+        self.out2 = self.Port(out_model)
+        self.out3 = self.Port(out_model)
 
-        dout_model = DigitalSource.from_supply(self.gnd, self.vm, current_limits=(-1.5, 1.5)*Amp)
+        pgnd_model = VoltageSink(
+            voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
+            current_draw=RangeExpr(),
+        )
+        self.pgnd1 = self.Port(pgnd_model)
+        self.pgnd2 = self.Port(pgnd_model)
+        self.pgnd3 = self.Port(pgnd_model)
+
+        din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
+            voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
+            input_thresholds=(0.7, 2.2)
+        )
+        self.en1 = self.Port(din_model)
+        self.en2 = self.Port(din_model)
+        self.en3 = self.Port(din_model)
+        self.in1 = self.Port(din_model)
+        self.in2 = self.Port(din_model)
+        self.in3 = self.Port(din_model)
+
+        self.nreset = self.Port(din_model)
+        self.nsleep = self.Port(din_model)
+
+        self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
+        self.cph = self.Port(Passive())
 
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
             {
-                '1': self.nsleep,
-                '2': self.aout1,
-                '3': self.gnd,  # AISEN
-                '4': self.aout2,
-                '5': self.bout2,
-                '6': self.gnd,  # BISEN
-                '7': self.bout1,
-                # '8': self.nfault,  # TODO at some point
-                '9': self.bin1,
-                '10': self.bin2,
-                '11': self.vcp,
-                '12': self.vm,
-                '13': self.gnd,
-                '14': self.vint,
-                '15': self.ain2,
-                '16': self.ain1,
-                '17': self.gnd,  # exposed pad
+                '1': self.cpl,
+                '2': self.cph,
+                '3': self.vcp,
+                '4': self.vm,
+                '5': self.out1,
+                '6': self.pgnd1,
+                '7': self.pgnd2,
+                '8': self.out2,
+                '9': self.out3,
+                '10': self.pgnd3,
+                '11': self.vm,
+                # '12': self.compp,  # uncommitted comparator input
+                # '13': self.compn,  # uncommitted comparator input
+                '14': self.gnd,
+                '15': self.v3p3,
+                '16': self.nreset,
+                '17': self.nsleep,
+                # '18': self.nfault,  # open-drain fault statuc (requires external pullup)
+                # '19': self.ncompo,  # uncommitted comparator output
+                '20': self.gnd,
+                # '21': self.nc,
+                '22': self.en3,
+                '23': self.in3,
+                '24': self.en2,
+                '25': self.in2,
+                '26': self.en1,
+                '27': self.in1,
+                '28': self.gnd,
+
+                '29': self.gnd,  # exposed pad
             },
             mfr='Texas Instruments', part='DRV8313PWP',
             datasheet='https://www.ti.com/lit/ds/symlink/drv8313.pdf'
