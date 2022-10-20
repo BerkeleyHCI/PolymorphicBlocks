@@ -27,8 +27,9 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.in2 = self.Port(din_model, optional=True)
         self.in3 = self.Port(din_model, optional=True)
 
-        self.nreset = self.Port(din_model)
-        self.nsleep = self.Port(din_model)
+        self.nreset = self.Port(din_model)  # required to be driven, to clear fault conditions
+        self.nsleep = self.Port(din_model)  # required, though can be tied high
+        self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
 
         out_model = DigitalSource.from_supply(
             self.gnd, self.vm,
@@ -76,13 +77,13 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
                 '9': self.out3,
                 '10': self.pgnd3,
                 '11': self.vm,
-                # '12': self.compp,  # uncommitted comparator input
-                # '13': self.compn,  # uncommitted comparator input
+                '12': self.gnd,  # compp  # uncommitted comparator input
+                '13': self.gnd,  # compn  # uncommitted comparator input
                 '14': self.gnd,
                 '15': self.v3p3,
                 '16': self.nreset,
                 '17': self.nsleep,
-                # '18': self.nfault,  # open-drain fault statuc (requires external pullup)
+                '18': self.nfault,  # open-drain fault status (requires external pullup)
                 # '19': self.ncompo,  # uncommitted comparator output
                 '20': self.gnd,
                 # '21': self.nc,
@@ -115,8 +116,9 @@ class Drv8313(GeneratorBlock):
         self.in1 = self.Export(self.ic.in1, optional=True)
         self.in2 = self.Export(self.ic.in2, optional=True)
         self.in3 = self.Export(self.ic.in3, optional=True)
-        self.nreset = self.Export(self.ic.nreset)
-        self.nsleep = self.Export(self.ic.nsleep)
+        self.nreset = self.Export(self.ic.nreset)  # required to be driven, to clear fault conditions
+        self.nsleep = self.Export(self.ic.nsleep, optional=True)  # tied high if not connected
+        self.nfault = self.Export(self.ic.nfault, optional=True)
 
         self.out1 = self.Export(self.ic.out1, optional=True)
         self.out2 = self.Export(self.ic.out2, optional=True)
@@ -127,9 +129,10 @@ class Drv8313(GeneratorBlock):
         self.pgnd3 = self.Port(VoltageSink.empty(), optional=True)
 
         self.generator(self.generate,
+                       self.nsleep.is_connected(),
                        self.pgnd1.is_connected(), self.pgnd2.is_connected(), self.pgnd3.is_connected())
 
-    def generate(self, pgnd1_connected: bool, pgnd2_connected: bool, pgnd3_connected: bool):
+    def generate(self, nsleep_connected: bool, pgnd1_connected: bool, pgnd2_connected: bool, pgnd3_connected: bool):
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -145,6 +148,11 @@ class Drv8313(GeneratorBlock):
         self.vcp_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 16)*Volt))
         self.connect(self.vcp_cap.pos, self.ic.vcp)
         self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+
+        if nsleep_connected:
+            self.connect(self.ic.nsleep, self.nsleep)
+        else:
+            self.connect(self.ic.nsleep, self.ic.v3p3.as_digital_source())
 
         if pgnd1_connected:  # PGND optional if external sensing used, otherwise directly ground
             self.connect(self.ic.pgnd1, self.pgnd1)
