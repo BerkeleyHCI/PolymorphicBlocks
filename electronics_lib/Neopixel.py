@@ -85,8 +85,8 @@ class Sk6812Mini_E(Neopixel, DiscreteChip, FootprintBlock):
         )
 
 
-class Ws2812bArray(GeneratorBlock):
-    """An array of WS2812B"""
+class NeopixelArray(GeneratorBlock):
+    """An array of Neopixels"""
 
     @init_in_parent
     def __init__(self, count: IntLike):
@@ -98,11 +98,11 @@ class Ws2812bArray(GeneratorBlock):
         self.generator(self.generate, count)
 
     def generate(self, count: int):
-        self.led = ElementDict[Ws2812b]()
+        self.led = ElementDict[Neopixel]()
 
         last_signal_pin: Port[DigitalLink] = self.din
         for led_i in range(count):
-            led = self.led[str(led_i)] = self.Block(Ws2812b())
+            led = self.led[str(led_i)] = self.Block(Neopixel())
             self.connect(last_signal_pin, led.din)
             self.connect(self.vdd, led.vdd)
             self.connect(self.gnd, led.gnd)
