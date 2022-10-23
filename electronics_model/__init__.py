@@ -23,6 +23,8 @@ from .SpeakerPort import SpeakerDriverPort, SpeakerPort
 from .CrystalPort import CrystalPort, CrystalDriver
 from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
 
+from .ConnectedGenerator import VoltageSourceConnected
+
 from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 
 from .NetlistBackend import NetlistBackend

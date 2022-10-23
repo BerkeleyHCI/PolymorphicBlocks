@@ -128,12 +128,9 @@ class BldcDriverBoard(JlcBoardTop):
 
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
-      for (i, drv_pgnd) in zip(
-        [1, 2, 3],
-        [self.bldc_drv.pgnd1, self.bldc_drv.pgnd2, self.bldc_drv.pgnd3]
-      ):
+      for i in ['1', '2']:  #, 3]:
         self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.gnd, drv_pgnd)
+            .connected(self.gnd, self.bldc_drv.pgnds.request(i))
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)

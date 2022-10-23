@@ -1,5 +1,4 @@
 import functools
-from typing import List
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
@@ -121,9 +120,9 @@ class Drv8313(GeneratorBlock):
         self.outs = self.Export(self.ic.outs)
         self.pgnds = self.Port(Vector(VoltageSink.empty()), optional=True)  # connected in the generator if used
 
-        self.generator(self.generate, self.nsleep.is_connected(), self.pgnds.requested())
+        self.generator(self.generate, self.nsleep.is_connected())
 
-    def generate(self, nsleep_connected: bool, pgnds_requested: List['str']):
+    def generate(self, nsleep_connected: bool):
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -145,17 +144,10 @@ class Drv8313(GeneratorBlock):
         else:
             self.connect(self.ic.nsleep, self.ic.v3p3.as_digital_source())
 
-        # if pgnd1_connected:  # PGND optional if external sensing used, otherwise directly ground
-        #     self.connect(self.ic.pgnd1, self.pgnd1)
-        # else:
-        #     self.connect(self.ic.pgnd1, self.gnd)
-        #
-        # if pgnd2_connected:
-        #     self.connect(self.ic.pgnd2, self.pgnd2)
-        # else:
-        #     self.connect(self.ic.pgnd2, self.gnd)
-        #
-        # if pgnd3_connected:
-        #     self.connect(self.ic.pgnd3, self.pgnd3)
-        # else:
-        #     self.connect(self.ic.pgnd3, self.gnd)
+        self.pgnd_defaults = ElementDict[VoltageSourceConnected]()
+        for i in ['1', '2', '3']:
+            pgnd = self.pgnds.append_elt(VoltageSink.empty(), i)
+            pgnd_default = self.pgnd_defaults[i] = self.Block(VoltageSourceConnected(pgnd.is_connected()))
+            self.connect(pgnd_default.out, self.ic.pgnds.request(i))
+            self.connect(pgnd_default.in_connected, pgnd)
+            self.connect(pgnd_default.in_unconnected, self.gnd)
