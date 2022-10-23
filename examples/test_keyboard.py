@@ -14,8 +14,6 @@ from edg import *
 
 
 class KeyboardTest(JlcBoardTop):
-  """Split ergo mechanical keyboard.
-  """
   def contents(self) -> None:
     super().contents()
 
