@@ -176,24 +176,39 @@ class SeriesPowerResistor(DiscreteApplication):
 
 
 from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
-class CurrentSenseResistor(DiscreteApplication):
+class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
-  def __init__(self, resistance: RangeLike) -> None:
+  def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
     super().__init__()
 
     self.res = self.Block(SeriesPowerResistor(resistance))
     self.pwr_in = self.Export(self.res.pwr_in, [Input])
     self.pwr_out = self.Export(self.res.pwr_out, [Output])
 
-    self.sense_in = self.Port(AnalogSource.empty())
+    self.sense_in = self.Port(AnalogSource.empty(), optional=True)
     self.sense_out = self.Port(AnalogSource.empty())
 
-  def contents(self):
+    # in some cases, the input rail may be the sense reference and this connection is optional
+    # but this must be an explicit opt-in
+    self.require(sense_in_reqd.implies(self.sense_in.is_connected()))
+    self.generator(self.generate, self.sense_in.is_connected())
+
+  def generate(self, sense_in_connected: bool):
     super().contents()
 
     # TODO dehack with better adapters that also handle bridging
-    self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
-    self.connect(self.pwr_in, self.pwr_adapter.src)
-    self.connect(self.pwr_adapter.dst, self.sense_in)
+    if sense_in_connected:
+      self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
+      self.connect(self.pwr_in, self.pwr_adapter.src)
+      self.connect(self.pwr_adapter.dst, self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
+
+  def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
+      'SeriesPowerResistor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if pwr_in is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+    if pwr_out is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+    return self

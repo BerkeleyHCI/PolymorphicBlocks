@@ -117,21 +117,30 @@ class BldcDriverBoard(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.bldc_drv = imp.Block(Drv8313())
-
-      self.connect(self.vusb, self.bldc_drv.pwr)
-      self.connect(self.mcu.gpio.request('bldc_in1'), self.bldc_drv.in1)
-      self.connect(self.mcu.gpio.request('bldc_in2'), self.bldc_drv.in2)
-      self.connect(self.mcu.gpio.request('bldc_in3'), self.bldc_drv.in3)
-      self.connect(self.mcu.gpio.request('bldc_en1'), self.bldc_drv.en1)
-      self.connect(self.mcu.gpio.request('bldc_en2'), self.bldc_drv.en2)
-      self.connect(self.mcu.gpio.request('bldc_en3'), self.bldc_drv.en3)
+      self.bldc = imp.Block(BldcConnector(2.5 * Amp))  # maximum of DRV8313
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
       self.connect(self.mcu.gpio.request('bldc_fault'), self.bldc_drv.nfault)
 
-      self.bldc = imp.Block(BldcConnector(1 * Amp))
-      self.connect(self.bldc.a, self.bldc_drv.out1)
-      self.connect(self.bldc.b, self.bldc_drv.out2)
-      self.connect(self.bldc.c, self.bldc_drv.out3)
+      self.connect(self.vusb, self.bldc_drv.pwr)
+      for (i, drv_in, drv_en, drv_out, bldc) in zip(
+        [1, 2, 3],
+        [self.bldc_drv.in1, self.bldc_drv.in2, self.bldc_drv.in3],
+        [self.bldc_drv.en1, self.bldc_drv.en2, self.bldc_drv.en3],
+        [self.bldc_drv.out1, self.bldc_drv.out2, self.bldc_drv.out3],
+        [self.bldc.a, self.bldc.b, self.bldc.c]
+      ):
+        self.connect(self.mcu.gpio.request(f'bldc_in{i}'), drv_in)
+        self.connect(self.mcu.gpio.request(f'bldc_en{i}'), drv_en)
+        self.connect(drv_out, bldc)
+
+      self.curr = ElementDict[CurrentSenseResistor]()
+      for (i, drv_pgnd) in zip(
+        [1, 2, 3],
+        [self.bldc_drv.pgnd1, self.bldc_drv.pgnd2, self.bldc_drv.pgnd3]
+      ):
+        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
+            .connected(self.gnd, drv_pgnd)
+        self.connect(self.curr[i].sense_out, self.mcu.adc.request(f'curr{i}'))
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -149,6 +158,12 @@ class BldcDriverBoard(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
 
         ]),
+        (['curr[1]', 'res', 'res', 'require_basic_part'], False),
+        (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['curr[2]', 'res', 'res', 'require_basic_part'], False),
+        (['curr[2]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['curr[3]', 'res', 'res', 'require_basic_part'], False),
+        (['curr[3]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
