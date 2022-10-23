@@ -3,14 +3,47 @@ import unittest
 from edg import *
 
 
+class BldcConnector(Block):
+  @init_in_parent
+  def __init__(self, max_current: FloatLike):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+
+    self.a = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(
+      current_draw=(-max_current, max_current)
+    )))
+    self.b = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
+      current_draw=(-max_current, max_current)
+    )))
+    self.c = self.Export(self.conn.pins.request('3').adapt_to(DigitalSink(
+      current_draw=(-max_current, max_current)
+    )))
+
+
+class MagneticSensor(Block):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+
+    self.pwm = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink()),
+                           [Input])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
+                           [Power])
+    self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
+                           [Common])
+
+
 class BldcDriverBoard(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
   def contents(self) -> None:
     super().contents()
 
+    # technically this needs to bootstrap w/ 5v before the MCU
+    # negotiates a higher voltage, but the BLDC driver needs
+    # at least 8v, so this "assumes" the USB will be at least 9v
     self.usb = self.Block(UsbCReceptacle(
-      voltage_out=(5.0*0.9, 12*1.1)*Volt,
+      voltage_out=(9.0*0.9, 12*1.1)*Volt,
       current_limits=(0, 5)*Amp))
 
     self.vusb = self.connect(self.usb.pwr)
@@ -53,6 +86,26 @@ class BldcDriverBoard(JlcBoardTop):
         self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
+    # BLDC CONTROLLER
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.bldc_drv = imp.Block(Drv8313())
+
+      self.connect(self.vusb, self.bldc_drv.pwr)
+      self.connect(self.mcu.gpio.request('bldc_in1'), self.bldc_drv.in1)
+      self.connect(self.mcu.gpio.request('bldc_in2'), self.bldc_drv.in2)
+      self.connect(self.mcu.gpio.request('bldc_in3'), self.bldc_drv.in3)
+      self.connect(self.mcu.gpio.request('bldc_en1'), self.bldc_drv.en1)
+      self.connect(self.mcu.gpio.request('bldc_en2'), self.bldc_drv.en2)
+      self.connect(self.mcu.gpio.request('bldc_en3'), self.bldc_drv.en3)
+      self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
+      self.connect(self.mcu.gpio.request('bldc_fault'), self.bldc_drv.nfault)
+
+      self.bldc = imp.Block(BldcConnector(1 * Amp))
+      self.connect(self.bldc.a, self.bldc_drv.out1)
+      self.connect(self.bldc.b, self.bldc_drv.out2)
+      self.connect(self.bldc.c, self.bldc_drv.out3)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -63,7 +116,7 @@ class BldcDriverBoard(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32c3_Wroom02),
+        (['mcu'], Stm32f103_48),
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
@@ -72,7 +125,9 @@ class BldcDriverBoard(JlcBoardTop):
         ]),
       ],
       class_refinements=[
-        (PassiveConnector, PinHeader254),
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+        (TestPoint, TeRc),
       ],
     )
 

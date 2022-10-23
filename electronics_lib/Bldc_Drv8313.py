@@ -41,7 +41,7 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
 
         pgnd_model = VoltageSink(
             voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
-            current_draw=RangeExpr(),
+            current_draw=-self.vm.current_draw,
         )
         self.pgnd1 = self.Port(pgnd_model)
         self.pgnd2 = self.Port(pgnd_model)
@@ -117,7 +117,7 @@ class Drv8313(GeneratorBlock):
         self.in2 = self.Export(self.ic.in2, optional=True)
         self.in3 = self.Export(self.ic.in3, optional=True)
         self.nreset = self.Export(self.ic.nreset)  # required to be driven, to clear fault conditions
-        self.nsleep = self.Export(self.ic.nsleep, optional=True)  # tied high if not connected
+        self.nsleep = self.Port(DigitalSink.empty(), optional=True)  # tied high if not connected
         self.nfault = self.Export(self.ic.nfault, optional=True)
 
         self.out1 = self.Export(self.ic.out1, optional=True)
