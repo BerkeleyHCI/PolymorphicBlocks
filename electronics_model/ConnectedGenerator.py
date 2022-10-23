@@ -1,32 +1,59 @@
-from typing import Type
+from typing import Type, TypeVar, Generic
 
 from edg_core import *
 from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
+from .DigitalPorts import DigitalLink, DigitalSink, DigitalSource
 
 
+OutputType = TypeVar('OutputType', bound=Port)
+InputsType = TypeVar('InputsType', bound=Port)
+LinkType = TypeVar('LinkType', bound=Link)
 @non_library  # this can't be instantiated
-class BaseConnectedGenerator(GeneratorBlock):
-  INPUT_TYPE: Type[Port]
-  OUTPUTS_TYPE: Type[Port]
+class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, LinkType]):
+  """A template for a utility block that takes in an input port that may be connected
+  and an output port that is required, and if the input is not present, connects the
+  output to a default port.
+  If the input is present, the default port presents an 'ideal' port. - TODO can this be a true disconnect?
+  If the input is not present, the default port is connected to the output.
+  """
+  INPUTS_TYPE: Type[Port]
+  OUTPUT_TYPE: Type[Port]
 
   @init_in_parent
-  def __init__(self, in_is_connected: BoolLike) -> None:
+  def __init__(self, in_is_connected: BoolLike = BoolExpr()) -> None:
     """in_is_connected needs to be connected from above, since from the perspective
     of this block, the input is always (locally) connected"""
     super().__init__()
-    self.out = self.Port(self.INPUT_TYPE.empty())
-    self.in_connected = self.Port(self.OUTPUTS_TYPE.empty(), optional=True)
-    self.in_unconnected = self.Port(self.OUTPUTS_TYPE.empty())
-    self.generator(self.generate, in_is_connected)
+    self.out = self.Port(self.OUTPUT_TYPE.empty())
+    self.in_connected = self.Port(self.INPUTS_TYPE.empty(), optional=True)
+    self.in_default = self.Port(self.INPUTS_TYPE.empty())
+    self.in_is_connected = self.ArgParameter(in_is_connected)
+
+    self.generator(self.generate, self.in_is_connected)
 
   def generate(self, input_connected: bool):
     if input_connected:
       self.connect(self.out, self.in_connected)
-      self.in_unconnected.init_from(self.OUTPUTS_TYPE())  # create ideal port
+      self.in_default.init_from(self.INPUTS_TYPE())  # create ideal port
     else:
-      self.connect(self.out, self.in_unconnected)
+      self.connect(self.out, self.in_default)
+      # no ideal port needed, this should be invalid anyways
+
+  def out_with_default(self, out: Port[LinkType], in_connected: Port[LinkType],
+                       in_default: Port[LinkType]) -> 'BaseConnectedGenerator':
+    # note this runs in parent scope, so in_is_connected is valid
+    builder.get_enclosing_block().connect(self.out, out)
+    builder.get_enclosing_block().connect(self.in_connected, in_connected)
+    builder.get_enclosing_block().connect(self.in_default, in_default)
+    builder.get_enclosing_block().assign(self.in_is_connected, in_connected.is_connected())
+    return self
 
 
-class VoltageSourceConnected(BaseConnectedGenerator):
-  INPUT_TYPE = VoltageSource
-  OUTPUTS_TYPE = VoltageSink
+class VoltageSourceConnected(BaseConnectedGenerator[VoltageSource, VoltageSink, VoltageLink]):
+  OUTPUT_TYPE = VoltageSource
+  INPUTS_TYPE = VoltageSink
+
+
+class DigitalSourceConnected(BaseConnectedGenerator[DigitalSource, DigitalSink, DigitalLink]):
+  OUTPUT_TYPE = DigitalSource
+  INPUTS_TYPE = DigitalSink

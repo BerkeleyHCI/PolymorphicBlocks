@@ -104,7 +104,7 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C92482')
 
 
-class Drv8313(GeneratorBlock):
+class Drv8313(Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())
@@ -120,9 +120,8 @@ class Drv8313(GeneratorBlock):
         self.outs = self.Export(self.ic.outs)
         self.pgnds = self.Port(Vector(VoltageSink.empty()), optional=True)  # connected in the generator if used
 
-        self.generator(self.generate, self.nsleep.is_connected())
-
-    def generate(self, nsleep_connected: bool):
+    def contents(self):
+        super().contents()
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -139,15 +138,11 @@ class Drv8313(GeneratorBlock):
         self.connect(self.vcp_cap.pos, self.ic.vcp)
         self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
 
-        if nsleep_connected:
-            self.connect(self.ic.nsleep, self.nsleep)
-        else:
-            self.connect(self.ic.nsleep, self.ic.v3p3.as_digital_source())
+        self.nsleep_default = self.Block(DigitalSourceConnected()) \
+            .out_with_default(self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source())
 
         self.pgnd_defaults = ElementDict[VoltageSourceConnected]()
         for i in ['1', '2', '3']:
             pgnd = self.pgnds.append_elt(VoltageSink.empty(), i)
-            pgnd_default = self.pgnd_defaults[i] = self.Block(VoltageSourceConnected(pgnd.is_connected()))
-            self.connect(pgnd_default.out, self.ic.pgnds.request(i))
-            self.connect(pgnd_default.in_connected, pgnd)
-            self.connect(pgnd_default.in_unconnected, self.gnd)
+            self.pgnd_defaults[i] = self.Block(VoltageSourceConnected())\
+                .out_with_default(self.ic.pgnds.request(i), pgnd, self.gnd)
