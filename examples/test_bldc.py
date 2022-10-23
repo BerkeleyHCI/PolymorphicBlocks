@@ -134,7 +134,7 @@ class BldcDriverBoard(JlcBoardTop):
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)
-        self.chain(self.curr[i].sense_out, self.curr_amp[i], self.mcu.adc.request(f'curr{i}'))
+        self.chain(self.curr[i].sense_out, self.curr_amp[i], self.mcu.adc.request(f'curr_{i}'))
 
     # Misc board
     self.duck = self.Block(DuckLogo())
