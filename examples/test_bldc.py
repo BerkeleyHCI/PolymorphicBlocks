@@ -4,6 +4,7 @@ from edg import *
 
 
 class BldcConnector(Block):
+  """Parameterizable-current connector to an external BLDC motor."""
   @init_in_parent
   def __init__(self, max_current: FloatLike):
     super().__init__()
@@ -20,17 +21,38 @@ class BldcConnector(Block):
     )))
 
 
-class MagneticSensor(Block):
+class MagneticEncoder(Block):
+  """Connector to AS5600 mangetic encoder,
+  https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf"""
   def __init__(self):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
-    self.pwm = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink()),
-                           [Input])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
-                           [Power])
+    self.pwr = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
+      voltage_limits=(3.0, 5.5),  # 3.0-3.6 for 3.3v mode, 4.5-5.5 for 5v mode
+      current_draw=(1.5, 6.5)*mAmp,  # supply current LPM3-NOM, excluding burn-in
+    )), [Power])
+    self.out = self.Export(self.conn.pins.request('2').adapt_to(AnalogSource(
+      voltage_out=(0, self.pwr.link().voltage.upper())
+    )), [Output])
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
+
+
+class I2cConnector(Block):
+  """Generic I2C connector, QWIIC pinning (gnd/vcc/sda/scl)"""
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()),
+                           [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
+                           [Power])
+
+    self.i2c = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
+    self.connect(self.i2c.sda, self.conn.pins.request('3').adapt_to(DigitalBidir()))
+    self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 
 
 class BldcDriverBoard(JlcBoardTop):
@@ -81,10 +103,14 @@ class BldcDriverBoard(JlcBoardTop):
       self.pd = imp.Block(Fusb302b())
       self.connect(self.usb.pwr, self.pd.vbus)
       self.connect(self.usb.cc, self.pd.cc)
+      i2c_bus = self.mcu.i2c.request()
       (self.i2c_pull, self.i2c_tp), _ = self.chain(
-        self.mcu.i2c.request(), imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
+        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
+
+      (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
+      (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
 
     # BLDC CONTROLLER
     with self.implicit_connect(
