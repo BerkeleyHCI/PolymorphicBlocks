@@ -9,16 +9,15 @@ class BldcConnector(Block):
   def __init__(self, max_current: FloatLike):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
+    self.phases = self.Port(Vector(DigitalSink.empty()))
 
-    self.a = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(
+    phase_model = DigitalSink(
       current_draw=(-max_current, max_current)
-    )))
-    self.b = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
-      current_draw=(-max_current, max_current)
-    )))
-    self.c = self.Export(self.conn.pins.request('3').adapt_to(DigitalSink(
-      current_draw=(-max_current, max_current)
-    )))
+    )
+    for i in range(3):  # note indices 0, 1, 2 is different than DRV8313 1, 2, 3
+      phase_i = self.phases.append_elt(DigitalSink.empty())
+      self.require(phase_i.is_connected(), f"all phases {i} must be connected")
+      self.connect(phase_i, self.conn.pins.request(str(i + 1)).adapt_to(phase_model))
 
 
 class MagneticEncoder(Block):
@@ -117,21 +116,15 @@ class BldcDriverBoard(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.bldc_drv = imp.Block(Drv8313())
-      self.bldc = imp.Block(BldcConnector(2.5 * Amp))  # maximum of DRV8313
+      self.connect(self.vusb, self.bldc_drv.pwr)
+
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
       self.connect(self.mcu.gpio.request('bldc_fault'), self.bldc_drv.nfault)
+      self.connect(self.mcu.gpio.request_vector('bldc_en'), self.bldc_drv.ens)
+      self.connect(self.mcu.gpio.request_vector('bldc_in'), self.bldc_drv.ins)
 
-      self.connect(self.vusb, self.bldc_drv.pwr)
-      for (i, drv_in, drv_en, drv_out, bldc) in zip(
-        [1, 2, 3],
-        [self.bldc_drv.in1, self.bldc_drv.in2, self.bldc_drv.in3],
-        [self.bldc_drv.en1, self.bldc_drv.en2, self.bldc_drv.en3],
-        [self.bldc_drv.out1, self.bldc_drv.out2, self.bldc_drv.out3],
-        [self.bldc.a, self.bldc.b, self.bldc.c]
-      ):
-        self.connect(self.mcu.gpio.request(f'bldc_in{i}'), drv_in)
-        self.connect(self.mcu.gpio.request(f'bldc_en{i}'), drv_en)
-        self.connect(drv_out, bldc)
+      self.bldc = imp.Block(BldcConnector(2.5 * Amp))  # maximum of DRV8313
+      self.connect(self.bldc_drv.outs.request_vector(), self.bldc.phases)
 
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()

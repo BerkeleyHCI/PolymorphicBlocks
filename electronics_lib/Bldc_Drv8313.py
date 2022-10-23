@@ -1,3 +1,5 @@
+import functools
+
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -16,28 +18,17 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.vcp = self.Port(Passive())  # charge pump, 16V 0.1uF capacitor to Vm
         self.gnd = self.Port(Ground())
 
-        din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
+        self.ens = self.Port(Vector(DigitalSink.empty()))
+        self.ins = self.Port(Vector(DigitalSink.empty()))
+        self.outs = self.Port(Vector(DigitalSource.empty()))
+
+        self.din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
             voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
             input_thresholds=(0.7, 2.2)
         )
-        self.en1 = self.Port(din_model, optional=True)
-        self.en2 = self.Port(din_model, optional=True)
-        self.en3 = self.Port(din_model, optional=True)
-        self.in1 = self.Port(din_model, optional=True)
-        self.in2 = self.Port(din_model, optional=True)
-        self.in3 = self.Port(din_model, optional=True)
-
-        self.nreset = self.Port(din_model)  # required to be driven, to clear fault conditions
-        self.nsleep = self.Port(din_model)  # required, though can be tied high
+        self.nreset = self.Port(self.din_model)  # required to be driven, to clear fault conditions
+        self.nsleep = self.Port(self.din_model)  # required, though can be tied high
         self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
-
-        out_model = DigitalSource.from_supply(
-            self.gnd, self.vm,
-            current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
-        )
-        self.out1 = self.Port(out_model, optional=True)
-        self.out2 = self.Port(out_model, optional=True)
-        self.out3 = self.Port(out_model, optional=True)
 
         pgnd_model = VoltageSink(
             voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
@@ -51,17 +42,26 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.cph = self.Port(Passive())
 
     def contents(self) -> None:
-        self.assign(self.vm.current_draw, (0.5, 5)*mAmp +  # Table 6.5 Vm sleep typ to operating max
-                    (0,  # calculate possible motor current, assuming 1/2/3 are coupled
-                     self.out1.is_connected().then_else(self.out1.link().current_drawn.abs().upper(), 0*mAmp).max(
-                     self.out2.is_connected().then_else(self.out2.link().current_drawn.abs().upper(), 0*mAmp).max(
-                     self.out3.is_connected().then_else(self.out3.link().current_drawn.abs().upper(), 0*mAmp)))
-                     ))
+        out_model = DigitalSource.from_supply(
+            self.gnd, self.vm,
+            current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
+        )
+        channel_currents = []
+        for i in [1, 2, 3]:
+            en_i = self.ens.append_elt(self.din_model, str(i))
+            in_i = self.ins.append_elt(self.din_model, str(i))
+            out_i = self.outs.append_elt(out_model, str(i))
 
-        self.require(self.out1.is_connected() | self.out2.is_connected() | self.out3.is_connected())
-        self.require(self.out1.is_connected().implies(self.en1.is_connected() & self.in1.is_connected()))
-        self.require(self.out2.is_connected().implies(self.en2.is_connected() & self.in2.is_connected()))
-        self.require(self.out3.is_connected().implies(self.en3.is_connected() & self.in3.is_connected()))
+            self.require(out_i.is_connected().implies(en_i.is_connected() & in_i.is_connected()))
+            channel_currents.append(
+                out_i.is_connected().then_else(out_i.link().current_drawn.abs().upper(), 0*mAmp)
+            )
+
+        overall_current = functools.reduce(lambda a, b: a.max(b), channel_currents)
+        self.assign(self.vm.current_draw, (0.5, 5)*mAmp +  # Table 6.5 Vm sleep typ to operating max
+                    (0,  overall_current))
+
+        self.require(self.outs['1'].is_connected() | self.outs['2'].is_connected() | self.outs['3'].is_connected())
 
         self.footprint(
             'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
@@ -70,11 +70,11 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
                 '2': self.cph,
                 '3': self.vcp,
                 '4': self.vm,
-                '5': self.out1,
+                '5': self.outs['1'],
                 '6': self.pgnd1,
                 '7': self.pgnd2,
-                '8': self.out2,
-                '9': self.out3,
+                '8': self.outs['2'],
+                '9': self.outs['3'],
                 '10': self.pgnd3,
                 '11': self.vm,
                 '12': self.gnd,  # compp  # uncommitted comparator input
@@ -87,12 +87,12 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
                 # '19': self.ncompo,  # uncommitted comparator output
                 '20': self.gnd,
                 # '21': self.nc,
-                '22': self.en3,
-                '23': self.in3,
-                '24': self.en2,
-                '25': self.in2,
-                '26': self.en1,
-                '27': self.in1,
+                '22': self.ens['3'],
+                '23': self.ins['3'],
+                '24': self.ens['2'],
+                '25': self.ins['2'],
+                '26': self.ens['1'],
+                '27': self.ins['1'],
                 '28': self.gnd,
 
                 '29': self.gnd,  # exposed pad
@@ -110,19 +110,13 @@ class Drv8313(GeneratorBlock):
         self.pwr = self.Export(self.ic.vm)
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-        self.en1 = self.Export(self.ic.en1, optional=True)
-        self.en2 = self.Export(self.ic.en2, optional=True)
-        self.en3 = self.Export(self.ic.en3, optional=True)
-        self.in1 = self.Export(self.ic.in1, optional=True)
-        self.in2 = self.Export(self.ic.in2, optional=True)
-        self.in3 = self.Export(self.ic.in3, optional=True)
+        self.ens = self.Export(self.ic.ens)
+        self.ins = self.Export(self.ic.ins)
         self.nreset = self.Export(self.ic.nreset)  # required to be driven, to clear fault conditions
         self.nsleep = self.Port(DigitalSink.empty(), optional=True)  # tied high if not connected
         self.nfault = self.Export(self.ic.nfault, optional=True)
 
-        self.out1 = self.Export(self.ic.out1, optional=True)
-        self.out2 = self.Export(self.ic.out2, optional=True)
-        self.out3 = self.Export(self.ic.out3, optional=True)
+        self.outs = self.Export(self.ic.outs)
 
         self.pgnd1 = self.Port(VoltageSink.empty(), optional=True)  # connected in the generator if used
         self.pgnd2 = self.Port(VoltageSink.empty(), optional=True)
