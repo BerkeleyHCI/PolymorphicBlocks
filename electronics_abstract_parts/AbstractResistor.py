@@ -191,7 +191,8 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
 
     # in some cases, the input rail may be the sense reference and this connection is optional
     # but this must be an explicit opt-in
-    self.require(sense_in_reqd.implies(self.sense_in.is_connected()))
+    sense_in_reqd_param = self.ArgParameter(sense_in_reqd)
+    self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
     self.generator(self.generate, self.sense_in.is_connected())
 
   def generate(self, sense_in_connected: bool):
@@ -205,7 +206,7 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
-      'SeriesPowerResistor':
+      'CurrentSenseResistor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
     if pwr_in is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
