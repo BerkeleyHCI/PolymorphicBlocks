@@ -1,4 +1,5 @@
 import functools
+from typing import List
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
@@ -30,13 +31,7 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
         self.nsleep = self.Port(self.din_model)  # required, though can be tied high
         self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
 
-        pgnd_model = VoltageSink(
-            voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
-            current_draw=-self.vm.current_draw,
-        )
-        self.pgnd1 = self.Port(pgnd_model)
-        self.pgnd2 = self.Port(pgnd_model)
-        self.pgnd3 = self.Port(pgnd_model)
+        self.pgnds = self.Port(Vector(VoltageSink.empty()))
 
         self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
         self.cph = self.Port(Passive())
@@ -46,22 +41,29 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
             self.gnd, self.vm,
             current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
         )
+        pgnd_model = VoltageSink(
+            voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
+            current_draw=-self.vm.current_draw,
+        )
         channel_currents = []
-        for i in [1, 2, 3]:
-            en_i = self.ens.append_elt(self.din_model, str(i))
-            in_i = self.ins.append_elt(self.din_model, str(i))
-            out_i = self.outs.append_elt(out_model, str(i))
+        out_connected = []
+        for i in ['1', '2', '3']:
+            en_i = self.ens.append_elt(self.din_model, i)
+            in_i = self.ins.append_elt(self.din_model, i)
+            out_i = self.outs.append_elt(out_model, i)
+            self.pgnds.append_elt(pgnd_model, i)
 
             self.require(out_i.is_connected().implies(en_i.is_connected() & in_i.is_connected()))
             channel_currents.append(
                 out_i.is_connected().then_else(out_i.link().current_drawn.abs().upper(), 0*mAmp)
             )
+            out_connected.append(out_i.is_connected())
 
         overall_current = functools.reduce(lambda a, b: a.max(b), channel_currents)
         self.assign(self.vm.current_draw, (0.5, 5)*mAmp +  # Table 6.5 Vm sleep typ to operating max
                     (0,  overall_current))
-
-        self.require(self.outs['1'].is_connected() | self.outs['2'].is_connected() | self.outs['3'].is_connected())
+        any_out_connected = functools.reduce(lambda a, b: a | b, out_connected)
+        self.require(any_out_connected)
 
         self.footprint(
             'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
@@ -71,11 +73,11 @@ class Drv8313_Device(DiscreteChip, FootprintBlock, JlcPart):
                 '3': self.vcp,
                 '4': self.vm,
                 '5': self.outs['1'],
-                '6': self.pgnd1,
-                '7': self.pgnd2,
+                '6': self.pgnds['1'],
+                '7': self.pgnds['2'],
                 '8': self.outs['2'],
                 '9': self.outs['3'],
-                '10': self.pgnd3,
+                '10': self.pgnds['3'],
                 '11': self.vm,
                 '12': self.gnd,  # compp  # uncommitted comparator input
                 '13': self.gnd,  # compn  # uncommitted comparator input
@@ -117,16 +119,11 @@ class Drv8313(GeneratorBlock):
         self.nfault = self.Export(self.ic.nfault, optional=True)
 
         self.outs = self.Export(self.ic.outs)
+        self.pgnds = self.Port(Vector(VoltageSink.empty()), optional=True)  # connected in the generator if used
 
-        self.pgnd1 = self.Port(VoltageSink.empty(), optional=True)  # connected in the generator if used
-        self.pgnd2 = self.Port(VoltageSink.empty(), optional=True)
-        self.pgnd3 = self.Port(VoltageSink.empty(), optional=True)
+        self.generator(self.generate, self.nsleep.is_connected(), self.pgnds.requested())
 
-        self.generator(self.generate,
-                       self.nsleep.is_connected(),
-                       self.pgnd1.is_connected(), self.pgnd2.is_connected(), self.pgnd3.is_connected())
-
-    def generate(self, nsleep_connected: bool, pgnd1_connected: bool, pgnd2_connected: bool, pgnd3_connected: bool):
+    def generate(self, nsleep_connected: bool, pgnds_requested: List['str']):
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -148,17 +145,17 @@ class Drv8313(GeneratorBlock):
         else:
             self.connect(self.ic.nsleep, self.ic.v3p3.as_digital_source())
 
-        if pgnd1_connected:  # PGND optional if external sensing used, otherwise directly ground
-            self.connect(self.ic.pgnd1, self.pgnd1)
-        else:
-            self.connect(self.ic.pgnd1, self.gnd)
-
-        if pgnd2_connected:
-            self.connect(self.ic.pgnd2, self.pgnd2)
-        else:
-            self.connect(self.ic.pgnd2, self.gnd)
-
-        if pgnd3_connected:
-            self.connect(self.ic.pgnd3, self.pgnd3)
-        else:
-            self.connect(self.ic.pgnd3, self.gnd)
+        # if pgnd1_connected:  # PGND optional if external sensing used, otherwise directly ground
+        #     self.connect(self.ic.pgnd1, self.pgnd1)
+        # else:
+        #     self.connect(self.ic.pgnd1, self.gnd)
+        #
+        # if pgnd2_connected:
+        #     self.connect(self.ic.pgnd2, self.pgnd2)
+        # else:
+        #     self.connect(self.ic.pgnd2, self.gnd)
+        #
+        # if pgnd3_connected:
+        #     self.connect(self.ic.pgnd3, self.pgnd3)
+        # else:
+        #     self.connect(self.ic.pgnd3, self.gnd)
