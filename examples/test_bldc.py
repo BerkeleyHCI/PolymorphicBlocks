@@ -14,10 +14,10 @@ class BldcConnector(Block):
     phase_model = DigitalSink(
       current_draw=(-max_current, max_current)
     )
-    for i in range(3):  # note indices 0, 1, 2 is different than DRV8313 1, 2, 3
-      phase_i = self.phases.append_elt(DigitalSink.empty())
+    for i in ['1', '2', '3']:
+      phase_i = self.phases.append_elt(DigitalSink.empty(), i)
       self.require(phase_i.is_connected(), f"all phases {i} must be connected")
-      self.connect(phase_i, self.conn.pins.request(str(i + 1)).adapt_to(phase_model))
+      self.connect(phase_i, self.conn.pins.request(i).adapt_to(phase_model))
 
 
 class MagneticEncoder(Block):
