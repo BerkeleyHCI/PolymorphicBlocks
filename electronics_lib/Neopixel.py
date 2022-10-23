@@ -2,25 +2,34 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ws2812b(DiscreteChip, FootprintBlock, JlcPart):
+class Neopixel(Block):
+    """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
+        self.vdd = self.Port(VoltageSink.empty())
+        self.gnd = self.Port(Ground.empty())
+        self.din = self.Port(DigitalSink.empty())
+        self.dout = self.Port(DigitalSource.empty(), optional=True)
+
+
+class Ws2812b(Neopixel, DiscreteChip, FootprintBlock, JlcPart):
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
             voltage_limits=(3.7, 5.3) * Volt,
-            current_draw=(0.6, 0.6 + 12*3) * mAmp)
-        )
-        self.gnd = self.Port(Ground())
-        self.din = self.Port(DigitalSink.from_supply(
+            current_draw=(0.6, 0.6 + 12*3) * mAmp,
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.3, 0.7),
-            input_threshold_abs=(0.7, 2.7))
+            input_threshold_abs=(0.7, 2.7),
             # note that a more restrictive input_threshold_abs of (1.5, 2.3) was used previously
-        )
-        self.dout = self.Port(DigitalSource.from_supply(
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
             self.gnd, self.vdd,
-            current_limits=0*mAmp(tol=0)),
-            optional=True
-        )
+            current_limits=0*mAmp(tol=0),
+        ))
 
     def contents(self) -> None:
         self.footprint(
@@ -40,6 +49,40 @@ class Ws2812b(DiscreteChip, FootprintBlock, JlcPart):
         # and Vih at 0.65 Vddmax = 5.5v is 3.575, which is not compatible with the B version
         self.assign(self.lcsc_part, 'C2920042')
         self.assign(self.actual_basic_part, False)
+
+
+class Sk6812Mini_E(Neopixel, DiscreteChip, FootprintBlock):
+    """SK6812MINI-E reverse-mount Neopixel RGB LED, commonly used for keyboard lighting.
+    Note: while listed as JLC C5149201, it seems non-stocked and is standard assembly only."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.7, 5.5) * Volt,
+            current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.5, 0.5),
+            input_threshold_factor=(0.3, 0.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'edg:LED_SK6812MINI-E',
+            {
+                '1': self.vdd,
+                '2': self.dout,
+                '3': self.gnd,
+                '4': self.din
+            },
+            mfr='Opsco Optoelectronics', part='SK6812MINI-E',
+            datasheet='https://cdn-shop.adafruit.com/product-files/4960/4960_SK6812MINI-E_REV02_EN.pdf'
+        )
 
 
 class Ws2812bArray(GeneratorBlock):
