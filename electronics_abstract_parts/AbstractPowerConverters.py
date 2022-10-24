@@ -353,11 +353,10 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
+               output_current: RangeLike, inductor_current_ripple: RangeLike, *,
                efficiency: RangeLike = Default((0.8, 1.0)),  # from TI reference
                input_voltage_ripple: FloatLike = Default(75*mVolt),
-               output_voltage_ripple: FloatLike = Default(25*mVolt),
-               dutycycle_limit: RangeLike = Default((0.2, 0.85))):  # arbitrary
+               output_voltage_ripple: FloatLike = Default(25*mVolt)):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # connected to the input cap, models input current
@@ -367,7 +366,6 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.output_voltage = self.ArgParameter(output_voltage)
-    self.current_limits = self.ArgParameter(current_limits)
     self.output_current = self.ArgParameter(output_current)
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
     # duty cycle limits not supported, since the crossover point has a dutycycle of 0 (boost) and 1 (buck)

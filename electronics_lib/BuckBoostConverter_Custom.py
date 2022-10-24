@@ -4,24 +4,52 @@ from electronics_abstract_parts import *
 class CustomBuckBoostConverter(DiscreteBoostConverter):
   """Custom buck-boost that has two PWM inputs for the input high and output low switches,
   with diodes for the complementary switches (non-synchronous)."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args, voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 0.0)*Ohm, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.low_pwm = self.Port(DigitalSink.empty())
-    self.high_pwm = self.Port(DigitalSink.empty())
+    self.buck_pwm = self.Port(DigitalSink.empty())
+    self.boost_pwm = self.Port(DigitalSink.empty())
+
+    self.voltage_drop = self.ArgParameter(voltage_drop)
+    self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self):
     super().contents()
 
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.power_path = imp.Block(BuckBoostConverterPowerPath(
-        self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
-        self.pwr_out.link().current_drawn, self.ic.vout.current_limits,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                       self.ripple_current_factor,
-                                                       rated_current=self.ic.vout.current_limits.lower())
-      ))
-      self.connect(self.power_path.pwr_out, self.pwr_out)
-      self.connect(self.power_path.switch, self.ic.sw)
+    self.power_path = self.Block(BuckBoostConverterPowerPath(
+      self.pwr_in.link().voltage, self.output_voltage, self.frequency,
+      self.pwr_out.link().current_drawn,
+      inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                     self.ripple_current_factor,
+                                                     rated_current=self.pwr_out.link().current_drawn.upper())
+    ))
+    self.connect(self.power_path.pwr_in, self.pwr_in)
+    self.connect(self.power_path.pwr_out, self.pwr_out)
+    self.connect(self.power_path.gnd, self.gnd)
+    self.in_low_diode = self.Block(Diode(
+      reverse_voltage=self.pwr_in.link().voltage,
+      current=self.power_path.switch_in.current_draw,
+      voltage_drop=self.voltage_drop_limit
+    ))
+    self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
+    self.connect(self.power_path.switch_in,  # internal node not modeled, assumed specs correct
+                 self.in_low_diode.cathode.adapt_to(VoltageSource()))
+    self.out_high_diode = self.Block(Diode(
+      reverse_voltage=self.output_voltage,
+      current=self.power_path.switch_out.current_draw,
+      voltage_drop=self.voltage_drop_limit
+    ))
+    self.out_low_switch = self.Block(Fet.NFet(
+      drain_voltage=self.output_voltage, drain_current=self.power_path.switch_out.current_draw,
+      gate_voltage=self.boost_pwm.link().voltage, rds_on=self.rds_on
+    ))
+    self.connect(self.power_path.switch_out,  # internal node not modeled, assumed specs correct
+                 self.out_high_diode.anode.adapt_to(VoltageSource()),
+                 self.out_low_switch.drain.adapt_to(VoltageSink()))
+    self.connect(self.boost_pwm, self.out_low_switch.gate.adapt_to(DigitalSink(
+
+    )))
+    self.connect(self.gnd, self.out_low_switch.source.adapt_to(Ground()))
+    self.connect(self.pwr_out, self.out_high_diode.anode.adapt_to(VoltageSource(
+
+    )))
