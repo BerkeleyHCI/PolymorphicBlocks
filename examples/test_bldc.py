@@ -236,6 +236,7 @@ class BldcDriverBoard(JlcBoardTop):
 
         # JLC does not have frequency specs, must be checked TODO
         (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['conv', 'power_path', 'inductor', 'lcsc_part'], 'C497840'),  # selected part out of stock
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
