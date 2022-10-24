@@ -54,6 +54,18 @@ class I2cConnector(Block):
     self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 
 
+class PowerOutConnector(Block):
+  """Parameterized current draw voltage output connector"""
+  @init_in_parent
+  def __init__(self, current: RangeLike):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      current_draw=current
+    )), [Power])
+
+
 class BldcDriverBoard(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
@@ -135,6 +147,15 @@ class BldcDriverBoard(JlcBoardTop):
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)
         self.chain(self.curr[i].sense_out, self.curr_amp[i], self.mcu.adc.request(f'curr_{i}'))
+
+    # BUCK BOOST TEST CIRCUIT
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.conv = imp.Block(CustomBuckBoostConverter((3.3, 36)*Volt))
+      self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
+      self.connect(self.conv.pwr_in, self.vusb)
+      self.connect(self.conv.pwr_out, self.conv_out.pwr)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

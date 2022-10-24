@@ -4,6 +4,7 @@ from electronics_abstract_parts import *
 class CustomBuckBoostConverter(DiscreteBoostConverter):
   """Custom buck-boost that has two PWM inputs for the input high and output low switches,
   with diodes for the complementary switches (non-synchronous)."""
+  @init_in_parent
   def __init__(self, *args, voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 0.0)*Ohm, **kwargs):
     super().__init__(*args, **kwargs)
 
@@ -29,27 +30,29 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     self.in_low_diode = self.Block(Diode(
       reverse_voltage=self.pwr_in.link().voltage,
       current=self.power_path.switch_in.current_draw,
-      voltage_drop=self.voltage_drop_limit
+      voltage_drop=self.voltage_drop
     ))
+    # TODO in high (buck) switch
     self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
     self.connect(self.power_path.switch_in,  # internal node not modeled, assumed specs correct
                  self.in_low_diode.cathode.adapt_to(VoltageSource()))
     self.out_high_diode = self.Block(Diode(
       reverse_voltage=self.output_voltage,
       current=self.power_path.switch_out.current_draw,
-      voltage_drop=self.voltage_drop_limit
+      voltage_drop=self.voltage_drop
     ))
     self.out_low_switch = self.Block(Fet.NFet(
       drain_voltage=self.output_voltage, drain_current=self.power_path.switch_out.current_draw,
       gate_voltage=self.boost_pwm.link().voltage, rds_on=self.rds_on
     ))
     self.connect(self.power_path.switch_out,  # internal node not modeled, assumed specs correct
-                 self.out_high_diode.anode.adapt_to(VoltageSource()),
+                 self.out_high_diode.anode.adapt_to(VoltageSource()),  # arbitrarily as source
                  self.out_low_switch.drain.adapt_to(VoltageSink()))
     self.connect(self.boost_pwm, self.out_low_switch.gate.adapt_to(DigitalSink(
-
+      # TODO model me
     )))
     self.connect(self.gnd, self.out_low_switch.source.adapt_to(Ground()))
-    self.connect(self.pwr_out, self.out_high_diode.anode.adapt_to(VoltageSource(
-
+    self.connect(self.pwr_out, self.out_high_diode.cathode.adapt_to(VoltageSource(
+      voltage_out=self.output_voltage,  # assumed external controller regulates correctly
+      # TODO derive current limits
     )))
