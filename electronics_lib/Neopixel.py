@@ -6,9 +6,9 @@ class Neopixel(Block):
     """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink.empty())
-        self.gnd = self.Port(Ground.empty())
-        self.din = self.Port(DigitalSink.empty())
+        self.vdd = self.Port(VoltageSink.empty(), [Power])
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.din = self.Port(DigitalSink.empty(), [Input])
         self.dout = self.Port(DigitalSource.empty(), optional=True)
 
 

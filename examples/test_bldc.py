@@ -98,6 +98,13 @@ class BldcDriverBoard(JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
+      (self.reg_5v, self.tp_5v), _ = self.chain(
+        self.vusb,
+        imp.Block(LinearRegulator(output_voltage=5.0*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint()),
+      )
+      self.v5 = self.connect(self.reg_5v.pwr_out)
+
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -106,8 +113,6 @@ class BldcDriverBoard(JlcBoardTop):
       self.mcu = imp.Block(IoController())
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
-      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
 
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
@@ -148,6 +153,13 @@ class BldcDriverBoard(JlcBoardTop):
         self.connect(self.curr_amp[i].pwr, self.v3v3)
         self.chain(self.curr[i].sense_out, self.curr_amp[i], self.mcu.adc.request(f'curr_{i}'))
 
+    # 5V DOMAIN
+    with self.implicit_connect(
+        ImplicitConnect(self.v5, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      (self.rgb, ), _ = self.chain(self.mcu.gpio.request('rgb'), imp.Block(Sk6812Mini_E()))
+
     # BUCK BOOST TEST CIRCUIT
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -179,6 +191,8 @@ class BldcDriverBoard(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Stm32f103_48),
         (['reg_3v3'], Ldl1117),
+        (['reg_5v'], Ldl1117),
+        (['sw1', 'package'], KailhSocket),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -197,6 +211,9 @@ class BldcDriverBoard(JlcBoardTop):
           'buck_pwm=11',
           'boost_pwm=12',
           'conv_sense=13',
+
+          'sw1=40',
+          'rgb=41',
 
           'i2c.scl=42',
           'i2c.sda=43',
