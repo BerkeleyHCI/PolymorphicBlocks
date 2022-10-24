@@ -31,7 +31,7 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
     self.connect(self.power_path.gnd, self.gnd)
-    self.in_high_switch = self.Block(HighSideSwitch())
+    self.in_high_switch = self.Block(HighSideSwitch(max_rds=self.rds_on.upper()))
     self.connect(self.in_high_switch.pwr, self.pwr_in)
     self.connect(self.in_high_switch.gnd, self.gnd)
     self.connect(self.in_high_switch.control, self.buck_pwm)

@@ -158,12 +158,15 @@ class BldcDriverBoard(JlcBoardTop):
                                                      voltage_drop=(0, 0.75)*Volt,
                                                      pwm_frequency=(1000, 1000)*kHertz,
                                                      ripple_current_factor=(0.01, 1.0),
-                                                     rds_on=(0, 1)*Ohm))
+                                                     rds_on=(0, 0.1)*Ohm))
       self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
       self.connect(self.mcu.gpio.request('buck_pwm'), self.conv.buck_pwm)
       self.connect(self.mcu.gpio.request('boost_pwm'), self.conv.boost_pwm)
       self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
+
+      div_model = VoltageDivider(output_voltage=(1.0, 3.3)*Volt, impedance=(100, 1000) * Ohm)
+      (self.conv_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model), self.mcu.adc.request('conv_sense'))
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -187,6 +190,8 @@ class BldcDriverBoard(JlcBoardTop):
         (['curr[2]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['curr[3]', 'res', 'res', 'require_basic_part'], False),
         (['curr[3]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+
+        (['conv', 'out_low_switch', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
 
         # JLC does not have frequency specs, must be checked TODO
         (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
