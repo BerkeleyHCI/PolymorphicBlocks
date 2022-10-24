@@ -191,6 +191,8 @@ class BldcDriverBoard(JlcBoardTop):
         (['curr[3]', 'res', 'res', 'require_basic_part'], False),
         (['curr[3]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
 
+        # doesn't seem to be available at JLC
+        # (['conv', 'in_high_switch', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
         (['conv', 'out_low_switch', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
 
         # JLC does not have frequency specs, must be checked TODO
