@@ -378,7 +378,7 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
-                   input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
+                   input_voltage_ripple, output_voltage_ripple)
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.buck_dutycycle, ""), " (buck)",
@@ -392,8 +392,7 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
                         output_current: Range, inductor_current_ripple: Range,
                         efficiency: Range,
-                        input_voltage_ripple: float, output_voltage_ripple: float,
-                        dutycycle_limit: Range) -> None:
+                        input_voltage_ripple: float, output_voltage_ripple: float) -> None:
     # clip each mode's duty cycle to that mode's operating range
     buck_dutycycle = (output_voltage / input_voltage / efficiency).bound_to(Range(-float('inf'), 1))
     self.assign(self.buck_dutycycle, buck_dutycycle)
@@ -418,7 +417,6 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
 
     inductance_min = max(buck_inductance_min, boost_inductance_min)
     inductance_max = min(buck_inductance_max, boost_inductance_max)
-
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
       current=(0, self.peak_current),
@@ -433,21 +431,21 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
       current_draw=(-peak_current, -min_current)  # peak currents, flowing out
     )))
 
-    input_buck_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
-                                               (frequency.lower * input_voltage_ripple))
-    input_boost_capacitance = Range.from_lower((output_current.upper / effective_dutycycle.lower) * (1 - effective_dutycycle.lower) /
-                                               (frequency.lower * input_voltage_ripple))
+    # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
+    # C = i * t / dV => C = i / (f * dV)
+    # Ripple current ignored, assume it's symmetric about the average
+    # TODO these should be based off worst-case duty cycle, not this weird superpositional impossible value
+    input_buck_min_cap = (output_current.upper * buck_dutycycle.upper * (1 - buck_dutycycle.lower) /
+                          (frequency.lower * input_voltage_ripple))
+    input_boost_min_cap = ((output_current.upper / boost_dutycycle.lower) * (1 - boost_dutycycle.lower) /
+                           (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
-      capacitance=input_capacitance*Farad,
+      capacitance=Range.from_lower(max(input_buck_min_cap, input_boost_min_cap))*Farad,
     )).connected(self.gnd, self.pwr_in)
 
     # calculated with steady-state ripple
-    output_buck_capacitance = inductor_current_ripple / 8 / frequency / input_voltage_ripple
-
-    output_buck_capacitance = Range.from_lower(inductor_current_ripple.upper /
-                                               (8 * frequency.lower * output_voltage_ripple))
-    output_boost_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper /
-                                                (frequency.lower * output_voltage_ripple))
+    output_buck_min_cap = inductor_current_ripple.upper / (8 * frequency.lower * output_voltage_ripple)
+    output_boost_min_cap = output_current.upper * boost_dutycycle.upper / (frequency.lower * output_voltage_ripple)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=output_capacitance*Farad,
+      capacitance=Range.from_lower(max(output_buck_min_cap, output_boost_min_cap))*Farad,
     )).connected(self.gnd, self.pwr_out)
