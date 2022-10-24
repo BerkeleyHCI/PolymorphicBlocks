@@ -382,8 +382,7 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.buck_dutycycle, ""), " (buck)",
-      ", ", DescriptionString.FormatUnits(self.boost_dutycycle, ""), " (boost)",
-      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
+      ", ", DescriptionString.FormatUnits(self.boost_dutycycle, ""), " (boost)\n",
       "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
       " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
       ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"

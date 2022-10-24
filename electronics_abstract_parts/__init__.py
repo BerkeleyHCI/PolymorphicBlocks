@@ -42,7 +42,7 @@ from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
 from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
-from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
+from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, AnalogTestPoint

@@ -8,6 +8,7 @@ from .DigitalPorts import DigitalLink, DigitalSink, DigitalSource
 OutputType = TypeVar('OutputType', bound=Port)
 InputsType = TypeVar('InputsType', bound=Port)
 LinkType = TypeVar('LinkType', bound=Link)
+SelfType = TypeVar('SelfType', bound='BaseConnectedGenerator')
 @non_library  # this can't be instantiated
 class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, LinkType]):
   """A template for a utility block that takes in an input port that may be connected
@@ -39,13 +40,15 @@ class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, Lin
       self.connect(self.out, self.in_default)
       # no ideal port needed, this should be invalid anyways
 
-  def out_with_default(self, out: Port[LinkType], in_connected: Port[LinkType],
-                       in_default: Port[LinkType]) -> 'BaseConnectedGenerator':
+  def out_with_default(self: SelfType, out: Port[LinkType], in_connected: Port[LinkType],
+                       in_default: Port[LinkType]) -> SelfType:
     # note this runs in parent scope, so in_is_connected is valid
-    builder.get_enclosing_block().connect(self.out, out)
-    builder.get_enclosing_block().connect(self.in_connected, in_connected)
-    builder.get_enclosing_block().connect(self.in_default, in_default)
-    builder.get_enclosing_block().assign(self.in_is_connected, in_connected.is_connected())
+    parent = builder.get_enclosing_block()
+    assert parent is not None
+    parent.connect(self.out, out)
+    parent.connect(self.in_connected, in_connected)
+    parent.connect(self.in_default, in_default)
+    parent.assign(self.in_is_connected, in_connected.is_connected())
     return self
 
 
