@@ -168,6 +168,18 @@ class BuckConverterPowerPath(GeneratorBlock):
       ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
     )
 
+  @staticmethod
+  def max_d_inverse_d(d_range: Range) -> float:
+    """Some power calculations require the maximum of D*(1-D), which has a maximum at D=0.5"""
+    if 0.5 in d_range:
+      return 0.5 * (1 - 0.5)
+    elif d_range.lower > 0.5:
+      return d_range.lower * (1 - d_range.lower)
+    elif d_range.upper < 0.5:
+      return d_range.upper * (1 - d_range.upper)
+    else:
+      raise Exception(f"unexpected D range {d_range}")
+
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
                         output_current: Range, inductor_current_ripple: Range,
                         efficiency: Range,
@@ -202,8 +214,7 @@ class BuckConverterPowerPath(GeneratorBlock):
       current_limits=self.current_limits
     )))
 
-    # TODO pick a single worst-case DC
-    input_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper * (1 - effective_dutycycle.lower) /
+    input_capacitance = Range.from_lower(output_current.upper * self.max_d_inverse_d(effective_dutycycle) /
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
@@ -315,7 +326,13 @@ class BoostConverterPowerPath(GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
     )))
 
-    input_capacitance = Range.from_lower((output_current.upper / effective_dutycycle.lower) * (1 - effective_dutycycle.lower) /
+    # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
+    # C = i * t / dV => C = i / (f * dV)
+    # Boost converter draws current from input throughout the entire cycle, and by conversation of power
+    # the average input current is Iin = Vout/Vin * Iout = 1/(1-D) * Iout
+    # Boost converter current should be much less spikey than buck converter current and probably
+    # less filtering than this is acceptable
+    input_capacitance = Range.from_lower((output_current.upper / (1 - effective_dutycycle.upper)) /
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
@@ -428,13 +445,9 @@ class BuckBoostConverterPowerPath(GeneratorBlock):
       current_draw=(-peak_current, -min_current)  # peak currents, flowing out
     )))
 
-    # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
-    # C = i * t / dV => C = i / (f * dV)
-    # Ripple current ignored, assume it's symmetric about the average
-    # TODO these should be based off worst-case duty cycle, not this weird superpositional impossible value
-    input_buck_min_cap = (output_current.upper * buck_dutycycle.upper * (1 - buck_dutycycle.lower) /
+    input_buck_min_cap = (output_current.upper * BuckConverterPowerPath.max_d_inverse_d(buck_dutycycle) /
                           (frequency.lower * input_voltage_ripple))
-    input_boost_min_cap = ((output_current.upper / boost_dutycycle.lower) * (1 - boost_dutycycle.lower) /
+    input_boost_min_cap = ((output_current.upper / (1 - boost_dutycycle.upper)) /
                            (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=Range.from_lower(max(input_buck_min_cap, input_boost_min_cap))*Farad,
