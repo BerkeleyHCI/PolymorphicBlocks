@@ -42,7 +42,7 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
                  self.in_low_diode.cathode.adapt_to(VoltageSource()))
     self.out_high_diode = self.Block(Diode(
       reverse_voltage=self.output_voltage,
-      current=self.power_path.switch_out.current_draw,
+      current=-self.power_path.switch_out.current_draw,
       voltage_drop=self.voltage_drop
     ))
     self.out_low_switch = self.Block(Fet.NFet(

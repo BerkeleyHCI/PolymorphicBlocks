@@ -152,9 +152,10 @@ class BldcDriverBoard(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.conv_foced_voltage = self.Block(ForcedVoltage(15*Volt(tol=0.1)))  # 0.5x to 2x voltage conversion
+      self.conv_foced_voltage = self.Block(ForcedVoltage(20*Volt(tol=0.1)))  # force tighter duty cycles
       self.connect(self.vusb, self.conv_foced_voltage.pwr_in)
-      self.conv = imp.Block(CustomBuckBoostConverter((10, 20)*Volt,
+      self.conv = imp.Block(CustomBuckBoostConverter((14, 28)*Volt,
+                                                     voltage_drop=(0, 0.75)*Volt,
                                                      pwm_frequency=(1000, 1000)*kHertz,
                                                      ripple_current_factor=(0.01, 1.0)))
       self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
