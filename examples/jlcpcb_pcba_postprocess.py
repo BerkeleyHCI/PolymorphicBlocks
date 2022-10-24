@@ -12,8 +12,9 @@ args = parser.parse_args()
 # Correct the rotations on a per-part-number-basis
 PART_ROTATIONS = {
   'C87911': 180,  # USB ESD diode
-  'C165948': -90,  # USB C connector
+  'C165948': 0,  # USB C connector
   'C86781': 180,  # LD1117
+  'C134077': 180,  # LD1117
   'C425057': -90,  # resistor array 750ohm 4x0603
   'C20197': -90,  # resistor array 1k 4x0603
   'C8734': -90,  # STM32F103C8T6
@@ -26,6 +27,7 @@ PART_ROTATIONS = {
   'C50506': -90,  # DRV8833 dual motor driver
   'C701342': -90,  # ESP32
   'C7972': 180,  # LMV opamp
+  'C92482': -90,  # DRV8313 BLDC driver
 }
 
 
