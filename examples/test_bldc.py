@@ -152,11 +152,13 @@ class BldcDriverBoard(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.conv = imp.Block(CustomBuckBoostConverter((3.3, 36)*Volt,
-                                                     pwm_frequency=(500, 1000)*kHertz,
-                                                     ripple_current_factor=(0.01, 0.5)))
-      self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
-      self.connect(self.conv.pwr_in, self.vusb)
+      self.conv_foced_voltage = self.Block(ForcedVoltage(15*Volt(tol=0.1)))  # 0.5x to 2x voltage conversion
+      self.connect(self.vusb, self.conv_foced_voltage.pwr_in)
+      self.conv = imp.Block(CustomBuckBoostConverter((10, 20)*Volt,
+                                                     pwm_frequency=(1000, 1000)*kHertz,
+                                                     ripple_current_factor=(0.01, 1.0)))
+      self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
+      self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
 
     # Misc board
@@ -181,6 +183,9 @@ class BldcDriverBoard(JlcBoardTop):
         (['curr[2]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['curr[3]', 'res', 'res', 'require_basic_part'], False),
         (['curr[3]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+
+        # JLC does not have frequency specs, must be checked TODO
+        (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
