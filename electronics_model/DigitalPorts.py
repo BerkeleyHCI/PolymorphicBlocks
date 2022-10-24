@@ -224,7 +224,9 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.src = self.Port(DigitalSink())
+    self.src = self.Port(DigitalSink(  # otherwise ideal
+      current_draw=RangeExpr()
+    ))
     self.dst = self.Port(VoltageSource(
       voltage_out=self.src.link().voltage,
       current_limits=(-float('inf'), float('inf'))))

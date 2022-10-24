@@ -7,7 +7,7 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
   @init_in_parent
   def __init__(self, *args,
                pwm_frequency: RangeLike = (100, 1000)*kHertz,
-               voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 0.0)*Ohm,
+               voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
                **kwargs):
     super().__init__(*args, **kwargs)
 
@@ -31,6 +31,10 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
     self.connect(self.power_path.gnd, self.gnd)
+    self.in_high_switch = self.Block(HighSideSwitch())
+    self.connect(self.in_high_switch.pwr, self.pwr_in)
+    self.connect(self.in_high_switch.gnd, self.gnd)
+    self.connect(self.in_high_switch.control, self.buck_pwm)
     self.in_low_diode = self.Block(Diode(
       reverse_voltage=self.pwr_in.link().voltage,
       current=self.power_path.switch_in.current_draw,
@@ -39,15 +43,19 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     # TODO in high (buck) switch
     self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
     self.connect(self.power_path.switch_in,  # internal node not modeled, assumed specs correct
-                 self.in_low_diode.cathode.adapt_to(VoltageSource()))
+                 self.in_high_switch.output.as_voltage_source(),
+                 self.in_low_diode.cathode.adapt_to(VoltageSink()))
     self.out_high_diode = self.Block(Diode(
       reverse_voltage=self.output_voltage,
       current=-self.power_path.switch_out.current_draw,
       voltage_drop=self.voltage_drop
     ))
     self.out_low_switch = self.Block(Fet.NFet(
-      drain_voltage=self.output_voltage, drain_current=self.power_path.switch_out.current_draw,
-      gate_voltage=self.boost_pwm.link().voltage, rds_on=self.rds_on
+      drain_voltage=self.output_voltage,
+      drain_current=-self.power_path.switch_out.current_draw,
+      gate_voltage=(self.boost_pwm.link().output_thresholds.upper(),
+                    self.boost_pwm.link().voltage.upper()),
+      rds_on=self.rds_on,
     ))
     self.connect(self.power_path.switch_out,  # internal node not modeled, assumed specs correct
                  self.out_high_diode.anode.adapt_to(VoltageSource()),  # arbitrarily as source
