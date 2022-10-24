@@ -158,7 +158,9 @@ class BldcDriverBoard(JlcBoardTop):
         ImplicitConnect(self.v5, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb, ), _ = self.chain(self.mcu.gpio.request('rgb'), imp.Block(Sk6812Mini_E()))
+      (self.rgb_pull, self.rgb, ), _ = self.chain(self.mcu.gpio.request('rgb'),
+                                                  imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+                                                  imp.Block(Sk6812Mini_E()))
 
     # BUCK BOOST TEST CIRCUIT
     with self.implicit_connect(
@@ -214,8 +216,8 @@ class BldcDriverBoard(JlcBoardTop):
           'boost_pwm=12',
           'conv_sense=13',
 
-          'sw1=40',
-          'rgb=41',
+          'sw1=38',
+          'rgb=40',
 
           'i2c.scl=42',
           'i2c.sda=43',
