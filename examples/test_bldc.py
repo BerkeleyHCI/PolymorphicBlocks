@@ -114,7 +114,7 @@ class BldcDriverBoard(JlcBoardTop):
       self.pd = imp.Block(Fusb302b())
       self.connect(self.usb.pwr, self.pd.vbus)
       self.connect(self.usb.cc, self.pd.cc)
-      i2c_bus = self.mcu.i2c.request()
+      i2c_bus = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), _ = self.chain(
         i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.pd.i2c)
@@ -182,7 +182,25 @@ class BldcDriverBoard(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'bldc_reset=26',
+          'bldc_fault=25',
+          'bldc_en_3=22',
+          'bldc_in_3=21',
+          'bldc_en_2=20',
+          'bldc_in_2=19',
+          'bldc_en_1=18',
+          'bldc_in_1=17',
+          'curr_3=16',
+          'curr_2=14',
+          'curr_1=15',
 
+          'buck_pwm=11',
+          'boost_pwm=12',
+          'conv_sense=13',
+
+          'i2c.scl=42',
+          'i2c.sda=43',
+          'pd_int=45',
         ]),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
