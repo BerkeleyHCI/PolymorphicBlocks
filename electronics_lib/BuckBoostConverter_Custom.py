@@ -5,12 +5,16 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
   """Custom buck-boost that has two PWM inputs for the input high and output low switches,
   with diodes for the complementary switches (non-synchronous)."""
   @init_in_parent
-  def __init__(self, *args, voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 0.0)*Ohm, **kwargs):
+  def __init__(self, *args,
+               pwm_frequency: RangeLike = (100, 1000)*kHertz,
+               voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 0.0)*Ohm,
+               **kwargs):
     super().__init__(*args, **kwargs)
 
     self.buck_pwm = self.Port(DigitalSink.empty())
     self.boost_pwm = self.Port(DigitalSink.empty())
 
+    self.assign(self.frequency, pwm_frequency)
     self.voltage_drop = self.ArgParameter(voltage_drop)
     self.rds_on = self.ArgParameter(rds_on)
 

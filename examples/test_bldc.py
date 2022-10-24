@@ -152,7 +152,9 @@ class BldcDriverBoard(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.conv = imp.Block(CustomBuckBoostConverter((3.3, 36)*Volt))
+      self.conv = imp.Block(CustomBuckBoostConverter((3.3, 36)*Volt,
+                                                     pwm_frequency=(500, 1000)*kHertz,
+                                                     ripple_current_factor=(0.01, 0.5)))
       self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
       self.connect(self.conv.pwr_in, self.vusb)
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
