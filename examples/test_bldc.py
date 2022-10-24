@@ -172,8 +172,10 @@ class BldcDriverBoard(JlcBoardTop):
                                                      ripple_current_factor=(0.01, 1.0),
                                                      rds_on=(0, 0.1)*Ohm))
       self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
-      self.connect(self.mcu.gpio.request('buck_pwm'), self.conv.buck_pwm)
-      self.connect(self.mcu.gpio.request('boost_pwm'), self.conv.boost_pwm)
+      (self.buck_pull, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'),
+                                         imp.Block(PulldownResistor(1*kOhm(tol=0.05))), self.conv.buck_pwm)
+      (self.boost_pull, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'),
+                                          imp.Block(PulldownResistor(1*kOhm(tol=0.05))), self.conv.boost_pwm)
       self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
 

@@ -74,7 +74,7 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
 
 
-class JlcFet(TableFet, JlcBaseFet):
+class JlcFet(JlcBaseFet, TableFet):
   pass
 
 

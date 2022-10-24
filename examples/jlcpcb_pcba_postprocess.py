@@ -28,6 +28,8 @@ PART_ROTATIONS = {
   'C701342': -90,  # ESP32
   'C7972': 180,  # LMV opamp
   'C92482': -90,  # DRV8313 BLDC driver
+  'C132291': -90,  # FUSB302B
+  'C508453': 180,  # FET
 }
 
 
