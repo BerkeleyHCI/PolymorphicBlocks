@@ -66,6 +66,23 @@ class PowerOutConnector(Block):
     )), [Power])
 
 
+class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
+  """Keystone 5015 / 5017 but with an experimental compact footprint"""
+  def contents(self) -> None:
+    super().contents()
+    self.assign(self.lcsc_part, 'C238130')
+    self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'TP', 'edg:TestPoint_TE_RCT_0805',
+      {
+        '1': self.io,
+      },
+      value=self.tp_name,
+      mfr='Keystone', part='5015',
+      datasheet='https://www.keyelco.com/userAssets/file/M65p55.pdf'
+    )
+
+
 class BldcDriverBoard(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
@@ -136,31 +153,40 @@ class BldcDriverBoard(JlcBoardTop):
       self.connect(self.vusb, self.bldc_drv.pwr)
 
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
-      self.connect(self.mcu.gpio.request('bldc_fault'), self.bldc_drv.nfault)
+      (self.bldc_fault_tp, ), _ = self.chain(self.mcu.gpio.request('bldc_fault'),
+                                             self.Block(DigitalTestPoint()),
+                                             self.bldc_drv.nfault)
       self.connect(self.mcu.gpio.request_vector('bldc_en'), self.bldc_drv.ens)
-      self.connect(self.mcu.gpio.request_vector('bldc_in'), self.bldc_drv.ins)
+      (self.bldc_in_tp, ), _ = self.chain(self.mcu.gpio.request_vector('bldc_in'),
+                                          self.Block(DigitalArrayTestPoint()),
+                                          self.bldc_drv.ins)
 
       self.bldc = imp.Block(BldcConnector(2.5 * Amp))  # maximum of DRV8313
       self.connect(self.bldc_drv.outs.request_vector(), self.bldc.phases)
 
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
+      self.curr_tp = ElementDict[AnalogTestPoint]()
       for i in ['1', '2', '3']:
         self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
             .connected(self.usb.gnd, self.bldc_drv.pgnds.request(i))
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)
-        self.chain(self.curr[i].sense_out, self.curr_amp[i], self.mcu.adc.request(f'curr_{i}'))
+        (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
+                                            self.Block(AnalogTestPoint()),
+                                            self.mcu.adc.request(f'curr_{i}'))
 
     # 5V DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v5, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb_pull, self.rgb, ), _ = self.chain(self.mcu.gpio.request('rgb'),
-                                                  imp.Block(PullupResistor(10*kOhm(tol=0.05))),
-                                                  imp.Block(Sk6812Mini_E()))
+      (self.rgb_pull, self.rgb_tp, self.rgb, ), _ = self.chain(
+        self.mcu.gpio.request('rgb'),
+        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        imp.Block(DigitalTestPoint()),
+        imp.Block(Sk6812Mini_E()))
 
     # BUCK BOOST TEST CIRCUIT
     with self.implicit_connect(
@@ -174,10 +200,14 @@ class BldcDriverBoard(JlcBoardTop):
                                                      ripple_current_factor=(0.01, 1.0),
                                                      rds_on=(0, 0.1)*Ohm))
       self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
-      (self.buck_pull, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'),
-                                         imp.Block(PulldownResistor(1*kOhm(tol=0.05))), self.conv.buck_pwm)
-      (self.boost_pull, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'),
-                                          imp.Block(PulldownResistor(1*kOhm(tol=0.05))), self.conv.boost_pwm)
+      (self.buck_pull, self.buck_tp), _ = self.chain(self.mcu.gpio.request('buck_pwm'),
+                                                     imp.Block(PulldownResistor(1*kOhm(tol=0.05))),
+                                                     self.Block(DigitalTestPoint()),
+                                                     self.conv.buck_pwm)
+      (self.boost_pull, self.boost_tp), _ = self.chain(self.mcu.gpio.request('boost_pwm'),
+                                                       imp.Block(PulldownResistor(1*kOhm(tol=0.05))),
+                                                       self.Block(DigitalTestPoint()),
+                                                       self.conv.boost_pwm)
       self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
 
@@ -241,7 +271,7 @@ class BldcDriverBoard(JlcBoardTop):
       class_refinements=[
         (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
-        (TestPoint, TeRc),
+        (TestPoint, CompactKeystone5015),
       ],
     )
 
