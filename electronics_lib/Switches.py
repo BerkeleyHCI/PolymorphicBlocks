@@ -17,7 +17,7 @@ class SmtSwitch(Switch, FootprintBlock):
     # the P/N isn't standardized, but these have been used in the past:
     # PTS820 J25K SMTR LFS, 2.5mm actuator height (from board)
 
-# TODO right-angle-ness should be a layout-level decision?
+
 class SmtSwitchRa(Switch, FootprintBlock):
   def contents(self) -> None:
     super().contents()
@@ -29,4 +29,23 @@ class SmtSwitchRa(Switch, FootprintBlock):
         '2': self.a,
       },
       part='EVQ-P7C01P'
+    )
+
+
+class KailhSocket(Switch, FootprintBlock):
+  """Kailh mechanical keyboard hotswap socket.
+  Requires an external library, Keyswitch Kicad Library, can be installed from the
+  KiCad Plugin and Content Manager, or from GitHub https://github.com/perigoso/keyswitch-kicad-library
+  """
+  def contents(self) -> None:
+    super().contents()
+
+    self.footprint(
+      'SW', 'Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX',
+      {
+        '1': self.b,
+        '2': self.a,
+      },
+      mfr='Kailh', part='PG151101S11',
+      datasheet='https://github.com/keyboardio/keyswitch_documentation/raw/master/datasheets/Kailh/PG151101S11-MX-Socket.pdf',
     )

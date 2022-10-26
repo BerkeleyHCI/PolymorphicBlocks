@@ -15,7 +15,7 @@ from .JlcFet import JlcFet, JlcSwitchFet
 from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
-from .Switches import SmtSwitch, SmtSwitchRa
+from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .JlcCrystal import JlcCrystal
 from .JlcSwitches import JlcSwitch
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
@@ -64,7 +64,7 @@ from .DacSpi_Mcp4901 import Mcp4921
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Ws2812b import Ws2812b, Ws2812bArray
+from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
