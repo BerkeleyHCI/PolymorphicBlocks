@@ -356,6 +356,11 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
 
+  def as_open_drain(self) -> DigitalSingleSource:
+    """Adapts this DigitalBidir to a DigitalSingleSource open-drain (low-side-only) driver.
+    Not that not all digital ports can be driven in open-drain mode, check your particular IO's capabilities."""
+    return self._convert(DigitalBidirAdapterOpenDrain())
+
 
 class DigitalBidirBridge(CircuitPortBridge):
   def __init__(self) -> None:
@@ -438,11 +443,11 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
     super().__init__()
     self.src = self.Port(DigitalSink(  # otherwise ideal
       current_draw=RangeExpr()
-    ), [Input])
+    ))
     self.dst = self.Port(DigitalSingleSource(
       voltage_out=self.src.link().voltage,
       output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
       pulldown_capable=False,
       low_signal_driver=True
-    ), [Output])
+    ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)

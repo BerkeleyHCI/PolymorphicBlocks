@@ -63,8 +63,8 @@ class PortAdapter(Block, Generic[AdapterDstType]):
 
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, *args, **kwargs) -> T:
-    assert 'optional' not in kwargs, "Ports in PortBridge may not be optional"
-    return super().Port(tpe, *args, optional=False, **kwargs)
+    assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
+    return super().Port(tpe, *args, optional=True, **kwargs)
 
   # TODO: dedup w/ BaseBlock
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:

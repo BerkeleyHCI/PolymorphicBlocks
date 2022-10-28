@@ -142,9 +142,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PeripheralFixedResource('USART3', uart_model, {
         'tx': ['PB10', 'PD8', 'PC10'], 'rx': ['PB11', 'PD9', 'PC11']
       }),
-      PeripheralFixedResource('I2C1', i2c_model, {
-        'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
-      }),
       PeripheralFixedResource('I2C2', i2c_model, {
         'scl': ['PB10'], 'sda': ['PB11']
       }),
@@ -162,6 +159,9 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
         'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST', 'swo': 'PB3'
+      }),
+      PeripheralFixedResource('I2C1', i2c_model, {
+        'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
       }),
     ])
 
