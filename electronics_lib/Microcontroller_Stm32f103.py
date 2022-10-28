@@ -90,16 +90,16 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     })
 
     self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
-      PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),  # PWMable
-      PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),  # PWMable
-      PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),  # PWMable
-      PinResource('PA3', {'PA3': dio_std_model, 'ADC12_IN3': adc_model}),  # PWMable
+      PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),
+      PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),
+      PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),
+      PinResource('PA3', {'PA3': dio_std_model, 'ADC12_IN3': adc_model}),
       PinResource('PA4', {'PA4': dio_std_model, 'ADC12_IN4': adc_model}),
       PinResource('PA5', {'PA5': dio_std_model, 'ADC12_IN5': adc_model}),
-      PinResource('PA6', {'PA6': dio_std_model, 'ADC12_IN6': adc_model}),  # PWMable
-      PinResource('PA7', {'PA7': dio_std_model, 'ADC12_IN7': adc_model}),  # PWMable
-      PinResource('PB0', {'PB0': dio_std_model, 'ADC12_IN8': adc_model}),  # PWMable
-      PinResource('PB1', {'PB1': dio_std_model, 'ADC12_IN9': adc_model}),  # PWMable
+      PinResource('PA6', {'PA6': dio_std_model, 'ADC12_IN6': adc_model}),
+      PinResource('PA7', {'PA7': dio_std_model, 'ADC12_IN7': adc_model}),
+      PinResource('PB0', {'PB0': dio_std_model, 'ADC12_IN8': adc_model}),
+      PinResource('PB1', {'PB1': dio_std_model, 'ADC12_IN9': adc_model}),
 
       PinResource('PB2', {'PB2': dio_ft_model}),  # BOOT1
       PinResource('PB10', {'PB10': dio_ft_model}),
@@ -109,9 +109,9 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PinResource('PB14', {'PB14': dio_ft_model}),
       PinResource('PB15', {'PB15': dio_ft_model}),
 
-      PinResource('PA8', {'PA8': dio_ft_model}),  # PWMable
-      PinResource('PA9', {'PA9': dio_ft_model}),  # PWMable
-      PinResource('PA10', {'PA10': dio_ft_model}),  # PWMable
+      PinResource('PA8', {'PA8': dio_ft_model}),
+      PinResource('PA9', {'PA9': dio_ft_model}),
+      PinResource('PA10', {'PA10': dio_ft_model}),
       PinResource('PA11', {'PA11': dio_ft_model}),
       PinResource('PA12', {'PA12': dio_ft_model}),
       # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
@@ -121,10 +121,10 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       # PinResource('PB3', {'PB3': dio_ft_model}),  # forced SWO, default is JTDO
       PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
       PinResource('PB5', {'PB5': dio_std_model}),
-      PinResource('PB6', {'PB6': dio_ft_model}),  # PWMable
-      PinResource('PB7', {'PB7': dio_ft_model}),  # PWMable
-      PinResource('PB8', {'PB8': dio_ft_model}),  # PWMable
-      PinResource('PB9', {'PB9': dio_ft_model}),  # PWMable
+      PinResource('PB6', {'PB6': dio_ft_model}),
+      PinResource('PB7', {'PB7': dio_ft_model}),
+      PinResource('PB8', {'PB8': dio_ft_model}),
+      PinResource('PB9', {'PB9': dio_ft_model}),
 
       # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
 
@@ -163,7 +163,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
         'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST', 'swo': 'PB3'
       }),
-
     ])
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
