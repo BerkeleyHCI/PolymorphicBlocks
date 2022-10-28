@@ -182,8 +182,9 @@ class BldcDriverBoard(JlcBoardTop):
         ImplicitConnect(self.v5, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb_pull, self.rgb_tp, self.rgb, ), _ = self.chain(
+      (self.rgb_adapt, self.rgb_pull, self.rgb_tp, self.rgb, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
+        imp.Block(DigitalBidirAdapterOpenDrain()),
         imp.Block(PullupResistor(10*kOhm(tol=0.05))),
         imp.Block(DigitalTestPoint()),
         imp.Block(Sk6812Mini_E()))

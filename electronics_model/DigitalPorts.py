@@ -429,3 +429,20 @@ class DigitalSingleSource(DigitalBase):
 
     self.low_signal_driver = self.Parameter(BoolExpr(low_signal_driver))
     self.high_signal_driver = self.Parameter(BoolExpr(high_signal_driver))
+
+
+class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
+  """Adapter where a DigitalBidir is run as an open-drain (low-side single source) port."""
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.src = self.Port(DigitalSink(  # otherwise ideal
+      current_draw=RangeExpr()
+    ), [Input])
+    self.dst = self.Port(DigitalSingleSource(
+      voltage_out=self.src.link().voltage,
+      output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
+      pulldown_capable=False,
+      low_signal_driver=True
+    ), [Output])
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)
