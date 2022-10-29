@@ -82,6 +82,8 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
   # default derating parameters
   DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
   DERATE_MIN_CAPACITANCE = 1.0e-6
+  DERATE_LOWEST = 0.2  # floor for maximum derating factor
+  # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
   @init_in_parent
   def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
@@ -112,6 +114,8 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
         derated = row[self.CAPACITANCE]
       else:  # actually derate
         factor = 1 - row[self.VOLTCO] * (voltage.upper - 3.6)
+        if factor < self.DERATE_LOWEST:
+          factor = self.DERATE_LOWEST
         derated = row[self.CAPACITANCE] * Range(factor, 1)
 
       return {self.DERATED_CAPACITANCE: derated}

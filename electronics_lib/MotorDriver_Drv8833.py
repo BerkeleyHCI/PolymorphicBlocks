@@ -34,19 +34,22 @@ class Drv8833_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.bout1 = self.Port(dout_model, optional=True)
     self.bout2 = self.Port(dout_model, optional=True)
 
+  def contents(self) -> None:
     self.assign(self.vm.current_draw, (1.6, 3000) * uAmp +  # from sleep to max operating
                 (0,  # calculate possible motor current, assuming A1/2 and B1/2 are coupled (and not independent)
                  self.aout1.is_connected().then_else(self.aout1.link().current_drawn.abs().upper(), 0*mAmp).max(
-                 self.aout2.is_connected().then_else(self.aout2.link().current_drawn.abs().upper(), 0*mAmp)) +
+                   self.aout2.is_connected().then_else(self.aout2.link().current_drawn.abs().upper(), 0*mAmp)) +
                  self.bout1.is_connected().then_else(self.bout1.link().current_drawn.abs().upper(), 0*mAmp).max(
-                 self.bout2.is_connected().then_else(self.bout2.link().current_drawn.abs().upper(), 0*mAmp))
-                ))
+                   self.bout2.is_connected().then_else(self.bout2.link().current_drawn.abs().upper(), 0*mAmp))
+                 ))
+
+    self.require(self.aout1.is_connected() | self.aout2.is_connected() |
+                 self.bout1.is_connected() | self.bout2.is_connected())
     self.require(self.aout1.is_connected().implies(self.ain1.is_connected()))
     self.require(self.aout2.is_connected().implies(self.ain2.is_connected()))
     self.require(self.bout1.is_connected().implies(self.bin1.is_connected()))
     self.require(self.bout2.is_connected().implies(self.bin2.is_connected()))
 
-  def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:TSSOP-16-1EP_4.4x5mm_P0.65mm_EP3x3mm_ThermalVias',
       # note: the above has 0.3mm thermal vias while
