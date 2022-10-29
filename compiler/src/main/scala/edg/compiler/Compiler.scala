@@ -68,7 +68,7 @@ object ElaborateRecord {
 }
 
 
-/** Configuration for partial compilation, where the compiler intentionally leaves some design subtre
+/** Configuration for partial compilation, where the compiler intentionally leaves some design subtree
   * unelaboated, eg as a template for design space exploration.
   */
 case class PartialCompile(
@@ -128,6 +128,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
+
+  // Returns a new copy of this compiler and all the work done already.
+  // Useful for design space exploration, where the non-search portions of the design have been compiled.
+  override def clone(): Compiler = {
+    val cloned = new Compiler(inputDesignPb, library, refinements, partial)
+    // TODO clone root
+    // TODO clone elaboratePending
+    // TODO clone const prop graph
+    // TODO clone expanded array connect constraints
+    // TODO clone errors
+    cloned
+  }
 
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
