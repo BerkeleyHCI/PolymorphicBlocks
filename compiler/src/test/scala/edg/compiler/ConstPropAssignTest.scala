@@ -144,4 +144,21 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2))  // should be ignored from above forced-set
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
   }
+
+  it should "handle clone assignments separately" in {
+    val constProp1 = new ConstProp()
+    constProp1.addAssignValue(IndirectDesignPath() + "a", IntValue(2))  // shared assignment
+    constProp1.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+
+    val constProp2 = constProp1.clone()
+    constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+
+    constProp1.addAssignValue(IndirectDesignPath() + "b", IntValue(5))
+    constProp1.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
+    constProp2.getValue(IndirectDesignPath() + "b") should equal(None)
+
+    constProp2.addAssignValue(IndirectDesignPath() + "b", IntValue(6))
+    constProp2.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(6)))
+    constProp1.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
+  }
 }
