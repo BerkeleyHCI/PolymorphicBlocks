@@ -93,9 +93,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     val dep = DependencyGraph[Int, Int]()
     dep.setValue(1, 0)
     dep.getReady shouldBe empty
-
   }
-
 
   it should "return knownValueKeys" in {
     val dep = DependencyGraph[Int, Int]()
@@ -176,5 +174,24 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.nodeDefinedAt(1) should equal(true)
     dep.valueDefinedAt(1) should equal(true)
     dep.nodeDefinedAt(2) should equal(true)
+  }
+
+  it should "track a single dependency separately when cloning" in {
+    val dep1 = DependencyGraph[Int, Int]()
+    dep1.addNode(1, Seq(0))
+    dep1.getReady shouldBe empty
+    val dep2 = dep1.clone()
+    dep2.getReady shouldBe empty
+    dep2.nodeMissing(1) should equal(Set(0))
+
+    dep1.setValue(0, 0)
+    dep1.getReady should equal(Set(1))
+    dep1.nodeMissing(1) should equal(Set())
+    dep2.getReady shouldBe empty
+    dep2.nodeMissing(1) should equal(Set(0))
+
+    dep2.setValue(0, 0)
+    dep2.getReady should equal(Set(1))
+    dep2.nodeMissing(1) should equal(Set())
   }
 }
