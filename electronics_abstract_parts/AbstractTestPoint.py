@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, List
 
 from electronics_model import *
 from electronics_model.CanPort import CanLogicLink
@@ -41,6 +41,20 @@ class DigitalTestPoint(Block):
   def connected(self, io: Port[DigitalLink]) -> 'DigitalTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
+
+
+class DigitalArrayTestPoint(GeneratorBlock):
+  """Creates an array of Digital test points, sized from the port array's connections."""
+  def __init__(self):
+    super().__init__()
+    self.io = self.Port(Vector(DigitalSink().empty()), [InOut])
+    self.generator(self.generate, self.io.requested())
+
+  def generate(self, requesteds: List[str]):
+    self.tp = ElementDict[DigitalTestPoint]()
+    for requested in requesteds:
+      tp = self.tp[requested] = self.Block(DigitalTestPoint())
+      self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
 class AnalogTestPoint(Block):

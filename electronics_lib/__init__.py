@@ -39,6 +39,7 @@ from .BuckConverter_Ap3418 import Ap3418
 from .BoostConverters_AnalogDevices import Ltc3429
 from .BoostConverters_DiodesInc import Ap3012
 from .BoostConverters_Torex import Xc9142
+from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
@@ -87,5 +88,6 @@ from .Mechanicals import JlcToolingHole
 
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
+from .Bldc_Drv8313 import Drv8313
 
 from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc_Device, Imu_Lsm6ds3trc

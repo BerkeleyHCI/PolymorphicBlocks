@@ -13,6 +13,7 @@ from .PassivePort import Passive, PassiveLink
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
+from .DigitalPorts import DigitalBidirAdapterOpenDrain
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .UartPort import UartPort
 from .SpiPort import SpiMaster, SpiSlave
@@ -22,6 +23,8 @@ from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort
 from .SpeakerPort import SpeakerDriverPort, SpeakerPort
 from .CrystalPort import CrystalPort, CrystalDriver
 from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
+
+from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
 from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 
