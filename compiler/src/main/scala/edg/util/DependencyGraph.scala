@@ -14,17 +14,17 @@ class DependencyGraph[KeyType, ValueType] {
   private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()  // cache structure tracking undefined deps
   private val ready = mutable.Set[KeyType]()
 
-  // Creates a shallow clone of this DependencyGraph
-  override def clone(): DependencyGraph[KeyType, ValueType] = {
-    val cloned = new DependencyGraph[KeyType, ValueType]()
-    cloned.values.addAll(values)
-    cloned.inverseDeps.addAll(inverseDeps.map { case (key, value) =>  // these require a deep copy
+  // Copies data from another dependency graph into this one, like a shallow clone
+  def initFrom(that: DependencyGraph[KeyType, ValueType]): Unit = {
+    require(values.isEmpty && inverseDeps.isEmpty && deps.isEmpty && ready.isEmpty)
+    values.addAll(that.values)
+    inverseDeps.addAll(that.inverseDeps.map { case (key, value) => // these require a deep copy
       key -> value.clone()
     })
-    cloned.deps.addAll(deps.map { case (key, value) =>
+    deps.addAll(that.deps.map { case (key, value) =>
       key -> value.clone()
     })
-    cloned
+    ready.addAll(that.ready)
   }
 
   // Adds a node in the graph. May only be called once per node.

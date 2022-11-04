@@ -64,62 +64,48 @@ object ConnectedLinkResult {
   * parameters on connected ports must be manually propagated via addEquality.
   * addEquality is idempotent and may be repeated.
   */
-class ConstProp(
-    // Assign statements logged here on addAssignment
-    paramAssign: mutable.HashMap[IndirectDesignPath, AssignRecord],
-    // Param source, for error tracking
-    paramSource: mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)],
+class ConstProp() {
+  // Assign statements logged here on addAssignment
+  private val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
+  // Param source, for error tracking
+  private val paramSource = mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)]()
 
-    // Assign statements are added to the dependency graph only when arrays are ready
-    // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
-    // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
-    params: DependencyGraph[IndirectDesignPath, ExprValue],
-    paramTypes: mutable.HashMap[DesignPath, Class[_ <: ExprValue]],  // only record types of authoritative elements
+  // Assign statements are added to the dependency graph only when arrays are ready
+  // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
+  // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
+  private val params = DependencyGraph[IndirectDesignPath, ExprValue]()
+  private val paramTypes = mutable.HashMap[DesignPath, Class[_ <: ExprValue]]()  // only record types of authoritative elements
 
-    connectedLink: DependencyGraph[ConnectedLinkRecord, DesignPath],  // tracks the port -> link paths
+  private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
-    // Params that have a forced/override value, which must be set before any assign statements are parsed
-    // TODO how to handle constraints on parameters from an outer component?
-    // Perhaps don't propagate assigns to targets before the param type is parsed?
-    forcedParams: mutable.Set[IndirectDesignPath],
+  // Params that have a forced/override value, which must be set before any assign statements are parsed
+  // TODO how to handle constraints on parameters from an outer component?
+  // Perhaps don't propagate assigns to targets before the param type is parsed?
+  private val forcedParams = mutable.Set[IndirectDesignPath]()
 
-    // Equality, two entries per equality edge (one per direction / target)
-    // This is a very special case, only used for port parameter propagations, and perhaps
-    // even that can be replaced with directed assignments
-    equality: mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]],
+  // Equality, two entries per equality edge (one per direction / target)
+  // This is a very special case, only used for port parameter propagations, and perhaps
+  // even that can be replaced with directed assignments
+  private val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
-    // Overassigns, for error tracking
-    // This only tracks overassigns that were discarded, not including assigns that took effect.
-    // Additional analysis is needed to get the full set of conflicting assigns.
-    discardOverassigns: mutable.HashMap[IndirectDesignPath, OverassignRecord]
-  ) {
-  def this() = {
-    this(
-      mutable.HashMap[IndirectDesignPath, AssignRecord](),
-      mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)](),
-      DependencyGraph[IndirectDesignPath, ExprValue](),
-      mutable.HashMap[DesignPath, Class[_ <: ExprValue]](),
-      DependencyGraph[ConnectedLinkRecord, DesignPath](),
-      mutable.Set[IndirectDesignPath](),
-      mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]](),
-      mutable.HashMap[IndirectDesignPath, OverassignRecord]()
-    )
-  }
+  // Overassigns, for error tracking
+  // This only tracks overassigns that were discarded, not including assigns that took effect.
+  // Additional analysis is needed to get the full set of conflicting assigns.
+  private val discardOverassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
 
-  override def clone(): ConstProp = {
-    val equalityClone = equality.map { case (key, value) =>
+  def initFrom(that: ConstProp): Unit = {
+    require(paramAssign.isEmpty && paramSource.isEmpty && paramTypes.isEmpty && forcedParams.isEmpty
+      && equality.isEmpty && discardOverassigns.isEmpty)
+    paramAssign.addAll(that.paramAssign)
+    paramSource.addAll(that.paramSource)
+    params.initFrom(that.params)
+    paramTypes.addAll(that.paramTypes)
+    connectedLink.initFrom(that.connectedLink)
+    forcedParams.addAll(that.forcedParams)
+    equality.addAll(that.equality.map { case (key, value) =>
       key -> value.clone()
-    }
-    new ConstProp(
-      paramAssign.clone(),
-      paramSource.clone(),
-      params.clone(),
-      paramTypes.clone(),
-      connectedLink.clone(),
-      forcedParams.clone(),
-      equalityClone,
-      discardOverassigns.clone()
-    )
+    })
+    discardOverassigns.addAll(that.discardOverassigns)
   }
 
   //

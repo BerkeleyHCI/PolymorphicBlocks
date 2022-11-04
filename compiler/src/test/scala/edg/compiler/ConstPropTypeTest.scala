@@ -59,7 +59,8 @@ class ConstPropTypeTest extends AnyFlatSpec {
     val constProp1 = new ConstProp()
     constProp1.addDeclaration(DesignPath() + "int", ValInit.Integer)
 
-    val constProp2 = constProp1.clone()
+    val constProp2 = new ConstProp()
+    constProp2.initFrom(constProp1)
     constProp1.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
     constProp2.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
 

@@ -150,7 +150,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp1.addAssignValue(IndirectDesignPath() + "a", IntValue(2))  // shared assignment
     constProp1.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
 
-    val constProp2 = constProp1.clone()
+    val constProp2 = new ConstProp()
+    constProp2.initFrom(constProp1)
     constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
 
     constProp1.addAssignValue(IndirectDesignPath() + "b", IntValue(5))

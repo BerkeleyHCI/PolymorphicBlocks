@@ -176,11 +176,12 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.nodeDefinedAt(2) should equal(true)
   }
 
-  it should "track a single dependency separately when cloning" in {
+  it should "track a single dependency separately with initFrom" in {
     val dep1 = DependencyGraph[Int, Int]()
     dep1.addNode(1, Seq(0))
     dep1.getReady shouldBe empty
-    val dep2 = dep1.clone()
+    val dep2 = DependencyGraph[Int, Int]()
+    dep2.initFrom(dep1)
     dep2.getReady shouldBe empty
     dep2.nodeMissing(1) should equal(Set(0))
 
