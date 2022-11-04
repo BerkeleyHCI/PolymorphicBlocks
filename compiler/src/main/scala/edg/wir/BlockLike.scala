@@ -13,6 +13,7 @@ import scala.collection.mutable
 
 
 sealed trait BlockLike extends Pathable {
+  def clone: BlockLike
   def toPb: elem.BlockLike
 }
 
@@ -29,6 +30,20 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
+
+  // creates a copy of this object
+  override def clone(): Block = {
+    val cloned = new Block(pb, unrefinedType)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.clone() })
+    cloned.blocks.clear()
+    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.clone() })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.clone() })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned
+  }
 
   override def isElaborated: Boolean = true
 

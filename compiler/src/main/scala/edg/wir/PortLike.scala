@@ -9,6 +9,7 @@ import edgir.ref.ref
 
 
 sealed trait PortLike extends Pathable {
+  def clone: PortLike
   def toPb: elem.PortLike
 }
 
