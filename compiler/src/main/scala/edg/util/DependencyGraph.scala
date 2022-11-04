@@ -8,30 +8,23 @@ import scala.collection.mutable
   * Will not detect cyclic dependencies, but can tolerate them.
   * Tracks the frontier, so getReady() is fast.
   */
-class DependencyGraph[KeyType, ValueType] private (values: mutable.HashMap[KeyType, ValueType],
-                                                   inverseDeps: mutable.HashMap[KeyType, mutable.Set[KeyType]],
-                                                   deps: mutable.HashMap[KeyType, mutable.Set[KeyType]],  // cache structure tracking undefined deps
-                                                   ready: mutable.Set[KeyType]
-                                                  ) {
-  // default public constructor populating state with empty structures
-  def this() = {
-    this(
-      mutable.HashMap[KeyType, ValueType](),
-      mutable.HashMap[KeyType, mutable.Set[KeyType]](),
-      mutable.HashMap[KeyType, mutable.Set[KeyType]](),
-      mutable.Set[KeyType]()
-    )
-  }
+class DependencyGraph[KeyType, ValueType] {
+  private val values = mutable.HashMap[KeyType, ValueType]()
+  private val inverseDeps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()
+  private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()  // cache structure tracking undefined deps
+  private val ready = mutable.Set[KeyType]()
 
   // Creates a shallow clone of this DependencyGraph
   override def clone(): DependencyGraph[KeyType, ValueType] = {
-    val inverseDepsClone = inverseDeps.map { case (key, value) =>  // these require a deep copy
+    val cloned = new DependencyGraph[KeyType, ValueType]()
+    cloned.values.addAll(values)
+    cloned.inverseDeps.addAll(inverseDeps.map { case (key, value) =>  // these require a deep copy
       key -> value.clone()
-    }
-    val depsClone = deps.map { case (key, value) =>
+    })
+    cloned.deps.addAll(deps.map { case (key, value) =>
       key -> value.clone()
-    }
-    new DependencyGraph(values.clone(), inverseDepsClone, depsClone, ready.clone())
+    })
+    cloned
   }
 
   // Adds a node in the graph. May only be called once per node.
