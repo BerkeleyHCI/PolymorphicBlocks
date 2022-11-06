@@ -10,7 +10,7 @@ import scala.collection.{SeqMap, mutable}
 
 
 sealed trait LinkLike extends Pathable {
-  def clone: LinkLike
+  def cloned: LinkLike  // using clone directly causes an access error to Object.clone
   def toPb: elem.LinkLike
 }
 

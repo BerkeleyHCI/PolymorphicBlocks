@@ -13,7 +13,7 @@ import scala.collection.mutable
 
 
 sealed trait BlockLike extends Pathable {
-  def clone: BlockLike
+  def cloned: BlockLike  // using clone directly causes an access error to Object.clone
   def toPb: elem.BlockLike
 }
 
@@ -35,11 +35,11 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   override def clone(): Block = {
     val cloned = new Block(pb, unrefinedType)
     cloned.ports.clear()
-    cloned.ports.addAll(ports.map { case (name, port) => name -> port.clone() })
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
     cloned.blocks.clear()
-    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.clone() })
+    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.cloned })
     cloned.links.clear()
-    cloned.links.addAll(links.map { case (name, link) => name -> link.clone() })
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
     cloned.constraints.clear()
     cloned.constraints.addAll(constraints)
     cloned
