@@ -18,6 +18,13 @@ class SingleWriteHashMap[K, V] {
     require(!map.contains(key), s"repeated put for key $key with existing value ${map(key)} and new value $value")
     map.put(key, value)
   }
+
+  def addAll(that: SingleWriteHashMap[K, V]): Unit = {
+    that.map.keys foreach { key =>
+      require(!map.contains(key))
+    }
+    map.addAll(that.map)
+  }
 }
 
 object SingleWriteHashMap {

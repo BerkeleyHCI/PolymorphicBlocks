@@ -88,8 +88,8 @@ class DependencyGraph[KeyType, ValueType] {
     ready.toSet
   }
 
-  // Returns all the KeyTypes that have no values. NOT a fast operation.
-  def getMissing: Set[KeyType] = {
+  // Returns all the KeyTypes that have no values. NOT a fast operation. Includes items in the ready list.
+  def getMissingValue: Set[KeyType] = {
     deps.keySet.toSet -- values.keySet
   }
 

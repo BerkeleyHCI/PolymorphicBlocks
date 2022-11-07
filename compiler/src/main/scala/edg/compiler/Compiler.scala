@@ -101,7 +101,9 @@ class AssignNamer() {
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
                refinements: Refinements=Refinements(), partial: PartialCompile=PartialCompile()) {
   // Working design tree data structure
-  private val root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
+  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
+  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
+
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
   def resolveLink(path: DesignPath): wir.LinkLike = root.resolve(path.steps).asInstanceOf[wir.LinkLike]
@@ -109,8 +111,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
-  // Tracks ElaborateRecord that are ready, but held by partial compilation
-  private val heldElaboratePending = mutable.ListBuffer[ElaborateRecord]()
+  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())  // seed with root
 
   // Design parameters solving (constraint evaluation) and assertions
   private val constProp = new ConstProp() {
@@ -131,32 +132,27 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Returns a new copy of this compiler and all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
+  // heldElaboratePending is cleared
   override def clone(): Compiler = {
     val cloned = new Compiler(inputDesignPb, library, refinements, partial)
-    // TODO clone root
-    // TODO clone elaboratePending
-    // TODO clone const prop graph
-    // TODO clone expanded array connect constraints
-    // TODO clone errors
+    cloned.root = root.cloned
+    cloned.elaboratePending.initFrom(elaboratePending)
+    cloned.constProp.initFrom(constProp)
+    cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
+    cloned.errors.clear()
+    cloned.errors.addAll(errors)
     cloned
   }
 
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val pendingErrors = elaboratePending.getMissing.map { missingNode =>
+    val pendingErrors = elaboratePending.getMissingValue.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
-    }.toSeq ++ heldElaboratePending.map { missingNode =>
-      CompilerError.Unelaborated(missingNode, Set())
-    }
+    }.toSeq
 
     errors.toSeq ++ constProp.getErrors ++ pendingErrors
   }
-
-  // Seed the elaboration record with the root design
-  //
-  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())
-  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
 
   // Hook method to be overridden, eg for status
   //
@@ -1206,18 +1202,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    while (elaboratePending.getReady.nonEmpty) {
+    val heldElaborateIgnored = mutable.Set[ElaborateRecord]()
+
+    // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
+    while (elaboratePending.getReady.nonEmpty && elaboratePending.getReady != heldElaborateIgnored) {
       elaboratePending.getReady.foreach { elaborateRecord =>
         onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              if (partial.blocks.contains(blockPath)) {  // in the partial case, just move it into the held pending
-                heldElaboratePending.append(elaborateRecord)
+              if (partial.blocks.contains(blockPath)) {  // in the partial case, mark this block to be ignored
+                heldElaborateIgnored.add(elaborateRecord)
               } else {
                 expandBlock(blockPath)
+                elaboratePending.setValue(elaborateRecord, None)
               }
-              elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)

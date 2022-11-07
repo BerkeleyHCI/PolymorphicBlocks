@@ -73,5 +73,7 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
       partial=PartialCompile(blocks=Seq(DesignPath() + "source" + "inner")))
     val compiled = compiler.compile()
     compiled should equal(referenceElaborated)
+    compiler.getErrors() should contain(
+      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(DesignPath() + "source" + "inner"), Set()))
   }
 }
