@@ -99,7 +99,8 @@ class AssignNamer() {
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
 class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
-               refinements: Refinements=Refinements(), partial: PartialCompile=PartialCompile()) {
+               refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile(),
+               init: Boolean = true) {
   // Working design tree data structure
   private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
@@ -111,7 +112,6 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
-  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())  // seed with root
 
   // Design parameters solving (constraint evaluation) and assertions
   private val constProp = new ConstProp() {
@@ -119,9 +119,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
-  for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
-    constProp.setForcedValue(path, value, "path refinement")
+
+  if (init) {
+    elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
+    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
+      constProp.setForcedValue(path, value, "path refinement")
+    }
   }
+
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
 
   // Supplemental elaboration data structures
@@ -133,8 +138,8 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Returns a new copy of this compiler and all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   // heldElaboratePending is cleared
-  override def clone(): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements, partial)
+  def fork(partial: PartialCompile): Compiler = {
+    val cloned = new Compiler(inputDesignPb, library, refinements, partial, init=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
