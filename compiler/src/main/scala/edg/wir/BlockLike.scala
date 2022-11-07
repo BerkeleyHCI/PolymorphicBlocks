@@ -32,7 +32,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
 
   // creates a copy of this object
-  override def clone(): Block = {
+  override def cloned: Block = {
     val cloned = new Block(pb, unrefinedType)
     cloned.ports.clear()
     cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
@@ -95,6 +95,20 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   links.clear()
   constraints.clear()
 
+  override def cloned: Generator = {  // TODO dedup w/ super (Block)? but Block.cloned returns a Block
+    val cloned = new Generator(basePb, unrefinedType)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.blocks.clear()
+    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.cloned })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned.generatedPb = generatedPb
+    cloned
+  }
+
   // Apply the generated block on top of the generator stub, and returns the ports that have arrays newly defined
   def applyGenerated(pb: elem.HierarchyBlock): Seq[String] = {
     require(generatedPb.isEmpty, "can't generate twice")
@@ -148,6 +162,8 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
 }
 
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
+  override def cloned: BlockLibrary = this  // immutable
+
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
     case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
