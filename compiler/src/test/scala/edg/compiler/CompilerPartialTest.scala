@@ -140,5 +140,12 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
       CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(DesignPath() + "source" + "inner"), Set()))
+
+    // check that we can fork multiple times
+    val forkedCompiler2 = compiler.fork(PartialCompile())
+    val forkedCompiled2 = forkedCompiler2.compile()
+
+    forkedCompiled2 should equal(referenceFullElaborated)
+    forkedCompiler2.getErrors() should be(empty)
   }
 }
