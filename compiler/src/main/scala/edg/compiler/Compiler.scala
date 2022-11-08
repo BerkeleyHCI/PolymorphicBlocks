@@ -130,7 +130,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  if (init) {
+  if (init) {  // seed only on the initial object creation (and not forks, which would duplicate work)
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
       constProp.setForcedValue(path, value, "path refinement")
