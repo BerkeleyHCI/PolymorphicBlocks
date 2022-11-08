@@ -1,6 +1,6 @@
 import itertools
 import math
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections import deque
 from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type
 
@@ -114,18 +114,22 @@ class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
   a nice closed-form solution so we test-and-check across decades
   """
   @staticmethod
+  @abstractmethod
   def from_resistors(r1: Range, r2: Range) -> ESeriesRatioValueType:
     """Calculates the range of outputs possible given input range of resistors."""
     ...
 
+  @abstractmethod
   def initial_test_decades(self) -> Tuple[int, int]:
     """Returns the initial decades to test that can satisfy this spec."""
     ...
 
+  @abstractmethod
   def distance_to(self, spec: ESeriesRatioValueType) -> List[float]:
     """Returns a distance vector to the spec, or the empty list if satisfying the spec"""
     ...
 
+  @abstractmethod
   def intersects(self, spec: ESeriesRatioValueType) -> bool:
     """Return whether this intersects with some spec - whether some subset of the resistors
     can potentially satisfy some spec"""
