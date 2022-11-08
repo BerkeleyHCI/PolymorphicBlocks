@@ -74,7 +74,11 @@ object ElaborateRecord {
 case class PartialCompile(
   blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
   params: Seq[DesignPath] = Seq()  // do not propagate values into these params (assignments are discarded)
-)
+) {
+  def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
+    PartialCompile(blocks ++ that.blocks, params ++ that.params)
+  }
+}
 
 
 // Utility class that provides a namespace for suggestedName, including a shared default naming pool for where
@@ -138,11 +142,14 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // Returns a new copy of this compiler and all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   // heldElaboratePending is cleared
-  def fork(partial: PartialCompile): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements, partial, init=false)
+  def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
+    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
+    for ((path, value) <- additionalRefinements.instanceValues) { // seed const prop with path assertions
+      cloned.constProp.setForcedValue(path, value, "path refinement")
+    }
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     cloned.errors.clear()
     cloned.errors.addAll(errors)
