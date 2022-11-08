@@ -260,10 +260,10 @@ class NetlistTransform(TransformUtil.Transform):
         return -1
       elif len(pin1.blocks) != len(pin2.blocks):  # prefer shorter block paths
         return len(pin1.blocks) - len(pin2.blocks)
-      elif len(pin1.ports) == 1 and pin1.ports[0].isnumeric and \
+      elif len(pin1.ports) == 1 and pin1.ports[0].isnumeric() and \
           (len(pin2.ports) != 1 or (pin2.ports and not pin2.ports[-1].isnumeric())):  # disprefer number-only ports
         return 1
-      elif len(pin2.ports) == 1 and pin2.ports[0].isnumeric and \
+      elif len(pin2.ports) == 1 and pin2.ports[0].isnumeric() and \
           (len(pin1.ports) != 1 or (pin1.ports and not pin1.ports[-1].isnumeric())):  # disprefer number-only ports
         return -1
       elif len(pin1.ports) != len(pin2.ports):  # prefer shorter port lengths
