@@ -146,10 +146,10 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
     val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
-    cloned.constProp.initFrom(constProp)
-    for ((path, value) <- additionalRefinements.instanceValues) { // seed const prop with path assertions
-      cloned.constProp.setForcedValue(path, value, "path refinement")
+    val additionalForcedValues = additionalRefinements.instanceValues.map { case (path, value) =>
+      path -> (value, "path refinement")  // forced values must be set before any prior processed constraints
     }
+    cloned.constProp.initFrom(constProp, additionalForcedValues)
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     cloned.errors.clear()
     cloned.errors.addAll(errors)

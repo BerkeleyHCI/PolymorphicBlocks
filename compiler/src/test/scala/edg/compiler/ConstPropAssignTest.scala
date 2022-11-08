@@ -181,4 +181,16 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp1.getValue(IndirectDesignPath() + "a") should equal(None)  // should not have changed
     constProp1.getValue(IndirectDesignPath() + "b") should equal(None)  // should not have changed
   }
+
+  it should "allow forcing frozen params" in {
+    val constProp1 = new ConstProp(Set(IndirectDesignPath() + "a"))
+    constProp1.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
+    constProp1.getValue(IndirectDesignPath() + "a") should equal(None)
+
+    val constProp2 = new ConstProp()
+    constProp2.initFrom(constProp1, Map(
+      DesignPath() + "a" -> (IntValue(3), "forced")
+    ))
+    constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
+  }
 }
