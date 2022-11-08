@@ -102,9 +102,15 @@ class AssignNamer() {
   * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
-class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
-               refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile(),
-               init: Boolean = true) {
+class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
+               refinements: Refinements, partial: PartialCompile,
+               init: Boolean) {
+  // public constructor that does not expose init, which is internal only
+  def this(inputDesignPb: schema.Design, library: edg.wir.Library,
+           refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
+    this(inputDesignPb, library, refinements, partial, true)
+  }
+
   // Working design tree data structure
   private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
   require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
