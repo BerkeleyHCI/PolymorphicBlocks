@@ -237,7 +237,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
     addAssignExpr(target, targetExpr, root, constrName, true)
   }
   protected def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
-                    root: DesignPath, constrName: String, update: Boolean = true): Unit = {
+                    root: DesignPath, constrName: String, update: Boolean): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val paramSourceRecord = (root, constrName, targetExpr)
 
@@ -288,7 +288,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   def setForcedValue(target: DesignPath, value: ExprValue, constrName: String): Unit = {
     setForcedValue(target, value, constrName, true)
   }
-  protected def setForcedValue(target: DesignPath, value: ExprValue, constrName: String, update: Boolean = true): Unit = {
+  protected def setForcedValue(target: DesignPath, value: ExprValue, constrName: String, update: Boolean): Unit = {
     val targetIndirect = target.asIndirect
     val expr = ExprBuilder.ValueExpr.Literal(value.toLit)
     forcedParams.put(targetIndirect, expr)

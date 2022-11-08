@@ -27,15 +27,16 @@ case class Refinements(
     )
   }
 
-  // separates the refinements
-  def valuesFiltered(removeBlocks: Set[DesignPath], removeParams: Set[DesignPath]): (Refinements, Refinements) = {
-    val (removedBlocks, filteredBlocks) = instanceRefinements.partition { case (path, _) => removeBlocks.contains(path) }
-    val (removedParams, filteredParams) = instanceValues.partition { case (path, _) => removeParams.contains(path) }
-    val filteredRefinement = Refinements(
-      classRefinements, filteredBlocks, classValues, filteredParams
+  // separates the refinements into one not containing (only) the set blocks and params, and one not.
+  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath]): (Refinements, Refinements) = {
+    val (containsBlocks, otherBlocks) = instanceRefinements.partition { case (path, _) => blocks.contains(path) }
+    val (containsParams, otherParams) = instanceValues.partition { case (path, _) => params.contains(path) }
+    val containsRefinement = Refinements(Map(), containsBlocks, Map(), containsParams)
+    val otherRefinement = Refinements(
+      classRefinements, otherBlocks, classValues, otherParams
     )
-    val removedRefinement = Refinements(Map(), removedBlocks, Map(), removedParams)
-    (filteredRefinement, removedRefinement)
+
+    (containsRefinement, otherRefinement)
   }
 
   def isEmpty: Boolean = {

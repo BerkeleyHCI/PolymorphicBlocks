@@ -145,7 +145,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
-  // Returns a new copy of this compiler and all the work done already.
+  // Creates a new copy of this compiler including all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   // heldElaboratePending is cleared
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
@@ -156,8 +156,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       path -> (value, "path refinement")  // forced values must be set before any prior processed constraints
     }
     cloned.constProp.initFrom(constProp, additionalForcedValues)
+    require(cloned.expandedArrayConnectConstraints.isEmpty)
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
-    cloned.errors.clear()
+    require(cloned.errors.isEmpty)
     cloned.errors.addAll(errors)
     cloned
   }

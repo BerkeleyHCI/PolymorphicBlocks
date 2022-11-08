@@ -14,6 +14,8 @@ class SingleWriteHashMap[K, V] {
 
   def contains(key: K): Boolean = map.contains(key)
 
+  def isEmpty: Boolean = map.isEmpty
+
   def put(key: K, value: V): Unit = {
     require(!map.contains(key), s"repeated put for key $key with existing value ${map(key)} and new value $value")
     map.put(key, value)
