@@ -64,7 +64,7 @@ object ConnectedLinkResult {
   * parameters on connected ports must be manually propagated via addEquality.
   * addEquality is idempotent and may be repeated.
   */
-class ConstProp() {
+class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   // Assign statements logged here on addAssignment
   private val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
   // Param source, for error tracking
@@ -106,6 +106,7 @@ class ConstProp() {
       key -> value.clone()
     })
     discardOverassigns.addAll(that.discardOverassigns)
+    update()  // for when frozenParams changes
   }
 
   //
@@ -145,27 +146,34 @@ class ConstProp() {
       connectedLink.setValue(ready, DesignPath())
     }
 
-    while (params.getReady.nonEmpty) {
-      val constrTarget = params.getReady.head
-      val assign = paramAssign(constrTarget)
-      new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
-        case ExprResult.Result(result) =>
-          params.setValue(constrTarget, result)
-          onParamSolved(constrTarget, result)
-          for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
-            propagateEquality(constrTargetEquals, constrTarget, result)
-          }
-        case ExprResult.Missing(missing) =>  // account for CONNECTED_LINK prefix
-          val missingCorrected = missing.map { path => resolveConnectedLink(path) match {
-            case ConnectedLinkResult.ResolvedPath(path) => path
-            case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
-          } }
-          params.addNode(constrTarget, missingCorrected.toSeq, update = true)
+    while ((params.getReady -- frozenParams).nonEmpty) {
+      (params.getReady -- frozenParams).foreach { constrTarget =>
+        val assign = paramAssign(constrTarget)
+        new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
+          case ExprResult.Result(result) =>
+            params.setValue(constrTarget, result)
+            onParamSolved(constrTarget, result)
+            for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
+              propagateEquality(constrTargetEquals, constrTarget, result)
+            }
+          case ExprResult.Missing(missing) => // account for CONNECTED_LINK prefix
+            val missingCorrected = missing.map { path =>
+              resolveConnectedLink(path) match {
+                case ConnectedLinkResult.ResolvedPath(path) => path
+                case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
+              }
+            }
+            params.addNode(constrTarget, missingCorrected.toSeq, update = true)
+        }
       }
     }
   }
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
+    // TODO because the equality system is separate from the dependency system, these may not automatically
+    // re-trigger on an update() after being un-frozen, so this is currently just not allowed
+    // in the future, uses of equality may be replaced with directed assigns, or the complexity may be implemented
+    require(!frozenParams.contains(dst), "equality w/ frozenParams not supported")
     if (params.getValue(dst).isDefined) {
       val record = discardOverassigns.getOrElseUpdate(dst, OverassignRecord())
       record.equals.add(src)

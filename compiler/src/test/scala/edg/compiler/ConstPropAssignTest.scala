@@ -162,4 +162,14 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp2.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(6)))
     constProp1.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
   }
+
+  it should "freeze parameters properly and unfreeze on clone" in {
+    val constProp1 = new ConstProp(Set(IndirectDesignPath() + "a"))
+    constProp1.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
+    constProp1.getValue(IndirectDesignPath() + "a") should equal(None)
+
+    val constProp2 = new ConstProp()
+    constProp2.initFrom(constProp1)
+    constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+  }
 }
