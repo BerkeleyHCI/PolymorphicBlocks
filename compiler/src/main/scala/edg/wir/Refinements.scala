@@ -26,6 +26,21 @@ case class Refinements(
       instanceValues=MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
     )
   }
+
+  // separates the refinements
+  def valuesFiltered(removeBlocks: Set[DesignPath], removeParams: Set[DesignPath]): (Refinements, Refinements) = {
+    val (removedBlocks, filteredBlocks) = instanceRefinements.partition { case (path, _) => removeBlocks.contains(path) }
+    val (removedParams, filteredParams) = instanceValues.partition { case (path, _) => removeParams.contains(path) }
+    val filteredRefinement = Refinements(
+      classRefinements, filteredBlocks, classValues, filteredParams
+    )
+    val removedRefinement = Refinements(Map(), removedBlocks, Map(), removedParams)
+    (filteredRefinement, removedRefinement)
+  }
+
+  def isEmpty: Boolean = {
+    classRefinements.isEmpty && instanceRefinements.isEmpty && classValues.isEmpty && instanceValues.isEmpty
+  }
 }
 
 

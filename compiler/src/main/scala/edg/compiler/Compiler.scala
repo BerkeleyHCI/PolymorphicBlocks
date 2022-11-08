@@ -118,7 +118,7 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
   // Design parameters solving (constraint evaluation) and assertions
-  private val constProp = new ConstProp() {
+  private val constProp = new ConstProp(partial.params.map(_.asIndirect).toSet) {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
