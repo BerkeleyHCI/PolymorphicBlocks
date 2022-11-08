@@ -1214,21 +1214,19 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    val heldElaborateIgnored = mutable.Set[ElaborateRecord]()
+    val partialElaborate = partial.blocks.map { blockPath =>
+      ElaborateRecord.ExpandBlock(blockPath)
+    }
 
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
-    while (elaboratePending.getReady.nonEmpty && elaboratePending.getReady != heldElaborateIgnored) {
-      elaboratePending.getReady.foreach { elaborateRecord =>
+    while ((elaboratePending.getReady -- partialElaborate).nonEmpty) {
+      (elaboratePending.getReady -- partialElaborate).foreach { elaborateRecord =>
         onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              if (partial.blocks.contains(blockPath)) {  // in the partial case, mark this block to be ignored
-                heldElaborateIgnored.add(elaborateRecord)
-              } else {
-                expandBlock(blockPath)
-                elaboratePending.setValue(elaborateRecord, None)
-              }
+              expandBlock(blockPath)
+              elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)

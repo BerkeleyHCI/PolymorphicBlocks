@@ -130,7 +130,7 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
       partial = PartialCompile(blocks = Seq(DesignPath() + "source" + "inner")))
     val compiled = compiler.compile()
 
-    val forkedCompiler = compiler.fork(PartialCompile())
+    val forkedCompiler = compiler.fork(Refinements(), PartialCompile())
     val forkedCompiled = forkedCompiler.compile()
 
     forkedCompiled should equal(referenceFullElaborated)
@@ -142,7 +142,7 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
       CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(DesignPath() + "source" + "inner"), Set()))
 
     // check that we can fork multiple times
-    val forkedCompiler2 = compiler.fork(PartialCompile())
+    val forkedCompiler2 = compiler.fork(Refinements(), PartialCompile())
     val forkedCompiled2 = forkedCompiler2.compile()
 
     forkedCompiled2 should equal(referenceFullElaborated)
