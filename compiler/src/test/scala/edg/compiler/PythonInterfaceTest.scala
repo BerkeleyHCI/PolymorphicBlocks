@@ -10,7 +10,10 @@ import java.io.File
 
 class PythonInterfaceTest extends AnyFlatSpec {
   "Python Interface" should "make basic connections" in {
-    val pyIf = new PythonInterface(new File("../HdlInterfaceService.py"))
+    val compiledDir = new File(getClass.getResource("").getPath)
+    // above returns compiler/target/scala-2.xx/test-classes/edg/compiler, get the root repo dir
+    val repoDir = compiledDir.getParentFile.getParentFile.getParentFile.getParentFile.getParentFile.getParentFile
+    val pyIf = new PythonInterface(new File(repoDir, "HdlInterfaceService.py"))
     pyIf.indexModule("edg_core").getClass should equal(classOf[Errorable.Success[Seq[LibraryPath]]])
     pyIf.shutdown() should equal(0)
   }
