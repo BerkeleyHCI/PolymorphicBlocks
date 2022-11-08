@@ -26,6 +26,22 @@ case class Refinements(
       instanceValues=MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
     )
   }
+
+  // separates the refinements into one not containing (only) the set blocks and params, and one not.
+  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath]): (Refinements, Refinements) = {
+    val (containsBlocks, otherBlocks) = instanceRefinements.partition { case (path, _) => blocks.contains(path) }
+    val (containsParams, otherParams) = instanceValues.partition { case (path, _) => params.contains(path) }
+    val containsRefinement = Refinements(Map(), containsBlocks, Map(), containsParams)
+    val otherRefinement = Refinements(
+      classRefinements, otherBlocks, classValues, otherParams
+    )
+
+    (containsRefinement, otherRefinement)
+  }
+
+  def isEmpty: Boolean = {
+    classRefinements.isEmpty && instanceRefinements.isEmpty && classValues.isEmpty && instanceValues.isEmpty
+  }
 }
 
 

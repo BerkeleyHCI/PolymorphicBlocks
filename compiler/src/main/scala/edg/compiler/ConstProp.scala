@@ -64,34 +64,52 @@ object ConnectedLinkResult {
   * parameters on connected ports must be manually propagated via addEquality.
   * addEquality is idempotent and may be repeated.
   */
-class ConstProp {
+class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   // Assign statements logged here on addAssignment
-  val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
+  private val paramAssign = mutable.HashMap[IndirectDesignPath, AssignRecord]()
   // Param source, for error tracking
-  val paramSource = mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)]()
+  private val paramSource = mutable.HashMap[IndirectDesignPath, (DesignPath, String, expr.ValueExpr)]()
 
   // Assign statements are added to the dependency graph only when arrays are ready
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
-  val params = DependencyGraph[IndirectDesignPath, ExprValue]()
-  val paramTypes = new mutable.HashMap[DesignPath, Class[_ <: ExprValue]]  // only record types of authoritative elements
+  private val params = DependencyGraph[IndirectDesignPath, ExprValue]()
+  private val paramTypes = mutable.HashMap[DesignPath, Class[_ <: ExprValue]]()  // only record types of authoritative elements
 
-  val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
+  private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
-  // Params that have a forced/override value, which must be set before any assign statements are parsed
-  // TODO how to handle constraints on parameters from an outer component?
-  // Perhaps don't propagate assigns to targets before the param type is parsed?
-  val forcedParams = mutable.Set[IndirectDesignPath]()
+  // Params that have a forced/override value, and the target expr.
+  // The value is tracked so we know which expr takes precedence.
+  private val forcedParams = mutable.Map[IndirectDesignPath, expr.ValueExpr]()
 
   // Equality, two entries per equality edge (one per direction / target)
   // This is a very special case, only used for port parameter propagations, and perhaps
   // even that can be replaced with directed assignments
-  val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
+  private val equality = mutable.HashMap[IndirectDesignPath, mutable.Buffer[IndirectDesignPath]]()
 
   // Overassigns, for error tracking
   // This only tracks overassigns that were discarded, not including assigns that took effect.
   // Additional analysis is needed to get the full set of conflicting assigns.
-  val discardOverassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
+  private val discardOverassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
+
+  def initFrom(that: ConstProp, forcedValues: Map[DesignPath, (ExprValue, String)] = Map()): Unit = {
+    require(paramAssign.isEmpty && paramSource.isEmpty && paramTypes.isEmpty && forcedParams.isEmpty
+      && equality.isEmpty && discardOverassigns.isEmpty)
+    paramAssign.addAll(that.paramAssign)
+    paramSource.addAll(that.paramSource)
+    params.initFrom(that.params)
+    paramTypes.addAll(that.paramTypes)
+    connectedLink.initFrom(that.connectedLink)
+    forcedParams.addAll(that.forcedParams)
+    equality.addAll(that.equality.map { case (key, value) =>
+      key -> value.clone()
+    })
+    discardOverassigns.addAll(that.discardOverassigns)
+    forcedValues.foreach { case (forcedPath, (forcedValue, forcedName)) =>
+      setForcedValue(forcedPath, forcedValue, forcedName, false)
+    }
+    update() // for when frozenParams changes
+  }
 
   //
   // Callbacks, to be overridden at instantiation site
@@ -130,27 +148,34 @@ class ConstProp {
       connectedLink.setValue(ready, DesignPath())
     }
 
-    while (params.getReady.nonEmpty) {
-      val constrTarget = params.getReady.head
-      val assign = paramAssign(constrTarget)
-      new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
-        case ExprResult.Result(result) =>
-          params.setValue(constrTarget, result)
-          onParamSolved(constrTarget, result)
-          for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
-            propagateEquality(constrTargetEquals, constrTarget, result)
-          }
-        case ExprResult.Missing(missing) =>  // account for CONNECTED_LINK prefix
-          val missingCorrected = missing.map { path => resolveConnectedLink(path) match {
-            case ConnectedLinkResult.ResolvedPath(path) => path
-            case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
-          } }
-          params.addNode(constrTarget, missingCorrected.toSeq, update = true)
+    while ((params.getReady -- frozenParams).nonEmpty) {
+      (params.getReady -- frozenParams).foreach { constrTarget =>
+        val assign = paramAssign(constrTarget)
+        new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
+          case ExprResult.Result(result) =>
+            params.setValue(constrTarget, result)
+            onParamSolved(constrTarget, result)
+            for (constrTargetEquals <- equality.getOrElse(constrTarget, mutable.Buffer())) {
+              propagateEquality(constrTargetEquals, constrTarget, result)
+            }
+          case ExprResult.Missing(missing) => // account for CONNECTED_LINK prefix
+            val missingCorrected = missing.map { path =>
+              resolveConnectedLink(path) match {
+                case ConnectedLinkResult.ResolvedPath(path) => path
+                case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
+              }
+            }
+            params.addNode(constrTarget, missingCorrected.toSeq, update = true)
+        }
       }
     }
   }
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
+    // TODO because the equality system is separate from the dependency system, these may not automatically
+    // re-trigger on an update() after being un-frozen, so this is currently just not allowed
+    // in the future, uses of equality may be replaced with directed assigns, or the complexity may be implemented
+    require(!frozenParams.contains(dst), "equality w/ frozenParams not supported")
     if (params.getValue(dst).isDefined) {
       val record = discardOverassigns.getOrElseUpdate(dst, OverassignRecord())
       record.equals.add(src)
@@ -209,23 +234,34 @@ class ConstProp {
     */
   def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
                     root: DesignPath, constrName: String): Unit = {
+    addAssignExpr(target, targetExpr, root, constrName, true)
+  }
+  protected def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
+                    root: DesignPath, constrName: String, update: Boolean): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
-    if (forcedParams.contains(target)) {
-      return  // ignore forced params
-    }
     val paramSourceRecord = (root, constrName, targetExpr)
-    if (params.nodeDefinedAt(target)) {
-      val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
-      record.assigns.add(paramSourceRecord)
-      return  // first set "wins"
+
+    forcedParams.get(target) match {  // check for overassign based on forced status
+      case Some(expr) if expr == targetExpr =>  // this is the forced param
+        require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
+        params.addNode(target, Seq(), update=true)  // allow updating and overwriting prior param record
+      case Some(expr) => return  // ignore forced params - discard the new assign
+      case None =>  // non-forced, check for and record over-assigns
+        if (params.nodeDefinedAt(target)) {
+          val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
+          record.assigns.add(paramSourceRecord)
+          return // first set "wins"
+        }
+        params.addNode(target, Seq())  // first add is not update=True, actual processing happens in update()
     }
 
     val assign = AssignRecord(target, root, targetExpr)
     paramAssign.put(target, assign)
     paramSource.put(target, paramSourceRecord)
-    params.addNode(target, Seq())  // first add is not update=True, actual processing happens in update()
 
-    update()
+    if (update) {
+      this.update()
+    }
   }
 
   /** Sets a value directly (without the expr), convenience wrapper around addAssignment
@@ -246,14 +282,17 @@ class ConstProp {
       root, constrName=constrName)
   }
 
-  /** Sets a value directly, and ignores subsequent assignments.
+  /** Sets a value directly, and ignores subsequent assignments. Idempotent.
     * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
     */
   def setForcedValue(target: DesignPath, value: ExprValue, constrName: String): Unit = {
+    setForcedValue(target, value, constrName, true)
+  }
+  protected def setForcedValue(target: DesignPath, value: ExprValue, constrName: String, update: Boolean): Unit = {
     val targetIndirect = target.asIndirect
-    require(!params.nodeDefinedAt(targetIndirect), s"forced value must be set before assigns, prior ${paramSource(targetIndirect)}")
-    addAssignValue(targetIndirect, value, DesignPath(), constrName)
-    forcedParams += targetIndirect
+    val expr = ExprBuilder.ValueExpr.Literal(value.toLit)
+    forcedParams.put(targetIndirect, expr)
+    addAssignExpr(targetIndirect, expr, DesignPath(), constrName, update)
   }
 
   /**

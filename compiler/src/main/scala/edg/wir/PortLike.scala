@@ -9,6 +9,7 @@ import edgir.ref.ref
 
 
 sealed trait PortLike extends Pathable {
+  def cloned: PortLike  // using clone directly causes an access error to Object.clone
   def toPb: elem.PortLike
 }
 
@@ -29,6 +30,8 @@ object PortLike {
 
 class Port(pb: elem.Port) extends PortLike
     with HasParams {
+  override def cloned: Port = this  // immutable
+
   override def isElaborated: Boolean = true
 
   override def getParams: Map[String, init.ValInit] = pb.params
@@ -51,6 +54,13 @@ class Bundle(pb: elem.Bundle) extends PortLike
     with HasMutablePorts with HasParams {
   private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
+
+  override def cloned: Bundle = {
+    val cloned = new Bundle(pb)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned
+  }
 
   override def isElaborated: Boolean = true
 
@@ -86,6 +96,14 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
     case elem.PortArray.Contains.Ports(ports) =>
       setPorts(SeqMap.from(parsePorts(ports.ports, nameOrder)))
     case _ =>
+  }
+
+  override def cloned: PortArray = {
+    val cloned = new PortArray(pb)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.portsSet = portsSet
+    cloned
   }
 
   override def isElaborated: Boolean = portsSet && ports.values.forall(_.isElaborated)
@@ -126,6 +144,8 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 }
 
 case class PortLibrary(target: ref.LibraryPath) extends PortLike {
+  override def cloned: PortLibrary = this  // immutable
+
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
     case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
