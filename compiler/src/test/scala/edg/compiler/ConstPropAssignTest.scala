@@ -164,12 +164,21 @@ class ConstPropAssignTest extends AnyFlatSpec {
   }
 
   it should "freeze parameters properly and unfreeze on clone" in {
+    import edgir.expr.expr.BinaryExpr.Op
+
     val constProp1 = new ConstProp(Set(IndirectDesignPath() + "a"))
     constProp1.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
+    constProp1.addAssignExpr(IndirectDesignPath() + "b",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
+    )
     constProp1.getValue(IndirectDesignPath() + "a") should equal(None)
+    constProp1.getValue(IndirectDesignPath() + "b") should equal(None)
 
     val constProp2 = new ConstProp()
     constProp2.initFrom(constProp1)
     constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+    constProp2.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))  // check second assign triggers
+    constProp1.getValue(IndirectDesignPath() + "a") should equal(None)  // should not have changed
+    constProp1.getValue(IndirectDesignPath() + "b") should equal(None)  // should not have changed
   }
 }
