@@ -60,10 +60,12 @@ object CompilerError {
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
   }
 
-  case class InconsistentLinkArrayElements(root: DesignPath, linkElements: IndirectDesignPath,
-                                           blockPortElements: IndirectDesignPath) extends CompilerError {
+  case class InconsistentLinkArrayElements(root: DesignPath,
+                                           linkPath: IndirectDesignPath, linkElements: ArrayValue[TextValue],
+                                           blockPortPath: IndirectDesignPath, blockPortElements: ArrayValue[TextValue]
+                                          ) extends CompilerError {
     override def toString: String =
-      s"Inconsistent link array elements: $linkElements, $blockPortElements"
+      s"Inconsistent link array elements: $linkPath ($linkElements), $blockPortPath ($blockPortElements)"
   }
 
   // TODO should this be an error? Currently a debugging tool

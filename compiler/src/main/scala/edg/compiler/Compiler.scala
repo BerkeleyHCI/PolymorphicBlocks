@@ -1076,8 +1076,12 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       constProp.addAssignEqual(record.target, record.source,
         record.containerPath, "array connect link ELEMENTS from block-side ELEMENTS")
     }
-    if (constProp.getValue(record.target).get != constProp.getValue(record.source).get) {
-      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath, record.target, record.source))
+    val linkElements = constProp.getValue(record.target).get.asInstanceOf[ArrayValue[TextValue]]
+    val blockPortElements = constProp.getValue(record.source).get.asInstanceOf[ArrayValue[TextValue]]
+    if (linkElements.values.toSet != blockPortElements.values.toSet) {
+      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath,
+        record.target, linkElements,
+        record.source, blockPortElements))
     }
   }
 
