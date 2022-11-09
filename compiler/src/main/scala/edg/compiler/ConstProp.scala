@@ -78,9 +78,9 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
 
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
-  // Params that have a forced/override value, and the target expr.
+  // Params that have a forced/override value, and the name and target expr.
   // The value is tracked so we know which expr takes precedence.
-  private val forcedParams = mutable.Map[IndirectDesignPath, expr.ValueExpr]()
+  private val forcedParams = mutable.Map[IndirectDesignPath, (String, expr.ValueExpr)]()
 
   // Equality, two entries per equality edge (one per direction / target)
   // This is a very special case, only used for port parameter propagations, and perhaps
@@ -242,7 +242,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
     val paramSourceRecord = (root, constrName, targetExpr)
 
     forcedParams.get(target) match {  // check for overassign based on forced status
-      case Some(expr) if expr == targetExpr =>  // this is the forced param
+      case Some(expr) if expr == (constrName, targetExpr) =>  // this is the forced param
         require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
         params.addNode(target, Seq(), update=true)  // allow updating and overwriting prior param record
       case Some(expr) => return  // ignore forced params - discard the new assign
@@ -291,7 +291,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   protected def setForcedValue(target: DesignPath, value: ExprValue, constrName: String, update: Boolean): Unit = {
     val targetIndirect = target.asIndirect
     val expr = ExprBuilder.ValueExpr.Literal(value.toLit)
-    forcedParams.put(targetIndirect, expr)
+    forcedParams.put(targetIndirect, (constrName, expr))
     addAssignExpr(targetIndirect, expr, DesignPath(), constrName, update)
   }
 
