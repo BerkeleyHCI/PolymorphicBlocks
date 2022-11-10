@@ -80,6 +80,7 @@ However, you can't do both (since they would duplicate the same results), but yo
 
 ## IDE Setup
 _Recommended (but optional), to use the IDE._
+_Runs natively on Windows, Linux, and Mac._
 
 1. Download [sbt](https://www.scala-sbt.org/download.html), the Scala build tool.
 2. If you do not have a Java JDK installed, download and install one.
@@ -90,7 +91,10 @@ _Recommended (but optional), to use the IDE._
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
-   - If you get an error along the lines of `not found: [...]\compiler_2.13\0.1.0-SNAPSHOT\ivys\ivy.xml` or `[error] sbt.librarymanagement.ResolveException: Error downloading compiler:compiler_2.13:0.1.0-SNAPSHOT`, this is because the PolymorphicBlock submodule hasn't been cloned.
+   - If you get an error along the lines of  
+     `sbt.librarymanagement.ResolveException: Error downloading edgcompiler:edgcompiler_2.13:0.1.0-SNAPSHOT`  
+     or `not found: [...]/edgcompiler/edgcompiler_2.13/0.1.0-SNAPSHOT/edgcompiler_2.13-0.1.0-SNAPSHOT.pom`,  
+     this is because the PolymorphicBlocks submodule hasn't been cloned.
      See the section above for instructions.
      The IDE plugin includes the HDL compiler as part of its build and requires the PolymorphicBlocks codebase.
 5. In the IDE, **open the `PolymorphicBlocks` folder as a project**.
@@ -107,10 +111,12 @@ _Recommended (but optional), to use the IDE._
 
 ## HDL-only Setup
 _This isn't necessary if you did the IDE setup above._
+_Runs natively on Windows, Linux, and Mac._
 
 1. Make sure you are using Python 3.7 (or later).
 2. Install the needed dependencies.
    If using pip: `pip install protobuf kinparse Deprecated`
+3. If on Linux and you get an error along the lines of `python: command not found`, you may need to `apt install python-is-python3`.
 
 
 ## A top-level design: Blinky
