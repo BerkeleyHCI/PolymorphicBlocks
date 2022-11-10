@@ -80,6 +80,7 @@ However, you can't do both (since they would duplicate the same results), but yo
 
 ## IDE Setup
 _Recommended (but optional), to use the IDE._
+_Runs natively on Windows, Linux, and Mac._
 
 1. Download [sbt](https://www.scala-sbt.org/download.html), the Scala build tool.
 2. If you do not have a Java JDK installed, download and install one.
@@ -107,10 +108,12 @@ _Recommended (but optional), to use the IDE._
 
 ## HDL-only Setup
 _This isn't necessary if you did the IDE setup above._
+_Runs natively on Windows, Linux, and Mac._
 
 1. Make sure you are using Python 3.7 (or later).
 2. Install the needed dependencies.
    If using pip: `pip install protobuf kinparse Deprecated`
+3. If on Linux and you get an error along the lines of `python: command not found`, you may need to `apt install python-is-python3`.
 
 
 ## A top-level design: Blinky

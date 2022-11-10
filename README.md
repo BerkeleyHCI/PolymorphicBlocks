@@ -66,11 +66,12 @@ Layout Integration Features
 
 
 ## Setup
-You will need a Python 3.7+ installation with the `protobuf` and `kinparse` packages and a recent Java JRE or JDK.
+You will need a Python 3.7+ installation with the `protobuf`, `kinparse`, and `Deprecated` packages and a recent Java JRE or JDK.
+Runs natively on Windows, Linux, and Mac.
 
 The packages can be installed using `pip`:
 ```python
-pip install protobuf kinparse
+pip install protobuf kinparse Deperecated
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 
@@ -80,6 +81,12 @@ The test suite includes both unit level tests and example boards.
 
 ```
 python -m unittest discover
+```
+
+If a bunch of things are failing but it isn't clear why from excessive console spam, consider just running one test:
+
+```python
+python -m unittest examples.test_blinky.BlinkyTestCase.test_design_complete
 ```
 
 ### Getting Started Tutorial
