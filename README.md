@@ -73,7 +73,7 @@ Runs natively on Windows, Linux, and Mac.
 
 The packages can be installed using `pip`:
 ```python
-pip install protobuf kinparse Deperecated
+pip install protobuf kinparse Deprecated
 ```
 On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
 
