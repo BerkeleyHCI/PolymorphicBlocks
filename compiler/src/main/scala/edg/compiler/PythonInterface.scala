@@ -117,7 +117,7 @@ class ProtobufStdioSubprocess
   * them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   */
-class PythonInterface(serverFile: File, pythonInterpreter: String = "pythonx") {
+class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
     Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath))  // in unbuffered mode
