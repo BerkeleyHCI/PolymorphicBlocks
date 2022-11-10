@@ -91,7 +91,10 @@ _Runs natively on Windows, Linux, and Mac._
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
-   - If you get an error along the lines of `not found: [...]\compiler_2.13\0.1.0-SNAPSHOT\ivys\ivy.xml` or `[error] sbt.librarymanagement.ResolveException: Error downloading compiler:compiler_2.13:0.1.0-SNAPSHOT`, this is because the PolymorphicBlock submodule hasn't been cloned.
+   - If you get an error along the lines of  
+     `sbt.librarymanagement.ResolveException: Error downloading edgcompiler:edgcompiler_2.13:0.1.0-SNAPSHOT`  
+     or `not found: [...]/edgcompiler/edgcompiler_2.13/0.1.0-SNAPSHOT/edgcompiler_2.13-0.1.0-SNAPSHOT.pom`,  
+     this is because the PolymorphicBlocks submodule hasn't been cloned.
      See the section above for instructions.
      The IDE plugin includes the HDL compiler as part of its build and requires the PolymorphicBlocks codebase.
 5. In the IDE, **open the `PolymorphicBlocks` folder as a project**.

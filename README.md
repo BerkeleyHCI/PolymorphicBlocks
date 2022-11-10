@@ -66,8 +66,10 @@ Layout Integration Features
 
 
 ## Setup
-You will need a Python 3.7+ installation with the `protobuf`, `kinparse`, and `Deprecated` packages and a recent Java JRE or JDK.
+You will need a Python 3.7+ installation with the `protobuf`, `kinparse`, and `Deprecated` packages and a recent Java JRE or JDK (version 8 or later _may_ work, version 11 or later probably will work).
 Runs natively on Windows, Linux, and Mac.
+
+<!--JDK compatibility from https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html-->
 
 The packages can be installed using `pip`:
 ```python
