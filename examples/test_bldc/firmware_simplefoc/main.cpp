@@ -56,7 +56,7 @@ void setup() {
   // power supply voltage
   // default 12V
   driver.voltage_power_supply = 7;
-  driver.pwm_frequency = 15000;
+  driver.pwm_frequency = 10000;
   driver.init();
   // link the motor to the driver
   motor.linkSensor(&encoder);
@@ -65,20 +65,20 @@ void setup() {
 
   // These were the first example setup, which use an encoder / position sensor
   // // set control loop to be used
-  // motor.controller = MotionControlType::velocity;
+  motor.controller = MotionControlType::velocity;
   
-  // // controller configuration based on the control type 
-  // // velocity PI controller parameters
-  // // default P=0.5 I = 10
-  // motor.PID_velocity.P = 0.2;
-  // motor.PID_velocity.I = 20;
+  // controller configuration based on the control type 
+  // velocity PI controller parameters
+  // default P=0.5 I = 10
+  motor.PID_velocity.P = 0.05;
+  motor.PID_velocity.I = 20;
   
-  // //default voltage_power_supply
-  // motor.voltage_limit = 6;
+  //default voltage_power_supply
+  motor.voltage_limit = 6;
 
-  // // velocity low pass filtering
-  // // default 5ms - try different values to see what is the best. 
-  // // the lower the less filtered
+  // velocity low pass filtering
+  // default 5ms - try different values to see what is the best. 
+  // the lower the less filtered
   // motor.LPF_velocity.Tf = 0.02;
 
 
@@ -114,30 +114,32 @@ void setup() {
 
 
   // angle control example
-  motor.controller = MotionControlType::angle;
+  // // motor.torque_controller = TorqueControlType::dc_current;
+  // motor.controller = MotionControlType::angle;
   
-  // controller configuration based on the control type 
-  // velocity PI controller parameters
-  // default P=0.5 I = 10
-  motor.PID_velocity.P = 0.1;
-  motor.PID_velocity.I = 1;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PID_velocity.output_ramp = 10;
+  // // controller configuration based on the control type 
+  // // velocity PI controller parameters
+  // // default P=0.5 I = 10
+  // motor.PID_velocity.P = 0.2;
+  // motor.PID_velocity.I = 10;
+  // // jerk control using voltage voltage ramp
+  // // default value is 300 volts per sec  ~ 0.3V per millisecond
+  // motor.PID_velocity.output_ramp = 300;
   
-  // velocity low pass filtering
-  // default 5ms - try different values to see what is the best. 
-  // the lower the less filtered
-  motor.LPF_velocity.Tf = 0.005;
+  // // velocity low pass filtering
+  // // default 5ms - try different values to see what is the best. 
+  // // the lower the less filtered
+  // // motor.LPF_velocity.Tf = 0.005;
 
-  // angle P controller 
-  // default P=20
-  motor.P_angle.P = 5;
+  // // angle P controller 
+  // // default P=20
+  // motor.P_angle.P = 10;
 
-  //  maximal velocity of the position control
-  // default 20
-  motor.velocity_limit = 1;
-  motor.current_limit = 2.0;    // 2 Amp current limit
+  // //  maximal velocity of the position control
+  // // default 20
+  // // motor.voltage_limit = 3;
+  // motor.velocity_limit = 0.3;
+  // motor.current_limit = 0.5;    // 2 Amp current limit
   
 
   // initialize motor
@@ -146,7 +148,7 @@ void setup() {
   encoder.init();
   cs.init();
 
-  // motor.linkCurrentSense(&cs);
+  motor.linkCurrentSense(&cs);
 
   // align encoder and start FOC
   mySerial.println("init FOC");
@@ -181,7 +183,7 @@ void loop() {
   // motor.move(0.25);
   // motor.move(min(millis() * 1 / 1000, 20UL));
 
-  motor.move(3);
+  motor.move(10);
 
   
 
