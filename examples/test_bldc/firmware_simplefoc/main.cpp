@@ -1,34 +1,9 @@
-#include <SoftwareSerial.h>
 #include <SimpleFOC.h>
-
-// #include <mbed.h>
-// #include "WS2812.h"
 
 
 // I2C i2c(B7, B6);  // sda, scl
 
-// AnalogIn curr3(A6);
-// AnalogIn curr2(A4);
-// AnalogIn curr1(A5);
-// AnalogIn convSense(A6);
-
-// PwmOut buckPwm(A1);
-// PwmOut boostPwm(A2);
-
-// DigitalIn bldcFault(B12);
-
-// DigitalIn sw1(A15, PinMode::PullUp);
-
-
-// const size_t kPixelBufferSize = 1;
-// WS2812 ws(B4, kPixelBufferSize, 1, 6, 6, 1);
-
-// // SoftSerial serial(B3, NC);  // can't do SWO serial on STM32, also broken since start bit is too long
-
-// Timer timer;
-
-
-
+int sw1 = PA15;
 
 // init BLDC motor
 int resetDout = PB13;
@@ -37,15 +12,53 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(PA7, PB1, PB10, PB0, PB2, PB11);
 LowsideCurrentSense cs = LowsideCurrentSense(0.050f, 20.5f, PA5, PA4, PA6);
 MagneticSensorAnalog encoder = MagneticSensorAnalog(PA0, 0, 1014);
 
-SoftwareSerial mySerial(0, PB3);
-
 
 int startMillis = 0;
 
+
+// This board uses a 12MHz crystal instead of the 8MHz ones common on STM32 boards
+extern "C" void SystemClock_Config(void) {
+  RCC_OscInitTypeDef RCC_OscInitStruct = {};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {};
+
+  /* Initializes the CPU, AHB and APB busses clocks */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;  // changed from 9 to 6
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    Error_Handler();
+  }
+
+  /* Initializes the CPU, AHB and APB busses clocks */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+    Error_Handler();
+  }
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC | RCC_PERIPHCLK_USB;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
+
 void setup() {
-  mySerial.begin(76800 * 0.66);
+  SerialUSB.begin();
+  // mySerial.begin(115200);
   // mySerial.begin(1000000 * 0.66);
-  mySerial.println("\r\nstart");
+  SerialUSB.println("\r\nstart");
 
   pinMode(resetDout, OUTPUT);
   digitalWrite(resetDout, 0);
@@ -143,7 +156,7 @@ void setup() {
   
 
   // initialize motor
-  mySerial.println("init motor");
+  // mySerial.println("init motor");
   motor.init();
   encoder.init();
   cs.init();
@@ -151,11 +164,11 @@ void setup() {
   motor.linkCurrentSense(&cs);
 
   // align encoder and start FOC
-  mySerial.println("init FOC");
+  // mySerial.println("init FOC");
   motor.initFOC();
 
   // monitoring port
-  mySerial.println("done");
+  // mySerial.println("done");
   // motor.useMonitoring(mySerial);
   // motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D | _MON_VEL; // monitor the two currents d and q
 
@@ -165,6 +178,8 @@ void setup() {
 }
 
 void loop() {
+  SerialUSB.println("ducks");
+
   // iterative FOC function
   motor.loopFOC();
   encoder.update();
@@ -183,7 +198,7 @@ void loop() {
   // motor.move(0.25);
   // motor.move(min(millis() * 1 / 1000, 20UL));
 
-  motor.move(10);
+  // motor.move(10);
 
   
 
