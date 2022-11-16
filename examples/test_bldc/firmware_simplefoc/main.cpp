@@ -32,9 +32,10 @@
 
 // init BLDC motor
 int resetDout = PB13;
-BLDCMotor motor = BLDCMotor(14);
+BLDCMotor motor = BLDCMotor(7);
 BLDCDriver3PWM driver = BLDCDriver3PWM(PA7, PB1, PB10, PB0, PB2, PB11);
 LowsideCurrentSense cs = LowsideCurrentSense(0.050f, 20.5f, PA5, PA4, PA6);
+MagneticSensorAnalog encoder = MagneticSensorAnalog(PA0, 0, 1014);
 
 SoftwareSerial mySerial(0, PB3);
 
@@ -58,6 +59,7 @@ void setup() {
   driver.pwm_frequency = 15000;
   driver.init();
   // link the motor to the driver
+  motor.linkSensor(&encoder);
   motor.linkDriver(&driver);
   cs.linkDriver(&driver);
 
@@ -80,51 +82,71 @@ void setup() {
   // motor.LPF_velocity.Tf = 0.02;
 
 
-  // These are the configs from the DRV8302 on STM32, which uses low-side current sensing
-  // align voltage
-  motor.voltage_sensor_align = 0.5;
+  // // These are the configs from the DRV8302 on STM32, which uses low-side current sensing
+  // // align voltage
+  // motor.voltage_sensor_align = 0.5;
   
   // control loop type and torque mode 
-  motor.torque_controller = TorqueControlType::foc_current;
-  motor.controller = MotionControlType::torque;
-  motor.motion_downsample = 0.0;
+  // motor.torque_controller = TorqueControlType::voltage;
+  // // motor.controller = MotionControlType::torque;
+  // motor.controller = MotionControlType::velocity;
+  // motor.motion_downsample = 0.0;
 
-  // velocity loop PID
-  motor.PID_velocity.P = 0.2;
-  motor.PID_velocity.I = 5.0;
-  // Low pass filtering time constant 
-  motor.LPF_velocity.Tf = 0.02;
-  // angle loop PID
-  motor.P_angle.P = 20.0;
-  // Low pass filtering time constant 
-  motor.LPF_angle.Tf = 0.0;
-  // current q loop PID 
-  motor.PID_current_q.P = 3.0;
-  motor.PID_current_q.I = 100.0;
-  // Low pass filtering time constant 
-  motor.LPF_current_q.Tf = 0.02;
-  // current d loop PID
-  motor.PID_current_d.P = 3.0;
-  motor.PID_current_d.I = 100.0;
-  // Low pass filtering time constant 
-  motor.LPF_current_d.Tf = 0.02;
+  // // velocity loop PID
+  // motor.PID_velocity.P = 0.2;
+  // motor.PID_velocity.I = 5.0;
+  // // Low pass filtering time constant 
+  // motor.LPF_velocity.Tf = 0.02;
+  // // angle loop PID
+  // motor.P_angle.P = 20.0;
+  // // Low pass filtering time constant 
+  // motor.LPF_angle.Tf = 0.0;
+  // // current q loop PID 
+  // motor.PID_current_q.P = 3.0;
+  // motor.PID_current_q.I = 100.0;
+  // // Low pass filtering time constant 
+  // motor.LPF_current_q.Tf = 0.02;
+  // // current d loop PID
+  // motor.PID_current_d.P = 3.0;
+  // motor.PID_current_d.I = 100.0;
+  // // Low pass filtering time constant 
+  // motor.LPF_current_d.Tf = 0.02;
 
+
+  // angle control example
+  motor.controller = MotionControlType::angle;
+  
+  // controller configuration based on the control type 
+  // velocity PI controller parameters
+  // default P=0.5 I = 10
+  motor.PID_velocity.P = 0.1;
+  motor.PID_velocity.I = 1;
+  // jerk control using voltage voltage ramp
+  // default value is 300 volts per sec  ~ 0.3V per millisecond
+  motor.PID_velocity.output_ramp = 10;
+  
+  // velocity low pass filtering
+  // default 5ms - try different values to see what is the best. 
+  // the lower the less filtered
+  motor.LPF_velocity.Tf = 0.005;
 
   // angle P controller 
   // default P=20
-  // motor.P_angle.P = 20;
+  motor.P_angle.P = 5;
 
   //  maximal velocity of the position control
   // default 20
-  motor.velocity_limit = 100;
+  motor.velocity_limit = 1;
   motor.current_limit = 2.0;    // 2 Amp current limit
   
+
   // initialize motor
   mySerial.println("init motor");
   motor.init();
+  encoder.init();
   cs.init();
 
-  motor.linkCurrentSense(&cs);
+  // motor.linkCurrentSense(&cs);
 
   // align encoder and start FOC
   mySerial.println("init FOC");
@@ -132,8 +154,8 @@ void setup() {
 
   // monitoring port
   mySerial.println("done");
-  motor.useMonitoring(mySerial);
-  motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D | _MON_VEL; // monitor the two currents d and q
+  // motor.useMonitoring(mySerial);
+  // motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D | _MON_VEL; // monitor the two currents d and q
 
   _delay(1000);
 
@@ -143,8 +165,9 @@ void setup() {
 void loop() {
   // iterative FOC function
   motor.loopFOC();
+  encoder.update();
 
-  PhaseCurrent_s  current = cs.getPhaseCurrents();
+  // PhaseCurrent_s  current = cs.getPhaseCurrents();
   // mySerial.print((int)(current.a * 1000));
   // mySerial.print(" ");
   // mySerial.print((int)(current.b * 1000));
@@ -155,7 +178,12 @@ void loop() {
   // motor.monitor();
 
   // function calculating the outer position loop and setting the target position 
-  motor.move(0.25);
-  // motor.move(min(millis() * 2 / 1000, 40UL));
+  // motor.move(0.25);
+  // motor.move(min(millis() * 1 / 1000, 20UL));
 
+  motor.move(3);
+
+  
+
+  // mySerial.println(encoder.raw_count);
 }
