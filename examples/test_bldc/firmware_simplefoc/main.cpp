@@ -1,21 +1,5 @@
 #include <SimpleFOC.h>
 
-
-// I2C i2c(B7, B6);  // sda, scl
-
-int sw1 = PA15;
-
-// init BLDC motor
-int resetDout = PB13;
-BLDCMotor motor = BLDCMotor(7);
-BLDCDriver3PWM driver = BLDCDriver3PWM(PA7, PB1, PB10, PB0, PB2, PB11);
-LowsideCurrentSense cs = LowsideCurrentSense(0.050f, 20.5f, PA5, PA4, PA6);
-MagneticSensorAnalog encoder = MagneticSensorAnalog(PA0, 0, 1014);
-
-
-int startMillis = 0;
-
-
 // This board uses a 12MHz crystal instead of the 8MHz ones common on STM32 boards
 extern "C" void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {};
@@ -53,11 +37,22 @@ extern "C" void SystemClock_Config(void) {
   }
 }
 
+// I2C i2c(B7, B6);  // sda, scl
+
+int sw1 = PA15;
+
+// init BLDC motor
+int resetDout = PB13;
+BLDCMotor motor = BLDCMotor(7);
+BLDCDriver3PWM driver = BLDCDriver3PWM(PA7, PB1, PB10, PB0, PB2, PB11);
+LowsideCurrentSense cs = LowsideCurrentSense(0.050f, 20.5f, PA5, PA4, PA6);
+MagneticSensorAnalog encoder = MagneticSensorAnalog(PA0, 0, 1014);
+
+Commander command = Commander(SerialUSB);
+void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
 void setup() {
   SerialUSB.begin();
-  // mySerial.begin(115200);
-  // mySerial.begin(1000000 * 0.66);
   SerialUSB.println("\r\nstart");
 
   pinMode(resetDout, OUTPUT);
@@ -87,7 +82,7 @@ void setup() {
   motor.PID_velocity.I = 20;
   
   //default voltage_power_supply
-  motor.voltage_limit = 6;
+  motor.voltage_limit = driver.voltage_power_supply;
 
   // velocity low pass filtering
   // default 5ms - try different values to see what is the best. 
@@ -127,36 +122,36 @@ void setup() {
 
 
   // angle control example
-  // // motor.torque_controller = TorqueControlType::dc_current;
-  // motor.controller = MotionControlType::angle;
+  // motor.torque_controller = TorqueControlType::dc_current;
+  motor.controller = MotionControlType::angle;
   
-  // // controller configuration based on the control type 
-  // // velocity PI controller parameters
-  // // default P=0.5 I = 10
+  // controller configuration based on the control type 
+  // velocity PI controller parameters
+  // default P=0.5 I = 10
   // motor.PID_velocity.P = 0.2;
   // motor.PID_velocity.I = 10;
-  // // jerk control using voltage voltage ramp
-  // // default value is 300 volts per sec  ~ 0.3V per millisecond
+  // jerk control using voltage voltage ramp
+  // default value is 300 volts per sec  ~ 0.3V per millisecond
   // motor.PID_velocity.output_ramp = 300;
   
-  // // velocity low pass filtering
-  // // default 5ms - try different values to see what is the best. 
-  // // the lower the less filtered
-  // // motor.LPF_velocity.Tf = 0.005;
+  // velocity low pass filtering
+  // default 5ms - try different values to see what is the best. 
+  // the lower the less filtered
+  // motor.LPF_velocity.Tf = 0.005;
 
-  // // angle P controller 
-  // // default P=20
+  // angle P controller 
+  // default P=20
   // motor.P_angle.P = 10;
 
-  // //  maximal velocity of the position control
-  // // default 20
-  // // motor.voltage_limit = 3;
+  //  maximal velocity of the position control
+  // default 20
+  // motor.voltage_limit = 3;
   // motor.velocity_limit = 0.3;
   // motor.current_limit = 0.5;    // 2 Amp current limit
   
 
   // initialize motor
-  // mySerial.println("init motor");
+  SerialUSB.println("init motor");
   motor.init();
   encoder.init();
   cs.init();
@@ -164,43 +159,30 @@ void setup() {
   motor.linkCurrentSense(&cs);
 
   // align encoder and start FOC
-  // mySerial.println("init FOC");
+  SerialUSB.println("init FOC");
   motor.initFOC();
 
   // monitoring port
-  // mySerial.println("done");
-  // motor.useMonitoring(mySerial);
-  // motor.monitor_variables = _MON_CURR_Q | _MON_CURR_D | _MON_VEL; // monitor the two currents d and q
+  SerialUSB.println("done");
+
+  command.add('M', doMotor, "motor");
+
+  motor.useMonitoring(SerialUSB);
+  motor.monitor_downsample = 0; // disable monitor at first - optional
 
   _delay(1000);
-
-  startMillis = millis();
 }
 
 void loop() {
-  SerialUSB.println("ducks");
-
   // iterative FOC function
   motor.loopFOC();
   encoder.update();
 
-  // PhaseCurrent_s  current = cs.getPhaseCurrents();
-  // mySerial.print((int)(current.a * 1000));
-  // mySerial.print(" ");
-  // mySerial.print((int)(current.b * 1000));
-  // mySerial.print(" ");
-  // mySerial.print((int)(current.c * 1000));
-  // mySerial.println("");
+  motor.move();
 
-  // motor.monitor();
-
-  // function calculating the outer position loop and setting the target position 
-  // motor.move(0.25);
-  // motor.move(min(millis() * 1 / 1000, 20UL));
-
-  // motor.move(10);
-
-  
-
-  // mySerial.println(encoder.raw_count);
+  // for SimpleFOCStudio
+  // real-time monitoring calls
+  motor.monitor();
+  // real-time commander calls
+  command.run();
 }
