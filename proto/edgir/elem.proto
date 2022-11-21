@@ -19,10 +19,38 @@ import "edgir/expr.proto";
 import "edgir/ref.proto";
 
 
-message Port {
+// These are essentially a element in a map<string, value>, but because maps
+// are unordered (whereas we want to preserve ordering to preserve design intent
+// through the compiler), we use a sequence of these pairs.
+message NamedValInit {
+  string name = 1;
+  edgir.init.ValInit value = 2;
+}
 
-  map<string, edgir.init.ValInit> params = 10;
-  map<string, edgir.expr.ValueExpr> constraints = 11;
+message NamedValueExpr {
+  string name = 1;
+  edgir.expr.ValueExpr value = 2;
+}
+
+message NamedPortLike {
+  string name = 1;
+  PortLike value = 2;
+}
+
+message NamedBlockLike {
+  string name = 1;
+  PortLike value = 2;
+}
+
+message NamedLinkLike {
+  string name = 1;
+  LinkLike value = 2;
+}
+
+
+message Port {
+  repeated NamedValInit params = 40;
+  repeated NamedValueExpr constraints = 41;
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
@@ -32,9 +60,9 @@ message Port {
 }
 
 message Bundle {
-  map<string, edgir.init.ValInit> params = 10;
-  map<string, PortLike> ports = 11;
-  map<string, edgir.expr.ValueExpr> constraints = 12;
+  repeated NamedValInit params = 40;
+  repeated NamedPortLike ports = 41;
+  repeated NamedValueExpr constraints = 42;
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
@@ -44,7 +72,7 @@ message Bundle {
 
 message PortArray {
   message Ports {
-    map<string, PortLike> ports = 10;
+    repeated NamedPortLike ports = 40;
   }
 
   /* The class that applies to every port in the set/array. Used
@@ -86,19 +114,19 @@ message StringDescriptionElement {
 }
 
 message HierarchyBlock {
-  map<string, edgir.init.ValInit>   params = 10;
+  repeated NamedValInit params = 40;
   // Refinements may introduce new parameters which would not be assigned a value in the parent class.
   // In those cases, those new parameters are given these default values.
-  map<string, edgir.expr.ValueExpr> param_defaults = 15;
-  map<string, PortLike>          ports  = 11;
+  map<string, edgir.expr.ValueExpr> param_defaults = 15;  // unordered
+  repeated NamedPortLike ports  = 41;
   /** Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
       VoltageSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
       infer these blocks. */
-  map<string, BlockLike>          blocks = 12;
-  map<string, LinkLike>           links  = 13;
+  repeated NamedBlockLike blocks = 42;
+  repeated NamedLinkLike links  = 43;
   /** Connections between internal block and link ports are represented by connected constraints.
       Connections between internal; block and edge (of this block) ports are represented by exported constraints. */
-  map<string, edgir.expr.ValueExpr> constraints = 14;
+  repeated NamedValueExpr constraints = 44;
 
   edgir.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
   repeated edgir.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
@@ -128,11 +156,10 @@ message BlockLike {
 }
 
 message Link {
-
-  map<string, edgir.init.ValInit> params = 10;
-  map<string, PortLike>          ports  = 11;
-  map<string, LinkLike>           links  = 13;
-  map<string, edgir.expr.ValueExpr> constraints = 12;
+  repeated NamedValInit params = 40;
+  repeated NamedPortLike ports = 41;
+  repeated NamedLinkLike links = 43;
+  repeated NamedValueExpr constraints = 42;
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
@@ -149,9 +176,9 @@ message LinkArray {
   edgir.ref.LibraryPath self_class = 20;
 
   /* Only designs should contain an implementation here */
-  map<string, PortLike>          ports  = 11;  // the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
-  map<string, edgir.expr.ValueExpr> constraints = 12;  // includes all exported constraints to map link ports to my ports
-  map<string, LinkLike> links = 13;
+  repeated NamedPortLike ports = 41;  // the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
+  repeated NamedValueExpr constraints = 42;  // includes all exported constraints to map link ports to my ports
+  repeated NamedLinkLike links = 43;
 
   edgir.common.Metadata meta = 127;
 }
