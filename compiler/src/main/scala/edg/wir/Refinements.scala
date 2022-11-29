@@ -42,6 +42,35 @@ case class Refinements(
   def isEmpty: Boolean = {
     classRefinements.isEmpty && instanceRefinements.isEmpty && classValues.isEmpty && instanceValues.isEmpty
   }
+
+  def toPb: hdl.Refinements = {
+    hdl.Refinements(
+      subclasses =
+        classRefinements.map { case (source, target) =>
+          hdl.Refinements.Subclass(
+            source=hdl.Refinements.Subclass.Source.Cls(source),
+            replacement=Some(target))
+        }.toSeq ++ instanceRefinements.map { case (path, target) =>
+          hdl.Refinements.Subclass(
+            source=hdl.Refinements.Subclass.Source.Path(path.asIndirect.toLocalPath),
+            replacement=Some(target))
+        },
+      values=
+        classValues.flatMap { case (source, subpathValue) =>
+          subpathValue.map { case (subpath, value) =>
+            hdl.Refinements.Value(
+              source = hdl.Refinements.Value.Source.ClsParam(
+                hdl.Refinements.Value.ClassParamPath(cls=Some(source), paramPath=Some(subpath))
+              ),
+              value = Some(value.toLit))
+          }
+        }.toSeq ++ instanceValues.map { case (path, value) =>
+          hdl.Refinements.Value(
+            source=hdl.Refinements.Value.Source.Path(path.asIndirect.toLocalPath),
+            value=Some(value.toLit))
+        }
+    )
+  }
 }
 
 
