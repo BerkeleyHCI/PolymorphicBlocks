@@ -20,10 +20,10 @@ case class Refinements(
       className -> MapUtils.mergeMapSafe(classPathValues.map(_._2):_*)
     }
     Refinements(
-      classRefinements=MapUtils.mergeMapSafe(classRefinements, that.classRefinements),
-      instanceRefinements=MapUtils.mergeMapSafe(instanceRefinements, that.instanceRefinements),
-      classValues=combinedClassValues,
-      instanceValues=MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
+      classRefinements = MapUtils.mergeMapSafe(classRefinements, that.classRefinements),
+      instanceRefinements = MapUtils.mergeMapSafe(instanceRefinements, that.instanceRefinements),
+      classValues = combinedClassValues,
+      instanceValues = MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
     )
   }
 
@@ -48,26 +48,26 @@ case class Refinements(
       subclasses =
         classRefinements.map { case (source, target) =>
           hdl.Refinements.Subclass(
-            source=hdl.Refinements.Subclass.Source.Cls(source),
-            replacement=Some(target))
+            source = hdl.Refinements.Subclass.Source.Cls(source),
+            replacement = Some(target))
         }.toSeq ++ instanceRefinements.map { case (path, target) =>
           hdl.Refinements.Subclass(
-            source=hdl.Refinements.Subclass.Source.Path(path.asIndirect.toLocalPath),
-            replacement=Some(target))
+            source = hdl.Refinements.Subclass.Source.Path(path.asIndirect.toLocalPath),
+            replacement = Some(target))
         },
-      values=
+      values =
         classValues.flatMap { case (source, subpathValue) =>
           subpathValue.map { case (subpath, value) =>
             hdl.Refinements.Value(
               source = hdl.Refinements.Value.Source.ClsParam(
-                hdl.Refinements.Value.ClassParamPath(cls=Some(source), paramPath=Some(subpath))
+                hdl.Refinements.Value.ClassParamPath(cls = Some(source), paramPath = Some(subpath))
               ),
               value = Some(value.toLit))
           }
         }.toSeq ++ instanceValues.map { case (path, value) =>
           hdl.Refinements.Value(
-            source=hdl.Refinements.Value.Source.Path(path.asIndirect.toLocalPath),
-            value=Some(value.toLit))
+            source = hdl.Refinements.Value.Source.Path(path.asIndirect.toLocalPath),
+            value = Some(value.toLit))
         }
     )
   }
