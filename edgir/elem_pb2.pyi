@@ -13,36 +13,36 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class Port(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.init_pb2.ValInit: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.init_pb2.ValInit] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.init_pb2.ValInit] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -70,59 +70,59 @@ class Port(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
-        constraints: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        params : typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
+        constraints : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        superclasses : typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","meta",b"meta","params",b"params","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___Port = Port
 
 class Bundle(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.init_pb2.ValInit: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.init_pb2.ValInit] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.init_pb2.ValInit] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___PortLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___PortLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___PortLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -149,32 +149,32 @@ class Bundle(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
-        ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
-        constraints: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        params : typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
+        ports : typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+        constraints : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        superclasses : typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","meta",b"meta","params",b"params","ports",b"ports","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___Bundle = Bundle
 
 class PortArray(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class Ports(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         class PortsEntry(google.protobuf.message.Message):
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
-            key: typing.Text
+            key: typing.Text = ...
             @property
             def value(self) -> global___PortLike: ...
             def __init__(self,
                 *,
-                key: typing.Text = ...,
-                value: typing.Optional[global___PortLike] = ...,
+                key : typing.Text = ...,
+                value : typing.Optional[global___PortLike] = ...,
                 ) -> None: ...
             def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
             def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -184,7 +184,7 @@ class PortArray(google.protobuf.message.Message):
         def ports(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___PortLike]: ...
         def __init__(self,
             *,
-            ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+            ports : typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["ports",b"ports"]) -> None: ...
 
@@ -203,9 +203,9 @@ class PortArray(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        ports: typing.Optional[global___PortArray.Ports] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        ports : typing.Optional[global___PortArray.Ports] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["contains",b"contains","meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["contains",b"contains","meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> None: ...
@@ -214,7 +214,7 @@ global___PortArray = PortArray
 
 class PortLike(google.protobuf.message.Message):
     """* Wrapper for different port like elements"""
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     UNDEFINED_FIELD_NUMBER: builtins.int
     LIB_ELEM_FIELD_NUMBER: builtins.int
     PORT_FIELD_NUMBER: builtins.int
@@ -236,11 +236,11 @@ class PortLike(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        undefined: typing.Optional[edgir.common_pb2.Empty] = ...,
-        lib_elem: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        port: typing.Optional[global___Port] = ...,
-        array: typing.Optional[global___PortArray] = ...,
-        bundle: typing.Optional[global___Bundle] = ...,
+        undefined : typing.Optional[edgir.common_pb2.Empty] = ...,
+        lib_elem : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        port : typing.Optional[global___Port] = ...,
+        array : typing.Optional[global___PortArray] = ...,
+        bundle : typing.Optional[global___Bundle] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["array",b"array","bundle",b"bundle","is",b"is","lib_elem",b"lib_elem","port",b"port","undefined",b"undefined"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["array",b"array","bundle",b"bundle","is",b"is","lib_elem",b"lib_elem","port",b"port","undefined",b"undefined"]) -> None: ...
@@ -248,32 +248,32 @@ class PortLike(google.protobuf.message.Message):
 global___PortLike = PortLike
 
 class Parameter(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     PATH_FIELD_NUMBER: builtins.int
     UNIT_FIELD_NUMBER: builtins.int
     @property
     def path(self) -> edgir.ref_pb2.LocalPath: ...
-    unit: typing.Text
+    unit: typing.Text = ...
     def __init__(self,
         *,
-        path: typing.Optional[edgir.ref_pb2.LocalPath] = ...,
-        unit: typing.Text = ...,
+        path : typing.Optional[edgir.ref_pb2.LocalPath] = ...,
+        unit : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["path",b"path"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["path",b"path","unit",b"unit"]) -> None: ...
 global___Parameter = Parameter
 
 class StringDescriptionElement(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     TEXT_FIELD_NUMBER: builtins.int
     PARAM_FIELD_NUMBER: builtins.int
-    text: typing.Text
+    text: typing.Text = ...
     @property
     def param(self) -> global___Parameter: ...
     def __init__(self,
         *,
-        text: typing.Text = ...,
-        param: typing.Optional[global___Parameter] = ...,
+        text : typing.Text = ...,
+        param : typing.Optional[global___Parameter] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["ElementType",b"ElementType","param",b"param","text",b"text"]) -> None: ...
@@ -281,93 +281,93 @@ class StringDescriptionElement(google.protobuf.message.Message):
 global___StringDescriptionElement = StringDescriptionElement
 
 class HierarchyBlock(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.init_pb2.ValInit: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.init_pb2.ValInit] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.init_pb2.ValInit] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ParamDefaultsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___PortLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___PortLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___PortLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class BlocksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___BlockLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___BlockLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___BlockLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___LinkLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___LinkLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___LinkLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -426,7 +426,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     def generator(self) -> global___Generator:
         """optional, and removed upon invocation"""
         pass
-    is_abstract: builtins.bool
+    is_abstract: builtins.bool = ...
     """true if self_class is abstract, and should error if used in a design"""
 
     @property
@@ -435,26 +435,26 @@ class HierarchyBlock(google.protobuf.message.Message):
     def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
     def __init__(self,
         *,
-        params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
-        param_defaults: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
-        blocks: typing.Optional[typing.Mapping[typing.Text, global___BlockLike]] = ...,
-        links: typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
-        constraints: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
-        prerefine_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        generator: typing.Optional[global___Generator] = ...,
-        is_abstract: builtins.bool = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
-        description: typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
+        params : typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
+        param_defaults : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        ports : typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+        blocks : typing.Optional[typing.Mapping[typing.Text, global___BlockLike]] = ...,
+        links : typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
+        constraints : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        superclasses : typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
+        prerefine_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        generator : typing.Optional[global___Generator] = ...,
+        is_abstract : builtins.bool = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
+        description : typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["generator",b"generator","meta",b"meta","prerefine_class",b"prerefine_class","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["blocks",b"blocks","constraints",b"constraints","description",b"description","generator",b"generator","is_abstract",b"is_abstract","links",b"links","meta",b"meta","param_defaults",b"param_defaults","params",b"params","ports",b"ports","prerefine_class",b"prerefine_class","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___HierarchyBlock = HierarchyBlock
 
 class Generator(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     REQUIRED_PARAMS_FIELD_NUMBER: builtins.int
     @property
     def required_params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
@@ -464,13 +464,13 @@ class Generator(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        required_params: typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
+        required_params : typing.Optional[typing.Iterable[edgir.ref_pb2.LocalPath]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["required_params",b"required_params"]) -> None: ...
 global___Generator = Generator
 
 class BlockLike(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     UNDEFINED_FIELD_NUMBER: builtins.int
     LIB_ELEM_FIELD_NUMBER: builtins.int
     HIERARCHY_FIELD_NUMBER: builtins.int
@@ -484,9 +484,9 @@ class BlockLike(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        undefined: typing.Optional[edgir.common_pb2.Empty] = ...,
-        lib_elem: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        hierarchy: typing.Optional[global___HierarchyBlock] = ...,
+        undefined : typing.Optional[edgir.common_pb2.Empty] = ...,
+        lib_elem : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        hierarchy : typing.Optional[global___HierarchyBlock] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["hierarchy",b"hierarchy","lib_elem",b"lib_elem","type",b"type","undefined",b"undefined"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["hierarchy",b"hierarchy","lib_elem",b"lib_elem","type",b"type","undefined",b"undefined"]) -> None: ...
@@ -494,63 +494,63 @@ class BlockLike(google.protobuf.message.Message):
 global___BlockLike = BlockLike
 
 class Link(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.init_pb2.ValInit: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.init_pb2.ValInit] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.init_pb2.ValInit] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___PortLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___PortLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___PortLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___LinkLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___LinkLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___LinkLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -587,62 +587,62 @@ class Link(google.protobuf.message.Message):
     def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
     def __init__(self,
         *,
-        params: typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
-        ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
-        links: typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
-        constraints: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        superclasses: typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
-        description: typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
+        params : typing.Optional[typing.Mapping[typing.Text, edgir.init_pb2.ValInit]] = ...,
+        ports : typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+        links : typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
+        constraints : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        superclasses : typing.Optional[typing.Iterable[edgir.ref_pb2.LibraryPath]] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
+        description : typing.Optional[typing.Iterable[global___StringDescriptionElement]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","description",b"description","links",b"links","meta",b"meta","params",b"params","ports",b"ports","self_class",b"self_class","superclasses",b"superclasses"]) -> None: ...
 global___Link = Link
 
 class LinkArray(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___PortLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___PortLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___PortLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> edgir.expr_pb2.ValueExpr: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[edgir.expr_pb2.ValueExpr] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___LinkLike: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___LinkLike] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___LinkLike] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -674,18 +674,18 @@ class LinkArray(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        self_class: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        ports: typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
-        constraints: typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
-        links: typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        self_class : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        ports : typing.Optional[typing.Mapping[typing.Text, global___PortLike]] = ...,
+        constraints : typing.Optional[typing.Mapping[typing.Text, edgir.expr_pb2.ValueExpr]] = ...,
+        links : typing.Optional[typing.Mapping[typing.Text, global___LinkLike]] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","self_class",b"self_class"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["constraints",b"constraints","links",b"links","meta",b"meta","ports",b"ports","self_class",b"self_class"]) -> None: ...
 global___LinkArray = LinkArray
 
 class LinkLike(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     UNDEFINED_FIELD_NUMBER: builtins.int
     LIB_ELEM_FIELD_NUMBER: builtins.int
     LINK_FIELD_NUMBER: builtins.int
@@ -702,10 +702,10 @@ class LinkLike(google.protobuf.message.Message):
     def array(self) -> global___LinkArray: ...
     def __init__(self,
         *,
-        undefined: typing.Optional[edgir.common_pb2.Empty] = ...,
-        lib_elem: typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
-        link: typing.Optional[global___Link] = ...,
-        array: typing.Optional[global___LinkArray] = ...,
+        undefined : typing.Optional[edgir.common_pb2.Empty] = ...,
+        lib_elem : typing.Optional[edgir.ref_pb2.LibraryPath] = ...,
+        link : typing.Optional[global___Link] = ...,
+        array : typing.Optional[global___LinkArray] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["array",b"array","lib_elem",b"lib_elem","link",b"link","type",b"type","undefined",b"undefined"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["array",b"array","lib_elem",b"lib_elem","link",b"link","type",b"type","undefined",b"undefined"]) -> None: ...

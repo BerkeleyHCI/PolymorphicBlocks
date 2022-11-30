@@ -79,7 +79,9 @@ message BackendRequest {
     edgir.ref.LocalPath path = 1;
     edgir.lit.ValueLit value = 2;
   }
+
   repeated Value solvedValues = 3;
+  map<string, string> arguments = 4;
 }
 
 message BackendResponse {

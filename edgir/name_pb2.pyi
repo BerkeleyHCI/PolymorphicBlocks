@@ -9,7 +9,7 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class Namespace(google.protobuf.message.Message):
     """*
@@ -17,10 +17,10 @@ class Namespace(google.protobuf.message.Message):
     over items in the library. It lets us group elements in categories that
     are orthogonal to the usual Block, Port, Link, ontology.
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     BASIC_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-    basic: typing.Text
+    basic: typing.Text = ...
     """* Basic namespaces are a way to organize library elements into a
     useful hirearchy (e.g. 'Core.*' for the most primitive definitions
     that we define, or 'NXP.*' for NXP made components.)
@@ -37,8 +37,8 @@ class Namespace(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        basic: typing.Text = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        basic : typing.Text = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["basic",b"basic","meta",b"meta","namespace",b"namespace"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["basic",b"basic","meta",b"meta","namespace",b"namespace"]) -> None: ...
@@ -51,10 +51,10 @@ class LibraryName(google.protobuf.message.Message):
 
     This can be the initial element in a path or reference.
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     NAME_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-    name: typing.Text
+    name: typing.Text = ...
     """* Since libraries allow for inheritance, we will often want to say
     this element, defined in *this* particular library.
 
@@ -69,8 +69,8 @@ class LibraryName(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        name: typing.Text = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        name : typing.Text = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["meta",b"meta","name",b"name"]) -> None: ...

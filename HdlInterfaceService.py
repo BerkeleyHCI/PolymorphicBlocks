@@ -116,7 +116,8 @@ if __name__ == '__main__':
                                            BaseBackend)  # type: ignore
         backend = backend_class()
 
-        results = backend.run(CompiledDesign.from_backend_request(request.run_backend))
+        results = backend.run(CompiledDesign.from_backend_request(request.run_backend),
+                              dict(request.run_backend.arguments))
         for path, result in results:
           response_result = response.run_backend.results.add()
           response_result.path.CopyFrom(path)

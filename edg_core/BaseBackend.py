@@ -10,4 +10,4 @@ class BaseBackend(metaclass=ABCMeta):
   of outputs associated with paths."""
   # to be implemented per backend
   @abstractmethod
-  def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, str]]: pass
+  def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]: pass

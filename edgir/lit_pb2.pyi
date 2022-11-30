@@ -10,57 +10,57 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class FloatLit(google.protobuf.message.Message):
     """* The core expression primitives we start with are the value
     literals that we can use
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     VAL_FIELD_NUMBER: builtins.int
-    val: builtins.float
+    val: builtins.float = ...
     def __init__(self,
         *,
-        val: builtins.float = ...,
+        val : builtins.float = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["val",b"val"]) -> None: ...
 global___FloatLit = FloatLit
 
 class IntLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     VAL_FIELD_NUMBER: builtins.int
-    val: builtins.int
+    val: builtins.int = ...
     def __init__(self,
         *,
-        val: builtins.int = ...,
+        val : builtins.int = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["val",b"val"]) -> None: ...
 global___IntLit = IntLit
 
 class BoolLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     VAL_FIELD_NUMBER: builtins.int
-    val: builtins.bool
+    val: builtins.bool = ...
     def __init__(self,
         *,
-        val: builtins.bool = ...,
+        val : builtins.bool = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["val",b"val"]) -> None: ...
 global___BoolLit = BoolLit
 
 class TextLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     VAL_FIELD_NUMBER: builtins.int
-    val: typing.Text
+    val: typing.Text = ...
     def __init__(self,
         *,
-        val: typing.Text = ...,
+        val : typing.Text = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["val",b"val"]) -> None: ...
 global___TextLit = TextLit
 
 class RangeLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     MINIMUM_FIELD_NUMBER: builtins.int
     MAXIMUM_FIELD_NUMBER: builtins.int
     @property
@@ -69,26 +69,26 @@ class RangeLit(google.protobuf.message.Message):
     def maximum(self) -> global___ValueLit: ...
     def __init__(self,
         *,
-        minimum: typing.Optional[global___ValueLit] = ...,
-        maximum: typing.Optional[global___ValueLit] = ...,
+        minimum : typing.Optional[global___ValueLit] = ...,
+        maximum : typing.Optional[global___ValueLit] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["maximum",b"maximum","minimum",b"minimum"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["maximum",b"maximum","minimum",b"minimum"]) -> None: ...
 global___RangeLit = RangeLit
 
 class StructLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class MembersEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
+        key: typing.Text = ...
         @property
         def value(self) -> global___ValueLit: ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Optional[global___ValueLit] = ...,
+            key : typing.Text = ...,
+            value : typing.Optional[global___ValueLit] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -98,25 +98,25 @@ class StructLit(google.protobuf.message.Message):
     def members(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___ValueLit]: ...
     def __init__(self,
         *,
-        members: typing.Optional[typing.Mapping[typing.Text, global___ValueLit]] = ...,
+        members : typing.Optional[typing.Mapping[typing.Text, global___ValueLit]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["members",b"members"]) -> None: ...
 global___StructLit = StructLit
 
 class ArrayLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     ELTS_FIELD_NUMBER: builtins.int
     @property
     def elts(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueLit]: ...
     def __init__(self,
         *,
-        elts: typing.Optional[typing.Iterable[global___ValueLit]] = ...,
+        elts : typing.Optional[typing.Iterable[global___ValueLit]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["elts",b"elts"]) -> None: ...
 global___ArrayLit = ArrayLit
 
 class ValueLit(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     FLOATING_FIELD_NUMBER: builtins.int
     INTEGER_FIELD_NUMBER: builtins.int
     BOOLEAN_FIELD_NUMBER: builtins.int
@@ -143,14 +143,14 @@ class ValueLit(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        floating: typing.Optional[global___FloatLit] = ...,
-        integer: typing.Optional[global___IntLit] = ...,
-        boolean: typing.Optional[global___BoolLit] = ...,
-        text: typing.Optional[global___TextLit] = ...,
-        struct: typing.Optional[global___StructLit] = ...,
-        range: typing.Optional[global___RangeLit] = ...,
-        array: typing.Optional[global___ArrayLit] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        floating : typing.Optional[global___FloatLit] = ...,
+        integer : typing.Optional[global___IntLit] = ...,
+        boolean : typing.Optional[global___BoolLit] = ...,
+        text : typing.Optional[global___TextLit] = ...,
+        struct : typing.Optional[global___StructLit] = ...,
+        range : typing.Optional[global___RangeLit] = ...,
+        array : typing.Optional[global___ArrayLit] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["array",b"array","boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["array",b"array","boolean",b"boolean","floating",b"floating","integer",b"integer","meta",b"meta","range",b"range","struct",b"struct","text",b"text","type",b"type"]) -> None: ...
