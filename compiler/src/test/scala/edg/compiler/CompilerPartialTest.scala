@@ -8,109 +8,111 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
+import scala.collection.SeqMap
+
 
 /** Tests partial compilation and fork-from-partial compilation.
   */
 class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
   val inputDesign = Design(Block.Block("topDesign",
-    blocks = Map(
+    blocks = SeqMap(
       "source" -> Block.Library("sourceContainerBlock"),
       "sink" -> Block.Library("sinkContainerBlock"),
     ),
-    links = Map(
+    links = SeqMap(
       "link" -> Link.Library("link")
     ),
-    constraints = Map(
+    constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
     )
   ))
 
   val referencePartialElaborated = Design(Block.Block("topDesign",
-    blocks = Map(
+    blocks = SeqMap(
       "source" -> Block.Block(selfClass = "sourceContainerBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Port(selfClass = "sourcePort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Library("sourceBlock")
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
       "sink" -> Block.Block(selfClass = "sinkContainerBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Port(selfClass = "sinkPort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Block(selfClass = "sinkBlock",
-            ports = Map(
+            ports = SeqMap(
               "port" -> Port.Port(selfClass = "sinkPort"),
             )
           )
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
     ),
-    links = Map(
+    links = SeqMap(
       "link" -> Link.Link(selfClass = "link",
-        ports = Map(
+        ports = SeqMap(
           "source" -> Port.Port(selfClass = "sourcePort"),
           "sink" -> Port.Port(selfClass = "sinkPort"),
         )
       )
     ),
-    constraints = Map(
+    constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
     )
   ))
 
   val referenceFullElaborated = Design(Block.Block("topDesign",
-    blocks = Map(
+    blocks = SeqMap(
       "source" -> Block.Block(selfClass = "sourceContainerBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Port(selfClass = "sourcePort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Block(selfClass = "sourceBlock",
-            ports = Map(
+            ports = SeqMap(
               "port" -> Port.Port(selfClass = "sourcePort"),
             )
           )
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
       "sink" -> Block.Block(selfClass = "sinkContainerBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Port(selfClass = "sinkPort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Block(selfClass = "sinkBlock",
-            ports = Map(
+            ports = SeqMap(
               "port" -> Port.Port(selfClass = "sinkPort"),
             )
           )
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
     ),
-    links = Map(
+    links = SeqMap(
       "link" -> Link.Link(selfClass = "link",
-        ports = Map(
+        ports = SeqMap(
           "source" -> Port.Port(selfClass = "sourcePort"),
           "sink" -> Port.Port(selfClass = "sinkPort"),
         )
       )
     ),
-    constraints = Map(
+    constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sinkConnect" -> Constraint.Connected(Ref("sink", "port"), Ref("link", "sink")),
     )

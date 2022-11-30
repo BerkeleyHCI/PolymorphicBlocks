@@ -1,6 +1,6 @@
 package edg.wir
 
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
@@ -164,7 +164,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
       val (linkPortRef, constrName) = connectsByBlock(portRef)
       require(linkPortRef.steps.nonEmpty)
       val linkName = linkPortRef.steps.head.getName
-      require(block.links.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
+      require(block.links.toSeqMap.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
 
       getConnectedToLink(linkName)
     } else if (exportsByInner.contains(portRef)) {

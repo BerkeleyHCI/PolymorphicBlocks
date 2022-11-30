@@ -4,10 +4,13 @@ import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.ValueExpr.RefAllocate
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
+import edg.wir.ProtoUtil.ConstraintProtoToSeqMap
 import edg.wir.{IndirectDesignPath, IndirectStep}
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import scala.collection.SeqMap
 
 
 /** Tests tunnel exports.
@@ -17,51 +20,51 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
       Port.Port("port",
-        params = Map(
+        params = SeqMap(
           "floatVal" -> ValInit.Floating,
         )
       ),
     ),
     blocks = Seq(
       Block.Block("portBlock",
-        params = Map(
+        params = SeqMap(
           "portVal" -> ValInit.Floating,
           "blockVal" -> ValInit.Floating,
         ),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("port"),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "innerVal" -> Constraint.Assign(Ref("port", "floatVal"), ValueExpr.Ref("portVal")),
         ),
       ),
       Block.Block("portBlockContainer",
-        params = Map(
+        params = SeqMap(
           "portVal" -> ValInit.Floating,
           "blockVal" -> ValInit.Floating,
         ),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("port"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Library("portBlock")
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port")),
           "innerPortVal" -> Constraint.Assign(Ref("inner", "portVal"), ValueExpr.Ref("portVal")),
           "innerBlockVal" -> Constraint.Assign(Ref("inner", "blockVal"), ValueExpr.Ref("blockVal")),
         ),
       ),
       Block.Block("portBlockArray2",  // without generators, the length must be fixed
-        params = Map(
+        params = SeqMap(
           "portVal" -> ValInit.Floating,
           "block0Val" -> ValInit.Floating,
           "block1Val" -> ValInit.Floating,
         ),
-        ports = Map(
+        ports = SeqMap(
           "ports" -> Port.Array("port", Seq("0", "1"), Port.Library("port")),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "innerVal0" -> Constraint.Assign(Ref("port", "0", "floatVal"), ValueExpr.Ref("portVal")),
           "innerVal1" -> Constraint.Assign(Ref("port", "1", "floatVal"), ValueExpr.Ref("portVal")),
         ),
@@ -69,14 +72,14 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     ),
     links = Seq(
       Link.Link("link",
-        ports = Map(
+        ports = SeqMap(
           "ports" -> Port.Array("port"),
         ),
-        params = Map(
+        params = SeqMap(
           "sum" -> ValInit.Floating,
           "hull" -> ValInit.Range,
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "calcSum" -> ValueExpr.Assign(Ref("sum"), ValueExpr.UnarySetOp(Op.SUM,
             ValueExpr.MapExtract(Ref("ports"), Ref("floatVal"))
           )),
@@ -90,14 +93,14 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with single tunnel export" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "container" -> Block.Library("portBlockContainer"),
         "packedBlock" -> Block.Library("portBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "containerPortVal" -> ValueExpr.Assign(Ref("container", "portVal"), ValueExpr.Literal(1.0)),
         "containerBlockVal" -> ValueExpr.Assign(Ref("container", "blockVal"), ValueExpr.Literal(8.0)),
         "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
@@ -128,13 +131,13 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with disconnected tunnel export" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "container" -> Block.Library("portBlockContainer"),
         "packedBlock" -> Block.Library("portBlock"),
       ),
-      links = Map(
+      links = SeqMap(
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "packedExport" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "port")),
       )
     ))
@@ -147,16 +150,16 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with array tunnel export" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "container" -> Block.Library("portBlockContainer"),
         "block" -> Block.Library("portBlock"),
 
         "packedBlock" -> Block.Library("portBlockArray2"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "containerPortVal" -> ValueExpr.Assign(Ref("container", "portVal"), ValueExpr.Literal(1.0)),
         "containerConnect" -> Constraint.Connected(Ref("container", "port"), Ref.Allocate(Ref("link", "ports"))),
 
@@ -171,10 +174,10 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check that allocates were properly lowered
-    compiled.contents.get.constraints("packed0Export") should equal(
+    compiled.contents.get.constraints.toSeqMap("packed0Export") should equal(
       Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0"))
     )
-    compiled.contents.get.constraints("packed1Export") should equal(
+    compiled.contents.get.constraints.toSeqMap("packed1Export") should equal(
       Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1"))
     )
 
