@@ -1,6 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
+import edg.wir.ProtoUtil.{ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
 
 import scala.collection.{SeqMap, mutable}
 import edgir.init.init
@@ -34,7 +35,7 @@ class Port(pb: elem.Port) extends PortLike
 
   override def isElaborated: Boolean = true
 
-  override def getParams: Map[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -52,8 +53,7 @@ class Port(pb: elem.Port) extends PortLike
 
 class Bundle(pb: elem.Bundle) extends PortLike
     with HasMutablePorts with HasParams {
-  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports.toSeqMap)
 
   override def cloned: Bundle = {
     val cloned = new Bundle(pb)
@@ -64,7 +64,7 @@ class Bundle(pb: elem.Bundle) extends PortLike
 
   override def isElaborated: Boolean = true
 
-  override def getParams: Map[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -78,7 +78,7 @@ class Bundle(pb: elem.Bundle) extends PortLike
 
   def toEltPb: elem.Bundle = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
     )
   }
 
@@ -88,13 +88,11 @@ class Bundle(pb: elem.Bundle) extends PortLike
 }
 
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
-  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
   var portsSet = false  // allow empty port arrays
 
   pb.contains match {
-    case elem.PortArray.Contains.Ports(ports) =>
-      setPorts(SeqMap.from(parsePorts(ports.ports, nameOrder)))
+    case elem.PortArray.Contains.Ports(ports) => setPorts(parsePorts(ports.ports.toSeqMap))
     case _ =>
   }
 
@@ -132,7 +130,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
     } else {
       pb.copy(
         contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
-          ports.view.mapValues(_.toPb).toMap
+          ports.view.mapValues(_.toPb).to(SeqMap).toPb
         ))
       )
     }
