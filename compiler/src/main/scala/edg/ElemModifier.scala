@@ -1,5 +1,6 @@
 package edg
 
+import edg.wir.ProtoUtil.BlockProtoToSeqMap
 import edgir.schema.schema
 import edgir.elem.elem
 
@@ -27,7 +28,8 @@ object ElemModifier {
       case Seq() =>
         fn(curr)
       case Seq(head, tail @ _*) =>
-        curr.blocks.get(head) match {
+        val blocks = curr.blocks.toSeqMap
+        blocks.get(head) match {
           case Some(headBlock) => headBlock.`type` match {
             case elem.BlockLike.Type.Hierarchy(headBlock) =>
               curr.update(

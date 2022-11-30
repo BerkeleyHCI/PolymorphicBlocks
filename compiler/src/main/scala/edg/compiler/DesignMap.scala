@@ -3,9 +3,11 @@ package edg.compiler
 import edgir.elem.elem
 import edgir.schema.schema
 import edgir.ref.ref
-import edg.wir.{ProtoUtil, DesignPath}
+import edg.wir.{DesignPath, ProtoUtil}
 import edg.util.SeqMapSortableFrom._
+import edg.wir.ProtoUtil.{BlockProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
 
+import scala.Predef.->
 import scala.collection.SeqMap
 
 
@@ -56,18 +58,16 @@ trait DesignMap[PortType, BlockType, LinkType] {
   // These methods provide default recursive processing functionality for child sub-tree elements,
   // and may be (but are not required to be) optionally overridden
   def wrapBundle(path: DesignPath, port: elem.Bundle): PortType = {
-    val nameOrder = ProtoUtil.getNameOrder(port.meta)
-    val ports = port.ports.map { case (name, elt) =>
-      name -> wrapPortlike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
+    val ports = port.ports.toSeqMap.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt)
+    }
     mapBundle(path, port, ports)
   }
 
   def wrapPortArray(path: DesignPath, port: elem.PortArray): PortType = {
-    val nameOrder = ProtoUtil.getNameOrder(port.meta)
-    val ports = port.contains.ports.getOrElse(elem.PortArray.Ports()).ports.map { case (name, elt) =>
-      name -> wrapPortlike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
+    val ports = port.contains.ports.getOrElse(elem.PortArray.Ports()).ports.toSeqMap.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt)
+    }
     mapPortArray(path, port, ports)
   }
 
@@ -82,16 +82,15 @@ trait DesignMap[PortType, BlockType, LinkType] {
   }
 
   def wrapBlock(path: DesignPath, block: elem.HierarchyBlock): BlockType = {
-    val nameOrder = ProtoUtil.getNameOrder(block.meta)
-    val ports = block.ports.map { case (name, elt) =>
-      name -> wrapPortlike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
-    val blocks = block.blocks.map { case (name, elt) =>
-      name -> wrapBlocklike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
-    val links = block.links.map { case (name, elt) =>
-      name -> wrapLinklike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
+    val ports = block.ports.toSeqMap.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt)
+    }
+    val blocks = block.blocks.toSeqMap.map { case (name, elt) =>
+      name -> wrapBlocklike(path + name, elt)
+    }
+    val links = block.links.toSeqMap.map { case (name, elt) =>
+      name -> wrapLinklike(path + name, elt)
+    }
     mapBlock(path, block, ports, blocks, links)
   }
 
@@ -104,24 +103,22 @@ trait DesignMap[PortType, BlockType, LinkType] {
   }
 
   def wrapLink(path: DesignPath, link: elem.Link): LinkType = {
-    val nameOrder = ProtoUtil.getNameOrder(link.meta)
-    val ports = link.ports.map { case (name, elt) =>
-      name -> wrapPortlike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
-    val links = link.links.map { case (name, elt) =>
-      name -> wrapLinklike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
+    val ports = link.ports.toSeqMap.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt)
+    }
+    val links = link.links.toSeqMap.map { case (name, elt) =>
+      name -> wrapLinklike(path + name, elt)
+    }
     mapLink(path, link, ports, links)
   }
 
   def wrapLinkArray(path: DesignPath, link: elem.LinkArray): LinkType = {
-    val nameOrder = ProtoUtil.getNameOrder(link.meta)
-    val ports = link.ports.map { case (name, elt) =>
-      name -> wrapPortlike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
-    val links = link.links.map { case (name, elt) =>
-      name -> wrapLinklike(path + name, elt) }
-        .sortKeysFrom(nameOrder)
+    val ports = link.ports.toSeqMap.map { case (name, elt) =>
+      name -> wrapPortlike(path + name, elt)
+    }
+    val links = link.links.toSeqMap.map { case (name, elt) =>
+      name -> wrapLinklike(path + name, elt)
+    }
     mapLinkArray(path, link, ports, links)
   }
 

@@ -36,8 +36,6 @@ trait HasMutableBlocks {
 
   protected def parseBlocks(pb: SeqMap[String, elem.BlockLike]):
       mutable.SeqMap[String, BlockLike] =
-
-
     pb.view.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
@@ -54,7 +52,7 @@ trait HasMutableLinks {
     require(links(name).isElaborated)
   }
 
-  protected def parseLinks(pb: Map[String, elem.LinkLike]):
+  protected def parseLinks(pb: SeqMap[String, elem.LinkLike]):
       mutable.SeqMap[String, LinkLike] =
     pb.view.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)

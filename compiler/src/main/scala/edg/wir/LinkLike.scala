@@ -1,6 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
+import edg.wir.ProtoUtil.{ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, LinkSeqMapToProto, ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
@@ -19,10 +20,9 @@ sealed trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports.toSeqMap)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links.toSeqMap)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints.toSeqMap)
 
   override def cloned: Link = {
     val cloned = new Link(pb)
@@ -37,7 +37,7 @@ class Link(pb: elem.Link) extends LinkLike
 
   override def isElaborated: Boolean = true
 
-  override def getParams: Map[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -53,9 +53,9 @@ class Link(pb: elem.Link) extends LinkLike
 
   def toEltPb: elem.Link = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.toPb
     )
   }
 
@@ -92,12 +92,12 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     model = Some(linkDef)
   }
 
-  def getModelPorts: Map[String, PortLike] = model.get.getPorts
+  def getModelPorts: SeqMap[String, PortLike] = model.get.getPorts
 
   // Creates my ports from the model type and array lengths, returning the port postfix and created port.
   // Outer arrays have their elements set, while inner arrays (corresponding to the link-array's ELEMENTS)
   // must be set externally.
-  def initPortsFromModel(arrayElements: Map[String, Seq[String]]): Map[Seq[String], PortArray] = {
+  def initPortsFromModel(arrayElements: SeqMap[String, Seq[String]]): SeqMap[Seq[String], PortArray] = {
     require(ports.isEmpty)
     model.get.getPorts.flatMap {
       case (portName, port: PortArray) =>
@@ -167,9 +167,9 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   def toEltPb: elem.LinkArray = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.toPb
     )
   }
 
