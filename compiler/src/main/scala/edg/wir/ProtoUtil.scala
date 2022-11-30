@@ -86,6 +86,10 @@ object ProtoUtil {
     def apply(key: String): ValueType = {
       valueExtractor(items.find(nameExtractor(_) == key).get).get
     }
+
+    def indexOfKey(key: String): Int = {
+      items.map(nameExtractor).indexOf(key)
+    }
   }
 
   implicit class ParamProtoToSeqMap(items: Seq[elem.NamedValInit])
