@@ -39,7 +39,7 @@ message NamedPortLike {
 
 message NamedBlockLike {
   string name = 1;
-  PortLike value = 2;
+  BlockLike value = 2;
 }
 
 message NamedLinkLike {
