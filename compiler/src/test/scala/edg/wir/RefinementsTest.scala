@@ -2,6 +2,7 @@ package edg.wir
 
 import edg.compiler.IntValue
 import edg.{ElemBuilder, ExprBuilder}
+import edgrpc.hdl.hdl
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -52,5 +53,39 @@ class RefinementsTest extends AnyFlatSpec {
         classRefinements = Map(ElemBuilder.LibraryPath("base1") -> ElemBuilder.LibraryPath("sub1"))
       )
     }
+  }
+
+  it should "convert to proto" in {
+    Refinements(
+      classRefinements = Map(ElemBuilder.LibraryPath("base1") -> ElemBuilder.LibraryPath("sub1")),
+      instanceRefinements = Map(DesignPath() + "elt1" -> ElemBuilder.LibraryPath("sub1")),
+      classValues = Map(ElemBuilder.LibraryPath("base1") -> Map(ExprBuilder.Ref("param1") -> IntValue(1))),
+      instanceValues = Map(DesignPath() + "elt1" -> IntValue(1))
+    ).toPb should equal(hdl.Refinements(
+      subclasses = Seq(
+        hdl.Refinements.Subclass(
+          source = hdl.Refinements.Subclass.Source.Cls(ElemBuilder.LibraryPath("base1")),
+          replacement = Some(ElemBuilder.LibraryPath("sub1"))
+        ),
+        hdl.Refinements.Subclass(
+          source = hdl.Refinements.Subclass.Source.Path((IndirectDesignPath() + "elt1").toLocalPath),
+          replacement = Some(ElemBuilder.LibraryPath("sub1"))
+        ),
+      ),
+      values=Seq(
+        hdl.Refinements.Value(
+          source = hdl.Refinements.Value.Source.ClsParam(
+            value = hdl.Refinements.Value.ClassParamPath(
+              cls = Some(ElemBuilder.LibraryPath("base1")),
+              paramPath = Some(ExprBuilder.Ref("param1")))
+          ),
+          value = Some(IntValue(1).toLit)
+        ),
+        hdl.Refinements.Value(
+          source = hdl.Refinements.Value.Source.Path((IndirectDesignPath() + "elt1").toLocalPath),
+          value = Some(IntValue(1).toLit)
+        ),
+      )
+    ))
   }
 }
