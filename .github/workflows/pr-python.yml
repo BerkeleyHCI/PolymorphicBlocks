@@ -43,6 +43,7 @@ jobs:
         pip install mypy types-protobuf types-Deprecated
     - name: mypy
       run: |
+        mypy --version
         mypy --install-types .
 
   unittest:
