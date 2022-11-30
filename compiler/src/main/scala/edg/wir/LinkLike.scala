@@ -20,9 +20,9 @@ sealed trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports.toSeqMap)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links.toSeqMap)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints.toSeqMap)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
 
   override def cloned: Link = {
     val cloned = new Link(pb)

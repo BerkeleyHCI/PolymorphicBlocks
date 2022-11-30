@@ -53,7 +53,7 @@ class Port(pb: elem.Port) extends PortLike
 
 class Bundle(pb: elem.Bundle) extends PortLike
     with HasMutablePorts with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports.toSeqMap)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
 
   override def cloned: Bundle = {
     val cloned = new Bundle(pb)
@@ -92,7 +92,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   var portsSet = false  // allow empty port arrays
 
   pb.contains match {
-    case elem.PortArray.Contains.Ports(ports) => setPorts(parsePorts(ports.ports.toSeqMap))
+    case elem.PortArray.Contains.Ports(ports) => setPorts(parsePorts(ports.ports))
     case _ =>
   }
 

@@ -24,10 +24,10 @@ sealed trait BlockLike extends Pathable {
   */
 class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports.toSeqMap)
-  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks.toSeqMap)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links.toSeqMap)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints.toSeqMap)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
 
   // creates a copy of this object
   override def cloned: Block = {
@@ -132,9 +132,9 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
     require(blocks.isEmpty)
     require(links.isEmpty)
     require(constraints.isEmpty)
-    blocks.addAll(parseBlocks(pb.blocks.toSeqMap))
-    links.addAll(parseLinks(pb.links.toSeqMap))
-    constraints.addAll(parseConstraints(pb.constraints.toSeqMap))
+    blocks.addAll(parseBlocks(pb.blocks))
+    links.addAll(parseLinks(pb.links))
+    constraints.addAll(parseConstraints(pb.constraints))
 
     generatedPb = Some(pb)
 

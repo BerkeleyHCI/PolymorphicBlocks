@@ -4,7 +4,7 @@ import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
 
-import scala.collection.SeqMap
+import scala.collection.{SeqMap, mutable}
 
 object ProtoUtil {
   // Implicit allowing toPb from the SeqMap that creates the Named* pair protos
@@ -57,7 +57,7 @@ object ProtoUtil {
   implicit class ConstraintTupleToProto(item: (String, expr.ValueExpr))
       extends BaseTupleToProto[elem.NamedValueExpr, expr.ValueExpr](item, elem.NamedValueExpr(_, _))
 
-  class BaseProtoToSeqMap[ProtoType <: scalapb.lenses.Updatable[ProtoType], ValueType](items: Seq[ProtoType],
+  class BaseProtoToSeqMap[ProtoType, ValueType](items: Seq[ProtoType],
                                                 nameExtractor: ProtoType => String,
                                                 valueExtractor: ProtoType => Option[ValueType],
                                                 ctor: (String, Option[ValueType]) => ProtoType) {
@@ -67,6 +67,12 @@ object ProtoUtil {
       }.to(SeqMap)
     }
 
+    def toMutableSeqMap: mutable.SeqMap[String, ValueType] = {
+      items.map { item =>
+        nameExtractor(item) -> valueExtractor(item).get
+      }.to(mutable.SeqMap)
+    }
+
     // This is named differently from filter because otherwise Seq.filter seems to be preferred
     def mapFilter(fn: (String, ValueType) => Boolean): Seq[ProtoType] = {
       items.filter { item => fn(nameExtractor(item), valueExtractor(item).get) }
@@ -74,6 +80,11 @@ object ProtoUtil {
 
     def mapValues(fn: ValueType => ValueType): Seq[ProtoType] = {
       items.map { item => ctor(nameExtractor(item), Some(fn(valueExtractor(item).get))) }
+    }
+
+    // Gets the value by key
+    def apply(key: String): ValueType = {
+      valueExtractor(items.find(nameExtractor(_) == key).get).get
     }
   }
 

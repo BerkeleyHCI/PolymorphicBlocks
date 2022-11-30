@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.wir.ProtoUtil._
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
@@ -17,9 +18,9 @@ trait HasMutablePorts {
     require(ports(name).isElaborated)
   }
 
-  protected def parsePorts(pb: SeqMap[String, elem.PortLike]):
+  protected def parsePorts(pb: Seq[elem.NamedPortLike]):
       mutable.SeqMap[String, PortLike] = {
-    pb.view.mapValues(PortLike.fromLibraryPb).to(mutable.SeqMap)
+    pb.toSeqMap.view.mapValues(PortLike.fromLibraryPb).to(mutable.SeqMap)
   }
 }
 
@@ -33,9 +34,9 @@ trait HasMutableBlocks {
     require(blocks(name).isElaborated)
   }
 
-  protected def parseBlocks(pb: SeqMap[String, elem.BlockLike]):
+  protected def parseBlocks(pb: Seq[elem.NamedBlockLike]):
       mutable.SeqMap[String, BlockLike] =
-    pb.view.mapValues { _.`type` match {
+    pb.toSeqMap.view.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
     }}.to(mutable.SeqMap)
@@ -51,9 +52,9 @@ trait HasMutableLinks {
     require(links(name).isElaborated)
   }
 
-  protected def parseLinks(pb: SeqMap[String, elem.LinkLike]):
+  protected def parseLinks(pb: Seq[elem.NamedLinkLike]):
       mutable.SeqMap[String, LinkLike] =
-    pb.view.mapValues { _.`type` match {
+    pb.toSeqMap.view.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
       case elem.LinkLike.Type.Array(like) => new LinkArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
@@ -80,9 +81,9 @@ trait HasMutableConstraints {
     newValues.to(SeqMap)
   }
 
-  protected def parseConstraints(pb: SeqMap[String, expr.ValueExpr]):
+  protected def parseConstraints(pb: Seq[elem.NamedValueExpr]):
       mutable.SeqMap[String, expr.ValueExpr] = {
-    pb.to(mutable.SeqMap)
+    pb.toMutableSeqMap
   }
 
 }
