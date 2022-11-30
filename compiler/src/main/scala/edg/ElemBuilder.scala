@@ -2,7 +2,7 @@ package edg
 
 import com.google.protobuf.ByteString
 import edg.EdgirUtils.SimpleLibraryPath
-import edg.wir.ProtoUtil.{BlockSeqMapToProto, ConstraintSeqMapToProto, LinkSeqMapToProto, ParamSeqMapToProto, PortSeqMapToProto}
+import edg.wir.ProtoUtil._
 
 import scala.collection.SeqMap
 

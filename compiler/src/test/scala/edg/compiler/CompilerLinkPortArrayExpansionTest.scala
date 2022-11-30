@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValueExpr}
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, LinkProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edg.{CompilerTestUtil, wir}
 
 import scala.collection.SeqMap

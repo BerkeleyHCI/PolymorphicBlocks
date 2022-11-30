@@ -1,7 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edg.wir.ProtoUtil.{ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, LinkSeqMapToProto, ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
+import edg.wir.ProtoUtil._
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr

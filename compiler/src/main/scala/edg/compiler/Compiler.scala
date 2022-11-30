@@ -2,7 +2,7 @@ package edg.compiler
 
 import edg.EdgirUtils._
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
-import edg.wir.ProtoUtil.{ParamProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
 import edgir.expr.expr

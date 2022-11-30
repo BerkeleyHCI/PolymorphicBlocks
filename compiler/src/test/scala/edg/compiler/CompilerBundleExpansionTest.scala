@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edg.{CompilerTestUtil, wir}
 import edg.wir.{IndirectDesignPath, IndirectStep}
 

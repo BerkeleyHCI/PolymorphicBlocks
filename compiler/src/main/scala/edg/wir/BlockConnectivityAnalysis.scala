@@ -1,6 +1,6 @@
 package edg.wir
 
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref

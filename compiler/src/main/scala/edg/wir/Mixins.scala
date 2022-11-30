@@ -3,7 +3,6 @@ package edg.wir
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
-import edg.util.SeqMapSortableFrom._
 
 import scala.collection.{SeqMap, mutable}
 

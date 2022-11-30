@@ -1,13 +1,11 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
 import edgir.ref.ref
-import edg.util.SeqMapSortableFrom._
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, BlockSeqMapToProto, ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, LinkSeqMapToProto, ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
+import edg.wir.ProtoUtil._
 import edgir.ref.ref.LibraryPath
 
 import scala.collection.{SeqMap, mutable}

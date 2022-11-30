@@ -4,9 +4,10 @@ import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
 
-import scala.collection.{SeqMap, mutable}
+import scala.collection.SeqMap
 
 object ProtoUtil {
+  // Implicit allowing toPb from the SeqMap that creates the Named* pair protos
   class BaseSeqMapToProto[ProtoType, ValueType](items: SeqMap[String, ValueType],
                                                 ctor: (String, Option[ValueType]) => ProtoType) {
     def toPb: Seq[ProtoType] = {
@@ -36,6 +37,30 @@ object ProtoUtil {
       extends BaseSeqMapToProto[elem.NamedValueExpr, expr.ValueExpr](items, elem.NamedValueExpr(_, _)) {
   }
 
+
+  // Implicit allowing toPb from a (name, value) pair that creates the wrapping Named* pair proto
+  class BaseTupleToProto[ProtoType, ValueType](item: (String, ValueType),
+                                               ctor: (String, Option[ValueType]) => ProtoType) {
+    def toPb: ProtoType = {
+      ctor(item._1, Some(item._2))
+    }
+  }
+
+
+  implicit class ParamTupleToProto(item: (String, init.ValInit))
+      extends BaseTupleToProto[elem.NamedValInit, init.ValInit](item, elem.NamedValInit(_, _))
+
+  implicit class PortTupleToProto(item: (String, elem.PortLike))
+      extends BaseTupleToProto[elem.NamedPortLike, elem.PortLike](item, elem.NamedPortLike(_, _))
+
+  implicit class BlockTupleToProto(item: (String, elem.BlockLike))
+      extends BaseTupleToProto[elem.NamedBlockLike, elem.BlockLike](item, elem.NamedBlockLike(_, _))
+
+  implicit class LinkTupleToProto(item: (String, elem.LinkLike))
+      extends BaseTupleToProto[elem.NamedLinkLike, elem.LinkLike](item, elem.NamedLinkLike(_, _))
+
+  implicit class ConstraintTupleToProto(item: (String, expr.ValueExpr))
+      extends BaseTupleToProto[elem.NamedValueExpr, expr.ValueExpr](item, elem.NamedValueExpr(_, _))
 
   class BaseProtoToSeqMap[ProtoType, ValueType](items: Seq[ProtoType],
                                                 nameExtractor: ProtoType => String,

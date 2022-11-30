@@ -1,6 +1,6 @@
 package edg.compiler
 
-import edg.wir.ProtoUtil.{ConstraintProtoToSeqMap, ParamProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edg.wir.{DesignPath, IndirectDesignPath}
 import edgir.elem.elem
 import edgir.expr.expr

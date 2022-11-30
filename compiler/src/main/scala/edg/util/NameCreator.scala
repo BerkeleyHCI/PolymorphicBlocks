@@ -1,6 +1,6 @@
 package edg.util
 
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, LinkProtoToSeqMap, ParamProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 
 import scala.collection.mutable
 import edgir.elem.elem

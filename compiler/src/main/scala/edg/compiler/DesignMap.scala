@@ -1,7 +1,7 @@
 package edg.compiler
 
 import edg.wir.DesignPath
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema

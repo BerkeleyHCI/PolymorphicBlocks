@@ -1,10 +1,9 @@
 package edg.util
 
-import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
-import matchers.should.Matchers._
-import collection.mutable
-import collection.SeqMap
+import org.scalatest.matchers.should.Matchers._
+
+import scala.collection.mutable
 
 
 class SeqMapUtilsTest extends AnyFlatSpec {

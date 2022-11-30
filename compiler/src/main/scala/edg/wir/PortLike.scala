@@ -1,7 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edg.wir.ProtoUtil.{ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
+import edg.wir.ProtoUtil._
 
 import scala.collection.{SeqMap, mutable}
 import edgir.init.init

@@ -3,7 +3,7 @@ package edg.compiler
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, PortProtoToSeqMap}
+import edg.wir.ProtoUtil._
 import edgir.ref.ref
 import edg.wir.{IndirectDesignPath, IndirectStep}
 import org.scalatest.flatspec.AnyFlatSpec
