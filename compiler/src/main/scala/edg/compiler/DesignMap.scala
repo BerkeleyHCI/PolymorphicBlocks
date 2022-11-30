@@ -1,13 +1,11 @@
 package edg.compiler
 
-import edgir.elem.elem
-import edgir.schema.schema
-import edgir.ref.ref
-import edg.wir.{DesignPath, ProtoUtil}
-import edg.util.SeqMapSortableFrom._
+import edg.wir.DesignPath
 import edg.wir.ProtoUtil.{BlockProtoToSeqMap, LinkProtoToSeqMap, PortProtoToSeqMap}
+import edgir.elem.elem
+import edgir.ref.ref
+import edgir.schema.schema
 
-import scala.Predef.->
 import scala.collection.SeqMap
 
 

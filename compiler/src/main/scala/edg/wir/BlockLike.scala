@@ -7,7 +7,7 @@ import edgir.expr.expr
 import edgir.init.init
 import edgir.ref.ref
 import edg.util.SeqMapSortableFrom._
-import edg.wir.ProtoUtil.{BlockProtoToSeqMap, BlockSeqMapToProto, ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, LinkSeqMapToProto, PortProtoToSeqMap, PortSeqMapToProto}
+import edg.wir.ProtoUtil.{BlockProtoToSeqMap, BlockSeqMapToProto, ConstraintProtoToSeqMap, ConstraintSeqMapToProto, LinkProtoToSeqMap, LinkSeqMapToProto, ParamProtoToSeqMap, PortProtoToSeqMap, PortSeqMapToProto}
 import edgir.ref.ref.LibraryPath
 
 import scala.collection.{SeqMap, mutable}
@@ -49,7 +49,7 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
 
   def getBlockClass: LibraryPath = pb.getSelfClass
 
-  override def getParams: SeqMap[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

@@ -127,7 +127,7 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     }.toMap
   }
 
-  def initConstraints(linkElements: Seq[String], arrayElements: Map[String, Seq[String]]): Unit = {
+  def initConstraints(linkElements: Seq[String], arrayElements: SeqMap[String, Seq[String]]): Unit = {
     import edg.ElemBuilder.Constraint
     import edg.ExprBuilder.Ref
     require(constraints.isEmpty)

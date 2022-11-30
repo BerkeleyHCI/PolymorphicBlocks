@@ -1,13 +1,15 @@
 package edg.util
 
+import edg.wir.ProtoUtil.{BlockProtoToSeqMap, ConstraintProtoToSeqMap, LinkProtoToSeqMap, ParamProtoToSeqMap, PortProtoToSeqMap}
+
 import scala.collection.mutable
 import edgir.elem.elem
 
 
 object NameCreator {
   def fromBlock(block: elem.HierarchyBlock): NameCreator = {
-    new NameCreator(block.blocks.keySet ++ block.ports.keySet ++ block.links.keySet ++
-        block.params.keySet ++ block.constraints.keySet)
+    new NameCreator((block.blocks.toSeqMap.keySet ++ block.ports.toSeqMap.keySet ++ block.links.toSeqMap.keySet ++
+        block.params.toSeqMap.keySet ++ block.constraints.toSeqMap.keySet).toSet)
   }
 }
 
