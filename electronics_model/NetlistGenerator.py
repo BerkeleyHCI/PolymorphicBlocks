@@ -169,13 +169,12 @@ class NetlistTransform(TransformUtil.Transform):
         self.class_paths[path],
       )
 
-      # Uncomment one to set refdes type
-      if (self.value_mode == "refdes"):
-        print(self.value_mode)
-        self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
-      elif (self.value_mode == "pathName"):
-        print(self.value_mode)
+      if self.value_mode == "pathName":
         self.names[path] = self.short_paths[path]
+      elif self.value_mode == "refdes":
+        self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
+      else:
+        raise ValueError(f"Invalid valueMode value {self.value_mode}")
 
       for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
         pin_path = path.append_port(pin_name)
