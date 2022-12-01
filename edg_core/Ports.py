@@ -205,7 +205,7 @@ class Port(BasePort, Generic[PortLinkType]):
     for (name, param) in self._parameters.items():
       edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
 
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
+    self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
 
     return pb
 
@@ -305,7 +305,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
     for (name, port) in self._ports.items():
       edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
 
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
+    self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
 
     return pb
 

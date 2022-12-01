@@ -59,11 +59,6 @@ class NetlistTransform(TransformUtil.Transform):
     short_path = self.short_paths[path]
     class_path = self.class_paths[path]
 
-    if 'error' in block.meta.members.node:
-      raise InvalidNetlistBlockException(f"attempt to netlist with error block at {path}")
-    elif 'abstract' in block.meta.members.node:
-      raise InvalidNetlistBlockException(f"attempt to netlist with abstract block at {path}")
-
     # TODO handle mixed net/connect operations
     if isinstance(block, edgir.Link) and 'nets' in block.meta.members.node:
       # Consolidate single-net link ports into just the link
@@ -125,8 +120,9 @@ class NetlistTransform(TransformUtil.Transform):
         for dst_path in flat_srcs:
           self.assert_connected.append((src_path, dst_path))
 
-    if 'pinning' in block.meta.members.node:
+    if 'fp_is_footprint' in block.meta.members.node:
       footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
+      footprint_pinning = self.design.get_value(path.to_tuple() + ('fp_pinning',))
       mfr = self.design.get_value(path.to_tuple() + ('fp_mfr',))
       part = self.design.get_value(path.to_tuple() + ('fp_part',))
       value = self.design.get_value(path.to_tuple() + ('fp_value',))
@@ -134,6 +130,7 @@ class NetlistTransform(TransformUtil.Transform):
       lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
 
       assert isinstance(footprint_name, str)
+      assert isinstance(footprint_pinning, list)
       assert isinstance(mfr, str) or mfr is None
       assert isinstance(part, str) or part is None
       assert isinstance(value, str) or value is None
@@ -174,14 +171,18 @@ class NetlistTransform(TransformUtil.Transform):
       # self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
       self.names[path] = self.short_paths[path]
 
-      for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
+      for pin_spec in footprint_pinning:
+        assert isinstance(pin_spec, str)
+        pin_spec_split = pin_spec.split('=')
+        assert len(pin_spec_split) == 2
+        pin_name = pin_spec_split[0]
+        port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
+
         pin_path = path.append_port(pin_name)
         self.pins.add(pin_path)
         self.short_paths[pin_path] = short_path.append_port(pin_name)
 
-        path_value = edgir.ValueExpr().FromString(pin_path_pb.bin_leaf)
-        assert path_value.HasField('ref')
-        src_path = path.follow(path_value.ref, block)[0]
+        src_path = path.follow(port_path, block)[0]
 
         # Create a unidirectional edge from the port to the footprint pin
         self.edges.setdefault(src_path, []).append(pin_path)

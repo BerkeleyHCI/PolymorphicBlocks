@@ -275,7 +275,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._constraints.finalize()  # needed for source locator generation
 
     ref_map = self._get_ref_map(edgir.LocalPath())
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))
+    self._populate_metadata(pb.meta, self._metadata, ref_map)
 
     return pb
 
