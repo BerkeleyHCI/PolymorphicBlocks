@@ -116,6 +116,9 @@ if __name__ == '__main__':
                                            BaseBackend)  # type: ignore
         backend = backend_class()
 
+        if set(dict(request.run_backend.arguments).keys()) != {'RefdesMode'}:
+          raise ValueError("Invalid argument found in args")
+
         results = backend.run(CompiledDesign.from_backend_request(request.run_backend),
                               dict(request.run_backend.arguments))
         for path, result in results:
