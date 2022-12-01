@@ -38,7 +38,7 @@ def resolve_blocklike(block: BlockLike) -> BlockTypes:
 def resolve_linklike(link: LinkLike) -> LinkTypes:
   if link.HasField('link'):
     return link.link
-  if link.HasField('array'):
+  elif link.HasField('array'):
     return link.array
   else:
     raise ValueError(f"bad linklike {link}")
