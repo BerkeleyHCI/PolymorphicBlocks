@@ -36,8 +36,8 @@ class Link(BaseBlock[edgir.Link]):
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb)
+    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_description(pb)
     # specifically ignore the port initializers
 
