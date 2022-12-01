@@ -21,7 +21,11 @@ class EltDictBlock(Block):
 class EltDictBlockProtoTestCase(unittest.TestCase):
   def test_connectivity(self):
     pb = EltDictBlock()._elaborated_def_to_proto()
-    self.assertEqual(pb.blocks['sink[0]'].lib_elem.target.name, "edg_core.test_common.TestBlockSink")
-    self.assertEqual(pb.blocks['sink[1]'].lib_elem.target.name, "edg_core.test_common.TestBlockSink")
-    self.assertEqual(pb.blocks['nested[inner][a]'].lib_elem.target.name, "edg_core.test_common.TestBlockSink")
-    self.assertEqual(pb.blocks['nested[inner][b]'].lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(pb.blocks[0].name, 'sink[0]')
+    self.assertEqual(pb.blocks[0].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(pb.blocks[1].name, 'sink[1]')
+    self.assertEqual(pb.blocks[1].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(pb.blocks[2].name, 'nested[inner][a]')
+    self.assertEqual(pb.blocks[2].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(pb.blocks[3].name, 'nested[inner][b]')
+    self.assertEqual(pb.blocks[3].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")

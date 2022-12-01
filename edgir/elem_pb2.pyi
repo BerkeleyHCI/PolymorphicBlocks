@@ -31,6 +31,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class NamedValInit(google.protobuf.message.Message):
     """These are essentially a element in a map<string, value>, but because maps
     are unordered (whereas we want to preserve ordering to preserve design intent
@@ -55,6 +56,7 @@ class NamedValInit(google.protobuf.message.Message):
 
 global___NamedValInit = NamedValInit
 
+@typing_extensions.final
 class NamedValueExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -74,6 +76,7 @@ class NamedValueExpr(google.protobuf.message.Message):
 
 global___NamedValueExpr = NamedValueExpr
 
+@typing_extensions.final
 class NamedPortLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -93,6 +96,7 @@ class NamedPortLike(google.protobuf.message.Message):
 
 global___NamedPortLike = NamedPortLike
 
+@typing_extensions.final
 class NamedBlockLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -100,18 +104,19 @@ class NamedBlockLike(google.protobuf.message.Message):
     VALUE_FIELD_NUMBER: builtins.int
     name: builtins.str
     @property
-    def value(self) -> global___PortLike: ...
+    def value(self) -> global___BlockLike: ...
     def __init__(
         self,
         *,
         name: builtins.str = ...,
-        value: global___PortLike | None = ...,
+        value: global___BlockLike | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
 global___NamedBlockLike = NamedBlockLike
 
+@typing_extensions.final
 class NamedLinkLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -131,6 +136,7 @@ class NamedLinkLike(google.protobuf.message.Message):
 
 global___NamedLinkLike = NamedLinkLike
 
+@typing_extensions.final
 class Port(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -165,6 +171,7 @@ class Port(google.protobuf.message.Message):
 
 global___Port = Port
 
+@typing_extensions.final
 class Bundle(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -202,9 +209,11 @@ class Bundle(google.protobuf.message.Message):
 
 global___Bundle = Bundle
 
+@typing_extensions.final
 class PortArray(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Ports(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -243,6 +252,7 @@ class PortArray(google.protobuf.message.Message):
 
 global___PortArray = PortArray
 
+@typing_extensions.final
 class PortLike(google.protobuf.message.Message):
     """* Wrapper for different port like elements"""
 
@@ -280,6 +290,7 @@ class PortLike(google.protobuf.message.Message):
 
 global___PortLike = PortLike
 
+@typing_extensions.final
 class Parameter(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -299,6 +310,7 @@ class Parameter(google.protobuf.message.Message):
 
 global___Parameter = Parameter
 
+@typing_extensions.final
 class StringDescriptionElement(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -319,9 +331,11 @@ class StringDescriptionElement(google.protobuf.message.Message):
 
 global___StringDescriptionElement = StringDescriptionElement
 
+@typing_extensions.final
 class HierarchyBlock(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class ParamDefaultsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -415,6 +429,7 @@ class HierarchyBlock(google.protobuf.message.Message):
 
 global___HierarchyBlock = HierarchyBlock
 
+@typing_extensions.final
 class Generator(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -433,6 +448,7 @@ class Generator(google.protobuf.message.Message):
 
 global___Generator = Generator
 
+@typing_extensions.final
 class BlockLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -459,6 +475,7 @@ class BlockLike(google.protobuf.message.Message):
 
 global___BlockLike = BlockLike
 
+@typing_extensions.final
 class Link(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -505,6 +522,7 @@ class Link(google.protobuf.message.Message):
 
 global___Link = Link
 
+@typing_extensions.final
 class LinkArray(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -544,6 +562,7 @@ class LinkArray(google.protobuf.message.Message):
 
 global___LinkArray = LinkArray
 
+@typing_extensions.final
 class LinkLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

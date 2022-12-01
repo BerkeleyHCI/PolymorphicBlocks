@@ -23,6 +23,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class Namespace(google.protobuf.message.Message):
     """*
     A namespace allows us to define a more useful organizational structure
@@ -60,6 +61,7 @@ class Namespace(google.protobuf.message.Message):
 
 global___Namespace = Namespace
 
+@typing_extensions.final
 class LibraryName(google.protobuf.message.Message):
     """* A library name is a way to identify a specific library from a
     set of parent libraries.

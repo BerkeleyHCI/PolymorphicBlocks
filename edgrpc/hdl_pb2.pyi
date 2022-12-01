@@ -22,9 +22,11 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class Refinements(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Subclass(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -48,9 +50,11 @@ class Refinements(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["cls", b"cls", "path", b"path", "replacement", b"replacement", "source", b"source"]) -> None: ...
         def WhichOneof(self, oneof_group: typing_extensions.Literal["source", b"source"]) -> typing_extensions.Literal["path", "cls"] | None: ...
 
+    @typing_extensions.final
     class Value(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class ClassParamPath(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -105,6 +109,7 @@ class Refinements(google.protobuf.message.Message):
 
 global___Refinements = Refinements
 
+@typing_extensions.final
 class ModuleName(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -119,6 +124,7 @@ class ModuleName(google.protobuf.message.Message):
 
 global___ModuleName = ModuleName
 
+@typing_extensions.final
 class IndexResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -134,6 +140,7 @@ class IndexResponse(google.protobuf.message.Message):
 
 global___IndexResponse = IndexResponse
 
+@typing_extensions.final
 class LibraryRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -151,6 +158,7 @@ class LibraryRequest(google.protobuf.message.Message):
 
 global___LibraryRequest = LibraryRequest
 
+@typing_extensions.final
 class LibraryResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -172,9 +180,11 @@ class LibraryResponse(google.protobuf.message.Message):
 
 global___LibraryResponse = LibraryResponse
 
+@typing_extensions.final
 class GeneratorRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Value(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -211,6 +221,7 @@ class GeneratorRequest(google.protobuf.message.Message):
 
 global___GeneratorRequest = GeneratorRequest
 
+@typing_extensions.final
 class GeneratorResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -227,6 +238,7 @@ class GeneratorResponse(google.protobuf.message.Message):
 
 global___GeneratorResponse = GeneratorResponse
 
+@typing_extensions.final
 class BackendRequest(google.protobuf.message.Message):
     """Runs a backend - something that generates fabrication artifacts from a compiled design tree
     eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
@@ -234,6 +246,7 @@ class BackendRequest(google.protobuf.message.Message):
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Value(google.protobuf.message.Message):
         """TODO dedup w/ same def in compiler.CompilerResult"""
 
@@ -275,9 +288,11 @@ class BackendRequest(google.protobuf.message.Message):
 
 global___BackendRequest = BackendRequest
 
+@typing_extensions.final
 class BackendResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Result(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -310,6 +325,7 @@ class BackendResponse(google.protobuf.message.Message):
 
 global___BackendResponse = BackendResponse
 
+@typing_extensions.final
 class ErrorResponse(google.protobuf.message.Message):
     """catch all error response"""
 
@@ -329,6 +345,7 @@ class ErrorResponse(google.protobuf.message.Message):
 
 global___ErrorResponse = ErrorResponse
 
+@typing_extensions.final
 class HdlRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -361,6 +378,7 @@ class HdlRequest(google.protobuf.message.Message):
 
 global___HdlRequest = HdlRequest
 
+@typing_extensions.final
 class HdlResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

@@ -24,6 +24,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class Library(google.protobuf.message.Message):
     """* This is the top-level schema for a library of blocks, ports, and links.
 
@@ -38,11 +39,13 @@ class Library(google.protobuf.message.Message):
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class NS(google.protobuf.message.Message):
         """* Library Namespace, avoiding collision w/ edg.name.Namespace"""
 
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class Val(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -74,6 +77,7 @@ class Library(google.protobuf.message.Message):
             def ClearField(self, field_name: typing_extensions.Literal["bundle", b"bundle", "hierarchy_block", b"hierarchy_block", "link", b"link", "namespace", b"namespace", "port", b"port", "type", b"type"]) -> None: ...
             def WhichOneof(self, oneof_group: typing_extensions.Literal["type", b"type"]) -> typing_extensions.Literal["port", "bundle", "hierarchy_block", "link", "namespace"] | None: ...
 
+        @typing_extensions.final
         class MembersEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -101,6 +105,7 @@ class Library(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["members", b"members"]) -> None: ...
 
+    @typing_extensions.final
     class LibIdent(google.protobuf.message.Message):
         """* How we identify a library within a set. Will probably
         evolve to capture more metadata.
@@ -142,6 +147,7 @@ class Library(google.protobuf.message.Message):
 
 global___Library = Library
 
+@typing_extensions.final
 class Design(google.protobuf.message.Message):
     """* This is a Design for an embedded system at some level of abstraction."""
 

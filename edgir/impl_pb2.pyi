@@ -23,6 +23,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class BlockImpl(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -39,6 +40,7 @@ class BlockImpl(google.protobuf.message.Message):
 
 global___BlockImpl = BlockImpl
 
+@typing_extensions.final
 class PortImpl(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -55,6 +57,7 @@ class PortImpl(google.protobuf.message.Message):
 
 global___PortImpl = PortImpl
 
+@typing_extensions.final
 class LinkImpl(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -71,6 +74,7 @@ class LinkImpl(google.protobuf.message.Message):
 
 global___LinkImpl = LinkImpl
 
+@typing_extensions.final
 class EnvironmentImpl(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

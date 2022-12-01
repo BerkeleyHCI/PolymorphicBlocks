@@ -33,7 +33,7 @@ class _Reserved:
     ValueType = typing.NewType("ValueType", builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
-class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Reserved.ValueType], builtins.type):  # noqa: F821
+class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Reserved.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     UNDEFINED: _Reserved.ValueType  # 0
     CONNECTED_LINK: _Reserved.ValueType  # 1
@@ -80,6 +80,7 @@ available on PortArray, returns a list of string of incoming connection names,
 """
 global___Reserved = Reserved
 
+@typing_extensions.final
 class LocalStep(google.protobuf.message.Message):
     """* This is an actual step you take within the local
     environment.
@@ -126,6 +127,7 @@ class LocalStep(google.protobuf.message.Message):
 
 global___LocalStep = LocalStep
 
+@typing_extensions.final
 class LocalPath(google.protobuf.message.Message):
     """* This is a path from a local context to some other local context.
     To be used as a reference.
@@ -150,6 +152,7 @@ class LocalPath(google.protobuf.message.Message):
 
 global___LocalPath = LocalPath
 
+@typing_extensions.final
 class LibraryPath(google.protobuf.message.Message):
     """* This is a path to an element within a library from the root of
     a library. To be used as a way to reference such elements.

@@ -22,6 +22,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class FloatLit(google.protobuf.message.Message):
     """* The core expression primitives we start with are the value
     literals that we can use
@@ -40,6 +41,7 @@ class FloatLit(google.protobuf.message.Message):
 
 global___FloatLit = FloatLit
 
+@typing_extensions.final
 class IntLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -54,6 +56,7 @@ class IntLit(google.protobuf.message.Message):
 
 global___IntLit = IntLit
 
+@typing_extensions.final
 class BoolLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -68,6 +71,7 @@ class BoolLit(google.protobuf.message.Message):
 
 global___BoolLit = BoolLit
 
+@typing_extensions.final
 class TextLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -82,6 +86,7 @@ class TextLit(google.protobuf.message.Message):
 
 global___TextLit = TextLit
 
+@typing_extensions.final
 class RangeLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -102,9 +107,11 @@ class RangeLit(google.protobuf.message.Message):
 
 global___RangeLit = RangeLit
 
+@typing_extensions.final
 class StructLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class MembersEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -134,6 +141,7 @@ class StructLit(google.protobuf.message.Message):
 
 global___StructLit = StructLit
 
+@typing_extensions.final
 class ArrayLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -149,6 +157,7 @@ class ArrayLit(google.protobuf.message.Message):
 
 global___ArrayLit = ArrayLit
 
+@typing_extensions.final
 class ValueLit(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

@@ -44,6 +44,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class UnaryExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -110,6 +111,7 @@ class UnaryExpr(google.protobuf.message.Message):
 
 global___UnaryExpr = UnaryExpr
 
+@typing_extensions.final
 class UnarySetExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -292,6 +294,7 @@ class UnarySetExpr(google.protobuf.message.Message):
 
 global___UnarySetExpr = UnarySetExpr
 
+@typing_extensions.final
 class BinaryExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -456,6 +459,7 @@ class BinaryExpr(google.protobuf.message.Message):
 
 global___BinaryExpr = BinaryExpr
 
+@typing_extensions.final
 class BinarySetExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -524,6 +528,7 @@ class BinarySetExpr(google.protobuf.message.Message):
 
 global___BinarySetExpr = BinarySetExpr
 
+@typing_extensions.final
 class ArrayExpr(google.protobuf.message.Message):
     """* Creates an array from element exprs"""
 
@@ -541,6 +546,7 @@ class ArrayExpr(google.protobuf.message.Message):
 
 global___ArrayExpr = ArrayExpr
 
+@typing_extensions.final
 class RangeExpr(google.protobuf.message.Message):
     """* Ranges have an expression form, allowing you to constrain them without
     specifying them fully
@@ -565,6 +571,7 @@ class RangeExpr(google.protobuf.message.Message):
 
 global___RangeExpr = RangeExpr
 
+@typing_extensions.final
 class StructExpr(google.protobuf.message.Message):
     """* Structs have an expression form, allowing you to constrain them without
     specifying them fully
@@ -572,6 +579,7 @@ class StructExpr(google.protobuf.message.Message):
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class ValsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -601,6 +609,7 @@ class StructExpr(google.protobuf.message.Message):
 
 global___StructExpr = StructExpr
 
+@typing_extensions.final
 class IfThenElseExpr(google.protobuf.message.Message):
     """* IfThenElse :: (cond :: Bool, tru :: a, fal :: a) -> a"""
 
@@ -631,6 +640,7 @@ class IfThenElseExpr(google.protobuf.message.Message):
 
 global___IfThenElseExpr = IfThenElseExpr
 
+@typing_extensions.final
 class ExtractExpr(google.protobuf.message.Message):
     """* Extract :: (container :: Array a           , index :: Int) -> a
     Extract :: (container :: Struct{index :: a}, index :: string)     -> a
@@ -656,6 +666,7 @@ class ExtractExpr(google.protobuf.message.Message):
 
 global___ExtractExpr = ExtractExpr
 
+@typing_extensions.final
 class MapExtractExpr(google.protobuf.message.Message):
     """/** MapExtract :: (container :: Array a , path :: LocalRef{from :: a, to :: b}) -> Array b
        MapExtract :: (container :: Set   a , path :: LocalRef{from :: a, to :: b}) -> Set   b
@@ -683,6 +694,7 @@ class MapExtractExpr(google.protobuf.message.Message):
 
 global___MapExtractExpr = MapExtractExpr
 
+@typing_extensions.final
 class ConnectedExpr(google.protobuf.message.Message):
     """* isConnected :: Port -> Port -> Bool
 
@@ -708,6 +720,7 @@ class ConnectedExpr(google.protobuf.message.Message):
 
 global___ConnectedExpr = ConnectedExpr
 
+@typing_extensions.final
 class ExportedExpr(google.protobuf.message.Message):
     """* isExported :: Port -> Port -> Bool
 
@@ -733,6 +746,7 @@ class ExportedExpr(google.protobuf.message.Message):
 
 global___ExportedExpr = ExportedExpr
 
+@typing_extensions.final
 class AssignExpr(google.protobuf.message.Message):
     """Variable assignment (from an expression value), which allows dataflow to be directioned and explicit.
     Assignments should not be cyclic.
@@ -757,6 +771,7 @@ class AssignExpr(google.protobuf.message.Message):
 
 global___AssignExpr = AssignExpr
 
+@typing_extensions.final
 class ValueExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

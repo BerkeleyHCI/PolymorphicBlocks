@@ -17,7 +17,7 @@ from edgir import expr_pb2 as edgir_dot_expr__pb2
 from edgir import ref_pb2 as edgir_dot_ref__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x65\x64gir/elem.proto\x12\nedgir.elem\x1a\x12\x65\x64gir/common.proto\x1a\x10\x65\x64gir/init.proto\x1a\x10\x65\x64gir/expr.proto\x1a\x0f\x65\x64gir/ref.proto\"@\n\x0cNamedValInit\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edgir.init.ValInit\"D\n\x0eNamedValueExpr\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.edgir.expr.ValueExpr\"B\n\rNamedPortLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edgir.elem.PortLike\"C\n\x0eNamedBlockLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edgir.elem.PortLike\"B\n\rNamedLinkLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edgir.elem.LinkLike\"\xe1\x01\n\x04Port\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12/\n\x0b\x63onstraints\x18) \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\x8d\x02\n\x06\x42undle\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\xca\x01\n\tPortArray\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x05ports\x18\x0e \x01(\x0b\x32\x1b.edgir.elem.PortArray.PortsH\x00\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x1a\x31\n\x05Ports\x12(\n\x05ports\x18( \x03(\x0b\x32\x19.edgir.elem.NamedPortLikeB\n\n\x08\x63ontains\"\xd6\x01\n\x08PortLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12 \n\x04port\x18\x03 \x01(\x0b\x32\x10.edgir.elem.PortH\x00\x12&\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x15.edgir.elem.PortArrayH\x00\x12$\n\x06\x62undle\x18\x06 \x01(\x0b\x32\x12.edgir.elem.BundleH\x00\x42\x04\n\x02is\"=\n\tParameter\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPath\x12\x0c\n\x04unit\x18\x02 \x01(\t\"a\n\x18StringDescriptionElement\x12\x0e\n\x04text\x18\x01 \x01(\tH\x00\x12&\n\x05param\x18\x02 \x01(\x0b\x32\x15.edgir.elem.ParameterH\x00\x42\r\n\x0b\x45lementType\"\xaa\x05\n\x0eHierarchyBlock\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12\x45\n\x0eparam_defaults\x18\x0f \x03(\x0b\x32-.edgir.elem.HierarchyBlock.ParamDefaultsEntry\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12*\n\x06\x62locks\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedBlockLike\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12/\n\x0b\x63onstraints\x18, \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x17 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12/\n\x0fprerefine_class\x18\x15 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\tgenerator\x18\x16 \x01(\x0b\x32\x15.edgir.elem.Generator\x12\x13\n\x0bis_abstract\x18\x1e \x01(\x08\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x12\x39\n\x0b\x64\x65scription\x18\x01 \x03(\x0b\x32$.edgir.elem.StringDescriptionElement\x1aK\n\x12ParamDefaultsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.edgir.expr.ValueExpr:\x02\x38\x01\":\n\tGenerator\x12-\n\x0frequired_params\x18\x02 \x03(\x0b\x32\x14.edgir.ref.LocalPath\"\x9a\x01\n\tBlockLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12/\n\thierarchy\x18\x04 \x01(\x0b\x32\x1a.edgir.elem.HierarchyBlockH\x00\x42\x06\n\x04type\"\xf0\x02\n\x04Link\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x12\x39\n\x0b\x64\x65scription\x18\x01 \x03(\x0b\x32$.edgir.elem.StringDescriptionElement\"\xe2\x01\n\tLinkArray\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\xb2\x01\n\x08LinkLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12 \n\x04link\x18\x03 \x01(\x0b\x32\x10.edgir.elem.LinkH\x00\x12&\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x15.edgir.elem.LinkArrayH\x00\x42\x06\n\x04typeb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x65\x64gir/elem.proto\x12\nedgir.elem\x1a\x12\x65\x64gir/common.proto\x1a\x10\x65\x64gir/init.proto\x1a\x10\x65\x64gir/expr.proto\x1a\x0f\x65\x64gir/ref.proto\"@\n\x0cNamedValInit\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.edgir.init.ValInit\"D\n\x0eNamedValueExpr\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.edgir.expr.ValueExpr\"B\n\rNamedPortLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edgir.elem.PortLike\"D\n\x0eNamedBlockLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.edgir.elem.BlockLike\"B\n\rNamedLinkLike\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.edgir.elem.LinkLike\"\xe1\x01\n\x04Port\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12/\n\x0b\x63onstraints\x18) \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\x8d\x02\n\x06\x42undle\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\xca\x01\n\tPortArray\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x05ports\x18\x0e \x01(\x0b\x32\x1b.edgir.elem.PortArray.PortsH\x00\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x1a\x31\n\x05Ports\x12(\n\x05ports\x18( \x03(\x0b\x32\x19.edgir.elem.NamedPortLikeB\n\n\x08\x63ontains\"\xd6\x01\n\x08PortLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12 \n\x04port\x18\x03 \x01(\x0b\x32\x10.edgir.elem.PortH\x00\x12&\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x15.edgir.elem.PortArrayH\x00\x12$\n\x06\x62undle\x18\x06 \x01(\x0b\x32\x12.edgir.elem.BundleH\x00\x42\x04\n\x02is\"=\n\tParameter\x12\"\n\x04path\x18\x01 \x01(\x0b\x32\x14.edgir.ref.LocalPath\x12\x0c\n\x04unit\x18\x02 \x01(\t\"a\n\x18StringDescriptionElement\x12\x0e\n\x04text\x18\x01 \x01(\tH\x00\x12&\n\x05param\x18\x02 \x01(\x0b\x32\x15.edgir.elem.ParameterH\x00\x42\r\n\x0b\x45lementType\"\xaa\x05\n\x0eHierarchyBlock\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12\x45\n\x0eparam_defaults\x18\x0f \x03(\x0b\x32-.edgir.elem.HierarchyBlock.ParamDefaultsEntry\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12*\n\x06\x62locks\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedBlockLike\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12/\n\x0b\x63onstraints\x18, \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x17 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x14 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12/\n\x0fprerefine_class\x18\x15 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\tgenerator\x18\x16 \x01(\x0b\x32\x15.edgir.elem.Generator\x12\x13\n\x0bis_abstract\x18\x1e \x01(\x08\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x12\x39\n\x0b\x64\x65scription\x18\x01 \x03(\x0b\x32$.edgir.elem.StringDescriptionElement\x1aK\n\x12ParamDefaultsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.edgir.expr.ValueExpr:\x02\x38\x01\":\n\tGenerator\x12-\n\x0frequired_params\x18\x02 \x03(\x0b\x32\x14.edgir.ref.LocalPath\"\x9a\x01\n\tBlockLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12/\n\thierarchy\x18\x04 \x01(\x0b\x32\x1a.edgir.elem.HierarchyBlockH\x00\x42\x06\n\x04type\"\xf0\x02\n\x04Link\x12(\n\x06params\x18( \x03(\x0b\x32\x18.edgir.elem.NamedValInit\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12,\n\x0csuperclasses\x18\x15 \x03(\x0b\x32\x16.edgir.ref.LibraryPath\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\x12\x39\n\x0b\x64\x65scription\x18\x01 \x03(\x0b\x32$.edgir.elem.StringDescriptionElement\"\xe2\x01\n\tLinkArray\x12*\n\nself_class\x18\x14 \x01(\x0b\x32\x16.edgir.ref.LibraryPath\x12(\n\x05ports\x18) \x03(\x0b\x32\x19.edgir.elem.NamedPortLike\x12/\n\x0b\x63onstraints\x18* \x03(\x0b\x32\x1a.edgir.elem.NamedValueExpr\x12(\n\x05links\x18+ \x03(\x0b\x32\x19.edgir.elem.NamedLinkLike\x12$\n\x04meta\x18\x7f \x01(\x0b\x32\x16.edgir.common.Metadata\"\xb2\x01\n\x08LinkLike\x12(\n\tundefined\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12*\n\x08lib_elem\x18\x02 \x01(\x0b\x32\x16.edgir.ref.LibraryPathH\x00\x12 \n\x04link\x18\x03 \x01(\x0b\x32\x10.edgir.elem.LinkH\x00\x12&\n\x05\x61rray\x18\x04 \x01(\x0b\x32\x15.edgir.elem.LinkArrayH\x00\x42\x06\n\x04typeb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'edgir.elem_pb2', globals())
@@ -33,35 +33,35 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _NAMEDPORTLIKE._serialized_start=241
   _NAMEDPORTLIKE._serialized_end=307
   _NAMEDBLOCKLIKE._serialized_start=309
-  _NAMEDBLOCKLIKE._serialized_end=376
-  _NAMEDLINKLIKE._serialized_start=378
-  _NAMEDLINKLIKE._serialized_end=444
-  _PORT._serialized_start=447
-  _PORT._serialized_end=672
-  _BUNDLE._serialized_start=675
-  _BUNDLE._serialized_end=944
-  _PORTARRAY._serialized_start=947
-  _PORTARRAY._serialized_end=1149
-  _PORTARRAY_PORTS._serialized_start=1088
-  _PORTARRAY_PORTS._serialized_end=1137
-  _PORTLIKE._serialized_start=1152
-  _PORTLIKE._serialized_end=1366
-  _PARAMETER._serialized_start=1368
-  _PARAMETER._serialized_end=1429
-  _STRINGDESCRIPTIONELEMENT._serialized_start=1431
-  _STRINGDESCRIPTIONELEMENT._serialized_end=1528
-  _HIERARCHYBLOCK._serialized_start=1531
-  _HIERARCHYBLOCK._serialized_end=2213
-  _HIERARCHYBLOCK_PARAMDEFAULTSENTRY._serialized_start=2138
-  _HIERARCHYBLOCK_PARAMDEFAULTSENTRY._serialized_end=2213
-  _GENERATOR._serialized_start=2215
-  _GENERATOR._serialized_end=2273
-  _BLOCKLIKE._serialized_start=2276
-  _BLOCKLIKE._serialized_end=2430
-  _LINK._serialized_start=2433
-  _LINK._serialized_end=2801
-  _LINKARRAY._serialized_start=2804
-  _LINKARRAY._serialized_end=3030
-  _LINKLIKE._serialized_start=3033
-  _LINKLIKE._serialized_end=3211
+  _NAMEDBLOCKLIKE._serialized_end=377
+  _NAMEDLINKLIKE._serialized_start=379
+  _NAMEDLINKLIKE._serialized_end=445
+  _PORT._serialized_start=448
+  _PORT._serialized_end=673
+  _BUNDLE._serialized_start=676
+  _BUNDLE._serialized_end=945
+  _PORTARRAY._serialized_start=948
+  _PORTARRAY._serialized_end=1150
+  _PORTARRAY_PORTS._serialized_start=1089
+  _PORTARRAY_PORTS._serialized_end=1138
+  _PORTLIKE._serialized_start=1153
+  _PORTLIKE._serialized_end=1367
+  _PARAMETER._serialized_start=1369
+  _PARAMETER._serialized_end=1430
+  _STRINGDESCRIPTIONELEMENT._serialized_start=1432
+  _STRINGDESCRIPTIONELEMENT._serialized_end=1529
+  _HIERARCHYBLOCK._serialized_start=1532
+  _HIERARCHYBLOCK._serialized_end=2214
+  _HIERARCHYBLOCK_PARAMDEFAULTSENTRY._serialized_start=2139
+  _HIERARCHYBLOCK_PARAMDEFAULTSENTRY._serialized_end=2214
+  _GENERATOR._serialized_start=2216
+  _GENERATOR._serialized_end=2274
+  _BLOCKLIKE._serialized_start=2277
+  _BLOCKLIKE._serialized_end=2431
+  _LINK._serialized_start=2434
+  _LINK._serialized_end=2802
+  _LINKARRAY._serialized_start=2805
+  _LINKARRAY._serialized_end=3031
+  _LINKLIKE._serialized_start=3034
+  _LINKLIKE._serialized_end=3212
 # @@protoc_insertion_point(module_scope)

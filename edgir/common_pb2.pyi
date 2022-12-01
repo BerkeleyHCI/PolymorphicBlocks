@@ -23,14 +23,17 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class Metadata(google.protobuf.message.Message):
     """* Arbitrary metadata stored in tree form."""
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Members(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class NodeEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -107,6 +110,7 @@ class Metadata(google.protobuf.message.Message):
 
 global___Metadata = Metadata
 
+@typing_extensions.final
 class SourceLocator(google.protobuf.message.Message):
     """* Definitions for structured metadata formats
 
@@ -157,6 +161,7 @@ class SourceLocator(google.protobuf.message.Message):
 
 global___SourceLocator = SourceLocator
 
+@typing_extensions.final
 class Error(google.protobuf.message.Message):
     """* Used to communicate results of analysis / checking passes.
     Limited to Block and Link objects.
@@ -185,6 +190,7 @@ class Error(google.protobuf.message.Message):
 
 global___Error = Error
 
+@typing_extensions.final
 class Empty(google.protobuf.message.Message):
     """* Placeholder until I figure out how to import properly"""
 

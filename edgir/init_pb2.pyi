@@ -24,6 +24,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class ValInit(google.protobuf.message.Message):
     """* This is the general way we initialize values in the local context.
 
