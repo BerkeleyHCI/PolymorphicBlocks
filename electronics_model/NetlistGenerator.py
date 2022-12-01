@@ -40,7 +40,7 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
-  def __init__(self, design: CompiledDesign, value_mode: str = "refdes"):
+  def __init__(self, design: CompiledDesign, refdes_mode: str = "refdes"):
     self.blocks: Blocks = {}
     self.edges: Edges = {}
     self.assert_connected: AssertConnected = []
@@ -52,7 +52,7 @@ class NetlistTransform(TransformUtil.Transform):
     self.refdes_last: Dict[str, int] = {}
 
     self.design = design
-    self.value_mode = value_mode
+    self.refdes_mode = refdes_mode
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
@@ -169,12 +169,12 @@ class NetlistTransform(TransformUtil.Transform):
         self.class_paths[path],
       )
 
-      if self.value_mode == "pathName":
+      if self.refdes_mode == "pathName":
         self.names[path] = self.short_paths[path]
-      elif self.value_mode == "refdes":
+      elif self.refdes_mode == "refdes":
         self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
       else:
-        raise ValueError(f"Invalid valueMode value {self.value_mode}")
+        raise ValueError(f"Invalid valueMode value {self.refdes_mode}")
 
       for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
         pin_path = path.append_port(pin_name)

@@ -7,10 +7,10 @@ from .NetlistGenerator import NetlistTransform
 
 class NetlistBackend(BaseBackend):
   def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
-    if set(args.keys()) != {'valueMode'}:
-      raise ValueError("Invalid values found in args.")
+    if set(args.keys()) != {'RefdesMode'}:
+      raise ValueError("Invalid argument found in args")
 
-    netlist = NetlistTransform(design, value_mode=args["valueMode"]).run()
+    netlist = NetlistTransform(design, refdes_mode=args["RefdesMode"]).run()
     netlist_string = kicad.generate_netlist(netlist.blocks, netlist.nets)
 
     return [
