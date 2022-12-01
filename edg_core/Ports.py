@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
-from itertools import chain
 from typing import *
 
 import edgir
@@ -12,7 +11,6 @@ from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .Exceptions import *
 from .IdentityDict import IdentityDict
-from .StructuredMetadata import MetaNamespaceOrder
 
 if TYPE_CHECKING:
   from .Blocks import BaseBlock
@@ -134,8 +132,6 @@ class Port(BasePort, Generic[PortLinkType]):
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
 
-    self._namespace_order = self.Metadata(MetaNamespaceOrder())
-
     self.manager_ignored.update(['_is_connected', '_name'])
     self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
     self._name = StringExpr()._bind(NameBinding(self))
@@ -207,10 +203,7 @@ class Port(BasePort, Generic[PortLinkType]):
       super_pb.target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
-      pb.params[name].CopyFrom(param._decl_to_proto())
-
-    for name in self._parameters.keys_ordered():
-      self._namespace_order.append(name)
+      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
 
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 
@@ -308,12 +301,9 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       super_pb.target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
-      pb.params[name].CopyFrom(param._decl_to_proto())
+      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
     for (name, port) in self._ports.items():
-      pb.ports[name].CopyFrom(port._instance_to_proto())
-
-    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered()):
-      self._namespace_order.append(name)
+      edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
 
     pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], IdentityDict()))  # TODO use ref map
 
