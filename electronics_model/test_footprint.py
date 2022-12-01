@@ -1,7 +1,6 @@
 import unittest
 
 import edgir
-from edg_core import *
 from . import *
 
 
@@ -29,12 +28,11 @@ class FootprintTestCase(unittest.TestCase):
     self.pb = TestBlock()._elaborated_def_to_proto()
 
   def test_footprint(self):
-    self.assertIn(edgir.AssignLit(['fp_footprint'], 'Resistor_SMD:R_0603_1608Metric'),
-                  self.pb.constraints.values())
-    self.assertIn(edgir.AssignLit(['fp_value'], '1k'),
-                  self.pb.constraints.values())
-    self.assertIn(edgir.AssignLit(['fp_refdes_prefix'], 'R'),
-                  self.pb.constraints.values())
+    constraints = list(map(lambda pair: pair.value, self.pb.constraints))
+
+    self.assertIn(edgir.AssignLit(['fp_footprint'], 'Resistor_SMD:R_0603_1608Metric'), constraints)
+    self.assertIn(edgir.AssignLit(['fp_value'], '1k'), constraints)
+    self.assertIn(edgir.AssignLit(['fp_refdes_prefix'], 'R'), constraints)
 
     expected_pinning = edgir.Metadata()
     path = edgir.ValueExpr()
