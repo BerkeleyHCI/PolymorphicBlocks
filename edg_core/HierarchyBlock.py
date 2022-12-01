@@ -319,17 +319,21 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
+    # TODO IMMEDIATE WHY generate connect stmts first?
     pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
-    pb = self._populate_def_proto_block_contents(pb)
+
     for (name, (param, param_value)) in self._init_params_value.items():
       assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
+
     for (port) in self._connected_ports():
       if port._block_parent() is self:
         initializers = port._get_initializers([])
         assert not initializers, f"connected boundary port {port._name_from(self)} has unexpected initializers {initializers}"
     pb = self._populate_def_proto_port_init(pb)
+
+    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_description(pb)
 
     return pb

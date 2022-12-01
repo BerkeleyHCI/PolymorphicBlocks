@@ -27,6 +27,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     pb = ImplicitConnectBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 2)
+    constraints = list(map(lambda pair: pair.value, pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'implicit_net'
@@ -34,14 +35,14 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'imp_block_sink'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'implicit_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
     expected_conn.connected.block_port.ref.steps.add().name = 'block_source'
     expected_conn.connected.block_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
 
 class ExportedImplicitConnectBlock(Block):
@@ -68,6 +69,7 @@ class ExportedImplicitConnectTestCase(unittest.TestCase):
     pb = ExportedImplicitConnectBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 5)  # including source export, connect, port required
+    constraints = list(map(lambda pair: pair.value, pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'implicit_net'
@@ -75,7 +77,7 @@ class ExportedImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'block_sink_0'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'implicit_net'
@@ -83,7 +85,7 @@ class ExportedImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'block_sink_1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
 
 class ImplicitConnectOutsideScopeErrorBlock(Block):

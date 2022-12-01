@@ -47,65 +47,51 @@ class InitializerTestCase(unittest.TestCase):
   def test_initializer(self):
     pb = TestSingleInitializerBlock()._elaborated_def_to_proto()
 
-    self.assertEqual(len(pb.constraints.items()), 3)
-    self.assertEqual(
-      edgir.AssignLit(['bundle_port', 'float_param'], 42.0),
-      pb.constraints["(init)bundle_port.float_param"])
-    self.assertEqual(
-      edgir.AssignLit(['bundle_port', 'a', 'float_param'], 1.0),
-      pb.constraints["(init)bundle_port.a.float_param"])
-    self.assertEqual(
-      edgir.AssignLit(['bundle_port', 'b', 'float_param'], -1.0),
-      pb.constraints["(init)bundle_port.b.float_param"])
+    self.assertEqual(len(pb.constraints), 3)
+    self.assertEqual(pb.constraints[0].name, "(init)bundle_port.float_param")
+    self.assertEqual(pb.constraints[0].value, edgir.AssignLit(['bundle_port', 'float_param'], 42.0))
+    self.assertEqual(pb.constraints[1].name, "(init)bundle_port.a.float_param")
+    self.assertEqual(pb.constraints[1].value, edgir.AssignLit(['bundle_port', 'a', 'float_param'], 1.0))
+    self.assertEqual(pb.constraints[2].name, "(init)bundle_port.b.float_param")
+    self.assertEqual(pb.constraints[2].value, edgir.AssignLit(['bundle_port', 'b', 'float_param'], -1.0))
 
   def test_nested_initializer(self):
     pb = TestNestedBlock()._elaborated_def_to_proto()
 
-    self.assertEqual(len(pb.constraints.items()), 5)
-
-    self.assertEqual(
-      edgir.AssignLit(['outer_bundle', 'float_param'], 21.0),
-      pb.constraints["(init)outer_bundle.float_param"])
-    self.assertEqual(
-      edgir.AssignLit(['outer_bundle', 'a', 'float_param'], 1.0),
-      pb.constraints["(init)outer_bundle.a.float_param"])
-    self.assertEqual(
-      edgir.AssignLit(['outer_bundle', 'b', 'float_param'], -1.0),
-      pb.constraints["(init)outer_bundle.b.float_param"])
-
-    self.assertEqual(
-      edgir.AssignLit(['inner', 'inner_param'], 62.0),
-      pb.constraints["(init)inner.inner_param"])
-    self.assertEqual(
-      edgir.AssignLit(['inner', 'bundle_param'], 31.0),
-      pb.constraints["(init)inner.bundle_param"])
+    self.assertEqual(len(pb.constraints), 5)
+    self.assertEqual(pb.constraints[0].name, "(init)outer_bundle.float_param")
+    self.assertEqual(pb.constraints[0].value, edgir.AssignLit(['outer_bundle', 'float_param'], 21.0))
+    self.assertEqual(pb.constraints[1].name, "(init)outer_bundle.a.float_param")
+    self.assertEqual(pb.constraints[1].value, edgir.AssignLit(['outer_bundle', 'a', 'float_param'], 1.0))
+    self.assertEqual(pb.constraints[2].name, "(init)outer_bundle.b.float_param")
+    self.assertEqual(pb.constraints[2].value, edgir.AssignLit(['outer_bundle', 'b', 'float_param'], -1.0))
+    self.assertEqual(pb.constraints[3].name, "(init)inner.inner_param")
+    self.assertEqual(pb.constraints[3].value, edgir.AssignLit(['inner', 'inner_param'], 62.0))
+    self.assertEqual(pb.constraints[4].name, "(init)inner.bundle_param")
+    self.assertEqual(pb.constraints[4].value, edgir.AssignLit(['inner', 'bundle_param'], 31.0))
 
   def test_nested_inner(self):
     pb = InternalBlock()._elaborated_def_to_proto()
 
-    self.assertEqual(len(pb.constraints.items()), 3)  # should not generate initializers for constructors
-
-    self.assertEqual(
-      edgir.AssignRef(['inner_bundle', 'float_param'], ['bundle_param']),  # even if it's a default
-      pb.constraints["(init)inner_bundle.float_param"])
-    self.assertIn("(init)inner_bundle.a.float_param", pb.constraints)  # don't care about literal initializers
-    self.assertIn("(init)inner_bundle.b.float_param", pb.constraints)  # don't care about literal initializers
+    self.assertEqual(len(pb.constraints), 3)  # should not generate initializers for constructors
+    self.assertEqual(pb.constraints[0].name, "(init)inner_bundle.float_param")
+    self.assertEqual(pb.constraints[0].value, edgir.AssignRef(['inner_bundle', 'float_param'], ['bundle_param']))
+    # don't care about value of literal initializers
+    self.assertEqual(pb.constraints[1].name, "(init)inner_bundle.a.float_param")
+    self.assertEqual(pb.constraints[2].name, "(init)inner_bundle.b.float_param")
 
   def test_default_initializer(self):
     pb = TestDefaultBlock()._elaborated_def_to_proto()
 
-    self.assertEqual(len(pb.constraints.items()), 1)
-    self.assertEqual(
-      edgir.AssignLit(['inner', 'inner_param'], 3.0),
-      pb.constraints["(init)inner.inner_param"])
+    self.assertEqual(len(pb.constraints), 1)
+    self.assertEqual(pb.constraints[0].name, "(init)inner.inner_param")
+    self.assertEqual(pb.constraints[0].value, edgir.AssignLit(['inner', 'inner_param'], 3.0))
 
   def test_multiple_initializer(self):
     pb = TestMultipleInstantiationBlock()._elaborated_def_to_proto()
 
-    self.assertEqual(
-      edgir.AssignLit(['inner1', 'inner_param'], 3.0),
-      pb.constraints["(init)inner1.inner_param"])
-
-    self.assertEqual(
-      edgir.AssignLit(['inner2', 'inner_param'], 3.0),
-      pb.constraints["(init)inner2.inner_param"])
+    self.assertEqual(len(pb.constraints), 2)
+    self.assertEqual(pb.constraints[0].name, "(init)inner1.inner_param")
+    self.assertEqual(pb.constraints[0].value, edgir.AssignLit(['inner1', 'inner_param'], 3.0))
+    self.assertEqual(pb.constraints[1].name, "(init)inner2.inner_param")
+    self.assertEqual(pb.constraints[1].value, edgir.AssignLit(['inner2', 'inner_param'], 3.0))
