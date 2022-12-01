@@ -44,10 +44,7 @@ class Link(BaseBlock[edgir.Link]):
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())
     self._connects.finalize()
-    self._links_order: Dict[str, str] = self.Metadata({})
     for name, connect in self._connects.items_ordered():
-      self._links_order[str(len(self._links_order))] = f"{name}"
-
       connect_elts = connect.make_connection(self)
       assert isinstance(connect_elts, Connection.ConnectedLink)
 
