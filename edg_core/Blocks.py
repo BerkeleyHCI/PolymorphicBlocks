@@ -258,6 +258,20 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     for (name, port) in self._ports.items():
       edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
 
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+    for (name, port) in self._ports.items():
+      if port in self._required_ports:
+        if isinstance(port, Port):
+          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
+            port.is_connected()._expr_to_proto(ref_map)
+          )
+        elif isinstance(port, Vector):
+          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
+            (port.length() > 0)._expr_to_proto(ref_map)
+          )
+        else:
+          raise ValueError(f"unknown non-optional port type {port}")
+
     self._constraints.finalize()  # needed for source locator generation
 
     ref_map = self._get_ref_map(edgir.LocalPath())
@@ -267,6 +281,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+
     for (name, port) in self._ports.items():
       for (param, path, initializer) in port._get_initializers([name]):
         edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}").CopyFrom(
@@ -294,19 +309,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     for (name, constraint) in self._constraints.items():
       edgir.add_pair(pb.constraints, name).CopyFrom(constraint._expr_to_proto(ref_map))
-
-    for (name, port) in self._ports.items():
-      if port in self._required_ports:
-        if isinstance(port, Port):
-          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
-            port.is_connected()._expr_to_proto(ref_map)
-          )
-        elif isinstance(port, Vector):
-          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
-            (port.length() > 0)._expr_to_proto(ref_map)
-          )
-        else:
-          raise ValueError(f"unknown non-optional port type {port}")
 
     return pb
 

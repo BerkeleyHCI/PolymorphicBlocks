@@ -89,9 +89,16 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.params[3].name, "array_empty")
     self.assertTrue(self.pb.params[3].value.HasField('array'))
 
+  def test_superclass_init(self) -> None:
+    self.assertEqual(self.pb.constraints[1].name, "(init)base_port_constr.float_param")
+    self.assertEqual(self.pb.constraints[1].value, edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']))
+
+  def test_port_init(self) -> None:
+    self.assertEqual(self.pb.constraints[2].name, "(init)port_lit.float_param")
+
   def test_param_init(self) -> None:
-    self.assertEqual(self.pb.constraints[1].name, "(init)range_init")
-    self.assertEqual(self.pb.constraints[1].value, edgir.AssignLit(['range_init'], Range(-4.2, -1.3)))
+    self.assertEqual(self.pb.constraints[3].name, "(init)range_init")
+    self.assertEqual(self.pb.constraints[3].value, edgir.AssignLit(['range_init'], Range(-4.2, -1.3)))
 
     expected_assign = edgir.ValueExpr()
     expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_init']))
@@ -99,18 +106,12 @@ class BlockProtoTestCase(unittest.TestCase):
     expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
     expected_array.vals.add().CopyFrom(edgir.lit_to_expr(True))
     expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
-    self.assertEqual(self.pb.constraints[2].name, "(init)array_init")
-    self.assertEqual(self.pb.constraints[2].value, expected_assign)
+    self.assertEqual(self.pb.constraints[4].name, "(init)array_init")
+    self.assertEqual(self.pb.constraints[4].value, expected_assign)
 
     expected_assign = edgir.ValueExpr()
     expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_empty']))
     expected_assign.assign.src.array.SetInParent()
-    self.assertEqual(self.pb.constraints[3].name, "(init)array_empty")
-    self.assertEqual(self.pb.constraints[3].value, expected_assign)
+    self.assertEqual(self.pb.constraints[5].name, "(init)array_empty")
+    self.assertEqual(self.pb.constraints[5].value, expected_assign)
 
-  def test_superclass_init(self) -> None:
-    self.assertEqual(self.pb.constraints[4].name, "(init)base_port_constr.float_param")
-    self.assertEqual(self.pb.constraints[4].value, edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']))
-
-  def test_port_init(self) -> None:
-    self.assertEqual(self.pb.constraints[5].name, "(init)port_lit.float_param")

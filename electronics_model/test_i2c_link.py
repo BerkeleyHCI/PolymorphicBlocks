@@ -31,8 +31,7 @@ class I2cTest(DesignTop):
     self.device2 = self.Block(I2cDeviceBlock(2))
     self.link = self.connect(self.master.port, self.pull.port, self.device1.port, self.device2.port)
 
-    # TODO this is probably reversed because of dict (non)ordering
-    self.require(self.master.port.link().addresses == [2, 1], unchecked=True)
+    self.require(self.master.port.link().addresses == [1, 2], unchecked=True)
 
 
 class I2cNoPullTest(DesignTop):
