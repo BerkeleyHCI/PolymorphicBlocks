@@ -90,6 +90,13 @@ object ProtoUtil {
       }
     }
 
+    // This matches the signature of SeqMap.foreach, which has a U type parameter
+    def pairsForEach[TargetType](fn: (String, ValueType) => TargetType): Unit = {
+      items.foreach { item =>
+        fn(nameExtractor(item), valueExtractor(item).get)
+      }
+    }
+
     def pairsFlatMap[TargetType](fn: (String, ValueType) => IterableOnce[TargetType]): Iterable[TargetType] = {
       items.flatMap { item =>
         fn(nameExtractor(item), valueExtractor(item).get)

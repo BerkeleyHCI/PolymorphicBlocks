@@ -109,7 +109,7 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   }
 
   override def mapPort(path: DesignPath, port: elem.Port): Unit = {
-    port.params.toSeqMap.foreach { case (name, _) => paramDefs.add(path + name) }
+    port.params.pairsForEach { case (name, _) => paramDefs.add(path + name) }
     portDefs.add(path)
   }
   override def mapPortArray(path: DesignPath, port: elem.PortArray,
@@ -118,7 +118,7 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   }
   override def mapBundle(path: DesignPath, port: elem.Bundle,
                 ports: SeqMap[String, Unit]): Unit = {
-    port.params.toSeqMap.foreach { case (name, _) => paramDefs.add(path + name) }
+    port.params.pairsForEach { case (name, _) => paramDefs.add(path + name) }
     portDefs.add(path)
   }
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {
@@ -128,8 +128,8 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
   override def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
                ports: SeqMap[String, Unit], blocks: SeqMap[String, Unit],
                links: SeqMap[String, Unit]): Unit = {
-    block.params.toSeqMap.foreach { case (name, _) => paramDefs.add(path + name) }
-    block.constraints.toSeqMap.foreach { case (name, constr) => mapConstraint(path, name, constr) }
+    block.params.pairsForEach { case (name, _) => paramDefs.add(path + name) }
+    block.constraints.pairsForEach { case (name, constr) => mapConstraint(path, name, constr) }
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): Unit = {
     // do nothing
@@ -137,12 +137,12 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
 
   override def mapLink(path: DesignPath, link: elem.Link,
                        ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
-    link.params.toSeqMap.foreach { case (name, _) => paramDefs.add(path + name) }
-    link.constraints.toSeqMap.foreach { case (name, constr) => mapConstraint(path, name, constr) }
+    link.params.pairsForEach { case (name, _) => paramDefs.add(path + name) }
+    link.constraints.pairsForEach { case (name, constr) => mapConstraint(path, name, constr) }
   }
   override def mapLinkArray(path: DesignPath, link: elem.LinkArray,
                             ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
-    link.constraints.toSeqMap.foreach { case (name, constr) => mapConstraint(path, name, constr) }
+    link.constraints.pairsForEach { case (name, constr) => mapConstraint(path, name, constr) }
   }
   override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {
     // do nothing
