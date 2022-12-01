@@ -35,9 +35,7 @@ class LibraryConnectivityAnalysis(library: Library) {
   lazy private val portToLinkMap: Map[ref.LibraryPath, ref.LibraryPath] = allLinks.toSeq
       .flatMap { case (linkPath, link) =>  // expand to all combinations (port path, link path) pairs
         link.ports.toSeqMap.values.map { port =>
-          LibraryConnectivityAnalysis.getLibPortType(port)
-        }.map {
-          (_, linkPath)
+          (LibraryConnectivityAnalysis.getLibPortType(port), linkPath)
         }
       } .groupBy(_._1)  // port path -> seq[(port path, link path) pairs]
       .view.mapValues(_.map(_._2).distinct)  // flatten into: port path -> seq[link path]
@@ -55,8 +53,8 @@ class LibraryConnectivityAnalysis(library: Library) {
       .collect { case (blockType, block)   // filter by PortBridge class
         if block.superclasses.toSet.intersect(LibraryConnectivityAnalysis.portBridges).nonEmpty =>
         (blockType,
-            block.ports.toSeqMap.get(LibraryConnectivityAnalysis.portBridgeOuterPort),
-            block.ports.toSeqMap.get(LibraryConnectivityAnalysis.portBridgeLinkPort))
+            block.ports.get(LibraryConnectivityAnalysis.portBridgeOuterPort),
+            block.ports.get(LibraryConnectivityAnalysis.portBridgeLinkPort))
       }.collect { // to (exterior port type, (link port type, port bridge type)) pairs
         case (blockType, Some(outerPort), Some(linkPort)) =>
           (LibraryConnectivityAnalysis.getLibPortType(outerPort),

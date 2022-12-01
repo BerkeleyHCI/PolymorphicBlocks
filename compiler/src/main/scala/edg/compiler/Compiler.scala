@@ -600,7 +600,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
       val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
 
-        innerBlockTemplate.ports.pairsForEach { case (portName, port) =>
+        innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
         import edgir.elem.elem
         val portPostfix = Seq(innerBlockName, portName)
         port.is match {

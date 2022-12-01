@@ -61,46 +61,16 @@ object ProtoUtil {
                                                 nameExtractor: ProtoType => String,
                                                 valueExtractor: ProtoType => Option[ValueType],
                                                 ctor: (String, Option[ValueType]) => ProtoType) {
+    def asPairs: Iterable[(String, ValueType)] = {
+      items.map { item =>
+        nameExtractor(item) -> valueExtractor(item).get
+      }
+    }
+
     def toSeqMap: SeqMap[String, ValueType] = {
       items.map { item =>
         nameExtractor(item) -> valueExtractor(item).get
       }.to(SeqMap)
-    }
-
-    def toMutableSeqMap: mutable.SeqMap[String, ValueType] = {
-      items.map { item =>
-        nameExtractor(item) -> valueExtractor(item).get
-      }.to(mutable.SeqMap)
-    }
-
-    // This is named differently from filter because otherwise Seq.filter seems to be preferred
-    def pairsFilter(fn: (String, ValueType) => Boolean): Seq[ProtoType] = {
-      items.filter { item => fn(nameExtractor(item), valueExtractor(item).get) }
-    }
-
-    def pairsMap[KeyType, TargetType](fn: (String, ValueType) => (KeyType, TargetType)): SeqMap[KeyType, TargetType] = {
-      items.map { item =>
-        fn(nameExtractor(item), valueExtractor(item).get)
-      }.to(SeqMap)
-    }
-
-    def pairsMap[TargetType](fn: (String, ValueType) => TargetType): Seq[TargetType] = {
-      items.map { item =>
-        fn(nameExtractor(item), valueExtractor(item).get)
-      }
-    }
-
-    // This matches the signature of SeqMap.foreach, which has a U type parameter
-    def pairsForEach[TargetType](fn: (String, ValueType) => TargetType): Unit = {
-      items.foreach { item =>
-        fn(nameExtractor(item), valueExtractor(item).get)
-      }
-    }
-
-    def pairsFlatMap[TargetType](fn: (String, ValueType) => IterableOnce[TargetType]): Iterable[TargetType] = {
-      items.flatMap { item =>
-        fn(nameExtractor(item), valueExtractor(item).get)
-      }
     }
 
     def mapValues(fn: ValueType => ValueType): Seq[ProtoType] = {
@@ -110,6 +80,10 @@ object ProtoUtil {
     // Gets the value by key
     def apply(key: String): ValueType = {
       valueExtractor(items.find(nameExtractor(_) == key).get).get
+    }
+
+    def get(key: String): Option[ValueType] = {
+      items.find(nameExtractor(_) == key).map(valueExtractor(_).get)
     }
 
     def indexOfKey(key: String): Int = {
