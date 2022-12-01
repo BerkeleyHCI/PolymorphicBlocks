@@ -41,7 +41,7 @@ class DesignAssertionCheck(compiler: Compiler) extends
   override def mapBlock(path: DesignPath, block: elem.HierarchyBlock, ports: SeqMap[String, Unit],
                         blocks: SeqMap[String, Seq[CompilerError.AssertionError]],
                         links: SeqMap[String, Seq[CompilerError.AssertionError]]): Seq[CompilerError.AssertionError] = {
-    block.constraints.toSeqMap.flatMap {
+    block.constraints.pairsFlatMap {
       case (name, constr) => mapConstraint(path, name, constr)
     }.toSeq ++ blocks.values.flatten ++ links.values.flatten
   }
@@ -51,13 +51,13 @@ class DesignAssertionCheck(compiler: Compiler) extends
 
   override def mapLink(path: DesignPath, link: elem.Link, ports: SeqMap[String, Unit],
                        links: SeqMap[String, Seq[CompilerError.AssertionError]]): Seq[CompilerError.AssertionError] = {
-    link.constraints.toSeqMap.flatMap {
+    link.constraints.pairsFlatMap {
       case (name, constr) => mapConstraint(path, name, constr)
     }.toSeq ++ links.values.flatten
   }
   override def mapLinkArray(path: DesignPath, link: elem.LinkArray, ports: SeqMap[String, Unit],
                             links: SeqMap[String, Seq[CompilerError.AssertionError]]): Seq[CompilerError.AssertionError] = {
-    link.constraints.toSeqMap.flatMap {
+    link.constraints.pairsFlatMap {
       case (name, constr) => mapConstraint(path, name, constr)
     }.toSeq ++ links.values.flatten
   }

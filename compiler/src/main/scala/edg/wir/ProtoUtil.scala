@@ -74,8 +74,26 @@ object ProtoUtil {
     }
 
     // This is named differently from filter because otherwise Seq.filter seems to be preferred
-    def mapFilter(fn: (String, ValueType) => Boolean): Seq[ProtoType] = {
+    def pairsFilter(fn: (String, ValueType) => Boolean): Seq[ProtoType] = {
       items.filter { item => fn(nameExtractor(item), valueExtractor(item).get) }
+    }
+
+    def pairsMap[KeyType, TargetType](fn: (String, ValueType) => (KeyType, TargetType)): SeqMap[KeyType, TargetType] = {
+      items.map { item =>
+        fn(nameExtractor(item), valueExtractor(item).get)
+      }.to(SeqMap)
+    }
+
+    def pairsMap[TargetType](fn: (String, ValueType) => TargetType): Seq[TargetType] = {
+      items.map { item =>
+        fn(nameExtractor(item), valueExtractor(item).get)
+      }
+    }
+
+    def pairsFlatMap[TargetType](fn: (String, ValueType) => IterableOnce[TargetType]): Iterable[TargetType] = {
+      items.flatMap { item =>
+        fn(nameExtractor(item), valueExtractor(item).get)
+      }
     }
 
     def mapValues(fn: ValueType => ValueType): Seq[ProtoType] = {

@@ -28,10 +28,9 @@ object ElemModifier {
       case Seq() =>
         fn(curr)
       case Seq(head, tail @ _*) =>
-        val blocks = curr.blocks.toSeqMap
-        val index = blocks.keys.toIndexedSeq.indexOf(head)
+        val index = curr.blocks.indexOfKey(head)
         if (index >= 0) {
-          blocks(head).`type` match {
+          curr.blocks(index).value.get.`type` match {
             case elem.BlockLike.Type.Hierarchy(headBlock) =>
               curr.update(
                 _.blocks(index).value.hierarchy := transformBlock(prefix :+ head, tail, headBlock, fn)

@@ -1056,9 +1056,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val port = resolvePort(path).asInstanceOf[wir.PortArray]
     if (!port.portsSet) {
       val childPortNames = ArrayValue.ExtractText(constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
-      val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
+      val childPortLibraries = childPortNames.map { childPortName =>
         childPortName -> wir.PortLibrary.apply(port.getType)
-      })
+      }.to(SeqMap)
       port.setPorts(childPortLibraries)
     }
     for ((childPortName, childPort) <- port.getPorts) {

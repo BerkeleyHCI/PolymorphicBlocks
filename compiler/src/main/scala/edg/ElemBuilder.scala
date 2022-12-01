@@ -167,9 +167,9 @@ object ElemBuilder {
       elem.PortLike(`is`=elem.PortLike.Is.Array(elem.PortArray(
         selfClass=Some(LibraryPath(selfClass)),
         contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
-          SeqMap.from(elements.map { element =>
+          elements.map { element =>
             element -> port
-          }).toPb
+          }.to(SeqMap).toPb
         ))
       )))
   }
