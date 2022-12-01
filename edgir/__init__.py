@@ -207,49 +207,54 @@ def add_pair(pb: Union[
   elt.name = name
   return elt.value
 
-# def
+
+@overload
+def pair_get(pb: RepeatedCompositeFieldContainer[NamedPortLike], name: str) -> PortLike: ...
+@overload
+def pair_get(pb: RepeatedCompositeFieldContainer[NamedBlockLike], name: str) -> BlockLike: ...
+@overload
+def pair_get(pb: RepeatedCompositeFieldContainer[NamedLinkLike], name: str) -> LinkLike: ...
+@overload
+def pair_get(pb: RepeatedCompositeFieldContainer[NamedValInit], name: str) -> ValInit: ...
+@overload
+def pair_get(pb: RepeatedCompositeFieldContainer[NamedValueExpr], name: str) -> ValueExpr: ...
+
+def pair_get(pb: Union[
+  RepeatedCompositeFieldContainer[NamedPortLike],
+  RepeatedCompositeFieldContainer[NamedBlockLike],
+  RepeatedCompositeFieldContainer[NamedLinkLike],
+  RepeatedCompositeFieldContainer[NamedValInit],
+  RepeatedCompositeFieldContainer[NamedValueExpr]
+], name: str) -> Union[
+  PortLike, BlockLike, LinkLike, ValInit, ValueExpr
+]:
+  for elt in pb:
+    if elt.name == name:
+      return elt.value
+  raise KeyError(name)
 
 
-# def to_dict(elt: )
+@overload
+def pair_get_opt(pb: RepeatedCompositeFieldContainer[NamedPortLike], name: str) -> Optional[PortLike]: ...
+@overload
+def pair_get_opt(pb: RepeatedCompositeFieldContainer[NamedBlockLike], name: str) -> Optional[BlockLike]: ...
+@overload
+def pair_get_opt(pb: RepeatedCompositeFieldContainer[NamedLinkLike], name: str) -> Optional[LinkLike]: ...
+@overload
+def pair_get_opt(pb: RepeatedCompositeFieldContainer[NamedValInit], name: str) -> Optional[ValInit]: ...
+@overload
+def pair_get_opt(pb: RepeatedCompositeFieldContainer[NamedValueExpr], name: str) -> Optional[ValueExpr]: ...
 
-# def _namespace(meta: Metadata) -> Iterable[str]:
-#   namespace_elts = [v.namespace_order
-#                     for k, v in meta.members.node.items() if v.HasField('namespace_order')]
-#   if len(namespace_elts) == 1:
-#     return namespace_elts[0].names
-#   elif not namespace_elts:
-#     return []
-#   else:
-#     raise ValueError(f"multiple namespace_order entries {namespace_elts}")
-#
-#
-# def ordered_blocks(block: HierarchyBlock) -> Iterable[Tuple[str, BlockLike]]:
-#   """Returns a list of all sub-blocks (as BlockLike) in lexical order recorded by metadata.
-#   """
-#   names_sorted = _namespace(block.meta)
-#   assert set(block.blocks.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all blocks {list(block.blocks.keys())}"
-#   return [(name, block.blocks[name]) for name in names_sorted if name in block.blocks]
-#
-#
-# def ordered_links(block: Union[HierarchyBlock, Link]) -> Iterable[Tuple[str, LinkLike]]:
-#   """Returns a list of all sub-links (as LinkLike) in lexical order recorded by metadata.
-#   """
-#   names_sorted = _namespace(block.meta)
-#   assert set(block.links.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all links {list(block.links.keys())}"
-#   return [(name, block.links[name]) for name in names_sorted if name in block.links]
-#
-#
-# def ordered_params(block: Union[HierarchyBlock, Link, Port, Bundle]) -> Iterable[Tuple[str, ValInit]]:
-#   """Returns a list of all sub-params (as ValInit) in lexical order recorded by metadata.
-#   """
-#   names_sorted = _namespace(block.meta)
-#   assert set(block.params.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all params {list(block.params.keys())}"
-#   return [(name, block.params[name]) for name in names_sorted if name in block.params]
-#
-#
-# def ordered_ports(block: Union[HierarchyBlock, Link, Bundle]) -> Iterable[Tuple[str, PortLike]]:
-#   """Returns a list of all sub-ports (as PortLike) in lexical order recorded by metadata.
-#   """
-#   names_sorted = _namespace(block.meta)
-#   assert set(block.ports.keys()).issubset(names_sorted), f"sorted names {names_sorted} did not contain all ports {list(block.ports.keys())}"
-#   return [(name, block.ports[name]) for name in names_sorted if name in block.ports]
+def pair_get_opt(pb: Union[
+  RepeatedCompositeFieldContainer[NamedPortLike],
+  RepeatedCompositeFieldContainer[NamedBlockLike],
+  RepeatedCompositeFieldContainer[NamedLinkLike],
+  RepeatedCompositeFieldContainer[NamedValInit],
+  RepeatedCompositeFieldContainer[NamedValueExpr]
+], name: str) -> Union[
+  Optional[PortLike], Optional[BlockLike], Optional[LinkLike], Optional[ValInit], Optional[ValueExpr]
+]:
+  for elt in pb:
+    if elt.name == name:
+      return elt.value
+  return None
