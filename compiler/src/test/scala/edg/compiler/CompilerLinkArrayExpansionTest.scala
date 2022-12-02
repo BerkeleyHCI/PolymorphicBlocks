@@ -136,12 +136,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(IntValue(3)))
     }
 
-    val linkPb = compiled.getContents.links.toSeqMap("link").getArray
+    val linkPb = compiled.getContents.links("link").getArray
     linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
     linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
-      linkPb.links.toSeqMap(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
@@ -229,12 +229,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "sinks" + IndirectStep.Length) should
         equal(Some(IntValue(0)))
 
-    val linkPb = compiled.getContents.links.toSeqMap("link").getArray
+    val linkPb = compiled.getContents.links("link").getArray
     linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
     linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
-      linkPb.links.toSeqMap(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq())))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
@@ -306,12 +306,12 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(IntValue(3)))
 
 
-    val linkPb = compiled.getContents.links.toSeqMap("link").getArray
+    val linkPb = compiled.getContents.links("link").getArray
     linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
     linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
-      linkPb.links.toSeqMap(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
+      linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
           equal(Some(ArrayValue(Seq(TextValue("0")))))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Length) should
@@ -451,7 +451,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           TextValue("n0_a"), TextValue("n0_b"), TextValue("n0_c"),
           TextValue("n1_a"), TextValue("n1_b"), TextValue("n1_c")
         ))))
-    compiled.getContents.blocks.toSeqMap("sink").getHierarchy.ports.toSeqMap("port").getArray.getPorts.ports.toSeqMap.keySet should equal(
+    compiled.getContents.blocks("sink").getHierarchy.ports("port").getArray.getPorts.ports.toSeqMap.keySet should equal(
       Set("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c"))
 
     Seq("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c").foreach { elementIndex =>

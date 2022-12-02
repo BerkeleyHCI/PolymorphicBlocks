@@ -93,7 +93,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
-    val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks.toSeqMap("dut").getHierarchy)
+    val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks("dut").getHierarchy)
 
     analysis.getConnected(Ref("port")) should equal(
       Connection.Export("export", Ref("port"), Ref("inner", "port"))
@@ -152,7 +152,7 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
-    val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks.toSeqMap("dut").getHierarchy)
+    val analysis = new BlockConnectivityAnalysis(compiled.getContents.blocks("dut").getHierarchy)
 
     val expectedConnects = Connection.Link(
       "link",

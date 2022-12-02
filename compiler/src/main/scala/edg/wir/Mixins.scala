@@ -18,8 +18,7 @@ trait HasMutablePorts {
     require(ports(name).isElaborated)
   }
 
-  protected def parsePorts(pb: Seq[elem.NamedPortLike]):
-      mutable.SeqMap[String, PortLike] = {
+  protected def parsePorts(pb: Seq[elem.NamedPortLike]): mutable.SeqMap[String, PortLike] = {
     pb.toSeqMap.view.mapValues(PortLike.fromLibraryPb).to(mutable.SeqMap)
   }
 }
@@ -34,12 +33,12 @@ trait HasMutableBlocks {
     require(blocks(name).isElaborated)
   }
 
-  protected def parseBlocks(pb: Seq[elem.NamedBlockLike]):
-      mutable.SeqMap[String, BlockLike] =
+  protected def parseBlocks(pb: Seq[elem.NamedBlockLike]): mutable.SeqMap[String, BlockLike] = {
     pb.toSeqMap.view.mapValues { _.`type` match {
       case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
       case like => throw new NotImplementedError(s"Non-library sub-block $like")
     }}.to(mutable.SeqMap)
+  }
 }
 
 trait HasMutableLinks {
@@ -52,13 +51,13 @@ trait HasMutableLinks {
     require(links(name).isElaborated)
   }
 
-  protected def parseLinks(pb: Seq[elem.NamedLinkLike]):
-      mutable.SeqMap[String, LinkLike] =
+  protected def parseLinks(pb: Seq[elem.NamedLinkLike]): mutable.SeqMap[String, LinkLike] = {
     pb.toSeqMap.view.mapValues { _.`type` match {
       case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
       case elem.LinkLike.Type.Array(like) => new LinkArray(like)
       case like => throw new NotImplementedError(s"Non-library sub-link $like")
     }}.to(mutable.SeqMap)
+  }
 }
 
 trait HasMutableConstraints {
@@ -81,8 +80,7 @@ trait HasMutableConstraints {
     newValues.to(SeqMap)
   }
 
-  protected def parseConstraints(pb: Seq[elem.NamedValueExpr]):
-      mutable.SeqMap[String, expr.ValueExpr] = {
+  protected def parseConstraints(pb: Seq[elem.NamedValueExpr]): mutable.SeqMap[String, expr.ValueExpr] = {
     pb.toSeqMap.to(mutable.SeqMap)
   }
 

@@ -174,10 +174,10 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     // check that allocates were properly lowered
-    compiled.contents.get.constraints.toSeqMap("packed0Export") should equal(
+    compiled.contents.get.constraints("packed0Export") should equal(
       Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0"))
     )
-    compiled.contents.get.constraints.toSeqMap("packed1Export") should equal(
+    compiled.contents.get.constraints("packed1Export") should equal(
       Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1"))
     )
 

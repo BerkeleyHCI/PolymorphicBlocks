@@ -100,7 +100,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
 
   private def blockIsBridge(block: elem.HierarchyBlock): Boolean = {
     // TODO superclass check once the infrastructure is there
-    block.ports.toSeqMap.keySet == Set(
+    block.ports.asPairs.map(_._1).toSet == Set(
       LibraryConnectivityAnalysis.portBridgeOuterPort,
       LibraryConnectivityAnalysis.portBridgeLinkPort)
   }
@@ -164,7 +164,8 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
       val (linkPortRef, constrName) = connectsByBlock(portRef)
       require(linkPortRef.steps.nonEmpty)
       val linkName = linkPortRef.steps.head.getName
-      require(block.links.toSeqMap.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
+      require(block.links.asPairs.map(_._1).toSet.contains(linkName),
+        s"reference to nonexistent link $linkName connected to $portRef")
 
       getConnectedToLink(linkName)
     } else if (exportsByInner.contains(portRef)) {

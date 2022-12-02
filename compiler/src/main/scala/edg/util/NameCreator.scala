@@ -8,8 +8,8 @@ import edgir.elem.elem
 
 object NameCreator {
   def fromBlock(block: elem.HierarchyBlock): NameCreator = {
-    new NameCreator((block.blocks.toSeqMap.keySet ++ block.ports.toSeqMap.keySet ++ block.links.toSeqMap.keySet ++
-        block.params.toSeqMap.keySet ++ block.constraints.toSeqMap.keySet).toSet)
+    new NameCreator((block.blocks.asPairs.map(_._1) ++ block.ports.asPairs.map(_._1) ++
+        block.links.asPairs.map(_._1) ++ block.params.asPairs.map(_._1) ++ block.constraints.asPairs.map(_._1)).toSet)
   }
 }
 

@@ -157,16 +157,16 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
     // Smaller comparisons to allow more targeted error messages
     val compiledBlock = compiled.getContents
     val referenceBlock = referenceElaborated.getContents
-    compiledBlock.blocks.toSeqMap("source") should equal(referenceBlock.blocks.toSeqMap("source"))
-    compiledBlock.blocks.toSeqMap("sink0") should equal(referenceBlock.blocks.toSeqMap("sink0"))
-    compiledBlock.blocks.toSeqMap("sink1") should equal(referenceBlock.blocks.toSeqMap("sink1"))
-    compiledBlock.blocks.toSeqMap("sink2") should equal(referenceBlock.blocks.toSeqMap("sink2"))
+    compiledBlock.blocks("source") should equal(referenceBlock.blocks("source"))
+    compiledBlock.blocks("sink0") should equal(referenceBlock.blocks("sink0"))
+    compiledBlock.blocks("sink1") should equal(referenceBlock.blocks("sink1"))
+    compiledBlock.blocks("sink2") should equal(referenceBlock.blocks("sink2"))
     compiledBlock.blocks should equal(referenceBlock.blocks)
     compiledBlock.links should equal(referenceBlock.links)
-    compiledBlock.constraints.toSeqMap("sourceConnect") should equal(referenceBlock.constraints.toSeqMap("sourceConnect"))
-    compiledBlock.constraints.toSeqMap("sink0Connect") should equal(referenceBlock.constraints.toSeqMap("sink0Connect"))
-    compiledBlock.constraints.toSeqMap("sink1Connect") should equal(referenceBlock.constraints.toSeqMap("sink1Connect"))
-    compiledBlock.constraints.toSeqMap("sink2Connect") should equal(referenceBlock.constraints.toSeqMap("sink2Connect"))
+    compiledBlock.constraints("sourceConnect") should equal(referenceBlock.constraints("sourceConnect"))
+    compiledBlock.constraints("sink0Connect") should equal(referenceBlock.constraints("sink0Connect"))
+    compiledBlock.constraints("sink1Connect") should equal(referenceBlock.constraints("sink1Connect"))
+    compiledBlock.constraints("sink2Connect") should equal(referenceBlock.constraints("sink2Connect"))
 
     compiledBlock.constraints should equal(referenceBlock.constraints)
 
@@ -242,6 +242,6 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.contents.get.links.toSeqMap("link").getLink.constraints.toSeqMap should equal(expectedLinkConstraints)
+    compiled.contents.get.links("link").getLink.constraints.toSeqMap should equal(expectedLinkConstraints)
   }
 }

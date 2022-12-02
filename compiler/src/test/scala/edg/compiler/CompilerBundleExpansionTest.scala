@@ -1,13 +1,12 @@
 package edg.compiler
 
-import org.scalatest._
-import org.scalatest.flatspec.AnyFlatSpec
-import matchers.should.Matchers._
+import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir.ProtoUtil._
-import edg.{CompilerTestUtil, wir}
 import edg.wir.{IndirectDesignPath, IndirectStep}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.SeqMap
 
@@ -178,15 +177,15 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     val compiledBlock = compiled.contents.get
     val referenceBlock = referenceElaborated.contents.get
 
-    compiledBlock.blocks.toSeqMap("source").`type`.hierarchy.get.ports.toSeqMap("port") should
-        equal(referenceBlock.blocks.toSeqMap("source").`type`.hierarchy.get.ports.toSeqMap("port"))
-    compiledBlock.blocks.toSeqMap("source") should equal(referenceBlock.blocks.toSeqMap("source"))
+    compiledBlock.blocks("source").`type`.hierarchy.get.ports("port") should
+        equal(referenceBlock.blocks("source").`type`.hierarchy.get.ports("port"))
+    compiledBlock.blocks("source") should equal(referenceBlock.blocks("source"))
 
-    compiledBlock.links.toSeqMap("link").`type`.link.get.ports.toSeqMap("outerPort") should
-        equal(referenceBlock.links.toSeqMap("link").`type`.link.get.ports.toSeqMap("outerPort"))
-    compiledBlock.links.toSeqMap("link").`type`.link.get.links.toSeqMap("inner") should
-        equal(referenceBlock.links.toSeqMap("link").`type`.link.get.links.toSeqMap("inner"))
-    compiledBlock.links.toSeqMap("link") should equal(referenceBlock.links.toSeqMap("link"))
+    compiledBlock.links("link").`type`.link.get.ports("outerPort") should
+        equal(referenceBlock.links("link").`type`.link.get.ports("outerPort"))
+    compiledBlock.links.toSeqMap("link").`type`.link.get.links("inner") should
+        equal(referenceBlock.links("link").`type`.link.get.links("inner"))
+    compiledBlock.links("link") should equal(referenceBlock.links("link"))
 
     compiledBlock.constraints should equal(referenceBlock.constraints)
 

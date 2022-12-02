@@ -34,7 +34,7 @@ class LibraryConnectivityAnalysis(library: Library) {
 
   lazy private val portToLinkMap: Map[ref.LibraryPath, ref.LibraryPath] = allLinks.toSeq
       .flatMap { case (linkPath, link) =>  // expand to all combinations (port path, link path) pairs
-        link.ports.toSeqMap.values.map { port =>
+        link.ports.asPairs.map { case (name, port) =>
           (LibraryConnectivityAnalysis.getLibPortType(port), linkPath)
         }
       } .groupBy(_._1)  // port path -> seq[(port path, link path) pairs]
@@ -76,7 +76,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     */
   def connectablePorts(linkPath: ref.LibraryPath): Map[ref.LibraryPath, Int] = {
     val link = allLinks.getOrElse(linkPath, return Map())
-    val linkPortTypes = link.ports.toSeqMap.values.map(_.is)
+    val linkPortTypes = link.ports.asPairs.map { case (name, link) => link.is }
 
     val singlePortCounts = linkPortTypes.collect {  // library, count pairs
       case elem.PortLike.Is.LibElem(value) => (value, 1)

@@ -2,10 +2,9 @@ package edg.compiler
 
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
-import edg.ExprBuilder.{Ref, ValueExpr}
-import edg.wir.ProtoUtil.ConstraintProtoToSeqMap
+import edg.ExprBuilder.Ref
+import edg.wir.ProtoUtil._
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
-import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 

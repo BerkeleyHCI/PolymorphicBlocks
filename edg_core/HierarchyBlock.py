@@ -319,7 +319,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
-    # TODO IMMEDIATE WHY generate connect stmts first?
     pb = self._populate_def_proto_block_base(pb)
 
     for (port) in self._connected_ports():
