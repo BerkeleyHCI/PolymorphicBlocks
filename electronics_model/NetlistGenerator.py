@@ -40,7 +40,7 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
-  def __init__(self, design: CompiledDesign, refdes_mode: str = "refdes"):
+  def __init__(self, design: CompiledDesign, refdes_mode: str = "pathName"):
     self.blocks: Blocks = {}
     self.edges: Edges = {}
     self.assert_connected: AssertConnected = []
