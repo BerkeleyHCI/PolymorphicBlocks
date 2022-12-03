@@ -54,18 +54,31 @@ message LibraryResponse {
 }
 
 
+message ExprValue {
+  edgir.ref.LocalPath path = 1;
+  edgir.lit.ValueLit value = 2;
+}
+
+
 message GeneratorRequest {
   edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
-
-  message Value {
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-  repeated Value values = 4;
+  repeated ExprValue values = 4;
 }
 
 message GeneratorResponse {
   edgir.elem.HierarchyBlock generated = 1;
+}
+
+
+// Runs an annotator - something that generates additional values, eg for refdes assignment
+message AnnotatorRequest {
+  edgir.ref.LibraryPath backend = 1;
+  edgir.schema.Design design = 2;
+  repeated ExprValue solvedValues = 3;
+}
+
+message AnnotatorResponse {
+  repeated ExprValue newValues = 1;
 }
 
 
@@ -74,12 +87,7 @@ message GeneratorResponse {
 message BackendRequest {
   edgir.ref.LibraryPath backend = 1;
   edgir.schema.Design design = 2;
-
-  message Value {  // TODO dedup w/ same def in compiler.CompilerResult
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-  repeated Value solvedValues = 3;
+  repeated ExprValue solvedValues = 3;
 }
 
 message BackendResponse {
