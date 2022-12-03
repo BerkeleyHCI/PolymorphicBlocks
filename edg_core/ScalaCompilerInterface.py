@@ -25,10 +25,10 @@ class CompiledDesign:
     return CompiledDesign(result.design, values)
 
   @staticmethod
-  def from_backend_request(request: edgrpc.BackendRequest) -> 'CompiledDesign':
-    values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
-              for value in request.solvedValues}
-    return CompiledDesign(request.design, values)
+  def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> 'CompiledDesign':
+    values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
+                   for value in values}
+    return CompiledDesign(design, values_dict)
 
   def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes]):
     self.design = design

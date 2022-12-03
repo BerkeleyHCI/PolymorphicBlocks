@@ -50,8 +50,6 @@ class NetlistTransform(TransformUtil.Transform):
     self.pins: Set[TransformUtil.Path] = set()
     self.names: Names = {}
 
-    self.refdes_last: Dict[str, int] = {}
-
     self.design = design
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
@@ -130,7 +128,7 @@ class NetlistTransform(TransformUtil.Transform):
       mfr = self.design.get_value(path.to_tuple() + ('fp_mfr',))
       part = self.design.get_value(path.to_tuple() + ('fp_part',))
       value = self.design.get_value(path.to_tuple() + ('fp_value',))
-      refdes_prefix = self.design.get_value(path.to_tuple() + ('fp_refdes_prefix',))
+      refdes = self.design.get_value(path.to_tuple() + ('fp_refdes',))
       lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
 
       assert isinstance(footprint_name, str)
@@ -138,7 +136,7 @@ class NetlistTransform(TransformUtil.Transform):
       assert isinstance(part, str) or part is None
       assert isinstance(value, str) or value is None
       assert isinstance(lcsc_part, str) or lcsc_part is None
-      assert isinstance(refdes_prefix, str)
+      assert isinstance(refdes, str)
 
       part_comps = [
         part,
@@ -151,12 +149,9 @@ class NetlistTransform(TransformUtil.Transform):
       ]
       value_str = " - ".join(filter(None, value_comps))
 
-      refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
-      self.refdes_last[refdes_prefix] = refdes_id
-
       self.blocks[path] = kicad.Block(
         footprint_name,
-        refdes_prefix + str(refdes_id),
+        refdes,
         part_str,
 
         # Uncomment one to set value field

@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 import edgir
 from .ScalaCompilerInterface import CompiledDesign
