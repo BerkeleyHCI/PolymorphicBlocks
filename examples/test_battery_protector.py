@@ -16,6 +16,7 @@ class BatteryProtectorCircuit(BoardTop):
     self.link_protect_neg = self.connect(self.battery_protector.gnd_out, self.led.gnd)
     self.link_protect_pos = self.connect(self.battery_protector.pwr_out, self.led.signal)
 
+
 class BatteryProtectorCircuitTestCase(unittest.TestCase):
   def test_design_battery_protector(self) -> None:
     compile_board_inplace(BatteryProtectorCircuit)
