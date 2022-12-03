@@ -11,10 +11,21 @@ import scala.collection.mutable
 class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
   private val inverseDeps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()
-
   private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()  // cache structure tracking undefined deps
-  // Key should be retained (even if value-set is empty) once addNode called
   private val ready = mutable.Set[KeyType]()
+
+  // Copies data from another dependency graph into this one, like a shallow clone
+  def initFrom(that: DependencyGraph[KeyType, ValueType]): Unit = {
+    require(values.isEmpty && inverseDeps.isEmpty && deps.isEmpty && ready.isEmpty)
+    values.addAll(that.values)
+    inverseDeps.addAll(that.inverseDeps.map { case (key, value) => // these require a deep copy
+      key -> value.clone()
+    })
+    deps.addAll(that.deps.map { case (key, value) =>
+      key -> value.clone()
+    })
+    ready.addAll(that.ready)
+  }
 
   // Adds a node in the graph. May only be called once per node.
   def addNode(node: KeyType, dependencies: Seq[KeyType], update: Boolean = false): Unit = {
@@ -77,8 +88,8 @@ class DependencyGraph[KeyType, ValueType] {
     ready.toSet
   }
 
-  // Returns all the KeyTypes that have no values. NOT a fast operation.
-  def getMissing: Set[KeyType] = {
+  // Returns all the KeyTypes that have no values. NOT a fast operation. Includes items in the ready list.
+  def getMissingValue: Set[KeyType] = {
     deps.keySet.toSet -- values.keySet
   }
 

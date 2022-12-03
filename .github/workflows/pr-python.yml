@@ -40,7 +40,8 @@ jobs:
 
     - name: install mypy
       run: |
-        pip install mypy types-protobuf types-Deprecated
+        pip install mypy mypy-protobuf types-protobuf types-Deprecated
+        mypy --version
     - name: mypy
       run: |
         mypy --install-types .

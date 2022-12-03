@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from abc import abstractmethod
 from typing import *
 from deprecated import deprecated
 
@@ -48,8 +49,9 @@ class FlattenBinding(Binding):
 
 @non_library
 class BaseVector(BaseContainerPort):
+  @abstractmethod
   def _get_elt_sample(self) -> BasePort:
-    pass
+    ...
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.

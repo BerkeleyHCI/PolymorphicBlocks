@@ -15,7 +15,7 @@ from .JlcFet import JlcFet, JlcSwitchFet
 from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
-from .Switches import SmtSwitch, SmtSwitchRa
+from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .JlcCrystal import JlcCrystal
 from .JlcSwitches import JlcSwitch
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
@@ -39,6 +39,7 @@ from .BuckConverter_Ap3418 import Ap3418
 from .BoostConverters_AnalogDevices import Ltc3429
 from .BoostConverters_DiodesInc import Ap3012
 from .BoostConverters_Torex import Xc9142
+from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
@@ -64,7 +65,7 @@ from .DacSpi_Mcp4901 import Mcp4921
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Ws2812b import Ws2812b, Ws2812bArray
+from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
@@ -87,5 +88,6 @@ from .Mechanicals import JlcToolingHole
 
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
+from .Bldc_Drv8313 import Drv8313
 
 from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc_Device, Imu_Lsm6ds3trc

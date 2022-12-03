@@ -15,7 +15,7 @@ class GroundWrapper:  # a wrapper around VoltageSink to have it behave as Ground
 
 class GroundSourceWrapper:
   def __call__(self) -> VoltageSource:
-    return VoltageSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ZERO * Amp)
+    return VoltageSource(voltage_out=RangeExpr.ZERO * Volt, current_limits=RangeExpr.ALL * Amp)
 
   def empty(self) -> VoltageSource:
     return VoltageSource.empty()

@@ -68,13 +68,17 @@ object ElaborateRecord {
 }
 
 
-/** Configuration for partial compilation, where the compiler intentionally leaves some design subtre
+/** Configuration for partial compilation, where the compiler intentionally leaves some design subtree
   * unelaboated, eg as a template for design space exploration.
   */
 case class PartialCompile(
   blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
   params: Seq[DesignPath] = Seq()  // do not propagate values into these params (assignments are discarded)
-)
+) {
+  def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
+    PartialCompile(blocks ++ that.blocks, params ++ that.params)
+  }
+}
 
 
 // Utility class that provides a namespace for suggestedName, including a shared default naming pool for where
@@ -98,10 +102,19 @@ class AssignNamer() {
   * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
-class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
-               refinements: Refinements=Refinements(), partial: PartialCompile=PartialCompile()) {
+class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
+               refinements: Refinements, partial: PartialCompile,
+               init: Boolean) {
+  // public constructor that does not expose init, which is internal only
+  def this(inputDesignPb: schema.Design, library: edg.wir.Library,
+           refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
+    this(inputDesignPb, library, refinements, partial, true)
+  }
+
   // Working design tree data structure
-  private val root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
+  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
+  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
+
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
   def resolveLink(path: DesignPath): wir.LinkLike = root.resolve(path.steps).asInstanceOf[wir.LinkLike]
@@ -109,18 +122,21 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Main data structure that tracks the next unit to elaborate
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
-  // Tracks ElaborateRecord that are ready, but held by partial compilation
-  private val heldElaboratePending = mutable.ListBuffer[ElaborateRecord]()
 
   // Design parameters solving (constraint evaluation) and assertions
-  private val constProp = new ConstProp() {
+  private val constProp = new ConstProp(partial.params.map(_.asIndirect).toSet) {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
-  for ((path, value) <- refinements.instanceValues) {  // seed const prop with path assertions
-    constProp.setForcedValue(path, value, "path refinement")
+
+  if (init) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+    elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
+    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
+      constProp.setForcedValue(path, value, "path refinement")
+    }
   }
+
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
 
   // Supplemental elaboration data structures
@@ -129,22 +145,33 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
+  // Creates a new copy of this compiler including all the work done already.
+  // Useful for design space exploration, where the non-search portions of the design have been compiled.
+  // heldElaboratePending is cleared
+  def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
+    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
+    cloned.root = root.cloned
+    cloned.elaboratePending.initFrom(elaboratePending)
+    val additionalForcedValues = additionalRefinements.instanceValues.map { case (path, value) =>
+      path -> (value, "path refinement")  // forced values must be set before any prior processed constraints
+    }
+    cloned.constProp.initFrom(constProp, additionalForcedValues)
+    require(cloned.expandedArrayConnectConstraints.isEmpty)
+    cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
+    require(cloned.errors.isEmpty)
+    cloned.errors.addAll(errors)
+    cloned
+  }
+
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val pendingErrors = elaboratePending.getMissing.map { missingNode =>
+    val pendingErrors = elaboratePending.getMissingValue.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
-    }.toSeq ++ heldElaboratePending.map { missingNode =>
-      CompilerError.Unelaborated(missingNode, Set())
-    }
+    }.toSeq
 
     errors.toSeq ++ constProp.getErrors ++ pendingErrors
   }
-
-  // Seed the elaboration record with the root design
-  //
-  elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq())
-  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
 
   // Hook method to be overridden, eg for status
   //
@@ -1049,8 +1076,12 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
       constProp.addAssignEqual(record.target, record.source,
         record.containerPath, "array connect link ELEMENTS from block-side ELEMENTS")
     }
-    if (constProp.getValue(record.target).get != constProp.getValue(record.source).get) {
-      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath, record.target, record.source))
+    val linkElements = constProp.getValue(record.target).get.asInstanceOf[ArrayValue[TextValue]]
+    val blockPortElements = constProp.getValue(record.source).get.asInstanceOf[ArrayValue[TextValue]]
+    if (linkElements.values.toSet != blockPortElements.values.toSet) {
+      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath,
+        record.target, linkElements,
+        record.source, blockPortElements))
     }
   }
 
@@ -1194,17 +1225,18 @@ class Compiler(inputDesignPb: schema.Design, library: edg.wir.Library,
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    while (elaboratePending.getReady.nonEmpty) {
-      elaboratePending.getReady.foreach { elaborateRecord =>
+    val partialElaborate = partial.blocks.map { blockPath =>
+      ElaborateRecord.ExpandBlock(blockPath)
+    }
+
+    // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
+    while ((elaboratePending.getReady -- partialElaborate).nonEmpty) {
+      (elaboratePending.getReady -- partialElaborate).foreach { elaborateRecord =>
         onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              if (partial.blocks.contains(blockPath)) {  // in the partial case, just move it into the held pending
-                heldElaboratePending.append(elaborateRecord)
-              } else {
-                expandBlock(blockPath)
-              }
+              expandBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)

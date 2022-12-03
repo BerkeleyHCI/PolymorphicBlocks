@@ -144,7 +144,7 @@ class RobotDriver(JlcBoardTop):
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
-      self.ws2812bArray = imp.Block(Ws2812bArray(5))
+      self.ws2812bArray = imp.Block(NeopixelArray(5))
       self.connect(self.mcu.gpio.request('ledArray'), self.ws2812bArray.din)
 
       self.led_pixel = imp.Block(LedConnector())
@@ -260,6 +260,7 @@ class RobotDriver(JlcBoardTop):
         (Vl53l0x, Vl53l0xConnector),
         (TestPoint, TeRc),
         (Speaker, ConnectorSpeaker),
+        (Neopixel, Ws2812b),
       ],
     )
 
