@@ -1,14 +1,13 @@
 import unittest
 
-from typing import Type
 from edg_core import *
-from .CircuitBlock import FootprintBlock
 from .CanPort import CanDiffPort
-from .UartPort import UartPort
-from .SpiPort import SpiMaster, SpiSlave
+from .CircuitBlock import FootprintBlock
 from .DigitalPorts import DigitalSource, DigitalSink
+from .SpiPort import SpiMaster, SpiSlave
+from .UartPort import UartPort
 from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-from .NetlistGenerator import NetlistTransform, Netlist
+from .test_netlist import NetlistTestCase
 
 
 class TestFakeSpiMaster(FootprintBlock):
@@ -126,13 +125,8 @@ class TestCanCircuit(Block):
 
 
 class BundleNetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Type[Block]) -> Netlist:
-    # TODO dedup w/ test_netlist
-    compiled = ScalaCompiler.compile(design)
-    return NetlistTransform(compiled).run()
-
   def test_spi_netlist(self) -> None:
-    net = self.generate_net(TestSpiCircuit)
+    net = NetlistTestCase.generate_net(TestSpiCircuit)
 
     self.assertEqual(net.nets['cs1_link'], {
       Pin('master', '0'),
@@ -169,7 +163,7 @@ class BundleNetlistTestCase(unittest.TestCase):
                                                   ['electronics_model.test_bundle_netlist.TestFakeSpiSlave']))
 
   def test_uart_netlist(self) -> None:
-    net = self.generate_net(TestUartCircuit)
+    net = NetlistTestCase.generate_net(TestUartCircuit)
 
     self.assertEqual(net.nets['link.a_tx'], {
       Pin('a', '1'),
@@ -187,7 +181,7 @@ class BundleNetlistTestCase(unittest.TestCase):
                                              ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
 
   def test_can_netlist(self) -> None:
-    net = self.generate_net(TestCanCircuit)
+    net = NetlistTestCase.generate_net(TestCanCircuit)
 
     self.assertEqual(net.nets['link.canh'], {
       Pin('node1', '1'),
