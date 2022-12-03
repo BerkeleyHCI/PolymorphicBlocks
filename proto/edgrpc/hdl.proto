@@ -70,14 +70,15 @@ message GeneratorResponse {
 }
 
 
-// Runs an annotator - something that generates additional values, eg for refdes assignment
-message AnnotatorRequest {
+// Runs a refinement pass - something that takes a full design and solved values and
+// generates additional values, eg for refdes assignment
+message RefinementRequest {
   edgir.ref.LibraryPath backend = 1;
   edgir.schema.Design design = 2;
   repeated ExprValue solvedValues = 3;
 }
 
-message AnnotatorResponse {
+message RefinementResponse {
   repeated ExprValue newValues = 1;
 }
 
