@@ -7,7 +7,6 @@ from .NetlistGenerator import NetlistTransform
 
 class NetlistBackend(BaseBackend):
   def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
-
     if ("RefdesMode" in args):
       netlist = NetlistTransform(design, refdes_mode=args["RefdesMode"]).run()
     else:
