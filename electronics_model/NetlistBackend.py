@@ -7,10 +7,7 @@ from .NetlistGenerator import NetlistTransform
 
 class NetlistBackend(BaseBackend):
   def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
-    if ("RefdesMode" in args):
-      netlist = NetlistTransform(design, refdes_mode=args["RefdesMode"]).run()
-    else:
-      netlist = NetlistTransform(design).run()
+    netlist = NetlistTransform(design, refdes_mode=args.get("RefdesMode", "pathName")).run()
     netlist_string = kicad.generate_netlist(netlist.blocks, netlist.nets)
 
     return [
