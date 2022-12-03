@@ -183,7 +183,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     compiledBlock.links("link").`type`.link.get.ports("outerPort") should
         equal(referenceBlock.links("link").`type`.link.get.ports("outerPort"))
-    compiledBlock.links.toSeqMap("link").`type`.link.get.links("inner") should
+    compiledBlock.links("link").`type`.link.get.links("inner") should
         equal(referenceBlock.links("link").`type`.link.get.links("inner"))
     compiledBlock.links("link") should equal(referenceBlock.links("link"))
 
