@@ -5,6 +5,7 @@ from typing import Type
 
 from edg_core import Block, ScalaCompiler, CompiledDesign
 from electronics_model import NetlistBackend
+from electronics_model.RefdesRefinementPass import RefdesRefinementPass
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str) -> CompiledDesign:
@@ -21,6 +22,7 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
     os.remove(netlist_filename)
 
   compiled = ScalaCompiler.compile(design)
+  compiled.append_values(RefdesRefinementPass().run(compiled))
   netlist_all = NetlistBackend().run(compiled)
   assert len(netlist_all) == 1
 

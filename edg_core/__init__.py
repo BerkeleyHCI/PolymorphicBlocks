@@ -26,6 +26,7 @@ from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_
 from .Blocks import BasePort, BaseBlock
 from .Builder import builder
 from . import TransformUtil
+from .BaseRefinementPass import BaseRefinementPass
 from .BaseBackend import BaseBackend
 
 from .BufferSerializer import BufferDeserializer, BufferSerializer
