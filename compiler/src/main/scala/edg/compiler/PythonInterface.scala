@@ -210,10 +210,44 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
   }
 
 
+  def onRunRefinementPass(refinementPass: ref.LibraryPath): Unit = {}
+
   def onRunBackend(backend: ref.LibraryPath): Unit = {}
+
+  def onRunRefinementPassComplete(refinementPass: ref.LibraryPath,
+                                  result: Errorable[Map[DesignPath, ExprValue]]): Unit = {}
 
   def onRunBackendComplete(backend: ref.LibraryPath,
                            result: Errorable[Map[DesignPath, String]]): Unit = {}
+
+  def runRefinementPass(refinementPass: ref.LibraryPath, design: schema.Design,
+                        solvedValues: Map[IndirectDesignPath, ExprValue]): Errorable[Map[DesignPath, ExprValue]] = {
+    onRunRefinementPass(refinementPass)
+
+    val request = edgrpc.RefinementRequest(
+      refinementPass = Some(refinementPass), design = Some(design),
+      solvedValues = solvedValues.map { case (path, value) =>
+        edgrpc.ExprValue(path = Some(path.toLocalPath), value = Some(value.toLit))
+      }.toSeq
+    )
+    val (reply, reqTime) = timeExec {
+      process.write(edgrpc.HdlRequest(
+        request = edgrpc.HdlRequest.Request.RunRefinement(value = request)))
+      process.read()
+    }
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.RunRefinement(result) =>
+        Errorable.Success(result.newValues.map { result =>
+          DesignPath() ++ result.getPath -> ExprValue.fromValueLit(result.getValue)
+        }.toMap)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while running backend $refinementPass: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while running backend $refinementPass: invalid response")
+    }
+    onRunRefinementPassComplete(refinementPass, result)
+    result
+  }
 
   def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
       Errorable[Map[DesignPath, String]] = {

@@ -1,4 +1,4 @@
-from typing import Optional, Any, Type, Iterable, Union, Dict
+from typing import Optional, Any, Type, Iterable, Union, Dict, List, Tuple
 
 import os
 import subprocess
@@ -40,6 +40,13 @@ class CompiledDesign:
   def get_value(self, path: Iterable[Union[str, 'edgir.Reserved.V']]) -> Optional[edgir.LitTypes]:
     path_key = edgir.LocalPathList(path).SerializeToString()
     return self._values.get(path_key, None)
+
+  def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]):
+    """Append solved values to this design, such as from a refinement pass"""
+    for (value_path, value_value) in values:
+      value_path_str = value_path.SerializeToString()
+      assert value_path_str not in self._values
+      self._values[value_path_str] = edgir.valuelit_to_lit(value_value)
 
 
 class ScalaCompilerInstance:

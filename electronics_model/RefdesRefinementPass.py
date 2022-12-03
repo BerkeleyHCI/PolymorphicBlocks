@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, Dict, Set
+from typing import List, Tuple, Dict, Set
 
 import edgir
 from edg_core import CompiledDesign, TransformUtil
@@ -20,15 +20,15 @@ class RefdesTransform(TransformUtil.Transform):
     self.seen_blocks: Set[TransformUtil.Path] = set()
     self.refdes_last: Dict[str, int] = {}
 
-  def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
+  def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     if 'pinning' in block.meta.members.node:
-      refdes_prefix = self.design.get_value(path.to_tuple() + ('fp_refdes_prefix',))
+      refdes_prefix = self.design.get_value(context.path.to_tuple() + ('fp_refdes_prefix',))
       assert isinstance(refdes_prefix, str)
 
       refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
       self.refdes_last[refdes_prefix] = refdes_id
-      assert path not in self.seen_blocks
-      self.block_refdes_list.append((path, refdes_prefix + str(refdes_id)))
+      assert context.path not in self.seen_blocks
+      self.block_refdes_list.append((context.path, refdes_prefix + str(refdes_id)))
 
   def run(self) -> List[Tuple[TransformUtil.Path, str]]:
     self.transform_design(self.design.design)

@@ -13,6 +13,23 @@ sealed trait ExprValue {
   def toStringValue: String
 }
 
+object ExprValue {
+  def fromValueLit(literal: lit.ValueLit): ExprValue = literal.`type` match {
+    case lit.ValueLit.Type.Floating(literal) => FloatValue(literal.`val`.toFloat)
+    case lit.ValueLit.Type.Integer(literal) => IntValue(literal.`val`)
+    case lit.ValueLit.Type.Boolean(literal) => BooleanValue(literal.`val`)
+    case lit.ValueLit.Type.Text(literal) => TextValue(literal.`val`)
+    case lit.ValueLit.Type.Range(literal) => (literal.getMinimum.`type`, literal.getMaximum.`type`) match {
+      case (lit.ValueLit.Type.Floating(literalMin), lit.ValueLit.Type.Floating(literalMax)) =>
+        RangeValue(literalMin.`val`.toFloat, literalMax.`val`.toFloat)
+      case _ => throw new IllegalArgumentException(s"Malformed range literal $literal")
+    }
+    case lit.ValueLit.Type.Array(arrayLiteral) =>
+      ArrayValue(arrayLiteral.elts.map { lit => fromValueLit(lit) })
+    case _ => throw new IllegalArgumentException(s"Unknown literal $literal")
+  }
+}
+
 // These should be consistent with what is in init.proto
 object FloatPromotable {
   def unapply(floatPromotable: FloatPromotable): Option[Float] = {
