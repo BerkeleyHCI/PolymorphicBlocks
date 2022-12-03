@@ -186,7 +186,7 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
     val request = edgrpc.GeneratorRequest(
       element=Some(element),
       values=values.map { case (valuePath, valueValue) =>
-        edgrpc.GeneratorRequest.Value(
+        edgrpc.ExprValue(
           path=Some(valuePath),
           value=Some(valueValue.toLit)
         )
@@ -222,7 +222,7 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
     val request = edgrpc.BackendRequest(
       backend=Some(backend), design=Some(design),
       solvedValues=solvedValues.map { case (path, value) =>
-        edgrpc.BackendRequest.Value(path=Some(path.toLocalPath), value=Some(value.toLit))
+        edgrpc.ExprValue(path=Some(path.toLocalPath), value=Some(value.toLit))
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
