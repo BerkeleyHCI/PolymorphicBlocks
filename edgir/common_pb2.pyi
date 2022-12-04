@@ -10,24 +10,24 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class Metadata(google.protobuf.message.Message):
     """* Arbitrary metadata stored in tree form."""
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class Members(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         class NodeEntry(google.protobuf.message.Message):
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
-            key: typing.Text
+            key: typing.Text = ...
             @property
             def value(self) -> global___Metadata: ...
             def __init__(self,
                 *,
-                key: typing.Text = ...,
-                value: typing.Optional[global___Metadata] = ...,
+                key : typing.Text = ...,
+                value : typing.Optional[global___Metadata] = ...,
                 ) -> None: ...
             def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
             def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -37,7 +37,7 @@ class Metadata(google.protobuf.message.Message):
         def node(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Metadata]: ...
         def __init__(self,
             *,
-            node: typing.Optional[typing.Mapping[typing.Text, global___Metadata]] = ...,
+            node : typing.Optional[typing.Mapping[typing.Text, global___Metadata]] = ...,
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["node",b"node"]) -> None: ...
 
@@ -53,11 +53,11 @@ class Metadata(google.protobuf.message.Message):
     FOOTPRINT_FIELD_NUMBER: builtins.int
     @property
     def unknown(self) -> global___Empty: ...
-    known: typing.Text
+    known: typing.Text = ...
     @property
     def members(self) -> global___Metadata.Members: ...
-    text_leaf: typing.Text
-    bin_leaf: builtins.bytes
+    text_leaf: typing.Text = ...
+    bin_leaf: builtins.bytes = ...
     """* I wanted to split binary and text data, since we might
     just want to dump a raw file/image/datasheet in here
     for safekeeping.
@@ -85,16 +85,16 @@ class Metadata(google.protobuf.message.Message):
     def footprint(self) -> global___Footprint: ...
     def __init__(self,
         *,
-        unknown: typing.Optional[global___Empty] = ...,
-        known: typing.Text = ...,
-        members: typing.Optional[global___Metadata.Members] = ...,
-        text_leaf: typing.Text = ...,
-        bin_leaf: builtins.bytes = ...,
-        source_locator: typing.Optional[global___SourceLocator] = ...,
-        namespace_order: typing.Optional[global___NamespaceOrder] = ...,
-        error: typing.Optional[global___Error] = ...,
-        copper_net: typing.Optional[global___CopperNet] = ...,
-        footprint: typing.Optional[global___Footprint] = ...,
+        unknown : typing.Optional[global___Empty] = ...,
+        known : typing.Text = ...,
+        members : typing.Optional[global___Metadata.Members] = ...,
+        text_leaf : typing.Text = ...,
+        bin_leaf : builtins.bytes = ...,
+        source_locator : typing.Optional[global___SourceLocator] = ...,
+        namespace_order : typing.Optional[global___NamespaceOrder] = ...,
+        error : typing.Optional[global___Error] = ...,
+        copper_net : typing.Optional[global___CopperNet] = ...,
+        footprint : typing.Optional[global___Footprint] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["bin_leaf",b"bin_leaf","copper_net",b"copper_net","error",b"error","footprint",b"footprint","known",b"known","members",b"members","meta",b"meta","namespace_order",b"namespace_order","source_locator",b"source_locator","text_leaf",b"text_leaf","type",b"type","unknown",b"unknown"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["bin_leaf",b"bin_leaf","copper_net",b"copper_net","error",b"error","footprint",b"footprint","known",b"known","members",b"members","meta",b"meta","namespace_order",b"namespace_order","source_locator",b"source_locator","text_leaf",b"text_leaf","type",b"type","unknown",b"unknown"]) -> None: ...
@@ -109,27 +109,26 @@ class SourceLocator(google.protobuf.message.Message):
 
     * For locating source data
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    class _SourceType:
-        ValueType = typing.NewType('ValueType', builtins.int)
-        V: typing_extensions.TypeAlias = ValueType
-    class _SourceTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[SourceLocator._SourceType.ValueType], builtins.type):
-        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNKNOWN: SourceLocator._SourceType.ValueType  # 0
-        DEFINITION: SourceLocator._SourceType.ValueType  # 1
-        """source defining this class, would be present in library"""
-
-        INSTANTIATION: SourceLocator._SourceType.ValueType  # 2
-        """source of instantiation, would be present in design"""
-
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper):
         pass
+    class _SourceType:
+        V = typing.NewType('V', builtins.int)
+    class _SourceTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_SourceType.V], builtins.type):
+        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+        UNKNOWN = SourceLocator.SourceType.V(0)
+        DEFINITION = SourceLocator.SourceType.V(1)
+        """source defining this class, would be present in library"""
 
-    UNKNOWN: SourceLocator.SourceType.ValueType  # 0
-    DEFINITION: SourceLocator.SourceType.ValueType  # 1
+        INSTANTIATION = SourceLocator.SourceType.V(2)
+        """source of instantiation, would be present in design"""
+
+
+    UNKNOWN = SourceLocator.SourceType.V(0)
+    DEFINITION = SourceLocator.SourceType.V(1)
     """source defining this class, would be present in library"""
 
-    INSTANTIATION: SourceLocator.SourceType.ValueType  # 2
+    INSTANTIATION = SourceLocator.SourceType.V(2)
     """source of instantiation, would be present in design"""
 
 
@@ -137,22 +136,22 @@ class SourceLocator(google.protobuf.message.Message):
     LINE_OFFSET_FIELD_NUMBER: builtins.int
     COL_OFFSET_FIELD_NUMBER: builtins.int
     SOURCE_TYPE_FIELD_NUMBER: builtins.int
-    file_package: typing.Text
+    file_package: typing.Text = ...
     """package name (portable, not tied to an absolute path) that locates the file"""
 
-    line_offset: builtins.int
+    line_offset: builtins.int = ...
     """line number"""
 
-    col_offset: builtins.int
+    col_offset: builtins.int = ...
     """character offset within the line"""
 
-    source_type: global___SourceLocator.SourceType.ValueType
+    source_type: global___SourceLocator.SourceType.V = ...
     def __init__(self,
         *,
-        file_package: typing.Text = ...,
-        line_offset: builtins.int = ...,
-        col_offset: builtins.int = ...,
-        source_type: global___SourceLocator.SourceType.ValueType = ...,
+        file_package : typing.Text = ...,
+        line_offset : builtins.int = ...,
+        col_offset : builtins.int = ...,
+        source_type : global___SourceLocator.SourceType.V = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["col_offset",b"col_offset","file_package",b"file_package","line_offset",b"line_offset","source_type",b"source_type"]) -> None: ...
 global___SourceLocator = SourceLocator
@@ -161,7 +160,7 @@ class NamespaceOrder(google.protobuf.message.Message):
     """* Supplemental data structure for anything containing a namespace (eg, Block, Link) that
     defines the original lexical ordering (since proto maps are not order-preserving)
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     NAMES_FIELD_NUMBER: builtins.int
     @property
     def names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]:
@@ -169,7 +168,7 @@ class NamespaceOrder(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        names: typing.Optional[typing.Iterable[typing.Text]] = ...,
+        names : typing.Optional[typing.Iterable[typing.Text]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["names",b"names"]) -> None: ...
 global___NamespaceOrder = NamespaceOrder
@@ -178,14 +177,14 @@ class Error(google.protobuf.message.Message):
     """* Used to communicate results of analysis / checking passes.
     Limited to Block and Link objects.
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     MESSAGE_FIELD_NUMBER: builtins.int
     TRACEBACK_FIELD_NUMBER: builtins.int
     SOURCE_FIELD_NUMBER: builtins.int
-    message: typing.Text
+    message: typing.Text = ...
     """free-form error message"""
 
-    traceback: typing.Text
+    traceback: typing.Text = ...
     """full traceback  TODO: should there be a structured stack trace?"""
 
     @property
@@ -194,9 +193,9 @@ class Error(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        message: typing.Text = ...,
-        traceback: typing.Text = ...,
-        source: typing.Optional[typing.Iterable[global___SourceLocator]] = ...,
+        message : typing.Text = ...,
+        traceback : typing.Text = ...,
+        source : typing.Optional[typing.Iterable[global___SourceLocator]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["message",b"message","source",b"source","traceback",b"traceback"]) -> None: ...
 global___Error = Error
@@ -206,24 +205,24 @@ class CopperNet(google.protobuf.message.Message):
     Currently empty (all-to-all copper connection implied)
     TODO: future feature: define specific ports connected?
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     def __init__(self,
         ) -> None: ...
 global___CopperNet = CopperNet
 
 class Footprint(google.protobuf.message.Message):
     """* Defines a footprint with copper mapping between pins and own ports"""
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class PinningEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text
-        value: typing.Text
+        key: typing.Text = ...
+        value: typing.Text = ...
         def __init__(self,
             *,
-            key: typing.Text = ...,
-            value: typing.Text = ...,
+            key : typing.Text = ...,
+            value : typing.Text = ...,
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
@@ -233,41 +232,41 @@ class Footprint(google.protobuf.message.Message):
     PART_FIELD_NUMBER: builtins.int
     MANUFACTURER_FIELD_NUMBER: builtins.int
     VALUE_FIELD_NUMBER: builtins.int
-    refdes_prefix: typing.Text
+    refdes_prefix: typing.Text = ...
     """eg, 'U' for chips, 'R' for resistors"""
 
-    footprint_name: typing.Text
+    footprint_name: typing.Text = ...
     """footprint name in KiCad format, including library"""
 
     @property
     def pinning(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]:
         """footprint pin -> port name (which can use dots to indicate path sub-components)"""
         pass
-    part: typing.Text
+    part: typing.Text = ...
     """TODO: use Ref.LocalPath? but importing ref creates a circular import dependency
 
     part number
     """
 
-    manufacturer: typing.Text
-    value: typing.Text
+    manufacturer: typing.Text = ...
+    value: typing.Text = ...
     """only for informational purposes when inspecting components in layout"""
 
     def __init__(self,
         *,
-        refdes_prefix: typing.Text = ...,
-        footprint_name: typing.Text = ...,
-        pinning: typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
-        part: typing.Text = ...,
-        manufacturer: typing.Text = ...,
-        value: typing.Text = ...,
+        refdes_prefix : typing.Text = ...,
+        footprint_name : typing.Text = ...,
+        pinning : typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
+        part : typing.Text = ...,
+        manufacturer : typing.Text = ...,
+        value : typing.Text = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["footprint_name",b"footprint_name","manufacturer",b"manufacturer","part",b"part","pinning",b"pinning","refdes_prefix",b"refdes_prefix","value",b"value"]) -> None: ...
 global___Footprint = Footprint
 
 class Empty(google.protobuf.message.Message):
     """* Placeholder until I figure out how to import properly"""
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     def __init__(self,
         ) -> None: ...
 global___Empty = Empty

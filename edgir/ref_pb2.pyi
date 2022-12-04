@@ -12,35 +12,7 @@ import google.protobuf.message
 import typing
 import typing_extensions
 
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
-
-class _Reserved:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Reserved.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-    UNDEFINED: _Reserved.ValueType  # 0
-    CONNECTED_LINK: _Reserved.ValueType  # 1
-    """* Directions we could move"""
-
-    IS_CONNECTED: _Reserved.ValueType  # 40
-    """* reserved parameters
-    true implies CONNECTED_LINK resolves; not available on PortArray
-    """
-
-    LENGTH: _Reserved.ValueType  # 42
-    """ EXISTS = 41;
-    available on PortArray and LinkArray
-    """
-
-    NAME: _Reserved.ValueType  # 44
-    ELEMENTS: _Reserved.ValueType  # 45
-    """available on PortArray and LinkArray, returns a list of string of element names"""
-
-    ALLOCATED: _Reserved.ValueType  # 46
-    """cannot be used as a generator dependency
-    available on PortArray, returns a list of string of incoming connection names,
-    """
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
 class Reserved(_Reserved, metaclass=_ReservedEnumTypeWrapper):
     """* These are reserved terms that we'll end up using in various places.
@@ -48,26 +20,53 @@ class Reserved(_Reserved, metaclass=_ReservedEnumTypeWrapper):
     to exist, but that's not possible without polymorphism protibuf doesn't have
     """
     pass
+class _Reserved:
+    V = typing.NewType('V', builtins.int)
+class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Reserved.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    UNDEFINED = Reserved.V(0)
+    CONNECTED_LINK = Reserved.V(1)
+    """* Directions we could move"""
 
-UNDEFINED: Reserved.ValueType  # 0
-CONNECTED_LINK: Reserved.ValueType  # 1
+    IS_CONNECTED = Reserved.V(40)
+    """* reserved parameters
+    true implies CONNECTED_LINK resolves; not available on PortArray
+    """
+
+    LENGTH = Reserved.V(42)
+    """ EXISTS = 41;
+    available on PortArray and LinkArray
+    """
+
+    NAME = Reserved.V(44)
+    ELEMENTS = Reserved.V(45)
+    """available on PortArray and LinkArray, returns a list of string of element names"""
+
+    ALLOCATED = Reserved.V(46)
+    """cannot be used as a generator dependency
+    available on PortArray, returns a list of string of incoming connection names,
+    """
+
+
+UNDEFINED = Reserved.V(0)
+CONNECTED_LINK = Reserved.V(1)
 """* Directions we could move"""
 
-IS_CONNECTED: Reserved.ValueType  # 40
+IS_CONNECTED = Reserved.V(40)
 """* reserved parameters
 true implies CONNECTED_LINK resolves; not available on PortArray
 """
 
-LENGTH: Reserved.ValueType  # 42
+LENGTH = Reserved.V(42)
 """ EXISTS = 41;
 available on PortArray and LinkArray
 """
 
-NAME: Reserved.ValueType  # 44
-ELEMENTS: Reserved.ValueType  # 45
+NAME = Reserved.V(44)
+ELEMENTS = Reserved.V(45)
 """available on PortArray and LinkArray, returns a list of string of element names"""
 
-ALLOCATED: Reserved.ValueType  # 46
+ALLOCATED = Reserved.V(46)
 """cannot be used as a generator dependency
 available on PortArray, returns a list of string of incoming connection names,
 """
@@ -82,17 +81,17 @@ class LocalStep(google.protobuf.message.Message):
     The directions encode the type of thing we are referencing,
     but to the user all of these look just like local variables
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     RESERVED_PARAM_FIELD_NUMBER: builtins.int
     ALLOCATE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
-    reserved_param: global___Reserved.ValueType
-    allocate: typing.Text
+    reserved_param: global___Reserved.V = ...
+    allocate: typing.Text = ...
     """Allocates a new element in an array, valid for arrays only.
     Empty string means automatically allocated, while a non-empty string is a suggested name.
     """
 
-    name: typing.Text
+    name: typing.Text = ...
     """*
     A local name is what something is called in the context of its parent,
     whether that parent is a namespace (as in the library) or some other
@@ -110,9 +109,9 @@ class LocalStep(google.protobuf.message.Message):
 
     def __init__(self,
         *,
-        reserved_param: global___Reserved.ValueType = ...,
-        allocate: typing.Text = ...,
-        name: typing.Text = ...,
+        reserved_param : global___Reserved.V = ...,
+        allocate : typing.Text = ...,
+        name : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["allocate",b"allocate","name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["allocate",b"allocate","name",b"name","reserved_param",b"reserved_param","step",b"step"]) -> None: ...
@@ -123,7 +122,7 @@ class LocalPath(google.protobuf.message.Message):
     """* This is a path from a local context to some other local context.
     To be used as a reference.
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     STEPS_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
@@ -132,8 +131,8 @@ class LocalPath(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        steps: typing.Optional[typing.Iterable[global___LocalStep]] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        steps : typing.Optional[typing.Iterable[global___LocalStep]] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["meta",b"meta","steps",b"steps"]) -> None: ...
@@ -143,7 +142,7 @@ class LibraryPath(google.protobuf.message.Message):
     """* This is a path to an element within a library from the root of
     a library. To be used as a way to reference such elements.
     """
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     START_FIELD_NUMBER: builtins.int
     STEPS_FIELD_NUMBER: builtins.int
     TARGET_FIELD_NUMBER: builtins.int
@@ -158,10 +157,10 @@ class LibraryPath(google.protobuf.message.Message):
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(self,
         *,
-        start: typing.Optional[edgir.name_pb2.LibraryName] = ...,
-        steps: typing.Optional[typing.Iterable[edgir.name_pb2.Namespace]] = ...,
-        target: typing.Optional[global___LocalStep] = ...,
-        meta: typing.Optional[edgir.common_pb2.Metadata] = ...,
+        start : typing.Optional[edgir.name_pb2.LibraryName] = ...,
+        steps : typing.Optional[typing.Iterable[edgir.name_pb2.Namespace]] = ...,
+        target : typing.Optional[global___LocalStep] = ...,
+        meta : typing.Optional[edgir.common_pb2.Metadata] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta",b"meta","start",b"start","target",b"target"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["meta",b"meta","start",b"start","steps",b"steps","target",b"target"]) -> None: ...
