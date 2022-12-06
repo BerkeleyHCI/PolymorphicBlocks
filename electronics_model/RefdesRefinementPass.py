@@ -21,7 +21,7 @@ class RefdesTransform(TransformUtil.Transform):
     self.refdes_last: Dict[str, int] = {}
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-    if 'pinning' in block.meta.members.node:
+    if 'fp_is_footprint' in block.meta.members.node:
       refdes_prefix = self.design.get_value(context.path.to_tuple() + ('fp_refdes_prefix',))
       assert isinstance(refdes_prefix, str)
 

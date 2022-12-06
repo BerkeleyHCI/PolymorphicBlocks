@@ -10,11 +10,14 @@ class PortBridgeProtoTestCase(unittest.TestCase):
     self.pb = TestPortBridge()._elaborated_def_to_proto()
 
   def test_contains_param(self):
-    self.assertEqual(self.pb.ports['inner_link'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
-    self.assertEqual(self.pb.ports['outer_port'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].name, 'outer_port')
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[1].name, 'inner_link')
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
 
   def test_constraints(self):
     self.assertEqual(len(self.pb.constraints), 2)
+    constraints = list(map(lambda pair: pair.value, self.pb.constraints))
 
     expected_constr = edgir.ValueExpr()
     expected_constr.assign.dst.steps.add().name = 'outer_port'
@@ -22,7 +25,7 @@ class PortBridgeProtoTestCase(unittest.TestCase):
     expected_constr.assign.src.ref.steps.add().name = 'inner_link'
     expected_constr.assign.src.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
     expected_constr.assign.src.ref.steps.add().name = 'float_param_sink_sum'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.binary.op = edgir.BinaryExpr.EQ
@@ -31,7 +34,7 @@ class PortBridgeProtoTestCase(unittest.TestCase):
     expected_constr.assign.src.ref.steps.add().name = 'inner_link'
     expected_constr.assign.src.ref.steps.add().reserved_param = edgir.CONNECTED_LINK
     expected_constr.assign.src.ref.steps.add().name = 'range_param_sink_common'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, constraints)
 
 
 class BadPortBridge(PortBridge):

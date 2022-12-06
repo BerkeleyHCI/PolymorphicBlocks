@@ -22,9 +22,12 @@ class BundleProtoTestCase(unittest.TestCase):
 
   def test_contains_param(self) -> None:
     self.assertEqual(len(self.pb.params), 1)
-    self.assertTrue(self.pb.params['float_param'].HasField('floating'))
+    self.assertEqual(self.pb.params[0].name, 'float_param')
+    self.assertTrue(self.pb.params[0].value.HasField('floating'))
 
   def test_contains_field(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
-    self.assertEqual(self.pb.ports['a'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
-    self.assertEqual(self.pb.ports['b'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].name, 'a')
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[1].name, 'b')
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")

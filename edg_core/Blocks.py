@@ -14,7 +14,6 @@ from .Exceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .Ports import BasePort, Port
-from .StructuredMetadata import MetaNamespaceOrder
 
 if TYPE_CHECKING:
   from .Link import Link
@@ -212,8 +211,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     self._name = StringExpr()._bind(NameBinding(self))
 
-    self._namespace_order = self.Metadata(MetaNamespaceOrder())
-
   def _post_init(self):
     assert self._elaboration_state == BlockElaborationState.init
     self._elaboration_state = BlockElaborationState.post_init
@@ -256,22 +253,29 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     for (name, param) in self._parameters.items():
       assert isinstance(param.binding, ParamBinding)
-      pb.params[name].CopyFrom(param._decl_to_proto())
+      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
 
     for (name, port) in self._ports.items():
-      pb.ports[name].CopyFrom(port._instance_to_proto())
+      edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
+
+    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+    for (name, port) in self._ports.items():
+      if port in self._required_ports:
+        if isinstance(port, Port):
+          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
+            port.is_connected()._expr_to_proto(ref_map)
+          )
+        elif isinstance(port, Vector):
+          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
+            (port.length() > 0)._expr_to_proto(ref_map)
+          )
+        else:
+          raise ValueError(f"unknown non-optional port type {port}")
 
     self._constraints.finalize()  # needed for source locator generation
 
-    # generate base-block order
-    # TODO unified namespace order
-    # TODO this also appends to end, which may not be desirable
-    for name in chain(self._parameters.keys_ordered(), self._ports.keys_ordered(),
-                      self._constraints.keys_ordered()):
-      self._namespace_order.append(name)
-
     ref_map = self._get_ref_map(edgir.LocalPath())
-    pb.meta.CopyFrom(self._metadata_to_proto(self._metadata, [], ref_map))
+    self._populate_metadata(pb.meta, self._metadata, ref_map)
 
     return pb
 
@@ -280,21 +284,18 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     for (name, port) in self._ports.items():
       for (param, path, initializer) in port._get_initializers([name]):
-        pb.constraints[f"(init){'.'.join(path)}"].CopyFrom(
+        edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}").CopyFrom(
           AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
         )
-        self._namespace_order.append(f"(init){'.'.join(path)}")
-
     return pb
 
   def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
     ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
     for (name, param) in self._parameters.items():
       if param.initializer is not None:
-        pb.constraints[f'(init){name}'].CopyFrom(
+        edgir.add_pair(pb.constraints, f'(init){name}').CopyFrom(
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
-        self._namespace_order.append(f'(init){name}')
     return pb
 
   def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
@@ -307,21 +308,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for (name, constraint) in self._constraints.items():
-      pb.constraints[name].CopyFrom(constraint._expr_to_proto(ref_map))
-
-    for (name, port) in self._ports.items():
-      if port in self._required_ports:
-        if isinstance(port, Port):
-          pb.constraints[f'(reqd){name}'].CopyFrom(
-            port.is_connected()._expr_to_proto(ref_map)
-          )
-        elif isinstance(port, Vector):
-          pb.constraints[f'(reqd){name}'].CopyFrom(
-            (port.length() > 0)._expr_to_proto(ref_map)
-          )
-        else:
-          raise ValueError(f"unknown non-optional port type {port}")
-        self._namespace_order.append(f'(reqd){name}')
+      edgir.add_pair(pb.constraints, name).CopyFrom(constraint._expr_to_proto(ref_map))
 
     return pb
 

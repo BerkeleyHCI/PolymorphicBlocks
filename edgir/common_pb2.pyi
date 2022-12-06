@@ -67,10 +67,7 @@ class Metadata(google.protobuf.message.Message):
     TEXT_LEAF_FIELD_NUMBER: builtins.int
     BIN_LEAF_FIELD_NUMBER: builtins.int
     SOURCE_LOCATOR_FIELD_NUMBER: builtins.int
-    NAMESPACE_ORDER_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
-    COPPER_NET_FIELD_NUMBER: builtins.int
-    FOOTPRINT_FIELD_NUMBER: builtins.int
     @property
     def unknown(self) -> global___Empty: ...
     known: builtins.str
@@ -92,14 +89,7 @@ class Metadata(google.protobuf.message.Message):
         TODO: how to handle multiple metadata of a given type?
         """
     @property
-    def namespace_order(self) -> global___NamespaceOrder: ...
-    @property
     def error(self) -> global___Error: ...
-    @property
-    def copper_net(self) -> global___CopperNet:
-        """Electronics-specific formats"""
-    @property
-    def footprint(self) -> global___Footprint: ...
     def __init__(
         self,
         *,
@@ -109,15 +99,12 @@ class Metadata(google.protobuf.message.Message):
         text_leaf: builtins.str = ...,
         bin_leaf: builtins.bytes = ...,
         source_locator: global___SourceLocator | None = ...,
-        namespace_order: global___NamespaceOrder | None = ...,
         error: global___Error | None = ...,
-        copper_net: global___CopperNet | None = ...,
-        footprint: global___Footprint | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "copper_net", b"copper_net", "error", b"error", "footprint", b"footprint", "known", b"known", "members", b"members", "meta", b"meta", "namespace_order", b"namespace_order", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "copper_net", b"copper_net", "error", b"error", "footprint", b"footprint", "known", b"known", "members", b"members", "meta", b"meta", "namespace_order", b"namespace_order", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "error", b"error", "known", b"known", "members", b"members", "meta", b"meta", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "error", b"error", "known", b"known", "members", b"members", "meta", b"meta", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["meta", b"meta"]) -> typing_extensions.Literal["members", "text_leaf", "bin_leaf", "source_locator", "namespace_order", "error", "copper_net", "footprint"] | None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["meta", b"meta"]) -> typing_extensions.Literal["members", "text_leaf", "bin_leaf", "source_locator", "error"] | None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing_extensions.Literal["type", b"type"]) -> typing_extensions.Literal["unknown", "known"] | None: ...
 
@@ -175,27 +162,6 @@ class SourceLocator(google.protobuf.message.Message):
 global___SourceLocator = SourceLocator
 
 @typing_extensions.final
-class NamespaceOrder(google.protobuf.message.Message):
-    """* Supplemental data structure for anything containing a namespace (eg, Block, Link) that
-    defines the original lexical ordering (since proto maps are not order-preserving)
-    """
-
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-    NAMES_FIELD_NUMBER: builtins.int
-    @property
-    def names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]:
-        """names in order, lowest index is first"""
-    def __init__(
-        self,
-        *,
-        names: collections.abc.Iterable[builtins.str] | None = ...,
-    ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["names", b"names"]) -> None: ...
-
-global___NamespaceOrder = NamespaceOrder
-
-@typing_extensions.final
 class Error(google.protobuf.message.Message):
     """* Used to communicate results of analysis / checking passes.
     Limited to Block and Link objects.
@@ -223,78 +189,6 @@ class Error(google.protobuf.message.Message):
     def ClearField(self, field_name: typing_extensions.Literal["message", b"message", "source", b"source", "traceback", b"traceback"]) -> None: ...
 
 global___Error = Error
-
-@typing_extensions.final
-class CopperNet(google.protobuf.message.Message):
-    """* Indicates a copper connection between ports
-    Currently empty (all-to-all copper connection implied)
-    TODO: future feature: define specific ports connected?
-    """
-
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-    def __init__(
-        self,
-    ) -> None: ...
-
-global___CopperNet = CopperNet
-
-@typing_extensions.final
-class Footprint(google.protobuf.message.Message):
-    """* Defines a footprint with copper mapping between pins and own ports"""
-
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-    @typing_extensions.final
-    class PinningEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        value: builtins.str
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: builtins.str = ...,
-        ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    REFDES_PREFIX_FIELD_NUMBER: builtins.int
-    FOOTPRINT_NAME_FIELD_NUMBER: builtins.int
-    PINNING_FIELD_NUMBER: builtins.int
-    PART_FIELD_NUMBER: builtins.int
-    MANUFACTURER_FIELD_NUMBER: builtins.int
-    VALUE_FIELD_NUMBER: builtins.int
-    refdes_prefix: builtins.str
-    """eg, 'U' for chips, 'R' for resistors"""
-    footprint_name: builtins.str
-    """footprint name in KiCad format, including library"""
-    @property
-    def pinning(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]:
-        """footprint pin -> port name (which can use dots to indicate path sub-components)"""
-    part: builtins.str
-    """TODO: use Ref.LocalPath? but importing ref creates a circular import dependency
-
-    part number
-    """
-    manufacturer: builtins.str
-    value: builtins.str
-    """only for informational purposes when inspecting components in layout"""
-    def __init__(
-        self,
-        *,
-        refdes_prefix: builtins.str = ...,
-        footprint_name: builtins.str = ...,
-        pinning: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
-        part: builtins.str = ...,
-        manufacturer: builtins.str = ...,
-        value: builtins.str = ...,
-    ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["footprint_name", b"footprint_name", "manufacturer", b"manufacturer", "part", b"part", "pinning", b"pinning", "refdes_prefix", b"refdes_prefix", "value", b"value"]) -> None: ...
-
-global___Footprint = Footprint
 
 @typing_extensions.final
 class Empty(google.protobuf.message.Message):

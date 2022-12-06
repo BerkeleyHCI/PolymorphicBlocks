@@ -89,6 +89,8 @@ message BackendRequest {
   edgir.ref.LibraryPath backend = 1;
   edgir.schema.Design design = 2;
   repeated ExprValue solvedValues = 3;
+
+  map<string, string> arguments = 4;
 }
 
 message BackendResponse {

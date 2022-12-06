@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x65\x64gir/common.proto\x12\x0c\x65\x64gir.common\"\xab\x04\n\x08Metadata\x12&\n\x07unknown\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12\x31\n\x07members\x18\x65 \x01(\x0b\x32\x1e.edgir.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x12\x35\n\x0esource_locator\x18n \x01(\x0b\x32\x1b.edgir.common.SourceLocatorH\x01\x12\x37\n\x0fnamespace_order\x18o \x01(\x0b\x32\x1c.edgir.common.NamespaceOrderH\x01\x12$\n\x05\x65rror\x18p \x01(\x0b\x32\x13.edgir.common.ErrorH\x01\x12-\n\ncopper_net\x18x \x01(\x0b\x32\x17.edgir.common.CopperNetH\x01\x12,\n\tfootprint\x18y \x01(\x0b\x32\x17.edgir.common.FootprintH\x01\x1a\x86\x01\n\x07Members\x12\x36\n\x04node\x18\n \x03(\x0b\x32(.edgir.common.Metadata.Members.NodeEntry\x1a\x43\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.edgir.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\xc9\x01\n\rSourceLocator\x12\x14\n\x0c\x66ile_package\x18\x01 \x01(\t\x12\x13\n\x0bline_offset\x18\x02 \x01(\x05\x12\x12\n\ncol_offset\x18\x03 \x01(\x05\x12;\n\x0bsource_type\x18\x04 \x01(\x0e\x32&.edgir.common.SourceLocator.SourceType\"<\n\nSourceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nDEFINITION\x10\x01\x12\x11\n\rINSTANTIATION\x10\x02\"\x1f\n\x0eNamespaceOrder\x12\r\n\x05names\x18\x01 \x03(\t\"X\n\x05\x45rror\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x11\n\ttraceback\x18\x03 \x01(\t\x12+\n\x06source\x18\x02 \x03(\x0b\x32\x1b.edgir.common.SourceLocator\"\x0b\n\tCopperNet\"\xd4\x01\n\tFootprint\x12\x15\n\rrefdes_prefix\x18\x01 \x01(\t\x12\x16\n\x0e\x66ootprint_name\x18\x15 \x01(\t\x12\x35\n\x07pinning\x18\x03 \x03(\x0b\x32$.edgir.common.Footprint.PinningEntry\x12\x0c\n\x04part\x18\n \x01(\t\x12\x14\n\x0cmanufacturer\x18\x0b \x01(\t\x12\r\n\x05value\x18\x0c \x01(\t\x1a.\n\x0cPinningEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x07\n\x05\x45mptyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x65\x64gir/common.proto\x12\x0c\x65\x64gir.common\"\x95\x03\n\x08Metadata\x12&\n\x07unknown\x18\x01 \x01(\x0b\x32\x13.edgir.common.EmptyH\x00\x12\x0f\n\x05known\x18\x02 \x01(\tH\x00\x12\x31\n\x07members\x18\x65 \x01(\x0b\x32\x1e.edgir.common.Metadata.MembersH\x01\x12\x13\n\ttext_leaf\x18\x66 \x01(\tH\x01\x12\x12\n\x08\x62in_leaf\x18g \x01(\x0cH\x01\x12\x35\n\x0esource_locator\x18n \x01(\x0b\x32\x1b.edgir.common.SourceLocatorH\x01\x12$\n\x05\x65rror\x18p \x01(\x0b\x32\x13.edgir.common.ErrorH\x01\x1a\x86\x01\n\x07Members\x12\x36\n\x04node\x18\n \x03(\x0b\x32(.edgir.common.Metadata.Members.NodeEntry\x1a\x43\n\tNodeEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.edgir.common.Metadata:\x02\x38\x01\x42\x06\n\x04typeB\x06\n\x04meta\"\xc9\x01\n\rSourceLocator\x12\x14\n\x0c\x66ile_package\x18\x01 \x01(\t\x12\x13\n\x0bline_offset\x18\x02 \x01(\x05\x12\x12\n\ncol_offset\x18\x03 \x01(\x05\x12;\n\x0bsource_type\x18\x04 \x01(\x0e\x32&.edgir.common.SourceLocator.SourceType\"<\n\nSourceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nDEFINITION\x10\x01\x12\x11\n\rINSTANTIATION\x10\x02\"X\n\x05\x45rror\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x11\n\ttraceback\x18\x03 \x01(\t\x12+\n\x06source\x18\x02 \x03(\x0b\x32\x1b.edgir.common.SourceLocator\"\x07\n\x05\x45mptyb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'edgir.common_pb2', globals())
@@ -22,28 +22,18 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _METADATA_MEMBERS_NODEENTRY._options = None
   _METADATA_MEMBERS_NODEENTRY._serialized_options = b'8\001'
-  _FOOTPRINT_PINNINGENTRY._options = None
-  _FOOTPRINT_PINNINGENTRY._serialized_options = b'8\001'
   _METADATA._serialized_start=37
-  _METADATA._serialized_end=592
-  _METADATA_MEMBERS._serialized_start=442
-  _METADATA_MEMBERS._serialized_end=576
-  _METADATA_MEMBERS_NODEENTRY._serialized_start=509
-  _METADATA_MEMBERS_NODEENTRY._serialized_end=576
-  _SOURCELOCATOR._serialized_start=595
-  _SOURCELOCATOR._serialized_end=796
-  _SOURCELOCATOR_SOURCETYPE._serialized_start=736
-  _SOURCELOCATOR_SOURCETYPE._serialized_end=796
-  _NAMESPACEORDER._serialized_start=798
-  _NAMESPACEORDER._serialized_end=829
-  _ERROR._serialized_start=831
-  _ERROR._serialized_end=919
-  _COPPERNET._serialized_start=921
-  _COPPERNET._serialized_end=932
-  _FOOTPRINT._serialized_start=935
-  _FOOTPRINT._serialized_end=1147
-  _FOOTPRINT_PINNINGENTRY._serialized_start=1101
-  _FOOTPRINT_PINNINGENTRY._serialized_end=1147
-  _EMPTY._serialized_start=1149
-  _EMPTY._serialized_end=1156
+  _METADATA._serialized_end=442
+  _METADATA_MEMBERS._serialized_start=292
+  _METADATA_MEMBERS._serialized_end=426
+  _METADATA_MEMBERS_NODEENTRY._serialized_start=359
+  _METADATA_MEMBERS_NODEENTRY._serialized_end=426
+  _SOURCELOCATOR._serialized_start=445
+  _SOURCELOCATOR._serialized_end=646
+  _SOURCELOCATOR_SOURCETYPE._serialized_start=586
+  _SOURCELOCATOR_SOURCETYPE._serialized_end=646
+  _ERROR._serialized_start=648
+  _ERROR._serialized_end=736
+  _EMPTY._serialized_start=738
+  _EMPTY._serialized_end=745
 # @@protoc_insertion_point(module_scope)

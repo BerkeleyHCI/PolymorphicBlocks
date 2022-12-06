@@ -1,16 +1,20 @@
 package edg.util
 
+import scala.collection.SeqMap
+
 object MapUtils {
   /**
     * Merges the argument maps, erroring out if there are duplicate names
     */
+  def mergeSeqMapSafe[K, V](maps: SeqMap[K, V]*): SeqMap[K, V] = {
+    val allKeys = maps.flatMap(_.keys)
+    require(allKeys.distinct == allKeys, "maps containing members with duplicate keys")
+    maps.flatten.to(SeqMap)
+  }
+
   def mergeMapSafe[K, V](maps: Map[K, V]*): Map[K, V] = {
-    maps.flatMap(_.toSeq) // to a list of pairs in the maps
-        .groupBy(_._1) // sort by name
-        .map {
-          case (name, Seq((_, value))) => name -> value
-          case (name, values) => throw new IllegalArgumentException(
-            s"maps contains ${values.length} conflicting members with name $name: $values")
-        }
+    val allKeys = maps.flatMap(_.keys)
+    require(allKeys.distinct == allKeys, "maps containing members with duplicate keys")
+    maps.flatten.toMap
   }
 }

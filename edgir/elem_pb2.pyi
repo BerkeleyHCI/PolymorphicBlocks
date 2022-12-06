@@ -32,44 +32,113 @@ else:
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
-class Port(google.protobuf.message.Message):
+class NamedValInit(google.protobuf.message.Message):
+    """These are essentially a element in a map<string, value>, but because maps
+    are unordered (whereas we want to preserve ordering to preserve design intent
+    through the compiler), we use a sequence of these pairs.
+    """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @typing_extensions.final
-    class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    NAME_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    name: builtins.str
+    @property
+    def value(self) -> edgir.init_pb2.ValInit: ...
+    def __init__(
+        self,
+        *,
+        name: builtins.str = ...,
+        value: edgir.init_pb2.ValInit | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.init_pb2.ValInit: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.init_pb2.ValInit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
+global___NamedValInit = NamedValInit
 
-    @typing_extensions.final
-    class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+@typing_extensions.final
+class NamedValueExpr(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.expr_pb2.ValueExpr: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.expr_pb2.ValueExpr | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
+    NAME_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    name: builtins.str
+    @property
+    def value(self) -> edgir.expr_pb2.ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        name: builtins.str = ...,
+        value: edgir.expr_pb2.ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
+
+global___NamedValueExpr = NamedValueExpr
+
+@typing_extensions.final
+class NamedPortLike(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    NAME_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    name: builtins.str
+    @property
+    def value(self) -> global___PortLike: ...
+    def __init__(
+        self,
+        *,
+        name: builtins.str = ...,
+        value: global___PortLike | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
+
+global___NamedPortLike = NamedPortLike
+
+@typing_extensions.final
+class NamedBlockLike(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    NAME_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    name: builtins.str
+    @property
+    def value(self) -> global___BlockLike: ...
+    def __init__(
+        self,
+        *,
+        name: builtins.str = ...,
+        value: global___BlockLike | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
+
+global___NamedBlockLike = NamedBlockLike
+
+@typing_extensions.final
+class NamedLinkLike(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    NAME_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    name: builtins.str
+    @property
+    def value(self) -> global___LinkLike: ...
+    def __init__(
+        self,
+        *,
+        name: builtins.str = ...,
+        value: global___LinkLike | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
+
+global___NamedLinkLike = NamedLinkLike
+
+@typing_extensions.final
+class Port(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     PARAMS_FIELD_NUMBER: builtins.int
     CONSTRAINTS_FIELD_NUMBER: builtins.int
@@ -77,9 +146,9 @@ class Port(google.protobuf.message.Message):
     SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
-    def params(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.init_pb2.ValInit]: ...
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]: ...
+    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
     def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
@@ -91,8 +160,8 @@ class Port(google.protobuf.message.Message):
     def __init__(
         self,
         *,
-        params: collections.abc.Mapping[builtins.str, edgir.init_pb2.ValInit] | None = ...,
-        constraints: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
@@ -106,60 +175,6 @@ global___Port = Port
 class Bundle(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @typing_extensions.final
-    class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.init_pb2.ValInit: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.init_pb2.ValInit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___PortLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___PortLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.expr_pb2.ValueExpr: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.expr_pb2.ValueExpr | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
     PARAMS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     CONSTRAINTS_FIELD_NUMBER: builtins.int
@@ -167,11 +182,11 @@ class Bundle(google.protobuf.message.Message):
     SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
-    def params(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.init_pb2.ValInit]: ...
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def ports(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___PortLike]: ...
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]: ...
+    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
     def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
@@ -182,9 +197,9 @@ class Bundle(google.protobuf.message.Message):
     def __init__(
         self,
         *,
-        params: collections.abc.Mapping[builtins.str, edgir.init_pb2.ValInit] | None = ...,
-        ports: collections.abc.Mapping[builtins.str, global___PortLike] | None = ...,
-        constraints: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
@@ -202,31 +217,13 @@ class PortArray(google.protobuf.message.Message):
     class Ports(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        @typing_extensions.final
-        class PortsEntry(google.protobuf.message.Message):
-            DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-            KEY_FIELD_NUMBER: builtins.int
-            VALUE_FIELD_NUMBER: builtins.int
-            key: builtins.str
-            @property
-            def value(self) -> global___PortLike: ...
-            def __init__(
-                self,
-                *,
-                key: builtins.str = ...,
-                value: global___PortLike | None = ...,
-            ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
         PORTS_FIELD_NUMBER: builtins.int
         @property
-        def ports(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___PortLike]: ...
+        def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
         def __init__(
             self,
             *,
-            ports: collections.abc.Mapping[builtins.str, global___PortLike] | None = ...,
+            ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["ports", b"ports"]) -> None: ...
 
@@ -339,97 +336,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     @typing_extensions.final
-    class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.init_pb2.ValInit: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.init_pb2.ValInit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
     class ParamDefaultsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.expr_pb2.ValueExpr: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.expr_pb2.ValueExpr | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___PortLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___PortLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class BlocksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___BlockLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___BlockLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___LinkLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___LinkLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class ConstraintsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         KEY_FIELD_NUMBER: builtins.int
@@ -460,24 +367,25 @@ class HierarchyBlock(google.protobuf.message.Message):
     META_FIELD_NUMBER: builtins.int
     DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
-    def params(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.init_pb2.ValInit]: ...
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
     def param_defaults(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]:
         """Refinements may introduce new parameters which would not be assigned a value in the parent class.
         In those cases, those new parameters are given these default values.
+        unordered
         """
     @property
-    def ports(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___PortLike]: ...
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
-    def blocks(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___BlockLike]:
+    def blocks(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedBlockLike]:
         """* Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
         VoltageSource, are defined as blocks in the IR. Upper layers can define convenience constructs and/or
         infer these blocks.
         """
     @property
-    def links(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___LinkLike]: ...
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]:
+    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
         """* Connections between internal block and link ports are represented by connected constraints.
         Connections between internal; block and edge (of this block) ports are represented by exported constraints.
         """
@@ -502,12 +410,12 @@ class HierarchyBlock(google.protobuf.message.Message):
     def __init__(
         self,
         *,
-        params: collections.abc.Mapping[builtins.str, edgir.init_pb2.ValInit] | None = ...,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
         param_defaults: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
-        ports: collections.abc.Mapping[builtins.str, global___PortLike] | None = ...,
-        blocks: collections.abc.Mapping[builtins.str, global___BlockLike] | None = ...,
-        links: collections.abc.Mapping[builtins.str, global___LinkLike] | None = ...,
-        constraints: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        blocks: collections.abc.Iterable[global___NamedBlockLike] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         prerefine_class: edgir.ref_pb2.LibraryPath | None = ...,
@@ -571,78 +479,6 @@ global___BlockLike = BlockLike
 class Link(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @typing_extensions.final
-    class ParamsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.init_pb2.ValInit: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.init_pb2.ValInit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___PortLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___PortLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___LinkLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___LinkLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.expr_pb2.ValueExpr: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.expr_pb2.ValueExpr | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
     PARAMS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     LINKS_FIELD_NUMBER: builtins.int
@@ -652,13 +488,13 @@ class Link(google.protobuf.message.Message):
     META_FIELD_NUMBER: builtins.int
     DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
-    def params(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.init_pb2.ValInit]: ...
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def ports(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___PortLike]: ...
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
-    def links(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___LinkLike]: ...
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]: ...
+    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
     def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
@@ -672,10 +508,10 @@ class Link(google.protobuf.message.Message):
     def __init__(
         self,
         *,
-        params: collections.abc.Mapping[builtins.str, edgir.init_pb2.ValInit] | None = ...,
-        ports: collections.abc.Mapping[builtins.str, global___PortLike] | None = ...,
-        links: collections.abc.Mapping[builtins.str, global___LinkLike] | None = ...,
-        constraints: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
@@ -690,60 +526,6 @@ global___Link = Link
 class LinkArray(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @typing_extensions.final
-    class PortsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___PortLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___PortLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class ConstraintsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> edgir.expr_pb2.ValueExpr: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: edgir.expr_pb2.ValueExpr | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
-    @typing_extensions.final
-    class LinksEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
-        @property
-        def value(self) -> global___LinkLike: ...
-        def __init__(
-            self,
-            *,
-            key: builtins.str = ...,
-            value: global___LinkLike | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
-
     SELF_CLASS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     CONSTRAINTS_FIELD_NUMBER: builtins.int
@@ -755,24 +537,24 @@ class LinkArray(google.protobuf.message.Message):
         when a new link is instantiated by the front or back end.
         """
     @property
-    def ports(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___PortLike]:
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]:
         """Only designs should contain an implementation here
         the last index is the index of the link, the first indices (if any) are the indices of the corresponding port in the inner link
         """
     @property
-    def constraints(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]:
+    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
         """includes all exported constraints to map link ports to my ports"""
     @property
-    def links(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___LinkLike]: ...
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(
         self,
         *,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
-        ports: collections.abc.Mapping[builtins.str, global___PortLike] | None = ...,
-        constraints: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
-        links: collections.abc.Mapping[builtins.str, global___LinkLike] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]) -> builtins.bool: ...

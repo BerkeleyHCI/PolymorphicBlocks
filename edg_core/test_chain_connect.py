@@ -63,13 +63,14 @@ class ChainConnectExplicitNamedBlock(Block):
 class ImplicitConnectTestCase(unittest.TestCase):
   def verify_pb(self, pb: edgir.HierarchyBlock) -> None:
     self.assertEqual(len(pb.constraints), 5)  # including source export, connect, port required
+    constraints = list(map(lambda pair: pair.value, pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_0'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
     expected_conn.connected.block_port.ref.steps.add().name = 'output'
     expected_conn.connected.block_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_0'
@@ -77,7 +78,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'inout'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_0'
@@ -85,14 +86,14 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'inputoutput'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_1'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
     expected_conn.connected.block_port.ref.steps.add().name = 'inputoutput'
     expected_conn.connected.block_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_chain_1'
@@ -100,7 +101,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'input'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
   def test_explicit_named_chain(self) -> None:
     pb = ChainConnectExplicitNamedBlock()._elaborated_def_to_proto()

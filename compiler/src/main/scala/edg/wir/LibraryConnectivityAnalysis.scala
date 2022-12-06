@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.wir.ProtoUtil.PortProtoToSeqMap
 import edgir.ref.ref
 import edgir.elem.elem
 
@@ -33,10 +34,8 @@ class LibraryConnectivityAnalysis(library: Library) {
 
   lazy private val portToLinkMap: Map[ref.LibraryPath, ref.LibraryPath] = allLinks.toSeq
       .flatMap { case (linkPath, link) =>  // expand to all combinations (port path, link path) pairs
-        link.ports.values.map { port =>
-          LibraryConnectivityAnalysis.getLibPortType(port)
-        }.map {
-          (_, linkPath)
+        link.ports.asPairs.map { case (name, port) =>
+          (LibraryConnectivityAnalysis.getLibPortType(port), linkPath)
         }
       } .groupBy(_._1)  // port path -> seq[(port path, link path) pairs]
       .view.mapValues(_.map(_._2).distinct)  // flatten into: port path -> seq[link path]
@@ -77,7 +76,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     */
   def connectablePorts(linkPath: ref.LibraryPath): Map[ref.LibraryPath, Int] = {
     val link = allLinks.getOrElse(linkPath, return Map())
-    val linkPortTypes = link.ports.values.map(_.is).toSeq
+    val linkPortTypes = link.ports.asPairs.map { case (name, link) => link.is }
 
     val singlePortCounts = linkPortTypes.collect {  // library, count pairs
       case elem.PortLike.Is.LibElem(value) => (value, 1)
@@ -85,7 +84,7 @@ class LibraryConnectivityAnalysis(library: Library) {
     val arrayPorts = linkPortTypes.collect {
       case elem.PortLike.Is.Array(array) =>
         (array.getSelfClass, Integer.MAX_VALUE)  // TODO maybe a inf type? but this practically won't matter
-    }.toMap
+    }
 
     (singlePortCounts ++ arrayPorts).toMap
   }

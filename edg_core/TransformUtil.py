@@ -76,22 +76,28 @@ class Path(NamedTuple):  # internal helper type
       return None, (self, curr)
     elif steps[0].HasField('name'):
       name = steps[0].name
-      if isinstance(curr, (edgir.Port, edgir.Bundle, edgir.HierarchyBlock, edgir.Link)) and name in curr.params:
-        return self.append_param(name)._follow_partial_steps(steps[1:], curr.params[name])
-      elif isinstance(curr, (edgir.Bundle, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)) and name in curr.ports:
-        path = self.append_port(name)
-        port = edgir.resolve_portlike(curr.ports[name])
-        return path._follow_partial_steps(steps[1:], port)
-      elif isinstance(curr, edgir.PortArray) and curr.HasField('ports') and name in curr.ports.ports:
-        path = self.append_port(name)
-        port = edgir.resolve_portlike(curr.ports.ports[name])
-        return path._follow_partial_steps(steps[1:], port)
-      elif isinstance(curr, edgir.HierarchyBlock) and name in curr.blocks:
-        return self.append_block(name)._follow_partial_steps(steps[1:], edgir.resolve_blocklike(curr.blocks[name]))
-      elif isinstance(curr, (edgir.HierarchyBlock, edgir.Link, edgir.LinkArray)) and name in curr.links.keys():
-        return self.append_link(name)._follow_partial_steps(steps[1:], edgir.resolve_linklike(curr.links[name]))
-      else:
-        return steps, (self, curr)
+      if isinstance(curr, (edgir.Port, edgir.Bundle, edgir.HierarchyBlock, edgir.Link)):
+        param_opt = edgir.pair_get_opt(curr.params, name)
+        if param_opt is not None:
+          return self.append_param(name)._follow_partial_steps(steps[1:], param_opt)
+      if isinstance(curr, (edgir.Bundle, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)):
+        port_opt = edgir.pair_get_opt(curr.ports, name)
+        if port_opt is not None:
+          return self.append_port(name)._follow_partial_steps(steps[1:], edgir.resolve_portlike(port_opt))
+      if isinstance(curr, edgir.PortArray) and curr.HasField('ports'):
+        port_opt = edgir.pair_get_opt(curr.ports.ports, name)
+        if port_opt is not None:
+          return self.append_port(name)._follow_partial_steps(steps[1:], edgir.resolve_portlike(port_opt))
+      if isinstance(curr, edgir.HierarchyBlock):
+        block_opt = edgir.pair_get_opt(curr.blocks, name)
+        if block_opt is not None:
+          return self.append_block(name)._follow_partial_steps(steps[1:], edgir.resolve_blocklike(block_opt))
+      if isinstance(curr, (edgir.HierarchyBlock, edgir.Link, edgir.LinkArray)):
+        link_opt = edgir.pair_get_opt(curr.links, name)
+        if link_opt is not None:
+          return self.append_link(name)._follow_partial_steps(steps[1:], edgir.resolve_linklike(link_opt))
+
+      return steps, (self, curr)
     elif steps[0].HasField('reserved_param'):
       return steps, (self, curr)  # Path does not understand special paths
     else:
@@ -177,11 +183,11 @@ class Transform():
     elif elt.HasField('port'):
       pass  # nothing to recurse into
     elif elt.HasField('bundle'):
-      for name, port in edgir.ordered_ports(elt.bundle):
-        self._traverse_portlike(context.append_port(name), port)
+      for port_pair in elt.bundle.ports:
+        self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
     elif elt.HasField('array') and elt.array.HasField('ports'):
-      for idx, port in elt.array.ports.ports.items():
-        self._traverse_portlike(context.append_port(idx), port)
+      for port_pair in elt.array.ports.ports:
+        self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
     else:
       raise ValueError(f"_traverse_portlike encountered unknown type {elt} at {context}")
 
@@ -192,12 +198,12 @@ class Transform():
       raise type(e)(f"(while visiting Block at {context}) " + str(e)) \
         .with_traceback(sys.exc_info()[2])
 
-    for name, port in edgir.ordered_ports(elt):
-      self._traverse_portlike(context.append_port(name), port)
-    for name, link in edgir.ordered_links(elt):
-      self._traverse_linklike(context.append_link(name), link)
-    for name, block in edgir.ordered_blocks(elt):
-      self._traverse_blocklike(context.append_block(name), block)
+    for port_pair in elt.ports:
+      self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
+    for link_pair in elt.links:
+      self._traverse_linklike(context.append_link(link_pair.name), link_pair.value)
+    for block_pair in elt.blocks:
+      self._traverse_blocklike(context.append_block(block_pair.name), block_pair.value)
 
   def _traverse_blocklike(self, context: TransformContext, elt: edgir.BlockLike) -> None:
     try:
@@ -229,11 +235,11 @@ class Transform():
         raise type(e)(f"(while visiting Link at {context}) " + str(e)) \
           .with_traceback(sys.exc_info()[2])
 
-      for name, port in elt.link.ports.items():
-        self._traverse_portlike(context.append_port(name), port)
+      for port_pair in elt.link.ports:
+        self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
 
-      for name, link in elt.link.links.items():
-        self._traverse_linklike(context.append_link(name), link)
+      for link_pair in elt.link.links:
+        self._traverse_linklike(context.append_link(link_pair.name), link_pair.value)
     elif elt.HasField('array'):
       try:
         self.visit_linkarray(context, elt.array)
@@ -241,11 +247,11 @@ class Transform():
         raise type(e)(f"(while visiting LinkArray at {context}) " + str(e)) \
           .with_traceback(sys.exc_info()[2])
 
-      for name, port in elt.array.ports.items():
-        self._traverse_portlike(context.append_port(name), port)
+      for port_pair in elt.array.ports:
+        self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
 
-      for name, link in elt.array.links.items():
-        self._traverse_linklike(context.append_link(name), link)
+      for link_pair in elt.array.links:
+        self._traverse_linklike(context.append_link(link_pair.name), link_pair.value)
     else:
       raise ValueError(f"_traverse_linklike encountered unknown type {elt} at {context}")
 
@@ -259,11 +265,11 @@ class Transform():
     self.visit_block(root_context, design_copy.contents)
 
     # TODO dedup w/ _transform_blocklike
-    for name, port in design_copy.contents.ports.items():
-      self._traverse_portlike(root_context.append_port(name), port)
-    for name, link in design_copy.contents.links.items():
-      self._traverse_linklike(root_context.append_link(name), link)
-    for name, block in edgir.ordered_blocks(design_copy.contents):
-      self._traverse_blocklike(root_context.append_block(name), block)
+    for port_pair in design_copy.contents.ports:
+      self._traverse_portlike(root_context.append_port(port_pair.name), port_pair.value)
+    for link_pair in design_copy.contents.links:
+      self._traverse_linklike(root_context.append_link(link_pair.name), link_pair.value)
+    for block_pair in design_copy.contents.blocks:
+      self._traverse_blocklike(root_context.append_block(block_pair.name), block_pair.value)
 
     return design_copy

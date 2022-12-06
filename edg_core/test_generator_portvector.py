@@ -39,16 +39,13 @@ class TestGeneratorPortVector(unittest.TestCase):
 
   def test_initializer(self):
     compiled = ScalaCompiler.compile(TestGeneratorElements)
-    pb = compiled.contents.blocks['block'].hierarchy
-    self.assertEqual(
-      edgir.AssignLit(['ports', '0', 'range_param'], Range(-1, 1)),
-      pb.constraints["(init)ports.0.range_param"])
-    self.assertEqual(
-      edgir.AssignLit(['ports', 'named', 'range_param'], Range(-5, 5)),
-      pb.constraints["(init)ports.named.range_param"])
-    self.assertEqual(
-      edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)),
-      pb.constraints["(init)ports.1.range_param"])
+    pb = compiled.contents.blocks[0].value.hierarchy
+    self.assertEqual(pb.constraints[1].name, "(init)ports.0.range_param")
+    self.assertEqual(pb.constraints[1].value, edgir.AssignLit(['ports', '0', 'range_param'], Range(-1, 1)))
+    self.assertEqual(pb.constraints[2].name, "(init)ports.named.range_param")
+    self.assertEqual(pb.constraints[2].value, edgir.AssignLit(['ports', 'named', 'range_param'], Range(-5, 5)))
+    self.assertEqual(pb.constraints[3].name, "(init)ports.1.range_param")
+    self.assertEqual(pb.constraints[3].value, edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)))
 
 
 class GeneratorInnerBlockInvalid(GeneratorBlock):
@@ -102,17 +99,19 @@ class TestGeneratorWrapper(unittest.TestCase):
 
   def test_exported_ports(self):
     compiled = ScalaCompiler.compile(GeneratorWrapperTest)
+    pb = edgir.pair_get(compiled.contents.blocks, 'block').hierarchy
 
     # check the inner block too
-    pb_ports = compiled.contents.blocks['block'].hierarchy.blocks['block'].hierarchy.ports['ports'].array.ports.ports
-    self.assertIn('0', pb_ports)
-    self.assertIn('named', pb_ports)
-    self.assertIn('1', pb_ports)
+    inner_block = edgir.pair_get(pb.blocks, 'block').hierarchy
+    pb_ports = edgir.pair_get(inner_block.ports, 'ports').array.ports.ports
+    self.assertEqual(pb_ports[0].name, '0')
+    self.assertEqual(pb_ports[1].name, 'named')
+    self.assertEqual(pb_ports[2].name, '1')
 
-    pb_ports = compiled.contents.blocks['block'].hierarchy.ports['ports'].array.ports.ports
-    self.assertIn('0', pb_ports)
-    self.assertIn('named', pb_ports)
-    self.assertIn('1', pb_ports)
+    pb_ports = edgir.pair_get(pb.ports, 'ports').array.ports.ports
+    self.assertEqual(pb_ports[0].name, '0')
+    self.assertEqual(pb_ports[1].name, 'named')
+    self.assertEqual(pb_ports[2].name, '1')
 
 
 class GeneratorArrayParam(GeneratorBlock):

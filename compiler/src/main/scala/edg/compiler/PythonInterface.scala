@@ -249,7 +249,7 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
     result
   }
 
-  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
+  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue], arguments: Map[String, String]):
       Errorable[Map[DesignPath, String]] = {
     onRunBackend(backend)
 
@@ -257,7 +257,8 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
       backend=Some(backend), design=Some(design),
       solvedValues=solvedValues.map { case (path, value) =>
         edgrpc.ExprValue(path=Some(path.toLocalPath), value=Some(value.toLit))
-      }.toSeq
+      }.toSeq,
+      arguments = arguments
     )
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
