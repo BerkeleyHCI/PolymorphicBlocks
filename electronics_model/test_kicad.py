@@ -1,18 +1,17 @@
 import os
 import unittest
-
 from typing import Type
+
 from . import *
 from . import test_netlist
-from . import footprint as kicad
-from .NetlistGenerator import NetlistTransform
+from .RefdesRefinementPass import RefdesRefinementPass
 
 
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
-    netlist = NetlistTransform(compiled).run()
-    return kicad.generate_netlist(netlist.blocks, netlist.nets)
+    compiled.append_values(RefdesRefinementPass().run(compiled))
+    return NetlistBackend().run(compiled)[0][1]
 
   def test_basic_kicad(self):
     with open(os.path.splitext(os.path.basename(__file__))[0] + '_basic.net', 'w') as f:

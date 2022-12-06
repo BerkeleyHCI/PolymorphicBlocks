@@ -181,27 +181,29 @@ class LibraryResponse(google.protobuf.message.Message):
 global___LibraryResponse = LibraryResponse
 
 @typing_extensions.final
-class GeneratorRequest(google.protobuf.message.Message):
+class ExprValue(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @typing_extensions.final
-    class Value(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    PATH_FIELD_NUMBER: builtins.int
+    VALUE_FIELD_NUMBER: builtins.int
+    @property
+    def path(self) -> edgir.ref_pb2.LocalPath: ...
+    @property
+    def value(self) -> edgir.lit_pb2.ValueLit: ...
+    def __init__(
+        self,
+        *,
+        path: edgir.ref_pb2.LocalPath | None = ...,
+        value: edgir.lit_pb2.ValueLit | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> None: ...
 
-        PATH_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        @property
-        def path(self) -> edgir.ref_pb2.LocalPath: ...
-        @property
-        def value(self) -> edgir.lit_pb2.ValueLit: ...
-        def __init__(
-            self,
-            *,
-            path: edgir.ref_pb2.LocalPath | None = ...,
-            value: edgir.lit_pb2.ValueLit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> None: ...
+global___ExprValue = ExprValue
+
+@typing_extensions.final
+class GeneratorRequest(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     ELEMENT_FIELD_NUMBER: builtins.int
     VALUES_FIELD_NUMBER: builtins.int
@@ -209,12 +211,12 @@ class GeneratorRequest(google.protobuf.message.Message):
     def element(self) -> edgir.ref_pb2.LibraryPath:
         """path of library element containing the generator"""
     @property
-    def values(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GeneratorRequest.Value]: ...
+    def values(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExprValue]: ...
     def __init__(
         self,
         *,
         element: edgir.ref_pb2.LibraryPath | None = ...,
-        values: collections.abc.Iterable[global___GeneratorRequest.Value] | None = ...,
+        values: collections.abc.Iterable[global___ExprValue] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["element", b"element"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["element", b"element", "values", b"values"]) -> None: ...
@@ -239,33 +241,57 @@ class GeneratorResponse(google.protobuf.message.Message):
 global___GeneratorResponse = GeneratorResponse
 
 @typing_extensions.final
+class RefinementRequest(google.protobuf.message.Message):
+    """Runs a refinement pass - something that takes a full design and solved values and
+    generates additional values, eg for refdes assignment
+    """
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    REFINEMENT_PASS_FIELD_NUMBER: builtins.int
+    DESIGN_FIELD_NUMBER: builtins.int
+    SOLVEDVALUES_FIELD_NUMBER: builtins.int
+    @property
+    def refinement_pass(self) -> edgir.ref_pb2.LibraryPath: ...
+    @property
+    def design(self) -> edgir.schema_pb2.Design: ...
+    @property
+    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExprValue]: ...
+    def __init__(
+        self,
+        *,
+        refinement_pass: edgir.ref_pb2.LibraryPath | None = ...,
+        design: edgir.schema_pb2.Design | None = ...,
+        solvedValues: collections.abc.Iterable[global___ExprValue] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["design", b"design", "refinement_pass", b"refinement_pass"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["design", b"design", "refinement_pass", b"refinement_pass", "solvedValues", b"solvedValues"]) -> None: ...
+
+global___RefinementRequest = RefinementRequest
+
+@typing_extensions.final
+class RefinementResponse(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    NEWVALUES_FIELD_NUMBER: builtins.int
+    @property
+    def newValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExprValue]: ...
+    def __init__(
+        self,
+        *,
+        newValues: collections.abc.Iterable[global___ExprValue] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["newValues", b"newValues"]) -> None: ...
+
+global___RefinementResponse = RefinementResponse
+
+@typing_extensions.final
 class BackendRequest(google.protobuf.message.Message):
     """Runs a backend - something that generates fabrication artifacts from a compiled design tree
     eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
     """
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-    @typing_extensions.final
-    class Value(google.protobuf.message.Message):
-        """TODO dedup w/ same def in compiler.CompilerResult"""
-
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        PATH_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        @property
-        def path(self) -> edgir.ref_pb2.LocalPath: ...
-        @property
-        def value(self) -> edgir.lit_pb2.ValueLit: ...
-        def __init__(
-            self,
-            *,
-            path: edgir.ref_pb2.LocalPath | None = ...,
-            value: edgir.lit_pb2.ValueLit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> None: ...
 
     @typing_extensions.final
     class ArgumentsEntry(google.protobuf.message.Message):
@@ -292,7 +318,7 @@ class BackendRequest(google.protobuf.message.Message):
     @property
     def design(self) -> edgir.schema_pb2.Design: ...
     @property
-    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___BackendRequest.Value]: ...
+    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExprValue]: ...
     @property
     def arguments(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]: ...
     def __init__(
@@ -300,7 +326,7 @@ class BackendRequest(google.protobuf.message.Message):
         *,
         backend: edgir.ref_pb2.LibraryPath | None = ...,
         design: edgir.schema_pb2.Design | None = ...,
-        solvedValues: collections.abc.Iterable[global___BackendRequest.Value] | None = ...,
+        solvedValues: collections.abc.Iterable[global___ExprValue] | None = ...,
         arguments: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["backend", b"backend", "design", b"design"]) -> builtins.bool: ...
@@ -372,6 +398,7 @@ class HdlRequest(google.protobuf.message.Message):
     INDEX_MODULE_FIELD_NUMBER: builtins.int
     GET_LIBRARY_ELEMENT_FIELD_NUMBER: builtins.int
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
+    RUN_REFINEMENT_FIELD_NUMBER: builtins.int
     RUN_BACKEND_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___ModuleName:
@@ -383,6 +410,8 @@ class HdlRequest(google.protobuf.message.Message):
     def elaborate_generator(self) -> global___GeneratorRequest:
         """returns the elaborated IR"""
     @property
+    def run_refinement(self) -> global___RefinementRequest: ...
+    @property
     def run_backend(self) -> global___BackendRequest: ...
     def __init__(
         self,
@@ -390,11 +419,12 @@ class HdlRequest(google.protobuf.message.Message):
         index_module: global___ModuleName | None = ...,
         get_library_element: global___LibraryRequest | None = ...,
         elaborate_generator: global___GeneratorRequest | None = ...,
+        run_refinement: global___RefinementRequest | None = ...,
         run_backend: global___BackendRequest | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_backend"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend"] | None: ...
 
 global___HdlRequest = HdlRequest
 
@@ -405,6 +435,7 @@ class HdlResponse(google.protobuf.message.Message):
     INDEX_MODULE_FIELD_NUMBER: builtins.int
     GET_LIBRARY_ELEMENT_FIELD_NUMBER: builtins.int
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
+    RUN_REFINEMENT_FIELD_NUMBER: builtins.int
     RUN_BACKEND_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
     @property
@@ -415,6 +446,8 @@ class HdlResponse(google.protobuf.message.Message):
     @property
     def elaborate_generator(self) -> global___GeneratorResponse: ...
     @property
+    def run_refinement(self) -> global___RefinementResponse: ...
+    @property
     def run_backend(self) -> global___BackendResponse: ...
     @property
     def error(self) -> global___ErrorResponse: ...
@@ -424,11 +457,12 @@ class HdlResponse(google.protobuf.message.Message):
         index_module: global___IndexResponse | None = ...,
         get_library_element: global___LibraryResponse | None = ...,
         elaborate_generator: global___GeneratorResponse | None = ...,
+        run_refinement: global___RefinementResponse | None = ...,
         run_backend: global___BackendResponse | None = ...,
         error: global___ErrorResponse | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["response", b"response"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_backend", "error"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["response", b"response"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "error"] | None: ...
 
 global___HdlResponse = HdlResponse

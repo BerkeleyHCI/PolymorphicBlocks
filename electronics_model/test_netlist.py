@@ -1,11 +1,12 @@
 import unittest
-
 from typing import Type
+
 from edg_core import *
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .CircuitBlock import FootprintBlock
-from .VoltagePorts import VoltageSource, VoltageSink
 from .NetlistGenerator import NetlistTransform
+from .RefdesRefinementPass import RefdesRefinementPass
+from .VoltagePorts import VoltageSource, VoltageSink
+from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 
 
 class TestFakeSource(FootprintBlock):
@@ -162,8 +163,10 @@ class TestDualHierarchyCircuit(Block):
 
 
 class NetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Type[Block]):
+  @staticmethod
+  def generate_net(design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
+    compiled.append_values(RefdesRefinementPass().run(compiled))
     return NetlistTransform(compiled).run()
 
   def test_basic_netlist(self) -> None:

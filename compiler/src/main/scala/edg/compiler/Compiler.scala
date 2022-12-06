@@ -164,6 +164,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     cloned
   }
 
+  // Add solved values
+  def addValues(values: Map[DesignPath, ExprValue], name: String): Unit = {
+    values.foreach { case (path, value) =>
+      constProp.setForcedValue(path, value, name)
+    }
+  }
+
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {

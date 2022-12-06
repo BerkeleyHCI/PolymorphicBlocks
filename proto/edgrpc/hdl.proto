@@ -54,18 +54,32 @@ message LibraryResponse {
 }
 
 
+message ExprValue {
+  edgir.ref.LocalPath path = 1;
+  edgir.lit.ValueLit value = 2;
+}
+
+
 message GeneratorRequest {
   edgir.ref.LibraryPath element = 2;  // path of library element containing the generator
-
-  message Value {
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-  repeated Value values = 4;
+  repeated ExprValue values = 4;
 }
 
 message GeneratorResponse {
   edgir.elem.HierarchyBlock generated = 1;
+}
+
+
+// Runs a refinement pass - something that takes a full design and solved values and
+// generates additional values, eg for refdes assignment
+message RefinementRequest {
+  edgir.ref.LibraryPath refinement_pass = 1;
+  edgir.schema.Design design = 2;
+  repeated ExprValue solvedValues = 3;
+}
+
+message RefinementResponse {
+  repeated ExprValue newValues = 1;
 }
 
 
@@ -74,13 +88,8 @@ message GeneratorResponse {
 message BackendRequest {
   edgir.ref.LibraryPath backend = 1;
   edgir.schema.Design design = 2;
+  repeated ExprValue solvedValues = 3;
 
-  message Value {  // TODO dedup w/ same def in compiler.CompilerResult
-    edgir.ref.LocalPath path = 1;
-    edgir.lit.ValueLit value = 2;
-  }
-
-  repeated Value solvedValues = 3;
   map<string, string> arguments = 4;
 }
 
@@ -106,6 +115,7 @@ message HdlRequest {
     ModuleName index_module = 1;  // returns an index of IR elements in a Python module
     LibraryRequest get_library_element = 2;  // returns the IR for a library element
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
+    RefinementRequest run_refinement = 5;
     BackendRequest run_backend = 4;
   }
 }
@@ -115,6 +125,7 @@ message HdlResponse {
     IndexResponse index_module = 1;  // list of contained library elements
     LibraryResponse get_library_element = 2;
     GeneratorResponse elaborate_generator = 3;
+    RefinementResponse run_refinement = 5;
     BackendResponse run_backend = 4;
 
     ErrorResponse error = 99;

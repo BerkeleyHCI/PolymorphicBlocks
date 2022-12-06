@@ -28,5 +28,6 @@ from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
 from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 
+from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
