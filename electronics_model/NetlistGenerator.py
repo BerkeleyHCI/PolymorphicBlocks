@@ -164,7 +164,7 @@ class NetlistTransform(TransformUtil.Transform):
       if self.refdes_mode == "pathName":
         self.names[path] = self.short_paths[path]
       elif self.refdes_mode == "refdes":
-        self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
+        self.names[path] = TransformUtil.Path.empty().append_block(refdes)
       else:
         raise ValueError(f"Invalid valueMode value {self.refdes_mode}")
 
