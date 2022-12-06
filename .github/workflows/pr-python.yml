@@ -40,10 +40,11 @@ jobs:
 
     - name: install mypy
       run: |
-        pip install mypy types-protobuf
+        pip install mypy mypy-protobuf types-protobuf types-Deprecated
+        mypy --version
     - name: mypy
       run: |
-        mypy --install-types --check-untyped-defs edg_core electronics_model electronics_abstract_parts electronics_lib edg examples
+        mypy --install-types .
 
   unittest:
     needs: pre_job
@@ -57,17 +58,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        pip install protobuf
-    - name: unittest (edg_core)
-      run: python -m unittest discover -s edg_core -t .
-    - name: unittest (electronics_model)
-      run: python -m unittest discover -s electronics_model -t .
-    - name: unittest (electronics_abstract_parts)
-      run: python -m unittest discover -s electronics_abstract_parts -t .
-    - name: skip tests depending on unavailable data
-      run: rm electronics_lib/test_inductor.py
-    - name: unittest (electronics_lib)
-      run: python -m unittest discover -s electronics_lib -t .
-    # only run the JLC examples until we have non-restricted parts tables
-    - name: unittest (partial examples)
-      run: python -m unittest examples.test_tofarray examples.test_ledmatrix
+        pip install protobuf kinparse Deprecated
+    - name: unittest
+      run: python -m unittest discover
+      

@@ -36,40 +36,37 @@ class Link(BaseBlock[edgir.Link]):
       assert issubclass(cls, Link)
 
     pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_param_init(pb)
+    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_description(pb)
     # specifically ignore the port initializers
 
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())
     self._connects.finalize()
-    self._links_order: Dict[str, str] = self.Metadata({})
     for name, connect in self._connects.items_ordered():
-      self._links_order[str(len(self._links_order))] = f"{name}"
-
       connect_elts = connect.make_connection(self)
       assert isinstance(connect_elts, Connection.ConnectedLink)
 
       link_path = edgir.localpath_concat(edgir.LocalPath(), name)
-      pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
+      edgir.add_pair(pb.links, name).lib_elem.target.name = connect_elts.link_type._static_def_name()
 
       assert not connect_elts.is_link_array
       assert not connect_elts.bridged_connects
       for idx, (self_port, link_port_path) in enumerate(connect_elts.link_connects):
+        constraint_pb = edgir.add_pair(pb.constraints, f"(export){name}_{idx}")
         if isinstance(self_port, BaseVector):
           assert isinstance(self_port, DerivedVector)
-          pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
-          pb.constraints[f"(export){name}_{idx}"].exportedArray.exterior_port.map_extract.path.steps.add().name = \
+          constraint_pb.exportedArray.exterior_port.map_extract.container.ref.CopyFrom(ref_map[self_port.base])
+          constraint_pb.exportedArray.exterior_port.map_extract.path.steps.add().name = \
             self_port.target._name_from(self_port.base._get_elt_sample())
-          pb.constraints[f"(export){name}_{idx}"].exportedArray.internal_block_port.ref.CopyFrom(
+          constraint_pb.exportedArray.internal_block_port.ref.CopyFrom(
             edgir.localpath_concat(link_path, link_port_path)
           )
         else:
-          pb.constraints[f"(export){name}_{idx}"].exported.exterior_port.ref.CopyFrom(ref_map[self_port])
-          pb.constraints[f"(export){name}_{idx}"].exported.internal_block_port.ref.CopyFrom(
+          constraint_pb.exported.exterior_port.ref.CopyFrom(ref_map[self_port])
+          constraint_pb.exported.internal_block_port.ref.CopyFrom(
             edgir.localpath_concat(link_path, link_port_path)
           )
-        self._namespace_order.append(f"(export){name}_{idx}")
 
     return pb

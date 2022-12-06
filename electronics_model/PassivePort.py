@@ -3,12 +3,10 @@ from __future__ import annotations
 from typing import TypeVar, Type, Dict
 
 from edg_core import *
-
-from .Units import Volt, Amp
-from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
 from .AnalogPort import AnalogSource, AnalogSink
+from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
+from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
 
 
 class PassiveLink(CircuitLink):

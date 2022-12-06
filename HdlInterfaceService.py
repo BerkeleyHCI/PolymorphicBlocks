@@ -111,16 +111,28 @@ if __name__ == '__main__':
           generator_obj,
           is_generator=True,
           generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
+      elif request.HasField('run_refinement'):
+        refinement_pass_class = class_from_library(request.run_refinement.refinement_pass,
+                                                   BaseRefinementPass)  # type: ignore
+        refinement_pass = refinement_pass_class()
+
+        refinement_results = refinement_pass.run(CompiledDesign.from_request(
+          request.run_refinement.design, request.run_refinement.solvedValues))
+        for path, refinement_result in refinement_results:
+          new_value = response.run_refinement.newValues.add()
+          new_value.path.CopyFrom(path)
+          new_value.value.CopyFrom(refinement_result)
       elif request.HasField('run_backend'):
         backend_class = class_from_library(request.run_backend.backend,
                                            BaseBackend)  # type: ignore
         backend = backend_class()
 
-        results = backend.run(CompiledDesign.from_backend_request(request.run_backend))
-        for path, result in results:
+        backend_results = backend.run(CompiledDesign.from_request(
+          request.run_backend.design, request.run_backend.solvedValues))
+        for path, backend_result in backend_results:
           response_result = response.run_backend.results.add()
           response_result.path.CopyFrom(path)
-          response_result.text = result
+          response_result.text = backend_result
       else:
         raise RuntimeError(f"Unknown request {request}")
     except BaseException as e:

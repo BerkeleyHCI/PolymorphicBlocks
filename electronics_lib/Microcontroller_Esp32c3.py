@@ -57,9 +57,9 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     # TODO add JTAG support
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated())
+                   self.gpio.requested(), self.adc.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested())
 
   @staticmethod
   def mappable_ios(dio_model: DigitalBidir) -> PinMapUtil:
@@ -108,9 +108,9 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str]) -> None: ...
+               gpio_requests: List[str], adc_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str]) -> None: ...
 
 
 class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
@@ -143,15 +143,15 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
   }
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str]) -> None:
+               gpio_requests: List[str], adc_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str]) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates),
-      (AnalogSink, adc_allocates), (DigitalBidir, gpio_allocates),
+      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+      (UartPort, uart_requests),
+      (AnalogSink, adc_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -179,6 +179,7 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic)
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),

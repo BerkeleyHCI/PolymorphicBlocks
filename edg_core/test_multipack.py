@@ -53,10 +53,11 @@ class TopMultipackDesign(DesignTop):
 
 class TopMultipackDesignTestCase(unittest.TestCase):
   def setUp(self) -> None:
-    self.pb = TopMultipackDesign()._elaborated_def_to_proto()
+    pb = TopMultipackDesign()._elaborated_def_to_proto()
+    self.constraints = list(map(lambda pair: pair.value, pb.constraints))
 
   def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
-    self.assertEqual(len(self.pb.constraints), 6)
+    self.assertEqual(len(self.constraints), 6)
 
   def test_export_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -64,7 +65,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'sink_port1'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink1'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
@@ -72,7 +73,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink2'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'inner'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
   def test_assign_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -80,7 +81,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.dst.steps.add().name = 'param1'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'sink1'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.assignTunnel.dst.steps.add().name = 'packed'
@@ -88,7 +89,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.src.ref.steps.add().name = 'sink2'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'inner'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
   def test_assign_unpacked_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -96,7 +97,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.assignTunnel.dst.steps.add().name = 'sink2'
@@ -104,7 +105,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
 
 class MultipackArrayBlockSink(MultipackBlock):
@@ -127,16 +128,17 @@ class TopMultipackArrayDesign(DesignTop):
 
   def multipack(self):
     self.packed = self.Block(MultipackArrayBlockSink())
-    self.pack(self.packed.sinks.allocate('1'), ['sink1'])
-    self.pack(self.packed.sinks.allocate('2'), ['sink2', 'inner'])
+    self.pack(self.packed.sinks.request('1'), ['sink1'])
+    self.pack(self.packed.sinks.request('2'), ['sink2', 'inner'])
 
 
 class TopMultipackArrayDesignTestCase(unittest.TestCase):
   def setUp(self) -> None:
-    self.pb = TopMultipackArrayDesign()._elaborated_def_to_proto()
+    pb = TopMultipackArrayDesign()._elaborated_def_to_proto()
+    self.constraints = list(map(lambda pair: pair.value, pb.constraints))
 
   def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
-    self.assertEqual(len(self.pb.constraints), 5)
+    self.assertEqual(len(self.constraints), 5)
 
   def test_export_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -145,7 +147,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().allocate = '1'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink1'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.exportedTunnel.internal_block_port.ref.steps.add().name = 'packed'
@@ -154,7 +156,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink2'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'inner'
     expected_constr.exportedTunnel.exterior_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
   def test_assign_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -168,7 +170,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_ref2.steps.add().name = 'sink2'
     expected_ref2.steps.add().name = 'inner'
     expected_ref2.steps.add().name = 'param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
   def test_assign_unpacked_tunnel(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -176,7 +178,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)
 
     expected_constr = edgir.ValueExpr()
     expected_constr.assignTunnel.dst.steps.add().name = 'sink2'
@@ -184,4 +186,4 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
     expected_constr.assignTunnel.dst.steps.add().name = 'result_param'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'packed'
     expected_constr.assignTunnel.src.ref.steps.add().name = 'result_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, self.constraints)

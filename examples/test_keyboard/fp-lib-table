@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "edg")(type "KiCad")(uri "${KIPRJMOD}/../edg.pretty")(options "")(descr ""))
+  (lib (name "Switch_Keyboard_Hotswap_Kailh")(type "KiCad")(uri "${KICAD6_3RD_PARTY}/footprints/com_github_perigoso_keyswitch-kicad-library/Switch_Keyboard_Hotswap_Kailh.pretty")(options "")(descr ""))
+)

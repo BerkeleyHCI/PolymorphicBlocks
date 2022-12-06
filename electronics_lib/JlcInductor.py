@@ -19,12 +19,33 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
     'L1812': 'Inductor_SMD:L_1812_4532Metric',
   }
 
+  # a secondary parsing method if the package parser fails
+  PART_FOOTPRINT_PARSERS: List[DescriptionParser] = [
+    (re.compile("^NR(20|24|30|40|50|60|80).*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Taiyo-Yuden_NR-{match.group(1)}xx'
+     }),
+    (re.compile("^SRR1015-.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns-SRR1005'
+     }),
+    (re.compile("^SRR1210A?-.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1210A'
+     }),
+    (re.compile("^SRR1260A?-.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1260'
+     }),
+    # Kicad does not have stock 1008 footprint
+  ]
+
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+A) (\S+H) (±\S+%) (\S+Ω) .* Inductors.*"),
      lambda match: {
        TableInductor.INDUCTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
                                                       PartsTableUtil.parse_tolerance(match.group(3))),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
+       TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
      }),
@@ -32,26 +53,42 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
      lambda match: {
        TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
                                                           PartsTableUtil.parse_value(match.group(3), 'H')),
-       TableInductor.FREQUENCY_RATING: Range(0, 0),  # user must waive frequency check
+       TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
      }),
   ]
 
+  @init_in_parent
+  def __init__(self, *args, ignore_frequency: BoolLike = False, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.require(ignore_frequency | (self.frequency == Range.zero_to_upper(0)),
+                 "JLC inductors do not have frequency data, frequency spec must be ignored")
+
   @classmethod
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['Second Category'] != 'Inductors (SMD)':
+      if row['Second Category'] not in ('Inductors (SMD)', 'Power Inductors'):
         return None
+
+      new_cols = {}
+
       footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row[cls._PACKAGE_HEADER])
-      if footprint is None:
+      if footprint is not None:
+        new_cols[cls.KICAD_FOOTPRINT] = footprint
+      else:
+        footprint_cols = cls.parse_full_description(row[cls.PART_NUMBER_COL], cls.PART_FOOTPRINT_PARSERS)
+        if footprint_cols is not None:
+          new_cols.update(footprint_cols)
+        else:
+          return None
+
+      desc_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
+      if desc_cols is not None:
+        new_cols.update(desc_cols)
+      else:
         return None
 
-      new_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
-      if new_cols is None:
-        return None
-
-      new_cols[cls.KICAD_FOOTPRINT] = footprint
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 

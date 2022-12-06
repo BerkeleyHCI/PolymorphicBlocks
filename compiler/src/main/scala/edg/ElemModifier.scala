@@ -1,7 +1,8 @@
 package edg
 
-import edgir.schema.schema
+import edg.wir.ProtoUtil.BlockProtoToSeqMap
 import edgir.elem.elem
+import edgir.schema.schema
 
 
 /** Functions for making small changes to IR trees.
@@ -27,16 +28,18 @@ object ElemModifier {
       case Seq() =>
         fn(curr)
       case Seq(head, tail @ _*) =>
-        curr.blocks.get(head) match {
-          case Some(headBlock) => headBlock.`type` match {
+        val index = curr.blocks.indexOfKey(head)
+        if (index >= 0) {
+          curr.blocks(index).value.get.`type` match {
             case elem.BlockLike.Type.Hierarchy(headBlock) =>
               curr.update(
-                _.blocks(head).hierarchy := transformBlock(prefix :+ head, tail, headBlock, fn)
+                _.blocks(index).value.hierarchy := transformBlock(prefix :+ head, tail, headBlock, fn)
               )
             case other =>
               throw new ElemModifyResolutionError(s"unexpected ${other.getClass} at ${(prefix :+ head).mkString(", ")}")
           }
-          case None => throw new ElemModifyResolutionError(s"can't find next $head at ${prefix.mkString(", ")}")
+        } else {
+          throw new ElemModifyResolutionError(s"can't find next $head at ${prefix.mkString(", ")}")
         }
     }
   }

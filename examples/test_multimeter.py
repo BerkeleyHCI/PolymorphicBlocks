@@ -27,11 +27,11 @@ class ResistorMux(GeneratorBlock):
     for i, resistance in enumerate(resistances):
       if resistance.upper == float('inf'):  # open circuit for this step
         self.dummy = self.Block(DummyPassive())
-        self.connect(self.dummy.io, self.switch.inputs.allocate(str(i)))
+        self.connect(self.dummy.io, self.switch.inputs.request(str(i)))
       else:
         res = self.res[i] = self.Block(Resistor(resistance))
         self.connect(res.a, self.input)
-        self.connect(res.b, self.switch.inputs.allocate(str(i)))
+        self.connect(res.b, self.switch.inputs.request(str(i)))
 
 
 class MultimeterAnalog(Block):
@@ -141,7 +141,7 @@ class MultimeterCurrentDriver(Block):
         [fet_source_node, self.amp.out],
         self.fet.gate.adapt_to(AnalogSink())
       )
-      self.connect(self.enable, self.sw.control.allocate())
+      self.connect(self.enable, self.sw.control.request())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -296,34 +296,34 @@ class MultimeterTest(JlcBoardTop):
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
-                                         self.mcu.adc.allocate('vbatsense'))
+                                         self.mcu.adc.request('vbatsense'))
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.allocate())
+      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
       self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
 
-      self.chain(self.gate.btn_out, self.mcu.gpio.allocate('sw0'))
-      self.chain(self.mcu.gpio.allocate('gate_control'), self.gate.control)
+      self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
+      self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate_vector('rgb'), self.rgb.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw1'))
-      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.allocate('sw2'))
+      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
+      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
 
-      lcd_spi = self.mcu.spi.allocate('lcd_spi')
+      lcd_spi = self.mcu.spi.request('lcd_spi')
       self.lcd = imp.Block(Qt096t_if09())
       self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.connect(self.mcu.gpio.allocate('lcd_reset'), self.lcd.reset)
-      self.connect(self.mcu.gpio.allocate('lcd_rs'), self.lcd.rs)
+      self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
+      self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
       self.connect(lcd_spi, self.lcd.spi)  # MISO unused
-      self.connect(self.mcu.gpio.allocate('lcd_cs'), self.lcd.cs)
+      self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
 
     # SPEAKER DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.gpio.allocate('spk'),
+        self.mcu.gpio.request('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
         self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
@@ -365,7 +365,7 @@ class MultimeterTest(JlcBoardTop):
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.adapt_to(AnalogSource()))
 
-      self.connect(self.mcu.gpio.allocate_vector('inn_control'), self.inn_mux.control)
+      self.connect(self.mcu.gpio.request_vector('inn_control'), self.inn_mux.control)
 
       # POSITIVE PORT
       self.inp = self.Block(BananaSafetyJack())
@@ -376,7 +376,7 @@ class MultimeterTest(JlcBoardTop):
       ))
 
       # MEASUREMENT / SIGNAL CONDITIONING CIRCUITS
-      adc_spi = self.mcu.spi.allocate('adc_spi')
+      adc_spi = self.mcu.spi.request('adc_spi')
       self.measure = imp.Block(MultimeterAnalog())
       self.connect(self.measure.input_positive, inp_port)
       self.connect(self.measure.input_negative, self.inn_merge.output)
@@ -389,10 +389,10 @@ class MultimeterTest(JlcBoardTop):
         adc_spi)
       self.connect(self.adc.pwr, self.v3v3)
       self.connect(self.adc.pwra, self.vanalog)
-      self.connect(self.adc.vins.allocate('0'), self.measure_buffer.output)
-      self.connect(self.adc.vins.allocate('1'), self.inn_merge.output)
-      self.connect(self.mcu.gpio.allocate_vector('measure_select'), self.measure.select)
-      self.connect(self.mcu.gpio.allocate('adc_cs'), self.adc.cs)
+      self.connect(self.adc.vins.request('0'), self.measure_buffer.output)
+      self.connect(self.adc.vins.request('1'), self.inn_merge.output)
+      self.connect(self.mcu.gpio.request_vector('measure_select'), self.measure.select)
+      self.connect(self.mcu.gpio.request('adc_cs'), self.adc.cs)
 
       self.adc_vref = self.connect(self.adc.vref)
       (self.tp_vref, ), _ = self.chain(
@@ -405,11 +405,11 @@ class MultimeterTest(JlcBoardTop):
       ))
       self.connect(self.driver.output, inp_port)
       (self.driver_dac, ), _ = self.chain(
-        self.mcu.gpio.allocate('driver_control'),
+        self.mcu.gpio.request('driver_control'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 100*Hertz(tol=0.5))),
         self.driver.control)
-      self.connect(self.mcu.gpio.allocate_vector('driver_select'), self.driver.select)
-      self.connect(self.mcu.gpio.allocate('driver_enable'), self.driver.enable)
+      self.connect(self.mcu.gpio.request_vector('driver_select'), self.driver.select)
+      self.connect(self.mcu.gpio.request('driver_enable'), self.driver.enable)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -429,10 +429,10 @@ class MultimeterTest(JlcBoardTop):
         (['measure', 'range', 'switch'], AnalogSwitchTree),
         (['driver', 'range', 'switch'], AnalogSwitchTree),
         (['measure', 'res'], GenericChipResistor),
-        (['spk', 'conn'], JstPhK),
+        (['spk', 'conn'], JstPhKVertical),
 
-        (['driver', 'fet'], DigikeyFet),
-        (['driver', 'diode'], DigikeySmtDiode),
+        (['driver', 'fet'], CustomFet),
+        (['driver', 'diode'], CustomDiode),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -476,6 +476,11 @@ class MultimeterTest(JlcBoardTop):
 
         # pin footprints to re-select parts with newer parts tables
         (['driver', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q3
+        (['driver', 'fet', 'manufacturer_spec'], 'Infineon Technologies'),
+        (['driver', 'fet', 'part_spec'], 'BSR92PH6327XTSA1'),
+        (['driver', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
+        (['driver', 'diode', 'manufacturer_spec'], 'Micro Commercial Co'),
+        (['driver', 'diode', 'part_spec'], 'GS1G-LTP'),
         (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
         (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
         (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
@@ -486,7 +491,7 @@ class MultimeterTest(JlcBoardTop):
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
+        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),

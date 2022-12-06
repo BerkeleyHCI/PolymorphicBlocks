@@ -434,6 +434,18 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
       rhs_cast = rhs
     return self * rhs_cast.__mul_inv__()
 
+  def abs(self) -> RangeExpr:
+    """Returns a RangeExpr that is the absolute value of this.
+    Intuitively, this returns a range that contains the absolute value of every point in the input."""
+    return (self.lower() < 0).then_else(
+      (self.upper() < 0).then_else(
+        self._to_expr_type((0 - self.upper(), 0 - self.lower())),  # both smaller than zero, invert everything
+        self._to_expr_type((0, self.upper().max(0 - self.lower())))  # range crosses zero
+      ),
+      self  # lower > 0 and by extension upper > 0, leave as-is
+    )
+
+
 StringLike = Union['StringExpr', str]
 class StringExpr(ConstraintExpr[str, StringLike]):
   """String expression, can be used as a constraint"""
@@ -466,18 +478,18 @@ class StringExpr(ConstraintExpr[str, StringLike]):
 class AssignExpr(ConstraintExpr[None, None]):
   """Assignment expression, should be an internal type"""
   @classmethod
-  def _to_expr_type(cls, input: Any) -> AssignExpr:
+  def _to_expr_type(cls, input: Any) -> NoReturn:
     raise ValueError("can't convert to AssignExpr")
 
   @classmethod
-  def _decl_to_proto(self) -> edgir.ValInit:
+  def _decl_to_proto(self) -> NoReturn:
     raise ValueError("can't create parameter from AssignExpr")
 
   @classmethod
-  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+  def _from_lit(cls, pb: edgir.ValueLit) -> NoReturn:
     raise ValueError("can't unpack AssignExpr")
 
-  def _is_lit(self) -> bool:
+  def _is_lit(self) -> NoReturn:
     raise ValueError("can't have literal AssignExpr")
 
 

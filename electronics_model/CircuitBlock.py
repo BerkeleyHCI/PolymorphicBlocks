@@ -34,6 +34,7 @@ class FootprintBlock(Block):
   def __init__(self) -> None:
     super().__init__()
     self.fp_footprint = self.Parameter(StringExpr())
+    self.fp_pinning = self.Parameter(ArrayStringExpr())
     self.fp_datasheet = self.Parameter(StringExpr())
 
     self.fp_mfr = self.Parameter(StringExpr())
@@ -41,19 +42,6 @@ class FootprintBlock(Block):
     self.fp_value = self.Parameter(StringExpr())
     self.fp_refdes = self.Parameter(StringExpr())
     self.fp_refdes_prefix = self.Parameter(StringExpr())
-
-  def _metadata_to_proto(self, src: Any, path: List[str],
-                         ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
-    def refable_to_path_expr(ref: Refable) -> edgir.ValueExpr:
-      expr = edgir.ValueExpr()
-      expr.ref.CopyFrom(ref_map[ref])
-      return expr
-
-    if path == ['pinning']:
-      fp_pins = {name: refable_to_path_expr(pin).SerializeToString() for name, pin in src.items()}
-      return super()._metadata_to_proto(fp_pins, path, ref_map)
-    else:
-      return super()._metadata_to_proto(src, path, ref_map)
 
   # TODO: allow value to be taken from parameters, ideally w/ string concat from params
   def footprint(self, refdes: str, footprint: StringLike, pinning: Mapping[str, CircuitPort],
@@ -70,12 +58,14 @@ class FootprintBlock(Block):
       raise BlockDefinitionError(self, "can't call Footprint(...) outside __init__, contents or generate",
                                  "call Footprint(...) inside those functions, and remember to make the super() call")
 
-    # TODO type-check footprints and pins?
+    self.fp_is_footprint = self.Metadata("")
+
+    pinning_array = []
     for pin_name, pin_port in pinning.items():
       if not isinstance(pin_port, CircuitPort):
         raise TypeError(f"pin port to Footprint(...) must be CircuitPort, got {pin_port} of type {type(pin_port)}")
-
-    self.pinning = self.Metadata(pinning)
+      pinning_array.append(f'{pin_name}={pin_port._name_from(self)}')
+    self.assign(self.fp_pinning, pinning_array)
 
     self.assign(self.fp_footprint, footprint)
     self.assign(self.fp_refdes_prefix, refdes)

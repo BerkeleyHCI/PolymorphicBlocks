@@ -10,11 +10,11 @@ class Qt096t_if09_Device(DiscreteChip):
     self.conn = self.Block(Fpc050(length=8))
 
     # both Vdd and VddI
-    self.vdd = self.Export(self.conn.pins.allocate('7').adapt_to(VoltageSink(
+    self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
       voltage_limits=(2.5, 4.8) * Volt,  # 2.75v typ
       current_draw=(0.02, 2.02) * mAmp  # ST7735S Table 7.3, IDDI + IDD, typ - max
     )))
-    self.gnd = self.Export(self.conn.pins.allocate('2').adapt_to(Ground()))
+    self.gnd = self.Export(self.conn.pins.request('2').adapt_to(Ground()))
 
     io_model = DigitalSink.from_supply(
       self.gnd, self.vdd,
@@ -22,17 +22,17 @@ class Qt096t_if09_Device(DiscreteChip):
       current_draw=0*mAmp(tol=0),
       input_threshold_factor=(0.3, 0.7),
     )
-    self.reset = self.Export(self.conn.pins.allocate('3').adapt_to(io_model))
+    self.reset = self.Export(self.conn.pins.request('3').adapt_to(io_model))
     # data / command selection pin
-    self.rs = self.Export(self.conn.pins.allocate('4').adapt_to(io_model))
-    self.cs = self.Export(self.conn.pins.allocate('8').adapt_to(io_model))
+    self.rs = self.Export(self.conn.pins.request('4').adapt_to(io_model))
+    self.cs = self.Export(self.conn.pins.request('8').adapt_to(io_model))
 
     self.spi = self.Port(SpiSlave.empty())
-    self.connect(self.spi.sck, self.conn.pins.allocate('6').adapt_to(io_model))  # scl
-    self.connect(self.spi.mosi, self.conn.pins.allocate('5').adapt_to(io_model))  # sda
+    self.connect(self.spi.sck, self.conn.pins.request('6').adapt_to(io_model))  # scl
+    self.connect(self.spi.mosi, self.conn.pins.request('5').adapt_to(io_model))  # sda
     self.spi.miso.not_connected()
 
-    self.leda = self.Export(self.conn.pins.allocate('1'))  # TODO maybe something else?
+    self.leda = self.Export(self.conn.pins.request('1'))  # TODO maybe something else?
 
 
 class Qt096t_if09(Lcd, Block):

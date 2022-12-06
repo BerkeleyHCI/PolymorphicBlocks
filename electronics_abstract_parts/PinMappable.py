@@ -57,6 +57,9 @@ class PinResource(BaseLeafPinMapResource):
     self.pin = pin
     self.name_models = name_models
 
+  def __repr__(self):
+    return f"PinResource({self.pin}, {self.name_models})"
+
   def __eq__(self, other):
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PinResource) and self.pin == other.pin and self.name_models is other.name_models
@@ -76,6 +79,9 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
     self.port_model = port_model
     self.inner_allowed_pins = inner_allowed_pins
 
+  def __repr__(self):
+    return f"PeripheralFixedPin({self.name}, {self.port_model.__class__.__name__} {self.inner_allowed_pins})"
+
   def __eq__(self, other):
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralFixedPin) and self.name == other.name and \
@@ -90,6 +96,9 @@ class PeripheralAnyResource(BaseDelegatingPinMapResource):
   def __init__(self, name: str, port_model: Bundle):
     self.name = name
     self.port_model = port_model
+
+  def __repr__(self):
+    return f"PeripheralAnyResource({self.name}, {self.port_model.__class__.__name__})"
 
   def __eq__(self, other):
     # TODO avoid using is if we can compare port model equality
@@ -107,6 +116,9 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
     self.name = name
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
+
+  def __repr__(self):
+    return f"PeripheralFixedResource({self.name}, {self.port_model.__class__.__name__}, {self.inner_allowed_names})"
 
   def __eq__(self, other):
     # TODO avoid using is if we can compare port model equality
@@ -238,6 +250,20 @@ class PinMapUtil:
 
     remapped_resources_raw = [remap_resource(resource) for resource in self.resources]
     remapped_resources = [resource for resource in remapped_resources_raw if resource is not None]
+
+    def resource_pin(resource: BasePinMapResource) -> List[str]:
+      if isinstance(resource, PinResource):
+        return [resource.pin]
+      elif isinstance(resource, PeripheralFixedPin):
+        return list(resource.inner_allowed_pins.values())
+      elif isinstance(resource, BaseDelegatingPinMapResource):
+        return []
+      else:
+        raise NotImplementedError(f"unknown resource {resource}")
+    all_pins = itertools.chain(*[resource_pin(resource) for resource in self.resources])
+    missed_names = set(pinmap.keys()).difference(all_pins)
+    assert not missed_names, f"invalid pins in remap: {missed_names}"
+
     return PinMapUtil(remapped_resources, self.transforms)
 
   @staticmethod

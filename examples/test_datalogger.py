@@ -50,9 +50,9 @@ class TestDatalogger(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      self.connect(self.mcu.usb.allocate(), self.usb_conn.usb)
+      self.connect(self.mcu.usb.request(), self.usb_conn.usb)
 
-      (self.can, ), _ = self.chain(self.mcu.can.allocate('can'), imp.Block(CalSolCanBlock()))
+      (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())
@@ -60,66 +60,66 @@ class TestDatalogger(BoardTop):
       self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
-      # mcu_i2c = self.mcu.i2c.allocate()  # no devices, ignored for now
+      # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now
       # self.i2c_pullup = imp.Block(I2cPullup())
       # self.connect(self.i2c_pullup.i2c, mcu_i2c)
 
       self.sd = imp.Block(SdSocket())
-      self.connect(self.mcu.spi.allocate('sd_spi'), self.sd.spi)
-      self.connect(self.mcu.gpio.allocate('sd_cs'), self.sd.cs)
+      self.connect(self.mcu.spi.request('sd_spi'), self.sd.spi)
+      self.connect(self.mcu.gpio.request('sd_cs'), self.sd.cs)
       (self.cd_pull, ), _ = self.chain(
-        self.mcu.gpio.allocate('sd_cd_pull'),
+        self.mcu.gpio.request('sd_cd_pull'),
         imp.Block(PullupResistor(4.7 * kOhm(tol=0.05))),
         self.sd.cd)
 
       self.xbee = imp.Block(Xbee_S3b())
-      self.connect(self.mcu.uart.allocate('xbee_uart'), self.xbee.data)
+      self.connect(self.mcu.uart.request('xbee_uart'), self.xbee.data)
       (self.xbee_assoc, ), _ = self.chain(
         self.xbee.associate,
         imp.Block(IndicatorLed(current_draw=(0.5, 2)*mAmp)))  # XBee DIO current is -2 -> 2 mA
 
-      aux_spi = self.mcu.spi.allocate('aux_spi')
+      aux_spi = self.mcu.spi.request('aux_spi')
       self.rtc = imp.Block(Pcf2129())
       self.connect(aux_spi, self.rtc.spi)
-      self.connect(self.mcu.gpio.allocate('rtc_cs'), self.rtc.cs)
+      self.connect(self.mcu.gpio.request('rtc_cs'), self.rtc.cs)
       self.connect(self.bat.pwr, self.rtc.pwr_bat)
 
       self.eink = imp.Block(E2154fs091())
       self.connect(aux_spi, self.eink.spi)
-      self.connect(self.mcu.gpio.allocate('eink_busy'), self.eink.busy)
-      self.connect(self.mcu.gpio.allocate('eink_reset'), self.eink.reset)
-      self.connect(self.mcu.gpio.allocate('eink_dc'), self.eink.dc)
-      self.connect(self.mcu.gpio.allocate('eink_cs'), self.eink.cs)
+      self.connect(self.mcu.gpio.request('eink_busy'), self.eink.busy)
+      self.connect(self.mcu.gpio.request('eink_reset'), self.eink.reset)
+      self.connect(self.mcu.gpio.request('eink_dc'), self.eink.dc)
+      self.connect(self.mcu.gpio.request('eink_cs'), self.eink.cs)
 
       self.ext = imp.Block(BlueSmirf())
-      self.connect(self.mcu.uart.allocate('ext_uart'), self.ext.data)
-      self.connect(self.mcu.gpio.allocate('ext_cts'), self.ext.cts)
-      self.connect(self.mcu.gpio.allocate('ext_rts'), self.ext.rts)
+      self.connect(self.mcu.uart.request('ext_uart'), self.ext.data)
+      self.connect(self.mcu.gpio.request('ext_cts'), self.ext.cts)
+      self.connect(self.mcu.gpio.request('ext_rts'), self.ext.rts)
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # system RGB 1
-      self.connect(self.mcu.gpio.allocate_vector('rgb1'), self.rgb1.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb1'), self.rgb1.signals)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # sd card RGB
-      self.connect(self.mcu.gpio.allocate_vector('rgb2'), self.rgb2.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb2'), self.rgb2.signals)
 
       self.rgb3 = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.allocate_vector('rgb3'), self.rgb3.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb3'), self.rgb3.signals)
 
       sw_pull_model = PullupResistor(4.7 * kOhm(tol=0.05))
       (self.sw1, self.sw1_pull), _ = self.chain(imp.Block(DigitalSwitch()),
                                                 imp.Block(sw_pull_model),
-                                                self.mcu.gpio.allocate('sw1'))
+                                                self.mcu.gpio.request('sw1'))
       (self.sw2, self.sw2_pull), _ = self.chain(imp.Block(DigitalSwitch()),
                                                 imp.Block(sw_pull_model),
-                                                self.mcu.gpio.allocate('sw2'))
+                                                self.mcu.gpio.request('sw2'))
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       div_model = VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)
-      (self.v12sense, ), _ = self.chain(self.vin, imp.Block(div_model), self.mcu.adc.allocate('v12sense'))
-      (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.allocate('v5sense'))
-      (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.allocate('vscsense'))
+      (self.v12sense, ), _ = self.chain(self.vin, imp.Block(div_model), self.mcu.adc.request('v12sense'))
+      (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.request('v5sense'))
+      (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.request('vscsense'))
 
     self.hole = ElementDict[MountingHole]()
     for i in range(3):
@@ -175,7 +175,14 @@ class TestDatalogger(BoardTop):
           'v5sense=9',
           'vscsense=8',
           'swd.swo=PIO0_8',
-        ])
+        ]),
+
+        (['pwr_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.6)),  # trade higher Imax for lower L
+        # JLC does not have frequency specs, must be checked TODO
+        (['pwr_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['eink', 'boost_ind', 'ignore_frequency'], True),
+        # JLC does not have gate voltage tolerance specs, and the inferred one is low
+        (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
       ]
     )
 

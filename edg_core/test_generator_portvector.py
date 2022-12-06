@@ -11,7 +11,7 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.allocated())
+    self.generator(self.generate, self.ports.requested())
 
   def generate(self, elements: List[str]) -> None:
     assert elements == ['0', 'named', '1'], f"bad elements {elements}"
@@ -28,9 +28,9 @@ class TestGeneratorElements(Block):
     self.source0 = self.Block(TestBlockSource(1.0))
     self.source1 = self.Block(TestBlockSource(1.0))
     self.source2 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate())
-    self.connect(self.source1.port, self.block.ports.allocate('named'))
-    self.connect(self.source2.port, self.block.ports.allocate())
+    self.connect(self.source0.port, self.block.ports.request())
+    self.connect(self.source1.port, self.block.ports.request('named'))
+    self.connect(self.source2.port, self.block.ports.request())
 
 
 class TestGeneratorPortVector(unittest.TestCase):
@@ -39,23 +39,20 @@ class TestGeneratorPortVector(unittest.TestCase):
 
   def test_initializer(self):
     compiled = ScalaCompiler.compile(TestGeneratorElements)
-    pb = compiled.contents.blocks['block'].hierarchy
-    self.assertEqual(
-      edgir.AssignLit(['ports', '0', 'range_param'], Range(-1, 1)),
-      pb.constraints["(init)ports.0.range_param"])
-    self.assertEqual(
-      edgir.AssignLit(['ports', 'named', 'range_param'], Range(-5, 5)),
-      pb.constraints["(init)ports.named.range_param"])
-    self.assertEqual(
-      edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)),
-      pb.constraints["(init)ports.1.range_param"])
+    pb = compiled.contents.blocks[0].value.hierarchy
+    self.assertEqual(pb.constraints[1].name, "(init)ports.0.range_param")
+    self.assertEqual(pb.constraints[1].value, edgir.AssignLit(['ports', '0', 'range_param'], Range(-1, 1)))
+    self.assertEqual(pb.constraints[2].name, "(init)ports.named.range_param")
+    self.assertEqual(pb.constraints[2].value, edgir.AssignLit(['ports', 'named', 'range_param'], Range(-5, 5)))
+    self.assertEqual(pb.constraints[3].name, "(init)ports.1.range_param")
+    self.assertEqual(pb.constraints[3].value, edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)))
 
 
 class GeneratorInnerBlockInvalid(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate, self.ports.allocated())
+    self.generator(self.generate, self.ports.requested())
 
   def generate(self, elements: List[str]) -> None:
     self.ports.append_elt(TestPortSink(), 'haha')
@@ -67,7 +64,7 @@ class TestGeneratorElementsInvalid(Block):
     self.block = self.Block(GeneratorInnerBlockInvalid())
 
     self.source0 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate('nope'))
+    self.connect(self.source0.port, self.block.ports.request('nope'))
 
 
 class TestGeneratorPortVectorInvalid(unittest.TestCase):
@@ -91,9 +88,9 @@ class GeneratorWrapperTest(Block):  # same as TestGeneratorElements, but creatin
     self.source0 = self.Block(TestBlockSource(1.0))
     self.source1 = self.Block(TestBlockSource(1.0))
     self.source2 = self.Block(TestBlockSource(1.0))
-    self.connect(self.source0.port, self.block.ports.allocate())
-    self.connect(self.source1.port, self.block.ports.allocate('named'))
-    self.connect(self.source2.port, self.block.ports.allocate())
+    self.connect(self.source0.port, self.block.ports.request())
+    self.connect(self.source1.port, self.block.ports.request('named'))
+    self.connect(self.source2.port, self.block.ports.request())
 
 
 class TestGeneratorWrapper(unittest.TestCase):
@@ -102,17 +99,19 @@ class TestGeneratorWrapper(unittest.TestCase):
 
   def test_exported_ports(self):
     compiled = ScalaCompiler.compile(GeneratorWrapperTest)
+    pb = edgir.pair_get(compiled.contents.blocks, 'block').hierarchy
 
     # check the inner block too
-    pb_ports = compiled.contents.blocks['block'].hierarchy.blocks['block'].hierarchy.ports['ports'].array.ports.ports
-    self.assertIn('0', pb_ports)
-    self.assertIn('named', pb_ports)
-    self.assertIn('1', pb_ports)
+    inner_block = edgir.pair_get(pb.blocks, 'block').hierarchy
+    pb_ports = edgir.pair_get(inner_block.ports, 'ports').array.ports.ports
+    self.assertEqual(pb_ports[0].name, '0')
+    self.assertEqual(pb_ports[1].name, 'named')
+    self.assertEqual(pb_ports[2].name, '1')
 
-    pb_ports = compiled.contents.blocks['block'].hierarchy.ports['ports'].array.ports.ports
-    self.assertIn('0', pb_ports)
-    self.assertIn('named', pb_ports)
-    self.assertIn('1', pb_ports)
+    pb_ports = edgir.pair_get(pb.ports, 'ports').array.ports.ports
+    self.assertEqual(pb_ports[0].name, '0')
+    self.assertEqual(pb_ports[1].name, 'named')
+    self.assertEqual(pb_ports[2].name, '1')
 
 
 class GeneratorArrayParam(GeneratorBlock):
@@ -137,7 +136,7 @@ class GeneratorArrayParamTop(Block):
 
     self.source = self.Block(TestBlockSource(1.0))
     self.connect(self.source.port,
-                 self.block.ports.allocate(), self.block.ports.allocate(), self.block.ports.allocate())
+                 self.block.ports.request(), self.block.ports.request(), self.block.ports.request())
 
 
 class TestGeneratorArrayParam(unittest.TestCase):

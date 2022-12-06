@@ -73,11 +73,11 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     self.input = self.Export(self.amp.inp, [Input])
     # self.output = self.Export(self.amp.out, [Output])
     self.output = self.Port(AnalogSource.empty(), [Output])
-    self.reference = self.Port(AnalogSink.empty())
+    self.reference = self.Port(AnalogSink.empty(), optional=True)  # optional zero reference, defaults to GND
 
     self.amplification = self.ArgParameter(amplification)
 
-    self.generator(self.generate_resistors, amplification, impedance, series, tolerance)
+    self.generator(self.generate_resistors, amplification, impedance, series, tolerance, self.reference.is_connected())
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
@@ -86,7 +86,8 @@ class Amplifier(AnalogFilter, GeneratorBlock):
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
     )
 
-  def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float) -> None:
+  def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float,
+                         reference_connected: bool) -> None:
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
     top_resistance, bottom_resistance = calculator.find(AmplifierValues(amplification, impedance))
 
@@ -105,9 +106,12 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     )), self.r2.a.adapt_to(AnalogSink(
       # treated as an ideal sink for now
     )), self.amp.inn)
-    self.connect(self.reference, self.r2.b.adapt_to(AnalogSink(
-      impedance=self.r1.actual_resistance + self.r2.actual_resistance
-    )))
+    if reference_connected:
+      self.connect(self.reference, self.r2.b.adapt_to(AnalogSink(
+        impedance=self.r1.actual_resistance + self.r2.actual_resistance
+      )))
+    else:
+      self.connect(self.gnd, self.r2.b.adapt_to(Ground()))
 
     self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))
 

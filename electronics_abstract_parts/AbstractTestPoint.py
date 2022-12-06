@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, List
 
 from electronics_model import *
 from electronics_model.CanPort import CanLogicLink
@@ -7,27 +7,14 @@ from .Categories import *
 
 
 @abstract_block
-class TestPoint(GeneratorBlock):
-  """A passively-typed test point that provides a value based on the connected link.
-  Supports a name parameter that allows it to take a link name from a wrapping block.
-  Abstract block, implementing blocks must implement create_test_point to actually make the footprint.
+class TestPoint(Block):
+  """Abstract test point that can take a name as a string, used as the footprint value.
   """
   @init_in_parent
   def __init__(self, name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(Passive(), [InOut])
-
-    self.generator(self.generate, name, self.io.link().name())
-    self.actual_name = self.Parameter(StringExpr())
-
-  def generate(self, block_name: str, link_name: str) -> None:
-    actual_name = block_name if block_name else link_name
-    assert actual_name, "test point may not have empty name"  # TODO this shouldn't gate generation
-    self.assign(self.actual_name, actual_name)
-    self.create_test_point(actual_name)
-
-  def create_test_point(self, name: str) -> None:
-    raise NotImplementedError
+    self.tp_name = self.ArgParameter(name)
 
 
 class VoltageTestPoint(Block):
@@ -54,6 +41,20 @@ class DigitalTestPoint(Block):
   def connected(self, io: Port[DigitalLink]) -> 'DigitalTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
+
+
+class DigitalArrayTestPoint(GeneratorBlock):
+  """Creates an array of Digital test points, sized from the port array's connections."""
+  def __init__(self):
+    super().__init__()
+    self.io = self.Port(Vector(DigitalSink().empty()), [InOut])
+    self.generator(self.generate, self.io.requested())
+
+  def generate(self, requesteds: List[str]):
+    self.tp = ElementDict[DigitalTestPoint]()
+    for requested in requesteds:
+      tp = self.tp[requested] = self.Block(DigitalTestPoint())
+      self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
 class AnalogTestPoint(Block):

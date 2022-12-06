@@ -32,28 +32,26 @@ class BlockBaseProtoTestCase(unittest.TestCase):
 
   def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 1)
-    self.assertTrue(self.pb.params['base_float'].HasField('floating'))
+    self.assertEqual(self.pb.params[0].name, 'base_float')
+    self.assertTrue(self.pb.params[0].value.HasField('floating'))
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
-    self.assertEqual(self.pb.ports['base_port'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
-    self.assertEqual(self.pb.ports['base_port_constr'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
-
-  def test_port_init(self) -> None:
-    self.assertEqual(
-      edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']),
-      self.pb.constraints["(init)base_port_constr.float_param"])
+    self.assertEqual(self.pb.ports[0].name, 'base_port')
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].name, 'base_port_constr')
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
     expected_constr.ref.steps.add().name = 'base_port'
     expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
+    self.assertEqual(self.pb.constraints[0].value, expected_constr)
 
-    expected_constr = edgir.ValueExpr()
-    expected_constr.ref.steps.add().name = 'base_port_constr'
-    expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
-    self.assertNotIn(expected_constr, self.pb.constraints.values())
+  def test_port_init(self) -> None:
+    self.assertEqual(self.pb.constraints[1].name, "(init)base_port_constr.float_param")
+    self.assertEqual(self.pb.constraints[1].value, edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']))
 
 
 class BlockProtoTestCase(unittest.TestCase):
@@ -69,32 +67,51 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(len(self.pb.superclasses), 1)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
 
-    self.assertTrue(self.pb.params['base_float'].HasField('floating'))
-    self.assertEqual(self.pb.ports['base_port'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
-    self.assertEqual(self.pb.ports['base_port_constr'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
-
-  def test_superclass_init(self) -> None:
-    self.assertEqual(
-      edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']),
-      self.pb.constraints["(init)base_port_constr.float_param"])
+    self.assertEqual(self.pb.params[0].name, "base_float")
+    self.assertTrue(self.pb.params[0].value.HasField('floating'))
+    self.assertEqual(self.pb.ports[0].name, "base_port")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].name, "base_port_constr")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 3)
-    self.assertEqual(self.pb.ports['port_lit'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[2].name, "port_lit")
+    self.assertEqual(self.pb.ports[2].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
 
   def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 4)
-    self.assertTrue(self.pb.params['range_init'].HasField('range'))
-    self.assertTrue(self.pb.params['array_init'].HasField('array'))
-    self.assertTrue(self.pb.params['array_empty'].HasField('array'))
+    self.assertEqual(self.pb.params[1].name, "range_init")
+    self.assertTrue(self.pb.params[1].value.HasField('range'))
+    self.assertEqual(self.pb.params[2].name, "array_init")
+    self.assertTrue(self.pb.params[2].value.HasField('array'))
+    self.assertEqual(self.pb.params[3].name, "array_empty")
+    self.assertTrue(self.pb.params[3].value.HasField('array'))
+
+  def test_superclass_init(self) -> None:
+    self.assertEqual(self.pb.constraints[1].name, "(init)base_port_constr.float_param")
+    self.assertEqual(self.pb.constraints[1].value, edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']))
+
+  def test_port_init(self) -> None:
+    self.assertEqual(self.pb.constraints[2].name, "(init)port_lit.float_param")
 
   def test_param_init(self) -> None:
-    self.assertEqual(
-      edgir.AssignLit(['range_init'], Range(-4.2, -1.3)),
-      self.pb.constraints["(init)range_init"])
-    self.assertEqual(
-      edgir.AssignLit(['array_init'], [False, True, False]),
-      self.pb.constraints["(init)array_init"])
-    self.assertEqual(
-      edgir.AssignLit(['array_empty'], []),
-      self.pb.constraints["(init)array_empty"])
+    self.assertEqual(self.pb.constraints[3].name, "(init)range_init")
+    self.assertEqual(self.pb.constraints[3].value, edgir.AssignLit(['range_init'], Range(-4.2, -1.3)))
+
+    expected_assign = edgir.ValueExpr()
+    expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_init']))
+    expected_array = expected_assign.assign.src.array
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(True))
+    expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
+    self.assertEqual(self.pb.constraints[4].name, "(init)array_init")
+    self.assertEqual(self.pb.constraints[4].value, expected_assign)
+
+    expected_assign = edgir.ValueExpr()
+    expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(['array_empty']))
+    expected_assign.assign.src.array.SetInParent()
+    self.assertEqual(self.pb.constraints[5].name, "(init)array_empty")
+    self.assertEqual(self.pb.constraints[5].value, expected_assign)
+

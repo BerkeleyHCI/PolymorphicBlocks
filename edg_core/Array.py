@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import itertools
+from abc import abstractmethod
 from typing import *
+from deprecated import deprecated
 
 import edgir
 from .Binding import LengthBinding, AllocatedBinding
@@ -30,10 +32,26 @@ class MapExtractBinding(Binding):
     return pb
 
 
+class FlattenBinding(Binding):
+  def __init__(self, elts: ConstraintExpr):
+    super().__init__()
+    self.elts = elts
+
+  def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+    return [self.elts]
+
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+    pb = edgir.ValueExpr()
+    pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
+    pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
+    return pb
+
+
 @non_library
 class BaseVector(BaseContainerPort):
+  @abstractmethod
   def _get_elt_sample(self) -> BasePort:
-    pass
+    ...
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
@@ -88,10 +106,10 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elt_sample = tpe._bind(self)
     self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
-    self._allocates: List[Tuple[Optional[str], BasePort]] = []  # used to track allocate / allocate_vector for ref_map
+    self._requests: List[Tuple[Optional[str], BasePort]] = []  # used to track request / request_vector for ref_map
 
     self._length = IntExpr()._bind(LengthBinding(self))
-    self._allocated = ArrayStringExpr()._bind(AllocatedBinding(self))
+    self._requested = ArrayStringExpr()._bind(AllocatedBinding(self))
 
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
@@ -122,7 +140,7 @@ class Vector(BaseVector, Generic[VectorType]):
       raise ValueError(f"no name for {subelt}")
     elif builder.get_enclosing_block() is block_parent._parent:
       # in block enclosing the block defining this port (allocate required)
-      for (i, (suggested_name, allocate_elt)) in enumerate(self._allocates):
+      for (i, (suggested_name, allocate_elt)) in enumerate(self._requests):
         if subelt is allocate_elt:
           if suggested_name is not None:
             return suggested_name
@@ -144,7 +162,7 @@ class Vector(BaseVector, Generic[VectorType]):
     if self._elts is not None:
       pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        pb.array.ports.ports[name].CopyFrom(elt._instance_to_proto())
+        edgir.add_pair(pb.array.ports.ports, name).CopyFrom(elt._instance_to_proto())
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -155,10 +173,10 @@ class Vector(BaseVector, Generic[VectorType]):
 
     return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
       [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
-       (self._allocated, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
+       (self._requested, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
       *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
       *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
-        for (suggested_name, elt) in self._allocates]
+        for (suggested_name, elt) in self._requests]
     )
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
@@ -203,7 +221,11 @@ class Vector(BaseVector, Generic[VectorType]):
     self._elts[suggested_name] = tpe._bind(self)
     return self._elts[suggested_name]
 
+  @deprecated(reason="renamed to request")
   def allocate(self, suggested_name: Optional[str] = None) -> VectorType:
+    return self.request(suggested_name)
+
+  def request(self, suggested_name: Optional[str] = None) -> VectorType:
     """Returns a new port of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
@@ -217,10 +239,14 @@ class Vector(BaseVector, Generic[VectorType]):
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = type(self._tpe).empty()._bind(self)
-    self._allocates.append((suggested_name, allocated))
+    self._requests.append((suggested_name, allocated))
     return allocated
 
+  @deprecated(reason="renamed to request_vector")
   def allocate_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
+    return self.request_vector(suggested_name)
+
+  def request_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
     """Returns a new dynamic-length, array-port slice of this Vector.
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
@@ -234,14 +260,18 @@ class Vector(BaseVector, Generic[VectorType]):
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
     allocated = Vector(type(self._tpe).empty())._bind(self)
-    self._allocates.append((suggested_name, allocated))
+    self._requests.append((suggested_name, allocated))
     return allocated
 
   def length(self) -> IntExpr:
     return self._length
 
+  @deprecated(reason="renamed to requested")
   def allocated(self) -> ArrayStringExpr:
-    return self._allocated
+    return self.requested()
+
+  def requested(self) -> ArrayStringExpr:
+    return self._requested
 
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
@@ -324,3 +354,10 @@ class Vector(BaseVector, Generic[VectorType]):
       raise TypeError(f"selector to hull(...) must return RangeExpr, got {param} of type {type(param)}")
 
     return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).hull()
+
+  ArrayType = TypeVar('ArrayType', bound=ArrayExpr)
+  def flatten(self, selector: Callable[[VectorType], ArrayType]) -> ArrayType:
+    param = selector(self._elt_sample)
+    assert isinstance(param, ArrayExpr), "selector to flatten must return ArrayExpr"
+    array_of_arrays = ArrayExpr.array_of_elt(param._elt_sample)._bind(MapExtractBinding(self, param))
+    return ArrayExpr.array_of_elt(param._elt_sample)._bind(FlattenBinding(array_of_arrays))  # type: ignore

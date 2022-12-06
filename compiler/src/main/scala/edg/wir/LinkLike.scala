@@ -1,6 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
+import edg.wir.ProtoUtil._
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
@@ -10,6 +11,7 @@ import scala.collection.{SeqMap, mutable}
 
 
 sealed trait LinkLike extends Pathable {
+  def cloned: LinkLike  // using clone directly causes an access error to Object.clone
   def toPb: elem.LinkLike
 }
 
@@ -18,14 +20,24 @@ sealed trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+
+  override def cloned: Link = {
+    val cloned = new Link(pb)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned
+  }
 
   override def isElaborated: Boolean = true
 
-  override def getParams: Map[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -41,9 +53,9 @@ class Link(pb: elem.Link) extends LinkLike
 
   def toEltPb: elem.Link = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.toPb
     )
   }
 
@@ -61,6 +73,18 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   var model: Option[Link] = None
 
+  override def cloned: LinkArray = {
+    val cloned = new LinkArray(pb)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned.model = model
+    cloned
+  }
+
   def getModelLibrary: ref.LibraryPath = pb.getSelfClass
 
   def createFrom(linkDef: Link): Unit = {
@@ -68,12 +92,12 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     model = Some(linkDef)
   }
 
-  def getModelPorts: Map[String, PortLike] = model.get.getPorts
+  def getModelPorts: SeqMap[String, PortLike] = model.get.getPorts
 
   // Creates my ports from the model type and array lengths, returning the port postfix and created port.
   // Outer arrays have their elements set, while inner arrays (corresponding to the link-array's ELEMENTS)
   // must be set externally.
-  def initPortsFromModel(arrayElements: Map[String, Seq[String]]): Map[Seq[String], PortArray] = {
+  def initPortsFromModel(arrayElements: SeqMap[String, Seq[String]]): SeqMap[Seq[String], PortArray] = {
     require(ports.isEmpty)
     model.get.getPorts.flatMap {
       case (portName, port: PortArray) =>
@@ -103,7 +127,7 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     }.toMap
   }
 
-  def initConstraints(linkElements: Seq[String], arrayElements: Map[String, Seq[String]]): Unit = {
+  def initConstraints(linkElements: Seq[String], arrayElements: SeqMap[String, Seq[String]]): Unit = {
     import edg.ElemBuilder.Constraint
     import edg.ExprBuilder.Ref
     require(constraints.isEmpty)
@@ -143,9 +167,9 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   def toEltPb: elem.LinkArray = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.toPb
     )
   }
 
@@ -155,6 +179,8 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 }
 
 case class LinkLibrary(target: ref.LibraryPath) extends LinkLike {
+  override def cloned: LinkLibrary = this  // immutable
+
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
     case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")

@@ -1,4 +1,4 @@
-from typing import Optional, Any, Type, Iterable, Union, Dict
+from typing import Optional, Any, Type, Iterable, Union, Dict, List, Tuple
 
 import os
 import subprocess
@@ -25,10 +25,10 @@ class CompiledDesign:
     return CompiledDesign(result.design, values)
 
   @staticmethod
-  def from_backend_request(request: edgrpc.BackendRequest) -> 'CompiledDesign':
-    values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
-              for value in request.solvedValues}
-    return CompiledDesign(request.design, values)
+  def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> 'CompiledDesign':
+    values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
+                   for value in values}
+    return CompiledDesign(design, values_dict)
 
   def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes]):
     self.design = design
@@ -40,6 +40,13 @@ class CompiledDesign:
   def get_value(self, path: Iterable[Union[str, 'edgir.Reserved.V']]) -> Optional[edgir.LitTypes]:
     path_key = edgir.LocalPathList(path).SerializeToString()
     return self._values.get(path_key, None)
+
+  def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]):
+    """Append solved values to this design, such as from a refinement pass"""
+    for (value_path, value_value) in values:
+      value_path_str = value_path.SerializeToString()
+      assert value_path_str not in self._values
+      self._values[value_path_str] = edgir.valuelit_to_lit(value_value)
 
 
 class ScalaCompilerInstance:
@@ -73,7 +80,6 @@ class ScalaCompilerInstance:
       self.request_serializer = BufferSerializer[edgrpc.CompilerRequest](self.process.stdin)
       assert self.process.stdout is not None
       self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
-
 
   def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
     self.check_started()

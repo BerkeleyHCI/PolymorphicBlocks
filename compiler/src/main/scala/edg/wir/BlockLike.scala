@@ -1,18 +1,18 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
 import edgir.ref.ref
-import edg.util.SeqMapSortableFrom._
+import edg.wir.ProtoUtil._
 import edgir.ref.ref.LibraryPath
 
-import scala.collection.mutable
+import scala.collection.{SeqMap, mutable}
 
 
 sealed trait BlockLike extends Pathable {
+  def cloned: BlockLike  // using clone directly causes an access error to Object.clone
   def toPb: elem.BlockLike
 }
 
@@ -24,17 +24,30 @@ sealed trait BlockLike extends Pathable {
   */
 class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
-  private val nameOrder = ProtoUtil.getNameOrder(pb.meta)
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports, nameOrder)
-  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks, nameOrder)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links, nameOrder)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints, nameOrder)
+  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
+  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+
+  // creates a copy of this object
+  override def cloned: Block = {
+    val cloned = new Block(pb, unrefinedType)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.blocks.clear()
+    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.cloned })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned
+  }
 
   override def isElaborated: Boolean = true
 
   def getBlockClass: LibraryPath = pb.getSelfClass
 
-  override def getParams: Map[String, init.ValInit] = pb.params
+  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
@@ -56,10 +69,10 @@ class Block(pb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath]) ext
         case None => pb.prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
-      ports=ports.view.mapValues(_.toPb).toMap,
-      blocks=blocks.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap,
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      blocks=blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.toPb,
     )
   }
 
@@ -80,6 +93,20 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   links.clear()
   constraints.clear()
 
+  override def cloned: Generator = {  // TODO dedup w/ super (Block)? but Block.cloned returns a Block
+    val cloned = new Generator(basePb, unrefinedType)
+    cloned.ports.clear()
+    cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
+    cloned.blocks.clear()
+    cloned.blocks.addAll(blocks.map { case (name, block) => name -> block.cloned })
+    cloned.links.clear()
+    cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
+    cloned.constraints.clear()
+    cloned.constraints.addAll(constraints)
+    cloned.generatedPb = generatedPb
+    cloned
+  }
+
   // Apply the generated block on top of the generator stub, and returns the ports that have arrays newly defined
   def applyGenerated(pb: elem.HierarchyBlock): Seq[String] = {
     require(generatedPb.isEmpty, "can't generate twice")
@@ -90,9 +117,11 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
     require(pb.params == basePb.params)
 
     // expand port arrays that may be defined by the generator
-    require(pb.ports.keySet == basePb.ports.keySet)
-    val expandedPorts = pb.ports.flatMap { case (portName, portPb) => portPb.is match {
-      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePb.ports(portName).getArray.contains.isPorts =>
+    val basePbPorts = basePb.ports.toSeqMap
+    val pbPorts = pb.ports.toSeqMap
+    require(pbPorts.keySet == basePbPorts.keySet)
+    val expandedPorts = pbPorts.flatMap { case (portName, portPb) => portPb.is match {
+      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePbPorts(portName).getArray.contains.isPorts =>
         val port = ports(portName).asInstanceOf[PortArray]
         require(!port.isElaborated)
         ports.put(portName, PortLike.fromLibraryPb(portPb))
@@ -100,13 +129,12 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
       case _ => None
     } }
 
-    val nameOrder = ProtoUtil.getNameOrder(pb.meta)
     require(blocks.isEmpty)
     require(links.isEmpty)
     require(constraints.isEmpty)
-    blocks.addAll(parseBlocks(pb.blocks, nameOrder))
-    links.addAll(parseLinks(pb.links, nameOrder))
-    constraints.addAll(parseConstraints(pb.constraints, nameOrder))
+    blocks.addAll(parseBlocks(pb.blocks))
+    links.addAll(parseLinks(pb.links))
+    constraints.addAll(parseConstraints(pb.constraints))
 
     generatedPb = Some(pb)
 
@@ -124,15 +152,17 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
         case None => generatedPb.getOrElse(basePb).prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
-      ports=ports.view.mapValues(_.toPb).toMap,
-      blocks=blocks.view.mapValues(_.toPb).toMap,
-      links=links.view.mapValues(_.toPb).toMap,
-      constraints=constraints.toMap,
+      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      blocks=blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints=constraints.to(SeqMap).toPb,
     )
   }
 }
 
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
+  override def cloned: BlockLibrary = this  // immutable
+
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
     case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")

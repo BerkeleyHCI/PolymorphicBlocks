@@ -6,5 +6,7 @@ name = "pypi"
 [packages]
 protobuf = "*"
 typing_extensions = "*"
+kinparse = "*"
+Deprecated = "*"
 
 [dev-packages]

@@ -2,6 +2,9 @@ package edg
 
 import com.google.protobuf.ByteString
 import edg.EdgirUtils.SimpleLibraryPath
+import edg.wir.ProtoUtil._
+
+import scala.collection.SeqMap
 
 
 /** Convenience functions for building edg ir element trees with less proto boilerplate
@@ -64,17 +67,17 @@ object ElemBuilder {
 
     def Block(selfClass: String,
               superclasses: Seq[String] = Seq(),
-              params: Map[String, init.ValInit] = Map(),
+              params: SeqMap[String, init.ValInit] = SeqMap(),
               paramDefaults: Map[String, expr.ValueExpr] = Map(),
-              ports: Map[String, elem.PortLike] = Map(),
-              blocks: Map[String, elem.BlockLike] = Map(),
-              links: Map[String, elem.LinkLike] = Map(),
-              constraints: Map[String, expr.ValueExpr] = Map(),
+              ports: SeqMap[String, elem.PortLike] = SeqMap(),
+              blocks: SeqMap[String, elem.BlockLike] = SeqMap(),
+              links: SeqMap[String, elem.LinkLike] = SeqMap(),
+              constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
               prerefine: String = "",
              ): elem.BlockLike = elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
-      params=params, paramDefaults=paramDefaults,
-      ports=ports, blocks=blocks, links=links,
-      constraints=constraints,
+      params=params.toPb, paramDefaults=paramDefaults,
+      ports=ports.toPb, blocks=blocks.toPb, links=links.toPb,
+      constraints=constraints.toPb,
       selfClass=Some(LibraryPath(selfClass)),
       superclasses=superclasses map {
         LibraryPath(_)
@@ -95,25 +98,25 @@ object ElemBuilder {
     ))
 
     def Link(selfClass: String,
-             params: Map[String, init.ValInit] = Map(),
-             ports: Map[String, elem.PortLike] = Map(),
-             links: Map[String, elem.LinkLike] = Map(),
-             constraints: Map[String, expr.ValueExpr] = Map(),
+             params: SeqMap[String, init.ValInit] = SeqMap(),
+             ports: SeqMap[String, elem.PortLike] = SeqMap(),
+             links: SeqMap[String, elem.LinkLike] = SeqMap(),
+             constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
             ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Link(elem.Link(
-      params=params, ports=ports, links=links,
-      constraints=constraints,
+      params=params.toPb, ports=ports.toPb, links=links.toPb,
+      constraints=constraints.toPb,
       selfClass=selfClass match {
         case "" => None
         case superclass => Some(LibraryPath(superclass))
       }
     )))
     def Array(selfClass: String,
-              ports: Map[String, elem.PortLike] = Map(),
-              links: Map[String, elem.LinkLike] = Map(),
-              constraints: Map[String, expr.ValueExpr] = Map(),
+              ports: SeqMap[String, elem.PortLike] = SeqMap(),
+              links: SeqMap[String, elem.LinkLike] = SeqMap(),
+              constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
              ): elem.LinkLike = elem.LinkLike(`type`=elem.LinkLike.Type.Array(elem.LinkArray(
-      ports=ports, links=links,
-      constraints=constraints,
+      ports=ports.toPb, links=links.toPb,
+      constraints=constraints.toPb,
       selfClass=selfClass match {
         case "" => None
         case superclass => Some(LibraryPath(superclass))
@@ -130,11 +133,11 @@ object ElemBuilder {
     ))
 
     def Port(selfClass: String,
-             params: Map[String, init.ValInit] = Map(),
-             constraints: Map[String, expr.ValueExpr] = Map(),
+             params: SeqMap[String, init.ValInit] = SeqMap(),
+             constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
             ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Port(elem.Port(
-      params=params,
-      constraints=constraints,
+      params=params.toPb,
+      constraints=constraints.toPb,
       selfClass=selfClass match {
         case "" => None
         case selfClass => Some(LibraryPath(selfClass))
@@ -142,12 +145,12 @@ object ElemBuilder {
     )))
 
     def Bundle(selfClass: String,
-               params: Map[String, init.ValInit] = Map(),
-               ports: Map[String, elem.PortLike] = Map(),
-               constraints: Map[String, expr.ValueExpr] = Map(),
+               params: SeqMap[String, init.ValInit] = SeqMap(),
+               ports: SeqMap[String, elem.PortLike] = SeqMap(),
+               constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
               ): elem.PortLike = elem.PortLike(`is`=elem.PortLike.Is.Bundle(elem.Bundle(
-      params=params, ports=ports,
-      constraints=constraints,
+      params=params.toPb, ports=ports.toPb,
+      constraints=constraints.toPb,
       selfClass=selfClass match {
         case "" => None
         case superclass => Some(LibraryPath(superclass))
@@ -166,7 +169,7 @@ object ElemBuilder {
         contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
           elements.map { element =>
             element -> port
-          }.toMap
+          }.to(SeqMap).toPb
         ))
       )))
   }

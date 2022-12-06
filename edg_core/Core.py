@@ -260,10 +260,9 @@ class HasMetadata(LibraryElement):
     return [bcls for bcls in cls.__bases__
             if issubclass(bcls, base_type) and (bcls, 'non_library') not in bcls._elt_properties]
 
-  def _metadata_to_proto(self, src: Any, path: List[str],
+  def _populate_metadata(self, pb: edgir.Metadata, src: Any,
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
     """Generate metadata from a given object."""
-    pb = edgir.Metadata()
     if isinstance(src, StructuredMetadata):
       pb.CopyFrom(src._to_proto(ref_map))
     elif isinstance(src, str):
@@ -274,11 +273,11 @@ class HasMetadata(LibraryElement):
       if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
         src.finalize()  # TODO should this be here?
       for key, val in src.items():
-        assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key} at {path}'
-        pb.members.node[key].CopyFrom(self._metadata_to_proto(val, path + [key], ref_map))
+        assert isinstance(key, str), f'must overload _metadata_to_proto for non-str dict key {key}'
+        self._populate_metadata(pb.members.node[key], val, ref_map)
     elif isinstance(src, list):
       for idx, val in enumerate(src):
-        pb.members.node[str(idx)].CopyFrom(self._metadata_to_proto(val, path + [str(idx)], ref_map))
+        self._populate_metadata(pb.members.node[str(idx)], val, ref_map)
     else:
-      raise ValueError(f'must overload _metadata_to_proto to handle unknown value {src} at {path}')
+      raise ValueError(f'must overload _metadata_to_proto to handle unknown value {src}')
     return pb

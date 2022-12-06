@@ -30,9 +30,9 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
     self.swd = self.Port(SwdTargetPort().empty())
 
     self.generator(self.generate, self.pin_assigns,
-                   self.gpio.allocated(), self.adc.allocated(), self.dac.allocated(),
-                   self.spi.allocated(), self.i2c.allocated(), self.uart.allocated(),
-                   self.usb.allocated(), self.can.allocated(), self.swd.is_connected())
+                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested(), self.can.requested(), self.swd.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -173,16 +173,16 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
   JLC_BASIC_PART: bool
 
   def generate(self, assignments: List[str],
-               gpio_allocates: List[str], adc_allocates: List[str], dac_allocates: List[str],
-               spi_allocates: List[str], i2c_allocates: List[str], uart_allocates: List[str],
-               usb_allocates: List[str], can_allocates: List[str], swd_connected: bool) -> None:
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_allocates), (SpiMaster, spi_allocates), (I2cMaster, i2c_allocates),
-      (UartPort, uart_allocates), (CanControllerPort, can_allocates),
-      (AnalogSink, adc_allocates), (AnalogSource, dac_allocates), (DigitalBidir, gpio_allocates),
+      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
+      (UartPort, uart_requests), (CanControllerPort, can_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -278,7 +278,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.allocated(), self.usb.allocated())
+    self.generator(self.generate, self.can.requested(), self.usb.requested())
 
   def contents(self):
     super().contents()
@@ -289,6 +289,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
       self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
       # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
@@ -304,21 +305,23 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                    self.ic.swd)
 
-  def generate(self, can_allocated: List[str], usb_allocated: List[str]) -> None:
-    if can_allocated or usb_allocated:  # tighter frequency tolerances from CAN and USB usage require a crystal
+  def generate(self, can_requests: List[str], usb_requests: List[str]) -> None:
+    if can_requests or usb_requests:  # tighter frequency tolerances from CAN and USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.osc)
 
-    if usb_allocated:
-      assert len(usb_allocated) == 1
-      usb_allocated_name = usb_allocated[0]
-      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_allocated_name)
-      self.connect(usb_port, self.ic.usb.allocate(usb_allocated_name))
+    if usb_requests:
+      assert len(usb_requests) == 1
+      usb_request_name = usb_requests[0]
+      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
+      self.connect(usb_port, self.ic.usb.request(usb_request_name))
 
       self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
       self.connect(self.usb_pull.pwr, self.pwr)
       self.connect(usb_port, self.usb_pull.usb)
+    else:
+      self.usb.defined()
 
 
 class Stm32f103_48(Stm32f103Base):

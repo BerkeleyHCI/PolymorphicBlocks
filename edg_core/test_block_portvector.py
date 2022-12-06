@@ -51,8 +51,8 @@ class TestBlockPortVectorConnect(Block):
     self.sink = self.Block(TestBlockPortVectorBase())
     self.source0 = self.Block(TestBlockSource())
     self.source1 = self.Block(TestBlockSource())
-    self.conn0 = self.connect(self.source0.source, self.sink.vector.allocate())
-    self.conn1 = self.connect(self.source1.source, self.sink.vector.allocate())
+    self.conn0 = self.connect(self.source0.source, self.sink.vector.request())
+    self.conn1 = self.connect(self.source1.source, self.sink.vector.request())
 
 
 class TestBlockPortVectorConstraint(TestBlockPortVectorBase):
@@ -68,7 +68,8 @@ class BlockVectorBaseProtoTestCase(unittest.TestCase):
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
-    self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].name, 'vector')
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_port_init(self) -> None:
     self.assertEqual(len(self.pb.constraints), 0)  # no constraints should generate
@@ -80,11 +81,14 @@ class BlockVectorProtoTestCase(unittest.TestCase):
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
-    self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
-    array_ports = self.pb.ports['vector'].array.ports.ports
+    self.assertEqual(self.pb.ports[0].name, 'vector')
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    array_ports = self.pb.ports[0].value.array.ports.ports
     self.assertEqual(len(array_ports), 2)
-    self.assertEqual(array_ports['0'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
-    self.assertEqual(array_ports['1'].lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(array_ports[0].name, '0')
+    self.assertEqual(array_ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(array_ports[1].name, '1')
+    self.assertEqual(array_ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
 
 class BlockVectorEmptyProtoTestCase(unittest.TestCase):
@@ -93,9 +97,9 @@ class BlockVectorEmptyProtoTestCase(unittest.TestCase):
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
-    self.assertEqual(self.pb.ports['vector'].array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
-    self.assertTrue(self.pb.ports['vector'].array.HasField('ports'))
-    array_ports = self.pb.ports['vector'].array.ports.ports
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertTrue(self.pb.ports[0].value.array.HasField('ports'))
+    array_ports = self.pb.ports[0].value.array.ports.ports
     self.assertEqual(len(array_ports), 0)
 
 
@@ -105,20 +109,21 @@ class VectorExportProtoTestCase(unittest.TestCase):
 
   def test_export(self) -> None:
     self.assertEqual(len(self.pb.constraints), 2)
+    constraints = list(map(lambda x: x.value, self.pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
     expected_conn.exported.exterior_port.ref.steps.add().name = '0'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'block0'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
     expected_conn.exported.exterior_port.ref.steps.add().name = '1'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'block1'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
 
 class VectorBridgedProtoTestCase(unittest.TestCase):
@@ -127,20 +132,21 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
 
   def test_bridged(self) -> None:
     self.assertEqual(len(self.pb.constraints), 4)
+    constraints = list(map(lambda x: x.value, self.pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.exported.exterior_port.ref.steps.add().name = 'vector'
     expected_conn.exported.exterior_port.ref.steps.add().name = '0'
     expected_conn.exported.internal_block_port.ref.steps.add().name = '(bridge)vector.0'
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'outer_port'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = '(bridge)vector.0'
     expected_conn.connected.block_port.ref.steps.add().name = 'inner_link'
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'block0'
@@ -148,7 +154,7 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'block1'
@@ -156,7 +162,7 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'conn'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
 
 class VectorConnectProtoTestCase(unittest.TestCase):
@@ -165,6 +171,7 @@ class VectorConnectProtoTestCase(unittest.TestCase):
 
   def test_export(self) -> None:
     self.assertEqual(len(self.pb.constraints), 4)
+    constraints = list(map(lambda x: x.value, self.pb.constraints))
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
@@ -173,14 +180,14 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'source0'
     expected_conn.connected.block_port.ref.steps.add().name = 'source'
     expected_conn.connected.link_port.ref.steps.add().name = 'conn0'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
@@ -189,14 +196,14 @@ class VectorConnectProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.block_port.ref.steps.add().name = 'source1'
     expected_conn.connected.block_port.ref.steps.add().name = 'source'
     expected_conn.connected.link_port.ref.steps.add().name = 'conn1'
     expected_conn.connected.link_port.ref.steps.add().name = 'source'
-    self.assertIn(expected_conn, self.pb.constraints.values())
+    self.assertIn(expected_conn, constraints)
 
 
 class VectorConstraintProtoTestCase(unittest.TestCase):
@@ -205,10 +212,11 @@ class VectorConstraintProtoTestCase(unittest.TestCase):
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.constraints), 1)
+    constraints = list(map(lambda x: x.value, self.pb.constraints))
 
     expected_constr = edgir.ValueExpr()
     expected_constr.assign.dst.steps.add().name = 'float_param_sink_sum'
     expected_constr.assign.src.unary_set.op = edgir.UnarySetExpr.SUM
     expected_constr.assign.src.unary_set.vals.map_extract.container.ref.steps.add().name = 'vector'
     expected_constr.assign.src.unary_set.vals.map_extract.path.steps.add().name = 'float_param'
-    self.assertIn(expected_constr, self.pb.constraints.values())
+    self.assertIn(expected_constr, constraints)

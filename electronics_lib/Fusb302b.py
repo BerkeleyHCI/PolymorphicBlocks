@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Fusb302b_Device(DiscreteChip, FootprintBlock):
+class Fusb302b_Device(DiscreteChip, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.vbus = self.Port(VoltageSink(voltage_limits=(4, 21)))
@@ -20,7 +21,7 @@ class Fusb302b_Device(DiscreteChip, FootprintBlock):
       input_thresholds=(0.51, 1.32)*Volt,
       output_thresholds=(0.35, float('inf')) * Volt,
     )
-    self.i2c = self.Port(I2cSlave(i2c_model))
+    self.i2c = self.Port(I2cSlave(i2c_model, [0x22]))
     self.int_n = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
 
   def contents(self) -> None:
@@ -46,6 +47,8 @@ class Fusb302b_Device(DiscreteChip, FootprintBlock):
       mfr='ON Semiconductor', part='FUSB302B11MPX',  # actual several compatible variants
       datasheet='https://www.onsemi.com/pdf/datasheet/fusb302b-d.pdf'
     )
+    self.assign(self.lcsc_part, 'C132291')
+    self.assign(self.actual_basic_part, False)
 
 
 class Fusb302b(Block):

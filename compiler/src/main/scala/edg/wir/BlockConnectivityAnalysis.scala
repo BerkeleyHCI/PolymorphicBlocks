@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.wir.ProtoUtil._
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
@@ -48,25 +49,21 @@ object BlockConnectivityAnalysis {
   */
 class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   lazy val allExports: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // external ref, internal ref, constr name
-    block.constraints
-        .map { case (name, constr) =>
-          (name, constr.expr)
-        }
-        .collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
-          case (name, expr.ValueExpr.Expr.Exported(exported)) =>
-            (exported.getExteriorPort.getRef, exported.getInternalBlockPort.getRef, name)
-        }.toSeq
+    block.constraints.asPairs.map { case (name, constr) =>
+      (name, constr.expr)
+    }.collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+      case (name, expr.ValueExpr.Expr.Exported(exported)) =>
+        (exported.getExteriorPort.getRef, exported.getInternalBlockPort.getRef, name)
+    }.toSeq
   }
 
   lazy val allConnects: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // block ref, link ref, constr name
-    block.constraints
-        .map { case (name, constr) =>
-          (name, constr.expr)
-        }
-        .collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
-          case (name, expr.ValueExpr.Expr.Connected(connected)) =>
-            (connected.getBlockPort.getRef, connected.getLinkPort.getRef, name)
-        }.toSeq
+    block.constraints.asPairs.map { case (name, constr) =>
+      (name, constr.expr)
+    }.collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+      case (name, expr.ValueExpr.Expr.Connected(connected)) =>
+        (connected.getBlockPort.getRef, connected.getLinkPort.getRef, name)
+    }.toSeq
   }
 
   // All exports, structured as exterior port ref -> (interior port ref, constr name)
@@ -103,7 +100,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
 
   private def blockIsBridge(block: elem.HierarchyBlock): Boolean = {
     // TODO superclass check once the infrastructure is there
-    block.ports.keySet == Set(
+    block.ports.asPairs.map(_._1).toSet == Set(
       LibraryConnectivityAnalysis.portBridgeOuterPort,
       LibraryConnectivityAnalysis.portBridgeLinkPort)
   }
@@ -167,7 +164,8 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
       val (linkPortRef, constrName) = connectsByBlock(portRef)
       require(linkPortRef.steps.nonEmpty)
       val linkName = linkPortRef.steps.head.getName
-      require(block.links.contains(linkName), s"reference to nonexistent link $linkName connected to $portRef")
+      require(block.links.asPairs.map(_._1).toSet.contains(linkName),
+        s"reference to nonexistent link $linkName connected to $portRef")
 
       getConnectedToLink(linkName)
     } else if (exportsByInner.contains(portRef)) {
@@ -192,8 +190,8 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
     * including inner block ports (and their types) and exterior ports (and their non-bridged type)
     */
   def allConnectablePortTypes: ConnectablePorts = {
-    val innerPortTypes = block.blocks.toSeq.flatMap { case (blockName, blockLike) =>
-      blockLike.getHierarchy.ports.map { case (portName, portLike) =>
+    val innerPortTypes = block.blocks.asPairs.flatMap { case (blockName, blockLike) =>
+      blockLike.getHierarchy.ports.asPairs.map { case (portName, portLike) =>
         val portRef = ref.LocalPath().update(_.steps := Seq(
           ref.LocalStep().update(_.name := blockName),
           ref.LocalStep().update(_.name := portName)
@@ -201,7 +199,7 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
         (portRef, BlockConnectivityAnalysis.typeOfPortLike(portLike))
       }
     }.toSet
-    val exteriorPortTypes = block.ports.toSeq.map { case (portName, portLike) =>
+    val exteriorPortTypes = block.ports.asPairs.map { case (portName, portLike) =>
       val portRef = ref.LocalPath().update(_.steps := Seq(
         ref.LocalStep().update(_.name := portName)
       ))

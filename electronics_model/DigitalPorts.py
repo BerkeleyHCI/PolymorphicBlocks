@@ -224,7 +224,9 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.src = self.Port(DigitalSink())
+    self.src = self.Port(DigitalSink(  # otherwise ideal
+      current_draw=RangeExpr()
+    ))
     self.dst = self.Port(VoltageSource(
       voltage_out=self.src.link().voltage,
       current_limits=(-float('inf'), float('inf'))))
@@ -299,8 +301,9 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
     elif voltage_limit_tolerance is not None:
       voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
                       RangeExpr._to_expr_type(voltage_limit_tolerance)
-    else:
-      raise ValueError("no voltage limit specified")
+    else:  # generic default
+      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
+                      RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
     if input_threshold_factor is not None:
@@ -352,6 +355,11 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
 
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+
+  def as_open_drain(self) -> DigitalSingleSource:
+    """Adapts this DigitalBidir to a DigitalSingleSource open-drain (low-side-only) driver.
+    Not that not all digital ports can be driven in open-drain mode, check your particular IO's capabilities."""
+    return self._convert(DigitalBidirAdapterOpenDrain())
 
 
 class DigitalBidirBridge(CircuitPortBridge):
@@ -426,3 +434,20 @@ class DigitalSingleSource(DigitalBase):
 
     self.low_signal_driver = self.Parameter(BoolExpr(low_signal_driver))
     self.high_signal_driver = self.Parameter(BoolExpr(high_signal_driver))
+
+
+class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
+  """Adapter where a DigitalBidir is run as an open-drain (low-side single source) port."""
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.src = self.Port(DigitalSink(  # otherwise ideal
+      current_draw=RangeExpr()
+    ))
+    self.dst = self.Port(DigitalSingleSource(
+      voltage_out=self.src.link().voltage,
+      output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
+      pulldown_capable=False,
+      low_signal_driver=True
+    ))
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)

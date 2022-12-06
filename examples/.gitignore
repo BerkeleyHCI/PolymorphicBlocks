@@ -1,10 +1,16 @@
 _autosave*
 *.kicad_pcb-bak
+*.kicad_prl
 *.sch
 *.log
 fp-info-cache
 
 *.zip
+
+# Spectra
+*.dsn
+*.ses
+*.rules
 
 # Firmware files
 **/.pio/

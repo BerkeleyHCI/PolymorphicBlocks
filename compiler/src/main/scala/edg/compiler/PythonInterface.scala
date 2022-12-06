@@ -25,12 +25,19 @@ class ProtobufStdioSubprocess
     [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
     args: Seq[String]) {
-  protected val process = new ProcessBuilder(args: _*).start()
+  protected val process: Either[Process, Throwable] = try {
+    Left(new ProcessBuilder(args: _*).start())
+  } catch {
+    case e: Throwable => Right(e)  // if it fails store the exception to be thrown when we can 
+  }
 
   // this provides a consistent Stream interface for both stdout and stderr
   // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
   val outputStream = new QueueStream()
-  val errorStream = process.getErrorStream  // the raw error stream from the process
+  val errorStream: InputStream = process match {  // the raw error stream from the process
+    case Left(process) => process.getErrorStream
+    case Right(_) => new QueueStream()  // empty queue if the process never started
+  }
 
   protected def readStreamAvailable(stream: InputStream): String = {
     var available = stream.available()
@@ -45,55 +52,63 @@ class ProtobufStdioSubprocess
   }
 
   def write(message: RequestType): Unit = {
-    if (!process.isAlive) {  // quick check before we try to write to a dead process
-      throw new ProtobufSubprocessException("process died" +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+    process match {
+      case Right(err) =>
+        throw err
+      case Left(process) if !process.isAlive =>
+        throw new ProtobufSubprocessException("process died, " +
+            s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+      case Left(process) =>
+        process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
+        message.writeDelimitedTo(process.getOutputStream)
+        process.getOutputStream.flush()
     }
-
-    process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
-    message.writeDelimitedTo(process.getOutputStream)
-    process.getOutputStream.flush()
   }
 
   def read(): ResponseType = {
-    var doneReadingStdout: Boolean = false
-    while (!doneReadingStdout) {
-      val nextByte = process.getInputStream.read()
-      if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
-        doneReadingStdout = true
-      } else if (nextByte < 0) {
-        throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
+    process match {
+      case Right(err) =>
+        throw err
+      case Left(process) if !process.isAlive =>
+        throw new ProtobufSubprocessException("process died, " +
             s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-      } else {
-       outputStream.write(nextByte)
-      }
+      case Left(process) =>
+        var doneReadingStdout: Boolean = false
+        while (!doneReadingStdout) {
+          val nextByte = process.getInputStream.read()
+          if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
+            doneReadingStdout = true
+          } else if (nextByte < 0) {
+            throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
+                s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+          } else {
+            outputStream.write(nextByte)
+          }
+        }
+        responseType.parseDelimitedFrom(process.getInputStream).get
     }
-
-    val responseOpt = responseType.parseDelimitedFrom(process.getInputStream)
-
-    if (!process.isAlive) {
-      throw new ProtobufSubprocessException("process died" +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-    }
-    responseOpt.get
   }
 
   // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
-    process.getOutputStream.close()
-    var doneReadingStdout: Boolean = false
-    while (!doneReadingStdout) {
-      val nextByte = process.getInputStream.read()
-      require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
-      if (nextByte < 0) {
-        doneReadingStdout = true
-      } else {
-        outputStream.write(nextByte)
-      }
-    }
+    process match {
+      case Right(_) => -1  // give a generic failed value, otherwise doesn't need to do anything
+      case Left(process) =>
+        process.getOutputStream.close()
+        var doneReadingStdout: Boolean = false
+        while (!doneReadingStdout) {
+          val nextByte = process.getInputStream.read()
+          require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
+          if (nextByte < 0) {
+            doneReadingStdout = true
+          } else {
+            outputStream.write(nextByte)
+          }
+        }
 
-    process.waitFor()
-    process.exitValue()
+        process.waitFor()
+        process.exitValue()
+    }
   }
 }
 
@@ -171,7 +186,7 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
     val request = edgrpc.GeneratorRequest(
       element=Some(element),
       values=values.map { case (valuePath, valueValue) =>
-        edgrpc.GeneratorRequest.Value(
+        edgrpc.ExprValue(
           path=Some(valuePath),
           value=Some(valueValue.toLit)
         )
@@ -195,20 +210,55 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
   }
 
 
+  def onRunRefinementPass(refinementPass: ref.LibraryPath): Unit = {}
+
   def onRunBackend(backend: ref.LibraryPath): Unit = {}
+
+  def onRunRefinementPassComplete(refinementPass: ref.LibraryPath,
+                                  result: Errorable[Map[DesignPath, ExprValue]]): Unit = {}
 
   def onRunBackendComplete(backend: ref.LibraryPath,
                            result: Errorable[Map[DesignPath, String]]): Unit = {}
 
-  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue]):
+  def runRefinementPass(refinementPass: ref.LibraryPath, design: schema.Design,
+                        solvedValues: Map[IndirectDesignPath, ExprValue]): Errorable[Map[DesignPath, ExprValue]] = {
+    onRunRefinementPass(refinementPass)
+
+    val request = edgrpc.RefinementRequest(
+      refinementPass = Some(refinementPass), design = Some(design),
+      solvedValues = solvedValues.map { case (path, value) =>
+        edgrpc.ExprValue(path = Some(path.toLocalPath), value = Some(value.toLit))
+      }.toSeq
+    )
+    val (reply, reqTime) = timeExec {
+      process.write(edgrpc.HdlRequest(
+        request = edgrpc.HdlRequest.Request.RunRefinement(value = request)))
+      process.read()
+    }
+    val result = reply.response match {
+      case edgrpc.HdlResponse.Response.RunRefinement(result) =>
+        Errorable.Success(result.newValues.map { result =>
+          DesignPath() ++ result.getPath -> ExprValue.fromValueLit(result.getValue)
+        }.toMap)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while running backend $refinementPass: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while running backend $refinementPass: invalid response")
+    }
+    onRunRefinementPassComplete(refinementPass, result)
+    result
+  }
+
+  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue], arguments: Map[String, String]):
       Errorable[Map[DesignPath, String]] = {
     onRunBackend(backend)
 
     val request = edgrpc.BackendRequest(
       backend=Some(backend), design=Some(design),
       solvedValues=solvedValues.map { case (path, value) =>
-        edgrpc.BackendRequest.Value(path=Some(path.toLocalPath), value=Some(value.toLit))
-      }.toSeq
+        edgrpc.ExprValue(path=Some(path.toLocalPath), value=Some(value.toLit))
+      }.toSeq,
+      arguments = arguments
     )
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(

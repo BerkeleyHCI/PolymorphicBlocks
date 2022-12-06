@@ -87,7 +87,7 @@ class TestHighSwitch(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.can, ), self.can_chain = self.chain(self.mcu.can.allocate('can'), imp.Block(CalSolCanBlock()))
+      (self.can, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(VoltageLoad())
@@ -98,13 +98,13 @@ class TestHighSwitch(BoardTop):
       (self.vsense, ), _ = self.chain(
         self.vin,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
-        self.mcu.adc.allocate('vsense'))
+        self.mcu.adc.request('vsense'))
 
       self.rgb1 = imp.Block(IndicatorSinkRgbLed())  # CAN RGB
-      self.connect(self.mcu.gpio.allocate_vector('rgb1'), self.rgb1.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb1'), self.rgb1.signals)
 
       self.rgb2 = imp.Block(IndicatorSinkRgbLed())  # system RGB 2
-      self.connect(self.mcu.gpio.allocate_vector('rgb2'), self.rgb2.signals)
+      self.connect(self.mcu.gpio.request_vector('rgb2'), self.rgb2.signals)
 
     self.limit_light_current = self.Block(ForcedVoltageCurrentDraw((0, 2.5) * Amp))
     self.connect(self.vin, self.limit_light_current.pwr_in)
@@ -115,13 +115,13 @@ class TestHighSwitch(BoardTop):
       self.light = ElementDict[LightsDriver]()
       for i in range(4):
         light = self.light[i] = imp.Block(LightsDriver((0, 0.5) * Amp))
-        self.connect(self.mcu.gpio.allocate(f'light_{i}0'), light.control[0])
-        self.connect(self.mcu.gpio.allocate(f'light_{i}1'), light.control[1])
+        self.connect(self.mcu.gpio.request(f'light_{i}0'), light.control[0])
+        self.connect(self.mcu.gpio.request(f'light_{i}1'), light.control[1])
 
       for i in range(4, 6):
         light = self.light[i] = imp.Block(LightsDriver((0, 3) * Amp))
-        self.connect(self.mcu.gpio.allocate(f'light_{i}0'), light.control[0])
-        self.connect(self.mcu.gpio.allocate(f'light_{i}1'), light.control[1])
+        self.connect(self.mcu.gpio.request(f'light_{i}0'), light.control[0])
+        self.connect(self.mcu.gpio.request(f'light_{i}1'), light.control[1])
 
     self.hole = ElementDict[MountingHole]()
     for i in range(4):
@@ -157,6 +157,21 @@ class TestHighSwitch(BoardTop):
           'light_51=45',
           'swd.swo=PIO0_8',
         ]),
+        # JLC does not have frequency specs, must be checked TODO
+        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        # JLC does not have gate charge spec, so ignore the power calc TODO
+        (['light[0]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[0]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[1]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[1]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[2]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[2]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[3]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[3]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[4]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[4]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[5]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
+        (['light[5]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
       ]
     )
 

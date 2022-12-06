@@ -52,7 +52,7 @@ class AnalogMixedTest(Block):
     self.link = self.connect(self.source.port, self.sink1.port, self.sink2.port)
 
 
-class CapacitorTestCase(unittest.TestCase):
+class AnalogLinkTestCase(unittest.TestCase):
   def test_analog_two_infinite(self) -> None:
     compiled = ScalaCompiler.compile(AnalogTwoInfiniteTest)
     self.assertEqual(compiled.get_value(['link', 'sink_impedance']),

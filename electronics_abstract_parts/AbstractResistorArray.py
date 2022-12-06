@@ -89,10 +89,10 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.count, self.a.allocated(), self.b.allocated(),
+    self.generator(self.select_part, self.count, self.a.requested(), self.b.requested(),
                    self.resistances, self.powers, self.part, self.footprint_spec)
 
-  def select_part(self, count: int, a_allocations: List[str], b_allocations: List[str],
+  def select_part(self, count: int, a_requests: List[str], b_requests: List[str],
                   resistances: List[Range], power_dissipations: List[Range],
                   part_spec: str, footprint_spec: str) -> None:
     # TODO some kind of range intersect construct?
@@ -106,12 +106,12 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
     powers_hull = Range(powers_min, powers_max)
 
     parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        (count == 0 or count == row[self.COUNT]) and
-        (row[self.COUNT] >= len(a_allocations) and row[self.COUNT] >= len(b_allocations)) and
-        row[self.RESISTANCE].fuzzy_in(resistance_intersect) and
-        powers_hull.fuzzy_in(row[self.POWER_RATING])
+            (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
+            (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+            (count == 0 or count == row[self.COUNT]) and
+            (row[self.COUNT] >= len(a_requests) and row[self.COUNT] >= len(b_requests)) and
+            row[self.RESISTANCE].fuzzy_in(resistance_intersect) and
+            powers_hull.fuzzy_in(row[self.POWER_RATING])
     ))
     part = parts.first(f"no resistors in {resistance_intersect} Ohm, {powers_hull} W")
 

@@ -5,7 +5,7 @@ class LeadFreeIndicator(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', 'edg:Indicator_LeadFree',
+      'U', 'edg:Indicator_LeadFree',
       {},
       value='LeadFree'
     )
@@ -15,7 +15,7 @@ class IdDots4(Label, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
-      '', 'edg:Indicator_IdDots_4',
+      'U', 'edg:Indicator_IdDots_4',
       {},
       value='IdDots4'
     )

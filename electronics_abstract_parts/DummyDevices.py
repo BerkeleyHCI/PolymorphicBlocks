@@ -17,6 +17,7 @@ class VoltageLoad(DummyDevice):
 
 
 class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
+  """Forces some input current draw regardless of the output's actual current draw value"""
   @init_in_parent
   def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
@@ -30,6 +31,26 @@ class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
       voltage_out=self.pwr_in.link().voltage,
       current_limits=RangeExpr.ALL
     ), [Output])
+
+
+class ForcedVoltage(DummyDevice, NetBlock):
+  """Forces some voltage on the output regardless of the input's actual voltage.
+  Current draw is passed through unchanged."""
+  @init_in_parent
+  def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.pwr_in = self.Port(VoltageSink(
+      current_draw=RangeExpr(),
+      voltage_limits=RangeExpr.ALL
+    ), [Input])
+
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=forced_voltage,
+      current_limits=RangeExpr.ALL
+    ), [Output])
+
+    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
@@ -59,22 +80,22 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL
     ))
-    self.generator(self.generate, self.pwr_ins.allocated())
+    self.generator(self.generate, self.pwr_ins.requested())
 
-  def generate(self, in_allocates: List[str]):
+  def generate(self, in_requests: List[str]):
     self.pwr_ins.defined()
-    for in_allocate in in_allocates:
+    for in_request in in_requests:
       self.pwr_ins.append_elt(VoltageSink(
         voltage_limits=RangeExpr.ALL,
         current_draw=self.pwr_out.link().current_drawn
-      ), in_allocate)
+      ), in_request)
 
     self.assign(self.pwr_out.voltage_out,
                 self.pwr_ins.hull(lambda x: x.link().voltage))
 
   def connected_from(self, *pwr_ins: Port[VoltageLink]) -> 'MergedVoltageSource':
     for pwr_in in pwr_ins:
-      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_ins.allocate())
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_ins.request())
     return self
 
 
@@ -89,16 +110,16 @@ class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
     ))
     self.inputs = self.Port(Vector(AnalogSink.empty()))
 
-    self.generator(self.generate, self.inputs.allocated())
+    self.generator(self.generate, self.inputs.requested())
 
-  def generate(self, inputs_allocates: List[str]):
+  def generate(self, in_requests: List[str]):
     self.inputs.defined()
-    for input_allocate in inputs_allocates:
+    for in_request in in_requests:
       self.inputs.append_elt(AnalogSink(
         voltage_limits=RangeExpr.ALL,
         current_draw=self.output.link().current_drawn,
         impedance=self.output.link().sink_impedance
-      ), input_allocate)
+      ), in_request)
 
     self.assign(self.output.voltage_out,
                 self.inputs.hull(lambda x: x.link().voltage))
@@ -108,7 +129,7 @@ class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
 
   def connected_from(self, *inputs: Port[AnalogLink]) -> 'MergedAnalogSource':
     for input in inputs:
-      cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.allocate())
+      cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.request())
     return self
 
 

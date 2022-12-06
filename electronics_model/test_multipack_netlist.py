@@ -1,11 +1,10 @@
 import unittest
 
-from typing import Type
 from edg_core import *
-from .NetlistGenerator import NetlistTransform
-from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .CircuitPackingBlock import PackedVoltageSource
+from .footprint import Pin, Block as FBlock  # TODO cleanup naming
+from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
+from .test_netlist import NetlistTestCase
 
 
 class TestFakeSinkElement(TestBaseFakeSink):
@@ -47,8 +46,8 @@ class TestPackedDevices(DesignTop):
 
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
-    self.pack(self.sink.elements.allocate('1'), ['sink1'])
-    self.pack(self.sink.elements.allocate('2'), ['sink2'])
+    self.pack(self.sink.elements.request('1'), ['sink1'])
+    self.pack(self.sink.elements.request('2'), ['sink2'])
 
 
 class TestInvalidPackedDevices(DesignTop):
@@ -67,17 +66,13 @@ class TestInvalidPackedDevices(DesignTop):
 
   def multipack(self) -> None:
       self.sink = self.PackedBlock(TestPackedSink())
-      self.pack(self.sink.elements.allocate('1'), ['sink1'])
-      self.pack(self.sink.elements.allocate('2'), ['sink2'])
+      self.pack(self.sink.elements.request('1'), ['sink1'])
+      self.pack(self.sink.elements.request('2'), ['sink2'])
 
 
-class NetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Type[Block]):
-    compiled = ScalaCompiler.compile(design)
-    return NetlistTransform(compiled).run()
-
+class MultipackNetlistTestCase(unittest.TestCase):
   def test_packed_netlist(self) -> None:
-    net = self.generate_net(TestPackedDevices)
+    net = NetlistTestCase.generate_net(TestPackedDevices)
 
     self.assertEqual(net.nets['vpos'], {
       Pin('source', '1'),
@@ -98,4 +93,4 @@ class NetlistTestCase(unittest.TestCase):
   def test_invalid_netlist(self) -> None:
     from .NetlistGenerator import InvalidPackingException
     with self.assertRaises(InvalidPackingException):
-      self.generate_net(TestInvalidPackedDevices)
+      NetlistTestCase.generate_net(TestInvalidPackedDevices)

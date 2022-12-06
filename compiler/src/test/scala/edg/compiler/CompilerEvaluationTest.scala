@@ -6,7 +6,10 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.{CompilerTestUtil, wir}
-import edg.wir.{IndirectDesignPath, IndirectStep}
+import edg.wir.{EdgirLibrary, IndirectDesignPath, IndirectStep, Refinements}
+import org.scalatest.exceptions.TestFailedException
+
+import scala.collection.SeqMap
 
 
 /** Tests compiler parameter and expression evaluation using ASSIGN constraints.
@@ -16,12 +19,12 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
       Port.Port("sourcePort",
-        params = Map(
+        params = SeqMap(
           "floatVal" -> ValInit.Floating,
         )
       ),
       Port.Port("sinkPort",
-        params = Map(
+        params = SeqMap(
           "sumVal" -> ValInit.Floating,
           "intersectVal" -> ValInit.Range,
         )
@@ -29,40 +32,40 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
     ),
     blocks = Seq(
       Block.Block("sourceBlock",
-        params = Map(
+        params = SeqMap(
           "floatVal" -> ValInit.Floating,
         ),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("sourcePort"),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "propFloatVal" -> ValueExpr.Assign(Ref("port", "floatVal"), ValueExpr.Ref("floatVal")),
         )
       ),
       Block.Block("sinkBlock",
-        params = Map(
+        params = SeqMap(
           "sumVal" -> ValInit.Floating,
           "intersectVal" -> ValInit.Range,
         ),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("sinkPort"),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "propSumVal" -> ValueExpr.Assign(Ref("port", "sumVal"), ValueExpr.Ref("sumVal")),
           "propIntersectVal" -> ValueExpr.Assign(Ref("port", "intersectVal"), ValueExpr.Ref("intersectVal")),
         )
       ),
       Block.Block("sourceContainerBlock",
-        params = Map(
+        params = SeqMap(
           "floatVal" -> ValInit.Floating,
         ),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("sourcePort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Library("sourceBlock")
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port")),
           "floatAssign" -> Constraint.Assign(Ref("inner", "floatVal"), ValueExpr.Ref("floatVal")),
         )
@@ -70,16 +73,16 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
     ),
     links = Seq(
       Link.Link("link",
-        ports = Map(
+        ports = SeqMap(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
         ),
-        params = Map(
+        params = SeqMap(
           "sourceFloat" -> ValInit.Floating,
           "sinkSum" -> ValInit.Floating,
           "sinkIntersect" -> ValInit.Range,
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "calcSourceFloat" -> ValueExpr.Assign(Ref("sourceFloat"), ValueExpr.Ref("source", "floatVal")),
           "calcSinkSum" -> ValueExpr.Assign(Ref("sinkSum"), ValueExpr.UnarySetOp(Op.SUM,
             ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal"))
@@ -94,14 +97,14 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with assign constraints" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("designTop",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
         "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
@@ -159,16 +162,16 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with assign constraints and multiple connects to link" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
         "sink1" -> Block.Library("sinkBlock"),
         "sink2" -> Block.Library("sinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
         "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
         "sink1Connect" -> Constraint.Connected(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
@@ -233,13 +236,13 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with empty port arrays" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
@@ -256,14 +259,14 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with exports" should "propagate and evaluate values" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceContainerBlock"),
         "sink0" -> Block.Library("sinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
         "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
@@ -296,10 +299,10 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with disconnected ports" should "indicate disconnected" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         // to not give an unsolved parameter error
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
@@ -313,7 +316,7 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with disconnected link ports" should "indicate disconnected" in {
     val inputDesign = Design(Block.Block("topDesign",
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Library("link")
       ),
     ))
@@ -326,10 +329,10 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with disconnected exported ports" should "indicate disconnected" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceContainerBlock"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         // to not give an unsolved parameter error
         "sourceFloatVal" -> Constraint.Assign(Ref("source", "floatVal"), ValueExpr.Literal(3.0)),
       )
@@ -345,7 +348,7 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with assign constraints" should "resolve if-then-else without defined non-taken branch" in {
     val inputDesign = Design(Block.Block("topDesign",
-      params = Map(
+      params = SeqMap(
         "condTrue" -> ValInit.Boolean,
         "condFalse" -> ValInit.Boolean,
         "defined" -> ValInit.Integer,
@@ -354,7 +357,7 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
         "ifFalse" -> ValInit.Integer,
         "ifUndef" -> ValInit.Integer,
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "condTrue" -> Constraint.Assign(Ref("condTrue"), ValueExpr.Literal(true)),
         "condFalse" -> Constraint.Assign(Ref("condFalse"), ValueExpr.Literal(false)),
         "defined" -> Constraint.Assign(Ref("defined"), ValueExpr.Literal(45)),
@@ -374,5 +377,47 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "ifUndef") should equal(None)
     compiler.getValue(IndirectDesignPath() + "ifTrue") should equal(Some(IntValue(45)))
     compiler.getValue(IndirectDesignPath() + "ifFalse") should equal(Some(IntValue(45)))
+  }
+
+  "Compiler on design with true assertions" should "not fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      constraints = SeqMap(
+        "requireTrue" -> ValueExpr.Literal(true),
+      )
+    ))
+    val (compiler, compiled) = testCompile(inputDesign, library)
+  }
+
+  "Compiler on design with false assertions" should "fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      constraints = SeqMap(
+        "requireFalse" -> ValueExpr.Literal(false),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
+    val compiled = compiler.compile()
+    val assertionErrors = new DesignAssertionCheck(compiler).map(compiled)
+    assertionErrors.size shouldBe 1
+    assertionErrors.head.getClass shouldBe classOf[CompilerError.FailedAssertion]
+
+    an [TestFailedException] should be thrownBy testCompile(inputDesign, library)  // test the test helper code
+  }
+
+  "Compiler on design with missing assertions" should "fail" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      params = SeqMap(
+        "missing" -> ValInit.Boolean,
+      ),
+      constraints = SeqMap(
+        "requireMissing" -> ValueExpr.Ref("missing"),
+      )
+    ))
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(library), Refinements())
+    val compiled = compiler.compile()
+    val assertionErrors = new DesignAssertionCheck(compiler).map(compiled)
+    assertionErrors.size shouldBe 1
+    assertionErrors.head.getClass shouldBe classOf[CompilerError.MissingAssertion]
+
+    an [TestFailedException] should be thrownBy testCompile(inputDesign, library)  // test the test helper code
   }
 }
