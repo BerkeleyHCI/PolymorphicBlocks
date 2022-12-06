@@ -267,24 +267,44 @@ class BackendRequest(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> None: ...
 
+    @typing_extensions.final
+    class ArgumentsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.str
+        value: builtins.str
+        def __init__(
+            self,
+            *,
+            key: builtins.str = ...,
+            value: builtins.str = ...,
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
+
     BACKEND_FIELD_NUMBER: builtins.int
     DESIGN_FIELD_NUMBER: builtins.int
     SOLVEDVALUES_FIELD_NUMBER: builtins.int
+    ARGUMENTS_FIELD_NUMBER: builtins.int
     @property
     def backend(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
     def design(self) -> edgir.schema_pb2.Design: ...
     @property
     def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___BackendRequest.Value]: ...
+    @property
+    def arguments(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]: ...
     def __init__(
         self,
         *,
         backend: edgir.ref_pb2.LibraryPath | None = ...,
         design: edgir.schema_pb2.Design | None = ...,
         solvedValues: collections.abc.Iterable[global___BackendRequest.Value] | None = ...,
+        arguments: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["backend", b"backend", "design", b"design"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["backend", b"backend", "design", b"design", "solvedValues", b"solvedValues"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["arguments", b"arguments", "backend", b"backend", "design", b"design", "solvedValues", b"solvedValues"]) -> None: ...
 
 global___BackendRequest = BackendRequest
 

@@ -6,7 +6,6 @@ import edgir
 from edg_core import *
 from . import footprint as kicad
 
-
 class InvalidNetlistBlockException(BaseException):
   pass
 
@@ -41,7 +40,7 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
-  def __init__(self, design: CompiledDesign):
+  def __init__(self, design: CompiledDesign, refdes_mode: str = "pathName"):
     self.blocks: Blocks = {}
     self.edges: Edges = {}
     self.assert_connected: AssertConnected = []
@@ -53,6 +52,7 @@ class NetlistTransform(TransformUtil.Transform):
     self.refdes_last: Dict[str, int] = {}
 
     self.design = design
+    self.refdes_mode = refdes_mode
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
@@ -166,10 +166,12 @@ class NetlistTransform(TransformUtil.Transform):
         self.class_paths[path],
       )
 
-      # Uncomment one to set refdes type
-      # TODO this should be a user flag
-      # self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
-      self.names[path] = self.short_paths[path]
+      if self.refdes_mode == "pathName":
+        self.names[path] = self.short_paths[path]
+      elif self.refdes_mode == "refdes":
+        self.names[path] = TransformUtil.Path.empty().append_block(refdes_prefix + str(refdes_id))
+      else:
+        raise ValueError(f"Invalid valueMode value {self.refdes_mode}")
 
       for pin_spec in footprint_pinning:
         assert isinstance(pin_spec, str)
