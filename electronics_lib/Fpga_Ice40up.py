@@ -170,7 +170,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
 
 
-class Ice40up5k_SG48_Device(Ice40up_Device):
+class Ice40up5k_Sg48_Device(Ice40up_Device):
   SYSTEM_PIN_REMAP = {
     'VCCPLL': '29',
     'VCC': ['5', '30'],
@@ -230,21 +230,55 @@ class Ice40up5k_SG48_Device(Ice40up_Device):
   JLC_BASIC_PART = False
 
 
+@abstract_block
 class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
-  """Application circuit for the iCE40UP series FPGAs"""
+  """Application circuit for the iCE40UP series FPGAs with a simple configuration"""
   DEVICE: Type[Ice40up_Device]
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+
+    self.cdone = self.Export(self.ic.cdone, optional=True)
 
   def contents(self):
     super().contents()
-    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
-    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.pwr, self.ic.pwr, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic)
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
+    # schematics don't seem to be available for the official reference designs,
+    # so the decoupling caps are kind of arbitrary (except the PLL)
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
-      self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
+      self.vcc_reg = self.Block(LinearRegulator((1.14, 1.26)*Volt))
+      self.reset_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.creset_b)
+
+      self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vio_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vio_cap2 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.vpp_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+    with self.implicit_connect(  # Vcc (core) power domain
+        ImplicitConnect(self.vcc_reg.pwr_out, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.connect(self.vcc_reg.pwr_out, self.ic.vcc)
+      self.pll_res = self.Block(SeriesPowerResistor(100*Ohm(tol=0.05)))
+
+      self.vcc_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+    with self.implicit_connect(  # PLL power domain, section 2 of the iCE40 Hardware Checklist
+        ImplicitConnect(self.pll_res.pwr_out, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.connect(self.pll_res.pwr_out, self.ic.vcc_pll)
+
+      self.pll_lf = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+      self.pll_hf = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+
+class Ice40up5k_Sg48(Ice40up):
+  DEVICE = Ice40up5k_Sg48_Device
