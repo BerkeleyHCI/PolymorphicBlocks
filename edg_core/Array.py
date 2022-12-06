@@ -162,7 +162,7 @@ class Vector(BaseVector, Generic[VectorType]):
     if self._elts is not None:
       pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        pb.array.ports.ports[name].CopyFrom(elt._instance_to_proto())
+        edgir.add_pair(pb.array.ports.ports, name).CopyFrom(elt._instance_to_proto())
     return pb
 
   def _def_to_proto(self) -> edgir.PortTypes:

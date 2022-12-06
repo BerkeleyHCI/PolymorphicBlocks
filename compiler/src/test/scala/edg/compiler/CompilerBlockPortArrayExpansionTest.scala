@@ -2,11 +2,13 @@ package edg.compiler
 
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
-import edg.ExprBuilder.{Ref, ValueExpr}
+import edg.ExprBuilder.Ref
+import edg.wir.ProtoUtil._
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
-import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import scala.collection.SeqMap
 
 
 /** Tests compiler PortArray expansion / elaboration and connected constraint allocation with block-side PortArray.
@@ -20,53 +22,53 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     ),
     blocks = Seq(
       Block.Block("sourceBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Library("sourcePort"),
         )
       ),
       Block.Block("baseSinksBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort"),
         )
       ),
       Block.Block("concreteSinksBlock",
         superclasses = Seq("baseSinksBlock"),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort", Seq("0", "1"), Port.Library("sinkPort")),
         )
       ),
       Block.Block("emptySinksBlock",
         superclasses = Seq("baseSinksBlock"),
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort", Seq(), Port.Library("sinkPort")),
         )
       ),
       Block.Block("concreteWrapperBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Library("concreteSinksBlock")
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
         )
       ),
       Block.Block("emptyWrapperBlock",
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort"),
         ),
-        blocks = Map(
+        blocks = SeqMap(
           "inner" -> Block.Library("emptySinksBlock")
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
         )
       ),
     ),
     links = Seq(
       Link.Link("link",
-        ports = Map(
+        ports = SeqMap(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
         )
@@ -76,18 +78,18 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
   "Compiler on design with abstract source and array sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "source2" -> Block.Library("sourceBlock"),
         "sinks" -> Block.Library("baseSinksBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Library("link"),
         "link1" -> Link.Library("link"),
         "link2" -> Link.Library("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
         "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
         "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
@@ -98,7 +100,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
           Ref.Allocate(Ref("link2", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(
+    val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
       "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref("link0", "sinks", "0")),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
@@ -113,7 +115,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
     compiler.getErrors() should not be empty
 
-    compiled.contents.get.constraints should equal(referenceConstraints)
+    compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Allocated) should
         equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("named")))))
@@ -133,23 +135,23 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
   "Compiler on design with concrete source and array sink" should "expand blocks" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "sinks" -> Block.Library("concreteSinksBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Library("link"),
         "link1" -> Link.Library("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
         "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
         "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
         "sink1Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(
+    val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
@@ -163,7 +165,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val drv = new DesignRefsValidate()
     drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
-    compiled.contents.get.constraints should equal(referenceConstraints)
+    compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
         equal(Some(IntValue(2)))
@@ -178,16 +180,16 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
   "Compiler on design with nested sink" should "expand across levels of hierarchy" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "sinks" -> Block.Library("concreteWrapperBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Library("link"),
         "link1" -> Link.Library("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
         "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
         "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
@@ -208,7 +210,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val drv = new DesignRefsValidate()
     drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
-    compiled.contents.get.constraints should equal(referenceConstraints)
+    compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
         equal(Some(IntValue(2)))
@@ -232,20 +234,20 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
   "Compiler on design with partially connected ports" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "sinks" -> Block.Library("concreteSinksBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Library("link"),
         "link1" -> Link.Library("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
         "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(
+    val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
     )
@@ -257,7 +259,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     val drv = new DesignRefsValidate()
     drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
-    compiled.contents.get.constraints should equal(referenceConstraints)
+    compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
         equal(Some(IntValue(2)))
@@ -272,11 +274,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
 
   "Compiler on design with empty nested sink" should "not fail" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "sinks" -> Block.Library("emptyWrapperBlock"),
       ),
-      links = Map(),
-      constraints = Map()
+      links = SeqMap(),
+      constraints = SeqMap()
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 

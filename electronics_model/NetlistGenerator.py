@@ -35,8 +35,8 @@ class NetlistTransform(TransformUtil.Transform):
     if port.HasField('port'):
       return [path]
     elif port.HasField('array') and port.array.HasField('ports'):
-      return chain(*[NetlistTransform.flatten_port(path.append_port(name), port)
-                     for name, port in port.array.ports.ports.items()])
+      return chain(*[NetlistTransform.flatten_port(path.append_port(port_pair.name), port_pair.value)
+                     for port_pair in port.array.ports.ports])
     else:
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
@@ -59,33 +59,28 @@ class NetlistTransform(TransformUtil.Transform):
     short_path = self.short_paths[path]
     class_path = self.class_paths[path]
 
-    if 'error' in block.meta.members.node:
-      raise InvalidNetlistBlockException(f"attempt to netlist with error block at {path}")
-    elif 'abstract' in block.meta.members.node:
-      raise InvalidNetlistBlockException(f"attempt to netlist with abstract block at {path}")
-
     # TODO handle mixed net/connect operations
     if isinstance(block, edgir.Link) and 'nets' in block.meta.members.node:
       # Consolidate single-net link ports into just the link
-      for name, _ in block.ports.items():
-        self.short_paths[path.append_port(name)] = short_path
+      for port_pair in block.ports:
+        self.short_paths[path.append_port(port_pair.name)] = short_path
 
     else:
-      for name, port in block.ports.items():
-        self.short_paths[path.append_port(name)] = short_path.append_port(name)
+      for port_pair in block.ports:
+        self.short_paths[path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
 
-    for name, sublink in block.links.items():
-      self.short_paths[path.append_link(name)] = short_path.append_link(name)
-      self.class_paths[path.append_link(name)] = class_path + [sublink.link.self_class.target.name]
+    for link_pair in block.links:
+      self.short_paths[path.append_link(link_pair.name)] = short_path.append_link(link_pair.name)
+      self.class_paths[path.append_link(link_pair.name)] = class_path + [link_pair.value.link.self_class.target.name]
 
     main_internal_blocks: Dict[str, edgir.BlockLike] = {}
     other_internal_blocks: Dict[str, edgir.BlockLike] = {}
     if isinstance(block, edgir.HierarchyBlock):
-      for name, subblock in block.blocks.items():
-        if not name.startswith('(bridge)') and not name.startswith('(adapter)'):
-          main_internal_blocks[name] = subblock
+      for block_pair in block.blocks:
+        if not block_pair.name.startswith('(bridge)') and not block_pair.name.startswith('(adapter)'):
+          main_internal_blocks[block_pair.name] = block_pair.value
         else:
-          other_internal_blocks[name] = subblock
+          other_internal_blocks[block_pair.name] = block_pair.value
 
     if len(main_internal_blocks) == 1:
       name = list(main_internal_blocks.keys())[0]
@@ -103,8 +98,8 @@ class NetlistTransform(TransformUtil.Transform):
     if 'nets' in block.meta.members.node:
       # add all-pairs edges
       # list conversion to deal with iterable-once
-      flat_ports = list(chain(*[self.flatten_port(path.append_port(name), port)
-                                for name, port in block.ports.items()]))
+      flat_ports = list(chain(*[self.flatten_port(path.append_port(port_pair.name), port_pair.value)
+                                for port_pair in block.ports]))
       for src_path in flat_ports:
         for dst_path in flat_ports:
           if src_path != dst_path:
@@ -115,8 +110,8 @@ class NetlistTransform(TransformUtil.Transform):
       # this leaves the sources unconnected, to be connected externally and checked at the end
       src_port_name = block.meta.members.node['nets_packed'].members.node['src'].text_leaf
       dst_port_name = block.meta.members.node['nets_packed'].members.node['dst'].text_leaf
-      flat_srcs = list(self.flatten_port(path.append_port(src_port_name), block.ports[src_port_name]))
-      flat_dsts = list(self.flatten_port(path.append_port(dst_port_name), block.ports[dst_port_name]))
+      flat_srcs = list(self.flatten_port(path.append_port(src_port_name), edgir.pair_get(block.ports, src_port_name)))
+      flat_dsts = list(self.flatten_port(path.append_port(dst_port_name), edgir.pair_get(block.ports, dst_port_name)))
       assert flat_srcs, "missing source port(s) for packed net"
       for dst_path in flat_dsts:
         self.edges.setdefault(flat_srcs[0], []).append(dst_path)
@@ -125,8 +120,9 @@ class NetlistTransform(TransformUtil.Transform):
         for dst_path in flat_srcs:
           self.assert_connected.append((src_path, dst_path))
 
-    if 'pinning' in block.meta.members.node:
+    if 'fp_is_footprint' in block.meta.members.node:
       footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
+      footprint_pinning = self.design.get_value(path.to_tuple() + ('fp_pinning',))
       mfr = self.design.get_value(path.to_tuple() + ('fp_mfr',))
       part = self.design.get_value(path.to_tuple() + ('fp_part',))
       value = self.design.get_value(path.to_tuple() + ('fp_value',))
@@ -134,6 +130,7 @@ class NetlistTransform(TransformUtil.Transform):
       lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
 
       assert isinstance(footprint_name, str)
+      assert isinstance(footprint_pinning, list)
       assert isinstance(mfr, str) or mfr is None
       assert isinstance(part, str) or part is None
       assert isinstance(value, str) or value is None
@@ -176,14 +173,18 @@ class NetlistTransform(TransformUtil.Transform):
       else:
         raise ValueError(f"Invalid valueMode value {self.refdes_mode}")
 
-      for pin_name, pin_path_pb in block.meta.members.node['pinning'].members.node.items():
+      for pin_spec in footprint_pinning:
+        assert isinstance(pin_spec, str)
+        pin_spec_split = pin_spec.split('=')
+        assert len(pin_spec_split) == 2
+        pin_name = pin_spec_split[0]
+        port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
+
         pin_path = path.append_port(pin_name)
         self.pins.add(pin_path)
         self.short_paths[pin_path] = short_path.append_port(pin_name)
 
-        path_value = edgir.ValueExpr().FromString(pin_path_pb.bin_leaf)
-        assert path_value.HasField('ref')
-        src_path = path.follow(path_value.ref, block)[0]
+        src_path = path.follow(port_path, block)[0]
 
         # Create a unidirectional edge from the port to the footprint pin
         self.edges.setdefault(src_path, []).append(pin_path)
@@ -191,13 +192,13 @@ class NetlistTransform(TransformUtil.Transform):
 
         self.names[pin_path] = self.names[path].append_port(pin_name)
 
-    for name, constraint in block.constraints.items():
-      if constraint.HasField('connected'):
-        self.process_connected(path, block, constraint.connected)
-      elif constraint.HasField('exported'):
-        self.process_exported(path, block, constraint.exported)
-      elif constraint.HasField('exportedTunnel'):
-        self.process_exported(path, block, constraint.exportedTunnel)
+    for constraint_pair in block.constraints:
+      if constraint_pair.value.HasField('connected'):
+        self.process_connected(path, block, constraint_pair.value.connected)
+      elif constraint_pair.value.HasField('exported'):
+        self.process_exported(path, block, constraint_pair.value.exported)
+      elif constraint_pair.value.HasField('exportedTunnel'):
+        self.process_exported(path, block, constraint_pair.value.exportedTunnel)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ConnectedExpr) -> None:
     assert constraint.block_port.HasField('ref')
@@ -219,11 +220,13 @@ class NetlistTransform(TransformUtil.Transform):
       self.edges.setdefault(elt1[0], []).append(elt2[0])
       self.edges.setdefault(elt2[0], []).append(elt1[0])
     elif isinstance(elt1[1], edgir.Bundle) and isinstance(elt2[1], edgir.Bundle):
-      assert elt1[1].ports.keys() == elt2[1].ports.keys(), f"mismatched bundle types {elt1}, {elt2}"
-      for key in elt1[1].ports.keys():
+      elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
+      elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
+      assert elt1_names == elt2_names, f"mismatched bundle types {elt1}, {elt2}"
+      for key in elt2_names:
         self.connect_ports(
-          (elt1[0].append_port(key), edgir.resolve_portlike(elt1[1].ports[key])),
-          (elt2[0].append_port(key), edgir.resolve_portlike(elt2[1].ports[key])))
+          (elt1[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt1[1].ports, key))),
+          (elt2[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt2[1].ports, key))))
       # don't need to create the bundle connect, since Bundles can't be CircuitPorts
     else:
       raise ValueError(f"can't connect types {elt1}, {elt2}")
@@ -233,11 +236,11 @@ class NetlistTransform(TransformUtil.Transform):
 
     short_path = self.short_paths[context.path]
     if port.HasField('bundle'):  # TODO maybe shorten if just one?
-      for name, _ in port.bundle.ports.items():
-        self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
+      for port_pair in port.bundle.ports:
+        self.short_paths[context.path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
     elif port.HasField('array') and port.array.HasField('ports'):
-      for name in port.array.ports.ports.keys():
-        self.short_paths[context.path.append_port(name)] = short_path.append_port(name)
+      for port_pair in port.array.ports.ports:
+        self.short_paths[context.path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     self.process_blocklike(context.path, block)

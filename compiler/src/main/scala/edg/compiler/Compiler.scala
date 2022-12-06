@@ -2,6 +2,7 @@ package edg.compiler
 
 import edg.EdgirUtils._
 import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
+import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
 import edgir.expr.expr
@@ -437,7 +438,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
           errors += CompilerError.LibraryError(path, libraryPath, err)
           elem.HierarchyBlock()
       }
-      val refinedNewParams = blockPb.params.keys.toSet -- unrefinedPb.params.keys
+      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- unrefinedPb.params.toSeqMap.keys
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(path.asIndirect + refinedNewParam, refinedDefault,
@@ -599,7 +600,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
       val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
 
-        innerBlockTemplate.ports.foreach { case (portName, port) =>
+        innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
         import edgir.elem.elem
         val portPostfix = Seq(innerBlockName, portName)
         port.is match {
@@ -1055,9 +1056,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val port = resolvePort(path).asInstanceOf[wir.PortArray]
     if (!port.portsSet) {
       val childPortNames = ArrayValue.ExtractText(constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
-      val childPortLibraries = SeqMap.from(childPortNames map { childPortName =>
+      val childPortLibraries = childPortNames.map { childPortName =>
         childPortName -> wir.PortLibrary.apply(port.getType)
-      })
+      }.to(SeqMap)
       port.setPorts(childPortLibraries)
     }
     for ((childPortName, childPort) <- port.getPorts) {

@@ -230,7 +230,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for name, block in self._blocks.items():
-      pb.blocks[name].lib_elem.target.name = block._get_def_name()
+      edgir.add_pair(pb.blocks, name).lib_elem.target.name = block._get_def_name()
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
@@ -251,22 +251,21 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         pass
 
       elif isinstance(connect_elts, Connection.Export):  # generate direct export
+        constraint_pb = edgir.add_pair(pb.constraints, f"(conn){name}")
         if connect_elts.is_array:
-          pb.constraints[f"(conn){name}"].exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
-          pb.constraints[f"(conn){name}"].exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
+          constraint_pb.exportedArray.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          constraint_pb.exportedArray.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
         else:
-          pb.constraints[f"(conn){name}"].exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
-          pb.constraints[f"(conn){name}"].exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
-        self._namespace_order.append(f"(conn){name}")
+          constraint_pb.exported.exterior_port.ref.CopyFrom(ref_map[connect_elts.external_port])
+          constraint_pb.exported.internal_block_port.ref.CopyFrom(ref_map[connect_elts.internal_port])
 
       elif isinstance(connect_elts, Connection.ConnectedLink):  # generate link
         link_path = edgir.localpath_concat(edgir.LocalPath(), name)
-
+        link_pb = edgir.add_pair(pb.links, name)
         if connect_elts.is_link_array:
-          pb.links[name].array.self_class.target.name = connect_elts.link_type._static_def_name()
+          link_pb.array.self_class.target.name = connect_elts.link_type._static_def_name()
         else:
-          pb.links[name].lib_elem.target.name = connect_elts.link_type._static_def_name()
-        self._namespace_order.append(f"{name}")
+          link_pb.lib_elem.target.name = connect_elts.link_type._static_def_name()
 
         for idx, (self_port, link_port_path) in enumerate(connect_elts.bridged_connects):
           assert isinstance(self_port, Port)
@@ -274,26 +273,25 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert self_port.bridge_type is not None
 
           port_name = self_port._name_from(self)
-          pb.blocks[f"(bridge){port_name}"].lib_elem.target.name = self_port.bridge_type._static_def_name()
-          self._namespace_order.append(f"(bridge){port_name}")
+          edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.target.name = self_port.bridge_type._static_def_name()
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
 
-          pb.constraints[f"(bridge){name}_b{idx}"].exported.exterior_port.ref.CopyFrom(ref_map[self_port])
-          pb.constraints[f"(bridge){name}_b{idx}"].exported.internal_block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'outer_port'))
-          self._namespace_order.append(f"(bridge){name}_b{idx}")
+          bridge_constraint_pb = edgir.add_pair(pb.constraints, f"(bridge){name}_b{idx}")
+          bridge_constraint_pb.exported.exterior_port.ref.CopyFrom(ref_map[self_port])
+          bridge_constraint_pb.exported.internal_block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'outer_port'))
 
-          pb.constraints[f"(conn){name}_b{idx}"].connected.block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'inner_link'))
-          pb.constraints[f"(conn){name}_b{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
-          self._namespace_order.append(f"(conn){name}_b{idx}")
+          connect_constraint_pb = edgir.add_pair(pb.constraints, f"(conn){name}_b{idx}")
+          connect_constraint_pb.connected.block_port.ref.CopyFrom(edgir.localpath_concat(bridge_path, 'inner_link'))
+          connect_constraint_pb.connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
 
         for idx, (subelt_port, link_port_path) in enumerate(connect_elts.link_connects):
+          connect_constraint_pb = edgir.add_pair(pb.constraints, f"(conn){name}_d{idx}")
           if connect_elts.is_link_array:
-            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.block_port.ref.CopyFrom(ref_map[subelt_port])
-            pb.constraints[f"(conn){name}_d{idx}"].connectedArray.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
+            connect_constraint_pb.connectedArray.block_port.ref.CopyFrom(ref_map[subelt_port])
+            connect_constraint_pb.connectedArray.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
           else:
-            pb.constraints[f"(conn){name}_d{idx}"].connected.block_port.ref.CopyFrom(ref_map[subelt_port])
-            pb.constraints[f"(conn){name}_d{idx}"].connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
-          self._namespace_order.append(f"(conn){name}_d{idx}")
+            connect_constraint_pb.connected.block_port.ref.CopyFrom(ref_map[subelt_port])
+            connect_constraint_pb.connected.link_port.ref.CopyFrom(edgir.localpath_concat(link_path, link_port_path))
       else:
         raise ValueError("unknown connect type")
 
@@ -301,14 +299,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     for (block_name, block) in self._blocks.items():
       for (block_param_name, (block_param, block_param_value)) in block._init_params_value.items():
         if block_param_value is not None:
-          pb.constraints[f'(init){block_name}.{block_param_name}'].CopyFrom(  # TODO better name
+          edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
             AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
           )
-          self._namespace_order.append(f'(init){block_name}.{block_param_name}')
-
-    # generate H-block-specific order
-    for name in self._blocks.keys_ordered():
-      self._namespace_order.append(name)
 
     return pb
 
@@ -326,17 +319,20 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
-    pb = self._populate_def_proto_hierarchy(pb)  # specifically generate connect statements first
     pb = self._populate_def_proto_block_base(pb)
-    pb = self._populate_def_proto_block_contents(pb)
-    for (name, (param, param_value)) in self._init_params_value.items():
-      assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
-    pb = self._populate_def_proto_param_init(pb)
+
     for (port) in self._connected_ports():
       if port._block_parent() is self:
         initializers = port._get_initializers([])
         assert not initializers, f"connected boundary port {port._name_from(self)} has unexpected initializers {initializers}"
     pb = self._populate_def_proto_port_init(pb)
+
+    for (name, (param, param_value)) in self._init_params_value.items():
+      assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
+    pb = self._populate_def_proto_param_init(pb)
+
+    pb = self._populate_def_proto_hierarchy(pb)
+    pb = self._populate_def_proto_block_contents(pb)
     pb = self._populate_def_proto_description(pb)
 
     return pb

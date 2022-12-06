@@ -6,6 +6,8 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
 
+import scala.collection.SeqMap
+
 
 /** Tests compiler Bundle expansion / elaboration, including nested links.
   */
@@ -15,25 +17,25 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
       Port.Port("innerSource"),
       Port.Port("innerSink"),
       Port.Bundle("outerPort",
-        ports = Map(
+        ports = SeqMap(
           "inner" -> Port.Library("innerPort"),
         )
       ),
     ),
     links = Seq(
       Link.Link("innerLink",
-        ports = Map(
+        ports = SeqMap(
           "innerSource" -> Port.Library("innerSource"),
           "innerSinks" -> Port.Array("innerSink")
         ),
         // practically invalid, missing connect constraints
       ),
       Link.Link("outerLink",
-        ports = Map(
+        ports = SeqMap(
           "outerPort1" -> Port.Library("outerPort"),
           "outerPort2" -> Port.Library("outerPort"),
         ),
-        links = Map(
+        links = SeqMap(
           "inner" -> Link.Library("innerLink"),
         ),
         // practically invalid, missing connect constraints
@@ -42,14 +44,14 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
     blocks = Seq(
       Block.Block("sourceAdapter",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
-        ports = Map(
+        ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
       Block.Block("sinkAdapter",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
-        ports = Map(
+        ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),
         )

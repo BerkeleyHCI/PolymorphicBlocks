@@ -3,10 +3,13 @@ package edg.compiler
 import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
+import edg.wir.ProtoUtil._
 import edgir.ref.ref
 import edg.wir.{IndirectDesignPath, IndirectStep}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import scala.collection.SeqMap
 
 
 /** Tests compiler LinkArray expansion / elaboration and connected constraint allocation with block-side PortArray.
@@ -15,35 +18,35 @@ import org.scalatest.matchers.should.Matchers._
 class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   val library = Library(
     ports = Seq(
-      Port.Port("sourcePort", params=Map("param" -> ValInit.Integer)),
-      Port.Port("sinkPort", params=Map("param" -> ValInit.Integer)),
+      Port.Port("sourcePort", params=SeqMap("param" -> ValInit.Integer)),
+      Port.Port("sinkPort", params=SeqMap("param" -> ValInit.Integer)),
     ),
     blocks = Seq(
       Block.Block("sourceBlock",  // array elements source
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sourcePort", Seq("a", "b", "c"), Port.Library("sourcePort")),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(1)),
           "port.b" -> Constraint.Assign(Ref("port", "b", "param"), ValueExpr.Literal(2)),
           "port.c" -> Constraint.Assign(Ref("port", "c", "param"), ValueExpr.Literal(3)),
         )
       ),
       Block.Block("sinkBlock",  // array elements sink
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort", Seq("a", "b", "c"), Port.Library("sinkPort")),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           "port.a" -> Constraint.Assign(Ref("port", "a", "param"), ValueExpr.Literal(11)),
           "port.b" -> Constraint.Assign(Ref("port", "b", "param"), ValueExpr.Literal(12)),
           "port.c" -> Constraint.Assign(Ref("port", "c", "param"), ValueExpr.Literal(13)),
         )
       ),
       Block.Block("elasticSinkBlock",  // array elements sink
-        ports = Map(
+        ports = SeqMap(
           "port" -> Port.Array("sinkPort"),
         ),
-        constraints = Map(
+        constraints = SeqMap(
           // Not truly correct but good enough for this test; this really needs a generator
           "elements" -> Constraint.Assign(
             ref.LocalPath(Seq(ref.LocalStep(ref.LocalStep.Step.Name("port")),
@@ -56,13 +59,13 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     ),
     links = Seq(
       Link.Link("link",
-        ports = Map(
+        ports = SeqMap(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort"),
         ),
-        params = Map(
+        params = SeqMap(
           "param" -> ValInit.Integer
-        ), constraints = Map(
+        ), constraints = SeqMap(
           "param_set" -> Constraint.Assign(Ref("param"), ValueExpr.Literal(-1)),
         )
       ),
@@ -71,21 +74,21 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with link-array" should "expand constraints and link arrays" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
         "sink0" -> Block.Library("sinkBlock"),
         "sink1" -> Block.Library("sinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Array("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.ConnectedArray(Ref("source", "port"), Ref("link", "source")),
         "sink0Connect" -> Constraint.ConnectedArray(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
         "sink1Connect" -> Constraint.ConnectedArray(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(  // expected constraints in the top-level design
+    val referenceConstraints = SeqMap(  // expected constraints in the top-level design
       "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
       "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
       "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
@@ -97,7 +100,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "sink1Connect.b" -> Constraint.Connected(Ref("sink1", "port", "b"), Ref("link", "sinks", "1", "b")),
       "sink1Connect.c" -> Constraint.Connected(Ref("sink1", "port", "c"), Ref("link", "sinks", "1", "c")),
     )
-    val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+    val referenceLinkArrayConstraints = SeqMap(  // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
       "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
       "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
@@ -112,7 +115,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.getContents.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
@@ -134,9 +137,9 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     }
 
     val linkPb = compiled.getContents.links("link").getArray
-    linkPb.constraints should equal(referenceLinkArrayConstraints)
+    linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
-    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
       linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
@@ -188,22 +191,22 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with partially-connected link-arrays, source only" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Array("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sourceConnect" -> Constraint.ConnectedArray(Ref("source", "port"), Ref("link", "source")),
       )
     ))
-    val referenceConstraints = Map(  // expected constraints in the top-level design
+    val referenceConstraints = SeqMap(  // expected constraints in the top-level design
       "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
       "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
       "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
     )
-    val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+    val referenceLinkArrayConstraints = SeqMap(  // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
       "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
       "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
@@ -211,7 +214,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.getContents.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
@@ -227,9 +230,9 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         equal(Some(IntValue(0)))
 
     val linkPb = compiled.getContents.links("link").getArray
-    linkPb.constraints should equal(referenceLinkArrayConstraints)
+    linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
-    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
       linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
@@ -260,22 +263,22 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with partially-connected link-arrays, sinks only" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "sink" -> Block.Library("sinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link" -> Link.Array("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "sinkConnect" -> Constraint.ConnectedArray(Ref("sink", "port"), Ref.Allocate(Ref("link", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(  // expected constraints in the top-level design
+    val referenceConstraints = SeqMap(  // expected constraints in the top-level design
       "sinkConnect.a" -> Constraint.Connected(Ref("sink", "port", "a"), Ref("link", "sinks", "0", "a")),
       "sinkConnect.b" -> Constraint.Connected(Ref("sink", "port", "b"), Ref("link", "sinks", "0", "b")),
       "sinkConnect.c" -> Constraint.Connected(Ref("sink", "port", "c"), Ref("link", "sinks", "0", "c")),
     )
-    val referenceLinkArrayConstraints = Map(  // expected constraints in the link array
+    val referenceLinkArrayConstraints = SeqMap(  // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),  // always generated, even if NC
       "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
       "source.c" -> Constraint.Exported(Ref("source", "c"), Ref("c", "source")),
@@ -287,7 +290,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.getContents.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
@@ -304,9 +307,9 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
 
     val linkPb = compiled.getContents.links("link").getArray
-    linkPb.constraints should equal(referenceLinkArrayConstraints)
+    linkPb.constraints.toSeqMap should equal(referenceLinkArrayConstraints)
 
-    linkPb.links.keySet should equal(Set("a", "b", "c"))
+    linkPb.links.toSeqMap.keySet should equal(Set("a", "b", "c"))
     Seq("a", "b", "c").foreach { elementIndex =>
       linkPb.links(elementIndex).getLink.getSelfClass should equal(LibraryPath("link"))
       compiler.getValue(IndirectDesignPath() + "link" + elementIndex + "sinks" + IndirectStep.Elements) should
@@ -347,23 +350,23 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with block-side-allocated link-arrays" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "sink" -> Block.Library("elasticSinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Array("link"),
         "link1" -> Link.Array("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
         "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
         "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link0", "sinks"))),
         "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(  // expected constraints in the top-level design
+    val referenceConstraints = SeqMap(  // expected constraints in the top-level design
       "source0Connect.a" -> Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
       "source0Connect.b" -> Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
       "source0Connect.c" -> Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
@@ -380,7 +383,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.getContents.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link0" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
@@ -402,23 +405,23 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
   "Compiler on design with block-side-named-allocated link-arrays" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
-      blocks = Map(
+      blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
         "source1" -> Block.Library("sourceBlock"),
         "sink" -> Block.Library("elasticSinkBlock"),
       ),
-      links = Map(
+      links = SeqMap(
         "link0" -> Link.Array("link"),
         "link1" -> Link.Array("link"),
       ),
-      constraints = Map(
+      constraints = SeqMap(
         "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
         "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
         "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port"), Some("n0")), Ref.Allocate(Ref("link0", "sinks"))),
         "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port"), Some("n1")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(  // expected constraints in the top-level design
+    val referenceConstraints = SeqMap(  // expected constraints in the top-level design
       "source0Connect.a" -> Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
       "source0Connect.b" -> Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
       "source0Connect.c" -> Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
@@ -435,7 +438,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiled.getContents.constraints should equal(referenceConstraints)
+    compiled.getContents.constraints.toSeqMap should equal(referenceConstraints)
 
     compiler.getValue(IndirectDesignPath() + "link0" + IndirectStep.Elements) should
         equal(Some(ArrayValue(Seq(TextValue("a"), TextValue("b"), TextValue("c")))))
@@ -448,7 +451,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           TextValue("n0_a"), TextValue("n0_b"), TextValue("n0_c"),
           TextValue("n1_a"), TextValue("n1_b"), TextValue("n1_c")
         ))))
-    compiled.getContents.blocks("sink").getHierarchy.ports("port").getArray.getPorts.ports.keySet should equal(
+    compiled.getContents.blocks("sink").getHierarchy.ports("port").getArray.getPorts.ports.toSeqMap.keySet should equal(
       Set("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c"))
 
     Seq("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c").foreach { elementIndex =>
