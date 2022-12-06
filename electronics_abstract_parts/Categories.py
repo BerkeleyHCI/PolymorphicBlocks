@@ -69,7 +69,13 @@ class IntegratedCircuit(Block):
 
 @abstract_block
 class Microcontroller(IntegratedCircuit):
-  """Microcontroller with its surrounding application circuit."""
+  """Microcontroller (with embedded-class processor) with its surrounding application circuit."""
+  pass
+
+
+@abstract_block
+class Fpga(IntegratedCircuit):
+  """FPGA with its surrounding application circuit."""
   pass
 
 

@@ -51,7 +51,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
 
     pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
     dpio0_model = pio0_model  # differential capability currently not modeled
-    pio1_model = self.make_dio_model(self.gnd, self.vccio_1)
+    pio1_model = self.make_dio_model(self.gnd, self.pwr)
     dpio1_model = pio1_model
     pio2_model = self.make_dio_model(self.gnd, self.vccio_2)
     dpio2_model = pio2_model
@@ -61,10 +61,6 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
 
     self.spi_config = self.Port(SpiMaster(dpio1_model, (7, 71)*MHertz))
     self.spi_config_cs = self.Port(dpio1_model)
-
-    # hard macros, not tied to any particular pin
-    i2c_model = I2cMaster(DigitalBidir.empty())  # user I2C, table 4.7
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 45)*MHertz)  # user SPI, table 4.10
 
     self.system_pinmaps = VariantPinRemapper({  # names consistent with pinout spreadsheet
       'VCCPLL': self.vcc_pll,
@@ -83,6 +79,10 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
       'IOB_34a_SPI_SCK': self.spi_config.sck,
       'IOB_35b_SPI_SS': self.spi_config_cs,
     })
+
+    # hard macros, not tied to any particular pin
+    i2c_model = I2cMaster(DigitalBidir.empty())  # user I2C, table 4.7
+    spi_model = SpiMaster(DigitalBidir.empty(), (0, 45)*MHertz)  # user SPI, table 4.10
 
     self.abstract_pinmaps = PinMapUtil([  # names consistent with pinout spreadsheet
       PinResource('IOB_0a', {'IOB_0a': pio2_model}),
@@ -158,7 +158,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
     self.footprint(
       'U', self.PACKAGE,
@@ -170,7 +170,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
 
 
-class Ice40up5k_SG48(Ice40up_Device):
+class Ice40up5k_SG48_Device(Ice40up_Device):
   SYSTEM_PIN_REMAP = {
     'VCCPLL': '29',
     'VCC': ['5', '30'],
@@ -228,3 +228,23 @@ class Ice40up5k_SG48(Ice40up_Device):
   PART = 'ICE40UP5K-SG48'
   JLC_PART = 'C2678152'
   JLC_BASIC_PART = False
+
+
+class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
+  """Application circuit for the iCE40UP series FPGAs"""
+  DEVICE: Type[Ice40up_Device]
+
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+    self.connect(self.pwr, self.ic.pwr)
+    self.connect(self.gnd, self.ic.gnd)
+    self._export_ios_from(self.ic)
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
+      self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2

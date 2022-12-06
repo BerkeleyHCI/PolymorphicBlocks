@@ -7,7 +7,7 @@ from .PartsTablePart import PartsTablePart, PartsTableFootprint
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
-from .Categories import IntegratedCircuit, Microcontroller, Memory, RealtimeClock, PowerConditioner
+from .Categories import IntegratedCircuit, Microcontroller, Fpga, Memory, RealtimeClock, PowerConditioner
 from .Categories import Connector, BarrelJack, ProgrammingConnector
 from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
 from .Categories import SpecificApplicationSubcircuit
