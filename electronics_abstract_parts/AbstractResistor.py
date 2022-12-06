@@ -80,7 +80,7 @@ class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock
     part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_resistance, part[self.RESISTANCE])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
 

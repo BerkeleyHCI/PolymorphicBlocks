@@ -62,7 +62,7 @@ class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
     part = parts.first(f"no crystal matching f={frequency} Hz")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, len(parts))
+    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_frequency, part[self.FREQUENCY])
     self.assign(self.actual_capacitance, part[self.CAPACITANCE])
 

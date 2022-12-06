@@ -37,7 +37,7 @@ class PartsTablePart(Block):
     super().__init__(*args, **kwargs)
     self.part = self.ArgParameter(part)
     self.actual_part = self.Parameter(StringExpr())
-    self.matching_parts = self.Parameter(IntExpr())
+    self.matching_parts = self.Parameter(ArrayStringExpr())
 
 
 class PartsTableFootprint(PartsTablePart, Block):
