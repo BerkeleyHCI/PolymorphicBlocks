@@ -25,7 +25,7 @@ class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock, JlcPa
       (Range(4.9, 5.1), 'LD1117S50TR', 'C134077'),
     ]
     suitable_parts = [(part_out, part_number, lcsc_part) for part_out, part_number, lcsc_part in parts
-                      if part_out in output_voltage]
+                      if part_out.fuzzy_in(output_voltage)]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 
