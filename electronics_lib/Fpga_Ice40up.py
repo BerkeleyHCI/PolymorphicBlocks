@@ -5,6 +5,38 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+class Ice40TargetHeader(FootprintBlock):
+  """Custom programming header for iCE40 loosely based on the SWD pinning"""
+  def __init__(self):
+    super().__init__()
+    self.pwr = self.Port(VoltageSink(), [Power])  # in practice this can power the target
+    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
+    self.spi = self.Port(SpiSlave())  # actually master, but multi-master busses aren't supported (yet)
+    self.cs = self.Port(DigitalSource())
+    self.reset = self.Port(DigitalSource())
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD',  # TODO: pattern needs shroud
+      {
+        '1': self.pwr,
+        '2': self.cs,  # swd: swdio
+        '3': self.gnd,
+        '4': self.spi.sck,  # swd: swclk
+        '5': self.gnd,
+        '6': self.spi.mosi,  # DI; swd: swo
+        # '7': ,  # key pin technically doesn't exist
+        '8': self.spi.miso,  # DO; jtag: tdi or swd: NC
+        '9': self.gnd,
+        '10': self.reset,
+      },
+      mfr='CNC Tech', part='3220-10-0300-00',
+      value='iCE40Prog'
+    )
+
+
 @abstract_block
 class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
@@ -264,6 +296,11 @@ class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.prog = imp.Block(Ice40TargetHeader())
+      self.connect(self.prog.spi, self.ic.spi_config)
+      self.connect(self.prog.cs, self.ic.spi_config_cs)
+      self.connect(self.prog.reset, self.ic.creset_b)
+
       self.vcc_reg = imp.Block(LinearRegulator((1.14, 1.26)*Volt))
       self.reset_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.creset_b)
 
