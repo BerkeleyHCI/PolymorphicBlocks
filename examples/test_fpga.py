@@ -57,6 +57,7 @@ class FpgaTest(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
 
         ]),
+        (['fpga', 'mem', 'size'], Range.from_lower(128*1024*1024)),  # use the JLC basic part
       ],
       class_refinements=[
       ],
