@@ -178,7 +178,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
   JLC_PART: str  # part number for lcsc_part
   JLC_BASIC_PART: bool
 
-  BITSTREAM_BITS: int
+  BITSTREAM_BITS: int = 0
 
   def generate(self, assignments: List[str],
                gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
@@ -268,25 +268,27 @@ class Ice40up5k_Sg48_Device(Ice40up_Device):
 
 
 @abstract_block
-class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
+class Ice40up(PinMappable, Fpga, IoController):
   """Application circuit for the iCE40UP series FPGAs, pre-baked for 'common' applications
   (3.3v supply with 1.2v core not shared, external FLASH programming, no NVCM programming).
 
   TODO: generator support for CRAM (volatile) programming mode, diode 2v5 NVCM supply.
   """
-  DEVICE: Type[Ice40up_Device]
+  DEVICE: Type[Ice40up_Device] = Ice40up_Device
+
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
-
-    self.cdone = self.Export(self.ic.cdone, optional=True)
+    self.cdone = self.Port(DigitalSource.empty(), optional=True)
 
   def contents(self):
     super().contents()
+    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+
     self.connect(self.pwr, self.ic.pwr, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic)
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+    self.connect(self.ic.cdone, self.cdone)
 
     # schematics don't seem to be available for the official reference designs,
     # so the decoupling caps are kind of arbitrary (except the PLL)
