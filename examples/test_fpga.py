@@ -40,7 +40,7 @@ class FpgaTest(JlcBoardTop):
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
       # TODO bitbang USB to FPGA
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()))
+      # (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()))
 
     # Misc board
     self.duck = self.Block(DuckLogo())

@@ -33,9 +33,6 @@ class W25q_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
     self.spi = self.Port(SpiSlave(dio_model, (0, 104)*MHertz))
     self.cs = self.Port(dio_model)
 
-    self.hold = self.Port(dio_model)
-    self.wp = self.Port(dio_model)
-
     self.actual_size = self.Parameter(IntExpr())
 
     self.generator(self.generate, size)
@@ -51,11 +48,11 @@ class W25q_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
       {
         '1': self.cs,
         '2': self.spi.miso,
-        '3': self.wp,
+        '3': self.vcc,  # /WP
         '4': self.gnd,
         '5': self.spi.mosi,
         '6': self.spi.sck,
-        '7': self.hold,
+        '7': self.vcc,  # /HOLD
         '8': self.vcc,
       },
       mfr='Winbond Electronics', part=part_pn,
@@ -81,6 +78,3 @@ class W25q(SpiMemory):
     self.vcc_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2)
     )).connected(self.gnd, self.pwr)
-
-    self.hold_pu = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.ic.hold)
-    self.wp_pu = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.ic.wp)

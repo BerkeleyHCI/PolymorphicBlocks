@@ -308,8 +308,8 @@ class Ice40up(PinMappable, Fpga, IoController):
 
       self.mem = imp.Block(SpiMemory(Range.from_lower(self.ic.BITSTREAM_BITS)))
       self.connect(self.ic.spi_config, self.mem.spi)
-      self.connect(self.ic.spi_config_cs, self.mem.cs)
       self.mem_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.spi_config_cs)
+      self.connect(self.ic.spi_config_cs, self.mem.cs)
       # SPI_SS_B is sampled on boot to determine boot config, needs to be high for PROM config
 
       self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
@@ -322,7 +322,7 @@ class Ice40up(PinMappable, Fpga, IoController):
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.connect(self.vcc_reg.pwr_out, self.ic.vcc)
-      self.pll_res = self.Block(SeriesPowerResistor(100*Ohm(tol=0.05)))
+      self.pll_res = imp.Block(SeriesPowerResistor(100*Ohm(tol=0.05)))
 
       self.vcc_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
