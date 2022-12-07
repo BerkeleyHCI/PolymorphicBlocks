@@ -59,7 +59,8 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     self.creset_b = self.Port(DigitalSink.from_bidir(pio1_model))  # no internal PUR, must be driven (or 10k pulled up)
     self.cdone = self.Port(DigitalSource.from_bidir(pio1_model), optional=True)  # dedicated on SG48, shared on UWG30
 
-    self.spi_config = self.Port(SpiMaster(dpio1_model, (7, 71)*MHertz))
+    # TODO requirements on SPI device frequency
+    self.spi_config = self.Port(SpiMaster(dpio1_model))
     self.spi_config_cs = self.Port(dpio1_model)
 
     self.system_pinmaps = VariantPinRemapper({  # names consistent with pinout spreadsheet
@@ -145,6 +146,8 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
   JLC_PART: str  # part number for lcsc_part
   JLC_BASIC_PART: bool
 
+  BITSTREAM_BITS: int
+
   def generate(self, assignments: List[str],
                gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
                spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
@@ -229,10 +232,16 @@ class Ice40up5k_Sg48_Device(Ice40up_Device):
   JLC_PART = 'C2678152'
   JLC_BASIC_PART = False
 
+  BITSTREAM_BITS = 833288
+
 
 @abstract_block
 class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
-  """Application circuit for the iCE40UP series FPGAs with a simple configuration"""
+  """Application circuit for the iCE40UP series FPGAs, pre-baked for 'common' applications
+  (3.3v supply with 1.2v core not shared, external FLASH programming, no NVCM programming).
+
+  TODO: generator support for CRAM (volatile) programming mode, diode 2v5 NVCM supply.
+  """
   DEVICE: Type[Ice40up_Device]
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -249,12 +258,18 @@ class Ice40up(PinMappable, Fpga, IoController, GeneratorBlock):
 
     # schematics don't seem to be available for the official reference designs,
     # so the decoupling caps are kind of arbitrary (except the PLL)
+    # in theory, there are supply sequencing requirements, but designs like UPduino
+    # seem to work fine without sequencing circuitry
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.vcc_reg = self.Block(LinearRegulator((1.14, 1.26)*Volt))
+      self.vcc_reg = imp.Block(LinearRegulator((1.14, 1.26)*Volt))
       self.reset_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.creset_b)
+
+      self.mem = imp.Block(SpiMemory(Range.from_lower(self.ic.BITSTREAM_BITS)))
+      self.connect(self.ic.spi_config, self.mem.spi)
+      self.connect(self.ic.spi_config_cs, self.mem.cs)
 
       self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vio_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))

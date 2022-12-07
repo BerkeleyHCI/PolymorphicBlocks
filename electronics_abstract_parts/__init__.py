@@ -38,6 +38,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
+from .AbstractSpiMemory import SpiMemory
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
 from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter

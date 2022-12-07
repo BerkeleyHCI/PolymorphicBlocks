@@ -34,6 +34,10 @@ mSecond = LiteralConstructor(1e-3, 'S')
 uSecond = LiteralConstructor(1e-6, 'S')
 nSecond = LiteralConstructor(1e-9, 'S')
 
+Bit = LiteralConstructor(1, 'bit')
+kiBit = LiteralConstructor(1024, 'bit')  # Ki/Mi (kibi/mebi) means factor of 1024 instead of 1000
+MiBit = LiteralConstructor(1024*1024, 'bit')
+
 Watt = LiteralConstructor(1, 'W')
 
 
