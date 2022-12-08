@@ -2,6 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
+from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
@@ -50,6 +51,13 @@ class Ice40upConfigSelector(Block):
     self.fpga = self.Port(SpiSlave(DigitalBidir.empty()))
     self.mem = self.Port(SpiMaster(DigitalBidir.empty()))
     self.prog = self.Port(SpiSlave(DigitalBidir.empty()))
+
+  def contents(self):
+    super().contents()
+    self.fpga_so = self.Block(PassiveConnector(2))
+    self.fpga_si = self.Block(PassiveConnector(2))
+
+    
 
 
 @abstract_block
