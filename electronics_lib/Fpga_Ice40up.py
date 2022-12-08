@@ -37,6 +37,21 @@ class Ice40TargetHeader(FootprintBlock):
     )
 
 
+class Ice40upConfigSelector(Block):
+  """A circuit that allows selection of either CRAM programming (programmer -> FPGA) or
+  flash programming (FPGA -> flash during FPGA config, otherwise programmer -> flash)
+  through jumpers.
+
+  See the UPduino circuit. This typically has the programmer and flash hard-tied,
+  then a 2x2 jumper grid that controls the directionality.
+  """
+  def __init__(self):
+    super().__init__()
+    self.fpga = self.Port(SpiSlave(DigitalBidir.empty()))
+    self.mem = self.Port(SpiMaster(DigitalBidir.empty()))
+    self.prog = self.Port(SpiSlave(DigitalBidir.empty()))
+
+
 @abstract_block
 class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
@@ -298,19 +313,22 @@ class Ice40up(PinMappable, Fpga, IoController):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.prog = imp.Block(Ice40TargetHeader())
-      self.connect(self.prog.spi, self.ic.spi_config)
-      self.connect(self.prog.cs, self.ic.spi_config_cs)
-      self.connect(self.prog.reset, self.ic.creset_b)
-
       self.vcc_reg = imp.Block(LinearRegulator((1.14, 1.26)*Volt))
       self.reset_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.creset_b)
 
       self.mem = imp.Block(SpiMemory(Range.from_lower(self.ic.BITSTREAM_BITS)))
-      self.connect(self.ic.spi_config, self.mem.spi)
+
       self.mem_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.spi_config_cs)
-      self.connect(self.ic.spi_config_cs, self.mem.cs)
       # SPI_SS_B is sampled on boot to determine boot config, needs to be high for PROM config
+
+      self.prog = imp.Block(Ice40TargetHeader())
+      self.connect(self.prog.reset, self.ic.creset_b)
+
+      self.config = self.Block(Ice40upConfigSelector())
+      self.connect(self.config.fpga, self.ic.spi_config)
+      self.connect(self.config.mem, self.mem.spi)
+      self.connect(self.config.prog, self.prog.spi)
+      self.connect(self.ic.spi_config_cs, self.mem.cs, self.prog.cs)
 
       self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vio_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
