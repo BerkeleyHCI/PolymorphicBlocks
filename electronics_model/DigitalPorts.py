@@ -418,21 +418,21 @@ class DigitalBidirBridge(CircuitPortBridge):
 
 class DigitalSingleSource(DigitalBase):
   @staticmethod
-  def low_from_supply(neg: Port[VoltageLink]) -> DigitalSingleSource:
+  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      pulldown_capable=False,
-      low_signal_driver=True
+      pulldown_capable=is_pulldown,
+      low_signal_driver=not is_pulldown
     )
 
   @staticmethod
-  def high_from_supply(pos: Port[VoltageLink]) -> DigitalSingleSource:
+  def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      pullup_capable=False,
-      high_signal_driver=True
+      pullup_capable=is_pullup,
+      high_signal_driver=not is_pullup
     )
 
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
