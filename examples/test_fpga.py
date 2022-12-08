@@ -39,8 +39,11 @@ class FpgaTest(JlcBoardTop):
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw1'))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
-      # TODO bitbang USB to FPGA
-      # (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()))
+      (self.usb_bitbang, self.usb_esd), _ = self.chain(imp.Block(UsbBitBang()), imp.Block(UsbEsdDiode()),
+                                                       self.usb.usb)
+      self.connect(self.usb_bitbang.dp_pull, self.fpga.gpio.request('usb_dp_pull'))
+      self.connect(self.usb_bitbang.dp, self.fpga.gpio.request('usb_dp'))
+      self.connect(self.usb_bitbang.dm, self.fpga.gpio.request('usb_dm'))
 
     # Misc board
     self.duck = self.Block(DuckLogo())

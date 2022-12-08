@@ -50,6 +50,7 @@ from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, Di
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .I2cPullup import I2cPullup
+from .UsbBitBang import UsbBitBang
 
 from .IoController import BaseIoController, IoController
 from .PinMappable import PinMappable, PinMapUtil
