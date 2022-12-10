@@ -115,6 +115,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     self.cdone = self.Port(DigitalSource.from_bidir(pio1_model), optional=True)  # dedicated on SG48, shared on UWG30
 
     # TODO requirements on SPI device frequency
+    # TODO this is really bidirectional, so this could be either separate ports or split ports
     self.spi_config = self.Port(SpiMaster(dpio1_model))
     self.spi_config_cs = self.Port(dpio1_model)
 
