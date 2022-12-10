@@ -83,7 +83,7 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
     # Pin/peripheral resource definitions (table 3)
     self.system_pins: Dict[str, CircuitPort] = {
       # '51': QSPI_SD3
-      '52': self.qspi.sclk,
+      '52': self.qspi.sck,
       '53': self.qspi.mosi,  # IO0
       # '54': QSPI_SD2
       '55': self.qspi.miso,  # IO1
@@ -95,7 +95,6 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
       '24': self.swd.swclk,
       '25': self.swd.swdio,
 
-      '26': self.run,
       '19': self.gnd,  # TESTEN, connect to gnd
 
       '1': self.pwr,  # IOVdd
@@ -193,9 +192,7 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
                gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
                spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
                usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+    allocated = self.pinmaps.allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
       (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
       (UartPort, uart_requests), (CanControllerPort, can_requests),
@@ -206,8 +203,8 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
     io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
 
     self.footprint(
-      'U', self.PACKAGE,
-      dict(chain(system_pins.items(), io_pins.items())),
+      'U', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm',
+      dict(chain(self.system_pins.items(), io_pins.items())),
       mfr='Raspberry Pi', part='RP2040',
       datasheet='https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf'
     )
