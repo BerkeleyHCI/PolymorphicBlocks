@@ -16,21 +16,21 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
       voltage_limits=(0.99, 1.21)*Volt,  # Table 627
       current_draw=(0.18, 40)*mAmp,  # Table 628 typ Dormant to Figure 171 approx max DVdd
     ))
-    self.vreg_vout = self.Port(VoltageSource( # TODO MODEL ME
-      # voltage_limits=(1.62, 3.63)*Volt,
-      # current_draw=self.dvdd.is_connected().then_else(self.dvdd.link().current_drawn, 0*Amp(tol=0)),
+    self.vreg_vout = self.Port(VoltageSource(  # actually adjustable, section 2.10.3
+      voltage_out=1.1*Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
+      current_limits=(0, 100)*mAmp  # Table 1, max current
     ))
     self.vreg_vin = self.Port(VoltageSink(
       voltage_limits=(1.62, 3.63)*Volt,  # Table 627
       current_draw=self.vreg_vout.is_connected().then_else(self.vreg_vout.link().current_drawn, 0*Amp(tol=0)),
     ))
     self.usb_vdd = self.Port(VoltageSink(
-      voltage_limits=(3.135, 3.63)*Volt,  # Table 627
-      # TODO model current draw
+      voltage_limits=(3.135, 3.63)*Volt,  # Table 627, can be lower if USB not used (section 2.9.4)
+      current_draw=(0.2, 2.0)*mAmp,  # Table 628 typ BOOTSEL Idle to max BOOTSEL Active
     ))
     self.adc_avdd = self.Port(VoltageSink(
       voltage_limits=(1.62, 3.63)*Volt,  # Table 627, performance compromised <2.97V
-      # TODO model current draw
+      # current draw not specified in datasheet
     ))
 
     # Additional ports (on top of IoController)
@@ -62,7 +62,7 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
       self.gnd, self.pwr,
       voltage_limit_abs=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
-      input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd
+      input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
       pullup_capable=True, pulldown_capable=True
     )
     dio_std_model = dio_ft_model  # exactly the same characteristics
@@ -215,11 +215,9 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
 # TODO this needs to be updated
 @abstract_block
 class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
-  DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
-
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested())
+    self.generator(self.generate, self.usb.requested())
 
   def contents(self):
     super().contents()
@@ -228,29 +226,32 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+      # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
+      self.ic = imp.Block(Rp2040_Device(pin_assigns=self.pin_assigns))
       self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
-      self.pwr_cap = ElementDict[DecouplingCapacitor]()
-      # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
-      self.pwr_cap[0] = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
-      for i in range(1, 4):
-        self.pwr_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.iovdd_cap = ElementDict[DecouplingCapacitor]()
+      for i in range(6):  # one per IOVdd, combining USBVdd and IOVdd pin 49 per the example
+        self.iovdd_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+      self.avdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
-      # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
-      self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
-      self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
+      self.vreg_in_cap = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-      # TODO add the reset stabilizing capacitor?
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                    self.ic.swd)
 
-  def generate(self, can_requests: List[str], usb_requests: List[str]) -> None:
-    if can_requests or usb_requests:  # tighter frequency tolerances from CAN and USB usage require a crystal
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
+    self.dvdd_cap = ElementDict[DecouplingCapacitor]()
+    for i in range(2):
+      self.dvdd_cap[i] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
+
+    self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
+
+  def generate(self, usb_requests: List[str]) -> None:
+    if usb_requests:  # tighter frequency tolerances from USB usage require a crystal
+      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
       self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.osc)
+      self.connect(self.crystal.crystal, self.ic.xosc)
 
     if usb_requests:
       assert len(usb_requests) == 1
