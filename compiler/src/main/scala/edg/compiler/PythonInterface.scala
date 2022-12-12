@@ -241,9 +241,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
           DesignPath() ++ result.getPath -> ExprValue.fromValueLit(result.getValue)
         }.toMap)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while running backend $refinementPass: ${err.error}")
+        Errorable.Error(s"while running refinement $refinementPass: ${err.error}")
       case _ =>
-        Errorable.Error(s"while running backend $refinementPass: invalid response")
+        Errorable.Error(s"while running refinement $refinementPass: invalid response")
     }
     onRunRefinementPassComplete(refinementPass, result)
     result
