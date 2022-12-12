@@ -3,6 +3,10 @@ import unittest
 from edg import *
 
 
+class TestBlinkyEmpty(SimpleBoardTop):
+  pass
+
+
 class TestBlinkyIncomplete(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
@@ -389,6 +393,9 @@ class TestBlinkyPacked(SimpleBoardTop):
 
 
 class BlinkyTestCase(unittest.TestCase):
+  def test_design_empty(self) -> None:
+    compile_board_inplace(TestBlinkyEmpty)
+
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
       compile_board_inplace(TestBlinkyIncomplete)
