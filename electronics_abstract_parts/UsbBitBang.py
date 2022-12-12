@@ -8,9 +8,23 @@ class UsbBitBang(DiscreteApplication):
   Presumably generalizes to any digital pin that can be driven fast enough.
 
   TODO: a more formal analysis of tolerances"""
+  @staticmethod
+  def digital_external_from_link(link_port: DigitalBidir) -> DigitalBidir:
+    """Creates a DigitalBidir model that is the external-facing port that exports from
+    an internal-facing (link-side) port. The internal-facing port should be ideal."""
+
+
   def __init__(self) -> None:
     super().__init__()
     self.usb = self.Port(UsbDevicePort(DigitalBidir.empty()), [Output])
+
+    # Internally, this behaves like a bridge, with defined 'external' (USB) and 'internal' (FPGA)
+    # sides and propagating port data from internal to external as with bridge semantics.
+    # Undirected / bidirectional propagation doesn't work with the current solver, since
+    # we need the FPGA-side link voltage to propagate to the USB port, and the USB-side link voltage
+    # to propagate to the FPGA port, and this causes both to deadlock (both link voltages depend on
+    # the port voltages, and neither is available until the other link voltage is available).
+    # Other ideas include moving to a fixed point solver, but that has other trade-offs.
     self.dp = self.Port(DigitalBidir.empty())
     self.dm = self.Port(DigitalBidir.empty())
     self.dp_pull = self.Port(DigitalSink.empty())
@@ -23,12 +37,7 @@ class UsbBitBang(DiscreteApplication):
     self.dp_res = self.Block(Resistor(68*Ohm(tol=0.05)))
     self.dm_res = self.Block(Resistor(68*Ohm(tol=0.05)))
 
-    # this only propagates discrete digital IO -> USB, since bidirectional
-    # propagation causes a cycle that the system is unable to handle:
-    # digital voltage depends on USB voltage which depends on digital voltage
-    # in practice this means the voltages on both links must be merged,
-    # but there is no mechanism for that
-    self.connect(self.dm, self.dm_res.a.adapt_to(DigitalBidir()))
+    self.connect(self.dm, self.dm_res.a.adapt_to(DigitalBidir()))  # internal ports are ideal
     self.connect(self.usb.dm, self.dm_res.b.adapt_to(DigitalBidir(
       voltage_out=self.dm.link().voltage
     )))
