@@ -118,6 +118,7 @@ if __name__ == '__main__':
 
         refinement_results = refinement_pass.run(CompiledDesign.from_request(
           request.run_refinement.design, request.run_refinement.solvedValues))
+        response.run_refinement.SetInParent()
         for path, refinement_result in refinement_results:
           new_value = response.run_refinement.newValues.add()
           new_value.path.CopyFrom(path)
@@ -129,6 +130,7 @@ if __name__ == '__main__':
 
         backend_results = backend.run(CompiledDesign.from_request(
           request.run_backend.design, request.run_backend.solvedValues))
+        response.run_backend.SetInParent()
         for path, backend_result in backend_results:
           response_result = response.run_backend.results.add()
           response_result.path.CopyFrom(path)

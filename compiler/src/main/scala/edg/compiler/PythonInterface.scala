@@ -171,9 +171,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
       case edgrpc.HdlResponse.Response.GetLibraryElement(result) =>
         Errorable.Success((result.getElement, result.refinements))
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while elaborating ${element.toSimpleString}: ${err.error}")
+        Errorable.Error(err.error)
       case _ =>
-        Errorable.Error(s"while elaborating ${element.toSimpleString}: invalid response")
+        Errorable.Error("invalid response")
     }
     onLibraryRequestComplete(element, result)
     result
@@ -201,9 +201,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
       case edgrpc.HdlResponse.Response.ElaborateGenerator(result) =>
         Errorable.Success(result.getGenerated)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while generating ${element.toSimpleString}: ${err.error}")
+        Errorable.Error(err.error)
       case _ =>
-        Errorable.Error(s"while generating ${element.toSimpleString}: invalid response")
+        Errorable.Error("invalid response")
     }
     onElaborateGeneratorRequestComplete(element, values, result)
     result
@@ -241,9 +241,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
           DesignPath() ++ result.getPath -> ExprValue.fromValueLit(result.getValue)
         }.toMap)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while running backend $refinementPass: ${err.error}")
+        Errorable.Error(err.error)
       case _ =>
-        Errorable.Error(s"while running backend $refinementPass: invalid response")
+        Errorable.Error(s"invalid response")
     }
     onRunRefinementPassComplete(refinementPass, result)
     result
@@ -271,9 +271,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
           DesignPath() ++ result.getPath -> result.getText
         }.toMap)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while running backend $backend: ${err.error}")
+        Errorable.Error(err.error)
       case _ =>
-        Errorable.Error(s"while running backend $backend: invalid response")
+        Errorable.Error("invalid response")
     }
     onRunBackendComplete(backend, result)
     result
