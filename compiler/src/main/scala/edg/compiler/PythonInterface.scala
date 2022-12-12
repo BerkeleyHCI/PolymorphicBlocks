@@ -241,9 +241,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
           DesignPath() ++ result.getPath -> ExprValue.fromValueLit(result.getValue)
         }.toMap)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while running refinement $refinementPass: ${err.error}")
+        Errorable.Error(s"while running refinement ${refinementPass.toSimpleString}: ${err.error}")
       case _ =>
-        Errorable.Error(s"while running refinement $refinementPass: invalid response")
+        Errorable.Error(s"while running refinement ${refinementPass.toSimpleString}: invalid response")
     }
     onRunRefinementPassComplete(refinementPass, result)
     result
@@ -271,9 +271,9 @@ class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
           DesignPath() ++ result.getPath -> result.getText
         }.toMap)
       case edgrpc.HdlResponse.Response.Error(err) =>
-        Errorable.Error(s"while running backend $backend: ${err.error}")
+        Errorable.Error(s"while running backend ${backend.toSimpleString}: ${err.error}")
       case _ =>
-        Errorable.Error(s"while running backend $backend: invalid response")
+        Errorable.Error(s"while running backend ${backend.toSimpleString}: invalid response")
     }
     onRunBackendComplete(backend, result)
     result
