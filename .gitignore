@@ -4,6 +4,7 @@ __pycache__
 *.edg
 *.net
 *.lib
+*.pdf
 
 *.raw
 *.plt
