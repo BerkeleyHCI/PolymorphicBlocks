@@ -58,7 +58,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        pip install protobuf kinparse Deprecated
+        pip install protobuf sexpdata Deprecated
     - name: unittest
       run: python -m unittest discover
       
