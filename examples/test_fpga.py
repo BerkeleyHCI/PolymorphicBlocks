@@ -45,11 +45,11 @@ class FpgaTest(JlcBoardTop):
       (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request('led'), imp.Block(IndicatorLed()))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
-      (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(imp.Block(UsbBitBang()), imp.Block(UsbEsdDiode()),
-                                                                 self.usb_fpga.usb)
-      self.connect(self.usb_fpga_bitbang.dp_pull, self.fpga.gpio.request('usb_dp_pull'))
-      self.connect(self.usb_fpga_bitbang.dp, self.fpga.gpio.request('usb_dp'))
-      self.connect(self.usb_fpga_bitbang.dm, self.fpga.gpio.request('usb_dm'))
+      (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(
+        imp.Block(UsbBitBang()).connected_from(
+          self.fpga.gpio.request('usb_dp_pull'), self.fpga.gpio.request('usb_dp'), self.fpga.gpio.request('usb_dm')),
+        imp.Block(UsbEsdDiode()),
+        self.usb_fpga.usb)
 
       # MICROCONTROLLER BLOCK
       self.mcu = imp.Block(Rp2040())
@@ -82,6 +82,9 @@ class FpgaTest(JlcBoardTop):
         (['fpga', 'vcc_reg'], Ld1117),
       ],
       instance_values=[
+        (['fpga', 'pin_assigns'], [
+
+        ]),
         (['mcu', 'pin_assigns'], [
 
         ]),

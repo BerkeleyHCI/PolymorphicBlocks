@@ -1,3 +1,5 @@
+from typing import cast
+
 from electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
@@ -62,3 +64,9 @@ class UsbBitBang(DiscreteApplication):
 
     self.connect(self.dp_pull, self.dp_pull_res.a.adapt_to(DigitalSink()))
     self.connect(self.dp_pull_res.b, self.dp_res.b)  # upstream of adapter
+
+  def connected_from(self, dp_pull: Port[DigitalLink], dp: Port[DigitalLink], dm: Port[DigitalLink]) -> 'UsbBitBang':
+    cast(Block, builder.get_enclosing_block()).connect(dp_pull, self.dp_pull)
+    cast(Block, builder.get_enclosing_block()).connect(dp, self.dp)
+    cast(Block, builder.get_enclosing_block()).connect(dm, self.dm)
+    return self
