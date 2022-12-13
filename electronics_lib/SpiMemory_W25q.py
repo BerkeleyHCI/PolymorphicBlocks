@@ -4,6 +4,9 @@ from .JlcPart import JlcPart
 
 class W25q_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   PARTS = [
+    # prefer the basic part version
+    (128*1024*1024, 'W25Q128JVSIQ', 'https://www.winbond.com/resource-files/W25Q128JV%20RevI%2008232021%20Plus.pdf',
+     'C97521', True),
     # note, 8Mib version considered obsolete at DigiKey
     (16*1024*1024, 'W25Q16JVSSIQ', 'https://www.winbond.com/resource-files/w25q16jv%20spi%20revg%2003222018%20plus.pdf',
      'C82317', False),
@@ -11,8 +14,6 @@ class W25q_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
      'C82344', False),
     (64*1024*1024, 'W25Q64JVSSIQ', 'https://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf',
      'C179171', False),
-    (128*1024*1024, 'W25Q128JVSIQ', 'https://www.winbond.com/resource-files/W25Q128JV%20RevI%2008232021%20Plus.pdf',
-     'C97521', True),
     # higher capacity variants available but not in SOIC-8
   ]
 

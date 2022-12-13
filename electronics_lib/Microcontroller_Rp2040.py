@@ -6,7 +6,6 @@ from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
 from .JlcPart import JlcPart
 
 
-@abstract_block
 class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
@@ -60,7 +59,7 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
     # Port models
     dio_ft_model = DigitalBidir.from_supply(  # Table 623
       self.gnd, self.pwr,
-      voltage_limit_abs=(-0.3, 0.3) * Volt,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
       input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
       pullup_capable=True, pulldown_capable=True
@@ -234,7 +233,6 @@ class Rp2040Usb(Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-@abstract_block
 class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -261,6 +259,11 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                    self.ic.swd)
+
+      self.mem = imp.Block(SpiMemory(Range.all()))
+      self.connect(self.ic.qspi, self.mem.spi)
+      self.connect(self.ic.qspi_cs, self.mem.cs)
+
 
     self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
     self.connect(self.ic.vreg_vout, self.ic.dvdd)
