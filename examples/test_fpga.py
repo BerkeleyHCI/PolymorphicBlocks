@@ -42,7 +42,7 @@ class FpgaTest(JlcBoardTop):
       self.fpga = imp.Block(Ice40up5k_Sg48())
 
       (self.fpga_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw'))
-      (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request('led'), imp.Block(IndicatorLed()))
+      (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
       (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(
@@ -55,7 +55,7 @@ class FpgaTest(JlcBoardTop):
       self.mcu = imp.Block(Rp2040())
 
       (self.mcu_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
-      (self.mcu_led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed()))
+      (self.mcu_leds, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
 
       (self.usb_mcu_esd, ), _ = self.chain(self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()),
                                            self.usb_mcu.usb)
