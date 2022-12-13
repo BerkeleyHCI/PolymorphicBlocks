@@ -9,13 +9,17 @@ class FpgaTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
+    self.usb_fpga = self.Block(UsbCReceptacle())
+    self.usb_mcu = self.Block(UsbCReceptacle())
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.vusb_merge = self.Block(MergedVoltageSource()).connected_from(self.usb_fpga.pwr, self.usb_mcu.pwr)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(self.usb_fpga.gnd, self.usb_mcu.gnd)
 
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.vusb = self.connect(self.vusb_merge.pwr_out)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
+
+    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_merge.pwr_out)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
 
     # POWER
     with self.implicit_connect(
@@ -34,20 +38,39 @@ class FpgaTest(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # FPGA BLOCK
       self.fpga = imp.Block(Ice40up5k_Sg48())
 
-      self.mcu = imp.Block(Rp2040())
-
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw1'))
+      (self.fpga_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw'))
+      (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request('led'), imp.Block(IndicatorLed()))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
-      (self.usb_bitbang, self.usb_esd), _ = self.chain(imp.Block(UsbBitBang()), imp.Block(UsbEsdDiode()),
-                                                       self.usb.usb)
-      self.connect(self.usb_bitbang.dp_pull, self.fpga.gpio.request('usb_dp_pull'))
-      self.connect(self.usb_bitbang.dp, self.fpga.gpio.request('usb_dp'))
-      self.connect(self.usb_bitbang.dm, self.fpga.gpio.request('usb_dm'))
+      (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(imp.Block(UsbBitBang()), imp.Block(UsbEsdDiode()),
+                                                                 self.usb_fpga.usb)
+      self.connect(self.usb_fpga_bitbang.dp_pull, self.fpga.gpio.request('usb_dp_pull'))
+      self.connect(self.usb_fpga_bitbang.dp, self.fpga.gpio.request('usb_dp'))
+      self.connect(self.usb_fpga_bitbang.dm, self.fpga.gpio.request('usb_dm'))
+
+      # MICROCONTROLLER BLOCK
+      self.mcu = imp.Block(Rp2040())
+
+      (self.mcu_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+      (self.mcu_led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed()))
+
+      (self.usb_mcu_esd, ), _ = self.chain(self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()),
+                                           self.usb_mcu.usb)
+
+      # FPGA <-> MCU CONNECTIONS
+      # Ideally this could request an anonymous sub-array (instead of 4 separate connections),
+      # but sadly that isn't supported (yet?).
+      # The 4 GPIOs could be, for example, an SPI connection.
+      self.connect(self.fpga.gpio.request('mcu0'), self.mcu.gpio.request('fpga0'))
+      self.connect(self.fpga.gpio.request('mcu1'), self.mcu.gpio.request('fpga1'))
+      self.connect(self.fpga.gpio.request('mcu2'), self.mcu.gpio.request('fpga2'))
+      self.connect(self.fpga.gpio.request('mcu3'), self.mcu.gpio.request('fpga3'))
 
     # Misc board
+    self.lemur = self.Block(LemurLogo())
     self.duck = self.Block(DuckLogo())
     self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())

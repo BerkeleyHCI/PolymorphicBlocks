@@ -283,10 +283,8 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
     if usb_requests:
       assert len(usb_requests) == 1
       usb_request_name = usb_requests[0]
-      ic_usb = self.ic.usb.request(usb_request_name)
-      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
-      self.connect(usb_port, ic_usb)
-
-      (self.usb_res, ), _ = self.chain(ic_usb, self.Block(Rp2040Usb()), usb_port)
+      (self.usb_res, ), _ = self.chain(self.ic.usb.request(usb_request_name),
+                                       self.Block(Rp2040Usb()),
+                                       self.usb.append_elt(UsbDevicePort.empty(), usb_request_name))
     else:
       self.usb.defined()
