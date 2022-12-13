@@ -23,7 +23,7 @@ class UsbBitBang(DiscreteApplication):
 
   def __init__(self) -> None:
     super().__init__()
-    self.usb = self.Port(UsbDevicePort(DigitalBidir.empty()), [Output])
+    self.usb = self.Port(UsbDevicePort.empty(), [Output])
 
     # Internally, this behaves like a bridge, with defined 'external' (USB) and 'internal' (FPGA)
     # sides and propagating port data from internal to external as with bridge semantics.

@@ -212,7 +212,28 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
     self.assign(self.actual_basic_part, False)
 
 
-# TODO this needs to be updated
+class Rp2040Usb(Block):
+  """Supporting passives for USB for RP2040"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.usb_rp = self.Port(UsbHostPort.empty(), [Input])
+    self.usb = self.Port(UsbDevicePort.empty(), [Output])
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.dp_res = self.Block(Resistor(27*Ohm(tol=0.05)))
+    self.dm_res = self.Block(Resistor(27*Ohm(tol=0.05)))
+
+    self.connect(self.usb_rp.dm, self.dm_res.a.adapt_to(DigitalBidir()))  # internal ports are ideal
+    self.connect(self.usb.dm, self.dm_res.b.adapt_to(
+      UsbBitBang.digital_external_from_link(self.usb_rp.dm)))
+
+    self.connect(self.usb_rp.dp, self.dp_res.a.adapt_to(DigitalBidir()))
+    self.connect(self.usb.dp, self.dp_res.b.adapt_to(
+      UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
+
+
 @abstract_block
 class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
   def __init__(self, **kwargs):
@@ -241,6 +262,9 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
       (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
                                    self.ic.swd)
 
+    self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
+    self.connect(self.ic.vreg_vout, self.ic.dvdd)
+
     self.dvdd_cap = ElementDict[DecouplingCapacitor]()
     for i in range(2):
       self.dvdd_cap[i] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
@@ -256,11 +280,10 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
     if usb_requests:
       assert len(usb_requests) == 1
       usb_request_name = usb_requests[0]
+      ic_usb = self.ic.usb.request(usb_request_name)
       usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
-      self.connect(usb_port, self.ic.usb.request(usb_request_name))
+      self.connect(usb_port, ic_usb)
 
-      self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
-      self.connect(self.usb_pull.pwr, self.pwr)
-      self.connect(usb_port, self.usb_pull.usb)
+      (self.usb_res, ), _ = self.chain(ic_usb, self.Block(Rp2040Usb()), usb_port)
     else:
       self.usb.defined()

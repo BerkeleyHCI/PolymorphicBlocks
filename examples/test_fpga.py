@@ -36,6 +36,8 @@ class FpgaTest(JlcBoardTop):
     ) as imp:
       self.fpga = imp.Block(Ice40up5k_Sg48())
 
+      self.mcu = imp.Block(Rp2040())
+
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw1'))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
