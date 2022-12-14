@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Any, Dict, Tuple, TypeVar, Type, Set
+from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple
 
 import math
 import sexpdata  # type: ignore
@@ -87,6 +87,18 @@ class KicadWire:
     self.pt2 = parse_xy(pts[2], 'xy')
 
 
+class KicadAnyLabel:
+  def __repr__(self):
+    return f"{self.__class__.__name__}({self.name} @ {self.pt})"
+
+  def __init__(self, sexp: List[Any]):
+    assert parse_symbol(sexp[0]) in ('label', 'global_label')
+    sexp_dict = group_by_car(sexp)
+    self.name = test_cast(sexp[1], str)
+    self.pos = parse_at(extract_only(sexp_dict['at']))
+    self.pt = (self.pos[0], self.pos[1])  # version without rotation
+
+
 class KicadSymbol:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
@@ -115,22 +127,31 @@ class KicadPin:
     )
 
 
+class ParsedNet(NamedTuple):
+  labels: Set[KicadAnyLabel]
+  pins: Set[KicadPin]
+
+  def __repr__(self):
+    return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
+
+
 class KicadSchematic:
   def __init__(self, data: str):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
     sexp_dict = group_by_car(schematic_top)
 
-    lib_symbols = {symbol.name: symbol
-                   for symbol in [KicadLibSymbol(elt)
-                                  for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
+    self.lib_symbols = {symbol.name: symbol
+                        for symbol in [KicadLibSymbol(elt)
+                                       for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
 
     wires = [KicadWire(elt) for elt in sexp_dict.get('wire', [])]
-    symbols = [KicadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    labels = [KicadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
+
+    self.symbols = [KicadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     symbol_pins = list(itertools.chain(*[[KicadPin(symbol, pin)
-                                          for pin in lib_symbols[symbol.lib].pins]
-                                         for symbol in symbols]))
-    print(list(symbol_pins))
+                                          for pin in self.lib_symbols[symbol.lib].pins]
+                                         for symbol in self.symbols]))
 
     # now, actually build the netlist, with graph traversal to find connected components
     # and by converting wires (and stuff) into lists of connected points
@@ -145,27 +166,32 @@ class KicadSchematic:
     pin_points: Dict[PointType, List[KicadPin]] = {}
     for pin in symbol_pins:
       pin_points.setdefault(pin.pos, []).append(pin)
+    label_points: Dict[PointType, List[KicadAnyLabel]] = {}
+    for label in labels:
+      label_points.setdefault(label.pt, []).append(label)
 
     # traverse the graph and build up nets
     seen_points: Set[PointType] = set()
-    self.nets: List[Tuple[str, List[KicadPin]]] = []
+    self.nets: List[ParsedNet] = []
     for point, pins in pin_points.items():
       if point in seen_points:
         continue  # already seen and part of another net
-      net_elts: List[KicadPin] = []
-      net_names: List[KicadPin] = []
+      net_pins: List[KicadPin] = []
+      net_labels: List[KicadAnyLabel] = []
       def traverse_point(point: PointType) -> None:
         if point in seen_points:
           return  # already seen, don't traverse again
         seen_points.add(point)
 
         for pin in pin_points.get(point, []):
-          net_elts.append(pin)
+          net_pins.append(pin)
+        for label in label_points.get(point, []):
+          net_labels.append(label)
         for point2 in edges.get(point, []):
           traverse_point(point2)
 
       traverse_point(point)
-      self.nets.append(("", net_elts))
+      self.nets.append(ParsedNet(set(net_labels), set(net_pins)))
 
     print(self.nets)
 
