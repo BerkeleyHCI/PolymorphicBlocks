@@ -170,6 +170,8 @@ class KicadSchematic:
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
 
+    # TODO also check for intersections - currently pins and labels need to be at wire ends
+
     # traverse the graph and build up nets
     seen_points: Set[PointType] = set()
     self.nets: List[ParsedNet] = []
