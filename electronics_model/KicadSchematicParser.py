@@ -44,6 +44,7 @@ def parse_symbol(sexp: Any) -> str:
 
 
 class KicadLibPin:
+  """Pin in a library symbol"""
   def __repr__(self):
     return f"{self.__class__.__name__}({self.number} @ {self.pt})"
 
@@ -55,6 +56,7 @@ class KicadLibPin:
 
 
 class KicadLibSymbol:
+  """Symbol in a library"""
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name})"
 
@@ -67,8 +69,7 @@ class KicadLibSymbol:
     symbol_elts = itertools.chain(*[symbol_sexp[2:]  # discard 'symbol' and the name
                                     for symbol_sexp in sexp_dict.get('symbol', [])])
     symbol_elts_dict = group_by_car(list(symbol_elts))
-    pins = [KicadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
-    print(pins)
+    self.pins = [KicadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
 
 
 class KicadWire:
@@ -84,13 +85,29 @@ class KicadWire:
     self.pt2 = parse_xy(pts[2], 'xy')
 
 
+class KicadSymbol:
+  def __repr__(self):
+    return f"{self.__class__.__name__}({self.refdes}, {self.lib})"
+
+  def __init__(self, sexp: List[Any]):
+    assert parse_symbol(sexp[0]) == 'symbol'
+    sexp_dict = group_by_car(sexp)
+    self.properties: Dict[str, str] = {test_cast(prop[1], str): test_cast(prop[2], str)
+                                       for prop in sexp_dict.get('property', [])}
+    self.refdes = self.properties.get("Reference", "")
+    self.lib = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
+
 class KicadSchematic:
   def __init__(self, data: str):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
-    top_groups = group_by_car(schematic_top)
-    wires = [KicadWire(elt) for elt in top_groups.get('wire', [])]
-    lib_symbols = [KicadLibSymbol(elt) for elt in extract_only(top_groups.get('lib_symbols', []))[1:]]  # slice to discard car
-    print(lib_symbols)
+    sexp_dict = group_by_car(schematic_top)
+
+    lib_symbols = [KicadLibSymbol(elt) for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]  # slice to discard car
+
+    wires = [KicadWire(elt) for elt in sexp_dict.get('wire', [])]
+    symbols = [KicadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    
+    print(symbols)
 
     # TODO support hierarchy with sheet_instances and symbol_instances
