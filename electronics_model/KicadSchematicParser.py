@@ -115,13 +115,15 @@ class KicadSymbol:
 
 class KicadPin:
   def __repr__(self):
-    return f"{self.__class__.__name__}({self.symbol.refdes}.{self.pin.number} @ {self.pos})"
+    return f"{self.__class__.__name__}({self.refdes}.{self.pin_number} @ {self.pt})"
 
   def __init__(self, symbol: KicadSymbol, pin: KicadLibPin):
     self.pin = pin
     self.symbol = symbol
+    self.refdes = self.symbol.refdes
+    self.pin_number = self.pin.number
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
-    self.pos = (  # round so the positions line up exactly
+    self.pt = (  # round so the positions line up exactly
       round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot), 2),
       round(symbol.pos[1] + pin.pos[0] * math.sin(symbol_rot) + pin.pos[1] * math.cos(symbol_rot), 2)
     )
@@ -165,11 +167,12 @@ class KicadSchematic:
     # build adjacency matrix for pin locations
     pin_points: Dict[PointType, List[KicadPin]] = {}
     for pin in symbol_pins:
-      pin_points.setdefault(pin.pos, []).append(pin)
+      pin_points.setdefault(pin.pt, []).append(pin)
     label_points: Dict[PointType, List[KicadAnyLabel]] = {}
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
 
+    # TODO support hierarchy with sheet_instances and symbol_instances
     # TODO also check for intersections - currently pins and labels need to be at wire ends
 
     # traverse the graph and build up nets
@@ -195,6 +198,3 @@ class KicadSchematic:
       traverse_point(point)
       self.nets.append(ParsedNet(set(net_labels), set(net_pins)))
 
-    print(self.nets)
-
-    # TODO support hierarchy with sheet_instances and symbol_instances
