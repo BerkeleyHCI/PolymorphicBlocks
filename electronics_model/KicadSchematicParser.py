@@ -197,4 +197,3 @@ class KicadSchematic:
 
       traverse_point(point)
       self.nets.append(ParsedNet(net_labels, net_pins))
-
