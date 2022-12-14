@@ -130,8 +130,8 @@ class KicadPin:
 
 
 class ParsedNet(NamedTuple):
-  labels: Set[KicadAnyLabel]
-  pins: Set[KicadPin]
+  labels: List[KicadAnyLabel]
+  pins: List[KicadPin]
 
   def __repr__(self):
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
@@ -196,5 +196,5 @@ class KicadSchematic:
           traverse_point(point2)
 
       traverse_point(point)
-      self.nets.append(ParsedNet(set(net_labels), set(net_pins)))
+      self.nets.append(ParsedNet(net_labels, net_pins))
 
