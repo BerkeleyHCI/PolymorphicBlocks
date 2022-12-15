@@ -24,3 +24,8 @@ class KicadSchematicParserTest(unittest.TestCase):
     self.assertIn(({'PORT_A'}, {'R1.1'}), nets)
     self.assertIn((set(), {'R1.2', 'R2.1', 'C1.1'}), nets)
     self.assertIn(({'Test_Net_1'}, {'R2.2', 'C1.2'}), nets)
+
+    symbols = [(x.refdes, x.lib) for x in sch.symbols]
+    self.assertIn(('R1', 'Device:R'), symbols)
+    self.assertIn(('R2', 'Device:R'), symbols)
+    self.assertIn(('C1', 'Device:C'), symbols)
