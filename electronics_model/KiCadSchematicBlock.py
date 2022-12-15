@@ -1,12 +1,30 @@
-from typing import Any
+from typing import Any, NamedTuple, Callable, Dict, TypeVar, Generic
 
 from kinparse import parse_netlist  # type: ignore
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor
-from electronics_model import Ohm, Farad
+from electronics_model import Ohm, Farad, CircuitPort
+
+
+SymbolParserBlockType = TypeVar('SymbolParserBlockType', bound=Block)
+class SymbolParser(Generic[SymbolParserBlockType]):
+    def __init__(self, block_gen: Callable[[str, Dict[str, str]], SymbolParserBlockType],
+                 pinning: Callable[[SymbolParserBlockType], Dict[str, CircuitPort]]):
+        # defines how to generate a block given the symbol name and property map
+        self.block_gen = block_gen
+        # define the pin mapping for a block, from the symbol pin numbers to that block's ports
+        self.pinning = pinning
 
 
 class KiCadSchematicBlock(Block):
+    SYMBOL_MAP = {
+        'Device:R': SymbolParser[Resistor](
+            lambda symbol, props: Resistor(20*Ohm(tol=0.05)),
+            lambda block: {'1': block.a, '2': block.b}
+        )
+    }
+
+
     def import_kicad(self, filepath: str):
         netlist = parse_netlist(filepath)
 
