@@ -192,7 +192,6 @@ class PartsTableUtil:
       else:
         return default  # type:ignore
 
-
   TOLERANCE_REGEX = re.compile(f'^(±)\s*([\d.]+)\s*(ppm|%)$')
   @classmethod
   def parse_tolerance(cls, value: str) -> Tuple[float, float]:
@@ -215,18 +214,6 @@ class PartsTableUtil:
       raise cls.ParseError(f"Cannot parse tolerance from '{value}'")
 
   @staticmethod
-  def strip_parameter(value: str) -> str:
-    """Given a value string that possibly contains a parameter (eg, 2V @ 1A),
-    strips the @ and everything after.
-    If the string does not contain @, it is passed through as-is.
-    """
-    if '@' in value:
-      return value[:value.find('@')].rstrip()
-    else:
-      return value
-
-
-  @staticmethod
   def with_source_dir(filenames: List[str], subdir: Optional[str] = None) -> List[str]:
     """Given a list of filenames, prepends the absolute path to the calling source file, with an optional subdir.
     """
@@ -239,24 +226,3 @@ class PartsTableUtil:
     if subdir is not None:
       prefix_dir = os.path.join(prefix_dir, subdir)
     return [os.path.join(prefix_dir, filename) for filename in filenames]
-
-  class RegexRemapper:
-    """
-    A utility class for transforming strings by applying a regex to the input string,
-    then applying the captured groups to an output string.
-
-    If the regex does not match, returns None.
-    Crashes if the regex matches, but a capture group in the remap string is unavailable.
-
-    For example, RegexRemapper(r'^duck(\\d\\d)$', 'quack{0}').apply('duck02') returns 'quack02'.
-    """
-    def __init__(self, regex: str, remap: str):
-      self.regex = re.compile(regex)
-      self.remap = remap
-
-    def apply(self, input: str) -> Optional[str]:
-      match = self.regex.match(input)
-      if match is not None:
-        return self.remap.format(*match.groups())
-      else:
-        return None
