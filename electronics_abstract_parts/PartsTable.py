@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
-from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  Tuple, cast
-import itertools
-import re
 import csv
-
+import itertools
 import sys
+from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
+  cast
+
 if sys.version_info[1] < 8:
   from typing_extensions import Protocol
 else:
@@ -55,6 +53,20 @@ class PartsTable:
   Optimization TODO: could probably significantly (~2x) improve performance using not-dicts
   https://www.districtdatalabs.com/simple-csv-data-wrangling-with-python
   """
+  @staticmethod
+  def with_source_dir(filenames: List[str], subdir: Optional[str] = None) -> List[str]:
+    """Given a list of filenames, prepends the absolute path to the calling source file, with an optional subdir.
+    """
+    from types import FrameType
+    import inspect
+    import os
+
+    calling_filename = cast(FrameType, cast(FrameType, inspect.currentframe()).f_back).f_code.co_filename
+    prefix_dir = os.path.dirname(calling_filename)
+    if subdir is not None:
+      prefix_dir = os.path.join(prefix_dir, subdir)
+    return [os.path.join(prefix_dir, filename) for filename in filenames]
+
   @classmethod
   def from_csv_files(cls, csv_names: List[str], encoding='utf-8') -> 'PartsTable':
     dict_rows = []
@@ -139,90 +151,3 @@ class PartsTable:
     if not self.rows:
       raise IndexError(err)
     return self.rows[0]
-
-
-class PartsTableUtil:
-  class ParseError(Exception):
-    pass
-
-  SI_PREFIX_DICT = {
-    '': 1,
-    'p': 1e-12,
-    'n': 1e-9,
-    'μ': 1e-6,
-    'µ': 1e-6,
-    'u': 1e-6,
-    'm': 1e-3,
-    'k': 1e3,
-    'M': 1e6,
-    'G': 1e9,
-  }
-  SI_PREFIXES = ''.join(SI_PREFIX_DICT.keys())
-
-  VALUE_REGEX = re.compile(f'^([\d./]+)\s*([{SI_PREFIXES}]?)(.+)$')
-  DefaultType = TypeVar('DefaultType')
-  @classmethod
-  @overload
-  def parse_value(cls, value: str, units: str) -> float: ...
-  @classmethod
-  @overload
-  def parse_value(cls, value: str, units: str, default: DefaultType) -> Union[DefaultType, float]: ...
-  @classmethod
-  def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], DefaultType] = ParseError) -> Union[DefaultType, float]:
-    """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
-    Additionally supports fractional notation, eg 1/16W
-    If the input is not a value:
-      if default is not specified, raises a ParseError.
-      if default is specified, returns the default."""
-    matches = cls.VALUE_REGEX.match(value)
-    if matches is not None and matches.group(3) == units:
-      try:
-        if '/' in matches.group(1):
-          fractional_components = matches.group(1).split('/')
-          assert len(fractional_components) == 2
-          numeric_value = float(fractional_components[0]) / float(fractional_components[1])
-        else:
-          numeric_value = float(matches.group(1))
-        return numeric_value * cls.SI_PREFIX_DICT[matches.group(2)]
-      except ValueError:
-        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
-    else:
-      if default == cls.ParseError:
-        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
-      else:
-        return default  # type:ignore
-
-  TOLERANCE_REGEX = re.compile(f'^(±)\s*([\d.]+)\s*(ppm|%)$')
-  @classmethod
-  def parse_tolerance(cls, value: str) -> Tuple[float, float]:
-    """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
-    For example, ±10% would be returned as (-0.1, 0.1)"""
-    matches = cls.TOLERANCE_REGEX.match(value)
-    if matches is not None:
-      if matches.group(1) == '±':  # only support the ± case right now
-        if matches.group(3) == '%':
-          scale = 1.0/100
-        elif matches.group(3) == 'ppm':
-          scale = 1e-6
-        else:
-          raise cls.ParseError(f"Cannot determine tolerance scale from '{value}'")
-        parsed = float(matches.group(2))
-        return -parsed * scale, parsed * scale
-      else:
-        raise cls.ParseError(f"Cannot determine tolerance type from '{value}'")
-    else:
-      raise cls.ParseError(f"Cannot parse tolerance from '{value}'")
-
-  @staticmethod
-  def with_source_dir(filenames: List[str], subdir: Optional[str] = None) -> List[str]:
-    """Given a list of filenames, prepends the absolute path to the calling source file, with an optional subdir.
-    """
-    from types import FrameType
-    import inspect
-    import os
-
-    calling_filename = cast(FrameType, cast(FrameType, inspect.currentframe()).f_back).f_code.co_filename
-    prefix_dir = os.path.dirname(calling_filename)
-    if subdir is not None:
-      prefix_dir = os.path.join(prefix_dir, subdir)
-    return [os.path.join(prefix_dir, filename) for filename in filenames]

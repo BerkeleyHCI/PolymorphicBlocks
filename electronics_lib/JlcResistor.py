@@ -39,15 +39,15 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
         extracted_values = cls.parse(row[cls.DESCRIPTION_COL], cls.RESISTOR_MATCHES)
 
         new_cols[cls.RESISTANCE] = Range.from_tolerance(
-          PartsTableUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
-          PartsTableUtil.parse_tolerance(extracted_values['tolerance'][1])
+          PartParserUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
+          PartParserUtil.parse_tolerance(extracted_values['tolerance'][1])
         )
 
         new_cols[cls.POWER_RATING] = Range.zero_to_upper(
-          PartsTableUtil.parse_value(extracted_values['power'][1], 'W'))
+          PartParserUtil.parse_value(extracted_values['power'][1], 'W'))
 
         return new_cols
-      except (KeyError, PartsTableUtil.ParseError):
+      except (KeyError, PartParserUtil.ParseError):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(

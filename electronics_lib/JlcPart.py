@@ -45,7 +45,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   def _jlc_table(cls) -> PartsTable:
     """Returns the full JLC parts table, saving the result for future use."""
     if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
-      JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTableUtil.with_source_dir([
+      JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
         'Pruned_JLCPCB SMT Parts Library(20220419).csv'
       ], 'resources'), encoding='gb2312')
     return JlcTablePart._JLC_TABLE
