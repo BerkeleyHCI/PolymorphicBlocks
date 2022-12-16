@@ -1,10 +1,11 @@
-from typing import Any, NamedTuple, Callable, Dict, TypeVar, Generic
+import re
+from typing import Any, Callable, Dict, TypeVar, Generic
 
 from kinparse import parse_netlist  # type: ignore
-from edg_core import Block
-from electronics_abstract_parts import Resistor, Capacitor
-from electronics_model import Ohm, Farad, CircuitPort
 
+from edg_core import Block, Range
+from electronics_abstract_parts import Resistor, Capacitor
+from electronics_model import Ohm, Farad, CircuitPort, PartParserUtil
 
 SymbolParserBlockType = TypeVar('SymbolParserBlockType', bound=Block)
 class SymbolParser(Generic[SymbolParserBlockType]):
@@ -14,6 +15,19 @@ class SymbolParser(Generic[SymbolParserBlockType]):
         self.block_gen = block_gen
         # define the pin mapping for a block, from the symbol pin numbers to that block's ports
         self.pinning = pinning
+
+
+RESISTOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)[RΩ]?" +
+                            "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
+RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
+def parse_resistor(value: str) -> Range:
+    match = RESISTOR_REGEX.match(value)
+    assert match is not None, f"could not parse resistance from value '{value}'"
+    center = PartParserUtil.parse_value(match.group(1), '')
+    if match.group(2) is None:
+        return Range.from_tolerance(center, RESISTOR_DEFAULT_TOL)
+    else:
+        return Range.from_tolerance(center, PartParserUtil.parse_tolerance(match.group(2)))
 
 
 class KiCadSchematicBlock(Block):

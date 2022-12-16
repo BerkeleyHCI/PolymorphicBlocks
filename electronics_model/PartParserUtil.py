@@ -25,7 +25,7 @@ class PartParserUtil:
   }
   SI_PREFIXES = ''.join(SI_PREFIX_DICT.keys())
 
-  VALUE_REGEX = re.compile(f'^([\d./]+)\s*([{SI_PREFIXES}]?)(.+)$')
+  VALUE_REGEX = re.compile(f'^([\d./]+)\s*([{SI_PREFIXES}]?)(.*)$')
   DefaultType = TypeVar('DefaultType')
   @classmethod
   @overload
@@ -58,14 +58,14 @@ class PartParserUtil:
       else:
         return default  # type:ignore
 
-  TOLERANCE_REGEX = re.compile(f'^(±)\s*([\d.]+)\s*(ppm|%)$')
+  TOLERANCE_REGEX = re.compile(f'^(±)?\s*([\d.]+)\s*(ppm|%)$')
   @classmethod
   def parse_tolerance(cls, value: str) -> Tuple[float, float]:
     """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
     For example, ±10% would be returned as (-0.1, 0.1)"""
     matches = cls.TOLERANCE_REGEX.match(value)
     if matches is not None:
-      if matches.group(1) == '±':  # only support the ± case right now
+      if matches.group(1) is None or matches.group(1) == '±':  # only support the ± case right now
         if matches.group(3) == '%':
           scale = 1.0/100
         elif matches.group(3) == 'ppm':

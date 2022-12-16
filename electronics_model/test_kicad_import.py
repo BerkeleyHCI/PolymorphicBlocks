@@ -2,7 +2,6 @@ import os
 import unittest
 
 import edgir
-from edg import BoardTop
 from electronics_model import Passive
 from electronics_model.KiCadSchematicBlock import KiCadSchematicBlock
 
