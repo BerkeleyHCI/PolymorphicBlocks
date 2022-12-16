@@ -33,7 +33,7 @@ def parse_resistor(value: str) -> Range:
 class KiCadSchematicBlock(Block):
     SYMBOL_MAP = {
         'Device:R': SymbolParser[Resistor](
-            lambda symbol, props: Resistor(20*Ohm(tol=0.05)),
+            lambda symbol, props: Resistor(parse_resistor(props['Value'])),
             lambda block: {'1': block.a, '2': block.b}
         )
     }
