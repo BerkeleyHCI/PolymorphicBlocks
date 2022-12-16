@@ -22,7 +22,7 @@ RESISTOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)[R
 RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 def parse_resistor(value: str) -> Range:
     match = RESISTOR_REGEX.match(value)
-    assert match is not None, f"could not parse resistance from value '{value}'"
+    assert match is not None, f"could not parse resistor from value '{value}'"
     center = PartParserUtil.parse_value(match.group(1), '')
     if match.group(2) is None:
         return Range.from_tolerance(center, RESISTOR_DEFAULT_TOL)
@@ -30,12 +30,33 @@ def parse_resistor(value: str) -> Range:
         return Range.from_tolerance(center, PartParserUtil.parse_tolerance(match.group(2)))
 
 
+CAPACITOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)F?" +
+                             "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
+                             "\s*" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?\s*V)" + "$")
+CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
+def parse_capacitor(value: str) -> (Range, float):  # as capacitance, voltage rating
+    match = CAPACITOR_REGEX.match(value)
+    assert match is not None, f"could not parse capacitor from value '{value}'"
+    center = PartParserUtil.parse_value(match.group(1), '')
+    voltage = PartParserUtil.parse_value(match.group(3), 'V')
+    if match.group(2) is None:
+        return (Range.from_tolerance(center, CAPACITOR_DEFAULT_TOL),
+                Range(0, voltage))
+    else:
+        return (Range.from_tolerance(center, PartParserUtil.parse_tolerance(match.group(2))),
+                Range(0, voltage))
+
+
 class KiCadSchematicBlock(Block):
     SYMBOL_MAP = {
         'Device:R': SymbolParser[Resistor](
             lambda symbol, props: Resistor(parse_resistor(props['Value'])),
             lambda block: {'1': block.a, '2': block.b}
-        )
+        ),
+        'Device:C': SymbolParser[Capacitor](
+            lambda symbol, props: Capacitor(*parse_capacitor(props['Value'])),
+            lambda block: {'1': block.a, '2': block.b}
+        ),
     }
 
 
