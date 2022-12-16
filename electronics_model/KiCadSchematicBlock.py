@@ -75,15 +75,24 @@ class KiCadSchematicBlock(Block):
         pinnings: Dict[str, Dict[str, Port]] = {}  # map from refdes to {pin number -> port}
         blocks: Dict[str, Block] = {}
         for symbol in sch.symbols:
-            if symbol.lib in self.SYMBOL_MAP:
-                new_block = self.Block(self.SYMBOL_MAP[symbol.lib].block_gen(symbol.lib, symbol.properties))
-                new_pinning = self.SYMBOL_MAP[symbol.lib].pinning(new_block)
+            if hasattr(self, symbol.refdes):  # if block already created, use schematic just for connectivity
+                assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
+                    f"{symbol.refdes} has both code block and non-empty value"
+                block = getattr(self, symbol.refdes)
+            elif symbol.lib in self.SYMBOL_MAP:
+                block = self.Block(self.SYMBOL_MAP[symbol.lib].block_gen(symbol.lib, symbol.properties))
+                setattr(self, symbol.refdes, block)
             else:
                 raise Exception(f"Unknown symbol {symbol.lib}")
-            setattr(self, symbol.refdes, new_block)
+
+            if symbol.lib in self.SYMBOL_MAP:  # resolve the pinning, independently of the block creation logic
+                pinning = self.SYMBOL_MAP[symbol.lib].pinning(block)
+            else:
+                raise Exception(f"Unknown pinning for {symbol.refdes}")
+
             assert symbol.refdes not in pinnings
-            pinnings[symbol.refdes] = new_pinning
-            blocks[symbol.refdes] = new_block
+            pinnings[symbol.refdes] = pinning
+            blocks[symbol.refdes] = block
 
         for net in sch.nets:
             net_ports = [pinnings[pin.refdes][pin.pin_number] for pin in net.pins]
@@ -97,5 +106,5 @@ class KiCadSchematicBlock(Block):
                 net_ports.insert(0, getattr(self, net_name))
             connection = self.connect(*net_ports)
 
-            if net.labels:
-                setattr(self, net.labels[0].name, connection)
+            if net_name is not None and not hasattr(self, net_name):
+                setattr(self, net_name, connection)
