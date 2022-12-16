@@ -6,7 +6,7 @@ from kinparse import parse_netlist  # type: ignore
 from edg_core import Block, Range
 from electronics_abstract_parts import Resistor, Capacitor, Opamp
 from electronics_model import Port, PartParserUtil
-from .KicadSchematicParser import KicadSchematic
+from .KiCadSchematicParser import KiCadSchematic
 
 SymbolParserBlockType = TypeVar('SymbolParserBlockType', bound=Block)
 class SymbolParser(Generic[SymbolParserBlockType]):
@@ -70,7 +70,7 @@ class KiCadSchematicBlock(Block):
     def import_kicad(self, filepath: str):
         with open(filepath, "r") as file:
             file_data = file.read()
-        sch = KicadSchematic(file_data)
+        sch = KiCadSchematic(file_data)
 
         pinnings: Dict[str, Dict[str, Port]] = {}  # map from refdes to {pin number -> port}
         blocks: Dict[str, Block] = {}

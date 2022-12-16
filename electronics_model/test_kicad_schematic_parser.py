@@ -4,7 +4,7 @@ import os.path
 from collections import Set
 from typing import Tuple
 
-from .KicadSchematicParser import KicadSchematic, ParsedNet
+from .KiCadSchematicParser import KiCadSchematic, ParsedNet
 
 
 def net_to_tuple(net: ParsedNet) -> Tuple[Set[str], Set[str]]:
@@ -18,7 +18,7 @@ class KicadSchematicParserTest(unittest.TestCase):
   def test_kicad(self):
     with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import.kicad_sch"), "r") as file:
       file_data = file.read()
-    sch = KicadSchematic(file_data)
+    sch = KiCadSchematic(file_data)
     nets = [net_to_tuple(x) for x in sch.nets]
     self.assertEqual(len(nets), 3)
     self.assertIn(({'PORT_A'}, {'R1.1'}), nets)

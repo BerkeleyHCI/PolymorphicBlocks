@@ -45,7 +45,7 @@ def parse_symbol(sexp: Any) -> str:
   return sexp.value()
 
 
-class KicadLibPin:
+class KiCadLibPin:
   """Pin in a library symbol"""
   def __repr__(self):
     return f"{self.__class__.__name__}({self.number} @ {self.pos})"
@@ -57,7 +57,7 @@ class KicadLibPin:
     self.number = test_cast(extract_only(sexp_dict['number'])[1], str)
 
 
-class KicadLibSymbol:
+class KiCadLibSymbol:
   """Symbol in a library"""
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name})"
@@ -71,10 +71,10 @@ class KicadLibSymbol:
     symbol_elts = itertools.chain(*[symbol_sexp[2:]  # discard 'symbol' and the name
                                     for symbol_sexp in sexp_dict.get('symbol', [])])
     symbol_elts_dict = group_by_car(list(symbol_elts))
-    self.pins = [KicadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
+    self.pins = [KiCadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
 
 
-class KicadWire:
+class KiCadWire:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.pt1}, {self.pt2})"
 
@@ -87,7 +87,7 @@ class KicadWire:
     self.pt2 = parse_xy(pts[2], 'xy')
 
 
-class KicadAnyLabel:
+class KiCadAnyLabel:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
@@ -99,7 +99,7 @@ class KicadAnyLabel:
     self.pt = (self.pos[0], self.pos[1])  # version without rotation
 
 
-class KicadSymbol:
+class KiCadSymbol:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
 
@@ -113,11 +113,11 @@ class KicadSymbol:
     self.pos = parse_at(extract_only(sexp_dict['at']))
 
 
-class KicadPin:
+class KiCadPin:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.refdes}.{self.pin_number} @ {self.pt})"
 
-  def __init__(self, symbol: KicadSymbol, pin: KicadLibPin):
+  def __init__(self, symbol: KiCadSymbol, pin: KiCadLibPin):
     self.pin = pin
     self.symbol = symbol
     self.refdes = self.symbol.refdes
@@ -130,28 +130,28 @@ class KicadPin:
 
 
 class ParsedNet(NamedTuple):
-  labels: List[KicadAnyLabel]
-  pins: List[KicadPin]
+  labels: List[KiCadAnyLabel]
+  pins: List[KiCadPin]
 
   def __repr__(self):
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
 
 
-class KicadSchematic:
+class KiCadSchematic:
   def __init__(self, data: str):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
     sexp_dict = group_by_car(schematic_top)
 
     self.lib_symbols = {symbol.name: symbol
-                        for symbol in [KicadLibSymbol(elt)
+                        for symbol in [KiCadLibSymbol(elt)
                                        for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
 
-    wires = [KicadWire(elt) for elt in sexp_dict.get('wire', [])]
-    labels = [KicadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
+    wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
+    labels = [KiCadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
 
-    self.symbols = [KicadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
-    symbol_pins = list(itertools.chain(*[[KicadPin(symbol, pin)
+    self.symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    symbol_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
                                           for pin in self.lib_symbols[symbol.lib].pins]
                                          for symbol in self.symbols]))
 
@@ -165,10 +165,10 @@ class KicadSchematic:
       edges.setdefault(wire.pt2, []).append(wire.pt1)
 
     # build adjacency matrix for pin locations
-    pin_points: Dict[PointType, List[KicadPin]] = {}
+    pin_points: Dict[PointType, List[KiCadPin]] = {}
     for pin in symbol_pins:
       pin_points.setdefault(pin.pt, []).append(pin)
-    label_points: Dict[PointType, List[KicadAnyLabel]] = {}
+    label_points: Dict[PointType, List[KiCadAnyLabel]] = {}
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
 
@@ -181,8 +181,8 @@ class KicadSchematic:
     for point, pins in pin_points.items():
       if point in seen_points:
         continue  # already seen and part of another net
-      net_pins: List[KicadPin] = []
-      net_labels: List[KicadAnyLabel] = []
+      net_pins: List[KiCadPin] = []
+      net_labels: List[KiCadAnyLabel] = []
       def traverse_point(point: PointType) -> None:
         if point in seen_points:
           return  # already seen, don't traverse again
