@@ -1,5 +1,5 @@
 import re
-from typing import Callable, Dict, TypeVar, Generic
+from typing import Callable, Dict, TypeVar, Generic, Tuple
 
 from kinparse import parse_netlist  # type: ignore
 
@@ -35,7 +35,7 @@ CAPACITOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)F
                              "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
                              "\s*" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?\s*V)" + "$")
 CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
-def parse_capacitor(value: str) -> (Range, float):  # as capacitance, voltage rating
+def parse_capacitor(value: str) -> Tuple[Range, Range]:  # as capacitance, voltage rating
     match = CAPACITOR_REGEX.match(value)
     assert match is not None, f"could not parse capacitor from value '{value}'"
     center = PartParserUtil.parse_value(match.group(1), '')
@@ -52,7 +52,7 @@ class KiCadSchematicBlock(Block):
     """A schematic block that can instantiate and connect components based on an imported Kicad schematic.
     Symbols on those schematics can either be inline Python that instantiates a Block, or one of a few
     common components (eg, resistors, capacitors) with parsing rules defined here."""
-    SYMBOL_MAP = {
+    SYMBOL_MAP: Dict[str, SymbolParser] = {
         'Device:R': SymbolParser[Resistor](
             lambda symbol, props: Resistor(parse_resistor(props['Value'])),
             lambda block: {'1': block.a, '2': block.b}
