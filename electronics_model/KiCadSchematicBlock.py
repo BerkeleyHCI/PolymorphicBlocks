@@ -1,16 +1,17 @@
 import re
-from typing import Any, Callable, Dict, TypeVar, Generic
+from typing import Callable, Dict, TypeVar, Generic
 
 from kinparse import parse_netlist  # type: ignore
 
 from edg_core import Block, Range
-from electronics_abstract_parts import Resistor, Capacitor
-from electronics_model import Ohm, Farad, CircuitPort, PartParserUtil
+from electronics_abstract_parts import Resistor, Capacitor, Opamp
+from electronics_model import Port, PartParserUtil
+from .KicadSchematicParser import KicadSchematic
 
 SymbolParserBlockType = TypeVar('SymbolParserBlockType', bound=Block)
 class SymbolParser(Generic[SymbolParserBlockType]):
     def __init__(self, block_gen: Callable[[str, Dict[str, str]], SymbolParserBlockType],
-                 pinning: Callable[[SymbolParserBlockType], Dict[str, CircuitPort]]):
+                 pinning: Callable[[SymbolParserBlockType], Dict[str, Port]]):
         # defines how to generate a block given the symbol name and property map
         self.block_gen = block_gen
         # define the pin mapping for a block, from the symbol pin numbers to that block's ports
@@ -48,6 +49,9 @@ def parse_capacitor(value: str) -> (Range, float):  # as capacitance, voltage ra
 
 
 class KiCadSchematicBlock(Block):
+    """A schematic block that can instantiate and connect components based on an imported Kicad schematic.
+    Symbols on those schematics can either be inline Python that instantiates a Block, or one of a few
+    common components (eg, resistors, capacitors) with parsing rules defined here."""
     SYMBOL_MAP = {
         'Device:R': SymbolParser[Resistor](
             lambda symbol, props: Resistor(parse_resistor(props['Value'])),
@@ -55,54 +59,43 @@ class KiCadSchematicBlock(Block):
         ),
         'Device:C': SymbolParser[Capacitor](
             lambda symbol, props: Capacitor(*parse_capacitor(props['Value'])),
-            lambda block: {'1': block.a, '2': block.b}
+            lambda block: {'1': block.pos, '2': block.neg}
+        ),
+        'Simulation_SPICE:OPAMP': SymbolParser[Opamp](  # no generic single opamp symbol
+            lambda symbol, props: Opamp(),  # note: all ports are typed (VoltageSink, AnalogSink/Source)
+            lambda block: {'1': block.inp, '2': block.inn, '3': block.out, '4': block.pwr, '5': block.gnd}
         ),
     }
 
-
     def import_kicad(self, filepath: str):
-        netlist = parse_netlist(filepath)
+        with open(filepath, "r") as file:
+            file_data = file.read()
+        sch = KicadSchematic(file_data)
 
-        for part in netlist.parts:
-            setattr(self, part.ref, self.make_block_from_mapping(part))
-
-        for net_num, net in enumerate(netlist.nets):
-            portlist = []
-
-            for pin in net.pins:
-                component = getattr(self, pin.ref)
-                if isinstance(component, Resistor):
-                    if pin.num == "1":
-                        portlist.append(component.a)
-                    else:
-                        portlist.append(component.b)
-                if isinstance(component, Capacitor):
-                    if pin.num == "1":
-                        portlist.append(component.pos)
-                    else:
-                        portlist.append(component.neg)
-
-            if hasattr(self, net.name):
-                portlist.append(getattr(self, net.name))
-
-            link_name = net.name + "_link"
-
-            if link_name[0] == '/':            # User-defined net labels prepend '/' to the label
-                link_name = link_name[1:]
-
-            setattr(self, link_name, self.connect(*portlist))
-        return
-
-    def make_block_from_mapping(self, part: Any) -> Block:
-        # part is schematic component from kinparse
-        if part.desc == 'Unpolarized capacitor':
-            if part.value == 'C':
-                raise ValueError("Capacitor must have defined capacitance")
+        pinnings: Dict[str, Dict[str, Port]] = {}  # map from refdes to {pin number -> port}
+        blocks: Dict[str, Block] = {}
+        for symbol in sch.symbols:
+            if symbol.lib in self.SYMBOL_MAP:
+                new_block = self.Block(self.SYMBOL_MAP[symbol.lib].block_gen(symbol.lib, symbol.properties))
+                new_pinning = self.SYMBOL_MAP[symbol.lib].pinning(new_block)
             else:
-                return self.Block(Capacitor(capacitance=int(part.value)*Farad(tol=0.05)))
-        elif part.desc == 'Resistor':
-            if part.value == 'R':
-                raise ValueError("Resistor must have defined resistance")
+                raise Exception(f"Unknown symbol {symbol.lib}")
+            setattr(self, symbol.refdes, new_block)
+            assert symbol.refdes not in pinnings
+            pinnings[symbol.refdes] = new_pinning
+            blocks[symbol.refdes] = new_block
+
+        for net in sch.nets:
+            net_ports = [pinnings[pin.refdes][pin.pin_number] for pin in net.pins]
+            if net.labels:
+                assert len(net.labels) == 1, "multiple net names not supported"
+                net_name = net.labels[0].name
             else:
-                return self.Block(Resistor(resistance=int(part.value)*Ohm(tol=0.05)))
-        return Block()
+                net_name = None
+
+            if net_name is not None and hasattr(self, net_name):  # append to existing port if needed
+                net_ports.insert(0, getattr(self, net_name))
+            connection = self.connect(*net_ports)
+
+            if net.labels:
+                setattr(self, net.labels[0].name, connection)

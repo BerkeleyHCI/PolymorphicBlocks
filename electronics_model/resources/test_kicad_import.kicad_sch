@@ -226,7 +226,7 @@
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid e8ed392d-e797-4a51-a62e-0d0cb2854712)
     (property "Reference" "C1" (id 0) (at 105.41 88.9 90))
-    (property "Value" "47" (id 1) (at 105.41 91.44 90))
+    (property "Value" "47u 6.3V" (id 1) (at 105.41 91.44 90))
     (property "Footprint" "" (id 2) (at 109.22 95.5548 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -243,7 +243,7 @@
 
   (symbol_instances
     (path "/e8ed392d-e797-4a51-a62e-0d0cb2854712"
-      (reference "C1") (unit 1) (value "47") (footprint "")
+      (reference "C1") (unit 1) (value "47u 6.3V") (footprint "")
     )
     (path "/691e9d02-a5cc-48a1-b9c1-b97da20de9cd"
       (reference "R1") (unit 1) (value "51") (footprint "")
