@@ -1,4 +1,5 @@
-from typing import Optional, cast
+import re
+from typing import Optional, cast, Dict
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -8,7 +9,30 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class Resistor(PassiveComponent):
+class Resistor(PassiveComponent, KiCadInstantiableBlock):
+  RESISTOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)[RΩ]?" +
+                              "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
+  RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'Device:R'
+    return {'1': self.a, '2': self.b}
+
+  @classmethod
+  def parse_resistor(cls, value: str):
+    match = cls.RESISTOR_REGEX.match(value)
+    assert match is not None, f"could not parse resistor from value '{value}'"
+    center = PartParserUtil.parse_value(match.group(1), '')
+    if match.group(2) is not None:
+      tolerance = PartParserUtil.parse_tolerance(match.group(2))
+    else:
+      tolerance = (-cls.RESISTOR_DEFAULT_TOL, cls.RESISTOR_DEFAULT_TOL)
+    return Range.from_tolerance(center, tolerance)
+
+  @classmethod
+  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Resistor':
+    return Resistor(resistance=cls.parse_resistor(properties['Value']))
+
   @init_in_parent
   def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()

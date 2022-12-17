@@ -1,5 +1,6 @@
+import re
 from abc import abstractmethod
-from typing import Optional, cast, Dict, Any, List
+from typing import Optional, cast, Dict, Any, List, Tuple
 import math
 
 from electronics_model import *
@@ -30,8 +31,33 @@ class UnpolarizedCapacitor(PassiveComponent):
     )
 
 @abstract_block
-class Capacitor(UnpolarizedCapacitor):
+class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
   """Polarized capacitor, which we assume will be the default"""
+  CAPACITOR_REGEX = re.compile("^" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?)F?" +
+                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
+                               "\s*" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?\s*V)" + "$")
+  CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'Device:C'
+    return {'1': self.pos, '2': self.neg}
+
+  @classmethod
+  def parse_capacitor(cls, value: str) -> Tuple[Range, Range]:
+    match = cls.CAPACITOR_REGEX.match(value)
+    assert match is not None, f"could not parse capacitor from value '{value}'"
+    center = PartParserUtil.parse_value(match.group(1), '')
+    voltage = PartParserUtil.parse_value(match.group(3), 'V')
+    if match.group(2) is not None:
+      tolerance = PartParserUtil.parse_tolerance(match.group(2))
+    else:
+      tolerance = (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL)
+    return (Range.from_tolerance(center, tolerance), Range.zero_to_upper(voltage))
+
+  @classmethod
+  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Capacitor':
+    return Capacitor(*cls.parse_capacitor(properties['Value']))
+
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
