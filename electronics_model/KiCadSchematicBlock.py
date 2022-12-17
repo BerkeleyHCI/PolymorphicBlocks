@@ -5,7 +5,7 @@ from kinparse import parse_netlist  # type: ignore
 
 from edg_core import Block
 from electronics_abstract_parts import Resistor, Capacitor, Opamp
-from electronics_model import Port, KiCadInstantiableBlock, KiCadImportableBlock
+from electronics_model import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic
 
 
