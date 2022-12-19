@@ -1,4 +1,3 @@
-import re
 from typing import Dict, Type
 
 from kinparse import parse_netlist  # type: ignore
