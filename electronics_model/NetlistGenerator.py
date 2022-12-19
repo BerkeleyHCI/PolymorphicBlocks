@@ -15,8 +15,8 @@ class InvalidPackingException(BaseException):
 
 
 class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: List[Tuple[str, kicad.Block]]  # block name: footprint name
-  nets: List[Tuple[str, List[kicad.Pin]]]  # net name: list of member pins
+  blocks: Dict[str, kicad.Block]  # block name: footprint name
+  nets: Dict[str, List[kicad.Pin]]  # net name: list of member pins
 
 
 Blocks = Dict[TransformUtil.Path, kicad.Block]  # path -> Block
@@ -317,13 +317,13 @@ class NetlistTransform(TransformUtil.Transform):
       else:
         return pin
 
-    named_nets = [(self.name_net([name_pin(pin) for pin in net]), net)
-                  for net in nets]
+    named_nets = {self.name_net([name_pin(pin) for pin in net]): net
+                  for net in nets}
 
-    netlist_blocks = [(str(self.names[block_path]), block)
-                      for block_path, block in self.blocks.items()]
-    netlist_nets = [(name, [self.path_to_pin(self.names[pin])
-                            for pin in net if pin in self.names])
-                    for name, net in named_nets]
+    netlist_blocks = {str(self.names[block_path]): block
+                      for block_path, block in self.blocks.items()}
+    netlist_nets = {name: [self.path_to_pin(self.names[pin])
+                            for pin in net if pin in self.names]
+                    for name, net in named_nets.items()}
 
     return Netlist(netlist_blocks, netlist_nets)
