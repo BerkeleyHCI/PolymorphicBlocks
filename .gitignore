@@ -2,9 +2,14 @@
 __pycache__
 
 *.edg
-*.net
 *.lib
 *.pdf
+
+# Netlists from the unit tests are committed as a change-detector, so we know when
+# an example has changed and can at least make sure it's intentional.
+# Other netlists (eg, generated from the IDE or normal usage) are ignored.
+examples/*.net
+/*.net
 
 *.raw
 *.plt
