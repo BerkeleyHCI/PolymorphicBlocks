@@ -6,6 +6,7 @@ import edgir
 from edg_core import *
 from . import footprint as kicad
 
+
 class InvalidNetlistBlockException(BaseException):
   pass
 
