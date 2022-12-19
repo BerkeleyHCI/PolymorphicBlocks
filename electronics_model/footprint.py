@@ -1,5 +1,5 @@
 import zlib  # for deterministic hash
-from typing import NamedTuple, List, Iterable, Mapping
+from typing import NamedTuple, List, Iterable, Mapping, Tuple
 
 
 class Block(NamedTuple):
@@ -74,7 +74,7 @@ def gen_block_prop_refdes(refdes: str) -> str:
 def gen_block_prop_part(part: str) -> str:
   return f'(property (name "edg_part") (value "{part}"))'
 
-def block_exp(block_dict: Mapping[str, Block]) -> str:
+def block_exp(block_dict: List[Tuple[str, Block]]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -90,7 +90,7 @@ def block_exp(block_dict: Mapping[str, Block]) -> str:
 
         """
         result = '(components' 
-        for block_name, block in block_dict.items():
+        for block_name, block in block_dict:
             result += '\n' + gen_block_comp(block_name) + '\n' +\
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
@@ -114,7 +114,7 @@ def gen_net_header(net_count: int, net_name: str) -> str:
 def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
-def net_exp(dict: Mapping[str, Iterable[Pin]]) -> str:
+def net_exp(nets: List[Tuple[str, List[Pin]]]) -> str:
         """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
         Example:
@@ -130,11 +130,11 @@ def net_exp(dict: Mapping[str, Iterable[Pin]]) -> str:
         """
         result = '(nets'
         net_count = 1
-        for (net_name, pin_list) in dict.items():
+        for (net_name, pin_list) in nets:
             result += '\n' + gen_net_header(net_count, net_name)
             net_count += 1
             for pin in pin_list:
-                result += '\n' + gen_net_pin(pin.block_name, pin.pin_name)
+                result += '\n  ' + gen_net_pin(pin.block_name, pin.pin_name)
             result += ')'
         return result + ')'
 
@@ -142,5 +142,5 @@ def net_exp(dict: Mapping[str, Iterable[Pin]]) -> str:
 
 """4. Generate Full Netlist"""
 
-def generate_netlist(blocks_dict: Mapping[str, Block], nets_dict: Mapping[str, Iterable[Pin]]) -> str:
+def generate_netlist(blocks_dict: List[Tuple[str, Block]], nets_dict: List[Tuple[str, List[Pin]]]) -> str:
     return gen_header() + '\n' + block_exp(blocks_dict) + '\n' + net_exp(nets_dict) + '\n' + ')'
