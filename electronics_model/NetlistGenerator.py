@@ -293,13 +293,13 @@ class NetlistTransform(TransformUtil.Transform):
     for port, conns in self.edges.items():
       if port not in seen:
         curr_net: List[TransformUtil.Path] = []
-        def traverse_pin(pin: TransformUtil.Path):
+        frontier: List[TransformUtil.Path] = [port]  # use BFS to maintain ordering instead of simpler DFS
+        while frontier:
+          pin = frontier.pop(0)
           if pin not in seen:
             seen.add(pin)
             curr_net.append(pin)
-            for port in self.edges[pin]:
-              traverse_pin(port)
-        traverse_pin(port)
+            frontier.extend(self.edges[pin])
         nets.append(curr_net)
 
     pin_to_net: Dict[TransformUtil.Path, List[TransformUtil.Path]] = {}  # values share reference to nets
