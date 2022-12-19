@@ -128,29 +128,29 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_spi_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestSpiCircuit)
 
-    self.assertEqual(net.nets['cs1_link'], {
+    self.assertEqual(net.nets['cs1_link'], [
       Pin('master', '0'),
       Pin('slave1', '4'),
-    })
-    self.assertEqual(net.nets['cs2_link'], {
+    ])
+    self.assertEqual(net.nets['cs2_link'], [
       Pin('master', '1'),
       Pin('slave2', '4'),
-    })
-    self.assertEqual(net.nets['spi_link.sck'], {
+    ])
+    self.assertEqual(net.nets['spi_link.sck'], [
       Pin('master', '2'),
       Pin('slave1', '1'),
       Pin('slave2', '1'),
-    })
-    self.assertEqual(net.nets['spi_link.mosi'], {
+    ])
+    self.assertEqual(net.nets['spi_link.mosi'], [
       Pin('master', '4'),
       Pin('slave1', '2'),
       Pin('slave2', '2'),
-    })
-    self.assertEqual(net.nets['spi_link.miso'], {
+    ])
+    self.assertEqual(net.nets['spi_link.miso'], [
       Pin('master', '3'),
       Pin('slave1', '3'),
       Pin('slave2', '3'),
-    })
+    ])
 
     self.assertEqual(net.blocks['master'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiMaster',
                                                   ['master'], ['master'],
@@ -165,14 +165,14 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_uart_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestUartCircuit)
 
-    self.assertEqual(net.nets['link.a_tx'], {
+    self.assertEqual(net.nets['link.a_tx'], [
       Pin('a', '1'),
       Pin('b', '2')
-    })
-    self.assertEqual(net.nets['link.b_tx'], {
+    ])
+    self.assertEqual(net.nets['link.b_tx'], [
       Pin('a', '2'),
       Pin('b', '1')
-    })
+    ])
     self.assertEqual(net.blocks['a'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
                                              ['a'], ['a'],
                                              ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
@@ -183,16 +183,16 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_can_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestCanCircuit)
 
-    self.assertEqual(net.nets['link.canh'], {
+    self.assertEqual(net.nets['link.canh'], [
       Pin('node1', '1'),
       Pin('node2', '1'),
       Pin('node3', '1')
-    })
-    self.assertEqual(net.nets['link.canl'], {
+    ])
+    self.assertEqual(net.nets['link.canl'], [
       Pin('node1', '2'),
       Pin('node2', '2'),
       Pin('node3', '2')
-    })
+    ])
     self.assertEqual(net.blocks['node1'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
                                                  ['node1'], ['node1'],
                                                  ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))

@@ -74,14 +74,14 @@ class MultipackNetlistTestCase(unittest.TestCase):
   def test_packed_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestPackedDevices)
 
-    self.assertEqual(net.nets['vpos'], {
+    self.assertEqual(net.nets['vpos'], [
       Pin('source', '1'),
       Pin('sink.device', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('sink.device', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))

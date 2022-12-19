@@ -6,6 +6,7 @@ import edgir
 from edg_core import *
 from . import footprint as kicad
 
+
 class InvalidNetlistBlockException(BaseException):
   pass
 
@@ -15,8 +16,8 @@ class InvalidPackingException(BaseException):
 
 
 class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: Mapping[str, kicad.Block]  # block name: footprint name
-  nets: Mapping[str, Iterable[kicad.Pin]]  # net name: list of member pins
+  blocks: Dict[str, kicad.Block]  # block name: footprint name
+  nets: Dict[str, List[kicad.Pin]]  # net name: list of member pins
 
 
 Blocks = Dict[TransformUtil.Path, kicad.Block]  # path -> Block
@@ -247,7 +248,7 @@ class NetlistTransform(TransformUtil.Transform):
     self.process_blocklike(context.path, link)
 
   @staticmethod
-  def name_net(net: Set[TransformUtil.Path]) -> str:
+  def name_net(net: Iterable[TransformUtil.Path]) -> str:
     """Names a net based on all the paths of ports and links that are part of the net."""
     def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
       assert not pin1.params and not pin2.params
@@ -288,21 +289,21 @@ class NetlistTransform(TransformUtil.Transform):
 
     # Convert to the netlist format
     seen: Set[TransformUtil.Path] = set()
-    nets: List[Set[TransformUtil.Path]] = []
+    nets: List[List[TransformUtil.Path]] = []  # use lists instead of sets to preserve ordering
 
     for port, conns in self.edges.items():
       if port not in seen:
-        curr_net: Set[TransformUtil.Path] = set()
-        def traverse_pin(pin: TransformUtil.Path):
+        curr_net: List[TransformUtil.Path] = []
+        frontier: List[TransformUtil.Path] = [port]  # use BFS to maintain ordering instead of simpler DFS
+        while frontier:
+          pin = frontier.pop(0)
           if pin not in seen:
             seen.add(pin)
-            curr_net.add(pin)
-            for port in self.edges[pin]:
-              traverse_pin(port)
-        traverse_pin(port)
+            curr_net.append(pin)
+            frontier.extend(self.edges[pin])
         nets.append(curr_net)
 
-    pin_to_net: Dict[TransformUtil.Path, Set[TransformUtil.Path]] = {}  # values share reference to nets
+    pin_to_net: Dict[TransformUtil.Path, List[TransformUtil.Path]] = {}  # values share reference to nets
     for net in nets:
       for pin in net:
         pin_to_net[pin] = net
@@ -317,12 +318,13 @@ class NetlistTransform(TransformUtil.Transform):
       else:
         return pin
 
-    named_nets = {self.name_net(set([name_pin(pin) for pin in net])): net
+    named_nets = {self.name_net([name_pin(pin) for pin in net]): net
                   for net in nets}
 
     netlist_blocks = {str(self.names[block_path]): block
                       for block_path, block in self.blocks.items()}
-    netlist_nets = {name: set([self.path_to_pin(self.names[pin])
-                               for pin in net if pin in self.names]) for name, net in named_nets.items()}
+    netlist_nets = {name: [self.path_to_pin(self.names[pin])
+                            for pin in net if pin in self.names]
+                    for name, net in named_nets.items()}
 
     return Netlist(netlist_blocks, netlist_nets)

@@ -172,14 +172,14 @@ class NetlistTestCase(unittest.TestCase):
   def test_basic_netlist(self) -> None:
     net = self.generate_net(TestBasicCircuit)
 
-    self.assertEqual(net.nets['vpos'], {
+    self.assertEqual(net.nets['vpos'], [
       Pin('source', '1'),
       Pin('sink', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('sink', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))
@@ -190,16 +190,16 @@ class NetlistTestCase(unittest.TestCase):
   def test_multisink_netlist(self) -> None:
     net = self.generate_net(TestMultisinkCircuit)
 
-    self.assertEqual(net.nets['vpos'], {
+    self.assertEqual(net.nets['vpos'], [
       Pin('source', '1'),
       Pin('sink1', '1'),
       Pin('sink2', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('sink1', '2'),
       Pin('sink2', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))
@@ -213,19 +213,19 @@ class NetlistTestCase(unittest.TestCase):
   def test_multinet_netlist(self) -> None:
     net = self.generate_net(TestMultinetCircuit)
 
-    self.assertEqual(net.nets['vin'], {
+    self.assertEqual(net.nets['vin'], [
       Pin('source', '1'),
       Pin('adapter', '3')
-    })
-    self.assertEqual(net.nets['vout'], {
+    ])
+    self.assertEqual(net.nets['vout'], [
       Pin('adapter', '2'),
       Pin('sink', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('adapter', '1'),
       Pin('sink', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))
@@ -239,14 +239,14 @@ class NetlistTestCase(unittest.TestCase):
   def test_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], {
+    self.assertEqual(net.nets['vpos'], [
       Pin('source', '1'),
       Pin('sink', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('sink', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))
@@ -257,16 +257,16 @@ class NetlistTestCase(unittest.TestCase):
   def test_dual_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestDualHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], {
+    self.assertEqual(net.nets['vpos'], [
       Pin('source', '1'),
       Pin('sink.block1', '1'),
       Pin('sink.block2', '1')
-    })
-    self.assertEqual(net.nets['gnd'], {
+    ])
+    self.assertEqual(net.nets['gnd'], [
       Pin('source', '2'),
       Pin('sink.block1', '2'),
       Pin('sink.block2', '2')
-    })
+    ])
     self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                                                   ['source'], ['source'],
                                                   ['electronics_model.test_netlist.TestFakeSource']))
