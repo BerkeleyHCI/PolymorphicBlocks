@@ -125,7 +125,7 @@ class KiCadPin:
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     self.pt = (  # round so the positions line up exactly
       round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot), 2),
-      round(symbol.pos[1] + pin.pos[0] * math.sin(symbol_rot) + pin.pos[1] * math.cos(symbol_rot), 2)
+      round(symbol.pos[1] - pin.pos[0] * math.sin(symbol_rot) - pin.pos[1] * math.cos(symbol_rot), 2)
     )
 
 
