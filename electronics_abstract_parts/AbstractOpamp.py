@@ -9,7 +9,7 @@ class Opamp(KiCadInstantiableBlock, Block):
   """
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'Simulation_SPICE:OPAMP'
-    return {'1': self.inp, '2': self.inn, '3': self.out, '4': self.pwr, '5': self.gnd}
+    return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
 
   @classmethod
   def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Opamp':

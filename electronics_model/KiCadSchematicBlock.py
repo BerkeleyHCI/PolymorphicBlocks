@@ -4,7 +4,7 @@ from typing import Dict, Type, Any
 
 from edg_core import Block, Port
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
-from .KiCadSchematicParser import KiCadSchematic
+from .KiCadSchematicParser import KiCadSchematic, KiCadPin
 
 
 class KiCadSchematicBlock(Block):
@@ -23,6 +23,19 @@ class KiCadSchematicBlock(Block):
     via the conversions mapping.
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
+    @staticmethod
+    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port]):
+        if pin.pin_number in mapping and pin.pin_name in mapping:
+            raise ValueError(f"ambiguous pinning for {pin.refdes}.{pin.pin_number}, "
+                             f"mapping defined for both name ${pin.pin_name} and number ${pin.pin_number}")
+        elif pin.pin_number in mapping:
+            return mapping[pin.pin_number]
+        elif pin.pin_name in mapping:
+            return mapping[pin.pin_name]
+        else:
+            raise ValueError(f"no pinning for {pin.refdes}.{pin.pin_number}, "
+                             f"no mapping defined for either name ${pin.pin_name} or number ${pin.pin_number}")
+
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
                      *, nodes: Dict[str, Port] = {}, conversions: Dict[str, Port] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
@@ -38,7 +51,7 @@ class KiCadSchematicBlock(Block):
             file_data = file.read()
         sch = KiCadSchematic(file_data)
 
-        blocks: Dict[str, KiCadImportableBlock] = {}
+        blocks_pins: Dict[str, Dict[str, Port]] = {}
 
         for symbol in sch.symbols:
             if hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
@@ -60,11 +73,11 @@ class KiCadSchematicBlock(Block):
             else:
                 raise Exception(f"Unknown symbol {symbol.lib}")
 
-            assert symbol.refdes not in blocks
-            blocks[symbol.refdes] = block
+            assert symbol.refdes not in blocks_pins
+            blocks_pins[symbol.refdes] = block.symbol_pinning(symbol.lib)
 
         for net in sch.nets:
-            net_ports = [blocks[pin.refdes].symbol_pinning(pin.symbol.lib)[pin.pin_number] for pin in net.pins]
+            net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes]) for pin in net.pins]
             if net.labels:
                 assert len(net.labels) == 1, "multiple net names not supported"
                 net_name = net.labels[0].name

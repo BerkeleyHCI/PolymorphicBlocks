@@ -54,6 +54,7 @@ class KiCadLibPin:
     assert parse_symbol(sexp[0]) == 'pin'
     sexp_dict = group_by_car(sexp)
     self.pos = parse_at(extract_only(sexp_dict['at']))
+    self.name = test_cast(extract_only(sexp_dict['name'])[1], str)
     self.number = test_cast(extract_only(sexp_dict['number'])[1], str)
 
 
@@ -121,6 +122,7 @@ class KiCadPin:
     self.pin = pin
     self.symbol = symbol
     self.refdes = self.symbol.refdes
+    self.pin_name = self.pin.name
     self.pin_number = self.pin.number
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     self.pt = (  # round so the positions line up exactly
