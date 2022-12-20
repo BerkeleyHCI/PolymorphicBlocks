@@ -39,7 +39,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-    assert symbol_name == 'Device:C'
+    assert symbol_name in ('Device:C', 'Device:C_Polarized')
     return {'1': self.pos, '2': self.neg}
 
   @classmethod

@@ -264,7 +264,7 @@ class IntegratorValues(ESeriesRatioValue):
            self.capacitance.intersects(spec.capacitance)
 
 
-class IntegratorInverting(AnalogFilter, GeneratorBlock):
+class IntegratorInverting(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 
@@ -280,8 +280,8 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     super().__init__()
 
     self.amp = self.Block(Opamp())
-    self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
@@ -300,22 +300,23 @@ class IntegratorInverting(AnalogFilter, GeneratorBlock):
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
     sel_resistance, sel_capacitance = calculator.find(IntegratorValues(factor, capacitance))
 
-    self.r = self.Block(Resistor(
-      resistance=Range.from_tolerance(sel_resistance, tolerance)
-    ))
+    self.r = self.Block(Resistor(resistance=Range.from_tolerance(sel_resistance, tolerance)))
     self.c = self.Block(Capacitor(
       capacitance=Range.from_tolerance(sel_capacitance, tolerance),
       voltage=self.output.link().voltage
     ))
 
-    self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)
+    self.import_kicad(self.file_path("resources", "opamp_integrator.kicad_sch"),
+      conversions={
+        'r.1': AnalogSink(  # TODO very simplified and probably very wrong
+          impedance=self.r.actual_resistance
+        ),
+        'c.1': AnalogSink(),  # TODO impedance of the feedback circuit?
 
-    self.connect(self.input, self.r.a.adapt_to(AnalogSink(
-      # TODO very simplified and probably very wrong
-      impedance=self.r.actual_resistance
-    )))
-    self.connect(self.amp.out, self.output, self.c.pos.adapt_to(AnalogSink()))  # TODO impedance of the feedback circuit?
-    self.connect(self.r.b.adapt_to(AnalogSource(
-      impedance=self.r.actual_resistance
-    )), self.c.neg.adapt_to(AnalogSink()), self.amp.inn)
-    self.connect(self.reference, self.amp.inp)
+        'r.2': AnalogSource(
+          impedance=self.r.actual_resistance
+        ),
+        'c.2': AnalogSink(),
+      })
+
+    self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)

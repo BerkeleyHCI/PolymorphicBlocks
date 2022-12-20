@@ -64,6 +64,7 @@ class KiCadSchematicBlock(Block):
         SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
             'Device:C': Capacitor,
+            'Device:C_Polarized': Capacitor,
             'Simulation_SPICE:OPAMP': Opamp,
         }
 
