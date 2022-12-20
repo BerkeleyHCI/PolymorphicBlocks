@@ -1,4 +1,5 @@
 import inspect
+import os
 from typing import Dict, Type, Any
 
 from edg_core import Block
@@ -67,3 +68,9 @@ class KiCadSchematicBlock(Block):
 
             if net_name is not None and not hasattr(self, net_name):
                 setattr(self, net_name, connection)
+
+    @classmethod
+    def file_path(cls, *names: str) -> str:
+        """Returns the path to a file from the current class's directory."""
+        dir_path = os.path.dirname(inspect.getfile(cls))
+        return os.path.join(dir_path, *names)

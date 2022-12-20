@@ -7,10 +7,6 @@ from electronics_model import KiCadSchematicBlock, Passive
 from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
 
 
-def example_filepath(filename: str) -> str:
-    return os.path.join(os.path.dirname(__file__), "resources", filename)
-
-
 # Note that all the below blocks are the same circuit (component values and connectivity)
 # but defined in slightly different ways.
 class KiCadBlock(KiCadSchematicBlock):
@@ -18,7 +14,7 @@ class KiCadBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
 
 
 class KiCadRotBlock(KiCadSchematicBlock):
@@ -26,7 +22,7 @@ class KiCadRotBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_rot.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_rot.kicad_sch"))
 
 
 class KiCadTunnelBlock(KiCadSchematicBlock):
@@ -34,7 +30,7 @@ class KiCadTunnelBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_tunnel.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_tunnel.kicad_sch"))
 
 
 class KiCadInlineBlock(KiCadSchematicBlock):
@@ -42,7 +38,7 @@ class KiCadInlineBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_inline.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_inline.kicad_sch"))
 
 
 class KiCadInlineVarsBlock(KiCadSchematicBlock):
@@ -51,7 +47,7 @@ class KiCadInlineVarsBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_inline_vars.kicad_sch"), {
+        self.import_kicad(self.file_path("resources", "test_kicad_import_inline_vars.kicad_sch"), {
             'r1_res': 51*Ohm(tol=0.05),
             'r2_res': 51*Ohm(tol=0.05),
             'c1_cap': 47*uFarad(tol=0.2),
@@ -67,7 +63,7 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
         self.R1 = self.Block(Resistor(51*Ohm(tol=0.05)))
         self.R2 = self.Block(Resistor(51*Ohm(tol=0.05)))
         self.C1 = self.Block(Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt))
-        self.import_kicad(example_filepath("test_kicad_import_codeparts.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_codeparts.kicad_sch"))
 
 
 class KiCadImportProtoTestCase(unittest.TestCase):

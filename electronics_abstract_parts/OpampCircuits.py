@@ -19,7 +19,7 @@ class OpampFollower(KiCadSchematicBlock, AnalogFilter):
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
-    self.import_kicad(os.path.join(os.path.dirname(__file__), "resources", "opamp_follower.kicad_sch"))
+    self.import_kicad(self.file_path("resources", "opamp_follower.kicad_sch"))
 
 
 class AmplifierValues(ESeriesRatioValue):
