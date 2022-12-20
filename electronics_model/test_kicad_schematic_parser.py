@@ -1,8 +1,7 @@
 import unittest
 
 import os.path
-from collections import Set
-from typing import Tuple
+from typing import Set, Tuple
 
 from .KiCadSchematicParser import KiCadSchematic, ParsedNet
 
