@@ -66,6 +66,18 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import_codeparts.kicad_sch"))
 
 
+class KiCadNodeBlock(KiCadSchematicBlock):
+    """Block that has its implementation completely defined in KiCad."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.R1 = self.Block(Resistor(51*Ohm(tol=0.05)))
+        self.PORT_A = self.Export(self.R1.a)
+        self.import_kicad(self.file_path("resources", "test_kicad_import_node.kicad_sch"),
+                          nodes={
+                              'node': self.R1.b
+                          })
+
+
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
@@ -84,6 +96,9 @@ class KiCadImportProtoTestCase(unittest.TestCase):
 
     def test_codeparts_block(self):
         self.check_connectivity(KiCadCodePartsBock)
+
+    def test_node_block(self):
+        self.check_connectivity(KiCadNodeBlock)
 
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
