@@ -226,7 +226,7 @@
     (in_bom yes) (on_board yes)
     (uuid e8ed392d-e797-4a51-a62e-0d0cb2854712)
     (property "Reference" "C1" (id 0) (at 105.41 92.71 90))
-    (property "Value" "#Capacitor(47*Farad(tol=0.05), (0, 6.3)*Volt)" (id 1) (at 105.41 100.33 90))
+    (property "Value" "#Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt)" (id 1) (at 105.41 100.33 90))
     (property "Footprint" "" (id 2) (at 109.22 95.5548 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -243,7 +243,7 @@
 
   (symbol_instances
     (path "/e8ed392d-e797-4a51-a62e-0d0cb2854712"
-      (reference "C1") (unit 1) (value "#Capacitor(47*Farad(tol=0.05), (0, 6.3)*Volt)") (footprint "")
+      (reference "C1") (unit 1) (value "#Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt)") (footprint "")
     )
     (path "/691e9d02-a5cc-48a1-b9c1-b97da20de9cd"
       (reference "R1") (unit 1) (value "#Resistor(51*Ohm(tol=0.05))") (footprint "")
