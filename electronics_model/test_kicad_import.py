@@ -3,7 +3,7 @@ from typing import Type
 
 import edgir
 from edg_core import Range
-from electronics_model import KiCadSchematicBlock, Passive
+from electronics_model import KiCadSchematicBlock, Passive, VoltageSource
 from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
 
 
@@ -66,6 +66,18 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import_codeparts.kicad_sch"))
 
 
+# These next tests test conversions (adapter generation) and HDL-defined nodes
+class KiCadConversionBlock(KiCadSchematicBlock):
+    """Block generates a Passive-to-VoltageSource adapter."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(VoltageSource.empty())
+        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"),
+                          conversions={
+                              'R1.a': VoltageSource()  # ideal port
+                          })
+
+
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
@@ -84,6 +96,9 @@ class KiCadImportProtoTestCase(unittest.TestCase):
 
     def test_codeparts_block(self):
         self.check_connectivity(KiCadCodePartsBock)
+
+    def test_conversion_block(self):
+        self.check_connectivity(KiCadConversionBlock)
 
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
