@@ -18,6 +18,14 @@ class KiCadBlock(KiCadSchematicBlock):
         self.import_kicad(example_filepath("test_kicad_import.kicad_sch"))
 
 
+class KiCadTunnelBlock(KiCadSchematicBlock):
+    """Block that has its implementation completely defined in KiCad, including using net labels as a tunnel."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(example_filepath("test_kicad_import_tunnel.kicad_sch"))
+
+
 class KiCadInlineBlock(KiCadSchematicBlock):
     """Block that has its implementation completely defined in KiCad, using inline Python in the symbol value."""
     def __init__(self) -> None:
@@ -54,6 +62,10 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         pb = KiCadBlock()._elaborated_def_to_proto()
+        self.check_connectivity(pb)
+
+    def test_tunnel_block(self):
+        pb = KiCadTunnelBlock()._elaborated_def_to_proto()
         self.check_connectivity(pb)
 
     def test_inline_block(self):
