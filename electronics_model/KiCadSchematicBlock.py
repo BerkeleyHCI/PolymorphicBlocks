@@ -1,6 +1,6 @@
 import inspect
 import os
-from typing import Dict, Type, Any
+from typing import Dict, Type, Any, Optional
 
 from edg_core import Block, Port
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
@@ -24,17 +24,36 @@ class KiCadSchematicBlock(Block):
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
-    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port]):
+    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port], conversions: Dict[str, Port]):
+        from .PassivePort import Passive
+
         if pin.pin_number in mapping and pin.pin_name in mapping:
             raise ValueError(f"ambiguous pinning for {pin.refdes}.{pin.pin_number}, "
-                             f"mapping defined for both name ${pin.pin_name} and number ${pin.pin_number}")
+                             f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}")
         elif pin.pin_number in mapping:
-            return mapping[pin.pin_number]
+            port = mapping[pin.pin_number]
         elif pin.pin_name in mapping:
-            return mapping[pin.pin_name]
+            port = mapping[pin.pin_name]
         else:
             raise ValueError(f"no pinning for {pin.refdes}.{pin.pin_number}, "
                              f"no mapping defined for either name ${pin.pin_name} or number ${pin.pin_number}")
+
+        if f"{pin.refdes}.{pin.pin_number}" in conversions and f"{pin.refdes}.{pin.pin_name}" in conversions:
+            raise ValueError(f"ambiguous conversion for {pin.refdes}.{pin.pin_number}, "
+                             f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}")
+        elif f"{pin.refdes}.{pin.pin_number}" in conversions:
+            conversion: Optional[Port] = conversions[f"{pin.refdes}.{pin.pin_number}"]
+        elif f"{pin.refdes}.{pin.pin_name}" in conversions:
+            conversion = conversions[f"{pin.refdes}.{pin.pin_name}"]
+        else:
+            conversion = None
+
+        if conversion is not None:
+            assert isinstance(port, Passive),\
+                f"conversion only allowed on Passive ports, got {pin.refdes}.{pin.pin_number}: {port.__class__.__name__}"
+            port = port.adapt_to(conversion)
+
+        return port
 
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
                      *, nodes: Dict[str, Port] = {}, conversions: Dict[str, Port] = {}):
@@ -77,7 +96,8 @@ class KiCadSchematicBlock(Block):
             blocks_pins[symbol.refdes] = block.symbol_pinning(symbol.lib)
 
         for net in sch.nets:
-            net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes]) for pin in net.pins]
+            net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
+                         for pin in net.pins]
             if net.labels:
                 assert len(net.labels) == 1, "multiple net names not supported"
                 net_name = net.labels[0].name
