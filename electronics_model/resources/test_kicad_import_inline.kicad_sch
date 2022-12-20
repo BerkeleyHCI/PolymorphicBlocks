@@ -193,10 +193,10 @@
   )
 
   (symbol (lib_name "R_1") (lib_id "Device:R") (at 100.33 86.36 90) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom yes) (on_board yes)
     (uuid 053518b3-994e-4e57-8f86-80f07be5a072)
-    (property "Reference" "R2" (id 0) (at 100.33 80.01 90))
-    (property "Value" "51" (id 1) (at 100.33 82.55 90))
+    (property "Reference" "R2" (id 0) (at 100.33 81.28 90))
+    (property "Value" "#Resistor(51*Ohm(tol=0.05))" (id 1) (at 100.33 83.82 90))
     (property "Footprint" "" (id 2) (at 100.33 88.138 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -208,10 +208,10 @@
   )
 
   (symbol (lib_id "Device:R") (at 83.82 96.52 90) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom yes) (on_board yes)
     (uuid 691e9d02-a5cc-48a1-b9c1-b97da20de9cd)
-    (property "Reference" "R1" (id 0) (at 83.82 90.17 90))
-    (property "Value" "51" (id 1) (at 83.82 92.71 90))
+    (property "Reference" "R1" (id 0) (at 83.82 91.44 90))
+    (property "Value" "#Resistor(51*Ohm(tol=0.05))" (id 1) (at 83.82 93.98 90))
     (property "Footprint" "" (id 2) (at 83.82 98.298 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -223,10 +223,10 @@
   )
 
   (symbol (lib_id "Device:C") (at 105.41 96.52 90) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom yes) (on_board yes)
     (uuid e8ed392d-e797-4a51-a62e-0d0cb2854712)
-    (property "Reference" "C1" (id 0) (at 105.41 88.9 90))
-    (property "Value" "47u 6.3V" (id 1) (at 105.41 91.44 90))
+    (property "Reference" "C1" (id 0) (at 105.41 92.71 90))
+    (property "Value" "#Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt)" (id 1) (at 105.41 100.33 90))
     (property "Footprint" "" (id 2) (at 109.22 95.5548 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -243,13 +243,13 @@
 
   (symbol_instances
     (path "/e8ed392d-e797-4a51-a62e-0d0cb2854712"
-      (reference "C1") (unit 1) (value "47u 6.3V") (footprint "")
+      (reference "C1") (unit 1) (value "#Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt)") (footprint "")
     )
     (path "/691e9d02-a5cc-48a1-b9c1-b97da20de9cd"
-      (reference "R1") (unit 1) (value "51") (footprint "")
+      (reference "R1") (unit 1) (value "#Resistor(51*Ohm(tol=0.05))") (footprint "")
     )
     (path "/053518b3-994e-4e57-8f86-80f07be5a072"
-      (reference "R2") (unit 1) (value "51") (footprint "")
+      (reference "R2") (unit 1) (value "#Resistor(51*Ohm(tol=0.05))") (footprint "")
     )
   )
 )

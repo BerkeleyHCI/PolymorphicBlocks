@@ -104,7 +104,7 @@ _Runs natively on Windows, Linux, and Mac._
    - Select a Python 3.7 (or later) interpreter.
    - If using a Pipenv environment, it will automatically fetch dependencies.
      You may need to install pipenv: `pip install pipenv`.
-   - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf kinparse Deprecated`.
+   - If using the System Interpreter or Conda: you will need to install dependencies manually, `pip install protobuf sexpdata Deprecated`.
 8. Open the Block Visualizer tab on the right.
    It will be empty right now.
 
@@ -115,7 +115,7 @@ _Runs natively on Windows, Linux, and Mac._
 
 1. Make sure you are using Python 3.7 (or later).
 2. Install the needed dependencies.
-   If using pip: `pip install protobuf kinparse Deprecated`
+   If using pip: `pip install protobuf sexpdata Deprecated`
 3. If on Linux and you get an error along the lines of `python: command not found`, you may need to `apt install python-is-python3`.
 
 

@@ -1,7 +1,7 @@
 from edg_core import *
 from electronics_model import *
 
-from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow, PartsTableUtil
+from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTablePart, PartsTableFootprint
 
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent

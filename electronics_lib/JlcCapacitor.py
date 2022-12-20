@@ -36,7 +36,7 @@ class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
 
         extracted_values = cls.parse(row[cls.DESCRIPTION_COL], CAPACITOR_MATCHES)
 
-        nominal_capacitance = PartsTableUtil.parse_value(extracted_values['nominal_capacitance'][1], 'F')
+        nominal_capacitance = PartParserUtil.parse_value(extracted_values['nominal_capacitance'][1], 'F')
 
         # enforce minimum packages, note the cutoffs are exclusive
         if nominal_capacitance > 10e-6 and footprint not in [
@@ -52,18 +52,18 @@ class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
         new_cols[cls.KICAD_FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = Range.from_tolerance(
           nominal_capacitance,
-          PartsTableUtil.parse_tolerance(extracted_values['tolerance'][1])
+          PartParserUtil.parse_tolerance(extracted_values['tolerance'][1])
         )
         new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-          PartsTableUtil.parse_value(extracted_values['voltage'][1], 'V')
+          PartParserUtil.parse_value(extracted_values['voltage'][1], 'V')
         )
         new_cols[cls.VOLTCO] = cls.DERATE_VOLTCO_MAP[footprint]
 
         new_cols.update(cls._parse_jlcpcb_common(row))
 
         return new_cols
-      except (KeyError, PartsTableUtil.ParseError):
+      except (KeyError, PartParserUtil.ParseError):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(

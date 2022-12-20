@@ -19,30 +19,30 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
     (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
        JlcBaseFet.CHANNEL: match.group(7),
-       TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
-       TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
+       TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
+       TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
        TableFet.VGS_RATING: Range.from_abs_tolerance(0,
-                                                     PartsTableUtil.parse_value(match.group(5), 'V')),
-       TableFet.VGS_DRIVE: Range(PartsTableUtil.parse_value(match.group(6), 'V'),
-                                 PartsTableUtil.parse_value(match.group(5), 'V')),
-       TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
-       TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'W')),
+                                                     PartParserUtil.parse_value(match.group(5), 'V')),
+       TableFet.VGS_DRIVE: Range(PartParserUtil.parse_value(match.group(6), 'V'),
+                                 PartParserUtil.parse_value(match.group(5), 'V')),
+       TableFet.RDS_ON: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
+       TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
        TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
     # Some of them have the power entry later, for whatever reason
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
        JlcBaseFet.CHANNEL: match.group(7),
-       TableFet.VDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'V')),
-       TableFet.IDS_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(2), 'A')),
+       TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
+       TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
        TableFet.VGS_RATING: Range.from_abs_tolerance(0,
-                                                     PartsTableUtil.parse_value(match.group(4), 'V')),
-       TableFet.VGS_DRIVE: Range(PartsTableUtil.parse_value(match.group(6), 'V'),
-                                 PartsTableUtil.parse_value(match.group(4), 'V')),
-       TableFet.RDS_ON: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(3), 'Ω')),
-       TableFet.POWER_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(5), 'W')),
+                                                     PartParserUtil.parse_value(match.group(4), 'V')),
+       TableFet.VGS_DRIVE: Range(PartParserUtil.parse_value(match.group(6), 'V'),
+                                 PartParserUtil.parse_value(match.group(4), 'V')),
+       TableFet.RDS_ON: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'Ω')),
+       TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
        TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
   ]

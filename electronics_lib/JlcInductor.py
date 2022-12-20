@@ -43,19 +43,19 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+A) (\S+H) (±\S+%) (\S+Ω) .* Inductors.*"),
      lambda match: {
-       TableInductor.INDUCTANCE: Range.from_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
-                                                      PartsTableUtil.parse_tolerance(match.group(3))),
+       TableInductor.INDUCTANCE: Range.from_tolerance(PartParserUtil.parse_value(match.group(2), 'H'),
+                                                      PartParserUtil.parse_tolerance(match.group(3))),
        TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
-       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
+       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
+       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
      }),
     (re.compile("(\S+A) (\S+H) ±(\S+H) (\S+Ω) .* Inductors.*"),
      lambda match: {
-       TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartsTableUtil.parse_value(match.group(2), 'H'),
-                                                          PartsTableUtil.parse_value(match.group(3), 'H')),
+       TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartParserUtil.parse_value(match.group(2), 'H'),
+                                                          PartParserUtil.parse_value(match.group(3), 'H')),
        TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
-       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartsTableUtil.parse_value(match.group(4), 'Ω')),
+       TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
+       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
      }),
   ]
 
