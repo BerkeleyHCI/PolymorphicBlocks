@@ -15,7 +15,6 @@ class Opamp(KiCadInstantiableBlock, Block):
   def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Opamp':
     return Opamp()
 
-
   def __init__(self) -> None:
     super().__init__()
 
