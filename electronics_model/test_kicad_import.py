@@ -1,4 +1,5 @@
 import unittest
+from typing import Type
 
 import edgir
 from edg_core import Range
@@ -67,31 +68,26 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
 
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
-        pb = KiCadBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadBlock)
 
     def test_rot_block(self):
-        pb = KiCadRotBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadRotBlock)
 
     def test_tunnel_block(self):
-        pb = KiCadTunnelBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadTunnelBlock)
 
     def test_inline_block(self):
-        pb = KiCadInlineBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadInlineBlock)
 
     def test_inline_vars_block(self):
-        pb = KiCadInlineVarsBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadInlineVarsBlock)
 
     def test_codeparts_block(self):
-        pb = KiCadCodePartsBock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadCodePartsBock)
 
-    def check_connectivity(self, pb: edgir.HierarchyBlock):
+    def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
+        pb = cls()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))
 
         expected_conn = edgir.ValueExpr()
