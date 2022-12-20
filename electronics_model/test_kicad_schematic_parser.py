@@ -21,7 +21,7 @@ class KicadSchematicParserTest(unittest.TestCase):
     nets = [net_to_tuple(x) for x in sch.nets]
     self.assertEqual(len(nets), 3)
     self.assertIn(({'PORT_A'}, {'R1.1'}), nets)
-    self.assertIn((set(), {'R1.2', 'R2.1', 'C1.1'}), nets)
+    self.assertIn(({'node'}, {'R1.2', 'R2.1', 'C1.1'}), nets)
     self.assertIn(({'Test_Net_1'}, {'R2.2', 'C1.2'}), nets)
 
     symbols = [(x.refdes, x.lib) for x in sch.symbols]
