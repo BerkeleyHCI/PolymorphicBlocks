@@ -52,7 +52,7 @@ class AmplifierValues(ESeriesRatioValue):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class Amplifier(AnalogFilter, GeneratorBlock):
+class Amplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
   """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal.
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Non-inverting_amplifier:
@@ -66,12 +66,10 @@ class Amplifier(AnalogFilter, GeneratorBlock):
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):  # to be overridden by refinements
     super().__init__()
 
-    self.amp = self.Block(Opamp())
-    self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.input = self.Export(self.amp.inp, [Input])
-    # self.output = self.Export(self.amp.out, [Output])
+    self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
     self.reference = self.Port(AnalogSink.empty(), optional=True)  # optional zero reference, defaults to GND
 
@@ -91,27 +89,33 @@ class Amplifier(AnalogFilter, GeneratorBlock):
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
     top_resistance, bottom_resistance = calculator.find(AmplifierValues(amplification, impedance))
 
-    self.r1 = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, tolerance)
-    ))
-    self.r2 = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, tolerance)
-    ))
-    self.connect(self.amp.out, self.output, self.r1.a.adapt_to(AnalogSink(
-      impedance=self.r1.actual_resistance + self.r2.actual_resistance
-    )))
-    self.connect(self.r1.b.adapt_to(AnalogSource(
-      voltage_out=self.amp.out.voltage_out,
-      impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
-    )), self.r2.a.adapt_to(AnalogSink(
-      # treated as an ideal sink for now
-    )), self.amp.inn)
+    self.amp = self.Block(Opamp())  # needed as forward reference for modeling
+    self.r1 = self.Block(Resistor(Range.from_tolerance(top_resistance, tolerance)))
+    self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, tolerance)))
+
     if reference_connected:
-      self.connect(self.reference, self.r2.b.adapt_to(AnalogSink(
+      reference_type = AnalogSink(
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
-      )))
+      )
+      reference_node = self.reference
     else:
-      self.connect(self.gnd, self.r2.b.adapt_to(Ground()))
+      reference_type = Ground()
+      reference_node = self.gnd
+
+    self.import_kicad(self.file_path("resources", "opamp_amplifier.kicad_sch"),
+      conversions={
+        'r1.1': AnalogSink(
+          impedance=self.r1.actual_resistance + self.r2.actual_resistance
+        ),
+        'r1.2': AnalogSource(  # this models the entire node
+          voltage_out=self.amp.out.voltage_out,
+          impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
+        ),
+        'r2.1': AnalogSink(),  # ideal
+        'r2.2': reference_type
+      }, nodes={
+        'ref': reference_node
+      })
 
     self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))
 
