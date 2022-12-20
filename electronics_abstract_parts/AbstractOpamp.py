@@ -1,6 +1,6 @@
 from typing import Dict
 
-from .Categories import *
+from electronics_model import *
 
 
 @abstract_block

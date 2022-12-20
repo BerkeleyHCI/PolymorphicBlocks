@@ -3,8 +3,7 @@ import unittest
 
 import edgir
 from edg_core import Range
-from electronics_model import Passive
-from electronics_model.KiCadSchematicBlock import KiCadSchematicBlock
+from electronics_model import KiCadSchematicBlock, Passive
 from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
 
 

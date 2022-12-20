@@ -1,24 +1,25 @@
+import os
 from math import ceil, log10
 from typing import List, Tuple
 
+from electronics_model import *
 from electronics_abstract_parts import Resistor, Capacitor
 from .AbstractOpamp import Opamp
-from .Categories import *
+from .Categories import AnalogFilter
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
-class OpampFollower(AnalogFilter):
+class OpampFollower(KiCadSchematicBlock, AnalogFilter):
   """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
   def __init__(self):
     super().__init__()
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.amp = self.Block(Opamp())
-    self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.input = self.Port(AnalogSink.empty(), [Input])
+    self.output = self.Port(AnalogSource.empty(), [Output])
 
-    self.input = self.Export(self.amp.inp, [Input])
-    self.output = self.Export(self.amp.out, [Output])
-    self.connect(self.amp.out, self.amp.inn)
+    self.import_kicad(os.path.join(os.path.dirname(__file__), "resources", "opamp_follower.kicad_sch"))
 
 
 class AmplifierValues(ESeriesRatioValue):
