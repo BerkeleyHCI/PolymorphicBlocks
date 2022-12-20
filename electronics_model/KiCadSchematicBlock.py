@@ -9,8 +9,12 @@ from .KiCadSchematicParser import KiCadSchematic
 
 class KiCadSchematicBlock(Block):
     """A schematic block that can instantiate and connect components based on an imported Kicad schematic.
-    Symbols on those schematics can either be inline Python that instantiates a Block, or one of a few
-    common components (eg, resistors, capacitors) with parsing rules defined here."""
+    Symbols on those schematics can either be inline Python that instantiates a KiCadImportableBlock
+    (that defines a symbol pinning), reference existing KiCadImportableBlock defined in HDL, or one of
+    a few KiCadInstantiableBlock (eg, resistors, capacitors) that have special value parsing rules.
+
+    For inline Python symbols, it uses the globals environment (including imports) of the calling context,
+    and can have local variables explicitly defined. It does not inherit local variables of the calling context."""
     SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
         'Device:R': Resistor,
         'Device:C': Capacitor,
