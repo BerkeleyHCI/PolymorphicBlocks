@@ -105,8 +105,12 @@ class KiCadSchematicBlock(Block):
             else:
                 net_name = None
 
+            if net_name is not None and net_name in nodes:  # add nodes if needed
+                net_ports.insert(0, nodes[net_name])
+
             if net_name is not None and hasattr(self, net_name):  # append to existing port if needed
                 net_ports.insert(0, getattr(self, net_name))
+
             connection = self.connect(*net_ports)
 
             if net_name is not None and not hasattr(self, net_name):
