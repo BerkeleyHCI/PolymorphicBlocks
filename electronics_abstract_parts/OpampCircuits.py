@@ -152,7 +152,7 @@ class DifferentialValues(ESeriesRatioValue):
            self.input_impedance.intersects(spec.input_impedance)
 
 
-class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
+class DifferentialAmplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
   """Opamp differential amplifier, outputs the difference between the input nodes, scaled by some factor,
   and offset from some reference node.
   This implementation uses the same resistance for the two input resistors (R1, R2),
@@ -173,9 +173,8 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
-    self.amp = self.Block(Opamp())
-    self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input_positive = self.Port(AnalogSink.empty())
     self.input_negative = self.Port(AnalogSink.empty())
@@ -195,47 +194,39 @@ class DifferentialAmplifier(AnalogFilter, GeneratorBlock):
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
     r1_resistance, rf_resistance = calculator.find(DifferentialValues(ratio, input_impedance))
 
-    self.r1 = self.Block(Resistor(
-      resistance=Range.from_tolerance(r1_resistance, tolerance)
-    ))
-    self.r2 = self.Block(Resistor(
-      resistance=Range.from_tolerance(r1_resistance, tolerance)
-    ))
-    self.rf = self.Block(Resistor(
-      resistance=Range.from_tolerance(rf_resistance, tolerance)
-    ))
-    self.rg = self.Block(Resistor(
-      resistance=Range.from_tolerance(rf_resistance, tolerance)
-    ))
+    self.amp = self.Block(Opamp())
+    self.r1 = self.Block(Resistor(Range.from_tolerance(r1_resistance, tolerance)))
+    self.r2 = self.Block(Resistor(Range.from_tolerance(r1_resistance, tolerance)))
+    self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
+    self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
+
+    self.import_kicad(self.file_path("resources", "opamp_differential_amplifier.kicad_sch"),
+      conversions={
+        'r1.1': AnalogSink(  # TODO very simplified and probably very wrong
+          impedance=self.r1.actual_resistance + self.rf.actual_resistance
+        ),
+        'r1.2': AnalogSource(  # combined R1 and Rf resistance
+          voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
+          impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)
+        ),
+        'rf.2': AnalogSink(),  # ideal
+        'rf.1': AnalogSink(  # TODO very simplified and probably very wrong
+          impedance=self.r1.actual_resistance + self.rf.actual_resistance
+        ),
+        'r2.1': AnalogSink(
+          impedance=self.r2.actual_resistance + self.rg.actual_resistance
+        ),
+        'r2.2': AnalogSource(  # combined R2 and Rg resistance
+          voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
+          impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)
+        ),
+        'rg.2': AnalogSink(),  # ideal
+        'rg.1': AnalogSink(
+          impedance=self.r2.actual_resistance + self.rg.actual_resistance
+        )
+      })
+
     self.assign(self.actual_ratio, self.rf.actual_resistance / self.r1.actual_resistance)
-
-    self.connect(self.input_negative, self.r1.a.adapt_to(AnalogSink(
-      # TODO very simplified and probably very wrong
-      impedance=self.r1.actual_resistance + self.rf.actual_resistance
-    )))
-    self.connect(self.input_positive, self.r2.a.adapt_to(AnalogSink(
-      impedance=self.r2.actual_resistance + self.rg.actual_resistance
-    )))
-
-    self.connect(self.amp.out, self.output, self.rf.a.adapt_to(AnalogSink(
-      # TODO very simplified and probably very wrong
-      impedance=self.r1.actual_resistance + self.rf.actual_resistance
-    )))
-    self.connect(self.r1.b.adapt_to(AnalogSource(
-      voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
-      impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)  # combined R1 and Rf resistance
-    )), self.rf.b.adapt_to(AnalogSink(
-      # treated as an ideal sink for now
-    )), self.amp.inn)
-    self.connect(self.r2.b.adapt_to(AnalogSource(
-      voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
-      impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)  # combined R2 and Rg resistance
-    )), self.rg.b.adapt_to(AnalogSink(
-      # treated as an ideal sink for now
-    )), self.amp.inp)
-    self.connect(self.rg.a.adapt_to(AnalogSink(
-      impedance=self.r2.actual_resistance + self.rg.actual_resistance
-    )), self.output_reference)
 
 
 class IntegratorValues(ESeriesRatioValue):
