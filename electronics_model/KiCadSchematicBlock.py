@@ -3,6 +3,7 @@ import os
 from typing import Dict, Type, Any, Optional
 
 from edg_core import Block, Port
+from .VoltagePorts import CircuitPort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin
 
@@ -24,7 +25,7 @@ class KiCadSchematicBlock(Block):
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
-    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port], conversions: Dict[str, Port]):
+    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port], conversions: Dict[str, CircuitPort]):
         from .PassivePort import Passive
 
         if pin.pin_number in mapping and pin.pin_name in mapping:
@@ -42,7 +43,7 @@ class KiCadSchematicBlock(Block):
             raise ValueError(f"ambiguous conversion for {pin.refdes}.{pin.pin_number}, "
                              f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}")
         elif f"{pin.refdes}.{pin.pin_number}" in conversions:
-            conversion: Optional[Port] = conversions[f"{pin.refdes}.{pin.pin_number}"]
+            conversion: Optional[CircuitPort] = conversions[f"{pin.refdes}.{pin.pin_number}"]
         elif f"{pin.refdes}.{pin.pin_name}" in conversions:
             conversion = conversions[f"{pin.refdes}.{pin.pin_name}"]
         else:
@@ -56,7 +57,7 @@ class KiCadSchematicBlock(Block):
         return port
 
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
-                     *, nodes: Dict[str, Port] = {}, conversions: Dict[str, Port] = {}):
+                     *, nodes: Dict[str, Port] = {}, conversions: Dict[str, CircuitPort] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
