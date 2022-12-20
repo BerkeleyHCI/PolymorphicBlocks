@@ -20,7 +20,9 @@ class KiCadSchematicBlock(Block):
     to internal nodes specified via a nodes mapping.
 
     Passive-typed ports on instantiated components can be converted to the target port model
-    via the conversions mapping."""
+    via the conversions mapping.
+
+    This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
                      *, nodes: Dict[str, Port] = {}, conversions: Dict[str, Port] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
