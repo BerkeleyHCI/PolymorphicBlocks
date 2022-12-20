@@ -2,7 +2,6 @@ import inspect
 from typing import Dict, Type, Any
 
 from edg_core import Block
-from electronics_abstract_parts import Resistor, Capacitor, Opamp
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic
 
@@ -15,13 +14,16 @@ class KiCadSchematicBlock(Block):
 
     For inline Python symbols, it uses the globals environment (including imports) of the calling context,
     and can have local variables explicitly defined. It does not inherit local variables of the calling context."""
-    SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
-        'Device:R': Resistor,
-        'Device:C': Capacitor,
-        'Simulation_SPICE:OPAMP': Opamp,
-    }
-
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {}):
+        # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
+        # so declaring it here causes it to reference Opamp lazily
+        from electronics_abstract_parts import Resistor, Capacitor, Opamp
+        SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
+            'Device:R': Resistor,
+            'Device:C': Capacitor,
+            'Simulation_SPICE:OPAMP': Opamp,
+        }
+
         with open(filepath, "r") as file:
             file_data = file.read()
         sch = KiCadSchematic(file_data)
@@ -42,8 +44,8 @@ class KiCadSchematicBlock(Block):
                     f"block {block_model} created by {inline_code} not KicadImportableBlock"
                 block = self.Block(block_model)
                 setattr(self, symbol.refdes, block)
-            elif symbol.lib in self.SYMBOL_MAP:  # sub-block with code to parse the value
-                block = self.Block(self.SYMBOL_MAP[symbol.lib].block_from_symbol(symbol.lib, symbol.properties))
+            elif symbol.lib in SYMBOL_MAP:  # sub-block with code to parse the value
+                block = self.Block(SYMBOL_MAP[symbol.lib].block_from_symbol(symbol.lib, symbol.properties))
                 setattr(self, symbol.refdes, block)
             else:
                 raise Exception(f"Unknown symbol {symbol.lib}")
