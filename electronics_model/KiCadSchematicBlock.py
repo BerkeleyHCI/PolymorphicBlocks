@@ -2,7 +2,7 @@ import inspect
 import os
 from typing import Dict, Type, Any
 
-from edg_core import Block
+from edg_core import Block, Port
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic
 
@@ -14,8 +14,15 @@ class KiCadSchematicBlock(Block):
     a few KiCadInstantiableBlock (eg, resistors, capacitors) that have special value parsing rules.
 
     For inline Python symbols, it uses the globals environment (including imports) of the calling context,
-    and can have local variables explicitly defined. It does not inherit local variables of the calling context."""
-    def import_kicad(self, filepath: str, locals: Dict[str, Any] = {}):
+    and can have local variables explicitly defined. It does not inherit local variables of the calling context.
+
+    Global and local net labels are connected to external ports by name matching, or optionally
+    to internal nodes specified via a nodes mapping.
+
+    Passive-typed ports on instantiated components can be converted to the target port model
+    via the conversions mapping."""
+    def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
+                     *, nodes: Dict[str, Port] = {}, conversions: Dict[str, Port] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
