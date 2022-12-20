@@ -14,7 +14,7 @@ class KiCadSchematicBlock(Block):
     SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
         'Device:R': Resistor,
         'Device:C': Capacitor,
-        # 'Simulation_SPICE:OPAMP': Opamp,
+        'Simulation_SPICE:OPAMP': Opamp,
     }
 
     def import_kicad(self, filepath: str, locals: Dict[str, Any] = {}):
@@ -32,7 +32,7 @@ class KiCadSchematicBlock(Block):
                 assert isinstance(block, KiCadImportableBlock)
             elif symbol.properties['Value'].startswith('#'):  # sub-block with inline Python in the value
                 inline_code = symbol.properties['Value'][1:]
-                # use the caller's globals,
+                # use the caller's globals, since this needs to reflect the caller's imports
                 block_model = eval(inline_code, inspect.stack()[1][0].f_globals, locals)
                 assert isinstance(block_model, KiCadImportableBlock),\
                     f"block {block_model} created by {inline_code} not KicadImportableBlock"
