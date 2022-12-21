@@ -185,7 +185,7 @@ class DifferentialAmplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFil
         '+': self.input_positive, '-': self.input_negative, '3': self.output,
         'V+': self.pwr, 'V-': self.gnd
       },
-      'edg_importable:Amplifier': {
+      'edg_importable:DifferentialAmplifier': {
         '+': self.input_positive, '-': self.input_negative,
         'R': self.output_reference, '3': self.output,
         'V+': self.pwr, 'V-': self.gnd
@@ -304,7 +304,7 @@ class IntegratorInverting(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilte
       'Simulation_SPICE:OPAMP': {
         '+': self.input, '-': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
       },
-      'edg_importable:Amplifier': {
+      'edg_importable:IntegratorInverting': {
         '-': self.input, 'R': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
       }
     }

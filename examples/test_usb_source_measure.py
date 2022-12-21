@@ -182,7 +182,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
         }, nodes=nodes)
 
 
-class SourceMeasureControl(Block):
+class SourceMeasureControl(KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
   @init_in_parent
@@ -202,69 +202,39 @@ class SourceMeasureControl(Block):
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
 
-    with self.implicit_connect(
-            ImplicitConnect(self.pwr_logic, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.err_volt = imp.Block(ErrorAmplifier(output_resistance=4.7*kOhm(tol=0.05),
-                                               input_resistance=(10, 100)*kOhm,
-                                               diode_spec=''))
-      self.control_voltage = self.Export(self.err_volt.target)
-      self.err_source = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
-                                                 input_resistance=(10, 100)*kOhm,
-                                                 diode_spec='source'))
-      self.control_current_source = self.Export(self.err_source.target)
-      self.err_sink = imp.Block(ErrorAmplifier(output_resistance=1*Ohm(tol=0.05),
-                                               input_resistance=(10, 100)*kOhm,
-                                               diode_spec='sink'))
-      self.control_current_sink = self.Export(self.err_sink.target)
-      self.err_merge = self.Block(MergedAnalogSource()).connected_from(
-        self.err_volt.output, self.err_source.output, self.err_sink.output)
-
-      self.int = imp.Block(IntegratorInverting(
-        factor=Range.from_tolerance(1 / 4.7e-6, 0.15),
-        capacitance=1*nFarad(tol=0.15)))
-      self.int_link = self.connect(self.err_merge.output, self.int.input)  # name it to support impedance check waive
-      self.connect(self.ref_center, self.int.reference)
-
-    with self.implicit_connect(
-            ImplicitConnect(self.pwr, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.amp = imp.Block(Amplifier(amplification=Range.from_tolerance(20, 0.05),
-                                     impedance=(1, 10)*kOhm))
-      self.connect(self.int.output, self.amp.input)
-      self.connect(self.ref_center, self.amp.reference)
-
-      self.driver = imp.Block(GatedEmitterFollower(
-        current=self.current, rds_on=self.rds_on
-      ))
-      self.connect(self.amp.output, self.driver.control)
-      self.high_en = self.Export(self.driver.high_en)
-      self.low_en = self.Export(self.driver.low_en)
-
-      self.imeas = imp.Block(OpampCurrentSensor(
-        resistance=0.1*Ohm(tol=0.01),
-        ratio=Range.from_tolerance(1, 0.05), input_impedance=10*kOhm(tol=0.05)
-      ))
-      self.connect(self.driver.out, self.imeas.pwr_in)
-      self.connect(self.imeas.pwr_out, self.out)
-      self.connect(self.imeas.ref, self.ref_center)
-      self.connect(self.imeas.out, self.measured_current,
-                   self.err_source.actual, self.err_sink.actual)
-
-      self.vmeas = imp.Block(DifferentialAmplifier(
-        ratio=Range.from_tolerance(1/22, 0.05),
-        input_impedance=220*kOhm(tol=0.05)))
-      self.connect(self.vmeas.input_positive, self.imeas.pwr_out.as_analog_source())
-      # TODO FIX ME - less jank bridging
-      from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
-      self.gnd_adapter = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.gnd_adapter.src, self.gnd)
-      self.connect(self.vmeas.input_negative, self.gnd_adapter.dst)
-      self.connect(self.vmeas.output_reference, self.ref_center)
-      self.connect(self.vmeas.output, self.measured_voltage,
-                   self.err_volt.actual)
+  def contents(self):
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      locals={
+        'err_volt': {
+          'output_resistance': 4.7*kOhm(tol=0.05),
+          'input_resistance': (10, 100)*kOhm
+        },
+        'err_current': {
+          'output_resistance': 1*Ohm(tol=0.05),
+          'input_resistance': (10, 100)*kOhm,
+        },
+        'int': {
+          'factor': Range.from_tolerance(1 / 4.7e-6, 0.15),
+          'capacitance': 1*nFarad(tol=0.15)
+        },
+        'amp': {
+          'amplification': Range.from_tolerance(20, 0.05),
+          'impedance': (1, 10)*kOhm
+        },
+        'driver': {
+          'current': self.current,
+          'rds_on': self.rds_on
+        },
+        'imeas': {
+          'resistance': 0.1*Ohm(tol=0.01),
+          'ratio': Range.from_tolerance(1, 0.05),
+          'input_impedance': 10*kOhm(tol=0.05)
+        },
+        'vmeas': {
+          'ratio': Range.from_tolerance(1/22, 0.05),
+          'input_impedance': 220*kOhm(tol=0.05)
+        },
+      })
 
 
 class UsbSourceMeasureTest(JlcBoardTop):
