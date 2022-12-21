@@ -3,6 +3,7 @@ from typing import Dict
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
+from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
 from edg import *
 
 
@@ -210,6 +211,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self):
+    super().contents()
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'err_volt': {

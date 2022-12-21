@@ -1179,6 +1179,22 @@
     (pin "1" (uuid 0219d585-0f71-4a21-9fcb-68614e6b87f2))
   )
 
+  (symbol (lib_id "power:GND") (at 236.855 129.54 0) (unit 1)
+    (in_bom yes) (on_board yes)
+    (uuid 953c4a3f-04c4-4b60-8449-afdabf5e219d)
+    (property "Reference" "#PWR?" (id 0) (at 236.855 135.89 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "GND" (id 1) (at 233.045 130.81 0))
+    (property "Footprint" "" (id 2) (at 236.855 129.54 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (id 3) (at 236.855 129.54 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid e05416c8-5307-4565-b1f2-5a712bf0775b))
+  )
+
   (symbol (lib_id "edg_importable:Opamp") (at 127 88.9 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 95a16bc8-5b0b-4a19-9511-bfbdba477838)
@@ -1475,6 +1491,9 @@
     )
     (path "/85ab7f04-6e29-4ab2-a823-31f40469d3eb"
       (reference "#PWR?") (unit 1) (value "+2V5") (footprint "")
+    )
+    (path "/953c4a3f-04c4-4b60-8449-afdabf5e219d"
+      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
     )
     (path "/9e669f52-d4c3-4121-b794-089746731681"
       (reference "#PWR?") (unit 1) (value "GND") (footprint "")
