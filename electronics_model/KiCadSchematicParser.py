@@ -1,4 +1,5 @@
 import itertools
+from enum import Enum
 from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple
 
 import math
@@ -148,8 +149,13 @@ class ParsedNet(NamedTuple):
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
 
 
+class SchematicOrder(Enum):
+  xy = 'xy'  # in position order, X then Y (left to right first, then top to bottom)
+  file = 'file'  # in order symbols are defined in the file
+
+
 class KiCadSchematic:
-  def __init__(self, data: str):
+  def __init__(self, data: str, order: SchematicOrder = SchematicOrder.xy):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
     sexp_dict = group_by_car(schematic_top)
@@ -163,7 +169,14 @@ class KiCadSchematic:
 
     all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     # separate out power and non-power symbols, power symbols stay internal
-    self.symbols = [symbol for symbol in all_symbols if not self.lib_symbols[symbol.lib_ref].is_power]
+    symbols = [symbol for symbol in all_symbols if not self.lib_symbols[symbol.lib_ref].is_power]
+    
+    # sorting allows for order-stability which allows for refdes-stability
+    if order == SchematicOrder.xy:
+      self.symbols = sorted(symbols, key=lambda elt: elt.pos)
+    elif order == SchematicOrder.file:
+      self.symbols = symbols  # preserve loaded order
+
     symbol_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
                                           for pin in self.lib_symbols[symbol.lib_ref].pins]
                                          for symbol in self.symbols]))
