@@ -170,7 +170,7 @@ class KiCadSchematic:
     all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     # separate out power and non-power symbols, power symbols stay internal
     symbols = [symbol for symbol in all_symbols if not self.lib_symbols[symbol.lib_ref].is_power]
-    
+
     # sorting allows for order-stability which allows for refdes-stability
     if order == SchematicOrder.xy:
       self.symbols = sorted(symbols, key=lambda elt: elt.pos)
