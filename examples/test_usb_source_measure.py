@@ -6,7 +6,7 @@ from electronics_abstract_parts.ResistiveDivider import DividerValues
 from edg import *
 
 
-class GatedEmitterFollower(Block):
+class GatedEmitterFollower(KiCadImportableBlock, Block):
   """Emitter follower, where each transistor can have its input gated independently,
   and a transistor with a disabled input will turn off.
 
@@ -15,6 +15,13 @@ class GatedEmitterFollower(Block):
   After the output stabilizes, both transistors can be enabled (if desired), to run under the
   analog feedback circuit.
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
+    return {
+      'IN': self.control, 'H': self.high_en, 'L': self.low_en,
+      '3': self.out, 'V+': self.pwr, 'V-': self.gnd
+    }
+
   @init_in_parent
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
@@ -103,7 +110,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
     return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
 
   @init_in_parent
-  def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike, *,
+  def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 

@@ -985,7 +985,7 @@
     (in_bom yes) (on_board yes)
     (uuid 3ce376be-d67d-4738-ac1b-3482dec1ca1a)
     (property "Reference" "err_merge" (id 0) (at 142.24 87.63 0))
-    (property "Value" "MergedAnalogSource()" (id 1) (at 142.24 95.25 0))
+    (property "Value" "#MergedAnalogSource()" (id 1) (at 142.24 95.25 0))
     (property "Footprint" "" (id 2) (at 142.24 91.44 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -1217,7 +1217,7 @@
     (in_bom yes) (on_board yes)
     (uuid 9f9bff03-bd8c-4f2b-b9cc-6e16ab31a28b)
     (property "Reference" "gnd_adapter" (id 0) (at 215.265 123.825 0))
-    (property "Value" "VoltageSinkAdapterAnalogSource()" (id 1) (at 215.9 127.635 0))
+    (property "Value" "#VoltageSinkAdapterAnalogSource()" (id 1) (at 215.9 127.635 0))
     (property "Footprint" "" (id 2) (at 215.9 125.73 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -1513,7 +1513,7 @@
       (reference "driver") (unit 1) (value "#GatedEmitterFollower(**driver)") (footprint "")
     )
     (path "/3ce376be-d67d-4738-ac1b-3482dec1ca1a"
-      (reference "err_merge") (unit 1) (value "MergedAnalogSource()") (footprint "")
+      (reference "err_merge") (unit 1) (value "#MergedAnalogSource()") (footprint "")
     )
     (path "/ee40d744-79c8-4d18-8ed9-bf15be85adc9"
       (reference "err_sink") (unit 1) (value "#ErrorAmplifier('sink', **err_current)") (footprint "")
@@ -1525,7 +1525,7 @@
       (reference "err_volt") (unit 1) (value "#ErrorAmplifier('', **err_volt)") (footprint "")
     )
     (path "/9f9bff03-bd8c-4f2b-b9cc-6e16ab31a28b"
-      (reference "gnd_adapter") (unit 1) (value "VoltageSinkAdapterAnalogSource()") (footprint "")
+      (reference "gnd_adapter") (unit 1) (value "#VoltageSinkAdapterAnalogSource()") (footprint "")
     )
     (path "/cff32c2d-33d5-4b97-b475-a64d002d0682"
       (reference "imeas") (unit 1) (value "#OpampCurrentSensor(**imeas)") (footprint "")
