@@ -82,7 +82,7 @@ class GatedEmitterFollower(Block):
       self.connect(self.low_gate.aout, self.low_fet.gate.adapt_to(AnalogSink()))
 
 
-class ErrorAmplifier(GeneratorBlock):
+class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
   """Not really a general error amplifier circuit, but a subcircuit that performs that function in
   the context of this SMU analog feedback block.
 
@@ -102,9 +102,8 @@ class ErrorAmplifier(GeneratorBlock):
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
     super().__init__()
 
-    self.amp = self.Block(Opamp())
-    self.pwr = self.Export(self.amp.pwr, [Power])
-    self.gnd = self.Export(self.amp.gnd, [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.target = self.Port(AnalogSink.empty())
     self.actual = self.Port(AnalogSink.empty())
@@ -121,28 +120,14 @@ class ErrorAmplifier(GeneratorBlock):
     top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
                                                                       input_resistance / 4))
 
-    self.rtop = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, tolerance)
-    ))
-    self.rbot = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, tolerance)
-    ))
-    self.connect(self.target, self.rtop.a.adapt_to(AnalogSink(
-      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
-    )))
-    self.connect(self.actual, self.rbot.a.adapt_to(AnalogSink(
-      impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
-    )))
-    self.connect(self.amp.inp, self.rtop.b.adapt_to(AnalogSource(
-      voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
-      impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
-    )), self.rbot.b.adapt_to(AnalogSink()))  # a side contains aggregate params, b side is dummy
+    self.amp = self.Block(Opamp())
+    self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, tolerance)))
+    self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, tolerance)))
+    self.rout = self.Block(Resistor(resistance=output_resistance))
 
-    self.rout = self.Block(Resistor(
-      resistance=output_resistance
-    ))
     if not diode_spec:
-      resistor_output_port = self.amp.out
+      amp_out_node = 'rout_in_node'  # connect both nodes together
+      rout_in_node = 'amp_out_node'
     else:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
@@ -150,27 +135,44 @@ class ErrorAmplifier(GeneratorBlock):
         voltage_drop=(0, 0.5)*Volt,  # arbitrary low threshold
         reverse_recovery_time=(0, 500)*nSecond  # arbitrary for "fast recovery"
       ))
+      # regardless of diode direction, the port model is the same on both ends
+      amp_out_model = AnalogSink(
+        impedance=self.rout.actual_resistance + self.output.link().sink_impedance
+      )
+      rout_in_model = AnalogSource(
+        impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
+      )
       if diode_spec == 'source':
-        self.connect(self.amp.out, self.diode.anode.adapt_to(AnalogSink(
-          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
-        )))
-        resistor_output_port = self.diode.cathode.adapt_to(AnalogSource(
-          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
-        ))
+        amp_out_node = self.diode.anode.adapt_to(amp_out_model)
+        rout_in_node = self.diode.cathode.adapt_to(rout_in_model)
       elif diode_spec == 'sink':
-        self.connect(self.amp.out, self.diode.cathode.adapt_to(AnalogSink(
-          impedance=self.rout.actual_resistance + self.output.link().sink_impedance
-        )))
-        resistor_output_port = self.diode.anode.adapt_to(AnalogSource(
-          impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
-        ))
+        amp_out_node = self.diode.cathode.adapt_to(amp_out_model)
+        rout_in_node = self.diode.anode.adapt_to(rout_in_model)
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
-    self.connect(resistor_output_port, self.rout.a.adapt_to(AnalogSink()))
-    self.connect(self.output, self.rout.b.adapt_to(AnalogSource(
-      voltage_out=self.amp.out.link().voltage,
-      impedance=self.rout.actual_resistance
-    )), self.amp.inn)
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+        conversions={
+          'rtop.1': AnalogSink(
+            impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
+          ),
+          'rbot.1': AnalogSink(
+            impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
+          ),
+          'rtop.2': AnalogSource(
+            voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
+            impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
+          ),
+          'rbot.2': AnalogSink(),  # ideal, rtop.2 contains the parameter model
+          'rout.a': AnalogSink(),
+          'rout.b': AnalogSource(
+            voltage_out=self.amp.out.link().voltage,
+            impedance=self.rout.actual_resistance
+          ),
+        }, nodes={
+          'amp_out_node': amp_out_node,
+          'rout_in_node': rout_in_node,
+        })
 
 
 class SourceMeasureControl(Block):
