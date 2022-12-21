@@ -101,9 +101,10 @@ class KiCadSchematicBlock(Block):
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
-            if net.labels:
-                assert len(net.labels) == 1, "multiple net names not supported"
-                net_name = net.labels[0].name
+            net_label_names = {label.name for label in net.labels}
+            if net_label_names:
+                assert len(net_label_names) == 1, "multiple net names not supported"
+                net_name = net_label_names.pop()
             else:
                 net_name = None
 
