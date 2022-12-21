@@ -1,5 +1,5 @@
 from math import ceil, log10
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from electronics_model import *
 from electronics_abstract_parts import Resistor, Capacitor
@@ -52,7 +52,7 @@ class AmplifierValues(ESeriesRatioValue):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class Amplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
+class Amplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
   """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal.
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Non-inverting_amplifier:
@@ -61,6 +61,17 @@ class Amplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    mapping: Dict[str, Dict[str, Port]] = {
+      'Simulation_SPICE:OPAMP': {
+        '+': self.input, '-': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
+      },
+      'edg_importable:Amplifier': {
+        '+': self.input, 'R': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
+      }
+    }
+    return mapping[symbol_name]
+
   @init_in_parent
   def __init__(self, amplification: RangeLike, impedance: RangeLike = Default((10, 100)*kOhm), *,
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):  # to be overridden by refinements
@@ -152,7 +163,7 @@ class DifferentialValues(ESeriesRatioValue):
            self.input_impedance.intersects(spec.input_impedance)
 
 
-class DifferentialAmplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
+class DifferentialAmplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
   """Opamp differential amplifier, outputs the difference between the input nodes, scaled by some factor,
   and offset from some reference node.
   This implementation uses the same resistance for the two input resistors (R1, R2),
@@ -168,6 +179,20 @@ class DifferentialAmplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
 
   ratio specifies Rf/R1, the amplification ratio.
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    mapping: Dict[str, Dict[str, Port]] = {
+      'Simulation_SPICE:OPAMP': {  # reference pin not supported
+        '+': self.input_positive, '-': self.input_negative, '3': self.output,
+        'V+': self.pwr, 'V-': self.gnd
+      },
+      'edg_importable:Amplifier': {
+        '+': self.input_positive, '-': self.input_negative,
+        'R': self.output_reference, '3': self.output,
+        'V+': self.pwr, 'V-': self.gnd
+      }
+    }
+    return mapping[symbol_name]
+
   @init_in_parent
   def __init__(self, ratio: RangeLike, input_impedance: RangeLike, *,
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
@@ -264,7 +289,7 @@ class IntegratorValues(ESeriesRatioValue):
            self.capacitance.intersects(spec.capacitance)
 
 
-class IntegratorInverting(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
+class IntegratorInverting(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 
@@ -274,6 +299,17 @@ class IntegratorInverting(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
   Series is lower and tolerance is higher because there's a cap involved
   TODO - separate series for cap, and series and tolerance by decade?
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    mapping: Dict[str, Dict[str, Port]] = {
+      'Simulation_SPICE:OPAMP': {
+        '+': self.input, '-': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
+      },
+      'edg_importable:Amplifier': {
+        '-': self.input, 'R': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
+      }
+    }
+    return mapping[symbol_name]
+
   @init_in_parent
   def __init__(self, factor: RangeLike, capacitance: RangeLike, *,
                series: IntLike = Default(6), tolerance: FloatLike = Default(0.05)):

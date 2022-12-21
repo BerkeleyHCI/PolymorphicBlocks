@@ -66,6 +66,7 @@ class KiCadSchematicBlock(Block):
             'Device:C': Capacitor,
             'Device:C_Polarized': Capacitor,
             'Simulation_SPICE:OPAMP': Opamp,
+            'edg_importable:Opamp': Opamp,
         }
 
         with open(filepath, "r") as file:
