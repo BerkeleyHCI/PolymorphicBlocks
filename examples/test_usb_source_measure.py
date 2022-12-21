@@ -1,4 +1,5 @@
 import unittest
+from typing import Dict
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
@@ -125,10 +126,7 @@ class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
     self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, tolerance)))
     self.rout = self.Block(Resistor(resistance=output_resistance))
 
-    if not diode_spec:
-      amp_out_node = 'rout_in_node'  # connect both nodes together
-      rout_in_node = 'amp_out_node'
-    else:
+    if diode_spec:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
         current=RangeExpr.ZERO,  # an approximation, current rating not significant here
@@ -143,13 +141,21 @@ class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
         impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
       )
       if diode_spec == 'source':
-        amp_out_node = self.diode.anode.adapt_to(amp_out_model)
-        rout_in_node = self.diode.cathode.adapt_to(rout_in_model)
+        nodes: Dict[str, Port] = {
+          'amp_out_node': self.diode.anode.adapt_to(amp_out_model),
+          'rout_in_node': self.diode.cathode.adapt_to(rout_in_model)
+        }
       elif diode_spec == 'sink':
-        amp_out_node = self.diode.cathode.adapt_to(amp_out_model)
-        rout_in_node = self.diode.anode.adapt_to(rout_in_model)
+        nodes = {
+          'amp_out_node': self.diode.cathode.adapt_to(amp_out_model),
+          'rout_in_node': self.diode.anode.adapt_to(rout_in_model)
+        }
       else:
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
+    else:
+      nodes = {
+        'rout_in_node': self.amp.out
+      }
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
         conversions={
@@ -164,15 +170,12 @@ class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
             impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
           ),
           'rbot.2': AnalogSink(),  # ideal, rtop.2 contains the parameter model
-          'rout.a': AnalogSink(),
-          'rout.b': AnalogSource(
+          'rout.1': AnalogSink(),
+          'rout.2': AnalogSource(
             voltage_out=self.amp.out.link().voltage,
             impedance=self.rout.actual_resistance
           ),
-        }, nodes={
-          'amp_out_node': amp_out_node,
-          'rout_in_node': rout_in_node,
-        })
+        }, nodes=nodes)
 
 
 class SourceMeasureControl(Block):

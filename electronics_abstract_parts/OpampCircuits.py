@@ -94,10 +94,10 @@ class Amplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
     self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, tolerance)))
 
     if reference_connected:
-      reference_type = AnalogSink(
+      reference_type: CircuitPort = AnalogSink(
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
       )
-      reference_node = self.reference
+      reference_node: CircuitPort = self.reference
     else:
       reference_type = Ground()
       reference_node = self.gnd
