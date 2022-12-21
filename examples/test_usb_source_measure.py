@@ -3,7 +3,7 @@ from typing import Dict
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
-from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
+from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
 from edg import *
 
 
