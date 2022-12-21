@@ -18,7 +18,7 @@ class OpampFollower(KiCadSchematicBlock, AnalogFilter):
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
-    self.import_kicad(self.file_path("resources", "opamp_follower.kicad_sch"))
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"))
 
 
 class AmplifierValues(ESeriesRatioValue):
@@ -102,7 +102,7 @@ class Amplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
       reference_type = Ground()
       reference_node = self.gnd
 
-    self.import_kicad(self.file_path("resources", "opamp_amplifier.kicad_sch"),
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'r1.1': AnalogSink(
           impedance=self.r1.actual_resistance + self.r2.actual_resistance
@@ -200,7 +200,7 @@ class DifferentialAmplifier(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
 
-    self.import_kicad(self.file_path("resources", "opamp_differential_amplifier.kicad_sch"),
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'r1.1': AnalogSink(  # TODO very simplified and probably very wrong
           impedance=self.r1.actual_resistance + self.rf.actual_resistance
@@ -306,7 +306,7 @@ class IntegratorInverting(KiCadSchematicBlock, AnalogFilter, GeneratorBlock):
       voltage=self.output.link().voltage
     ))
 
-    self.import_kicad(self.file_path("resources", "opamp_integrator.kicad_sch"),
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'r.1': AnalogSink(  # TODO very simplified and probably very wrong
           impedance=self.r.actual_resistance
