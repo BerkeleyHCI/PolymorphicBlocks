@@ -15,7 +15,22 @@ def net_to_tuple(net: ParsedNet) -> Tuple[Set[str], Set[str]]:
 
 class KicadSchematicParserTest(unittest.TestCase):
   def test_kicad(self):
-    with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import.kicad_sch"), "r") as file:
+    self.check_schematic("test_kicad_import.kicad_sch")
+
+  def test_kicad_rot(self):
+    self.check_schematic("test_kicad_import_rot.kicad_sch")
+
+  def test_kicad_tunnel(self):
+    self.check_schematic("test_kicad_import_tunnel.kicad_sch")
+
+  def test_kicad_power(self):
+    self.check_schematic("test_kicad_import_power.kicad_sch")
+
+  def test_kicad_modified_symbol(self):
+    self.check_schematic("test_kicad_import_modified_symbol.kicad_sch")
+
+  def check_schematic(self, filename):
+    with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
     sch = KiCadSchematic(file_data)
     nets = [net_to_tuple(x) for x in sch.nets]

@@ -78,6 +78,22 @@ class KiCadNodeBlock(KiCadSchematicBlock):
                           })
 
 
+class KiCadPowerBlock(KiCadSchematicBlock):
+    """Block using Power symbols (eg, Vdd, GND) as internal non-named tunnels."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_power.kicad_sch"))
+
+
+class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
+    """Imports a schematic with a modified (sheet-specific) symbol."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_modified_symbol.kicad_sch"))
+
+
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
@@ -99,6 +115,12 @@ class KiCadImportProtoTestCase(unittest.TestCase):
 
     def test_node_block(self):
         self.check_connectivity(KiCadNodeBlock)
+
+    def test_power_block(self):
+        self.check_connectivity(KiCadPowerBlock)
+
+    def test_modified_symbol_block(self):
+        self.check_connectivity(KiCadModifiedSymbolBlock)
 
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""

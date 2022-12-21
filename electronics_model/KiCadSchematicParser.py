@@ -73,6 +73,7 @@ class KiCadLibSymbol:
                                     for symbol_sexp in sexp_dict.get('symbol', [])])
     symbol_elts_dict = group_by_car(list(symbol_elts))
     self.pins = [KiCadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
+    self.is_power = 'power' in sexp_dict
 
 
 class KiCadWire:
@@ -111,6 +112,12 @@ class KiCadSymbol:
                                        for prop in sexp_dict.get('property', [])}
     self.refdes = self.properties.get("Reference", "")
     self.lib = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
+    # lib_name (if present) is used for sheet-specific modified symbols to reference that modified symbol
+    # but is not a user-specified name, so the interface symbol name is still lib_id
+    if 'lib_name' in sexp_dict:
+      self.lib_ref = test_cast(extract_only(sexp_dict['lib_name'])[1], str)
+    else:
+      self.lib_ref = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
     self.pos = parse_at(extract_only(sexp_dict['at']))
 
 
@@ -152,9 +159,11 @@ class KiCadSchematic:
     wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
     labels = [KiCadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
 
-    self.symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    # separate out power and non-power symbols, power symbols stay internal
+    self.symbols = [symbol for symbol in all_symbols if not self.lib_symbols[symbol.lib_ref].is_power]
     symbol_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
-                                          for pin in self.lib_symbols[symbol.lib].pins]
+                                          for pin in self.lib_symbols[symbol.lib_ref].pins]
                                          for symbol in self.symbols]))
 
     # now, actually build the netlist, with graph traversal to find connected components
@@ -170,9 +179,25 @@ class KiCadSchematic:
     pin_points: Dict[PointType, List[KiCadPin]] = {}
     for pin in symbol_pins:
       pin_points.setdefault(pin.pt, []).append(pin)
+
+    # build adjacency matrix for labels and symbols
     label_points: Dict[PointType, List[KiCadAnyLabel]] = {}
+    label_by_name: Dict[str, List[PointType]] = {}  # this also shares a namespace w/ power symbols
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
+      label_by_name.setdefault(label.name, []).append(label.pt)
+
+    power_symbols = [symbol for symbol in all_symbols if self.lib_symbols[symbol.lib_ref].is_power]
+    power_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
+                                         for pin in self.lib_symbols[symbol.lib_ref].pins]
+                                        for symbol in power_symbols]))
+    for power_pin in power_pins:
+      label_by_name.setdefault(power_pin.symbol.properties['Value'], []).append(power_pin.pt)
+
+    for name, points in label_by_name.items():
+      for other_point in points[1:]:
+        edges.setdefault(points[0], []).append(other_point)
+        edges.setdefault(other_point, []).append(points[0])
 
     # TODO support hierarchy with sheet_instances and symbol_instances
     # TODO also check for intersections - currently pins and labels need to be at wire ends
