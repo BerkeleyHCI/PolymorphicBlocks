@@ -202,6 +202,11 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.ref_center = self.Port(AnalogSink.empty())
 
+    self.control_voltage = self.Port(AnalogSink.empty())
+    self.control_current_source = self.Port(AnalogSink.empty())
+    self.control_current_sink = self.Port(AnalogSink.empty())
+    self.high_en = self.Port(DigitalSink.empty())
+    self.low_en = self.Port(DigitalSink.empty())
     self.out = self.Port(VoltageSource.empty())
 
     self.measured_voltage = self.Port(AnalogSource.empty())

@@ -28,16 +28,18 @@ def group_by_car(elts: List[Any]) -> Dict[Any, List[List[Any]]]:
 
 PointType = Tuple[float, float]
 def parse_xy(sexp: List[Any], expected_car: str = 'xy') -> PointType:
-  """Given a sexp of the form (xy, x, y) (for x, y float), returns (x, y)."""
+  """Given a sexp of the form (xy, x, y) (for x, y float), returns (x, y).
+  X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 3
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (float(sexp[1]), float(sexp[2]))
+  return (round(float(sexp[1]) / 1.27), round(float(sexp[2]) / 1.27))
 
 def parse_at(sexp: List[Any], expected_car: str = 'at') -> Tuple[float, float, float]:
-  """Given a sexp of the form (at, x, y, r) (for x, y, r float), returns (x, y, r)."""
+  """Given a sexp of the form (at, x, y, r) (for x, y, r float), returns (x, y, r).
+  X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 4
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (float(sexp[1]), float(sexp[2]), float(sexp[3]))
+  return (round(float(sexp[1]) / 1.27), round(float(sexp[2]) / 1.27), float(sexp[3]))
 
 def parse_symbol(sexp: Any) -> str:
   """Asserts sexp is a Symbol and returns its value."""
@@ -133,8 +135,8 @@ class KiCadPin:
     self.pin_number = self.pin.number
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     self.pt = (  # round so the positions line up exactly
-      round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot), 2),
-      round(symbol.pos[1] - pin.pos[0] * math.sin(symbol_rot) - pin.pos[1] * math.cos(symbol_rot), 2)
+      round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot)),
+      round(symbol.pos[1] - pin.pos[0] * math.sin(symbol_rot) - pin.pos[1] * math.cos(symbol_rot))
     )
 
 
