@@ -83,7 +83,7 @@ class GatedEmitterFollower(Block):
       self.connect(self.low_gate.aout, self.low_fet.gate.adapt_to(AnalogSink()))
 
 
-class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
+class ErrorAmplifier(KiCadSchematicBlock, KiCadInstantiableBlock, GeneratorBlock):
   """Not really a general error amplifier circuit, but a subcircuit that performs that function in
   the context of this SMU analog feedback block.
 
@@ -98,6 +98,10 @@ class ErrorAmplifier(KiCadSchematicBlock, GeneratorBlock):
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'Simulation_SPICE:OPAMP'
+    return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
+
   @init_in_parent
   def __init__(self, output_resistance: RangeLike, input_resistance: RangeLike, diode_spec: StringLike, *,
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
