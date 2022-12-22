@@ -148,16 +148,18 @@ class KiCadPin:
 
     pin_x = pin.pos[0]
     pin_y = pin.pos[1]
+    symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     if symbol.mirror == '':
       pass
     elif symbol.mirror == 'x':  # mirror along x axis
       pin_y = -pin_y
+      symbol_rot = -symbol_rot
     elif symbol.mirror == 'y':  # mirror along y axis
+      assert symbol_rot == 0  # KiCad doesn't seem to generate Y-mirror with rotation, so this can't be tested
       pin_x = -pin_x
     else:
       raise ValueError(f"unexpected mirror value {symbol.mirror}")
 
-    symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     self.pt = (  # round so the positions line up exactly
       round(symbol.pos[0] + pin_x * math.cos(symbol_rot) - pin_y * math.sin(symbol_rot)),
       round(symbol.pos[1] - pin_x * math.sin(symbol_rot) - pin_y * math.cos(symbol_rot))

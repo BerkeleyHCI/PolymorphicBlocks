@@ -47,6 +47,12 @@ class KiCadSchematicParserTest(unittest.TestCase):
   def test_kicad_mirrorx(self):
     self.check_schematic_fet("test_kicad_import_mirrorx.kicad_sch")
 
+  def test_kicad_mirrory(self):
+    self.check_schematic_fet("test_kicad_import_mirrory.kicad_sch")
+
+  def test_kicad_mirrory_rot(self):
+    self.check_schematic_fet("test_kicad_import_mirrory_rot.kicad_sch")
+
   def check_schematic_fet(self, filename):
     """R and Cs are symmetric and don't test for mirroring well."""
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
