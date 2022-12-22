@@ -20,6 +20,9 @@ class KicadSchematicParserTest(unittest.TestCase):
   def test_kicad_rot(self):
     self.check_schematic("test_kicad_import_rot.kicad_sch")
 
+  def test_kicad_mirrorx(self):
+    self.check_schematic("test_kicad_import_mirrorx.kicad_sch")
+
   def test_kicad_tunnel(self):
     self.check_schematic("test_kicad_import_tunnel.kicad_sch")
 

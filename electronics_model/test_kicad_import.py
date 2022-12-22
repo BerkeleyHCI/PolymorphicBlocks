@@ -9,20 +9,13 @@ from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
 
 # Note that all the below blocks are the same circuit (component values and connectivity)
 # but defined in slightly different ways.
+# Rotation and mirroring are not checked here, but tested in the schematic parser.
 class KiCadBlock(KiCadSchematicBlock):
     """Block that has its implementation completely defined in KiCad."""
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
         self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
-
-
-class KiCadRotBlock(KiCadSchematicBlock):
-    """Block that has a rotated part."""
-    def __init__(self) -> None:
-        super().__init__()
-        self.PORT_A = self.Port(Passive())
-        self.import_kicad(self.file_path("resources", "test_kicad_import_rot.kicad_sch"))
 
 
 class KiCadTunnelBlock(KiCadSchematicBlock):
@@ -97,9 +90,6 @@ class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
-
-    def test_rot_block(self):
-        self.check_connectivity(KiCadRotBlock)
 
     def test_tunnel_block(self):
         self.check_connectivity(KiCadTunnelBlock)
