@@ -6,13 +6,19 @@ import math
 import sexpdata  # type: ignore
 
 
-TestCaseType = TypeVar('TestCaseType')
-def test_cast(x: Any, type: Type[TestCaseType]) -> TestCaseType:
+# This defines the minimum resolvable grid, so all coordinates are rounded to integer
+# coordinates to exact position equality checks can be made without worrying about
+# float precision issues.
+MIN_GRID = 1.27
+
+
+TestCastType = TypeVar('TestCastType')
+def test_cast(x: Any, type: Type[TestCastType]) -> TestCastType:
   """Combination of (dynamic) isinstance test and static typing cast."""
   assert isinstance(x, type)
   return x
 
-def extract_only(x: List[TestCaseType]) -> TestCaseType:
+def extract_only(x: List[TestCastType]) -> TestCastType:
   """Asserts the input list only has one element, and returns it."""
   assert len(x) == 1
   return x[0]
@@ -33,14 +39,14 @@ def parse_xy(sexp: List[Any], expected_car: str = 'xy') -> PointType:
   X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 3
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (round(float(sexp[1]) / 1.27), round(float(sexp[2]) / 1.27))
+  return (round(float(sexp[1]) / MIN_GRID), round(float(sexp[2]) / MIN_GRID))
 
 def parse_at(sexp: List[Any], expected_car: str = 'at') -> Tuple[float, float, float]:
   """Given a sexp of the form (at, x, y, r) (for x, y, r float), returns (x, y, r).
   X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 4
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (round(float(sexp[1]) / 1.27), round(float(sexp[2]) / 1.27), float(sexp[3]))
+  return (round(float(sexp[1]) / MIN_GRID), round(float(sexp[2]) / MIN_GRID), float(sexp[3]))
 
 def parse_symbol(sexp: Any) -> str:
   """Asserts sexp is a Symbol and returns its value."""
