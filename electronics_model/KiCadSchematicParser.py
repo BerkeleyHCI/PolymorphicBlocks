@@ -129,6 +129,11 @@ class KiCadSymbol:
       self.lib_ref = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
     self.pos = parse_at(extract_only(sexp_dict['at']))
 
+    if 'mirror' in sexp_dict:
+      self.mirror = parse_symbol(extract_only(sexp_dict['mirror'])[1])
+    else:
+      self.mirror = ''
+
 
 class KiCadPin:
   def __repr__(self):
@@ -140,10 +145,22 @@ class KiCadPin:
     self.refdes = self.symbol.refdes
     self.pin_name = self.pin.name
     self.pin_number = self.pin.number
+
+    pin_x = pin.pos[0]
+    pin_y = pin.pos[1]
+    if symbol.mirror == '':
+      pass
+    elif symbol.mirror == 'x':  # mirror along x axis
+      pin_y = -pin_y
+    elif symbol.mirror == 'y':  # mirror along y axis
+      pin_x = -pin_x
+    else:
+      raise ValueError(f"unexpected mirror value {symbol.mirror}")
+
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
     self.pt = (  # round so the positions line up exactly
-      round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot)),
-      round(symbol.pos[1] - pin.pos[0] * math.sin(symbol_rot) - pin.pos[1] * math.cos(symbol_rot))
+      round(symbol.pos[0] + pin_x * math.cos(symbol_rot) - pin_y * math.sin(symbol_rot)),
+      round(symbol.pos[1] - pin_x * math.sin(symbol_rot) - pin_y * math.cos(symbol_rot))
     )
 
 

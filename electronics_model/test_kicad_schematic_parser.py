@@ -13,26 +13,23 @@ def net_to_tuple(net: ParsedNet) -> Tuple[Set[str], Set[str]]:
   return (labels, pins)
 
 
-class KicadSchematicParserTest(unittest.TestCase):
+class KiCadSchematicParserTest(unittest.TestCase):
   def test_kicad(self):
-    self.check_schematic("test_kicad_import.kicad_sch")
+    self.check_schematic_rcs("test_kicad_import.kicad_sch")
 
   def test_kicad_rot(self):
-    self.check_schematic("test_kicad_import_rot.kicad_sch")
-
-  def test_kicad_mirrorx(self):
-    self.check_schematic("test_kicad_import_mirrorx.kicad_sch")
+    self.check_schematic_rcs("test_kicad_import_rot.kicad_sch")
 
   def test_kicad_tunnel(self):
-    self.check_schematic("test_kicad_import_tunnel.kicad_sch")
+    self.check_schematic_rcs("test_kicad_import_tunnel.kicad_sch")
 
   def test_kicad_power(self):
-    self.check_schematic("test_kicad_import_power.kicad_sch")
+    self.check_schematic_rcs("test_kicad_import_power.kicad_sch")
 
   def test_kicad_modified_symbol(self):
-    self.check_schematic("test_kicad_import_modified_symbol.kicad_sch")
+    self.check_schematic_rcs("test_kicad_import_modified_symbol.kicad_sch")
 
-  def check_schematic(self, filename):
+  def check_schematic_rcs(self, filename):
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
     sch = KiCadSchematic(file_data)
@@ -46,3 +43,17 @@ class KicadSchematicParserTest(unittest.TestCase):
     self.assertIn(('R1', 'Device:R'), symbols)
     self.assertIn(('R2', 'Device:R'), symbols)
     self.assertIn(('C1', 'Device:C'), symbols)
+
+  def test_kicad_mirrorx(self):
+    self.check_schematic_fet("test_kicad_import_mirrorx.kicad_sch")
+
+  def check_schematic_fet(self, filename):
+    """R and Cs are symmetric and don't test for mirroring well."""
+    with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
+      file_data = file.read()
+    sch = KiCadSchematic(file_data)
+    nets = [net_to_tuple(x) for x in sch.nets]
+
+    self.assertIn(({'drain'}, {'Q1.1'}), nets)
+    self.assertIn(({'gate'}, {'Q1.2'}), nets)
+    self.assertIn(({'source'}, {'Q1.3'}), nets)
