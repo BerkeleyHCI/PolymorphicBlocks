@@ -33,7 +33,7 @@ from .AbstractLed import IndicatorSinkPackedRgbLed
 from .AbstractLed import IndicatorSinkLedArray
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
-from .AbstractSolidStateRelay import SolidStateRelay, DigitalAnalogIsolatedSwitch
+from .AbstractSolidStateRelay import SolidStateRelay, AnalogIsolatedSwitch
 from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp

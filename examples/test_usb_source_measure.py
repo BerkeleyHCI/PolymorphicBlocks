@@ -7,7 +7,7 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # nee
 from edg import *
 
 
-class GatedEmitterFollower(KiCadImportableBlock, Block):
+class GatedEmitterFollower(KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower, where each transistor can have its input gated independently,
   and a transistor with a disabled input will turn off.
 
@@ -56,39 +56,29 @@ class GatedEmitterFollower(KiCadImportableBlock, Block):
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
-    self.connect(self.pwr, self.high_fet.drain.adapt_to(VoltageSink(
-      current_draw=self.current,
-      voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
-        self.low_fet.actual_drain_voltage_rating)
-    )))
-    self.connect(self.gnd, self.low_fet.drain.adapt_to(VoltageSink()))
-    output_driver = self.high_fet.source.adapt_to(VoltageSource(
-      voltage_out=self.pwr.link().voltage,
-      current_limits=self.current
-    ))
-    self.connect(output_driver, self.low_fet.source.adapt_to(VoltageSink()),
-                 self.out)
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'high_fet.D': VoltageSink(
+          current_draw=self.current,
+          voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
+            self.low_fet.actual_drain_voltage_rating)
+        ),
+        'high_fet.S': VoltageSource(
+          voltage_out=self.pwr.link().voltage,
+          current_limits=self.current
+        ),
+        'low_fet.S': VoltageSink(),  # ideal, modeled by high_fet source
+        'low_fet.D': Ground(),
 
-    # TODO all the analog parameter modeling
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.high_gate = imp.Block(DigitalAnalogIsolatedSwitch())
-      self.connect(self.high_en, self.high_gate.signal)
-      self.low_gate = imp.Block(DigitalAnalogIsolatedSwitch())
-      self.connect(self.low_en, self.low_gate.signal)
+        'high_fet.G': AnalogSink(),
+        'low_fet.G': AnalogSink(),
 
-      self.connect(self.control, self.high_gate.ain, self.low_gate.ain)
+        'high_res.1': VoltageSink(),
+        'low_res.1': VoltageSink(),
 
-      self.high_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
-      self.low_res = self.Block(Resistor(resistance=4.7*kOhm(tol=0.05)))
-
-      self.connect(self.high_fet.source, self.high_res.a)
-      self.connect(self.low_fet.source, self.low_res.a)
-      self.connect(self.high_res.b.adapt_to(AnalogSource()), self.high_gate.apull)
-      self.connect(self.low_res.b.adapt_to(AnalogSource()), self.low_gate.apull)
-      self.connect(self.high_gate.aout, self.high_fet.gate.adapt_to(AnalogSink()))
-      self.connect(self.low_gate.aout, self.low_fet.gate.adapt_to(AnalogSink()))
+        'high_res.2': AnalogSource(),
+        'low_res.2': AnalogSource(),
+      })
 
 
 class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):

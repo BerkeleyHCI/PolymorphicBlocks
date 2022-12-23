@@ -80,7 +80,7 @@ class KiCadSchematicBlock(Block):
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
                     f"{symbol.refdes} has both code block and non-empty value"
                 block = getattr(self, symbol.refdes)
-                assert isinstance(block, KiCadImportableBlock)
+                assert isinstance(block, KiCadImportableBlock), f"{symbol.refdes} not a KiCadImportableBlock"
             elif symbol.properties['Value'].startswith('#'):  # sub-block with inline Python in the value
                 inline_code = symbol.properties['Value'][1:]
                 # use the caller's globals, since this needs to reflect the caller's imports

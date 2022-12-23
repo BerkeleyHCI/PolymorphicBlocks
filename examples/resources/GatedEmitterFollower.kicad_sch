@@ -690,7 +690,7 @@
   (symbol (lib_id "Device:R") (at 97.79 100.33 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 18151125-a0aa-48cb-8e22-37702ba5fd19)
-    (property "Reference" "low_res" (id 0) (at 97.79 102.87 90))
+    (property "Reference" "low_res" (id 0) (at 97.79 97.79 90))
     (property "Value" "4.7k" (id 1) (at 97.79 100.33 90))
     (property "Footprint" "" (id 2) (at 97.79 98.552 90)
       (effects (font (size 1.27 1.27)) hide)
@@ -725,7 +725,7 @@
   (symbol (lib_name "R_1") (lib_id "Device:R") (at 97.79 90.17 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 8f89b971-2ab7-457c-a735-5e470aec7a82)
-    (property "Reference" "high_res" (id 0) (at 97.79 92.71 90))
+    (property "Reference" "high_res" (id 0) (at 97.79 87.63 90))
     (property "Value" "4.7k" (id 1) (at 97.79 90.17 90))
     (property "Footprint" "" (id 2) (at 97.79 88.392 90)
       (effects (font (size 1.27 1.27)) hide)
@@ -741,7 +741,7 @@
     (in_bom yes) (on_board yes)
     (uuid b1a076cf-3646-4d9c-aad5-391cc07c078e)
     (property "Reference" "high_gate" (id 0) (at 81.28 80.01 0))
-    (property "Value" "AnalogIsolatedSwitch" (id 1) (at 81.28 90.17 0))
+    (property "Value" "#AnalogIsolatedSwitch()" (id 1) (at 81.28 90.17 0))
     (property "Footprint" "" (id 2) (at 76.2 90.17 0)
       (effects (font (size 1.27 1.27) italic) (justify left) hide)
     )
@@ -759,7 +759,7 @@
     (in_bom yes) (on_board yes)
     (uuid ed11e52c-da6b-4ccb-b773-d3fad32f6765)
     (property "Reference" "low_gate" (id 0) (at 81.28 95.25 0))
-    (property "Value" "AnalogIsolatedSwitch" (id 1) (at 81.28 105.41 0))
+    (property "Value" "#AnalogIsolatedSwitch()" (id 1) (at 81.28 105.41 0))
     (property "Footprint" "" (id 2) (at 76.2 105.41 0)
       (effects (font (size 1.27 1.27) italic) (justify left) hide)
     )
@@ -802,7 +802,7 @@
       (reference "high_fet") (unit 1) (value "~") (footprint "")
     )
     (path "/b1a076cf-3646-4d9c-aad5-391cc07c078e"
-      (reference "high_gate") (unit 1) (value "AnalogIsolatedSwitch") (footprint "")
+      (reference "high_gate") (unit 1) (value "#AnalogIsolatedSwitch()") (footprint "")
     )
     (path "/8f89b971-2ab7-457c-a735-5e470aec7a82"
       (reference "high_res") (unit 1) (value "4.7k") (footprint "")
@@ -811,7 +811,7 @@
       (reference "low_fet") (unit 1) (value "~") (footprint "")
     )
     (path "/ed11e52c-da6b-4ccb-b773-d3fad32f6765"
-      (reference "low_gate") (unit 1) (value "AnalogIsolatedSwitch") (footprint "")
+      (reference "low_gate") (unit 1) (value "#AnalogIsolatedSwitch()") (footprint "")
     )
     (path "/18151125-a0aa-48cb-8e22-37702ba5fd19"
       (reference "low_res") (unit 1) (value "4.7k") (footprint "")

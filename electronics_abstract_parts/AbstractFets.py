@@ -7,7 +7,7 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class Fet(DiscreteSemiconductor):
+class Fet(KiCadImportableBlock, DiscreteSemiconductor):
   """Base class for untyped MOSFETs
   Drain voltage, drain current, and gate voltages are positive (absolute).
 

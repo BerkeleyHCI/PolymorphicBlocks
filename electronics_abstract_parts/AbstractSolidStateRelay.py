@@ -30,7 +30,7 @@ class SolidStateRelay(Block):
     self.load_resistance = self.Parameter(RangeExpr())
 
 
-class DigitalAnalogIsolatedSwitch(KiCadImportableBlock, Block):
+class AnalogIsolatedSwitch(KiCadImportableBlock, Block):
   """Digitally controlled solid state relay that switches an analog signal.
   Includes a ballasting resistor.
 
