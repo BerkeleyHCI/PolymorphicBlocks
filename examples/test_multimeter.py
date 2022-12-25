@@ -41,7 +41,7 @@ class ResistorMux(KiCadImportableBlock, GeneratorBlock):
         self.connect(res.b, self.switch.inputs.request(str(i)))
 
 
-class MultimeterAnalog(Block):
+class MultimeterAnalog(KiCadSchematicBlock, Block):
   """Analog measurement stage for the volts stage of the multimeter.
   Includes a 1M input resistor and a variable divider.
   Purely DC sampling, and true-RMS functionality needs to be implemented in firmware
@@ -66,26 +66,24 @@ class MultimeterAnalog(Block):
     super().contents()
 
     self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
-    self.connect(self.res.a.adapt_to(AnalogSink()), self.input_positive)
+    self.range = self.Block(ResistorMux([
+      1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
+      10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
+      100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
+      Range(float('inf'), float('inf'))  # 1:1 step, open circuit
+    ]))
 
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-        ImplicitConnect(self.pwr, [Power]),
-    ) as imp:
-      self.range = imp.Block(ResistorMux([
-        1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
-        10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
-        100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
-        Range(float('inf'), float('inf'))  # 1:1 step, open circuit
-      ]))
-      self.connect(self.range.input.adapt_to(AnalogSink()), self.input_negative)
-      self.connect(self.res.b.adapt_to(AnalogSource(
-        voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-        current_limits=(-10, 10)*mAmp,
-        impedance=1*mOhm(tol=0)
-      )), self.range.com.adapt_to(AnalogSink()), self.output)
-
-      self.connect(self.select, self.range.control)
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'res.1': AnalogSink(),
+        'res.2': AnalogSource(
+          voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+          current_limits=(-10, 10)*mAmp,
+          impedance=1*mOhm(tol=0)
+        ),
+        'range.com': AnalogSink(),
+        'range.sw': AnalogSink(),
+      })
 
 
 class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
