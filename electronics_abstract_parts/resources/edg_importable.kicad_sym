@@ -458,6 +458,14 @@
     (symbol "Mux2_0_1"
       (polyline
         (pts
+          (xy -1.27 -1.905)
+          (xy -1.27 -3.81)
+        )
+        (stroke (width 0.5) (type default) (color 0 0 0 0))
+        (fill (type none))
+      )
+      (polyline
+        (pts
           (xy -2.54 1.27)
           (xy -2.54 -1.27)
           (xy 2.54 -3.81)
@@ -661,6 +669,14 @@
       (circle (center -1.27 2.921) (radius 0.254)
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type outline))
+      )
+      (polyline
+        (pts
+          (xy -5.08 -3.81)
+          (xy -7.62 -3.81)
+        )
+        (stroke (width 0.5) (type default) (color 0 0 0 0))
+        (fill (type none))
       )
       (polyline
         (pts

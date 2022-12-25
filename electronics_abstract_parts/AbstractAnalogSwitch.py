@@ -101,7 +101,7 @@ class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
     pins = {
-      'C': self.out, 'S': self.control, 'V+': self.pwr,  'V-': self.gnd
+      'C': self.out, 'S': self.control, 'V+': self.pwr, 'V-': self.gnd
     }
     pins.update({str(i+1): self.inputs.request() for i in range(count)})
     return pins

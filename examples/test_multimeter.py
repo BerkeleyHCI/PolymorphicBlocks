@@ -131,6 +131,9 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
       reverse_recovery_time=RangeExpr.ALL
     ))
 
+    # this is connected in HDL (instead of schematic) because it needs a type conversion (from array[1] to element)
+    self.connect(self.sw.control.request(), self.enable)
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'fet.S': AnalogSink(),
