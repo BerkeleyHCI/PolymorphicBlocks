@@ -1,11 +1,20 @@
-from typing import List, cast, Optional
+from typing import List, cast, Optional, Dict
 
 from electronics_model import *
 
 
 @abstract_block
-class AnalogSwitch(Block):
+class AnalogSwitch(KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
+    count = int(symbol_name.removeprefix('edg_importable:Mux'))
+    pins = {
+      'C': self.com, 'S': self.control, 'V+': self.pwr,  'V-': self.gnd
+    }
+    pins.update({str(i+1): self.inputs.request() for i in range(count)})
+    return pins
+
   def __init__(self) -> None:
     super().__init__()
 
@@ -85,9 +94,18 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.assign(self.analog_on_resistance, all_switches[0].analog_on_resistance * switch_stage)
 
 
-class AnalogMuxer(GeneratorBlock):
+class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
+    count = int(symbol_name.removeprefix('edg_importable:Mux'))
+    pins = {
+      'C': self.out, 'S': self.control, 'V+': self.pwr,  'V-': self.gnd
+    }
+    pins.update({str(i+1): self.inputs.request() for i in range(count)})
+    return pins
+
   def __init__(self) -> None:
     super().__init__()
     self.device = self.Block(AnalogSwitch())

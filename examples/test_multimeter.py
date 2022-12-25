@@ -1,12 +1,19 @@
 import unittest
-from typing import List
+from typing import List, Dict
 
 from edg import *
 
 
-class ResistorMux(GeneratorBlock):
+class ResistorMux(KiCadImportableBlock, GeneratorBlock):
   """Generates an array of resistors with one side muxed and the other end an array. Passive-typed.
   Specify an infinite resistance for an open circuit."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'edg_importable:ResistorMux'
+    return {
+      'control': self.control, 'sw': self.com, 'com': self.input,
+      'V+': self.pwr,  'V-': self.gnd
+    }
+
   @init_in_parent
   def __init__(self, resistances: ArrayRangeLike):
     super().__init__()
@@ -81,14 +88,13 @@ class MultimeterAnalog(Block):
       self.connect(self.select, self.range.control)
 
 
-class MultimeterCurrentDriver(Block):
+class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
   """Protected constant-current stage for the multimeter driver.
   """
   @init_in_parent
   def __init__(self, voltage_rating: RangeLike = RangeExpr()):
     super().__init__()
 
-    # TODO: separate Vref?
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
@@ -109,39 +115,14 @@ class MultimeterCurrentDriver(Block):
       drain_current=(0, max_in_voltage / 1000),  # approx lowest resistance - TODO properly model the resistor mux
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
     ))
-
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-        ImplicitConnect(self.pwr, [Power]),
-    ) as imp:
-      self.amp = imp.Block(Opamp())
-      self.connect(self.amp.inp, self.control)
-
-      self.range = imp.Block(ResistorMux([
-        1*kOhm(tol=0.01),  # 1 mA range
-        10*kOhm(tol=0.01),  # 100 uA range
-        100*kOhm(tol=0.01),  # 10 uA range
-        1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
-      ]))
-      self.connect(self.pwr, self.range.input.adapt_to(VoltageSink(
-        current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
-      )))
-      fet_source_node = self.fet.source.adapt_to(AnalogSink())
-      self.connect(
-        self.amp.inn,
-        fet_source_node,
-        self.range.com.adapt_to(AnalogSource(
-          voltage_out=(0, max_in_voltage),
-          impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
-        )))
-
-      self.connect(self.select, self.range.control)
-
-      self.sw = imp.Block(AnalogMuxer()).mux_to(  # enable switch
-        [fet_source_node, self.amp.out],
-        self.fet.gate.adapt_to(AnalogSink())
-      )
-      self.connect(self.enable, self.sw.control.request())
+    self.amp = self.Block(Opamp())
+    self.range = self.Block(ResistorMux([
+      1*kOhm(tol=0.01),  # 1 mA range
+      10*kOhm(tol=0.01),  # 100 uA range
+      100*kOhm(tol=0.01),  # 10 uA range
+      1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
+    ]))
+    self.sw = self.Block(AnalogMuxer())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -149,10 +130,22 @@ class MultimeterCurrentDriver(Block):
       voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
       reverse_recovery_time=RangeExpr.ALL
     ))
-    self.connect(self.fet.drain, self.diode.anode)
-    self.connect(self.diode.cathode.adapt_to(AnalogSink(  # TODO should be analog source
-      voltage_limits=self.voltage_rating
-    )), self.output)
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'fet.S': AnalogSink(),
+        'fet.G': AnalogSink(),
+        'range.com': VoltageSink(
+          current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
+        ),
+        'range.sw': AnalogSource(
+          voltage_out=(0, max_in_voltage),
+          impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
+        ),
+        'diode.K': AnalogSink(  # TODO should be analog source
+          voltage_limits=self.voltage_rating
+        )
+      })
 
 
 class FetPowerGate(KiCadSchematicBlock, Block):
