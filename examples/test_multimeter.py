@@ -155,7 +155,7 @@ class MultimeterCurrentDriver(Block):
     )), self.output)
 
 
-class FetPowerGate(Block):
+class FetPowerGate(KiCadSchematicBlock, Block):
   """A high-side PFET power gate that has a button to power on, can be latched
   on by an external signal, and provides the button output as a signal.
   """

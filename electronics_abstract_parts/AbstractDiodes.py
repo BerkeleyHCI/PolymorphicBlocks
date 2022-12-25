@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -43,11 +45,15 @@ class BaseDiodeStandardPinning(BaseDiode, StandardPinningFootprint[BaseDiode]):
 
 
 @abstract_block
-class Diode(BaseDiode):
+class Diode(KiCadImportableBlock, BaseDiode):
   """Base class for untyped diodes
 
   TODO power? capacitance? leakage current?
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'Device:D'
+    return {'A': self.anode, 'K': self.cathode}
+
   @init_in_parent
   def __init__(self, reverse_voltage: RangeLike, current: RangeLike, *,
                voltage_drop: RangeLike = Default(Range.all()),
