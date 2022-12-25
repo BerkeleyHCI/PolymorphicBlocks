@@ -5,7 +5,7 @@ from typing import Type, Any, Optional, Mapping, Dict
 from edg_core import Block, BasePort
 from .VoltagePorts import CircuitPort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
-from .KiCadSchematicParser import KiCadSchematic, KiCadPin
+from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel
 
 
 class KiCadSchematicBlock(Block):
@@ -25,7 +25,9 @@ class KiCadSchematicBlock(Block):
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
-    def _port_from_pin(pin: KiCadPin, mapping: Mapping[str, BasePort], conversions: Mapping[str, CircuitPort]):
+    def _port_from_pin(pin: KiCadPin, mapping: Mapping[str, BasePort],
+                       conversions: Mapping[str, CircuitPort]) -> BasePort:
+        """Returns the Port from a symbol's pin, using the provided mapping and applying conversions as needed."""
         from .PassivePort import Passive
 
         if pin.pin_number in mapping and pin.pin_name in mapping:
@@ -101,22 +103,30 @@ class KiCadSchematicBlock(Block):
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
-            net_label_names = {label.name for label in net.labels}
+            net_label_names = set()
+            for net_label in net.labels:
+                if isinstance(net_label, KiCadLabel):  # only these are used for naming the net
+                    net_label_names.add(net_label.name)
+                elif isinstance(net_label, KiCadGlobalLabel):  # global labels must be connected to ports or nodes
+                    if net_label.name in nodes:  # add nodes if needed
+                        net_ports.insert(0, nodes[net_label.name])
+                    if hasattr(self, net_label.name) and isinstance(getattr(self, net_label.name), BasePort):
+                        # connect to boundary port, but not links
+                        net_ports.insert(0, getattr(self, net_label.name))
+                    assert net_label.name in nodes or hasattr(self, net_label.name),\
+                        f"global label {net_label.name} must connect to boundary port or node"
+                else:
+                    raise ValueError(f"unknown label type {net_label.__class__}")
+
+            connection = self.connect(*net_ports)
+
             if net_label_names:
                 assert len(net_label_names) == 1, "multiple net names not supported"
                 net_name = net_label_names.pop()
             else:
                 net_name = None
-
-            if net_name is not None and net_name in nodes:  # add nodes if needed
-                net_ports.insert(0, nodes[net_name])
-
-            if net_name is not None and hasattr(self, net_name):  # append to existing port if needed
-                net_ports.insert(0, getattr(self, net_name))
-
-            connection = self.connect(*net_ports)
-
-            if net_name is not None and not hasattr(self, net_name):
+            if net_name is not None:
+                assert not hasattr(self, net_name), f"net name {net_name} already exists in Block"
                 setattr(self, net_name, connection)
 
     @classmethod

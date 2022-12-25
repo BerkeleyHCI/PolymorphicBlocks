@@ -65,6 +65,7 @@ class KiCadNodeBlock(KiCadSchematicBlock):
         super().__init__()
         self.R1 = self.Block(Resistor(51*Ohm(tol=0.05)))
         self.PORT_A = self.Export(self.R1.a)
+        self.node = self.connect(self.R1.b)  # requires an explicit name
         self.import_kicad(self.file_path("resources", "test_kicad_import_node.kicad_sch"),
                           nodes={
                               'node': self.R1.b
