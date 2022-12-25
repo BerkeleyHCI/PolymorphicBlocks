@@ -176,59 +176,56 @@ class FetPowerGate(KiCadSchematicBlock, Block):
     max_voltage = self.control.link().voltage.upper()
     max_current = self.pwr_out.link().current_drawn.upper()
 
-    self.pull_res = self.Block(Resistor(
-      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
-    ))
-    self.connect(self.pwr_in, self.pull_res.a.adapt_to(VoltageSink()))
-    self.pwr_fet = self.Block(Fet.PFet(
-      drain_voltage=(0, max_voltage),
-      drain_current=(0, max_current),
-      gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
-    ))
-    self.connect(self.pwr_in, self.pwr_fet.source.adapt_to(VoltageSink(
-      current_draw=self.pwr_out.link().current_drawn,
-      voltage_limits=RangeExpr.ALL,
-    )))
-    self.connect(self.pwr_fet.drain.adapt_to(VoltageSource(
-      voltage_out = self.pwr_in.link().voltage,
-      current_limits=RangeExpr.ALL,
-    )), self.pwr_out)
 
-    self.amp_res = self.Block(Resistor(
-      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
-    ))
-    self.amp_fet = self.Block(Fet.NFet(
-      drain_voltage=(0, max_voltage),
-      drain_current=(0, 0),  # effectively no current
-      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
-    ))
-    self.connect(self.control, self.amp_fet.gate.adapt_to(DigitalSink()),
-                 self.amp_res.a.adapt_to(DigitalSink()))  # TODO more modeling here?
 
-    self.ctl_diode = self.Block(Diode(
-      reverse_voltage=(0, max_voltage),
-      current=RangeExpr.ZERO,  # effectively no current
-      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
-      reverse_recovery_time=RangeExpr.ALL
-    ))
-    self.btn_diode = self.Block(Diode(
-      reverse_voltage=(0, max_voltage),
-      current=RangeExpr.ZERO,  # effectively no current
-      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
-      reverse_recovery_time=RangeExpr.ALL
-    ))
-    self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
-    self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
-    self.connect(self.gnd, self.amp_fet.source.adapt_to(Ground()), self.amp_res.b.adapt_to(Ground()),
-                 self.btn.b.adapt_to(Ground()))
-
-    self.connect(self.btn_diode.anode.adapt_to(DigitalSingleSource(
-      voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
-      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-      low_signal_driver=True
-    )), self.btn_out)
-
-    self.connect(self.pull_res.b, self.ctl_diode.anode, self.pwr_fet.gate, self.amp_fet.drain)
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      locals={
+        'pwr_fet': {
+          'drain_voltage': (0, max_voltage),
+          'drain_current': (0, max_current),
+          'gate_voltage': (max_voltage, max_voltage),  # TODO this ignores the diode drop
+        },
+        'amp_fet': {
+          'drain_voltage': (0, max_voltage),
+          'drain_current': (0, 0),  # effectively no current
+          'gate_voltage': (self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
+        },
+        'ctl_diode': {
+          'reverse_voltage': (0, max_voltage),
+          'current': RangeExpr.ZERO,  # effectively no current
+          'voltage_drop': (0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+          'reverse_recovery_time': RangeExpr.ALL
+        },
+        'btn_diode': {
+          'reverse_voltage': (0, max_voltage),
+          'current': RangeExpr.ZERO,  # effectively no current
+          'voltage_drop': (0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+          'reverse_recovery_time': RangeExpr.ALL
+        },
+        'btn': {
+          'voltage': 0*Volt(tol=0)
+        }
+      }, conversions={
+        'pull_res.1': VoltageSink(),
+        'pwr_fet.S': VoltageSink(
+          current_draw=self.pwr_out.link().current_drawn,
+          voltage_limits=RangeExpr.ALL,
+        ),
+        'pwr_fet.D': VoltageSource(
+          voltage_out=self.pwr_in.link().voltage,
+          current_limits=RangeExpr.ALL,
+        ),
+        'amp_res.2': DigitalSink(),  # TODO more modeling here?
+        'amp_fet.G': DigitalSink(),
+        'amp_fet.S': Ground(),
+        'amp_res.1': Ground(),
+        'btn.2': Ground(),
+        'btn_diode.A': DigitalSingleSource(
+          voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
+          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+          low_signal_driver=True
+        )
+      })
 
 
 class MultimeterTest(JlcBoardTop):
