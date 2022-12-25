@@ -564,6 +564,10 @@
     (uuid d49e0d7b-5462-4efa-acea-d0c43ef95aeb)
   )
 
+  (wire (pts (xy 132.08 110.49) (xy 132.08 107.95))
+    (stroke (width 0) (type default) (color 0 0 0 0))
+    (uuid 007a1bea-feb1-40f4-a4c6-740ef602b951)
+  )
   (wire (pts (xy 109.22 100.33) (xy 109.22 111.76))
     (stroke (width 0) (type default) (color 0 0 0 0))
     (uuid 0172bd3f-1d7c-47d2-979f-29d10d74e2dd)
@@ -587,10 +591,6 @@
   (wire (pts (xy 109.22 111.76) (xy 111.76 111.76))
     (stroke (width 0) (type default) (color 0 0 0 0))
     (uuid 502f274b-278e-43c6-b7e3-e5f211e1f4e9)
-  )
-  (wire (pts (xy 132.08 110.49) (xy 132.08 107.95))
-    (stroke (width 0) (type default) (color 0 0 0 0))
-    (uuid 5560b5cb-63c3-44db-a410-85bb5f2b5ee9)
   )
   (wire (pts (xy 93.98 102.87) (xy 91.44 102.87))
     (stroke (width 0) (type default) (color 0 0 0 0))
@@ -622,12 +622,17 @@
   )
 
   (text "sw select connected in HDL,\nsee code comments for details"
-    (at 128.27 120.65 0)
+    (at 99.06 125.73 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 78ed84c1-1313-4e57-b528-ac2ac7db7d6b)
   )
-  (text "Opamp feedback holds the fet's\nsource node at the control voltage,\nproviding a constant current through\nthe ranging resistor"
-    (at 134.62 111.76 0)
+  (text "FET provides negative voltage standoff\nDiode provides positive voltage standoff"
+    (at 133.35 110.49 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 8742afba-c343-42a7-9e98-7e1a9cf1713a)
+  )
+  (text "Opamp feedback holds the fet's source node\nat the control voltage, providing a\nconstant voltage across (and current through)\nthe ranging resistor"
+    (at 128.27 120.65 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid b8e87abc-aba9-4337-bd6a-db3a65d352c0)
   )
