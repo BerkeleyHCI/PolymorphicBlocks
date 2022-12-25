@@ -176,36 +176,40 @@ class FetPowerGate(KiCadSchematicBlock, Block):
     max_voltage = self.control.link().voltage.upper()
     max_current = self.pwr_out.link().current_drawn.upper()
 
+    self.pull_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
+    ))
+    self.pwr_fet = self.Block(Fet.PFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, max_current),
+      gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
+    ))
 
+    self.amp_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
+    ))
+    self.amp_fet = self.Block(Fet.NFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, 0),  # effectively no current
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
+    ))
+
+    self.ctl_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+    self.btn_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+    self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-      locals={
-        'pwr_fet': {
-          'drain_voltage': (0, max_voltage),
-          'drain_current': (0, max_current),
-          'gate_voltage': (max_voltage, max_voltage),  # TODO this ignores the diode drop
-        },
-        'amp_fet': {
-          'drain_voltage': (0, max_voltage),
-          'drain_current': (0, 0),  # effectively no current
-          'gate_voltage': (self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
-        },
-        'ctl_diode': {
-          'reverse_voltage': (0, max_voltage),
-          'current': RangeExpr.ZERO,  # effectively no current
-          'voltage_drop': (0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
-          'reverse_recovery_time': RangeExpr.ALL
-        },
-        'btn_diode': {
-          'reverse_voltage': (0, max_voltage),
-          'current': RangeExpr.ZERO,  # effectively no current
-          'voltage_drop': (0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
-          'reverse_recovery_time': RangeExpr.ALL
-        },
-        'btn': {
-          'voltage': 0*Volt(tol=0)
-        }
-      }, conversions={
+      conversions={
         'pull_res.1': VoltageSink(),
         'pwr_fet.S': VoltageSink(
           current_draw=self.pwr_out.link().current_drawn,
