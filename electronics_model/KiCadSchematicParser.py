@@ -98,16 +98,27 @@ class KiCadWire:
     self.pt2 = parse_xy(pts[2], 'xy')
 
 
-class KiCadAnyLabel:
+class KiCadBaseLabel:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
   def __init__(self, sexp: List[Any]):
-    assert parse_symbol(sexp[0]) in ('label', 'global_label')
     sexp_dict = group_by_car(sexp)
     self.name = test_cast(sexp[1], str)
     self.pos = parse_at(extract_only(sexp_dict['at']))
     self.pt = (self.pos[0], self.pos[1])  # version without rotation
+
+
+class KiCadLabel(KiCadBaseLabel):
+  def __init__(self, sexp: List[Any]):
+    super().__init__(sexp)
+    assert parse_symbol(sexp[0]) == 'label'
+
+
+class KiCadGlobalLabel(KiCadBaseLabel):
+  def __init__(self, sexp: List[Any]):
+    super().__init__(sexp)
+    assert parse_symbol(sexp[0]) == 'global_label'
 
 
 class KiCadSymbol:
@@ -167,7 +178,7 @@ class KiCadPin:
 
 
 class ParsedNet(NamedTuple):
-  labels: List[KiCadAnyLabel]
+  labels: List[KiCadBaseLabel]
   pins: List[KiCadPin]
 
   def __repr__(self):
@@ -190,7 +201,8 @@ class KiCadSchematic:
                                        for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
 
     wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
-    labels = [KiCadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
+    labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
+    labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
 
     all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     # separate out power and non-power symbols, power symbols stay internal
@@ -221,7 +233,7 @@ class KiCadSchematic:
       pin_points.setdefault(pin.pt, []).append(pin)
 
     # build adjacency matrix for labels and symbols
-    label_points: Dict[PointType, List[KiCadAnyLabel]] = {}
+    label_points: Dict[PointType, List[KiCadBaseLabel]] = {}
     label_by_name: Dict[str, List[PointType]] = {}  # this also shares a namespace w/ power symbols
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
@@ -249,7 +261,7 @@ class KiCadSchematic:
       if pin.pt in seen_points:
         continue  # already seen and part of another net
       net_pins: List[KiCadPin] = []
-      net_labels: List[KiCadAnyLabel] = []
+      net_labels: List[KiCadBaseLabel] = []
       def traverse_point(point: PointType) -> None:
         if point in seen_points:
           return  # already seen, don't traverse again

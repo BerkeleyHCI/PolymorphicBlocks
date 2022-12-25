@@ -40,7 +40,7 @@ class AnalogIsolatedSwitch(KiCadImportableBlock, Block):
   A separate output-side pull port allows modeling the output switch standoff voltage
   when the switch is off.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:AnalogIsolatedSwitch'
     return {'in': self.signal, 'gnd': self.gnd,
             'ain': self.ain, 'apull': self.apull, 'aout': self.aout}

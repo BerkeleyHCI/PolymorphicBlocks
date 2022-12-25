@@ -100,10 +100,10 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
 
 
 class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorBlock):
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Merge')  # can be any merge
     count = int(symbol_name.removeprefix('edg_importable:Merge'))
-    pins = {'0': self.output}
+    pins: Dict[str, BasePort] = {'0': self.output}
     pins.update({str(i+1): self.inputs.request() for i in range(count)})
     return pins
 

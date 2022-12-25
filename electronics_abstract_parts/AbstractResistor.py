@@ -14,7 +14,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Device:R'
     return {'1': self.a, '2': self.b}
 

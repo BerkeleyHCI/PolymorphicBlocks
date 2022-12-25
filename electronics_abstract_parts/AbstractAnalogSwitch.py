@@ -6,10 +6,10 @@ from electronics_model import *
 @abstract_block
 class AnalogSwitch(KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
-    pins = {
+    pins: Dict[str, BasePort] = {
       'C': self.com, 'S': self.control, 'V+': self.pwr,  'V-': self.gnd
     }
     pins.update({str(i+1): self.inputs.request() for i in range(count)})
@@ -97,10 +97,10 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
-    pins = {
+    pins: Dict[str, BasePort] = {
       'C': self.out, 'S': self.control, 'V+': self.pwr, 'V-': self.gnd
     }
     pins.update({str(i+1): self.inputs.request() for i in range(count)})

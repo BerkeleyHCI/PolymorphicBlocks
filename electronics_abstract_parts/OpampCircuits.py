@@ -61,8 +61,8 @@ class Amplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, Generat
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-    mapping: Dict[str, Dict[str, Port]] = {
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {
         '+': self.input, '-': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
       },
@@ -179,8 +179,8 @@ class DifferentialAmplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFil
 
   ratio specifies Rf/R1, the amplification ratio.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-    mapping: Dict[str, Dict[str, Port]] = {
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {  # reference pin not supported
         '+': self.input_positive, '-': self.input_negative, '3': self.output,
         'V+': self.pwr, 'V-': self.gnd
@@ -299,8 +299,8 @@ class IntegratorInverting(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilte
   Series is lower and tolerance is higher because there's a cap involved
   TODO - separate series for cap, and series and tolerance by decade?
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-    mapping: Dict[str, Dict[str, Port]] = {
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {
         '+': self.input, '-': self.reference, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
       },

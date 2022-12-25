@@ -16,7 +16,7 @@ class GatedEmitterFollower(KiCadSchematicBlock, KiCadImportableBlock, Block):
   After the output stabilizes, both transistors can be enabled (if desired), to run under the
   analog feedback circuit.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
     return {
       'IN': self.control, 'H': self.high_en, 'L': self.low_en,
@@ -96,7 +96,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
 

@@ -6,7 +6,7 @@ from .Categories import *
 
 @abstract_block
 class Switch(KiCadImportableBlock, DiscreteComponent):
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Switch:SW_SPST'
     return {'1': self.a, '2': self.b}
 

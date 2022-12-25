@@ -7,7 +7,7 @@ from edg import *
 class ResistorMux(KiCadImportableBlock, GeneratorBlock):
   """Generates an array of resistors with one side muxed and the other end an array. Passive-typed.
   Specify an infinite resistance for an open circuit."""
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:ResistorMux'
     return {
       'control': self.control, 'sw': self.com, 'com': self.input,

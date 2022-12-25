@@ -110,7 +110,7 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
 AdapterDstType = TypeVar('AdapterDstType', bound='CircuitPort')
 @abstract_block
 class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:Adapter'
     return {'1': self.src, '2': self.dst}
 

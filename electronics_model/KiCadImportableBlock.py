@@ -10,7 +10,7 @@ class KiCadImportableBlock(Block):
   The Block still must be instantiated via HDL, but the connectivity can be defined by a schematic."""
 
   @abstractmethod
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     """Returns the symbol pin number to Block Port correspondence, for KiCad schematic import."""
     raise NotImplementedError  # implement me
 
