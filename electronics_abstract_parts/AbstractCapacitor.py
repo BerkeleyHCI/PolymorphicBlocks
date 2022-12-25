@@ -1,6 +1,6 @@
 import re
 from abc import abstractmethod
-from typing import Optional, cast, Dict, Any, List, Tuple
+from typing import Optional, cast, Dict, Any, List, Tuple, Mapping
 import math
 
 from electronics_model import *
@@ -55,7 +55,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     return (Range.from_tolerance(center, tolerance), Range.zero_to_upper(voltage))
 
   @classmethod
-  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Capacitor':
+  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
     return Capacitor(*cls.parse_capacitor(properties['Value']))
 
   @init_in_parent

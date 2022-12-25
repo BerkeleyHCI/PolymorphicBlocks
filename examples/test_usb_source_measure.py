@@ -1,5 +1,5 @@
 import unittest
-from typing import Dict
+from typing import Mapping
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
@@ -16,7 +16,7 @@ class GatedEmitterFollower(KiCadSchematicBlock, KiCadImportableBlock, Block):
   After the output stabilizes, both transistors can be enabled (if desired), to run under the
   analog feedback circuit.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
     return {
       'IN': self.control, 'H': self.high_en, 'L': self.low_en,
@@ -96,7 +96,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
 
@@ -143,7 +143,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
         impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
       )
       if diode_spec == 'source':
-        nodes: Dict[str, Port] = {
+        nodes: Mapping[str, BasePort] = {
           'amp_out_node': self.diode.anode.adapt_to(amp_out_model),
           'rout_in_node': self.diode.cathode.adapt_to(rout_in_model)
         }

@@ -1,5 +1,5 @@
 import re
-from typing import Optional, cast, Dict
+from typing import Optional, cast, Mapping
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -14,7 +14,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:R'
     return {'1': self.a, '2': self.b}
 
@@ -30,7 +30,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return Range.from_tolerance(center, tolerance)
 
   @classmethod
-  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Resistor':
+  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Resistor':
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
   @init_in_parent

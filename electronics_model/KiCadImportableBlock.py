@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import TypeVar, Type, Dict
+from typing import TypeVar, Type, Mapping
 
 from edg_core import *
 
@@ -10,7 +10,7 @@ class KiCadImportableBlock(Block):
   The Block still must be instantiated via HDL, but the connectivity can be defined by a schematic."""
 
   @abstractmethod
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     """Returns the symbol pin number to Block Port correspondence, for KiCad schematic import."""
     raise NotImplementedError  # implement me
 
@@ -23,6 +23,6 @@ class KiCadInstantiableBlock(KiCadImportableBlock):
 
   @classmethod
   @abstractmethod
-  def block_from_symbol(cls: Type[BlockSelfType], symbol_name: str, properties: Dict[str, str]) -> BlockSelfType:
+  def block_from_symbol(cls: Type[BlockSelfType], symbol_name: str, properties: Mapping[str, str]) -> BlockSelfType:
     """Creates an instance of this block given a symbol name and its properties, for KiCad schematic import."""
     raise NotImplementedError  # implement me

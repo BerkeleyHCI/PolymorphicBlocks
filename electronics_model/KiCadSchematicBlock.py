@@ -1,8 +1,8 @@
 import inspect
 import os
-from typing import Dict, Type, Any, Optional
+from typing import Type, Any, Optional, Mapping, Dict
 
-from edg_core import Block, Port
+from edg_core import Block, BasePort
 from .VoltagePorts import CircuitPort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin
@@ -25,7 +25,7 @@ class KiCadSchematicBlock(Block):
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
-    def _port_from_pin(pin: KiCadPin, mapping: Dict[str, Port], conversions: Dict[str, CircuitPort]):
+    def _port_from_pin(pin: KiCadPin, mapping: Mapping[str, BasePort], conversions: Mapping[str, CircuitPort]):
         from .PassivePort import Passive
 
         if pin.pin_number in mapping and pin.pin_name in mapping:
@@ -56,12 +56,12 @@ class KiCadSchematicBlock(Block):
 
         return port
 
-    def import_kicad(self, filepath: str, locals: Dict[str, Any] = {},
-                     *, nodes: Dict[str, Port] = {}, conversions: Dict[str, CircuitPort] = {}):
+    def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
+                     *, nodes: Mapping[str, BasePort] = {}, conversions: Mapping[str, CircuitPort] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
-        SYMBOL_MAP: Dict[str, Type[KiCadInstantiableBlock]] = {
+        SYMBOL_MAP: Mapping[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
             'Device:C': Capacitor,
             'Device:C_Polarized': Capacitor,
@@ -73,7 +73,7 @@ class KiCadSchematicBlock(Block):
             file_data = file.read()
         sch = KiCadSchematic(file_data)
 
-        blocks_pins: Dict[str, Dict[str, Port]] = {}
+        blocks_pins: Dict[str, Mapping[str, BasePort]] = {}
 
         for symbol in sch.symbols:
             if hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections

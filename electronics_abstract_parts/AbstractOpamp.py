@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Mapping
 
 from electronics_model import *
 
@@ -7,12 +7,12 @@ from electronics_model import *
 class Opamp(KiCadInstantiableBlock, Block):
   """Base class for opamps. Parameters need to be more restricted in subclasses.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
 
   @classmethod
-  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Opamp':
+  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Opamp':
     return Opamp()
 
   def __init__(self) -> None:

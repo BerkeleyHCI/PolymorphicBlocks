@@ -1,12 +1,12 @@
 import unittest
 
 import os.path
-from typing import Set, Tuple
+from typing import Set, Tuple, Type
 
 from .KiCadSchematicParser import KiCadSchematic, ParsedNet, KiCadGlobalLabel, KiCadLabel
 
 
-def net_to_tuple(net: ParsedNet) -> Tuple[Set[str], Set[str]]:
+def net_to_tuple(net: ParsedNet) -> Tuple[Set[Tuple[Type, str]], Set[str]]:
   """Converts a ParsedNet to a tuple of net labels and net pins, so it can be compared during unit testing."""
   labels = set([(x.__class__, x.name) for x in net.labels])
   pins = set([f"{x.refdes}.{x.pin_number}" for x in net.pins])
