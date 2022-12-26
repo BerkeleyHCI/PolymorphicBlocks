@@ -1,3 +1,5 @@
+from typing import List
+
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -52,7 +54,7 @@ class Cbmud1200l_Device(JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Cbmud1200l(DigitalIsolator):
+class Cbmud1200l(DigitalIsolator, GeneratorBlock):
   def contents(self):
     super().contents()
     self.ic = self.Block(Cbmud1200l_Device())
@@ -61,4 +63,13 @@ class Cbmud1200l(DigitalIsolator):
     self.connect(self.pwr_b, self.ic.vdd2)
     self.connect(self.gnd_b, self.ic.gnd2)
 
-    # TODO generate channels
+  def generate(self, in_a_elts: List[str], out_b_elts: List[str], in_b_elts: List[str], out_a_elts: List[str]):
+    assert in_a_elts == out_b_elts, f"in_a={in_a_elts} and out_b={out_b_elts} must be equal"
+    assert not in_b_elts and not out_a_elts, f"in_b={in_b_elts} and out_a={out_a_elts} must be empty, device has no b->a channels"
+    channel_pairs = [
+      (self.ic.via, self.ic.voa),
+      (self.ic.vib, self.ic.vob),
+    ]
+    for elt_name, (in_a_port, out_b_port) in zip(in_a_elts, channel_pairs):
+      self.connect(self.in_a.append_elt(elt_name, DigitalSink.empty()), in_a_port)
+      self.connect(self.out_b.append_elt(elt_name, DigitalSource.empty()), out_b_port)
