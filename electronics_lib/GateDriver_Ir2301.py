@@ -7,7 +7,7 @@ class Ir2301_Device(JlcPart, FootprintBlock):
     super().__init__()
     self.com = self.Port(Ground(), [Common])
     self.vcc = self.Port(VoltageSink.from_gnd(
-      self.gnd,
+      self.com,
       voltage_limits=(5, 20)*Volt,  # recommended operating conditions
       current_draw=(50, 190)*uAmp  # quiescent current only, TODO model gate current
     ))
@@ -26,7 +26,7 @@ class Ir2301_Device(JlcPart, FootprintBlock):
     )
 
     self.vs = self.Port(VoltageSink.from_gnd(
-      self.gnd,
+      self.com,
       voltage_limits=(-5, 600)  # no current draw since this is a "ground" pin
     ))
     self.vb = self.Port(VoltageSink.from_gnd(

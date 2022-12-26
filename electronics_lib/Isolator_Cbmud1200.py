@@ -9,7 +9,7 @@ class Cbmud1200l_Device(JlcPart, FootprintBlock):
     self.vdd1 = self.Port(VoltageSink.from_gnd(
       self.gnd1,
       voltage_limits=(2.5, 5.5)*Volt,
-      current_draw=(280, 300)*uAmp + 2*(0, 26)*mAmp  # 2.5-5v static to maximum dynamic power
+      current_draw=(280, 300)*uAmp + 2*((0, 26)*mAmp)  # 2.5-5v static to maximum dynamic power
     ))
     in_model = DigitalSink.from_supply(
       self.gnd1, self.vdd1,
@@ -23,7 +23,7 @@ class Cbmud1200l_Device(JlcPart, FootprintBlock):
     self.vdd2 = self.Port(VoltageSink.from_gnd(  # assumed the same as vdd1 ratings
       self.gnd2,
       voltage_limits=(2.5, 5.5)*Volt,
-      current_draw=(280, 300)*uAmp + 2*(0, 26)*mAmp  # 2.5-5v static to maximum dynamic power
+      current_draw=(280, 300)*uAmp + 2*((0, 26)*mAmp)  # 2.5-5v static to maximum dynamic power
     ))
     out_model = DigitalSource.from_supply(
       self.gnd2, self.vdd2,
