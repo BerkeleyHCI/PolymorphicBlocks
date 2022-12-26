@@ -1,5 +1,5 @@
 import unittest
-from typing import Mapping
+from typing import Mapping, Optional
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
@@ -143,7 +143,7 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
         impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
       )
       if diode_spec == 'source':
-        nodes: Mapping[str, BasePort] = {
+        nodes: Mapping[str, Optional[BasePort]] = {
           'amp_out_node': self.diode.anode.adapt_to(amp_out_model),
           'rout_in_node': self.diode.cathode.adapt_to(rout_in_model)
         }
@@ -156,7 +156,8 @@ class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
         raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
     else:
       nodes = {
-        'rout_in_node': self.amp.out
+        'rout_in_node': self.amp.out,
+        'amp_out_node': None,  # must be marked as used, but don't want to double-connect to above
       }
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),

@@ -17,8 +17,12 @@ class KiCadSchematicBlock(Block):
     For inline Python symbols, it uses the globals environment (including imports) of the calling context,
     and can have local variables explicitly defined. It does not inherit local variables of the calling context.
 
-    Global and local net labels are connected to external ports by name matching, or optionally
-    to internal nodes specified via a nodes mapping.
+    Global net labels must be connected to external ports (by name matching) or nodes (specified by the
+    nodes mapping). Nodes can be None, in which case the global label is not connected (but this is
+    different from a no-connect, in that the node can be connected elsewhere such as in the HDL).
+
+    Net labels are used for internal schematic connectivity and net naming. Net label names are used
+    as link names, and must not collide with any existing object member.
 
     Passive-typed ports on instantiated components can be converted to the target port model
     via the conversions mapping.
@@ -59,7 +63,7 @@ class KiCadSchematicBlock(Block):
         return port
 
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
-                     *, nodes: Mapping[str, BasePort] = {}, conversions: Mapping[str, CircuitPort] = {}):
+                     *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
@@ -104,19 +108,25 @@ class KiCadSchematicBlock(Block):
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
             net_label_names = set()
+            global_label_names = set()
             for net_label in net.labels:
                 if isinstance(net_label, KiCadLabel):  # only these are used for naming the net
                     net_label_names.add(net_label.name)
                 elif isinstance(net_label, KiCadGlobalLabel):  # global labels must be connected to ports or nodes
-                    if net_label.name in nodes:  # add nodes if needed
-                        net_ports.insert(0, nodes[net_label.name])
-                    if hasattr(self, net_label.name) and isinstance(getattr(self, net_label.name), BasePort):
-                        # connect to boundary port, but not links
-                        net_ports.insert(0, getattr(self, net_label.name))
-                    assert net_label.name in nodes or hasattr(self, net_label.name),\
-                        f"global label {net_label.name} must connect to boundary port or node"
+                    global_label_names.add(net_label.name)  # add to set to deduplicate
                 else:
                     raise ValueError(f"unknown label type {net_label.__class__}")
+
+            for global_label_name in global_label_names:
+                if global_label_name in nodes:  # add nodes if needed
+                    node = nodes[global_label_name]
+                    if node is not None:
+                        net_ports.insert(0, node)
+                if hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
+                    # connect to boundary port, but not links
+                    net_ports.insert(0, getattr(self, global_label_name))
+                assert global_label_name in nodes or hasattr(self, global_label_name), \
+                    f"global label {global_label_name} must connect to boundary port or node"
 
             connection = self.connect(*net_ports)
 
