@@ -1,7 +1,123 @@
 import unittest
+from typing import Optional
 
 from edg import *
 from .test_bldc import PowerOutConnector, CompactKeystone5015
+
+
+class MultilevelSwitchingCell(GeneratorBlock):
+  """A switching cell for one level of a multilevel converter, consisting of a high FET,
+  low FET, gate driver, isolator (if needed), and bootstrap circuit (for the gate driver).
+
+  This is its own block to allow hierarchical replicate in layout.
+
+  Current and voltage are provided via the ports.
+
+  The first cell (closest to the power supply) is different in that:
+  - it does not generate an isolator, since signals are already ground-referenced
+  - it does not generate a low-side bootstrap diode and cap, since voltage is provided
+  - it does not generate a flying capacitor on the input, since that is the input cap"""
+  @init_in_parent
+  def __init__(self, is_first: BoolLike = False, *,
+               in_voltage: RangeLike, fet_rds: RangeLike):
+    super().__init__()
+    # in is generally towards the supply side, out is towards the inductor side
+    self.low_in = self.Port(VoltageSink.empty())
+    self.low_out = self.Port(VoltageSource.empty())
+    self.low_boot_in = self.Port(VoltageSink.empty())  # bootstrap voltage for the prior cell, except if is_first
+    self.low_boot_out = self.Port(VoltageSource.empty())  # bootstrap voltage for this cell
+    self.high_in = self.Port(VoltageSink.empty())
+    self.high_out = self.Port(VoltageSource.empty())
+    # except for high boot they're reversed, out is towards the supply side
+    self.high_boot_out = self.Port(VoltageSource.empty(), optional=True)
+    self.high_boot_in = self.Port(VoltageSink.empty())
+
+    # control signals
+    self.gnd_ctl = self.Port(VoltageSink.empty())
+    self.pwr_ctl = self.Port(VoltageSink.empty())
+    self.low_pwm = self.Port(DigitalSink.empty())
+    self.high_pwm = self.Port(DigitalSink.empty())
+
+    self.in_voltage = self.ArgParameter(in_voltage)
+    self.fet_rds = self.ArgParameter(fet_rds)
+
+    self.generator(self.generate, is_first, self.high_boot_out.is_connected())
+
+  def generate(self, is_first: bool, high_boot_out_connected: bool):
+    # power path
+    fet_model = Fet.NFet(
+      drain_voltage=self.in_voltage,
+      drain_current=(0, self.high_out.link().current_drawn.upper()),
+      gate_voltage=self.low_boot_out.link().voltage,  # TODO account for boot diode drop
+      rds_on=self.fet_rds
+    )
+    self.low_fet = self.Block(fet_model)
+    self.connect(self.low_fet.source.adapt_to(VoltageSink(
+      current_draw=self.low_out.link().current_drawn
+    )), self.low_in)
+    self.connect(self.low_fet.drain.adapt_to(VoltageSource(
+      voltage_out=self.low_in.link().voltage
+    )), self.low_out)
+    self.high_fet = self.Block(fet_model)
+    self.connect(self.high_fet.drain.adapt_to(VoltageSink(
+      current_draw=self.high_out.link().current_drawn
+    )), self.high_in)
+    self.connect(self.high_fet.source.adapt_to(VoltageSource(
+      voltage_out=self.low_in.link().voltage
+    )), self.high_out)
+
+    self.cap = self.Block(Capacitor(  # flying cap
+      capacitance=1*uFarad(tol=0.2),  # TODO size cap
+      voltage=self.in_voltage
+    ))
+    self.connect(self.cap.neg.adapt_to(VoltageSink()), self.low_in)
+    self.connect(self.cap.pos.adapt_to(VoltageSink()), self.high_in)
+
+    # bootstrap path
+    # boot_diode_model = Diode(
+    #   # TODO modeling
+    # )
+    # boot_cap_model = Capacitor(
+    #   capacitance=0.1*uFarad(tol=0.2),
+    #   voltage=self.pwr_in.link().voltage
+    # )
+    if is_first:
+      self.connect(self.low_boot_out, self.low_boot_in)
+    else:
+      self.connect(self.low_boot_out, self.low_boot_in)  # TODO PLACEHOLDER
+    high_boot = self.high_boot_in
+    if high_boot_out_connected:  # don't connect the port is it's not used since there isn't a downstream model
+      self.connect(self.high_boot_out, high_boot)  # TODO PLACEHOLDER
+
+    # signal path
+    if is_first:
+      low_pwm: Port[DigitalLink] = self.low_pwm
+      high_pwm: Port[DigitalLink] = self.high_pwm
+      self.gnd_ctl.init_from(VoltageSink())  # ideal port, not connected
+      self.pwr_ctl.init_from(VoltageSink())  # ideal port, not connected
+    else:
+      self.ldo = self.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.1)))
+      self.connect(self.ldo.gnd, self.low_in)
+      self.connect(self.ldo.pwr_in, self.low_boot_out)
+      self.iso = self.Block(DigitalIsolator())
+      self.connect(self.iso.gnd_a, self.gnd_ctl)
+      self.connect(self.iso.pwr_a, self.pwr_ctl)
+      self.connect(self.iso.gnd_b, self.low_in)
+      self.connect(self.iso.pwr_b, self.ldo.pwr_out)
+      self.connect(self.iso.in_a.request(f'low'), self.low_pwm)
+      self.connect(self.iso.in_a.request(f'high'), self.high_pwm)
+      low_pwm = self.iso.out_b.request(f'low')
+      high_pwm = self.iso.out_b.request(f'high')
+
+    self.driver = self.Block(HalfBridgeDriver())
+    self.connect(self.driver.gnd, self.low_in)
+    self.connect(self.driver.pwr, self.low_boot_out)
+    self.connect(self.driver.low_in, low_pwm)
+    self.connect(self.driver.high_in, high_pwm)
+    self.connect(self.driver.high_gnd, self.high_out)
+    self.connect(self.driver.high_pwr, high_boot)
+    self.connect(self.driver.low_out, self.low_fet.gate.adapt_to(DigitalSink()))
+    self.connect(self.driver.high_out, self.high_fet.gate.adapt_to(DigitalSink()))
 
 
 class DiscreteMutlilevelBuckConverter(GeneratorBlock):
@@ -31,6 +147,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.pwr_gate = self.Port(VoltageSink.empty())
+    self.pwr_ctl = self.Port(VoltageSink.empty())
     self.pwms = self.Port(Vector(DigitalSink.empty()))
 
     self.frequency = self.ArgParameter(frequency)
@@ -51,126 +168,35 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
     self.connect(self.power_path.pwr_out, self.pwr_out)
     self.connect(self.power_path.gnd, self.gnd)
 
-    self.low_fet = ElementDict[Fet]()  # [0, levels-1)
-    self.high_fet = ElementDict[Fet]()
-    self.boot_diode = ElementDict[Diode]()  # [1, 2*(levels-1)), associated with the powered FET
-    self.boot_cap = ElementDict[Capacitor]()  # similar indexing to boot_diode
-
-    fet_model = Fet.NFet(
-      drain_voltage=self.pwr_in.link().voltage,
-      drain_current=(0, self.power_path.peak_current),
-      gate_voltage=self.pwr_gate.link().voltage,  # TODO account for boot diode drop
-      rds_on=self.fet_rds
-    )
-    boot_diode_model = Diode(
-      # TODO modeling
-    )
-    boot_cap_model = Capacitor(
-      capacitance=0.1*uFarad(tol=0.2),
-      voltage=self.pwr_in.link().voltage
-    )
-
-    low_prev = self.gnd
-    high_prev = self.pwr_in
-    low_boot_prev = self.pwr_gate
-    high_boot_prev = None
-
-    # generate the FET and bootstrap ladder all the way up
-    for level in range((levels - 1) * 2):
-      pass
-
-    flying_cap_model = Capacitor(
-      capacitance=1*uFarad(tol=0.2),  # TODO size cap
-      voltage=self.pwr_in.link().voltage
-    )
-
-    self.flying_cap = ElementDict[Capacitor]()  # [1 ... levels-1), excluding main input cap
-    self.driver = ElementDict[HalfBridgeDriver]()  # [0, levels-1)
-    self.isolator = ElementDict[DigitalIsolator]()  # [1, levels-1), unneeded at 0
-    # generate the flying caps, gate driver, and isolators
+    self.sw = ElementDict[MultilevelSwitchingCell]()
+    last_sw: Optional[MultilevelSwitchingCell] = None
     for level in range(levels - 1):
-      pass
-
-
-    for level in range(levels - 1):
-      # generate gate driver
-      self.driver[level] = driver = self.Block(HalfBridgeDriver())
-      self.connect(driver.gnd, low_prev)
-      self.connect(driver.pwr, low_boot_prev)
-
-      # connect gate driver inputs, generating isolator if needed
-      pwm_low = self.pwms.append_elt(DigitalSink.empty(), f'low_{level}')
-      pwm_high = self.pwms.append_elt(DigitalSink.empty(), f'high_{level}')
-      if level == 0:
-        self.connect(driver.low_in, pwm_low)
-        self.connect(driver.high_in, pwm_high)
+      self.sw[level] = sw = self.Block(MultilevelSwitchingCell(
+        last_sw is None,
+        in_voltage=self.pwr_in.link().voltage,
+        fet_rds=self.fet_rds
+      ))
+      self.connect(sw.gnd_ctl, self.gnd)
+      self.connect(sw.pwr_ctl, self.pwr_ctl)
+      self.connect(sw.low_pwm, self.pwms.append_elt(DigitalSink.empty(), f'{level}L'))
+      self.connect(sw.high_pwm, self.pwms.append_elt(DigitalSink.empty(), f'{level}H'))
+      if last_sw is None:
+        self.connect(sw.low_in, self.gnd)
+        self.connect(sw.high_in, self.pwr_in)
+        self.connect(sw.low_boot_in, self.pwr_gate)
       else:
-        self.isolator[level] = isolator = self.Block(DigitalIsolator())
-        self.connect(isolator.gnd_a, self.gnd)
-        self.connect(isolator.pwr_a, self.pwr_gate)  # TODO needs a LDO
-        self.connect(isolator.gnd_b, low_prev)
-        self.connect(isolator.pwr_b, low_boot_prev)
-        self.connect(isolator.in_a.request(f'low'), pwm_low)
-        self.connect(isolator.in_a.request(f'high'), pwm_high)
-        self.connect(driver.low_in, isolator.out_b.request(f'low'))
-        self.connect(driver.high_in, isolator.out_b.request(f'high'))
+        self.connect(sw.low_in, last_sw.low_out)
+        self.connect(sw.high_in, last_sw.high_out)
+        self.connect(sw.low_boot_in, last_sw.low_boot_out)
+        self.connect(sw.high_boot_out, last_sw.high_boot_in)
 
-      # generate and connect low FET
-      self.low_fet[level] = low_fet = self.Block(fet_model)
-      low_source = low_fet.source.adapt_to(VoltageSink())
-      self.connect(low_prev, low_source)
-      low_prev = low_fet.drain.adapt_to(VoltageSource())
+      last_sw = sw
 
-      # generate and connect high FET
-      self.high_fet[level] = high_fet = self.Block(fet_model)
-      if level == 0:  # this connects to pwr_in and needs a current draw model
-        high_drain_model = VoltageSink(current_draw=self.power_path.switch.link().current_drawn)
-      else:
-        high_drain_model = VoltageSink()
-      high_drain = high_fet.drain.adapt_to(high_drain_model)
-      self.connect(high_prev, high_drain)
-      if level < levels - 2:  # intermediate levels: is a voltage source
-        high_source_model = VoltageSource()
-      else:  # last level: is a voltage sink, the lower FET is the source
-        high_source_model = VoltageSink()
-      high_prev = high_fet.source.adapt_to(high_source_model)
-
-      self.connect(driver.low_out, low_fet.gate.adapt_to(DigitalSink()))
-      self.connect(driver.high_out, high_fet.gate.adapt_to(DigitalSink()))
-
-      # generate low-side bootstrap circuit
-      if level > 0:  # level 0 uses boot source directly
-        self.boot_diode[level] = low_boot_diode = self.Block(boot_diode_model)
-        self.connect(low_boot_diode.anode.adapt_to(VoltageSink()), low_boot_prev)
-        low_boot_prev = low_boot_diode.cathode.adapt_to(VoltageSource())
-
-        self.boot_cap[level] = low_boot_cap = self.Block(boot_cap_model)
-        self.connect(low_boot_cap.neg.adapt_to(VoltageSink()), low_source)
-        self.connect(low_boot_cap.pos.adapt_to(VoltageSink()), low_boot_prev)
-
-      # generate high-side bootstrap circuit
-      self.boot_diode[levels - 1 + level] = high_boot_diode = self.Block(boot_diode_model)
-      high_boot_diode_cathode = high_boot_diode.cathode.adapt_to(VoltageSource())
-
-      if high_boot_prev is not None:
-        self.connect(high_boot_diode.anode.adapt_to(VoltageSink()), high_boot_prev)
-      high_boot_prev =
-
-      self.boot_cap[levels - 1 + level] = high_boot_cap = self.Block(boot_cap_model)
-      self.connect(high_boot_cap.neg.adapt_to(VoltageSink()), high_prev)
-      self.connect(high_boot_cap.pos.adapt_to(VoltageSink()), low_boot_prev)
-
-      # connect high side driver to bootstrap circuit
-      self.connect(driver.high_gnd, high_prev)
-      self.connect(high_prev, driver.high_pwr)  # TODO FIXME
-
-      # generate flying cap, if not the main input cap
-      if level > 0:
-        self.flying_cap[level] = flying_cap = self.Block(flying_cap_model)
-        self.connect(low_source, flying_cap.neg.adapt_to(VoltageSink()))
-        self.connect(high_drain, flying_cap.pos.adapt_to(VoltageSink()))
-
-    self.connect(high_prev, low_prev, self.power_path.switch)
+    self.connect(last_sw.low_boot_out, last_sw.high_boot_in)
+    self.sw_merge = self.Block(MergedVoltageSource()).connected_from(
+      last_sw.low_out, last_sw.high_out
+    )
+    self.connect(self.sw_merge.pwr_out, self.power_path.switch)
 
 
 class FcmlTest(JlcBoardTop):
@@ -219,7 +245,7 @@ class FcmlTest(JlcBoardTop):
       )
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
       self.connect(self.conv.pwr_gate, self.vgate)
-    # TODO
+      self.connect(self.conv.pwr_ctl, self.v3v3)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -258,6 +284,7 @@ class FcmlTest(JlcBoardTop):
         (TestPoint, CompactKeystone5015),
         (HalfBridgeDriver, Ir2301),
         (DigitalIsolator, Cbmud1200l),
+        (LinearRegulator, Lp5907),  # for all the switching cells
       ],
     )
 
