@@ -15,8 +15,13 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
   Instead of a target output voltage (since the output is controlled by external PWMs), this takes
   in operating duty ratios for component sizing. Current is calculated by current drawn at the output.
+
+  Generates a bootstrap capacitor ladder to generate the gate drive voltages for each switch.
+  Generates a gate driver for each switch pair, in normal operation each gate driver should be
+  either be high or low (but not both or none).
+  Generates a digital isolator for each gate driver that is offset from ground.
   """
-  def __init__(self, levels: IntLike = 2, ratios: RangeLike = (0.0, 1.0)):
+  def __init__(self, levels: IntLike = 2, ratios: RangeLike = (0.25, 0.75)):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())
