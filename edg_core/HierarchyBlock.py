@@ -240,16 +240,25 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
     for name, connect in self._connects.items_ordered():
-      if connect in link_chain_names:
-        if not name.startswith('anon_'):
-          pass  # prefer a named link above all else
-        else:
-          name = link_chain_names[connect][0]  # arbitrarily pick the first one for now, TODO disambiguate?
-
       connect_elts = connect.make_connection(self)
+
+      if name.startswith('anon_'):  # infer a non-anon name if possible
+        if connect in link_chain_names and not link_chain_names[connect][0].startswith('anon_'):
+          name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
+        elif isinstance(connect_elts, Connection.Export):
+          port_pathname = connect_elts.external_port._name_from(self).replace('.', '_')
+          name = f'_{port_pathname}_link'
+        elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.bridged_connects:
+          port_pathname = connect_elts.bridged_connects[0][0]._name_from(self).replace('.', '_')
+          name = f'_{port_pathname}_link'
+        elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.link_connects:
+          port_pathname = connect_elts.link_connects[0][0]._name_from(self).replace('.', '_')
+          name = f'_{port_pathname}_link'
+        elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
+          name = link_chain_names[connect][0]
+
       if connect_elts is None:  # single port net - effectively discard
         pass
-
       elif isinstance(connect_elts, Connection.Export):  # generate direct export
         constraint_pb = edgir.add_pair(pb.constraints, f"(conn){name}")
         if connect_elts.is_array:
