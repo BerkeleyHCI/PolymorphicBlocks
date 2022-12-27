@@ -55,6 +55,11 @@ class Cbmud1200l_Device(JlcPart, FootprintBlock):
 
 
 class Cbmud1200l(DigitalIsolator, GeneratorBlock):
+  def __init__(self):
+    super().__init__()
+    self.generator(self.generate, self.in_a.requested(), self.out_b.requested(),
+                   self.in_b.requested(), self.out_a.requested())
+
   def contents(self):
     super().contents()
     self.ic = self.Block(Cbmud1200l_Device())
@@ -62,9 +67,6 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
     self.connect(self.gnd_a, self.ic.gnd1)
     self.connect(self.pwr_b, self.ic.vdd2)
     self.connect(self.gnd_b, self.ic.gnd2)
-
-    self.generator(self.generate, self.in_a.requested(), self.out_b.requested(),
-                   self.in_b.requested(), self.out_a.requested())
 
   def generate(self, in_a_elts: List[str], out_b_elts: List[str], in_b_elts: List[str], out_a_elts: List[str]):
     assert in_a_elts == out_b_elts, f"in_a={in_a_elts} and out_b={out_b_elts} must be equal"
@@ -76,3 +78,6 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
     for elt_name, (in_a_port, out_b_port) in zip(in_a_elts, channel_pairs):
       self.connect(self.in_a.append_elt(DigitalSink.empty(), elt_name), in_a_port)
       self.connect(self.out_b.append_elt(DigitalSource.empty(), elt_name), out_b_port)
+
+    self.out_a.defined()
+    self.in_b.defined()
