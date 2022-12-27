@@ -66,7 +66,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
       rds_on=self.fet_rds
     )
     flying_cap_model = Capacitor(
-      capacitance=1*uFarad(tol=0),  # TODO size cap
+      capacitance=1*uFarad(tol=0.2),  # TODO size cap
       voltage=self.pwr_in.link().voltage
     )
 
@@ -82,7 +82,11 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
       low_prev = low_fet.drain.adapt_to(VoltageSource())
 
       self.high_fet[level] = high_fet = self.Block(fet_model)
-      high_drain = high_fet.drain.adapt_to(VoltageSink())
+      if level == 0:  # this connects to pwr_in and needs a current draw model
+        high_source_model = VoltageSink(current_draw=self.power_path.switch.link().current_drawn)
+      else:
+        high_source_model = VoltageSink()
+      high_drain = high_fet.drain.adapt_to(high_source_model)
       self.connect(high_prev, high_drain)
       high_prev = high_fet.source.adapt_to(VoltageSource())
 
@@ -93,6 +97,8 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
     # TODO connect high_prev, which conflicts b/c it's VoltageSource as well
     self.connect(low_prev, self.power_path.switch)
+
+    self.pwms.defined()  # allows structural generation, TODO remove me
 
 
 class FcmlTest(JlcBoardTop):
@@ -123,9 +129,9 @@ class FcmlTest(JlcBoardTop):
 
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
-        inductor_current_ripple=(0, 1)*Amp
+        inductor_current_ripple=(0.1, 2)*Amp
       ))
-      self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
+      self.conv_out = imp.Block(PowerOutConnector((0, 2)*Amp))
       self.connect(self.conv.pwr_in, self.vusb)
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
     # TODO
