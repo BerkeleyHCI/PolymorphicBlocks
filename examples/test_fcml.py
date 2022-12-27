@@ -192,6 +192,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
       last_sw = sw
 
+    assert last_sw is not None
     self.connect(last_sw.low_boot_out, last_sw.high_boot_in)
     self.sw_merge = self.Block(MergedVoltageSource()).connected_from(
       last_sw.low_out, last_sw.high_out
