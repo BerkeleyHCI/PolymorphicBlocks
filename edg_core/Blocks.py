@@ -35,8 +35,9 @@ class Connection():
     internal_port: BasePort
 
   """A data structure that tracks connected ports."""
-  def __init__(self, flatten: bool) -> None:
+  def __init__(self, parent: BaseBlock, flatten: bool) -> None:
     self.connected: List[Connection.PortRecord] = []
+    self.parent = parent
     self.flatten = flatten  # vectors are treated as connected to a link
 
   def add_ports(self, ports: Iterable[BasePort]):
@@ -105,7 +106,9 @@ class Connection():
         link_type = link_types.pop()
         link = link_type()
       else:
-        raise UnconnectableError(f"Ambiguous link {link_types} for connection between {ports}")
+        link_type_names = ', '.join([link_type.__name__ for link_type in link_types])
+        port_names = ', '.join([port._name_from(self.parent) for port in ports])
+        raise UnconnectableError(f"Ambiguous link types {link_type_names} for connection between {port_names}")
       link_ports_by_type: Dict[Type[Port], List[BasePort]] = {}  # sorted by port order; mutable and consumed as allocated
       for name, port in link._ports.items():
         link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
@@ -461,7 +464,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       connect = existing_connects[0]
       assert connect.flatten == flatten, "flatten must be equivalent to existing connect"
     elif not existing_connects:
-      connect = Connection(flatten)
+      connect = Connection(self, flatten)
       self._connects.register(connect)
     else:  # more than 1 existing connect
       raise ValueError("TODO implement net join")

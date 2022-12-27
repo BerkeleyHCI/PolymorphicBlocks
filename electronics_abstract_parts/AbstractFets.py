@@ -7,7 +7,7 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class Fet(DiscreteSemiconductor):
+class Fet(KiCadImportableBlock, DiscreteSemiconductor):
   """Base class for untyped MOSFETs
   Drain voltage, drain current, and gate voltages are positive (absolute).
 
@@ -20,6 +20,13 @@ class Fet(DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-low-frequency-mosfet-parameters/
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    # TODO actually check that the device channel corresponds with the schematic?
+    assert symbol_name.startswith('Device:Q_NMOS_') or symbol_name.startswith('Device:Q_PMOS_')
+    assert symbol_name.removeprefix('Device:Q_NMOS_').removeprefix('Device:Q_PMOS_') in \
+           ('DGS', 'DSG', 'GDS', 'GSD', 'SDG', 'SGD')
+    return {'D': self.drain, 'G': self.gate, 'S': self.source}
+
   @staticmethod
   def NFet(*args, **kwargs) -> 'Fet':
     return Fet(*args, **kwargs, channel='N')

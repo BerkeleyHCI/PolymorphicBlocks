@@ -6,6 +6,7 @@ from edg_core import *
 import edgir
 from edg_core import IdentityDict  # TODO: this is ugly
 from edg_core.ConstraintExpr import Refable
+from .KiCadImportableBlock import KiCadImportableBlock
 
 if TYPE_CHECKING:
   from .VoltagePorts import CircuitPort
@@ -108,7 +109,11 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
 
 AdapterDstType = TypeVar('AdapterDstType', bound='CircuitPort')
 @abstract_block
-class CircuitPortAdapter(NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:Adapter'
+    return {'1': self.src, '2': self.dst}
+
   def contents(self):
     super().contents()
     self.net()

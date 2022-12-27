@@ -28,10 +28,11 @@ from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
 from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 
+from .PartParserUtil import PartParserUtil
+
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
+from .KiCadSchematicBlock import KiCadSchematicBlock
 
 from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
-
-from .PartParserUtil import PartParserUtil
