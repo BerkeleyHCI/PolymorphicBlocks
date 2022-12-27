@@ -1,12 +1,19 @@
 import unittest
-from typing import List
+from typing import List, Dict
 
 from edg import *
 
 
-class ResistorMux(GeneratorBlock):
+class ResistorMux(KiCadImportableBlock, GeneratorBlock):
   """Generates an array of resistors with one side muxed and the other end an array. Passive-typed.
   Specify an infinite resistance for an open circuit."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:ResistorMux'
+    return {
+      'control': self.control, 'sw': self.com, 'com': self.input,
+      'V+': self.pwr,  'V-': self.gnd
+    }
+
   @init_in_parent
   def __init__(self, resistances: ArrayRangeLike):
     super().__init__()
@@ -34,7 +41,7 @@ class ResistorMux(GeneratorBlock):
         self.connect(res.b, self.switch.inputs.request(str(i)))
 
 
-class MultimeterAnalog(Block):
+class MultimeterAnalog(KiCadSchematicBlock, Block):
   """Analog measurement stage for the volts stage of the multimeter.
   Includes a 1M input resistor and a variable divider.
   Purely DC sampling, and true-RMS functionality needs to be implemented in firmware
@@ -59,36 +66,33 @@ class MultimeterAnalog(Block):
     super().contents()
 
     self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
-    self.connect(self.res.a.adapt_to(AnalogSink()), self.input_positive)
+    self.range = self.Block(ResistorMux([
+      1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
+      10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
+      100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
+      Range(float('inf'), float('inf'))  # 1:1 step, open circuit
+    ]))
 
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-        ImplicitConnect(self.pwr, [Power]),
-    ) as imp:
-      self.range = imp.Block(ResistorMux([
-        1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
-        10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
-        100*kOhm(tol=0.01),  # 1:10 step (+/- 10 V range)
-        Range(float('inf'), float('inf'))  # 1:1 step, open circuit
-      ]))
-      self.connect(self.range.input.adapt_to(AnalogSink()), self.input_negative)
-      self.connect(self.res.b.adapt_to(AnalogSource(
-        voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-        current_limits=(-10, 10)*mAmp,
-        impedance=1*mOhm(tol=0)
-      )), self.range.com.adapt_to(AnalogSink()), self.output)
-
-      self.connect(self.select, self.range.control)
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'res.1': AnalogSink(),
+        'res.2': AnalogSource(
+          voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+          current_limits=(-10, 10)*mAmp,
+          impedance=1*mOhm(tol=0)
+        ),
+        'range.com': AnalogSink(),
+        'range.sw': AnalogSink(),
+      })
 
 
-class MultimeterCurrentDriver(Block):
+class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
   """Protected constant-current stage for the multimeter driver.
   """
   @init_in_parent
   def __init__(self, voltage_rating: RangeLike = RangeExpr()):
     super().__init__()
 
-    # TODO: separate Vref?
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
@@ -109,39 +113,14 @@ class MultimeterCurrentDriver(Block):
       drain_current=(0, max_in_voltage / 1000),  # approx lowest resistance - TODO properly model the resistor mux
       gate_voltage=(max_in_voltage, max_in_voltage),  # allow all
     ))
-
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-        ImplicitConnect(self.pwr, [Power]),
-    ) as imp:
-      self.amp = imp.Block(Opamp())
-      self.connect(self.amp.inp, self.control)
-
-      self.range = imp.Block(ResistorMux([
-        1*kOhm(tol=0.01),  # 1 mA range
-        10*kOhm(tol=0.01),  # 100 uA range
-        100*kOhm(tol=0.01),  # 10 uA range
-        1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
-      ]))
-      self.connect(self.pwr, self.range.input.adapt_to(VoltageSink(
-        current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
-      )))
-      fet_source_node = self.fet.source.adapt_to(AnalogSink())
-      self.connect(
-        self.amp.inn,
-        fet_source_node,
-        self.range.com.adapt_to(AnalogSource(
-          voltage_out=(0, max_in_voltage),
-          impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
-        )))
-
-      self.connect(self.select, self.range.control)
-
-      self.sw = imp.Block(AnalogMuxer()).mux_to(  # enable switch
-        [fet_source_node, self.amp.out],
-        self.fet.gate.adapt_to(AnalogSink())
-      )
-      self.connect(self.enable, self.sw.control.request())
+    self.amp = self.Block(Opamp())
+    self.range = self.Block(ResistorMux([
+      1*kOhm(tol=0.01),  # 1 mA range
+      10*kOhm(tol=0.01),  # 100 uA range
+      100*kOhm(tol=0.01),  # 10 uA range
+      1*MOhm(tol=0.01),  # 1 uA range (for MOhm measurements)
+    ]))
+    self.sw = self.Block(AnalogMuxer())
 
     self.diode = self.Block(Diode(
       reverse_voltage=self.voltage_rating,  # protect against positive overvoltage
@@ -149,13 +128,28 @@ class MultimeterCurrentDriver(Block):
       voltage_drop=(0, 1)*Volt,  # TODO kind of arbitrary
       reverse_recovery_time=RangeExpr.ALL
     ))
-    self.connect(self.fet.drain, self.diode.anode)
-    self.connect(self.diode.cathode.adapt_to(AnalogSink(  # TODO should be analog source
-      voltage_limits=self.voltage_rating
-    )), self.output)
+
+    # this is connected in HDL (instead of schematic) because it needs a type conversion (from array[1] to element)
+    self.connect(self.sw.control.request(), self.enable)
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'fet.S': AnalogSink(),
+        'fet.G': AnalogSink(),
+        'range.com': VoltageSink(
+          current_draw=(0, max_in_voltage / 1000)  # approx lowest resistance - TODO properly model the resistor mux
+        ),
+        'range.sw': AnalogSource(
+          voltage_out=(0, max_in_voltage),
+          impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
+        ),
+        'diode.K': AnalogSink(  # TODO should be analog source
+          voltage_limits=self.voltage_rating
+        )
+      })
 
 
-class FetPowerGate(Block):
+class FetPowerGate(KiCadSchematicBlock, Block):
   """A high-side PFET power gate that has a button to power on, can be latched
   on by an external signal, and provides the button output as a signal.
   """
@@ -179,20 +173,11 @@ class FetPowerGate(Block):
     self.pull_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
     ))
-    self.connect(self.pwr_in, self.pull_res.a.adapt_to(VoltageSink()))
     self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=(0, max_voltage),
       drain_current=(0, max_current),
       gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
     ))
-    self.connect(self.pwr_in, self.pwr_fet.source.adapt_to(VoltageSink(
-      current_draw=self.pwr_out.link().current_drawn,
-      voltage_limits=RangeExpr.ALL,
-    )))
-    self.connect(self.pwr_fet.drain.adapt_to(VoltageSource(
-      voltage_out = self.pwr_in.link().voltage,
-      current_limits=RangeExpr.ALL,
-    )), self.pwr_out)
 
     self.amp_res = self.Block(Resistor(
       resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
@@ -202,8 +187,6 @@ class FetPowerGate(Block):
       drain_current=(0, 0),  # effectively no current
       gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
     ))
-    self.connect(self.control, self.amp_fet.gate.adapt_to(DigitalSink()),
-                 self.amp_res.a.adapt_to(DigitalSink()))  # TODO more modeling here?
 
     self.ctl_diode = self.Block(Diode(
       reverse_voltage=(0, max_voltage),
@@ -218,17 +201,29 @@ class FetPowerGate(Block):
       reverse_recovery_time=RangeExpr.ALL
     ))
     self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
-    self.connect(self.btn.a, self.ctl_diode.cathode, self.btn_diode.cathode)
-    self.connect(self.gnd, self.amp_fet.source.adapt_to(Ground()), self.amp_res.b.adapt_to(Ground()),
-                 self.btn.b.adapt_to(Ground()))
 
-    self.connect(self.btn_diode.anode.adapt_to(DigitalSingleSource(
-      voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
-      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-      low_signal_driver=True
-    )), self.btn_out)
-
-    self.connect(self.pull_res.b, self.ctl_diode.anode, self.pwr_fet.gate, self.amp_fet.drain)
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'pull_res.1': VoltageSink(),
+        'pwr_fet.S': VoltageSink(
+          current_draw=self.pwr_out.link().current_drawn,
+          voltage_limits=RangeExpr.ALL,
+        ),
+        'pwr_fet.D': VoltageSource(
+          voltage_out=self.pwr_in.link().voltage,
+          current_limits=RangeExpr.ALL,
+        ),
+        'amp_res.2': DigitalSink(),  # TODO more modeling here?
+        'amp_fet.G': DigitalSink(),
+        'amp_fet.S': Ground(),
+        'amp_res.1': Ground(),
+        'btn.2': Ground(),
+        'btn_diode.A': DigitalSingleSource(
+          voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
+          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+          low_signal_driver=True
+        )
+      })
 
 
 class MultimeterTest(JlcBoardTop):

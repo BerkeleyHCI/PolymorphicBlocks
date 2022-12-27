@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, cast, Dict
 
 from electronics_model import *
 from .Categories import *
@@ -99,7 +99,14 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
     return self
 
 
-class MergedAnalogSource(DummyDevice, NetBlock, GeneratorBlock):
+class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorBlock):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name.startswith('edg_importable:Merge')  # can be any merge
+    count = int(symbol_name.removeprefix('edg_importable:Merge'))
+    pins: Dict[str, BasePort] = {'0': self.output}
+    pins.update({str(i+1): self.inputs.request() for i in range(count)})
+    return pins
+
   def __init__(self) -> None:
     super().__init__()
 

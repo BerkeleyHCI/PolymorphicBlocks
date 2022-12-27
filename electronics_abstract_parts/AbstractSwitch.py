@@ -1,9 +1,15 @@
+from typing import Dict
+
 from electronics_model import *
 from .Categories import *
 
 
 @abstract_block
-class Switch(DiscreteComponent):
+class Switch(KiCadImportableBlock, DiscreteComponent):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'Switch:SW_SPST'
+    return {'1': self.a, '2': self.b}
+
   @init_in_parent
   def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp(tol=0))) -> None:
     super().__init__()

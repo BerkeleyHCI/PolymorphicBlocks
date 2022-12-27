@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_model import *
 from .DummyDevices import MergedAnalogSource
 from .AbstractResistor import Resistor
@@ -28,13 +30,21 @@ class SolidStateRelay(Block):
     self.load_resistance = self.Parameter(RangeExpr())
 
 
-class DigitalAnalogIsolatedSwitch(Block):
+class AnalogIsolatedSwitch(KiCadImportableBlock, Block):
   """Digitally controlled solid state relay that switches an analog signal.
   Includes a ballasting resistor.
 
   The ports are not tagged with Input/Output/InOut, because of potential for confusion between
-  the digital side and the analog side
+  the digital side and the analog side.
+
+  A separate output-side pull port allows modeling the output switch standoff voltage
+  when the switch is off.
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:AnalogIsolatedSwitch'
+    return {'in': self.signal, 'gnd': self.gnd,
+            'ain': self.ain, 'apull': self.apull, 'aout': self.aout}
+
   def __init__(self) -> None:
     super().__init__()
 

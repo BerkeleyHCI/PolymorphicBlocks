@@ -1,17 +1,24 @@
 import itertools
+from enum import Enum
 from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple
 
 import math
 import sexpdata  # type: ignore
 
 
-TestCaseType = TypeVar('TestCaseType')
-def test_cast(x: Any, type: Type[TestCaseType]) -> TestCaseType:
+# This defines the minimum resolvable grid, so all coordinates are rounded to integer
+# coordinates to exact position equality checks can be made without worrying about
+# float precision issues.
+MIN_GRID = 1.27
+
+
+TestCastType = TypeVar('TestCastType')
+def test_cast(x: Any, type: Type[TestCastType]) -> TestCastType:
   """Combination of (dynamic) isinstance test and static typing cast."""
   assert isinstance(x, type)
   return x
 
-def extract_only(x: List[TestCaseType]) -> TestCaseType:
+def extract_only(x: List[TestCastType]) -> TestCastType:
   """Asserts the input list only has one element, and returns it."""
   assert len(x) == 1
   return x[0]
@@ -28,16 +35,18 @@ def group_by_car(elts: List[Any]) -> Dict[Any, List[List[Any]]]:
 
 PointType = Tuple[float, float]
 def parse_xy(sexp: List[Any], expected_car: str = 'xy') -> PointType:
-  """Given a sexp of the form (xy, x, y) (for x, y float), returns (x, y)."""
+  """Given a sexp of the form (xy, x, y) (for x, y float), returns (x, y).
+  X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 3
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (float(sexp[1]), float(sexp[2]))
+  return (round(float(sexp[1]) / MIN_GRID), round(float(sexp[2]) / MIN_GRID))
 
 def parse_at(sexp: List[Any], expected_car: str = 'at') -> Tuple[float, float, float]:
-  """Given a sexp of the form (at, x, y, r) (for x, y, r float), returns (x, y, r)."""
+  """Given a sexp of the form (at, x, y, r) (for x, y, r float), returns (x, y, r).
+  X and Y are returned as part of an integer grid and rounded so points line up exactly."""
   assert len(sexp) == 4
   assert sexp[0] == sexpdata.Symbol(expected_car)
-  return (float(sexp[1]), float(sexp[2]), float(sexp[3]))
+  return (round(float(sexp[1]) / MIN_GRID), round(float(sexp[2]) / MIN_GRID), float(sexp[3]))
 
 def parse_symbol(sexp: Any) -> str:
   """Asserts sexp is a Symbol and returns its value."""
@@ -54,6 +63,7 @@ class KiCadLibPin:
     assert parse_symbol(sexp[0]) == 'pin'
     sexp_dict = group_by_car(sexp)
     self.pos = parse_at(extract_only(sexp_dict['at']))
+    self.name = test_cast(extract_only(sexp_dict['name'])[1], str)
     self.number = test_cast(extract_only(sexp_dict['number'])[1], str)
 
 
@@ -72,6 +82,7 @@ class KiCadLibSymbol:
                                     for symbol_sexp in sexp_dict.get('symbol', [])])
     symbol_elts_dict = group_by_car(list(symbol_elts))
     self.pins = [KiCadLibPin(pin_sexp) for pin_sexp in symbol_elts_dict.get('pin', [])]
+    self.is_power = 'power' in sexp_dict
 
 
 class KiCadWire:
@@ -87,16 +98,27 @@ class KiCadWire:
     self.pt2 = parse_xy(pts[2], 'xy')
 
 
-class KiCadAnyLabel:
+class KiCadBaseLabel:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
   def __init__(self, sexp: List[Any]):
-    assert parse_symbol(sexp[0]) in ('label', 'global_label')
     sexp_dict = group_by_car(sexp)
     self.name = test_cast(sexp[1], str)
     self.pos = parse_at(extract_only(sexp_dict['at']))
     self.pt = (self.pos[0], self.pos[1])  # version without rotation
+
+
+class KiCadLabel(KiCadBaseLabel):
+  def __init__(self, sexp: List[Any]):
+    super().__init__(sexp)
+    assert parse_symbol(sexp[0]) == 'label'
+
+
+class KiCadGlobalLabel(KiCadBaseLabel):
+  def __init__(self, sexp: List[Any]):
+    super().__init__(sexp)
+    assert parse_symbol(sexp[0]) == 'global_label'
 
 
 class KiCadSymbol:
@@ -110,7 +132,18 @@ class KiCadSymbol:
                                        for prop in sexp_dict.get('property', [])}
     self.refdes = self.properties.get("Reference", "")
     self.lib = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
+    # lib_name (if present) is used for sheet-specific modified symbols to reference that modified symbol
+    # but is not a user-specified name, so the interface symbol name is still lib_id
+    if 'lib_name' in sexp_dict:
+      self.lib_ref = test_cast(extract_only(sexp_dict['lib_name'])[1], str)
+    else:
+      self.lib_ref = test_cast(extract_only(sexp_dict['lib_id'])[1], str)
     self.pos = parse_at(extract_only(sexp_dict['at']))
+
+    if 'mirror' in sexp_dict:
+      self.mirror = parse_symbol(extract_only(sexp_dict['mirror'])[1])
+    else:
+      self.mirror = ''
 
 
 class KiCadPin:
@@ -121,24 +154,44 @@ class KiCadPin:
     self.pin = pin
     self.symbol = symbol
     self.refdes = self.symbol.refdes
+    self.pin_name = self.pin.name
     self.pin_number = self.pin.number
+
+    pin_x = pin.pos[0]
+    pin_y = pin.pos[1]
     symbol_rot = math.radians(symbol.pos[2])  # degrees to radians
+    if symbol.mirror == '':
+      pass
+    elif symbol.mirror == 'x':  # mirror along x axis
+      pin_y = -pin_y
+      symbol_rot = -symbol_rot
+    elif symbol.mirror == 'y':  # mirror along y axis
+      assert symbol_rot == 0  # KiCad doesn't seem to generate Y-mirror with rotation, so this can't be tested
+      pin_x = -pin_x
+    else:
+      raise ValueError(f"unexpected mirror value {symbol.mirror}")
+
     self.pt = (  # round so the positions line up exactly
-      round(symbol.pos[0] + pin.pos[0] * math.cos(symbol_rot) - pin.pos[1] * math.sin(symbol_rot), 2),
-      round(symbol.pos[1] + pin.pos[0] * math.sin(symbol_rot) + pin.pos[1] * math.cos(symbol_rot), 2)
+      round(symbol.pos[0] + pin_x * math.cos(symbol_rot) - pin_y * math.sin(symbol_rot)),
+      round(symbol.pos[1] - pin_x * math.sin(symbol_rot) - pin_y * math.cos(symbol_rot))
     )
 
 
 class ParsedNet(NamedTuple):
-  labels: List[KiCadAnyLabel]
+  labels: List[KiCadBaseLabel]
   pins: List[KiCadPin]
 
   def __repr__(self):
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
 
 
+class SchematicOrder(Enum):
+  xy = 'xy'  # in position order, X then Y (left to right first, then top to bottom)
+  file = 'file'  # in order symbols are defined in the file
+
+
 class KiCadSchematic:
-  def __init__(self, data: str):
+  def __init__(self, data: str, order: SchematicOrder = SchematicOrder.xy):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
     sexp_dict = group_by_car(schematic_top)
@@ -148,11 +201,21 @@ class KiCadSchematic:
                                        for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
 
     wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
-    labels = [KiCadAnyLabel(elt) for elt in sexp_dict.get('label', []) + sexp_dict.get('global_label', [])]
+    labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
+    labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
 
-    self.symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
+    # separate out power and non-power symbols, power symbols stay internal
+    symbols = [symbol for symbol in all_symbols if not self.lib_symbols[symbol.lib_ref].is_power]
+
+    # sorting allows for order-stability which allows for refdes-stability
+    if order == SchematicOrder.xy:
+      self.symbols = sorted(symbols, key=lambda elt: elt.pos)
+    elif order == SchematicOrder.file:
+      self.symbols = symbols  # preserve loaded order
+
     symbol_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
-                                          for pin in self.lib_symbols[symbol.lib].pins]
+                                          for pin in self.lib_symbols[symbol.lib_ref].pins]
                                          for symbol in self.symbols]))
 
     # now, actually build the netlist, with graph traversal to find connected components
@@ -168,9 +231,25 @@ class KiCadSchematic:
     pin_points: Dict[PointType, List[KiCadPin]] = {}
     for pin in symbol_pins:
       pin_points.setdefault(pin.pt, []).append(pin)
-    label_points: Dict[PointType, List[KiCadAnyLabel]] = {}
+
+    # build adjacency matrix for labels and symbols
+    label_points: Dict[PointType, List[KiCadBaseLabel]] = {}
+    label_by_name: Dict[str, List[PointType]] = {}  # this also shares a namespace w/ power symbols
     for label in labels:
       label_points.setdefault(label.pt, []).append(label)
+      label_by_name.setdefault(label.name, []).append(label.pt)
+
+    power_symbols = [symbol for symbol in all_symbols if self.lib_symbols[symbol.lib_ref].is_power]
+    power_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
+                                         for pin in self.lib_symbols[symbol.lib_ref].pins]
+                                        for symbol in power_symbols]))
+    for power_pin in power_pins:
+      label_by_name.setdefault(power_pin.symbol.properties['Value'], []).append(power_pin.pt)
+
+    for name, points in label_by_name.items():
+      for other_point in points[1:]:
+        edges.setdefault(points[0], []).append(other_point)
+        edges.setdefault(other_point, []).append(points[0])
 
     # TODO support hierarchy with sheet_instances and symbol_instances
     # TODO also check for intersections - currently pins and labels need to be at wire ends
@@ -178,11 +257,11 @@ class KiCadSchematic:
     # traverse the graph and build up nets
     seen_points: Set[PointType] = set()
     self.nets: List[ParsedNet] = []
-    for point, pins in pin_points.items():
-      if point in seen_points:
+    for pin in symbol_pins:  # traverse in symbol / pin order to preserve ordering
+      if pin.pt in seen_points:
         continue  # already seen and part of another net
       net_pins: List[KiCadPin] = []
-      net_labels: List[KiCadAnyLabel] = []
+      net_labels: List[KiCadBaseLabel] = []
       def traverse_point(point: PointType) -> None:
         if point in seen_points:
           return  # already seen, don't traverse again
@@ -195,5 +274,5 @@ class KiCadSchematic:
         for point2 in edges.get(point, []):
           traverse_point(point2)
 
-      traverse_point(point)
+      traverse_point(pin.pt)
       self.nets.append(ParsedNet(net_labels, net_pins))

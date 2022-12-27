@@ -1,0 +1,3 @@
+# KiCad creates some project files automatically that we don't care about
+*.kicad_prl
+*.kicad_pro

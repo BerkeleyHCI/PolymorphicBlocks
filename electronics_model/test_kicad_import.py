@@ -1,25 +1,21 @@
-import os
 import unittest
+from typing import Type
 
 import edgir
 from edg_core import Range
-from electronics_model import Passive
-from electronics_model.KiCadSchematicBlock import KiCadSchematicBlock
+from electronics_model import KiCadSchematicBlock, Passive, VoltageSource
 from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
-
-
-def example_filepath(filename: str) -> str:
-    return os.path.join(os.path.dirname(__file__), "resources", filename)
 
 
 # Note that all the below blocks are the same circuit (component values and connectivity)
 # but defined in slightly different ways.
+# Rotation and mirroring are not checked here, but tested in the schematic parser.
 class KiCadBlock(KiCadSchematicBlock):
     """Block that has its implementation completely defined in KiCad."""
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
 
 
 class KiCadTunnelBlock(KiCadSchematicBlock):
@@ -27,7 +23,7 @@ class KiCadTunnelBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_tunnel.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_tunnel.kicad_sch"))
 
 
 class KiCadInlineBlock(KiCadSchematicBlock):
@@ -35,7 +31,7 @@ class KiCadInlineBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_inline.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_inline.kicad_sch"))
 
 
 class KiCadInlineVarsBlock(KiCadSchematicBlock):
@@ -44,7 +40,7 @@ class KiCadInlineVarsBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.import_kicad(example_filepath("test_kicad_import_inline_vars.kicad_sch"), {
+        self.import_kicad(self.file_path("resources", "test_kicad_import_inline_vars.kicad_sch"), {
             'r1_res': 51*Ohm(tol=0.05),
             'r2_res': 51*Ohm(tol=0.05),
             'c1_cap': 47*uFarad(tol=0.2),
@@ -60,32 +56,66 @@ class KiCadCodePartsBock(KiCadSchematicBlock):
         self.R1 = self.Block(Resistor(51*Ohm(tol=0.05)))
         self.R2 = self.Block(Resistor(51*Ohm(tol=0.05)))
         self.C1 = self.Block(Capacitor(47*uFarad(tol=0.2), (0, 6.3)*Volt))
-        self.import_kicad(example_filepath("test_kicad_import_codeparts.kicad_sch"))
+        self.import_kicad(self.file_path("resources", "test_kicad_import_codeparts.kicad_sch"))
+
+
+class KiCadNodeBlock(KiCadSchematicBlock):
+    """Block that has its implementation completely defined in KiCad."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.R1 = self.Block(Resistor(51*Ohm(tol=0.05)))
+        self.PORT_A = self.Export(self.R1.a)
+        self.node = self.connect(self.R1.b)  # requires an explicit name
+        self.import_kicad(self.file_path("resources", "test_kicad_import_node.kicad_sch"),
+                          nodes={
+                              'node': self.R1.b
+                          })
+
+
+class KiCadPowerBlock(KiCadSchematicBlock):
+    """Block using Power symbols (eg, Vdd, GND) as internal non-named tunnels."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_power.kicad_sch"))
+
+
+class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
+    """Imports a schematic with a modified (sheet-specific) symbol."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_modified_symbol.kicad_sch"))
 
 
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
-        pb = KiCadBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadBlock)
 
     def test_tunnel_block(self):
-        pb = KiCadTunnelBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadTunnelBlock)
 
     def test_inline_block(self):
-        pb = KiCadInlineBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadInlineBlock)
 
     def test_inline_vars_block(self):
-        pb = KiCadInlineVarsBlock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadInlineVarsBlock)
 
     def test_codeparts_block(self):
-        pb = KiCadCodePartsBock()._elaborated_def_to_proto()
-        self.check_connectivity(pb)
+        self.check_connectivity(KiCadCodePartsBock)
 
-    def check_connectivity(self, pb: edgir.HierarchyBlock):
+    def test_node_block(self):
+        self.check_connectivity(KiCadNodeBlock)
+
+    def test_power_block(self):
+        self.check_connectivity(KiCadPowerBlock)
+
+    def test_modified_symbol_block(self):
+        self.check_connectivity(KiCadModifiedSymbolBlock)
+
+    def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
+        pb = cls()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))
 
         expected_conn = edgir.ValueExpr()
@@ -105,7 +135,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'anon_link_0'
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R1'
@@ -113,7 +143,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'anon_link_0'
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'C1'
@@ -121,7 +151,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'anon_link_0'
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R2'

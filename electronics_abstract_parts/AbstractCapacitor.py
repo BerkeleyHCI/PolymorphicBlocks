@@ -1,6 +1,6 @@
 import re
 from abc import abstractmethod
-from typing import Optional, cast, Dict, Any, List, Tuple
+from typing import Optional, cast, Dict, Any, List, Tuple, Mapping
 import math
 
 from electronics_model import *
@@ -38,8 +38,8 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
                                "\s*" + f"([\d.]+\s*[{PartParserUtil.SI_PREFIXES}]?\s*V)" + "$")
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-    assert symbol_name == 'Device:C'
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:C', 'Device:C_Polarized')
     return {'1': self.pos, '2': self.neg}
 
   @classmethod
@@ -55,7 +55,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     return (Range.from_tolerance(center, tolerance), Range.zero_to_upper(voltage))
 
   @classmethod
-  def block_from_symbol(cls, symbol_name: str, properties: Dict[str, str]) -> 'Capacitor':
+  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
     return Capacitor(*cls.parse_capacitor(properties['Value']))
 
   @init_in_parent
