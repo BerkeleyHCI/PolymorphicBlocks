@@ -76,6 +76,8 @@ from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .BatteryProtector_S8200A import BatteryProtector_S8200A
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray
+from .Isolator_Cbmud1200 import Cbmud1200l
+from .GateDriver_Ir2301 import Ir2301
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode

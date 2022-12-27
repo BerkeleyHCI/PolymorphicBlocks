@@ -63,6 +63,9 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
     self.connect(self.pwr_b, self.ic.vdd2)
     self.connect(self.gnd_b, self.ic.gnd2)
 
+    self.generator(self.generate, self.in_a.requested(), self.out_b.requested(),
+                   self.in_b.requested(), self.out_a.requested())
+
   def generate(self, in_a_elts: List[str], out_b_elts: List[str], in_b_elts: List[str], out_a_elts: List[str]):
     assert in_a_elts == out_b_elts, f"in_a={in_a_elts} and out_b={out_b_elts} must be equal"
     assert not in_b_elts and not out_a_elts, f"in_b={in_b_elts} and out_a={out_a_elts} must be empty, device has no b->a channels"

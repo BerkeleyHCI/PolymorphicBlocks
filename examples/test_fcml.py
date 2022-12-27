@@ -1,7 +1,7 @@
 import unittest
 
 from edg import *
-from .test_bldc import PowerOutConnector
+from .test_bldc import PowerOutConnector, CompactKeystone5015
 
 
 class DiscreteMutlilevelBuckConverter(GeneratorBlock):
@@ -69,6 +69,10 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
       capacitance=1*uFarad(tol=0.2),  # TODO size cap
       voltage=self.pwr_in.link().voltage
     )
+    boot_cap_model = Capacitor(
+      capacitance=0.1*uFarad(tol=0.2),
+      voltage=self.pwr_in.link().voltage
+    )
 
     low_prev = self.gnd
     high_prev = self.pwr_in
@@ -76,27 +80,43 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
     high_boot_prev = None
 
     for level in range(levels - 1):
+      self.driver[level] = driver = self.Block(HalfBridgeDriver())
+      self.connect(driver.gnd, low_prev)
+      self.connect(driver.pwr, low_boot_prev)
+      # TODO add isolator
+      self.connect(driver.low_in, self.pwms.append_elt(DigitalSink.empty(), f'low_{level}'))
+      self.connect(driver.high_in, self.pwms.append_elt(DigitalSink.empty(), f'high_{level}'))
+
       self.low_fet[level] = low_fet = self.Block(fet_model)
       low_source = low_fet.source.adapt_to(VoltageSink())
       self.connect(low_prev, low_source)
       low_prev = low_fet.drain.adapt_to(VoltageSource())
+      self.connect(driver.low_out, low_fet.gate.adapt_to(DigitalSink()))
 
       self.high_fet[level] = high_fet = self.Block(fet_model)
       if level == 0:  # this connects to pwr_in and needs a current draw model
-        high_source_model = VoltageSink(current_draw=self.power_path.switch.link().current_drawn)
+        high_drain_model = VoltageSink(current_draw=self.power_path.switch.link().current_drawn)
       else:
-        high_source_model = VoltageSink()
-      high_drain = high_fet.drain.adapt_to(high_source_model)
+        high_drain_model = VoltageSink()
+      high_drain = high_fet.drain.adapt_to(high_drain_model)
       self.connect(high_prev, high_drain)
-      high_prev = high_fet.source.adapt_to(VoltageSource())
+      if level < levels - 2:  # intermediate levels: is a voltage source
+        high_source_model = VoltageSource()
+      else:  # last level: is a voltage sink, we use the lower FET as the source
+        high_source_model = VoltageSink()
+      high_prev = high_fet.source.adapt_to(high_source_model)
+      self.connect(driver.high_out, high_fet.gate.adapt_to(DigitalSink()))
+
+      # connect high side driver to bootstrap circuit
+      self.connect(driver.high_gnd, high_prev)
+      self.connect(high_prev, driver.high_pwr)  # TODO FIXME
 
       if level > 0:  # generate flying cap, if not the main input cap
         self.flying_cap[level] = flying_cap = self.Block(flying_cap_model)
         self.connect(low_source, flying_cap.neg.adapt_to(VoltageSink()))
         self.connect(high_drain, flying_cap.pos.adapt_to(VoltageSink()))
 
-    # TODO connect high_prev, which conflicts b/c it's VoltageSource as well
-    self.connect(low_prev, self.power_path.switch)
+    self.connect(high_prev, low_prev, self.power_path.switch)
 
     self.pwms.defined()  # allows structural generation, TODO remove me
 
@@ -127,13 +147,26 @@ class FcmlTest(JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
+      (self.reg_vgate, self.tp_vgate), _ = self.chain(
+        self.vusb,
+        imp.Block(BoostConverter(output_voltage=9*Volt(tol=0.1))),
+        self.Block(VoltageTestPoint())
+      )
+      self.vgate = self.connect(self.reg_vgate.pwr_out)
+
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
-        inductor_current_ripple=(0.1, 2)*Amp
+        inductor_current_ripple=(0.1, 2)*Amp,
+        fet_rds=(0, 0.015)*Ohm
       ))
       self.conv_out = imp.Block(PowerOutConnector((0, 2)*Amp))
-      self.connect(self.conv.pwr_in, self.vusb)
+      (self.conv_curr, ), _ = self.chain(
+        self.vusb,
+        self.Block(ForcedVoltageCurrentDraw((0, 0.3)*Amp)),
+        self.conv.pwr_in
+      )
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
+      self.connect(self.conv.pwr_gate, self.vgate)
     # TODO
 
     # 3V3 DOMAIN
@@ -157,13 +190,22 @@ class FcmlTest(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Stm32f103_48),  # TODO replace with FPGA
         (['reg_3v3'], Ldl1117),
+        (['reg_vgate'], Ap3012),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
         ]),
+
+        # JLC does not have frequency specs, must be checked TODO
+        (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
-        (PassiveConnector, PinHeader254),
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+        (TestPoint, CompactKeystone5015),
+        (HalfBridgeDriver, Ir2301),
+        (DigitalIsolator, Cbmud1200l),
       ],
     )
 
