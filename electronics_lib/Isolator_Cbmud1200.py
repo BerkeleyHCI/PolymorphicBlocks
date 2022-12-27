@@ -71,5 +71,5 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
       (self.ic.vib, self.ic.vob),
     ]
     for elt_name, (in_a_port, out_b_port) in zip(in_a_elts, channel_pairs):
-      self.connect(self.in_a.append_elt(elt_name, DigitalSink.empty()), in_a_port)
-      self.connect(self.out_b.append_elt(elt_name, DigitalSource.empty()), out_b_port)
+      self.connect(self.in_a.append_elt(DigitalSink.empty(), elt_name), in_a_port)
+      self.connect(self.out_b.append_elt(DigitalSource.empty(), elt_name), out_b_port)
