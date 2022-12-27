@@ -9,11 +9,6 @@ class OpampCurrentSensor(KiCadImportableBlock, Block):
   For a positive current (flowing from pwr_in -> pwr_out), this generates a positive voltage on the output.
   Output reference can be floating (eg, at Vdd/2) to allow bidirectional current sensing.
   """
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name == 'edg_importable:OpampCurrentSensor'
-    return {'+': self.pwr_in, '-': self.pwr_out, 'R': self.ref, '3': self.out,
-            'V+': self.pwr, 'V-': self.gnd}
-
   @init_in_parent
   def __init__(self, resistance: RangeLike, ratio: RangeLike, input_impedance: RangeLike):
     super().__init__()
@@ -36,3 +31,8 @@ class OpampCurrentSensor(KiCadImportableBlock, Block):
   def contents(self):
     self.connect(self.amp.input_positive, self.sense.sense_in)
     self.connect(self.amp.input_negative, self.sense.sense_out)
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'edg_importable:OpampCurrentSensor'
+    return {'+': self.pwr_in, '-': self.pwr_out, 'R': self.ref, '3': self.out,
+            'V+': self.pwr, 'V-': self.gnd}
