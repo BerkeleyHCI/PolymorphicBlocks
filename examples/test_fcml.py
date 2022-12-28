@@ -2,6 +2,7 @@ import unittest
 from typing import Optional
 
 from edg import *
+from .test_robotdriver import LipoConnector
 from .test_bldc import PowerOutConnector, CompactKeystone5015
 
 
@@ -181,12 +182,13 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
   def generate(self, levels: int, ratios: Range):
     assert levels >= 2, "levels must be 2 or more"
-    # TODO downsize the inductor
     self.power_path = self.Block(BuckConverterPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
       self.pwr_out.link().current_drawn, self.pwr_out.link().current_drawn,
       inductor_current_ripple=self.inductor_current_ripple,
-      dutycycle_limit=(0, 1)
+      input_voltage_ripple=250*mVolt,
+      dutycycle_limit=(0, 1),
+      inductor_scale=(levels - 1)**2
     ))
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
@@ -231,9 +233,12 @@ class FcmlTest(JlcBoardTop):
     super().contents()
 
     self.usb = self.Block(UsbCReceptacle())
+    self.conv_in = self.Block(LipoConnector(actual_voltage=20*Volt(tol=0)))
 
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.usb.gnd, self.conv_in.gnd)
     self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
@@ -259,15 +264,11 @@ class FcmlTest(JlcBoardTop):
 
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
-        inductor_current_ripple=(0.1, 2)*Amp,
+        inductor_current_ripple=(0.1, 1)*Amp,
         fet_rds=(0, 0.015)*Ohm
       ))
-      self.conv_out = imp.Block(PowerOutConnector((0, 2)*Amp))
-      (self.conv_curr, ), _ = self.chain(
-        self.vusb,
-        self.Block(ForcedVoltageCurrentDraw((0, 0.3)*Amp)),
-        self.conv.pwr_in
-      )
+      self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
+      self.connect(self.conv.pwr_in, self.conv_in.pwr)
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
       self.connect(self.conv.pwr_gate, self.vgate)
       self.connect(self.conv.pwr_ctl, self.v3v3)
