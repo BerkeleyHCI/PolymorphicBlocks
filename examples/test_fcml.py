@@ -181,6 +181,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
   def generate(self, levels: int, ratios: Range):
     assert levels >= 2, "levels must be 2 or more"
+    # TODO downsize the inductor
     self.power_path = self.Block(BuckConverterPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
       self.pwr_out.link().current_drawn, self.pwr_out.link().current_drawn,
@@ -309,6 +310,10 @@ class FcmlTest(JlcBoardTop):
         (HalfBridgeDriver, Ir2301),
         (DigitalIsolator, Cbmud1200l),
         (LinearRegulator, Ap2204k),  # for all the switching cells
+      ],
+      class_values=[
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        # (Fet, ['footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),  # don't seem to be alternatives
       ],
     )
 

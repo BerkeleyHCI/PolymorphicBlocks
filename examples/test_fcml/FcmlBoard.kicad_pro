@@ -154,7 +154,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "BldcDriverBoard.kicad_pro",
+    "filename": "FcmlBoard.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -186,7 +186,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "../BldcDriverBoard.net",
+      "netlist": "../FcmlTest.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
