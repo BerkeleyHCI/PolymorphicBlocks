@@ -1,10 +1,8 @@
-from typing import *
-
 from electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcPart
 
 
-class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock, JlcPart):
+class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -111,7 +109,7 @@ class Ldl1117(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -134,18 +132,18 @@ class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
     TOLERANCE = 0.02
     parts = [
       # output voltage, quiescent current
-      (5, 'AP2204K-5.0'),
-      (3.3, 'AP2204K-3.3'),
-      (3.0, 'AP2204K-3.0'),
-      (2.8, 'AP2204K-2.8'),
-      (2.5, 'AP2204K-2.5'),
-      (1.8, 'AP2204K-1.8'),
-      (1.5, 'AP2204K-1.5'),
+      (5, 'AP2204K-5.0', 'C112031'),
+      (3.3, 'AP2204K-3.3', 'C112032'),
+      (3.0, 'AP2204K-3.0', 'C460339'),
+      # (2.8, 'AP2204K-2.8'),  # not stocked at JLC
+      # (2.5, 'AP2204K-2.5'),
+      (1.8, 'AP2204K-1.8', 'C460338'),
+      # (1.5, 'AP2204K-1.5'),
     ]
-    suitable_parts = [(part_out_nominal, part_number) for part_out_nominal, part_number in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in output_voltage]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
-    part_output_voltage_nominal, part_number = suitable_parts[0]
+    part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
@@ -160,6 +158,8 @@ class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
       mfr='Diodes Incorporated', part=part_number,
       datasheet='https://www.diodes.com/assets/Datasheets/AP2204.pdf'
     )
+    self.assign(self.lcsc_part, jlc_number)
+    self.assign(self.actual_basic_part, False)
 
 
 class Ap2204k_Block(Block):
@@ -255,7 +255,7 @@ class Xc6209(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -270,15 +270,15 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
   def select_part(self, output_voltage: Range):
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
-      (2.5, 'AP2210K-2.5'),
-      (3.0, 'AP2210K-3.0'),
-      (3.3, 'AP2210K-3.3'),
-      (5.0, 'AP2210K-5.0'),
+      (2.5, 'AP2210K-2.5', 'C460340'),
+      # (3.0, 'AP2210K-3.0'),  # JLC part not available
+      (3.3, 'AP2210K-3.3', 'C176959'),
+      (5.0, 'AP2210K-5.0', 'C500758'),
     ]
-    suitable_parts = [(part_out_nominal, part_number) for part_out_nominal, part_number in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in output_voltage]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
-    part_output_voltage_nominal, part_number = suitable_parts[0]
+    part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
@@ -290,9 +290,11 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
         # pin 4 is BYP, optional
         '5': self.pwr_out,
       },
-      mfr='Torex Semiconductor Ltd', part=part_number,
-      datasheet='https://www.torexsemi.com/file/en/products/discontinued/-2016/53-XC6209_12.pdf',
+      mfr='Diodes Incorporated', part=part_number,
+      datasheet='https://www.diodes.com/assets/Datasheets/AP2210.pdf',
     )
+    self.assign(self.lcsc_part, jlc_number)
+    self.assign(self.actual_basic_part, False)
 
 
 class Ap2210(LinearRegulator):

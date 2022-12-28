@@ -285,7 +285,7 @@ class FcmlTest(JlcBoardTop):
         (TestPoint, CompactKeystone5015),
         (HalfBridgeDriver, Ir2301),
         (DigitalIsolator, Cbmud1200l),
-        (LinearRegulator, Lp5907),  # for all the switching cells
+        (LinearRegulator, Ap2204k),  # for all the switching cells
       ],
     )
 
