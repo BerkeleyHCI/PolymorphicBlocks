@@ -74,18 +74,41 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.connect(self.cap.pos.adapt_to(VoltageSink()), self.high_in)
 
     # bootstrap path
-    # boot_diode_model = Diode(
-    #   # TODO modeling
-    # )
-    # boot_cap_model = Capacitor(
-    #   capacitance=0.1*uFarad(tol=0.2),
-    #   voltage=self.pwr_in.link().voltage
-    # )
+    boot_diode_model = Diode(
+      reverse_voltage=self.in_voltage + self.low_boot_in.link().voltage,  # upper bound
+      current=(0, 0)*Amp,  # TODO model current draw, though it's probably negligibly small
+      voltage_drop=(0, 0.6)*Volt  # arbitrary to limit gate voltage droop
+    )
+    boot_cap_model = Capacitor(
+      capacitance=0.1*uFarad(tol=0.2),
+      voltage=self.low_boot_in.link().voltage
+    )
     if is_first:
       self.connect(self.low_boot_out, self.low_boot_in)
     else:
-      self.connect(self.low_boot_out, self.low_boot_in)  # TODO PLACEHOLDER
-    high_boot = self.high_boot_in
+      self.low_boot_diode = self.Block(boot_diode_model)
+      low_boot = self.low_boot_diode.cathode.adapt_to(VoltageSource(
+        voltage_out=self.low_boot_in.link().voltage
+      ))
+      self.connect(self.low_boot_in, self.low_boot_diode.anode.adapt_to(VoltageSink(
+        current_draw=low_boot.link().current_drawn
+      )))
+      self.connect(self.low_boot_out, low_boot)
+      self.low_boot_cap = self.Block(boot_cap_model)
+      self.connect(self.low_boot_cap.neg.adapt_to(VoltageSink()), self.low_in)
+      self.connect(self.low_boot_cap.pos.adapt_to(VoltageSink()), low_boot)
+
+    self.high_boot_diode = self.Block(boot_diode_model)
+    high_boot = self.high_boot_diode.cathode.adapt_to(VoltageSource(
+      voltage_out=self.high_boot_in.link().voltage
+    ))
+    self.connect(self.high_boot_in, self.high_boot_diode.anode.adapt_to(VoltageSink(
+      current_draw=high_boot.link().current_drawn
+    )))
+    self.high_boot_cap = self.Block(boot_cap_model)
+    self.connect(self.high_boot_cap.neg.adapt_to(VoltageSink()), self.high_out)
+    self.connect(self.high_boot_cap.pos.adapt_to(VoltageSink()), high_boot)
+
     if high_boot_out_connected:  # don't connect the port is it's not used since there isn't a downstream model
       self.connect(self.high_boot_out, high_boot)  # TODO PLACEHOLDER
 
@@ -160,7 +183,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
     assert levels >= 2, "levels must be 2 or more"
     self.power_path = self.Block(BuckConverterPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
-      self.pwr_out.link().current_drawn, (0, 1.5)*Amp,
+      self.pwr_out.link().current_drawn, self.pwr_out.link().current_drawn,
       inductor_current_ripple=self.inductor_current_ripple,
       dutycycle_limit=(0, 1)
     ))
