@@ -253,11 +253,12 @@ class NetlistTransform(TransformUtil.Transform):
     def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
       assert not pin1.params and not pin2.params
       # TODO rewrite rules to based on _anon internal depth, though elt[0] is likely where the _anon will be
-      if pin1.links and pin1.links[0].startswith('anon') and \
-          (not pin2.links or pin2.links[0].startswith('anon')):  # disprefer anon over anything else
+      # First disprefer anon or auto-generated names
+      if pin1.links and (pin1.links[0].startswith('anon') or pin1.links[0].startswith('_')) and \
+          (not pin2.links or pin2.links[0].startswith('anon') or pin2.links[0].startswith('_')):
         return 1
-      elif (not pin1.links or pin1.links[0].startswith('anon')) and \
-          (pin2.links and pin2.links[0].startswith('anon')):  # disprefer anon over anything else
+      elif (not pin1.links or pin1.links[0].startswith('anon') or pin1.links[0].startswith('_')) and \
+          (pin2.links and (pin2.links[0].startswith('anon') or pin2.links[0].startswith('_'))):
         return -1
       elif len(pin1.blocks) != len(pin2.blocks):  # prefer shorter block paths
         return len(pin1.blocks) - len(pin2.blocks)
@@ -269,6 +270,10 @@ class NetlistTransform(TransformUtil.Transform):
         return -1
       elif len(pin1.ports) != len(pin2.ports):  # prefer shorter port lengths
         return len(pin1.ports) - len(pin2.ports)
+      elif pin1.ports and not pin2.ports:  # prefer ports
+        return -1
+      elif not pin1.ports and pin2.ports:
+        return 1
       elif pin1.links and not pin2.links:  # prefer links
         return -1
       elif not pin1.links and pin2.links:

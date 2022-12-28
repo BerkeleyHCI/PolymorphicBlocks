@@ -375,7 +375,7 @@
   (sheetpath (names "/i2c_tp/") (tstamps "/07770242/"))
   (tstamps "08f50286"))
 (comp (ref "i2c_tp.tp_sda")
-  (value "RCT-0C (TE Connectivity) - i2c_tp.anon_link_1")
+  (value "RCT-0C (TE Connectivity) - i2c_tp._io_sda_link")
   (footprint "edg:TestPoint_TE_RCT_0805")
   (property (name "Sheetname") (value "i2c_tp"))
   (property (name "Sheetfile") (value "electronics_abstract_parts.AbstractTestPoint.I2cTestPoint"))
