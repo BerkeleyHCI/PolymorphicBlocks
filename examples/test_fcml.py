@@ -299,6 +299,10 @@ class FcmlTest(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
         ]),
 
+        # flying caps need to be beefier for high current rating (which isn't modeled)
+        (['conv', 'sw[1]', 'cap', 'footprint_spec'], 'Capacitor_SMD:C_1206_3216Metric'),
+        (['conv', 'sw[2]', 'cap', 'footprint_spec'], 'Capacitor_SMD:C_1206_3216Metric'),
+
         # JLC does not have frequency specs, must be checked TODO
         (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
         (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),

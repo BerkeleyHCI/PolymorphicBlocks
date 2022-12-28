@@ -75,6 +75,10 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
       (self.ic.via, self.ic.voa),
       (self.ic.vib, self.ic.vob),
     ]
+
+    self.cap_a = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_a, self.pwr_a)
+    self.cap_b = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_b, self.pwr_b)
+
     for elt_name, (in_a_port, out_b_port) in zip(in_a_elts, channel_pairs):
       self.connect(self.in_a.append_elt(DigitalSink.empty(), elt_name), in_a_port)
       self.connect(self.out_b.append_elt(DigitalSource.empty(), elt_name), out_b_port)
