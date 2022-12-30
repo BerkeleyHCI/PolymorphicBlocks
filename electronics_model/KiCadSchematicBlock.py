@@ -5,7 +5,7 @@ from typing import Type, Any, Optional, Mapping, Dict
 from edg_core import Block, BasePort
 from .VoltagePorts import CircuitPort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
-from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel
+from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
 
 
 class KiCadSchematicBlock(Block):
@@ -108,16 +108,16 @@ class KiCadSchematicBlock(Block):
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
             net_label_names = set()
-            global_label_names = set()
+            port_label_names = set()
             for net_label in net.labels:
                 if isinstance(net_label, KiCadLabel):  # only these are used for naming the net
                     net_label_names.add(net_label.name)
-                elif isinstance(net_label, KiCadGlobalLabel):  # global labels must be connected to ports or nodes
-                    global_label_names.add(net_label.name)  # add to set to deduplicate
+                elif isinstance(net_label, (KiCadGlobalLabel, KiCadHierarchicalLabel)):  # must connect to port or node
+                    port_label_names.add(net_label.name)  # add to set to deduplicate
                 else:
                     raise ValueError(f"unknown label type {net_label.__class__}")
 
-            for global_label_name in global_label_names:
+            for global_label_name in port_label_names:
                 if global_label_name in nodes:  # add nodes if needed
                     node = nodes[global_label_name]
                     if node is not None:
