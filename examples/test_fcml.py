@@ -20,7 +20,7 @@ class MultilevelSwitchingCell(GeneratorBlock):
   - it does not generate a flying capacitor on the input, since that is the input cap"""
   @init_in_parent
   def __init__(self, is_first: BoolLike = False, *,
-               in_voltage: RangeLike, fet_rds: RangeLike):
+               in_voltage: RangeLike, frequency: RangeLike, fet_rds: RangeLike):
     super().__init__()
     # in is generally towards the supply side, out is towards the inductor side
     self.low_in = self.Port(VoltageSink.empty())
@@ -40,6 +40,7 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.high_pwm = self.Port(DigitalSink.empty())
 
     self.in_voltage = self.ArgParameter(in_voltage)
+    self.frequency = self.ArgParameter(frequency)
     self.fet_rds = self.ArgParameter(fet_rds)
 
     self.generator(self.generate, is_first, self.high_boot_out.is_connected())
@@ -67,8 +68,12 @@ class MultilevelSwitchingCell(GeneratorBlock):
       voltage_out=self.low_in.link().voltage
     )), self.high_out)
 
+    # size the flying cap for max voltage change at max current
+    # Q = C dv => C = I*t / dV
+    MAX_FLYING_CAP_DV_PERCENT = 0.08
+    capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
     self.cap = self.Block(Capacitor(  # flying cap
-      capacitance=1*uFarad(tol=0.2),  # TODO size cap
+      capacitance=(capacitance, float('inf')*Farad),
       voltage=self.in_voltage
     ))
     self.connect(self.cap.neg.adapt_to(VoltageSink()), self.low_in)
@@ -128,10 +133,10 @@ class MultilevelSwitchingCell(GeneratorBlock):
       self.connect(self.iso.pwr_a, self.pwr_ctl)
       self.connect(self.iso.gnd_b, self.low_in)
       self.connect(self.iso.pwr_b, self.ldo.pwr_out)
-      self.connect(self.iso.in_a.request(f'low'), self.low_pwm)
       self.connect(self.iso.in_a.request(f'high'), self.high_pwm)
-      low_pwm = self.iso.out_b.request(f'low')
+      self.connect(self.iso.in_a.request(f'low'), self.low_pwm)
       high_pwm = self.iso.out_b.request(f'high')
+      low_pwm = self.iso.out_b.request(f'low')
 
     self.driver = self.Block(HalfBridgeDriver())
     self.connect(self.driver.gnd, self.low_in)
@@ -200,6 +205,7 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
       self.sw[level] = sw = self.Block(MultilevelSwitchingCell(
         last_sw is None,
         in_voltage=self.pwr_in.link().voltage,
+        frequency=self.frequency,
         fet_rds=self.fet_rds
       ))
       self.connect(sw.gnd_ctl, self.gnd)
