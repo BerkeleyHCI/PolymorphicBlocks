@@ -121,6 +121,12 @@ class KiCadGlobalLabel(KiCadBaseLabel):
     assert parse_symbol(sexp[0]) == 'global_label'
 
 
+class KiCadHierarchicalLabel(KiCadBaseLabel):
+  def __init__(self, sexp: List[Any]):
+    super().__init__(sexp)
+    assert parse_symbol(sexp[0]) == 'hierarchical_label'
+
+
 class KiCadSymbol:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
@@ -203,6 +209,7 @@ class KiCadSchematic:
     wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
     labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
     labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
+    labels.extend([KiCadHierarchicalLabel(elt) for elt in sexp_dict.get('hierarchical_label', [])])
 
     all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     # separate out power and non-power symbols, power symbols stay internal
