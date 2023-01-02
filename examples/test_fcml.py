@@ -271,7 +271,7 @@ class FcmlTest(JlcBoardTop):
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
         inductor_current_ripple=(0.1, 1)*Amp,
-        fet_rds=(0, 0.015)*Ohm
+        fet_rds=(0, 0.010)*Ohm
       ))
       self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
       self.connect(self.conv.pwr_in, self.conv_in.pwr)
@@ -324,7 +324,7 @@ class FcmlTest(JlcBoardTop):
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        # (Fet, ['footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),  # don't seem to be alternatives
+        (Fet, ['footprint_spec'], 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm'),  # don't seem to be alternatives
       ],
     )
 

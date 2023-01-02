@@ -7,12 +7,18 @@ from .JlcPart import JlcTablePart, DescriptionParser
 
 class JlcBaseFet(BaseTableFet, JlcTablePart):
   PACKAGE_FOOTPRINT_MAP = {
+    'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3L': 'Package_TO_SOT_SMD:SOT-23',
-    'TO-252-2': 'Package_TO_SOT_SMD:TO-252-2',  # aka DPak
+    'TO-252': 'Package_TO_SOT_SMD:TO-252-2',  # aka DPak
+    'TO-252-2': 'Package_TO_SOT_SMD:TO-252-2',
     'TO-263-2': 'Package_TO_SOT_SMD:TO-263-2',  # aka D2Pak
     'SOT-223': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
     'SOT-223-3': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+    'SO-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+    'SOIC-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+    'SOP-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+    'SOP-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
