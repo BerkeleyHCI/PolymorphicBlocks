@@ -41,7 +41,7 @@ class Ir2301_Device(JlcPart, FootprintBlock):
 
   def contents(self):
     self.footprint(
-      'U', 'Package_SO:SO-8_3.9x4.9mm_P1.27mm',
+      'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
         '1': self.vcc,
         '2': self.hin,
