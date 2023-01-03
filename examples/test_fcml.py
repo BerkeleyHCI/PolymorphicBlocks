@@ -250,7 +250,7 @@ class FcmlTest(JlcBoardTop):
     super().contents()
 
     self.usb = self.Block(UsbCReceptacle())
-    self.conv_in = self.Block(LipoConnector(actual_voltage=20*Volt(tol=0)))
+    self.conv_in = self.Block(LipoConnector(voltage=20*Volt(tol=0), actual_voltage=20*Volt(tol=0)))
 
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       self.usb.gnd, self.conv_in.gnd)
@@ -303,6 +303,8 @@ class FcmlTest(JlcBoardTop):
         self.mcu.gpio.request_vector('pwm'),
         imp.Block(DigitalLowPassRcArray(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))),
         self.conv.pwms)
+
+      # TODO resistive divider feedback
 
     # Misc board
     self.duck = self.Block(DuckLogo())
