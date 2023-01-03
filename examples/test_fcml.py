@@ -68,16 +68,17 @@ class MultilevelSwitchingCell(GeneratorBlock):
       voltage_out=self.low_in.link().voltage
     )), self.high_out)
 
-    # size the flying cap for max voltage change at max current
-    # Q = C dv => C = I*t / dV
-    MAX_FLYING_CAP_DV_PERCENT = 0.08
-    capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
-    self.cap = self.Block(Capacitor(  # flying cap
-      capacitance=(capacitance, float('inf')*Farad),
-      voltage=self.in_voltage
-    ))
-    self.connect(self.cap.neg.adapt_to(VoltageSink()), self.low_in)
-    self.connect(self.cap.pos.adapt_to(VoltageSink()), self.high_in)
+    if not is_first:  # first FETs rely on the main input capacitors
+      # size the flying cap for max voltage change at max current
+      # Q = C dv => C = I*t / dV
+      MAX_FLYING_CAP_DV_PERCENT = 0.08
+      capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
+      self.cap = self.Block(Capacitor(  # flying cap
+        capacitance=(capacitance, float('inf')*Farad),
+        voltage=self.in_voltage
+      ))
+      self.connect(self.cap.neg.adapt_to(VoltageSink()), self.low_in)
+      self.connect(self.cap.pos.adapt_to(VoltageSink()), self.high_in)
 
     # bootstrap path
     boot_diode_model = Diode(
