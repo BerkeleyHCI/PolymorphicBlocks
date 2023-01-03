@@ -289,7 +289,8 @@ class FcmlTest(JlcBoardTop):
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
-      self.connect(self.mcu.gpio.request_vector('pwm'), self.conv.pwms)
+      # self.connect(self.mcu.gpio.request_vector('pwm'), self.conv.pwms)
+      # TODO add RC filters, 150ohm 150pF
 
     # Misc board
     self.duck = self.Block(DuckLogo())
