@@ -24,7 +24,7 @@ from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandar
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import LowPassRc, DigitalLowPassRc, LowPassRcDac, PullupDelayRc
+from .PassiveFilters import LowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
 from .I2cPullup import I2cPullup
 
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardPinning, TableDiode

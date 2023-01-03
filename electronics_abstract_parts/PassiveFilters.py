@@ -1,5 +1,5 @@
 from math import pi
-from typing import Optional, cast
+from typing import Optional, cast, List
 
 from electronics_model import *
 from .AbstractResistor import Resistor
@@ -79,6 +79,32 @@ class DigitalLowPassRc(DigitalFilter, Block):
     )))
 
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+
+
+class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
+  """Array of DigitalLowPassRc, currently takes its size from the output.
+  TODO: properly size when either input or output is sized?
+  """
+  @init_in_parent
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
+    super().__init__()
+    self.input = self.Port(Vector(DigitalSink.empty()), [Input])
+    self.output = self.Port(Vector(DigitalSource.empty()), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+
+    self.generator(self.generate, self.output.requested())
+
+  def generate(self, outputs: List[str]):
+    self.elts = ElementDict[DigitalLowPassRc]()
+    model = DigitalLowPassRc(self.impedance, self.cutoff_freq)
+    for requested in outputs:
+      self.elts[requested] = elt = self.Block(model)
+      self.connect(self.input.append_elt(DigitalSink.empty(), requested), elt.input)
+      self.connect(self.output.append_elt(DigitalSource.empty(), requested), elt.output)
+      self.connect(self.gnd, elt.gnd)
 
 
 class LowPassRcDac(AnalogFilter, Block):
