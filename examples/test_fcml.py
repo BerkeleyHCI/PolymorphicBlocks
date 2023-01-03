@@ -20,7 +20,8 @@ class MultilevelSwitchingCell(GeneratorBlock):
   - it does not generate a flying capacitor on the input, since that is the input cap"""
   @init_in_parent
   def __init__(self, is_first: BoolLike = False, *,
-               in_voltage: RangeLike, frequency: RangeLike, fet_rds: RangeLike):
+               in_voltage: RangeLike, frequency: RangeLike, fet_rds: RangeLike,
+               gate_res: RangeLike):
     super().__init__()
     # in is generally towards the supply side, out is towards the inductor side
     self.low_in = self.Port(VoltageSink.empty())
@@ -42,6 +43,7 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.in_voltage = self.ArgParameter(in_voltage)
     self.frequency = self.ArgParameter(frequency)
     self.fet_rds = self.ArgParameter(fet_rds)
+    self.gate_res = self.ArgParameter(gate_res)
 
     self.generator(self.generate, is_first, self.high_boot_out.is_connected())
 
@@ -146,8 +148,15 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.connect(self.driver.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
     self.connect(self.driver.high_pwr, high_boot)
-    self.connect(self.driver.low_out, self.low_fet.gate.adapt_to(DigitalSink()))
-    self.connect(self.driver.high_out, self.high_fet.gate.adapt_to(DigitalSink()))
+
+    # gate resistors
+    gate_res_model = Resistor(self.gate_res)
+    self.low_gate_res = self.Block(gate_res_model)
+    self.connect(self.driver.low_out, self.low_gate_res.a.adapt_to(DigitalSink()))
+    self.connect(self.low_gate_res.b, self.low_fet.gate)
+    self.high_gate_res = self.Block(gate_res_model)
+    self.connect(self.driver.high_out, self.high_gate_res.a.adapt_to(DigitalSink()))
+    self.connect(self.high_gate_res.b, self.high_fet.gate)
 
 
 class DiscreteMutlilevelBuckConverter(GeneratorBlock):
@@ -207,7 +216,8 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
         last_sw is None,
         in_voltage=self.pwr_in.link().voltage,
         frequency=self.frequency,
-        fet_rds=self.fet_rds
+        fet_rds=self.fet_rds,
+        gate_res=22*Ohm(tol=0.05)
       ))
       self.connect(sw.gnd_ctl, self.gnd)
       self.connect(sw.pwr_ctl, self.pwr_ctl)
