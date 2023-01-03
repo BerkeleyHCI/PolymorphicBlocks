@@ -249,16 +249,19 @@ class FcmlTest(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
+    self.usb_mcu = self.Block(UsbCReceptacle())
+    self.usb_fpga = self.Block(UsbCReceptacle())
+
     self.conv_in = self.Block(LipoConnector(voltage=20*Volt(tol=0), actual_voltage=20*Volt(tol=0)))
 
+    self.vusb_merge = self.Block(MergedVoltageSource()).connected_from(self.usb_mcu.pwr, self.usb_fpga.pwr)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.conv_in.gnd)
-    self.vusb = self.connect(self.usb.pwr)
+      self.usb_mcu.gnd, self.usb_fpga.gnd, self.conv_in.gnd)
+    self.vusb = self.connect(self.vusb_merge.pwr_out)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
 
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_merge.pwr_out)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
 
     # POWER
     with self.implicit_connect(
@@ -295,12 +298,31 @@ class FcmlTest(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # FPGA BLOCK
+      self.fpga = imp.Block(Ice40up5k_Sg48())
+
+      (self.fpga_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw'))
+      (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
+      (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
+
+      (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(
+        imp.Block(UsbBitBang()).connected_from(
+          self.fpga.gpio.request('usb_dp_pull'), self.fpga.gpio.request('usb_dp'), self.fpga.gpio.request('usb_dm')),
+        imp.Block(UsbEsdDiode()),
+        self.usb_fpga.usb)
+
+      # MICROCONTROLLER BLOCK
       self.mcu = imp.Block(IoController())
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.mcu_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+      (self.mcu_leds, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
+
+      (self.usb_mcu_esd, ), _ = self.chain(self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()),
+                                           self.usb_mcu.usb)
+
+      # FCML CONTROL BLOCK
       (self.pwm_filter, ), _ = self.chain(
-        self.mcu.gpio.request_vector('pwm'),
+        self.fpga.gpio.request_vector('pwm'),
         imp.Block(DigitalLowPassRcArray(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))),
         self.conv.pwms)
 
@@ -314,12 +336,17 @@ class FcmlTest(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Stm32f103_48),  # TODO replace with FPGA
+        (['mcu'], Rp2040),
         (['reg_3v3'], Ldl1117),
+        (['fpga', 'vcc_reg'], Ld1117),
         (['reg_vgate'], Ap3012),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+
+        ]),
+        (['fpga', 'pin_assigns'], [
+
         ]),
 
         # flying caps need to be beefier for high current rating (which isn't modeled)
@@ -331,7 +358,7 @@ class FcmlTest(JlcBoardTop):
         (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
         (HalfBridgeDriver, Ir2301),

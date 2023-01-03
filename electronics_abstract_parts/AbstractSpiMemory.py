@@ -1,3 +1,4 @@
+from electronics_model import *
 from .Categories import *
 
 
