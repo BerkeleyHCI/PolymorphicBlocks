@@ -956,7 +956,7 @@
     (property "edg_short_path" "conv.sw[2].low_boot_cap")
     (path "/00000000-0000-0000-0000-0000042f01b7/00000000-0000-0000-0000-000005f201d5/00000000-0000-0000-0000-000020ac04f9")
     (attr smd)
-    (fp_text reference "C29" (at -1 -1.43 90) (layer "F.SilkS")
+    (fp_text reference "C29" (at 2 -0.02 180) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp c686c4c9-e0c9-4698-aa51-22f8336b1e00)
     )
