@@ -48,6 +48,9 @@ from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
 from .Microcontroller_Esp32 import Esp32_Wroom_32
+from .Microcontroller_Rp2040 import Rp2040
+from .Fpga_Ice40up import Ice40up5k_Sg48
+
 from .IoExpander_Pcf8574 import Pcf8574
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
@@ -78,6 +81,7 @@ from .BatteryProtector_S8200A import BatteryProtector_S8200A
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
+from .SpiMemory_W25q import W25q
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode

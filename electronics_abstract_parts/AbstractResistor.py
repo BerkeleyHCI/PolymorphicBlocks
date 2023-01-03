@@ -129,7 +129,9 @@ class PullupResistor(DiscreteApplication):
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
     self.pwr = self.Export(self.res.a.adapt_to(VoltageSink()), [Power])
-    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [InOut])
+    self.io = self.Export(self.res.b.adapt_to(
+      DigitalSingleSource.high_from_supply(self.pwr, is_pullup=True)
+    ), [InOut])
 
   def connected(self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PullupResistor':
@@ -150,7 +152,9 @@ class PulldownResistor(DiscreteApplication):
     self.res = self.Block(Resistor(resistance, 0*Watt(tol=0)))  # TODO automatically calculate power
 
     self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
-    self.io = self.Export(self.res.b.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)), [InOut])
+    self.io = self.Export(self.res.b.adapt_to(
+      DigitalSingleSource.low_from_supply(self.gnd, is_pulldown=True)
+    ), [InOut])
 
   def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PulldownResistor':

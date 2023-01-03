@@ -71,6 +71,25 @@ class IndicatorLed(Light):
     self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
 
+class IndicatorLedArray(Light, GeneratorBlock):
+  """An array of IndicatorLed, just a convenience wrapper."""
+  @init_in_parent
+  def __init__(self, count: IntLike, current_draw: RangeLike = (1, 10) * mAmp):
+    super().__init__()
+    self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
+    self.gnd = self.Port(VoltageSink.empty(), [Common])
+
+    self.current_draw = self.ArgParameter(current_draw)
+    self.generator(self.generate, count)
+
+  def generate(self, count: int):
+    self.led = ElementDict[IndicatorSinkLed]()
+    for led_i in range(count):
+      led = self.led[str(led_i)] = self.Block(IndicatorLed(self.current_draw))
+      self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
+      self.connect(led.gnd, self.gnd)
+
+
 @abstract_block
 class IndicatorSinkLed(Light, Block):
   """Abstract part for an low-side-driven ("common anode") indicator LED"""

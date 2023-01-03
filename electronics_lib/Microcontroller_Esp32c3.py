@@ -23,7 +23,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     ))
     self.gnd.init_from(Ground())
 
-    self.dio_model = dio_model = DigitalBidir.from_supply(  # table 4.4
+    dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 40)*mAmp,
@@ -52,17 +52,6 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
       'RXD': self.uart0.rx,
     })
 
-    self.abstract_pinmaps = self.mappable_ios(dio_model)
-
-    # TODO add JTAG support
-
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested())
-
-  @staticmethod
-  def mappable_ios(dio_model: DigitalBidir) -> PinMapUtil:
     adc_model = AnalogSink(
       voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
       current_draw=(0, 0) * Amp,
@@ -73,7 +62,7 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
 
-    return PinMapUtil([  # section 2.2
+    self.abstract_pinmaps = PinMapUtil([  # section 2.2
       PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
       PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
       # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
@@ -103,6 +92,13 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
         'dp': ['GPIO19'], 'dm': ['GPIO18']
       }),
     ])
+
+    # TODO add JTAG support
+
+    self.generator(self.generate, self.pin_assigns,
+                   self.gpio.requested(), self.adc.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested())
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
@@ -167,15 +163,11 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     )
 
 
-
 class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self.ic = self.Block(Esp32c3_Wroom02_Device(pin_assigns=self.pin_assigns))
-
   def contents(self) -> None:
     super().contents()
+    self.ic = self.Block(Esp32c3_Wroom02_Device(pin_assigns=self.pin_assigns))
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
     self._export_ios_from(self.ic)

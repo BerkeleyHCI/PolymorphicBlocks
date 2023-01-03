@@ -7,7 +7,7 @@ from .PartsTablePart import PartsTablePart, PartsTableFootprint
 from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
-from .Categories import IntegratedCircuit, Microcontroller, Memory, RealtimeClock, PowerConditioner
+from .Categories import IntegratedCircuit, Microcontroller, Fpga, Memory, RealtimeClock, PowerConditioner
 from .Categories import Connector, BarrelJack, ProgrammingConnector
 from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
 from .Categories import SpecificApplicationSubcircuit
@@ -32,7 +32,7 @@ from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode
 from .AbstractLed import Led, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed
-from .AbstractLed import IndicatorSinkLedArray
+from .AbstractLed import IndicatorLedArray, IndicatorSinkLedArray
 from .AbstractFets import Fet, FetStandardPinning, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 
@@ -41,6 +41,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, DigitalSwitch
 from .AbstractOpamp import Opamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
+from .AbstractSpiMemory import SpiMemory
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
 from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter
@@ -54,6 +55,8 @@ from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .GateDrivers import HalfBridgeDriver
 from .DigitalIsolator import DigitalIsolator
+from .I2cPullup import I2cPullup
+from .UsbBitBang import UsbBitBang
 
 from .IoController import BaseIoController, IoController
 from .PinMappable import PinMappable, PinMapUtil

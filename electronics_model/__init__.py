@@ -6,6 +6,7 @@ from .VoltagePorts import CircuitPort
 from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry
 from .Units import Volt, mVolt, Watt, Amp, mAmp, uAmp, nAmp, pAmp
 from .Units import Second, mSecond, uSecond, nSecond, Hertz, kHertz, MHertz
+from .Units import Bit, kiBit, MiBit
 from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
