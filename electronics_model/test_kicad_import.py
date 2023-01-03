@@ -18,6 +18,14 @@ class KiCadBlock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
 
 
+class KiCadHierarchyLabelBlock(KiCadSchematicBlock):
+    """Block that uses a hierarchy label for its port mapping."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_hierarchical_label.kicad_sch"))
+
+
 class KiCadTunnelBlock(KiCadSchematicBlock):
     """Block that has its implementation completely defined in KiCad, including using net labels as a tunnel."""
     def __init__(self) -> None:
@@ -91,6 +99,9 @@ class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
+
+    def test_hierarchy_label_block(self):
+        self.check_connectivity(KiCadHierarchyLabelBlock)
 
     def test_tunnel_block(self):
         self.check_connectivity(KiCadTunnelBlock)
