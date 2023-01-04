@@ -5,12 +5,18 @@ from typing import Type
 from . import *
 from . import test_netlist
 from .RefdesRefinementPass import RefdesRefinementPass
+from .BomBackend import BomTransform, BomBackend
 
 
 class NetlistTestCase(unittest.TestCase):
   def generate_net(self, design: Type[Block]):
     compiled = ScalaCompiler.compile(design)
     compiled.append_values(RefdesRefinementPass().run(compiled))
+
+    compiled2 = ScalaCompiler.compile(design)
+    BomTransform(compiled2).run()
+    BomBackend().run(compiled2)
+
     return NetlistBackend().run(compiled)[0][1]
 
   def test_basic_kicad(self):
