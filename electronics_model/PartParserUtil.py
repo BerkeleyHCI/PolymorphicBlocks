@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TypeVar, Type, overload, Union, Tuple
+from typing import TypeVar, Type, overload, Union, Tuple, Optional
 
 
 class PartParserUtil:
@@ -12,7 +12,6 @@ class PartParserUtil:
     pass
 
   SI_PREFIX_DICT = {
-    '': 1,
     'p': 1e-12,
     'n': 1e-9,
     'μ': 1e-6,
@@ -28,35 +27,51 @@ class PartParserUtil:
   VALUE_REGEX = re.compile(f'^([\d./]+)\s*([{SI_PREFIXES}]?)(.*)$')
   DefaultType = TypeVar('DefaultType')
   @classmethod
-  @overload
-  def parse_value(cls, value: str, units: str) -> float: ...
-  @classmethod
-  @overload
-  def parse_value(cls, value: str, units: str, default: DefaultType) -> Union[DefaultType, float]: ...
-  @classmethod
-  def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], DefaultType] = ParseError) -> Union[DefaultType, float]:
+  def parse_value(cls, value: str, units: str) -> float:
     """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
     Supports inline prefix notation (eg, 2k2R) and fractional notation (eg, 1/16W)
     If the input is not a value:
       if default is not specified, raises a ParseError.
       if default is specified, returns the default."""
-    matches = cls.VALUE_REGEX.match(value)
-    if matches is not None and matches.group(3) == units:
+    value = value.strip()
+    # validate units
+    if not value.endswith(units):
+      raise cls.ParseError(f"'{value}' does not have expected units '{units}'")
+    value = value.removesuffix(units)
+    # do not re-strip here, prefix must directly precede units
+    prefix: Optional[str] = None
+    if value[-1] in cls.SI_PREFIX_DICT.keys():
+      prefix = value[-1]
+      value = value[:-1]
+    value = value.strip()  # allow a space between the value and prefix + units
+
+    # at this point, only the numeric part remains (possibly with inline prefix, like 2k2)
+    if '/' in value:  # fractional case
+      fractional_components = value.split('/')
+      if len(fractional_components) != 2:
+        raise cls.ParseError(f"'{value}' has invalid fractional format")
       try:
-        if '/' in matches.group(1):
-          fractional_components = matches.group(1).split('/')
-          assert len(fractional_components) == 2
-          numeric_value = float(fractional_components[0]) / float(fractional_components[1])
-        else:
-          numeric_value = float(matches.group(1))
-        return numeric_value * cls.SI_PREFIX_DICT[matches.group(2)]
+        numeric_value = float(fractional_components[0]) / float(fractional_components[1])
       except ValueError:
-        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
+        raise cls.ParseError(f"'{value}' is not a valid fraction")
+    else:  # numeric case, possibly with inline prefix
+      if value.isnumeric():
+        numeric_value = float(value)
+      else:  # check for inline prefix
+        for test_prefix in cls.SI_PREFIX_DICT.keys():
+          if test_prefix in value:
+            value = value.replace(test_prefix, '.', 1)  # only replace the first one
+            if prefix is not None:
+              raise cls.ParseError(f"'{value}' contains multiple SI prefixes")
+            prefix = test_prefix
+        try:
+          numeric_value = float(value)
+        except ValueError:
+          raise cls.ParseError(f"'{value}' is not numeric")
+    if prefix is not None:
+      return numeric_value * cls.SI_PREFIX_DICT[prefix]
     else:
-      if default == cls.ParseError:
-        raise cls.ParseError(f"Cannot parse units '{units}' from '{value}'")
-      else:
-        return default  # type:ignore
+      return numeric_value
 
   TOLERANCE_REGEX = re.compile(f'^(±)?\s*([\d.]+)\s*(ppm|%)$')
   @classmethod
