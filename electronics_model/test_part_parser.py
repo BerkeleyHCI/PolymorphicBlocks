@@ -10,8 +10,10 @@ class PartsTableUtilsTest(unittest.TestCase):
     self.assertEqual(PartParserUtil.parse_value('20F', 'F'), 20)
     self.assertEqual(PartParserUtil.parse_value('50 kV', 'V'), 50e3)
     self.assertEqual(PartParserUtil.parse_value('49.9 GΩ', 'Ω'), 49.9e9)
-    self.assertEqual(PartParserUtil.parse_value('49.9 GΩ', 'Ω'), 49.9e9)
+    self.assertEqual(PartParserUtil.parse_value('49G9 Ω', 'Ω'), 49.9e9)
 
+    with self.assertRaises(PartParserUtil.ParseError):
+      self.assertEqual(PartParserUtil.parse_value('50 k V', 'V'), None)
     with self.assertRaises(PartParserUtil.ParseError):
       self.assertEqual(PartParserUtil.parse_value('50 kA', 'V'), None)
     with self.assertRaises(PartParserUtil.ParseError):
@@ -20,6 +22,8 @@ class PartsTableUtilsTest(unittest.TestCase):
       self.assertEqual(PartParserUtil.parse_value('50 k', 'V'), None)
     with self.assertRaises(PartParserUtil.ParseError):
       self.assertEqual(PartParserUtil.parse_value('ducks', 'V'), None)
+    with self.assertRaises(PartParserUtil.ParseError):
+      self.assertEqual(PartParserUtil.parse_value('50k1 kV', 'V'), None)
     with self.assertRaises(PartParserUtil.ParseError):
       self.assertEqual(PartParserUtil.parse_value('50.1.2 V', 'V'), None)
     with self.assertRaises(PartParserUtil.ParseError):
