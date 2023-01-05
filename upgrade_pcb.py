@@ -11,12 +11,22 @@ parser.add_argument('input_netlist', type=argparse.FileType('r'))
 parser.add_argument('output_pcb', type=argparse.FileType('w'))
 args = parser.parse_args()
 
+# build pathname -> new timestamp mapping
+net_sexp = sexpdata.loads(args.input_netlist.read())
+assert parse_symbol(net_sexp[0]) == 'export'
+net_dict = group_by_car(net_sexp)
+
+net_components = net_dict['components']
+assert len(net_components) == 1
+for elt in net_components[0][1:]:
+  assert parse_symbol(elt[0]) == 'comp'
+  elt_dict = group_by_car(elt)
+  print(elt_dict['tstamps'])
+
 pcb_sexp = sexpdata.loads(args.input_pcb.read())
 assert parse_symbol(pcb_sexp[0]) == 'kicad_pcb'
 pcb_dict = group_by_car(pcb_sexp)
 
-netlist_sexp = sexpdata.loads(args.input_netlist.read())
-assert parse_symbol(netlist_sexp[0]) == 'export'
-netlist_dict = group_by_car(netlist_sexp)
-
-print(pcb_dict)
+for elt in pcb_dict['module']:
+  elt_dict = group_by_car(elt)
+  print(elt_dict['tstamp'])
