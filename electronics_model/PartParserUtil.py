@@ -36,7 +36,7 @@ class PartParserUtil:
   @classmethod
   def parse_value(cls, value: str, units: str, default: Union[Type[ParseError], DefaultType] = ParseError) -> Union[DefaultType, float]:
     """Parses a value with unit and SI prefixes, for example '20 nF' would be parsed as 20e-9.
-    Additionally supports fractional notation, eg 1/16W
+    Supports inline prefix notation (eg, 2k2R) and fractional notation (eg, 1/16W)
     If the input is not a value:
       if default is not specified, raises a ParseError.
       if default is specified, returns the default."""
