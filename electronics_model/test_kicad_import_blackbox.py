@@ -13,7 +13,7 @@ class KiCadBlackboxBlock(KiCadSchematicBlock):
         super().__init__()
         self.pwr = self.Port(VoltageSink.empty())
         self.gnd = self.Port(Ground.empty())
-        self.pwr = self.Port(AnalogSource.empty())
+        self.out = self.Port(AnalogSource.empty())
         self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"),
                           conversions={  # ideal ports only here
                               'pwr': VoltageSink(),
@@ -22,8 +22,8 @@ class KiCadBlackboxBlock(KiCadSchematicBlock):
                           })
 
 
-class KiCadImportProtoTestCase(unittest.TestCase):
-    def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
+class KiCadImportBlackboxTestCase(unittest.TestCase):
+    def test_import_blackbox(self):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
         pb = KiCadBlackboxBlock()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))
