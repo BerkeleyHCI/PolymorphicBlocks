@@ -1,7 +1,8 @@
 import unittest
 
-from edg_core import Block, Builder
-from electronics_model import KiCadSchematicBlock, VoltageSink, Ground, AnalogSource
+import edgir
+from edg_core import Builder
+from electronics_model import KiCadSchematicBlock, Passive
 
 
 class KiCadBlackboxBlock(KiCadSchematicBlock):
@@ -9,19 +10,57 @@ class KiCadBlackboxBlock(KiCadSchematicBlock):
     map to one of the abstract types."""
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Port(VoltageSink.empty(), optional=True)
-        self.gnd = self.Port(Ground.empty(), optional=True)
-        self.out = self.Port(AnalogSource.empty(), optional=True)
-        self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"),
-                          conversions={  # ideal ports only here
-                              'U1.Vdd': VoltageSink(),
-                              'U1.GND': Ground(),
-                              'res.2': AnalogSource(),
-                          })
+        self.pwr = self.Port(Passive.empty(), optional=True)
+        self.gnd = self.Port(Passive.empty(), optional=True)
+        self.out = self.Port(Passive.empty(), optional=True)
+        self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"))
 
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):
     def test_import_blackbox(self):
         # the elaborate_toplevel wrapper is needed since the inner block uses array ports
         pb = Builder.builder.elaborate_toplevel(KiCadBlackboxBlock())
-        print(pb)
+        constraints = list(map(lambda pair: pair.value, pb.constraints))
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'pwr'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'U1'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'ports'
+        expected_conn.exported.internal_block_port.ref.steps.add().allocate = '1'
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'gnd'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'U1'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'ports'
+        expected_conn.exported.internal_block_port.ref.steps.add().allocate = '3'
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
+        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
+        expected_conn.connected.link_port.ref.steps.add().allocate = ''
+        expected_conn.connected.block_port.ref.steps.add().name = 'U1'
+        expected_conn.connected.block_port.ref.steps.add().name = 'ports'
+        expected_conn.connected.block_port.ref.steps.add().allocate = '2'
+        self.assertIn(expected_conn, constraints)
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
+        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
+        expected_conn.connected.link_port.ref.steps.add().allocate = ''
+        expected_conn.connected.block_port.ref.steps.add().name = 'res'
+        expected_conn.connected.block_port.ref.steps.add().name = 'a'
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'out'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'res'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'b'
+
+        self.assertIn(expected_conn, constraints)
+
+        # resistor not checked, responsibility of another test
+        # U1.kicad_pins not checked, because array assign syntax is wonky
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_refdes_prefix'], 'U'), constraints)
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_footprint'], 'Package_TO_SOT_SMD:SOT-23'), constraints)
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_part'], 'Sensor_Temperature:MCP9700AT-ETT'), constraints)
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_value'], 'MCP9700AT-ETT'), constraints)
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_datasheet'], 'http://ww1.microchip.com/downloads/en/DeviceDoc/21942e.pdf'), constraints)

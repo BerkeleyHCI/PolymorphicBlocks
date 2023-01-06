@@ -109,12 +109,13 @@ class KiCadSchematicBlock(Block):
 
         for symbol in sch.symbols:
             if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
-                pins = [pin.name for pin in sch.lib_symbols[symbol.lib_ref].pins]
+                pins = sch.lib_symbols[symbol.lib_ref].pins
+                pin_numbers = [pin.number for pin in pins]
                 refdes_prefix = symbol.refdes.rstrip('0123456789?')
                 blackbox_block = self.Block(KiCadBlackboxComponent(
-                    pins, refdes_prefix, symbol.properties['Footprint'],
+                    pin_numbers, refdes_prefix, symbol.properties['Footprint'],
                     symbol.lib, symbol.properties.get('Value', ''), symbol.properties.get('Datasheet', '')))
-                block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pins}
+                block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pin_numbers}
                 setattr(self, symbol.refdes, blackbox_block)
             elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
