@@ -114,7 +114,8 @@ class KiCadSchematicBlock(Block):
                 refdes_prefix = symbol.refdes.rstrip('0123456789?')
                 blackbox_block = self.Block(KiCadBlackboxComponent(
                     pin_numbers, refdes_prefix, symbol.properties['Footprint'],
-                    symbol.lib, symbol.properties.get('Value', ''), symbol.properties.get('Datasheet', '')))
+                    kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
+                    kicad_datasheet=symbol.properties.get('Datasheet', '')))
                 block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pin_numbers}
                 setattr(self, symbol.refdes, blackbox_block)
             elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
