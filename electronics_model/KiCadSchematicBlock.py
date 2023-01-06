@@ -1,11 +1,37 @@
 import inspect
 import os
-from typing import Type, Any, Optional, Mapping, Dict
+from typing import Type, Any, Optional, Mapping, Dict, List
 
-from edg_core import Block, BasePort
+from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike
+from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
+from .PassivePort import Passive
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
+
+
+class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
+    """A footprint block that is fully defined (both value fields and structural pins) by its argument parameters
+    and has all passive ports.
+    """
+    @init_in_parent
+    def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
+                 kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
+        super().__init__()
+        self.ports = self.Port(Vector(Passive()))
+        self.kicad_refdes_prefix = self.ArgParameter(kicad_refdes_prefix)
+        self.kicad_footprint = self.ArgParameter(kicad_footprint)
+        self.kicad_part = self.ArgParameter(kicad_part)
+        self.kicad_value = self.ArgParameter(kicad_value)
+        self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
+
+        self.generator(self.generate, kicad_pins)
+
+    def generate(self, kicad_pins: List[str]):
+        mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
+                   for pin_name in kicad_pins}
+        self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
+                       part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
 
 class KiCadSchematicBlock(Block):
@@ -82,10 +108,21 @@ class KiCadSchematicBlock(Block):
         blocks_pins: Dict[str, Mapping[str, BasePort]] = {}
 
         for symbol in sch.symbols:
-            if hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
+            if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
+                pins = sch.lib_symbols[symbol.lib_ref].pins
+                pin_numbers = [pin.number for pin in pins]
+                refdes_prefix = symbol.refdes.rstrip('0123456789?')
+                blackbox_block = self.Block(KiCadBlackboxComponent(
+                    pin_numbers, refdes_prefix, symbol.properties['Footprint'],
+                    kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
+                    kicad_datasheet=symbol.properties.get('Datasheet', '')))
+                block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pin_numbers}
+                setattr(self, symbol.refdes, blackbox_block)
+            elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
                     f"{symbol.refdes} has both code block and non-empty value"
                 block = getattr(self, symbol.refdes)
+                block_pinning = block.symbol_pinning(symbol.lib)
                 assert isinstance(block, KiCadImportableBlock), f"{symbol.refdes} not a KiCadImportableBlock"
             elif symbol.properties['Value'].startswith('#'):  # sub-block with inline Python in the value
                 inline_code = symbol.properties['Value'][1:]
@@ -94,15 +131,17 @@ class KiCadSchematicBlock(Block):
                 assert isinstance(block_model, KiCadImportableBlock),\
                     f"block {block_model} created by {inline_code} not KicadImportableBlock"
                 block = self.Block(block_model)
+                block_pinning = block.symbol_pinning(symbol.lib)
                 setattr(self, symbol.refdes, block)
             elif symbol.lib in SYMBOL_MAP:  # sub-block with code to parse the value
                 block = self.Block(SYMBOL_MAP[symbol.lib].block_from_symbol(symbol.lib, symbol.properties))
+                block_pinning = block.symbol_pinning(symbol.lib)
                 setattr(self, symbol.refdes, block)
             else:
                 raise Exception(f"Unknown symbol {symbol.lib}")
 
             assert symbol.refdes not in blocks_pins
-            blocks_pins[symbol.refdes] = block.symbol_pinning(symbol.lib)
+            blocks_pins[symbol.refdes] = block_pinning
 
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)

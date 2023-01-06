@@ -102,7 +102,7 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     return self._create_unary_set_op(RangeSetOp.hull)
 
 
-ArrayBoolLike = Union['ArrayBoolExpr', List[BoolLike]]
+ArrayBoolLike = Union['ArrayBoolExpr', Sequence[BoolLike]]
 class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
   _elt_type = BoolExpr
 
@@ -113,17 +113,17 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
 
-ArrayIntLike = Union['ArrayIntExpr', List[IntLike]]
+ArrayIntLike = Union['ArrayIntExpr', Sequence[IntLike]]
 class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
   _elt_type = IntExpr
 
 
-ArrayFloatLike = Union['ArrayFloatExpr', List[FloatLike]]
+ArrayFloatLike = Union['ArrayFloatExpr', Sequence[FloatLike]]
 class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
   _elt_type = FloatExpr
 
 
-ArrayRangeLike = Union['ArrayRangeExpr', List[RangeLike]]
+ArrayRangeLike = Union['ArrayRangeExpr', Sequence[RangeLike]]
 class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
   _elt_type = RangeExpr
 
@@ -144,6 +144,6 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
       self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul)
 
 
-ArrayStringLike = Union['ArrayStringExpr', List[StringLike]]
+ArrayStringLike = Union['ArrayStringExpr', Sequence[StringLike]]
 class ArrayStringExpr(ArrayExpr[StringExpr, List[str], ArrayStringLike]):
   _elt_type = StringExpr

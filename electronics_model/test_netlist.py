@@ -164,8 +164,8 @@ class TestDualHierarchyCircuit(Block):
 
 class NetlistTestCase(unittest.TestCase):
   @staticmethod
-  def generate_net(design: Type[Block]):
-    compiled = ScalaCompiler.compile(design)
+  def generate_net(design: Type[Block], refinements: Refinements = Refinements()):
+    compiled = ScalaCompiler.compile(design, refinements)
     compiled.append_values(RefdesRefinementPass().run(compiled))
     return NetlistTransform(compiled).run()
 
