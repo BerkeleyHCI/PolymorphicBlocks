@@ -27,12 +27,14 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'U1'
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'ports'
         expected_conn.exported.internal_block_port.ref.steps.add().allocate = '1'
+        self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
         expected_conn.exported.exterior_port.ref.steps.add().name = 'gnd'
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'U1'
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'ports'
         expected_conn.exported.internal_block_port.ref.steps.add().allocate = '3'
+        self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
         expected_conn.connected.link_port.ref.steps.add().name = 'node'
@@ -49,12 +51,12 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'res'
         expected_conn.connected.block_port.ref.steps.add().name = 'a'
+        self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
         expected_conn.exported.exterior_port.ref.steps.add().name = 'out'
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'res'
         expected_conn.exported.internal_block_port.ref.steps.add().name = 'b'
-
         self.assertIn(expected_conn, constraints)
 
         # resistor not checked, responsibility of another test
