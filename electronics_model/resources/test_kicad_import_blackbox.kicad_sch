@@ -189,7 +189,7 @@
   (symbol (lib_id "Sensor_Temperature:MCP9700AT-ETT") (at 137.16 91.44 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 4c761edd-ab2d-4b19-9b61-34987e818418)
-    (property "Reference" "ic" (id 0) (at 128.27 90.1699 0)
+    (property "Reference" "U1" (id 0) (at 128.27 90.1699 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "MCP9700AT-ETT" (id 1) (at 128.27 92.7099 0)
@@ -227,7 +227,7 @@
 
   (symbol_instances
     (path "/4c761edd-ab2d-4b19-9b61-34987e818418"
-      (reference "ic") (unit 1) (value "MCP9700AT-ETT") (footprint "Package_TO_SOT_SMD:SOT-23")
+      (reference "U1") (unit 1) (value "MCP9700AT-ETT") (footprint "Package_TO_SOT_SMD:SOT-23")
     )
     (path "/83f6ca75-8fba-4023-b08a-d07466a66a0d"
       (reference "res") (unit 1) (value "51") (footprint "")
