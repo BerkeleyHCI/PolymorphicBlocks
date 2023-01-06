@@ -1,11 +1,36 @@
 import inspect
 import os
-from typing import Type, Any, Optional, Mapping, Dict
+from typing import Type, Any, Optional, Mapping, Dict, List
 
-from edg_core import Block, BasePort
+from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike
+from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
+from .PassivePort import Passive
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
+
+
+class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
+    """A footprint block that is fully defined (both value fields and structural pins) by its argument parameters
+    and has all passive ports.
+    """
+    @init_in_parent
+    def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
+                 kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
+        self.ports = self.Port(Vector(Passive()))
+        self.kicad_refdes_prefix = self.ArgParameter(kicad_refdes_prefix)
+        self.kicad_footprint = self.ArgParameter(kicad_footprint)
+        self.kicad_part = self.ArgParameter(kicad_part)
+        self.kicad_value = self.ArgParameter(kicad_value)
+        self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
+
+        self.generator(self.generate, kicad_pins)
+
+    def generate(self, kicad_pins: List[str]):
+        mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
+                   for pin_name in kicad_pins}
+        self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
+                       part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
 
 class KiCadSchematicBlock(Block):
@@ -82,7 +107,9 @@ class KiCadSchematicBlock(Block):
         blocks_pins: Dict[str, Mapping[str, BasePort]] = {}
 
         for symbol in sch.symbols:
-            if hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
+            if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
+
+            elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
                     f"{symbol.refdes} has both code block and non-empty value"
                 block = getattr(self, symbol.refdes)
