@@ -689,6 +689,8 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                   }
                   suggestedName match {
                     case None => allocatedVals  // for empty suggestedName, flatten into parent namespace
+                      ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
+                        ValueExpr.Literal(""), allocatedVals)
                     case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
                       ValueExpr.Literal(suggestedName + "_"), allocatedVals)
                   }
@@ -924,8 +926,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
                         ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
                   ))
-                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
-                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
+                  suggestedName match {
+                    case None => allocatedVals // for empty suggestedName, flatten into parent namespace
+                    case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
+                      ValueExpr.Literal(suggestedName + "_"), allocatedVals)
+                  }
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,

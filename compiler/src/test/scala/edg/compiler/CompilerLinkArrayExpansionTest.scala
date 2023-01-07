@@ -459,4 +459,27 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           equal(Some(IntValue(-1)))
     }
   }
+
+  "Compiler on design with conflicting-name block-side-unnamed-allocated link-arrays" should "work" in {
+    val inputDesign = Design(Block.Block("topDesign",
+      blocks = SeqMap(
+        "source0" -> Block.Library("sourceBlock"),
+        "source1" -> Block.Library("sourceBlock"),
+        "sink" -> Block.Library("elasticSinkBlock"),
+      ),
+      links = SeqMap(
+        "link0" -> Link.Array("link"),
+        "link1" -> Link.Array("link"),
+      ),
+      constraints = SeqMap(
+        "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
+        "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
+        "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link0", "sinks"))),
+        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link1", "sinks"))),
+      )
+    ))
+    assertThrows[Exception] {
+      testCompile(inputDesign, library)
+    }
+  }
 }
