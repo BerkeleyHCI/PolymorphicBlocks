@@ -1263,7 +1263,7 @@
 
   (footprint "Button_Switch_SMD:SW_SPST_SKQG_WithoutStem" (layer "F.Cu")
     (tedit 61D4AA89) (tstamp 1c4d1583-9105-4bab-afe2-9b3479845c08)
-    (at -48 74)
+    (at -27 101)
     (descr "ALPS 5.2mm Square Low-profile Type (Surface Mount) SKQG Series, Without stem, http://www.alps.com/prod/info/E/HTML/Tact/SurfaceMount/SKQG/SKQGAEE010.html")
     (tags "SPST Button Switch")
     (property "Sheetfile" "")
@@ -1338,10 +1338,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy -47 72.7)
-          (xy -44 72.7)
-          (xy -44 75.3)
-          (xy -47 75.3)
+          (xy -26 99.7)
+          (xy -23 99.7)
+          (xy -23 102.3)
+          (xy -26 102.3)
         )
       )
     )
@@ -1352,10 +1352,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy -52 72.7)
-          (xy -49 72.7)
-          (xy -49 75.3)
-          (xy -52 75.3)
+          (xy -31 99.7)
+          (xy -28 99.7)
+          (xy -28 102.3)
+          (xy -31 102.3)
         )
       )
     )
@@ -1368,7 +1368,7 @@
 
   (footprint "Capacitor_SMD:C_0805_2012Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 1c7c6569-bf99-4cf9-aac6-77c2b5647015)
-    (at 81.07 27.14)
+    (at -109 81)
     (descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -1870,7 +1870,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-223-3_TabPin2" (layer "F.Cu")
     (tedit 5A02FF57) (tstamp 2d5db46d-36fd-44c1-9161-86c8574f448f)
-    (at 83.77 21.51)
+    (at -106.3 75.37)
     (descr "module CMS SOT223 4 pins")
     (tags "CMS SOT")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -3625,7 +3625,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 68fb5eb8-e184-4735-b0cd-2ca9fc91e8c2)
-    (at 90.7 18.64)
+    (at -99.37 72.5)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -6151,7 +6151,7 @@
 
   (footprint "Button_Switch_SMD:SW_SPST_SKQG_WithoutStem" (layer "F.Cu")
     (tedit 61D4AA89) (tstamp c08e09a3-6cff-4011-ace3-7cbe4dfe850a)
-    (at -61 43)
+    (at -136 95)
     (descr "ALPS 5.2mm Square Low-profile Type (Surface Mount) SKQG Series, Without stem, http://www.alps.com/prod/info/E/HTML/Tact/SurfaceMount/SKQG/SKQGAEE010.html")
     (tags "SPST Button Switch")
     (property "Sheetfile" "")
@@ -6226,10 +6226,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy -60 41.7)
-          (xy -57 41.7)
-          (xy -57 44.3)
-          (xy -60 44.3)
+          (xy -135 93.7)
+          (xy -132 93.7)
+          (xy -132 96.3)
+          (xy -135 96.3)
         )
       )
     )
@@ -6240,10 +6240,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy -65 41.7)
-          (xy -62 41.7)
-          (xy -62 44.3)
-          (xy -65 44.3)
+          (xy -140 93.7)
+          (xy -137 93.7)
+          (xy -137 96.3)
+          (xy -140 96.3)
         )
       )
     )
