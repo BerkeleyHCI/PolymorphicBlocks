@@ -208,7 +208,7 @@ Try building the example now:
   </details>
 - <details> <summary>Resolving common errors</summary>
   
-  - If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies hasn't been installed.
+  - If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies haven't been installed.
   See the [setup](#setup) section above for instructions on installing dependencies.
   </details>
 
