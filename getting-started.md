@@ -100,7 +100,7 @@ _Runs natively on Windows, Linux, and Mac._
      ```
    
      The above is an example of a JDK at Java 17.
-     Version reporting formats are not standardized across versions, for example you may see `Oracle Corporation Java 1.8.0_351` which is Java 8.
+     Version reporting formats are not standardized, for example Oracle's Java 8 may report as `Oracle Corporation Java 1.8.0_351`.
    </details>
    <!--Reference: JDK compatibility from https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html-->
 3. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
