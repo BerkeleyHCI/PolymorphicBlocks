@@ -5,10 +5,10 @@ from .IoController import IoController
 
 @abstract_block
 class IoControllerWithSwdTargetConnector(IoController):
-  """An IoController with a SWD programming header and optional SWD and TDI pins that
+  """An IoController with a SWD programming header and optional SWO and TDI pins that
   can be assigned to any microcontroller pin.
 
-  This defines the interface for the SWD and TDI pin spec (passed to the pin assignment),
+  This defines the interface for the SWO and TDI pin spec (passed to the pin assignment),
   and instantiates a SWD target with connected power and ground. SWD must be connected by
   the subclass."""
   @init_in_parent
@@ -20,4 +20,3 @@ class IoControllerWithSwdTargetConnector(IoController):
 
     self.swd_swo_pin = self.ArgParameter(swd_swo_pin)
     self.swd_tdi_pin = self.ArgParameter(swd_tdi_pin)
-    
