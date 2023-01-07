@@ -55,6 +55,7 @@ from .IoController import BaseIoController, IoController
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
+from .IoControllerProgramming import IoControllerWithSwdTargetConnector
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, ForcedVoltage, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw

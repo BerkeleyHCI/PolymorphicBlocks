@@ -369,7 +369,7 @@ class Mdbt50q_UsbSeriesResistor(Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
+class Mdbt50q_1mv2(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -390,8 +390,7 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
-                                   self.ic.swd)
+      self.connect(self.swd.swd, self.ic.swd)
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
     if usb_requests:
