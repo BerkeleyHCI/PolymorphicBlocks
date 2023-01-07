@@ -1,4 +1,4 @@
-from typing import List, Dict, Set, Type
+from typing import List, Dict, Set, Type, Sequence
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
@@ -22,14 +22,14 @@ class BaseIoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
     self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
-    self._io_ports: List[BasePort] = [
+    self._io_ports: List[Vector[Port]] = [
       self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can]
 
-  def _get_io_ports(self) -> List[BasePort]:
+  def _get_io_ports(self) -> List[Vector[Port]]:
     """Returns all the IO ports of this BaseIoController as a list"""
     return self._io_ports
 
-  def _export_ios_from(self, inner: 'BaseIoController', excludes: List[BasePort] = []) -> None:
+  def _export_ios_from(self, inner: 'BaseIoController', excludes: Sequence[Vector[Port]] = []) -> None:
     """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
     Optional exclude list, for example if a more complex connection is needed."""
     assert isinstance(inner, BaseIoController), "can only export from inner block of type BaseIoController"
@@ -41,7 +41,7 @@ class BaseIoController(Block):
         self.connect(self_io, inner_io)
 
   @staticmethod
-  def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
+  def _instantiate_from(ios: Sequence[Vector[Port]], allocations: Sequence[AllocatedResource]) -> \
       Dict[str, CircuitPort]:
     """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
     instantiate vector elements (if a vector) or init the port model (if a port)
