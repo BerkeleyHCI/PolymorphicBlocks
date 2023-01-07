@@ -127,7 +127,7 @@ _Runs natively on Windows, Linux, and Mac._
    - You do not need to clone `PolymorphicBlocks` separately, you can use the submodule in `edg-ide`.
 6. Once the project loads, open `blinky_skeleton.py`.
 7. Set up the Python interpreter once the prompt shows up, "Configure Python interpreter".
-   - Recommended: set up a VirtualEnv environment based on a Python 3.7 (or later) interpreter. 
+   - Recommended: set up a Virtualenv environment based on a Python 3.7 (or later) interpreter. 
    - Install Python requirements (packages) if prompted, this banner should show up in the `blinky_skeleton.py` editor:
      ![Dependencies banner](docs/ide/ide_deps.png)
    - When requirements finish installing, this popup will show up on the bottom right:
