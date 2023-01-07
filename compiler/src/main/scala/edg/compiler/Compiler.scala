@@ -687,8 +687,12 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     }
                     case _ => throw new IllegalArgumentException
                   }
-                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
-                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
+                  suggestedName match {
+                    case None => allocatedVals  // for empty suggestedName, flatten into parent namespace
+                    case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
+                      ValueExpr.Literal(suggestedName + "_"), allocatedVals)
+                  }
+
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,

@@ -362,8 +362,8 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       constraints = SeqMap(
         "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
         "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
-        "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link0", "sinks"))),
-        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link1", "sinks"))),
+        "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port"), Some("0")), Ref.Allocate(Ref("link0", "sinks"))),
+        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port"), Some("1")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
     val referenceConstraints = SeqMap(  // expected constraints in the top-level design
