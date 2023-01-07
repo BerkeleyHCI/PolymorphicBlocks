@@ -2,7 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
+from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
@@ -302,7 +302,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
       # TODO add the reset stabilizing capacitor?
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
                                    self.ic.swd)
 
   def generate(self, can_requests: List[str], usb_requests: List[str]) -> None:

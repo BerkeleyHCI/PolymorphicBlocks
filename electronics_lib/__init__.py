@@ -28,9 +28,8 @@ from .PassiveConnector import PassiveConnector, PinHeader254
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 
-from .DebugHeaders import SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader
+from .DebugHeaders import SwdCortexTargetHeader, SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
-from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210, Lp5907

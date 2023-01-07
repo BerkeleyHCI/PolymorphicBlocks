@@ -2,7 +2,6 @@ from typing import *
 from itertools import chain
 
 from electronics_abstract_parts import *
-from electronics_lib import SwdCortexTargetWithTdiConnector
 
 
 @abstract_block
@@ -265,7 +264,7 @@ class Holyiot_18010(PinMappable, Microcontroller, IoController):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
                                    self.ic.swd)
 
 
@@ -391,7 +390,7 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
                                    self.ic.swd)
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 

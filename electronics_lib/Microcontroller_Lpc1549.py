@@ -2,7 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
+from electronics_lib import OscillatorCrystal
 
 
 @abstract_block
@@ -333,8 +333,7 @@ class Lpc1549SwdPull(Block):
 
   def contents(self):
     super().contents()
-    self.swd.swo.init_from(DigitalSingleSource())
-    self.swd.reset.init_from(DigitalSingleSource())
+    self.swd.reset.init_from(DigitalSingleSource())  # not connected, ideal model
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
     self.swclk = self.Block(PulldownResistor((10, 100) * kOhm(tol=0.05))).connected(self.gnd, self.swd.swclk)
 
@@ -375,7 +374,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
+      (self.swd, self.swd_pull), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
                                                 imp.Block(Lpc1549SwdPull()),
                                                 self.ic.swd)
 
