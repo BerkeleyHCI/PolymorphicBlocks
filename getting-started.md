@@ -201,7 +201,7 @@ Try building the example now:
   4. Unlike the command-line option, this generates a netlist in the same directory as `blinky_skeleton.py`.
      In the IDE, you can configure where this goes via the run options at the top right:  
      ![run menu](docs/ide/ide_run_config.png)
-- <details> <summary>**If not using the IDE**</summary>
+- <details> <summary>If not using the IDE</summary>
   
   Run `python blinkly_skeleton.py` from the command line.
   If all worked, this should create a folder `PolymorphicNlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
