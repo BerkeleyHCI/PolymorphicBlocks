@@ -55,8 +55,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', bound='Port', covariant=True)
-InvariantVectorType = TypeVar('InvariantVectorType', bound='Port')
+VectorType = TypeVar('VectorType', bound='Port')
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -201,8 +200,7 @@ class Vector(BaseVector, Generic[VectorType]):
     if self._elts is None:
       self._elts = OrderedDict()
 
-  def append_elt(self: Vector[InvariantVectorType], tpe: InvariantVectorType,
-                 suggested_name: Optional[str] = None) -> InvariantVectorType:
+  def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
     when subclassing a base class with a dynamically-sized array) with either the number of elements
     or with specific names of elements.
