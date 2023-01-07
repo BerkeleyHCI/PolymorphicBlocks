@@ -86,8 +86,7 @@ _Runs natively on Windows, Linux, and Mac._
 2. If you do not have a Java JDK installed, download and install one.
    An open-source one is [Eclipse Temurin](https://adoptium.net/temurin/releases/?version=17).
    Java 11 (or later) is required.
-   <details>
-     <summary>Determining Java version</summary>
+   <details> <summary>Determining Java version</summary>
    
      _This is probably not necessary unless you suspect you're running an outdated Java version, most will probably have Java 11+ installed._
    
@@ -110,16 +109,15 @@ _Runs natively on Windows, Linux, and Mac._
 4. In the `edg-ide` directory, run `sbt runIDE`.
    sbt will automatically fetch dependencies, compile the plugin, and start the IDE with the plugin enabled.
    - The first run may take a while. 
-   <details>
-     <summary>Resolving common errors</summary>
-
-    - If you get an error along the lines of  
+   <details> <summary>Resolving common errors</summary>
+   
+   - If you get an error along the lines of  
       `sbt.librarymanagement.ResolveException: Error downloading edgcompiler:edgcompiler_2.13:0.1.0-SNAPSHOT`  
       or `not found: [...]/edgcompiler/edgcompiler_2.13/0.1.0-SNAPSHOT/edgcompiler_2.13-0.1.0-SNAPSHOT.pom`,  
       this is because the PolymorphicBlocks submodule hasn't been cloned.
       See the section above for instructions.
       The IDE plugin includes the HDL compiler as part of its build and requires the PolymorphicBlocks codebase.
-    - If you get an error along the lines of `[error] ...: value strip is not a member of String`,
+   - If you get an error along the lines of `[error] ...: value strip is not a member of String`,
       this is because your Java version is pre-11.
       See the section above for instructions to install a more recent JDK.
    </details>
@@ -132,9 +130,8 @@ _Runs natively on Windows, Linux, and Mac._
      ![Dependencies banner](docs/ide/ide_deps.png)
    - When requirements finish installing, this popup will show up on the bottom right:  
      ![Install complete popup](docs/ide/ide_deps_complete.png)
-   <details>
-     <summary>Using other interpreters</summary>
-     
+   <details> <summary>Using other interpreters</summary>
+   
      - If using Pipenv (may need to be installed separately), IntelliJ should also prompt you to install dependencies similarly to the Virtualenv case above
      - If using System Interpreter or Conda: you will need to install dependencies manually, `pip install -r requirements.txt`.
        - On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
@@ -143,8 +140,7 @@ _Runs natively on Windows, Linux, and Mac._
    It will be empty right now.
 
 
-<details>
-  <summary>Alternatively, HDL-only setup...</summary>
+<details> <summary>Alternatively, HDL-only setup...</summary>
 
   _This isn't necessary if you're using the IDE._
   _Runs natively on Windows, Linux, and Mac._
@@ -188,8 +184,6 @@ if __name__ == "__main__":
   This is the starting point that allows the file to run as a Python script, and you can treat it as magic.
 
 Try building the example now:
-- **If not using the IDE**: run `python blinkly_skeleton.py` from the command line.
-  If all worked, this should create a folder `PolymorphicNlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
 - **If using the IDE**: look for the run icon ![run icon](docs/ide/ide_run_button.png) in the gutter (with the line numbers) next to `class BlinkyExample`.
   1. Click it.
      _Make sure that you're using the run icon associated with `class BlinkyExample`, not the file, and not `if __name__ == "__main__"`._
@@ -207,8 +201,17 @@ Try building the example now:
   4. Unlike the command-line option, this generates a netlist in the same directory as `blinky_skeleton.py`.
      In the IDE, you can configure where this goes via the run options at the top right:  
      ![run menu](docs/ide/ide_run_config.png)
-- If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies hasn't been installed.
-  See the [IDE setup](#ide-setup) or [HDL setup](#hdl-only-setup) sections above for instructions on installing dependencies.
+- <details> <summary>**If not using the IDE**</summary>
+  
+  Run `python blinkly_skeleton.py` from the command line.
+  If all worked, this should create a folder `PolymorphicNlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
+  </details>
+- <details> <summary>Resolving common errors</summary>
+  
+  - If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies hasn't been installed.
+  See the [setup](#setup) section above for instructions on installing dependencies.
+  </details>
+
 
 
 ### Creating the microcontroller and LED
