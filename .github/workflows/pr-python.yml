@@ -58,7 +58,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        pip install protobuf sexpdata Deprecated
+        pip install -r requirements.txt
     - name: unittest
       run: python -m unittest discover
       
