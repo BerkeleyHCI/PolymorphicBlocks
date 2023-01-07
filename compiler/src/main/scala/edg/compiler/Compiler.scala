@@ -692,7 +692,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
                       ValueExpr.Literal(suggestedName + "_"), allocatedVals)
                   }
-
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
