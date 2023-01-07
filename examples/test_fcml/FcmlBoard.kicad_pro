@@ -53,6 +53,11 @@
           "gap": 0.0,
           "via_gap": 0.0,
           "width": 0.0
+        },
+        {
+          "gap": 0.16,
+          "via_gap": 0.0,
+          "width": 0.16
         }
       ],
       "drc_exclusions": [],

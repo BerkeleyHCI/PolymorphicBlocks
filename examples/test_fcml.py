@@ -305,7 +305,8 @@ class FcmlTest(JlcBoardTop):
       (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
-      (self.usb_fpga_bitbang, self.usb_fpga_esd), _ = self.chain(
+      # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
+      (self.usb_fpga_bitbang, self.usb_fpga_esd), self.usb_fpga_chain = self.chain(
         imp.Block(UsbBitBang()).connected_from(
           self.fpga.gpio.request('usb_dp_pull'), self.fpga.gpio.request('usb_dp'), self.fpga.gpio.request('usb_dm')),
         imp.Block(UsbEsdDiode()),
@@ -317,8 +318,8 @@ class FcmlTest(JlcBoardTop):
       (self.mcu_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
       (self.mcu_leds, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
 
-      (self.usb_mcu_esd, ), _ = self.chain(self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()),
-                                           self.usb_mcu.usb)
+      (self.usb_mcu_esd, ), self.usb_mcu_chain = self.chain(
+        self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
 
       # FCML CONTROL BLOCK
       (self.pwm_filter, ), _ = self.chain(
