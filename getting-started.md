@@ -132,7 +132,7 @@ _Runs natively on Windows, Linux, and Mac._
      ![Install complete popup](docs/ide/ide_deps_complete.png)
    <details> <summary>Using other interpreters</summary>
    
-     - If using Pipenv (may need to be installed separately), IntelliJ should also prompt you to install dependencies similarly to the Virtualenv case above
+     - If using Pipenv (may need to be installed separately), IntelliJ should also prompt you to install dependencies similarly to the Virtualenv case above.
      - If using System Interpreter or Conda: you will need to install dependencies manually, `pip install -r requirements.txt`.
        - On Ubuntu, you may need to select a particular version of Python for pip, using `python3.8 -m pip` instead of `pip` directly.
    </details>
@@ -217,7 +217,7 @@ Try building the example now:
 ### Creating the microcontroller and LED
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
-**In `blinky_skeleton.py`, `# you implementation here`, add this code** to instantiate the microcontroller and LED as follows:
+**In `blinky_skeleton.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
 ```python
 self.usb = self.Block(UsbCReceptacle())
 self.mcu = self.Block(Stm32f103_48())
