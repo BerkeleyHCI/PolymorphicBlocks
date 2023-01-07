@@ -270,7 +270,7 @@ class BldcDriverBoard(JlcBoardTop):
         (['conv', 'power_path', 'inductor', 'lcsc_part'], 'C497840'),  # selected part out of stock
       ],
       class_refinements=[
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
       ],

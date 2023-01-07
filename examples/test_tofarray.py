@@ -158,7 +158,7 @@ class TofArrayTest(JlcBoardTop):
         ]),
       ],
       class_refinements=[
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
         (PassiveConnector, PinHeader254),
         (Speaker, ConnectorSpeaker),
       ],
