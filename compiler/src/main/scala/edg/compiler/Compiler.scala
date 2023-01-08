@@ -664,7 +664,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                 val namer = new AssignNamer()
                 val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
-                val arrayConnectTermss = arrayConnects.map { case (suggestedName, constrName, constr) =>
+                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
                   val allocatedVals = constr.expr match {
                     case expr.ValueExpr.Expr.ConnectedArray(connected) => connected.getLinkPort match {
                       case ValueExpr.RefAllocate(linkPath, _) =>
@@ -689,11 +689,8 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                       throw new IllegalArgumentException("unsupported array export to allocate")
                     case _ => throw new IllegalArgumentException
                   }
-                  suggestedName match {
-                    case None => allocatedVals  // for empty suggestedName, flatten into parent namespace
-                    case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
-                      ValueExpr.Literal(suggestedName + "_"), allocatedVals)
-                  }
+                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
+                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
@@ -926,11 +923,8 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
                         ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
                   ))
-                  suggestedName match {
-                    case None => allocatedVals // for empty suggestedName, flatten into parent namespace
-                    case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
-                      ValueExpr.Literal(suggestedName + "_"), allocatedVals)
-                  }
+                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
+                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
