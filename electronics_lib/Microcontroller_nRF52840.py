@@ -136,10 +136,10 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
       PinResource('P0.20', {'P0.20': dio_model}),
       PinResource('P0.22', {'P0.22': dio_model}),
       PinResource('P0.24', {'P0.24': dio_model}),
-      # PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
+      PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
-        'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18', 'swo': 'P1.00',
+        'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18'
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {
         'dp': 'D+', 'dm': 'D-'
@@ -373,16 +373,20 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoControllerWithSwdTargetConnec
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=self.pin_assigns))
+    self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
-    self.generator(self.generate, self.usb.requested())
+    self.generator(self.generate, self.usb.requested(),
+                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
 
-  def generate(self, usb_requests: List[str]) -> None:
+  def generate(self, usb_requests: List[str],
+               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic, excludes=[self.usb])
+    self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])  # SWO/TDI must be mixed into GPIOs
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+    self.connect(self.swd.swd, self.ic.swd)
 
     self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
 
@@ -390,7 +394,6 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoControllerWithSwdTargetConnec
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.connect(self.swd.swd, self.ic.swd)
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
     if usb_requests:
@@ -400,5 +403,17 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, IoControllerWithSwdTargetConnec
       self.usb_res = self.Block(Mdbt50q_UsbSeriesResistor())
       self.connect(self.ic.usb.request(usb_request_name), self.usb_res.usb_inner)
       self.connect(self.usb_res.usb_outer, usb_port)
-    else:
-      self.usb.defined()
+    self.usb.defined()
+
+    if swd_swo_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
+      pin_assigns.append(f'swd_swo={swd_swo_pin}')
+    if swd_tdi_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
+      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
+    self.assign(self.ic.pin_assigns, pin_assigns)
+
+    gpio_model = DigitalBidir.empty()
+    for gpio_name in gpio_requested:
+      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
+    self.gpio.defined()

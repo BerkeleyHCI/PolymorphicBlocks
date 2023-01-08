@@ -118,7 +118,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
 
       # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
       PinResource('PA15', {'PA15': dio_ft_model}),  # default is JTDI
-      # PinResource('PB3', {'PB3': dio_ft_model}),  # forced SWO, default is JTDO
+      PinResource('PB3', {'PB3': dio_ft_model}),  # SWO, default is JTDO
       PinResource('PB4', {'PB4': dio_ft_model}),  # default is JNTRST
       PinResource('PB5', {'PB5': dio_std_model}),
       PinResource('PB6', {'PB6': dio_ft_model}),
@@ -158,7 +158,7 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
         'dm': ['PA11'], 'dp': ['PA12']
       }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
-        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST', 'swo': 'PB3'
+        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
       }),
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
@@ -278,7 +278,8 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested())
+    self.generator(self.generate, self.can.requested(), self.usb.requested(),
+                   )# self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
 
   def contents(self):
     super().contents()
@@ -287,9 +288,14 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      # self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+      # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
+      # self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])
       self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
-      self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
+      self._export_ios_from(self.ic, excludes=[self.usb])
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+      # self.connect(self.swd.swd, self.ic.swd)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
       # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
@@ -301,11 +307,8 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-      # TODO add the reset stabilizing capacitor?
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
-                                   self.ic.swd)
-
-  def generate(self, can_requests: List[str], usb_requests: List[str]) -> None:
+  def generate(self, can_requests: List[str], usb_requests: List[str],
+               )->None: #pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
     if can_requests or usb_requests:  # tighter frequency tolerances from CAN and USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
@@ -320,8 +323,20 @@ class Stm32f103Base(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
       self.connect(self.usb_pull.pwr, self.pwr)
       self.connect(usb_port, self.usb_pull.usb)
-    else:
-      self.usb.defined()
+    self.usb.defined()
+
+    # if swd_swo_pin != 'NC':
+    #   self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
+    #   pin_assigns.append(f'swd_swo={swd_swo_pin}')
+    # if swd_tdi_pin != 'NC':
+    #   self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
+    #   pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
+    # self.assign(self.ic.pin_assigns, pin_assigns)
+    #
+    # gpio_model = DigitalBidir.empty()
+    # for gpio_name in gpio_requested:
+    #   self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
+    # self.gpio.defined()
 
 
 class Stm32f103_48(Stm32f103Base):

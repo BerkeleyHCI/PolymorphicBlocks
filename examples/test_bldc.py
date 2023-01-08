@@ -254,6 +254,7 @@ class BldcDriverBoard(JlcBoardTop):
           'i2c.sda=43',
           'pd_int=45',
         ]),
+        (['mcu', 'swd_swo_pin'], 'PB3'),  # TODO maybe use a UART capable pin
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['curr[2]', 'res', 'res', 'require_basic_part'], False),

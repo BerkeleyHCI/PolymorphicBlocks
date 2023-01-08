@@ -161,7 +161,6 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
 
       # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
       # Reset has an internal pull-up (or can be configured as unused), except when deep power down is needed
-      # TODO: SWO is arbitrary and can also be NC, current mapped to TDO - should support AnyPin for swo
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
         'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'],
       }),
@@ -344,8 +343,8 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.gpio.requested(), self.can.requested(), self.usb.requested(),
-                   self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
+    self.generator(self.generate, self.can.requested(), self.usb.requested(),
+                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
 
   def contents(self):
     super().contents()
@@ -354,7 +353,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(self.DEVICE(pin_assigns=StringExpr()))
+      self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
       self._export_ios_from(self.ic, excludes=[self.gpio])  # SWO/TDI must be mixed into GPIOs
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
@@ -379,8 +378,8 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
-  def generate(self, gpio_requested: List[str], can_requested: List[str], usb_requested: List[str],
-               pin_assigns: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
+  def generate(self, can_requested: List[str], usb_requested: List[str],
+               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
     if can_requested or usb_requested:  # tighter frequency tolerances from CAN and USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
@@ -391,12 +390,13 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
       pin_assigns.append(f'swd_swo={swd_swo_pin}')
     if swd_tdi_pin != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      pin_assigns.append(f'swd_tdi={swd_swo_pin}')
+      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
     self.assign(self.ic.pin_assigns, pin_assigns)
 
     gpio_model = DigitalBidir.empty()
     for gpio_name in gpio_requested:
       self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
+    self.gpio.defined()
 
 
 class Lpc1549_48(Lpc1549Base):

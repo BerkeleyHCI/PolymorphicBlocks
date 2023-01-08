@@ -129,7 +129,6 @@ class TofArrayTest(JlcBoardTop):
     self.pack(self.rgb.green, ['leds', 'led[6]'])
     self.pack(self.rgb.blue, ['leds', 'led[7]'])
 
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -156,6 +155,7 @@ class TofArrayTest(JlcBoardTop):
           'tof_xshut_3=3',
           'tof_xshut_4=2',
         ]),
+        (['mcu', 'swd_swo_pin'], 'PB3'),
       ],
       class_refinements=[
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),

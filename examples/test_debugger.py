@@ -145,7 +145,8 @@ class Debugger(BoardTop):
           'rgb_tgt_green=30',  # pinning on stock st-link
           'rgb_tgt_blue=10',
           'sw_usb=38',
-        ])
+        ]),
+        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
       ]
     )
 
