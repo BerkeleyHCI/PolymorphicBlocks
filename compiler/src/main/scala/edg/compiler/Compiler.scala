@@ -1114,7 +1114,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
             intPortArrayElts.map { index =>
-              val newConstr = constr.asSingleConnection.connectUpdateRef {  // tack an index on both sides
+              val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
                 case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
               }.connectUpdateRef {
                 case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
