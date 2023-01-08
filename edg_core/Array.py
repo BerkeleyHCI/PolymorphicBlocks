@@ -227,9 +227,6 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def request(self, suggested_name: Optional[str] = None) -> VectorType:
     """Returns a new port of this Vector.
-    If suggested_name is provided, the element will have that name, otherwise names will be automatically allocated.
-    Conflicting names will fail to compile.
-
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
     To create elements where this is the boundary block, use init_elts(...).
@@ -251,10 +248,6 @@ class Vector(BaseVector, Generic[VectorType]):
 
   def request_vector(self, suggested_name: Optional[str] = None) -> Vector[VectorType]:
     """Returns a new dynamic-length, array-port slice of this Vector.
-    If suggested_name is provided, array elements are prefixed with this name, otherwise array elements are
-    flattened into the parent namespace (eg, naming semantics for request_vector() and direct connect are the same).
-    Conflicting names will fail to compile.
-
     Can only be called from the block containing the block containing this as a port (used to allocate a
     port of an internal block).
     Can only be used as an array elements sink.
