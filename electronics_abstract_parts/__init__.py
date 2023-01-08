@@ -49,6 +49,7 @@ from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, Boost
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
+from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 
@@ -62,6 +63,7 @@ from .IoController import BaseIoController, IoController
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
+from .IoControllerProgramming import IoControllerWithSwdTargetConnector
 
 from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, ForcedVoltage, MergedVoltageSource, MergedAnalogSource
 from .DummyDevices import ForcedDigitalSinkCurrentDraw

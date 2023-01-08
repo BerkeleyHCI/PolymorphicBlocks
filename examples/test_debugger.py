@@ -10,9 +10,10 @@ class SwdSourceBitBang(Block):
     self.swclk_in = self.Port(DigitalSink.empty())
     self.swdio_in = self.Port(DigitalSink.empty())
     self.swdio_out = self.Port(DigitalSource.empty())
-    self.swo_out = self.Port(DigitalSource.empty())  # TODO is this directionality coreect?
+    self.swo_out = self.Port(DigitalSource.empty())
 
     self.swd = self.Port(SwdHostPort.empty(), [Output])
+    self.swo_in = self.Port(DigitalSink.empty())
 
   def contents(self) -> None:
     super().contents()
@@ -21,6 +22,7 @@ class SwdSourceBitBang(Block):
     self.swclk_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swdio_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swdio_drv_res = self.Block(Resistor(resistance=100*Ohm(tol=0.05)))
+
     self.swo_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
 
     # TODO simplify using DigitalSeriesResistor(?) and chain
@@ -34,7 +36,7 @@ class SwdSourceBitBang(Block):
                  self.swdio_out)
     self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
     self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
-    self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swd.swo)
+    self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
 
 
 class Debugger(BoardTop):
@@ -76,6 +78,7 @@ class Debugger(BoardTop):
       self.tdi_res = imp.Block(Resistor(22*Ohm(tol=0.05)))
 
       self.connect(self.target_drv.swd, self.target.swd)
+      self.connect(self.target_drv.swo_in, self.target.swo)
       self.connect(self.tdi_res.b.adapt_to(DigitalSource()), self.target.tdi)
 
       self.sw_usb = imp.Block(DigitalSwitch())
@@ -145,7 +148,8 @@ class Debugger(BoardTop):
           'rgb_tgt_green=30',  # pinning on stock st-link
           'rgb_tgt_blue=10',
           'sw_usb=38',
-        ])
+        ]),
+        (['mcu', 'swd_swo_pin'], 'PB3'),
       ]
     )
 

@@ -25,7 +25,7 @@ class BaseBoardTop(DesignTop):
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, TeRc),
 
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
 
         (Vl53l0x, Vl53l0xApplication)
       ],

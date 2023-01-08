@@ -100,8 +100,8 @@ class CanAdapter(BoardTop):
           'rgb_can_red=6',
           'rgb_can_green=4',
           'rgb_can_blue=7',
-          'swd.swo=PIO0_8',
-        ])
+        ]),
+        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
       ]
     )
 

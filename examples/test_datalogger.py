@@ -174,8 +174,8 @@ class TestDatalogger(BoardTop):
           'v12sense=10',
           'v5sense=9',
           'vscsense=8',
-          'swd.swo=PIO0_8',
         ]),
+        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
 
         (['pwr_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.6)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
