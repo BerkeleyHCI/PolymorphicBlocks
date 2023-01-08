@@ -1123,19 +1123,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             }
           }.keys
 
-        case (ValueExpr.Ref(extPortArray), ValueExpr.RefAllocate(_, _)) =>
-          val extPortArrayElts = ArrayValue.ExtractText(  // outer elements defined, use outer
-            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
-          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-            extPortArrayElts.map { index =>
-              val newConstr = constr.asSingleConnection.connectUpdateRef {  // tack an index on outer
-                case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
-                // inner side remains an allocate, to be resolved later
-              }
-              s"${record.constraintName}.$index" -> newConstr
-            }
-          }.keys
-
         case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
           val extPortArrayElts = ArrayValue.ExtractText(  // propagates outer to inner
             constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
