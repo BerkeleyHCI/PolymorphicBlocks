@@ -344,7 +344,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested(),
+    self.generator(self.generate, self.gpio.requested(), self.can.requested(), self.usb.requested(),
                    self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
 
   def contents(self):
@@ -355,7 +355,7 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=StringExpr()))
-      self._export_ios_from(self.ic)
+      self._export_ios_from(self.ic, excludes=[self.gpio])  # SWO/TDI must be mixed into GPIOs
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
@@ -379,13 +379,24 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
-  def generate(self, can_requested: List[str], usb_requested: List[str],
+  def generate(self, gpio_requested: List[str], can_requested: List[str], usb_requested: List[str],
                pin_assigns: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
     if can_requested or usb_requested:  # tighter frequency tolerances from CAN and USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xtal)
-      self.assign(self.ic.pin_assigns, pin_assigns)
+
+    if swd_swo_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
+      pin_assigns.append(f'swd_swo={swd_swo_pin}')
+    if swd_tdi_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
+      pin_assigns.append(f'swd_tdi={swd_swo_pin}')
+    self.assign(self.ic.pin_assigns, pin_assigns)
+
+    gpio_model = DigitalBidir.empty()
+    for gpio_name in gpio_requested:
+      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
 
 
 class Lpc1549_48(Lpc1549Base):

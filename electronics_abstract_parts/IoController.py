@@ -38,10 +38,7 @@ class BaseIoController(Block):
     for (self_io, inner_io) in zip(self._io_ports, inner._io_ports):
       assert self_io._type_of() == inner_io._type_of(), "IO ports must be of same type"
       if self_io not in exclude_set:
-        if isinstance(inner_io, Vector):  # for array ports connect a slice to allow other connections
-          self.connect(self_io, inner_io.request_vector())
-        else:
-          self.connect(self_io, inner_io)
+        self.connect(self_io, inner_io)
 
   @staticmethod
   def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
