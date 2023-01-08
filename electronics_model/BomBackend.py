@@ -21,7 +21,7 @@ class BomItem:
 class BomBackend(BaseBackend):      # creates and populates .csv file
     def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, str]]:
         bom_list = BomTransform(design).run()
-        name = 'BOM.csv' # fix filename: os.path.splitext(__file__)[0] + ...
+        name = 'BOM.csv' # fix filename: os.path.splitext(__file__)[0]
         with open(name, 'w', newline='') as f:
             fieldnames = ['Ref Des', 'Quantity', 'Value', 'Footprint', 'Manufacturer', 'Part Number', 'Datasheet']
             thewriter = csv.DictWriter(f, fieldnames=fieldnames)

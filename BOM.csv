@@ -1,0 +1,4 @@
+Ref Des,Quantity,Value,Footprint,Manufacturer,Part Number,Datasheet
+None,1,None,None,None,None,None
+None,1,1uF,Capacitor_SMD:C_0603_1608Metric,,,
+None None,2,1k,Resistor_SMD:R_0603_1608Metric,,,
