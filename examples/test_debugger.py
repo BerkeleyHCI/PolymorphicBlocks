@@ -10,10 +10,10 @@ class SwdSourceBitBang(Block):
     self.swclk_in = self.Port(DigitalSink.empty())
     self.swdio_in = self.Port(DigitalSink.empty())
     self.swdio_out = self.Port(DigitalSource.empty())
-    self.swo_in = self.Port(DigitalSink.empty())
+    self.swo_out = self.Port(DigitalSource.empty())
 
     self.swd = self.Port(SwdHostPort.empty(), [Output])
-    self.swo_out = self.Port(DigitalSource.empty())
+    self.swo_in = self.Port(DigitalSink.empty())
 
   def contents(self) -> None:
     super().contents()
@@ -35,8 +35,8 @@ class SwdSourceBitBang(Block):
                  self.swdio_drv_res.b.adapt_to(DigitalBidir()),
                  self.swdio_out)
     self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
-    self.connect(self.swo_res.a.adapt_to(DigitalSink()), self.swo_in)
-    self.connect(self.swo_res.b.adapt_to(DigitalSource()), self.swo_out)
+    self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
+    self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
 
 
 class Debugger(BoardTop):
