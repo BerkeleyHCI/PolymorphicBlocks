@@ -321,6 +321,11 @@ class FcmlTest(JlcBoardTop):
       (self.usb_mcu_esd, ), self.usb_mcu_chain = self.chain(
         self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
 
+      self.connect(self.mcu.gpio.request('fpga1'), self.fpga.gpio.request('mcu1'))
+      self.connect(self.mcu.gpio.request('fpga2'), self.fpga.gpio.request('mcu2'))
+      self.connect(self.mcu.gpio.request('fpga3'), self.fpga.gpio.request('mcu3'))
+      self.connect(self.mcu.gpio.request('fpga4'), self.fpga.gpio.request('mcu4'))
+
       # FCML CONTROL BLOCK
       (self.pwm_filter, ), _ = self.chain(
         self.fpga.gpio.request_vector('pwm'),
@@ -349,6 +354,11 @@ class FcmlTest(JlcBoardTop):
           'led_1=39',
           'led_2=40',
           'led_3=41',
+
+          'fpga1=14',
+          'fpga2=13',
+          'fpga3=12',
+          'fpga4=11',
         ]),
         (['mcu', 'swd_swo_pin'], 'NC'),  # TODO
         (['mcu', 'swd_tdi_pin'], 'NC'),  # TODO
@@ -369,6 +379,11 @@ class FcmlTest(JlcBoardTop):
           'usb_dm=25',
           'usb_dp=26',
           'usb_dp_pull=27',
+
+          'mcu1=2',
+          'mcu2=3',
+          'mcu3=4',
+          'mcu4=6',
        ]),
 
         # flying caps need to be beefier for high current rating (which isn't modeled)
