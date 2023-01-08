@@ -14,7 +14,6 @@ class NetlistTestCase(unittest.TestCase):
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
     compiled2 = ScalaCompiler.compile(design)
-    BomTransform(compiled2).run()
     BomBackend().run(compiled2)
 
     return NetlistBackend().run(compiled)[0][1]
