@@ -49,6 +49,7 @@ from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, Boost
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
+from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint

@@ -17,6 +17,8 @@ KEEP_CATEGORIES = [
   'Resettable Fuses',
 
   'Crystals',
+  'Pre-programmed Oscillators',
+  'Oscillators',
 
   'Diodes - Fast Recovery Rectifiers',
   'Diodes - General Purpose',
@@ -28,6 +30,7 @@ KEEP_CATEGORIES = [
   'Inductors (SMD)',
   'Power Inductors',
   'Through Hole Inductors',
+  'Ferrite Beads',
 
   'Infrared (IR) LEDs',
   'Light Emitting Diodes (LED)',
