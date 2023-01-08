@@ -54,17 +54,6 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
           "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
         )
       ),
-      Block.Block("concreteAllocateWrapperBlock",
-        ports = SeqMap(
-          "port" -> Port.Array("sinkPort"),
-        ),
-        blocks = SeqMap(
-          "inner" -> Block.Library("concreteSinksBlock")
-        ),
-        constraints = SeqMap(
-          "export" -> Constraint.ExportedArray(Ref("port"), Ref.Allocate(Ref("inner", "port"))),
-        )
-      ),
       Block.Block("emptyWrapperBlock",
         ports = SeqMap(
           "port" -> Port.Array("sinkPort"),
@@ -241,61 +230,6 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + "1" + IndirectStep.IsConnected) should
         equal(Some(BooleanValue(true)))
-  }
-
-
-  "Compiler on design with nested allocate sink" should "expand across levels of hierarchy" in {
-    val inputDesign = Design(Block.Block("topDesign",
-      blocks = SeqMap(
-        "source0" -> Block.Library("sourceBlock"),
-        "source1" -> Block.Library("sourceBlock"),
-        "sinks" -> Block.Library("concreteAllocateWrapperBlock"),
-      ),
-      links = SeqMap(
-        "link0" -> Link.Library("link"),
-        "link1" -> Link.Library("link"),
-      ),
-      constraints = SeqMap(
-        "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-        "sink0Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link0", "sinks"))),
-        "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-        "sink1Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link1", "sinks"))),
-      )
-    ))
-    val referenceConstraints = Map(
-      "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
-      "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-      "sink1Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
-    )
-    val (compiler, compiled) = testCompile(inputDesign, library)
-
-    val dsv = new DesignStructuralValidate()
-    dsv.map(Design(compiled.contents.get)) should equal(Seq())
-
-    val drv = new DesignRefsValidate()
-    drv.validate(Design(compiled.contents.get)) should equal(Seq())
-
-    compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
-
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
-      equal(Some(IntValue(2)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Elements) should
-      equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
-
-    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + IndirectStep.Length) should
-      equal(Some(IntValue(2)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + IndirectStep.Elements) should
-      equal(Some(ArrayValue(Seq(TextValue("0"), TextValue("1")))))
-
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "0" + IndirectStep.IsConnected) should
-      equal(Some(BooleanValue(true)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "port" + "1" + IndirectStep.IsConnected) should
-      equal(Some(BooleanValue(true)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + "0" + IndirectStep.IsConnected) should
-      equal(Some(BooleanValue(true)))
-    compiler.getValue(IndirectDesignPath() + "sinks" + "inner" + "port" + "1" + IndirectStep.IsConnected) should
-      equal(Some(BooleanValue(true)))
   }
 
   "Compiler on design with partially connected ports" should "work" in {

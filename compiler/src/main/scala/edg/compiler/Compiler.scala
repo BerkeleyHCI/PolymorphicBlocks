@@ -687,28 +687,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     }
                     case _ => throw new IllegalArgumentException
                   }
-                  val namedVals = suggestedName match {
+                  suggestedName match {
                     case None => allocatedVals  // for empty suggestedName, flatten into parent namespace
                     case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
                       ValueExpr.Literal(suggestedName + "_"), allocatedVals)
                   }
-
-                  constr.expr match {  // if a directly exported array, propagate ELEMENTS outwards
-                    case expr.ValueExpr.Expr.ExportedArray(exported) =>
-                      val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
-                      constProp.addAssignExpr(path.asIndirect ++ extPostfix + IndirectStep.Elements,
-                        namedVals,
-                        path, constrName)
-                      val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                      elaboratePending.addNode(expandArrayTask,
-                        Seq(
-                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
-                          // allocated must run first, it depends on constraints not being lowered
-                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated)
-                        ))
-                    case _ =>
-                  }
-                  namedVals
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
