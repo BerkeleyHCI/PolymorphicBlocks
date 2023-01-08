@@ -28,7 +28,7 @@ from .PassiveConnector import PassiveConnector, PinHeader254
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 
-from .Jumper import SolderJumperTriangular
+from .Jumpers import SolderJumperTriangular
 
 from .DebugHeaders import SwdCortexTargetHeader, JlcSwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl

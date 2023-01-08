@@ -333,13 +333,11 @@ class Ice40up(PinMappable, Fpga, IoController):
       self.prog = imp.Block(Ice40TargetHeader())
       self.connect(self.prog.reset, self.ic.creset_b)
 
+      # this defaults to flash programming, but to use CRAM programming you can swap the
+      # SDI/SDO pins on the debug probe and disconnect the CS line
       self.connect(self.ic.spi_config, self.mem.spi, self.prog.spi)
-      # TODO the config circuit is very messy from a model standpoint
-      # self.config = self.Block(Ice40upConfigSelector())
-      # self.connect(self.config.fpga, self.ic.spi_config)
-      # self.connect(self.config.mem, self.mem.spi)
-      # self.connect(self.config.prog, self.prog.spi)
-      self.connect(self.ic.spi_config_cs, self.mem.cs, self.prog.cs)
+      self.connect(self.ic.spi_config_cs, self.prog.cs)
+      (self.cs_jmp, ), _ = self.chain(self.ic.spi_config_cs, self.Block(DigitalJumper()), self.mem.cs)
 
       self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vio_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
