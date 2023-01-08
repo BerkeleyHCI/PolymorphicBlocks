@@ -8402,6 +8402,9 @@
 
   (gr_rect (start 77.25 152) (end 78.75 154) (layer "F.Paste") (width 0) (fill solid) (tstamp 0b1f9b2b-e25c-4d32-a6ee-054c7a12a9b7))
   (gr_rect (start 26 101) (end 104 173) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 47d0e35f-9ca8-4803-9888-6ec266548b6c))
+  (gr_text "FCML Test Board\nJan 23" (at 93 130) (layer "F.SilkS") (tstamp fe85dbb0-225e-4ab6-a053-7ecd776ab720)
+    (effects (font (size 1 0.8) (thickness 0.15)))
+  )
 
   (segment (start 33 147) (end 32 147) (width 0.5) (layer "F.Cu") (net 1) (tstamp 078dfd26-cf74-4845-baf8-b694f1e11546))
   (segment (start 72.405 123.905) (end 72.405 125) (width 0.2) (layer "F.Cu") (net 1) (tstamp 0a14ae99-cae4-43eb-9d46-ba0526b7af61))
