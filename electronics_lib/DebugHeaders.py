@@ -1,26 +1,7 @@
 from electronics_abstract_parts import *
 
 
-@abstract_block
-class SwdCortexTargetConnector(ProgrammingConnector):
-  def __init__(self) -> None:
-    super().__init__()
-
-    # TODO: should these also act as sources?
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-    self.swd = self.Port(SwdHostPort(), [Output])
-
-
-@abstract_block
-class SwdCortexTargetWithTdiConnector(SwdCortexTargetConnector):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.tdi = self.Port(DigitalBidir(), optional=True)
-
-
-class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
+class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -32,7 +13,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
         '3': self.gnd,
         '4': self.swd.swclk,
         '5': self.gnd,
-        '6': self.swd.swo,
+        '6': self.swo,
         # '7': ,  # key pin technically doesn't exist
         '8': self.tdi,  # or NC
         '9': self.gnd,
@@ -43,7 +24,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithTdiConnector, FootprintBlock):
     )
 
 
-class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, FootprintBlock):
+class SwdCortexTargetTc2050(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -55,7 +36,7 @@ class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, FootprintBlock):
         '2': self.gnd,
         '9': self.swd.swclk,
         '3': self.gnd,
-        '8': self.swd.swo,
+        '8': self.swo,
         # '4': ,  # key pin technically doesn't exist
         '7': self.tdi,  # or NC
         '5': self.gnd,
@@ -66,7 +47,7 @@ class SwdCortexTargetTc2050(SwdCortexTargetWithTdiConnector, FootprintBlock):
 
 
 # TODO dedup most with legged version
-class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, FootprintBlock):
+class SwdCortexTargetTc2050Nl(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
   def contents(self):
     super().contents()
 
@@ -78,7 +59,7 @@ class SwdCortexTargetTc2050Nl(SwdCortexTargetWithTdiConnector, FootprintBlock):
         '2': self.gnd,
         '9': self.swd.swclk,
         '3': self.gnd,
-        '8': self.swd.swo,
+        '8': self.swo,
         # '4': ,  # key pin technically doesn't exist
         '7': self.tdi,  # or NC
         '5': self.gnd,
@@ -95,6 +76,7 @@ class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
     self.pwr = self.Port(VoltageSink(), [Power])
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdTargetPort(), [Input])
+    self.swo = self.Port(DigitalBidir(), optional=True)
     self.tdi = self.Port(DigitalBidir(), optional=True)
 
   def contents(self):
@@ -108,7 +90,7 @@ class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
         '3': self.gnd,
         '4': self.swd.swclk,
         '5': self.gnd,
-        '6': self.swd.swo,
+        '6': self.swo,
         # '7': ,  # key pin technically doesn't exist
         '8': self.tdi,  # or NC
         '9': self.gnd,

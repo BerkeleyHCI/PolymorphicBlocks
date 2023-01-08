@@ -136,7 +136,7 @@ class Stm32f303Base_Device():
       }),
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_ft_model), {  # TODO some are FTf pins
-        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST', 'swo': 'PB3',
+        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
       }),
     ])
 

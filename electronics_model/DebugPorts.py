@@ -19,8 +19,6 @@ class SwdLink(Link):
                               flatten=True)
     self.swclk = self.connect(self.host.swclk, self.device.swclk, self.pull.map_extract(lambda port: port.swclk),
                               flatten=True)
-    self.swo = self.connect(self.host.swo, self.device.swo, self.pull.map_extract(lambda port: port.swo),
-                            flatten=True)
     self.reset = self.connect(self.host.reset, self.device.reset, self.pull.map_extract(lambda port: port.reset),
                               flatten=True)
 
@@ -34,7 +32,6 @@ class SwdHostPort(Bundle[SwdLink]):
       model = DigitalBidir()  # ideal by default
     self.swdio = self.Port(model)
     self.swclk = self.Port(DigitalSource.from_bidir(model))
-    self.swo = self.Port(DigitalSink.from_bidir(model))
     self.reset = self.Port(DigitalSource.from_bidir(model))
 
 
@@ -47,7 +44,6 @@ class SwdTargetPort(Bundle[SwdLink]):
       model = DigitalBidir()  # ideal by default
     self.swdio = self.Port(model)
     self.swclk = self.Port(DigitalSink.from_bidir(model))
-    self.swo = self.Port(DigitalSource.from_bidir(model))
     self.reset = self.Port(DigitalSink.from_bidir(model))
 
 
@@ -60,5 +56,4 @@ class SwdPullPort(Bundle[SwdLink]):
       model = DigitalSingleSource()  # ideal by default
     self.swdio = self.Port(model)
     self.swclk = self.Port(model)
-    self.swo = self.Port(model)
     self.reset = self.Port(model)
