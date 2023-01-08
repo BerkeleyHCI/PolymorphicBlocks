@@ -666,12 +666,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
                 val arrayConnectTermss = arrayConnects.map { case (suggestedName, constrName, constr) =>
                   val allocatedVals = constr.expr match {
-                    case expr.ValueExpr.Expr.ExportedArray(exported) =>
-                      val ValueExpr.Ref(extPortArray) = exported.getExteriorPort
-                      ValueExpr.Ref(ref.LocalPath(steps =
-                        extPortArray.map(step => ref.LocalStep(step = ref.LocalStep.Step.Name(step))) :+
-                            ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ALLOCATED))
-                      ))
                     case expr.ValueExpr.Expr.ConnectedArray(connected) => connected.getLinkPort match {
                       case ValueExpr.RefAllocate(linkPath, _) =>
                         ValueExpr.Ref(ref.LocalPath(steps = Seq(
@@ -685,6 +679,14 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                         )))
                       case _ => throw new IllegalArgumentException
                     }
+                    case expr.ValueExpr.Expr.ExportedArray(_) =>
+                      // Can't array-export from an allocated array, since it's unclear what the actual internal
+                      // ELEMENTS are since there isn't a specified correlation from ALLOCATED (available here) to
+                      // (potentially post-generate) ELEMENTS.
+                      // Possible semantics here might be to just use the ALLOCATED available here, but that is
+                      // subtly different from ELEMENTS in edge cases, so for now the user must explicitly unroll
+                      // the array.
+                      throw new IllegalArgumentException("unsupported array export to allocate")
                     case _ => throw new IllegalArgumentException
                   }
                   suggestedName match {
