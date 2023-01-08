@@ -211,6 +211,7 @@ class BldcDriverBoard(JlcBoardTop):
       self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
 
+      # TODO update to use VoltageSenseDivider
       div_model = VoltageDivider(output_voltage=(1.0, 3.3)*Volt, impedance=(100, 1000) * Ohm)
       (self.conv_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model), self.mcu.adc.request('conv_sense'))
 

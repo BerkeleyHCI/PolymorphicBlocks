@@ -116,6 +116,7 @@ class TestDatalogger(BoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # TODO update to use VoltageSenseDivider
       div_model = VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)
       (self.v12sense, ), _ = self.chain(self.vin, imp.Block(div_model), self.mcu.adc.request('v12sense'))
       (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.request('v5sense'))

@@ -95,7 +95,7 @@ class TestHighSwitch(BoardTop):
       self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
-      (self.vsense, ), _ = self.chain(
+      (self.vsense, ), _ = self.chain(  # TODO update to use VoltageSenseDivider
         self.vin,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
         self.mcu.adc.request('vsense'))

@@ -289,7 +289,7 @@ class MultimeterTest(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(Mdbt50q_1mv2())
 
-      (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,
+      (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,  # TODO update to use VoltageSenseDivider
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
                                          self.mcu.adc.request('vbatsense'))
 
