@@ -16,7 +16,7 @@ class SwdCortexTargetConnector(ProgrammingConnector):
 @abstract_block
 class SwdCortexTargetWithSwoTdiConnector(SwdCortexTargetConnector):
   """SWD programming header (power + SWD) with additional optional and generic-digital
-  SWO (STM32-specific) and TDI (if a JTAG header is used) pins which can be used as GPIOs
+  SWO (optional SWD pin) and TDI (if a JTAG header is used) pins which can be used as GPIOs
   for side-channel data like a supplementary UART console."""
   def __init__(self) -> None:
     super().__init__()
