@@ -664,7 +664,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                 val namer = new AssignNamer()
                 val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
-                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
+                val arrayConnectTermss = arrayConnects.map { case (suggestedName, constrName, constr) =>
                   val allocatedVals = constr.expr match {
                     case expr.ValueExpr.Expr.ExportedArray(exported) =>
                       val ValueExpr.Ref(extPortArray) = exported.getExteriorPort
@@ -687,13 +687,28 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                     }
                     case _ => throw new IllegalArgumentException
                   }
-                  suggestedName match {
+                  val namedVals = suggestedName match {
                     case None => allocatedVals  // for empty suggestedName, flatten into parent namespace
-                      ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
-                        ValueExpr.Literal(""), allocatedVals)
                     case Some(suggestedName) => ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT,
                       ValueExpr.Literal(suggestedName + "_"), allocatedVals)
                   }
+
+                  constr.expr match {  // if a directly exported array, propagate ELEMENTS outwards
+                    case expr.ValueExpr.Expr.ExportedArray(exported) =>
+                      val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
+                      constProp.addAssignExpr(path.asIndirect ++ extPostfix + IndirectStep.Elements,
+                        namedVals,
+                        path, constrName)
+                      val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                      elaboratePending.addNode(expandArrayTask,
+                        Seq(
+                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
+                          // allocated must run first, it depends on constraints not being lowered
+                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated)
+                        ))
+                    case _ =>
+                  }
+                  namedVals
                 }
                 constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
@@ -1110,14 +1125,27 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
-          val intPortArrayElts = ArrayValue.ExtractText(  // propagates inner to outer
-            constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
+          val extPortArrayElts = ArrayValue.ExtractText(  // inner and outer elements should be equivalent, use outer
+            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-            intPortArrayElts.map { index =>
+            extPortArrayElts.map { index =>
               val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
                 case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
               }.connectUpdateRef {
                 case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
+              }
+              s"${record.constraintName}.$index" -> newConstr
+            }
+          }.keys
+
+        case (ValueExpr.Ref(extPortArray), ValueExpr.RefAllocate(_, _)) =>
+          val extPortArrayElts = ArrayValue.ExtractText(  // outer elements defined, use outer
+            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
+          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+            extPortArrayElts.map { index =>
+              val newConstr = constr.asSingleConnection.connectUpdateRef {  // tack an index on outer
+                case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
+                // inner side remains an allocate, to be resolved later
               }
               s"${record.constraintName}.$index" -> newConstr
             }
@@ -1131,7 +1159,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
               val newConstr = constr.asSingleConnection.connectUpdateRef {
                 case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
                   ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
-                // inner side remains an allocate
+                // inner side remains an allocate, to be resolved later
               }
               s"${record.constraintName}.$index" -> newConstr
             }
