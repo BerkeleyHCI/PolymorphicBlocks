@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
@@ -22,6 +23,31 @@ class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
       mfr='CNC Tech', part='3220-10-0300-00',
       value='SWD'
     )
+
+
+class JlcSwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector, JlcPart, FootprintBlock):
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD',  # TODO: pattern needs shroud
+      {
+        '1': self.pwr,
+        '2': self.swd.swdio,
+        '3': self.gnd,
+        '4': self.swd.swclk,
+        '5': self.gnd,
+        '6': self.swo,
+        # '7': ,  # key pin technically doesn't exist
+        '8': self.tdi,  # or NC
+        '9': self.gnd,
+        '10': self.swd.reset,
+      },
+      mfr='XKB Connectivity', part='X1270WVS-2x05B-6TV01',
+      value='SWD'
+    )
+    self.assign(self.lcsc_part, 'C2962219')
+    self.assign(self.actual_basic_part, False)
 
 
 class SwdCortexTargetTc2050(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):

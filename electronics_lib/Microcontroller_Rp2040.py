@@ -2,7 +2,7 @@ from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal, SwdCortexTargetWithTdiConnector
+from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
@@ -183,7 +183,6 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {
         'swdio': '25', 'swclk': '24', 'reset': '26',  # reset is 'run'
-        # 'swo': 'PB3'  # TODO SWO NC by default, allocatable by user
       }),
     ])
 
@@ -233,10 +232,11 @@ class Rp2040Usb(Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
+class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.usb.requested())
+    self.generator(self.generate, self.usb.requested(),
+                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
 
   def contents(self):
     super().contents()
@@ -246,9 +246,12 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
-      self.ic = imp.Block(Rp2040_Device(pin_assigns=self.pin_assigns))
-      self._export_ios_from(self.ic, excludes=[self.usb])  # explicitly don't forward USB here, since we need to tack things to it
+      self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
+      # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
+      self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+      self.connect(self.swd.swd, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
       for i in range(6):  # one per IOVdd, combining USBVdd and IOVdd pin 49 per the example
@@ -256,9 +259,6 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
       self.avdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
       self.vreg_in_cap = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
-
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithTdiConnector()),
-                                   self.ic.swd)
 
       self.mem = imp.Block(SpiMemory(Range.all()))
       self.connect(self.ic.qspi, self.mem.spi)
@@ -274,7 +274,8 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
-  def generate(self, usb_requests: List[str]) -> None:
+  def generate(self, usb_requests: List[str],
+               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
     if usb_requests:  # tighter frequency tolerances from USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
       self.connect(self.crystal.gnd, self.gnd)
@@ -287,5 +288,17 @@ class Rp2040(PinMappable, Microcontroller, IoController, GeneratorBlock):
         self.ic.usb.request(usb_request_name),
         self.Block(Rp2040Usb()),
         self.usb.append_elt(UsbDevicePort.empty(), usb_request_name))
-    else:
-      self.usb.defined()
+    self.usb.defined()
+
+    if swd_swo_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
+      pin_assigns.append(f'swd_swo={swd_swo_pin}')
+    if swd_tdi_pin != 'NC':
+      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
+      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
+    self.assign(self.ic.pin_assigns, pin_assigns)
+
+    gpio_model = DigitalBidir.empty()
+    for gpio_name in gpio_requested:
+      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
+    self.gpio.defined()

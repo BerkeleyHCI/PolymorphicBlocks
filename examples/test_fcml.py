@@ -344,10 +344,12 @@ class FcmlTest(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-
+          # TODO
         ]),
+        (['mcu', 'swd_swo_pin'], 'NC'),  # TODO
+        (['mcu', 'swd_tdi_pin'], 'NC'),  # TODO
         (['fpga', 'pin_assigns'], [
-
+          # TODO
         ]),
 
         # flying caps need to be beefier for high current rating (which isn't modeled)
@@ -359,7 +361,7 @@ class FcmlTest(JlcBoardTop):
         (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
-        (SwdCortexTargetWithTdiConnector, SwdCortexTargetHeader),
+        (SwdCortexTargetWithSwoTdiConnector, JlcSwdCortexTargetHeader),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
         (HalfBridgeDriver, Ir2301),
