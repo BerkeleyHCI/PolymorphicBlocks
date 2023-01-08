@@ -12,7 +12,7 @@ class Ice40TargetHeader(FootprintBlock):
     super().__init__()
     self.pwr = self.Port(VoltageSink(), [Power])  # in practice this can power the target
     self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-    self.spi = self.Port(SpiSlave())  # actually master, but multi-master busses aren't supported (yet)
+    self.spi = self.Port(SpiSlave())  # TODO actually master, but multi-master busses aren't supported (yet)
     self.cs = self.Port(DigitalSource())
     self.reset = self.Port(DigitalSource())
 
@@ -327,9 +327,6 @@ class Ice40up(PinMappable, Fpga, IoController):
 
       self.mem = imp.Block(SpiMemory(Range.from_lower(self.ic.BITSTREAM_BITS)))
 
-      self.mem_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.spi_config_cs)
-      # SPI_SS_B is sampled on boot to determine boot config, needs to be high for PROM config
-
       self.prog = imp.Block(Ice40TargetHeader())
       self.connect(self.prog.reset, self.ic.creset_b)
 
@@ -338,6 +335,8 @@ class Ice40up(PinMappable, Fpga, IoController):
       self.connect(self.ic.spi_config, self.mem.spi, self.prog.spi)
       self.connect(self.ic.spi_config_cs, self.prog.cs)
       (self.cs_jmp, ), _ = self.chain(self.ic.spi_config_cs, self.Block(DigitalJumper()), self.mem.cs)
+      # SPI_SS_B is sampled on boot to determine boot config, needs to be high for PROM config
+      self.mem_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.mem.cs)
 
       self.vio_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vio_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
