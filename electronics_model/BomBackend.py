@@ -1,4 +1,5 @@
 from typing import List, Tuple
+import os
 
 import edgir
 from edg_core import CompiledDesign, TransformUtil, BaseBackend
@@ -20,7 +21,8 @@ class BomItem:
 class BomBackend(BaseBackend):      # creates and populates .csv file
     def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, str]]:
         bom_list = BomTransform(design).run()
-        with open('BOM.csv', 'w', newline='') as f:
+        name = 'BOM.csv' # fix filename: os.path.splitext(__file__)[0] + ...
+        with open(name, 'w', newline='') as f:
             fieldnames = ['Ref Des', 'Quantity', 'Value', 'Footprint', 'Manufacturer', 'Part Number', 'Datasheet']
             thewriter = csv.DictWriter(f, fieldnames=fieldnames)
 
@@ -28,7 +30,7 @@ class BomBackend(BaseBackend):      # creates and populates .csv file
 
             for item in bom_list:
                 thewriter.writerow({'Ref Des' : item.designator, 'Quantity' : item.quantity, 'Value' : item.value,
-                                    'Footprint': item.footprint, 'Manufacturer' : item.manufacturer,
+                                    'Footprint' : item.footprint, 'Manufacturer' : item.manufacturer,
                                     'Part Number' : item.part_number, 'Datasheet' : item.datasheet})
 
         return [
