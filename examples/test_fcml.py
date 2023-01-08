@@ -251,12 +251,14 @@ class FcmlTest(JlcBoardTop):
 
     self.usb_mcu = self.Block(UsbCReceptacle())
     self.usb_fpga = self.Block(UsbCReceptacle())
+    self.usb_uart = self.Block(UsbCReceptacle())  # powers the USB UART chip only
 
     self.conv_in = self.Block(LipoConnector(voltage=20*Volt(tol=0), actual_voltage=20*Volt(tol=0)))
 
-    self.vusb_merge = self.Block(MergedVoltageSource()).connected_from(self.usb_mcu.pwr, self.usb_fpga.pwr)
+    self.vusb_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.usb_mcu.pwr, self.usb_fpga.pwr)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb_mcu.gnd, self.usb_fpga.gnd, self.conv_in.gnd)
+      self.usb_mcu.gnd, self.usb_fpga.gnd, self.usb_uart.gnd, self.conv_in.gnd)
     self.vusb = self.connect(self.vusb_merge.pwr_out)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
 
@@ -293,6 +295,11 @@ class FcmlTest(JlcBoardTop):
       self.connect(self.conv.pwr_gate, self.vgate)
       self.connect(self.conv.pwr_ctl, self.v3v3)
 
+      self.usbconv = imp.Block(Cp2102())
+      self.connect(self.usb_uart.pwr, self.usbconv.pwr)
+      (self.usb_uart_esd, ), self.usb_uart_chain = self.chain(
+        self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
+
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -325,6 +332,7 @@ class FcmlTest(JlcBoardTop):
       self.connect(self.mcu.gpio.request('fpga2'), self.fpga.gpio.request('mcu2'))
       self.connect(self.mcu.gpio.request('fpga3'), self.fpga.gpio.request('mcu3'))
       self.connect(self.mcu.gpio.request('fpga4'), self.fpga.gpio.request('mcu4'))
+      self.connect(self.mcu.uart.request('usbconv'), self.usbconv.uart)
 
       # FCML CONTROL BLOCK
       (self.pwm_filter, ), _ = self.chain(
@@ -359,6 +367,10 @@ class FcmlTest(JlcBoardTop):
           'fpga2=13',
           'fpga3=12',
           'fpga4=11',
+
+          'usbconv=UART1',  # TODO this should be inferred, see issue 169
+          'usbconv.tx=6',
+          'usbconv.rx=7',
         ]),
         (['mcu', 'swd_swo_pin'], 'GPIO0'),  # UART0 TX
         (['mcu', 'swd_tdi_pin'], 'GPIO1'),  # UART0 RX

@@ -249,7 +249,7 @@ class BldcDriverBoard(JlcBoardTop):
           'sw1=38',
           'rgb=40',
 
-          'i2c=I2C1',
+          'i2c=I2C1',  # TODO this should be inferred, see issue 169
           'i2c.scl=42',
           'i2c.sda=43',
           'pd_int=45',

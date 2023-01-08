@@ -84,6 +84,7 @@ from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl5
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .SpiMemory_W25q import W25q
+from .UsbUart_Cp2102 import Cp2102
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
