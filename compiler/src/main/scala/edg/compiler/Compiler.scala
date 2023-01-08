@@ -1110,10 +1110,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
-          val extPortArrayElts = ArrayValue.ExtractText(  // inner and outer elements should be equivalent, use outer
-            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
+          val intPortArrayElts = ArrayValue.ExtractText( // propagates inner to outer
+            constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-            extPortArrayElts.map { index =>
+            intPortArrayElts.map { index =>
               val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
                 case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
               }.connectUpdateRef {
