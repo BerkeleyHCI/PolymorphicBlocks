@@ -19,6 +19,7 @@ class BaseBoardTop(DesignTop):
         (RgbLedCommonAnode, SmtRgbLed),
         (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
 
+        (Jumper, SolderJumperTriangular),
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
         (Fpc050, HiroseFh12sh),

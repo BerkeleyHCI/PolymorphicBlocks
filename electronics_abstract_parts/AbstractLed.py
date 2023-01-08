@@ -83,7 +83,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
     self.generator(self.generate, count)
 
   def generate(self, count: int):
-    self.led = ElementDict[IndicatorSinkLed]()
+    self.led = ElementDict[IndicatorLed]()
     for led_i in range(count):
       led = self.led[str(led_i)] = self.Block(IndicatorLed(self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)

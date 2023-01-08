@@ -52,6 +52,7 @@ from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
+from .AbstractJumper import Jumper, DigitalJumper
 
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
 from .GateDrivers import HalfBridgeDriver
