@@ -360,8 +360,8 @@ class FcmlTest(JlcBoardTop):
           'fpga3=12',
           'fpga4=11',
         ]),
-        (['mcu', 'swd_swo_pin'], 'NC'),  # TODO
-        (['mcu', 'swd_tdi_pin'], 'NC'),  # TODO
+        (['mcu', 'swd_swo_pin'], 'GPIO0'),  # UART0 TX
+        (['mcu', 'swd_tdi_pin'], 'GPIO1'),  # UART0 RX
         (['fpga', 'pin_assigns'], [
           'sw=36',
           'led_0=21',
