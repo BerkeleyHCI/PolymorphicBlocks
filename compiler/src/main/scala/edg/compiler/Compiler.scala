@@ -1110,11 +1110,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
         case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
-          val intPortArrayElts = ArrayValue.ExtractText( // propagates inner to outer
+          val intPortArrayElts = ArrayValue.ExtractText(  // propagates inner to outer
             constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
           parentBlock.mapMultiConstraint(record.constraintName) { constr =>
             intPortArrayElts.map { index =>
-              val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+              val newConstr = constr.asSingleConnection.connectUpdateRef {  // tack an index on both sides
                 case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
               }.connectUpdateRef {
                 case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
@@ -1131,7 +1131,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
               val newConstr = constr.asSingleConnection.connectUpdateRef {
                 case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
                   ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
-                // inner side remains an allocate, to be resolved later
+                // inner side remains an allocate
               }
               s"${record.constraintName}.$index" -> newConstr
             }
