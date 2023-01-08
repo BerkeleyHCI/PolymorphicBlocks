@@ -348,7 +348,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     }
   }
 
-  "Compiler on design with block-side-allocated partly-named link-arrays" should "work" in {
+  "Compiler on design with block-side-allocated link-arrays" should "work" in {
     val inputDesign = Design(Block.Block("topDesign",
       blocks = SeqMap(
         "source0" -> Block.Library("sourceBlock"),
@@ -363,7 +363,7 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
         "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
         "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link0", "sinks"))),
-        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port"), Some("1")), Ref.Allocate(Ref("link1", "sinks"))),
+        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
     val referenceConstraints = SeqMap(  // expected constraints in the top-level design
@@ -373,9 +373,9 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       "source1Connect.a" -> Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
       "source1Connect.b" -> Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
       "source1Connect.c" -> Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
-      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "a"), Ref("link0", "sinks", "0", "a")),
-      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "b"), Ref("link0", "sinks", "0", "b")),
-      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "c"), Ref("link0", "sinks", "0", "c")),
+      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "0_a"), Ref("link0", "sinks", "0", "a")),
+      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "0_b"), Ref("link0", "sinks", "0", "b")),
+      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "0_c"), Ref("link0", "sinks", "0", "c")),
       "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "1_a"), Ref("link1", "sinks", "0", "a")),
       "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "1_b"), Ref("link1", "sinks", "0", "b")),
       "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "1_c"), Ref("link1", "sinks", "0", "c")),
@@ -393,11 +393,11 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     // Don't need to test ELEMENTS, that is out of scope
     compiler.getValue(IndirectDesignPath() + "sink" + "port" + IndirectStep.Allocated) should
         equal(Some(ArrayValue(Seq(
-          TextValue("a"), TextValue("b"), TextValue("c"),
+          TextValue("0_a"), TextValue("0_b"), TextValue("0_c"),
           TextValue("1_a"), TextValue("1_b"), TextValue("1_c")
         ))))
 
-    Seq("a", "b", "c", "1_a", "1_b", "1_c").foreach { elementIndex =>
+    Seq("0_a", "0_b", "0_c", "1_a", "1_b", "1_c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
     }
@@ -457,29 +457,6 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     Seq("n0_a", "n0_b", "n0_c", "n1_a", "n1_b", "n1_c").foreach { elementIndex =>
       compiler.getValue(IndirectDesignPath() + "sink" + "port" + elementIndex + IndirectStep.ConnectedLink + "param") should
           equal(Some(IntValue(-1)))
-    }
-  }
-
-  "Compiler on design with conflicting-name block-side-unnamed-allocated link-arrays" should "work" in {
-    val inputDesign = Design(Block.Block("topDesign",
-      blocks = SeqMap(
-        "source0" -> Block.Library("sourceBlock"),
-        "source1" -> Block.Library("sourceBlock"),
-        "sink" -> Block.Library("elasticSinkBlock"),
-      ),
-      links = SeqMap(
-        "link0" -> Link.Array("link"),
-        "link1" -> Link.Array("link"),
-      ),
-      constraints = SeqMap(
-        "source0Connect" -> Constraint.ConnectedArray(Ref("source0", "port"), Ref("link0", "source")),
-        "source1Connect" -> Constraint.ConnectedArray(Ref("source1", "port"), Ref("link1", "source")),
-        "sinkConnect0" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link0", "sinks"))),
-        "sinkConnect1" -> Constraint.ConnectedArray(Ref.Allocate(Ref("sink", "port")), Ref.Allocate(Ref("link1", "sinks"))),
-      )
-    ))
-    assertThrows[Exception] {
-      testCompile(inputDesign, library)
     }
   }
 }
