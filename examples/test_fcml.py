@@ -344,13 +344,28 @@ class FcmlTest(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          # TODO
+          'sw=37',
+          'led_0=38',
+          'led_1=39',
+          'led_2=40',
+          'led_3=41',
         ]),
         (['mcu', 'swd_swo_pin'], 'NC'),  # TODO
         (['mcu', 'swd_tdi_pin'], 'NC'),  # TODO
         (['fpga', 'pin_assigns'], [
-          # TODO
-        ]),
+          'sw=23',
+          'led_0=21',
+          'led_1=20',
+          'led_2=19',
+          'led_3=18',
+
+          'pwm_0H=48',
+          'pwm_0L=47',
+          'pwm_1H=46',
+          'pwm_1L=45',
+          'pwm_2H=44',
+          'pwm_2L=43',
+       ]),
 
         # flying caps need to be beefier for high current rating (which isn't modeled)
         (['conv', 'sw[1]', 'cap', 'footprint_spec'], 'Capacitor_SMD:C_1206_3216Metric'),
