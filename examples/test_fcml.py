@@ -244,7 +244,8 @@ class DiscreteMutlilevelBuckConverter(GeneratorBlock):
 
 
 class FcmlTest(JlcBoardTop):
-  """FPGA + FCML (flying cpacitor multilevel converter) test circuit
+  """FPGA + FCML (flying cpacitor multilevel converter) test circuit,
+  plus a bunch of other hardware blocks to test like RP2040 and CP2102
   """
   def contents(self) -> None:
     super().contents()
@@ -340,7 +341,15 @@ class FcmlTest(JlcBoardTop):
         imp.Block(DigitalLowPassRcArray(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))),
         self.conv.pwms)
 
-      # TODO resistive divider feedback
+    # SENSING
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      div_model = VoltageSenseDivider(full_scale_voltage=1.5*Volt(tol=0.05), impedance=(100, 1000)*Ohm)
+      (self.conv_in_sense, ), _ = self.chain(self.conv.pwr_in, imp.Block(div_model),
+                                             self.mcu.adc.request('conv_in_sense'))
+      (self.conv_out_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model),
+                                              self.mcu.adc.request('conv_out_sense'))
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -358,10 +367,13 @@ class FcmlTest(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           'sw=29',
-          'led_0=38',
-          'led_1=39',
-          'led_2=40',
-          'led_3=41',
+          'led_0=34',
+          'led_1=35',
+          'led_2=36',
+          'led_3=37',
+
+          'conv_in_sense=38',
+          'conv_out_sense=39',
 
           'fpga1=14',
           'fpga2=13',

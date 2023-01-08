@@ -23,7 +23,8 @@ from .AbstractResistorArray import ResistorArray, ResistorArrayStandardPinning, 
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardPinning, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor
-from .ResistiveDivider import ResistiveDivider, VoltageDivider, FeedbackVoltageDivider, SignalDivider
+from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
+from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
 from .I2cPullup import I2cPullup
 
