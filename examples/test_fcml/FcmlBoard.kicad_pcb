@@ -766,7 +766,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 12d28c04-9a98-48bc-8086-f99e6fc96d5b)
-    (at 38 161 180)
+    (at 38 155 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -2542,7 +2542,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp 48b89536-a06e-4eaa-b327-00ff61fd37e5)
-    (at 42 155)
+    (at 42 161)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -3879,7 +3879,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp 6c207f7d-bb5d-4791-950d-dd8a86c6eae6)
-    (at 42 161)
+    (at 42 155)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -6395,7 +6395,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp c8b209ac-6570-40e8-bcc7-0fb8aca9e5a1)
-    (at 42 157)
+    (at 42 159)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -6535,7 +6535,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp d090c4c2-945c-443d-b2cc-2acaf40578d9)
-    (at 42 159)
+    (at 42 157)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -7518,7 +7518,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp e96ec66b-9f2b-4a36-958a-6b8122f1672a)
-    (at 38 155 180)
+    (at 38 161 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -7564,7 +7564,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp ec21aaf1-e692-4990-b657-88081ee5c617)
-    (at 38 157 180)
+    (at 38 159 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -8037,7 +8037,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp f3f7b5fa-daff-4a40-b866-113eb5312e66)
-    (at 38 159 180)
+    (at 38 157 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -8400,6 +8400,7 @@
     )
   )
 
+  (gr_rect (start 79.25 152) (end 80.75 154) (layer "F.Paste") (width 0) (fill solid) (tstamp 0b1f9b2b-e25c-4d32-a6ee-054c7a12a9b7))
   (gr_rect (start 10 88.5) (end 149 211.5) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 47d0e35f-9ca8-4803-9888-6ec266548b6c))
 
   (segment (start 72.405 123.905) (end 72.405 125) (width 0.2) (layer "F.Cu") (net 1) (tstamp 0a14ae99-cae4-43eb-9d46-ba0526b7af61))
