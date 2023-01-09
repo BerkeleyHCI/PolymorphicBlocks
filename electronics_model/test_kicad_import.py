@@ -18,6 +18,14 @@ class KiCadBlock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
 
 
+class KiCadBlockAliasedPinName(KiCadSchematicBlock):
+    """Block with a symbol that has the same pin name and number."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_aliasedpinname.kicad_sch"))
+
+
 class KiCadHierarchyLabelBlock(KiCadSchematicBlock):
     """Block that uses a hierarchy label for its port mapping."""
     def __init__(self) -> None:
@@ -99,6 +107,9 @@ class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
+
+    def test_block_aliased_pin_name(self):
+        self.check_connectivity(KiCadBlockAliasedPinName)
 
     def test_hierarchy_label_block(self):
         self.check_connectivity(KiCadHierarchyLabelBlock)
