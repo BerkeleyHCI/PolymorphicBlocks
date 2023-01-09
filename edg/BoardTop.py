@@ -3,6 +3,12 @@ from electronics_lib import *
 
 class BaseBoardTop(DesignTop):
   """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.refdes_prefix = self.Parameter(StringExpr())
+    self.assign(self.refdes_prefix, "")  # override with refinements
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[

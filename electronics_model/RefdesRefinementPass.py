@@ -16,6 +16,13 @@ class RefdesTransform(TransformUtil.Transform):
   def __init__(self, design: CompiledDesign):
     self.design = design
 
+    board_refdes_prefix = self.design.get_value(('refdes_prefix',))
+    if board_refdes_prefix is None:
+      self.board_refdes_prefix = ''
+    else:
+      assert isinstance(board_refdes_prefix, str)
+      self.board_refdes_prefix = board_refdes_prefix
+
     self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
     self.seen_blocks: Set[TransformUtil.Path] = set()
     self.refdes_last: Dict[str, int] = {}
@@ -28,7 +35,7 @@ class RefdesTransform(TransformUtil.Transform):
       refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
       self.refdes_last[refdes_prefix] = refdes_id
       assert context.path not in self.seen_blocks
-      self.block_refdes_list.append((context.path, refdes_prefix + str(refdes_id)))
+      self.block_refdes_list.append((context.path, self.board_refdes_prefix + refdes_prefix + str(refdes_id)))
 
   def run(self) -> List[Tuple[TransformUtil.Path, str]]:
     self.transform_design(self.design.design)

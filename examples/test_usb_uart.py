@@ -53,6 +53,7 @@ class UsbUartTest(JlcBoardTop):
         (['out', 'conn'], PinHeader254),
       ],
       instance_values=[
+        (['refdes_prefix'], '1'),  # unique refdes for panelization
       ],
       class_refinements=[
       ],
