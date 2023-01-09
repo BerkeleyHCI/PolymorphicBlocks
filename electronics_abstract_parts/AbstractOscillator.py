@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from electronics_model import *
 from . import PartsTableFootprint, PartsTableColumn, PartsTableRow
 from .Categories import *
@@ -47,13 +49,10 @@ class TableOscillator(Oscillator, PartsTableFootprint, GeneratorBlock):
     self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_frequency, part[self.FREQUENCY])
 
-    self._make_footprint(part)
+    self._implementation(part)
 
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'X', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  @abstractmethod
+  def _implementation(self, part: PartsTableRow) -> None:
+    """Implement me. This defines the implementation given the selected part.
+    Unlike passives, this doesn't necessarily create a footprint, since it may need a supporting capacitor."""
+    ...

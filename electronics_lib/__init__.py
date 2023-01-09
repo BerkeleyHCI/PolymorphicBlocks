@@ -17,6 +17,7 @@ from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .JlcCrystal import JlcCrystal
+from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001

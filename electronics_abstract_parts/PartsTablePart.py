@@ -41,16 +41,11 @@ class PartsTablePart(Block):
 
 
 class PartsTableFootprint(PartsTablePart, Block):
-  """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param."""
+  """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param.
+  This Block doesn't need to directly be a footprint, only that the part search can filter on footprint."""
   KICAD_FOOTPRINT = PartsTableColumn(str)
 
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
-
-
-  @abstractmethod
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    """Given a selected part (row), creates the footprint. Implement me."""
-    ...

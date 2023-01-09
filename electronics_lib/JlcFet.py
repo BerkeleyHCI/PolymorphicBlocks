@@ -74,15 +74,16 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
 
+
+class JlcFet(JlcBaseFet, TableFet):
   def _make_footprint(self, part: PartsTableRow) -> None:
     super()._make_footprint(part)
     self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
     self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
 
 
-class JlcFet(JlcBaseFet, TableFet):
-  pass
-
-
 class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
-  pass
+  def _make_footprint(self, part: PartsTableRow) -> None:
+    super()._make_footprint(part)
+    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

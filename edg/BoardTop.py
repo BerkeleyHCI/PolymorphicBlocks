@@ -24,6 +24,7 @@ class BaseBoardTop(DesignTop):
         (Led, SmtLed),
         (RgbLedCommonAnode, SmtRgbLed),
         (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
+        (Oscillator, JlcOscillator),  # TODO: replace with non-distributor parts list
 
         (Jumper, SolderJumperTriangular),
         (IndicatorSinkLed, IndicatorSinkLedResistor),
@@ -78,6 +79,7 @@ class JlcBoardTop(BaseBoardTop):
         (Inductor, JlcInductor),
         (ResistorArray, JlcResistorArray),
         (Crystal, JlcCrystal),
+        (Oscillator, JlcOscillator),
 
         (Switch, JlcSwitch),
         (Led, JlcLed),
