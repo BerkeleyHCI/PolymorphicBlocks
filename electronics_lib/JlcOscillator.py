@@ -4,42 +4,55 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart, JlcTablePart, DescriptionParser
 
 
-class JlcOscillator_Device(JlcPart, FootprintBlock, GeneratorBlock):
-  """Parameter-defined device, other than the fixed oscillator refdes prefix.
-  TODO: can this be shared infrastructure?"""
+class JlcOscillator_Device(Block):
+  """Base oscillator device definition, that takes in the part data from the containing part table.
+  Defines a standard interface, and specifies the footprint here."""
+  FOOTPRINT: str
+
   @init_in_parent
-  def __init__(self, kicad_pins: ArrayStringLike, kicad_footprint: StringLike,
-               kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike,
-               lcsc_part: StringLike, actual_basic_part: StringLike):
+  def __init__(self, in_kicad_part: StringLike, in_kicad_value: StringLike, in_kicad_datasheet: StringLike,
+               in_lcsc_part: StringLike, in_actual_basic_part: BoolLike):
     super().__init__()
-    self.ports = self.Port(Vector(Passive()))
-    self.kicad_footprint = self.ArgParameter(kicad_footprint)
-    self.kicad_part = self.ArgParameter(kicad_part)
-    self.kicad_value = self.ArgParameter(kicad_value)
-    self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
+    self.gnd = self.Port(Ground.empty())
+    self.vcc = self.Port(VoltageSink.empty())
+    self.out = self.Port(DigitalSource.empty())
+    self.st = self.Port(DigitalSink.empty())
 
-    self.assign(self.lcsc_part, lcsc_part)
-    self.assign(self.actual_basic_part, actual_basic_part)
+    self.in_kicad_part = self.ArgParameter(in_kicad_part)
+    self.in_kicad_value = self.ArgParameter(in_kicad_value)
+    self.in_kicad_datasheet = self.ArgParameter(in_kicad_datasheet)
 
-    self.generator(self.generate, kicad_pins)
+    self.in_lcsc_part = self.ArgParameter(in_lcsc_part)
+    self.in_actual_basic_part = self.ArgParameter(in_actual_basic_part)
 
-  def generate(self, kicad_pins: List[str]):
-    mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
-               for pin_name in kicad_pins}
-    self.footprint('X', self.kicad_footprint, mapping,
-                   part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
+
+class Sh8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
+  FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.footprint(
+      'X', self.FOOTPRINT,
+      {
+        '1': self.vcc,  # ST/OE pin
+        '2': self.gnd,
+        '3': self.out,
+        '4': self.vcc,
+      },
+      part=self.in_kicad_part, value=self.in_kicad_value, datasheet=self.in_kicad_datasheet)
+
+    self.assign(self.lcsc_part, self.in_lcsc_part)
+    self.assign(self.actual_basic_part, self.in_actual_basic_part)
 
 
 class JlcOscillator(TableOscillator, JlcTablePart, Block):
-  """TODO: this technically shouldn't be a JlcPart?"""
-  SERIES_PACKAGE_FOOTPRINT_PIN_MAP = {
-    ('SG–8101CG', 'SMD2520-4P'): ('Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm',
-                                  lambda block: {
-                                    '1': block.pwr, '2': block.gnd, '3': block.out, '4': block.pwr
-                                  }),
+  """TODO: this technically shouldn't be a JlcPart?
+  TODO: this also really shouldn't provide the decoupling capacitor, but it's convenient for now"""
+  SERIES_DEVICE_MAP = {
+    'SG-8101CG': Sh8101cg_Device,
   }
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("(±\S+ppm) .* (\S+MHz) .*Pre-programmed Oscillators .*"),
+    (re.compile("(±\S+ppm) .* (\S+MHz) .* Pre-programmed Oscillators .*"),
      lambda match: {
        TableOscillator.FREQUENCY: Range.from_tolerance(PartParserUtil.parse_value(match.group(2), 'Hz'),
                                                        PartParserUtil.parse_tolerance(match.group(1))),
@@ -49,14 +62,14 @@ class JlcOscillator(TableOscillator, JlcTablePart, Block):
   @classmethod
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['Second Category'] != 'Crystals':
+      if row['Second Category'] not in ('Pre-programmed Oscillators', 'Oscillators'):
         return None
 
       footprint = None
-      for (series, package), (map_footprint, map_pinning) in cls.SERIES_PACKAGE_FOOTPRINT_PIN_MAP.items():
-        if row[cls.PART_NUMBER_COL].startswith(series) and row[cls._PACKAGE_HEADER] == package:
+      for series, device_cls in cls.SERIES_DEVICE_MAP.items():
+        if row[cls.PART_NUMBER_COL].startswith(series):
           assert footprint is None, f"multiple footprint rules match {row[cls.PART_NUMBER_COL]}"
-          footprint = map_footprint
+          footprint = device_cls.FOOTPRINT
       if footprint is None:
         return None
 
@@ -73,14 +86,13 @@ class JlcOscillator(TableOscillator, JlcTablePart, Block):
     )
 
   def _implementation(self, row: PartsTableRow) -> None:
-    for (series, package), (map_footprint, map_pinning) in self.SERIES_PACKAGE_FOOTPRINT_PIN_MAP.items():
-      if row[self.PART_NUMBER_COL].startswith(series) and row[self._PACKAGE_HEADER] == package:
-        # TODO implement me
-        pinning = map_pinning(self)
-        self.device = self.Block(JlcOscillator_Device(
-          list(pinning.keys()), row[self.KICAD_FOOTPRINT],
+    for series, device_cls in self.SERIES_DEVICE_MAP.items():
+      if row[self.PART_NUMBER_COL].startswith(series):
+        self.device = self.Block(device_cls(
           row[self.PART_NUMBER_COL], row[self.DESCRIPTION_COL], row[self.DATASHEET_COL],
-          row[self.LCSC_PART_HEADER], row[self.BASIC_PART_HEADER]
+          row[self.LCSC_PART_HEADER], row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE
         ))
+        self.connect(self.pwr, self.device.vcc)
+        self.connect(self.gnd, self.device.gnd)
+        self.connect(self.out, self.device.out)
         self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
-

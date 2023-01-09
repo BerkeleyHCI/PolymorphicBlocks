@@ -17,7 +17,7 @@ class Oscillator(DiscreteComponent):
 
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.clock = self.Port(DigitalSource.empty(), [Output])
+    self.out = self.Port(DigitalSource.empty(), [Output])
 
     self.description = DescriptionString(
       "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),

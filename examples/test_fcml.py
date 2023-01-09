@@ -304,6 +304,7 @@ class FcmlTest(JlcBoardTop):
 
       (self.fpga_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw'))
       (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
+      (self.fpga_osc, ), _ = self.chain(imp.Block(Oscillator(48*MHertz(tol=0.005))), self.fpga.gpio.request('osc'))
       (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
