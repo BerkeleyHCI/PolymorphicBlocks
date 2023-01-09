@@ -31,6 +31,8 @@ class Cp2102_Device(DiscreteChip, FootprintBlock, JlcPart):
     dout_model = DigitalSource.from_bidir(dio_model)
 
     self.rst = self.Port(din_model, optional=True)
+    self.suspend = self.Port(dout_model, optional=True)
+    self.nsuspend = self.Port(dout_model, optional=True)
 
     self.uart = self.Port(UartPort(dio_model), optional=True)  # baud up to 921600bps
     self.ri = self.Port(din_model, optional=True)
@@ -56,7 +58,8 @@ class Cp2102_Device(DiscreteChip, FootprintBlock, JlcPart):
         '8': self.vbus,
         '9': self.rst,
         # 10: NC - per Table 9 can be unconnected or tied to Vdd
-        # 11: /SUSPEND, 12: SUSPEND
+        '11': self.nsuspend,
+        '12': self.suspend,
         # 13-22: NC (18 on CP2109 is VPP)
         '23': self.cts,
         '24': self.rts,
@@ -81,6 +84,9 @@ class Cp2102(PinMappable):
     self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.usb = self.Export(self.ic.usb)
+    self.suspend = self.Export(self.ic.suspend, optional=True)
+    self.nsuspend = self.Export(self.ic.nsuspend, optional=True)
+
     self.uart = self.Export(self.ic.uart, optional=True)
     self.ri = self.Export(self.ic.ri, optional=True)
     self.dcd = self.Export(self.ic.dcd, optional=True)
