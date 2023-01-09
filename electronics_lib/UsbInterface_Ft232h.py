@@ -97,8 +97,8 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
         '47': self.gnd,
         '48': self.gnd,
 
-        '1': self.osci,
-        '2': self.osco,
+        '1': self.osc.xtal_in,
+        '2': self.osc.xtal_out,
         '5': self.ref,
         '6': self.usb.dm,
         '7': self.usb.dp,
@@ -145,23 +145,36 @@ class Ft232hl(PinMappable):
     self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.usb = self.Export(self.ic.usb)
-    self.suspend = self.Export(self.ic.suspend, optional=True)
-    self.nsuspend = self.Export(self.ic.nsuspend, optional=True)
 
-    self.uart = self.Export(self.ic.uart, optional=True)
-    self.ri = self.Export(self.ic.ri, optional=True)
-    self.dcd = self.Export(self.ic.dcd, optional=True)
-    self.dtr = self.Export(self.ic.dtr, optional=True)
-    self.dsr = self.Export(self.ic.dsr, optional=True)
-    self.rts = self.Export(self.ic.rts, optional=True)
-    self.cts = self.Export(self.ic.cts, optional=True)
+    self.adbus0 = self.Export(self.ic.adbus0, optional=True)
+    self.adbus1 = self.Export(self.ic.adbus1, optional=True)
+    self.adbus2 = self.Export(self.ic.adbus2, optional=True)
+    self.adbus3 = self.Export(self.ic.adbus3, optional=True)
+    self.adbus4 = self.Export(self.ic.adbus4, optional=True)
+    self.adbus5 = self.Export(self.ic.adbus5, optional=True)
+    self.adbus6 = self.Export(self.ic.adbus6, optional=True)
+    self.adbus7 = self.Export(self.ic.adbus7, optional=True)
+
+    self.acbus0 = self.Export(self.ic.acbus0, optional=True)
+    self.acbus1 = self.Export(self.ic.acbus1, optional=True)
+    self.acbus2 = self.Export(self.ic.acbus2, optional=True)
+    self.acbus3 = self.Export(self.ic.acbus3, optional=True)
+    self.acbus4 = self.Export(self.ic.acbus4, optional=True)
+    self.acbus5 = self.Export(self.ic.acbus5, optional=True)
+    self.acbus6 = self.Export(self.ic.acbus6, optional=True)
+    self.acbus7 = self.Export(self.ic.acbus7, optional=True)
+    self.acbus8 = self.Export(self.ic.acbus8, optional=True)
+    self.acbus9 = self.Export(self.ic.acbus9, optional=True)
 
   def contents(self) -> None:
     super().contents()
-    self.connect(self.ic.regin, self.ic.vbus)
-    self.connect(self.ic.vdd.as_digital_source(), self.ic.rst)
+    # self.connect(self.ic.regin, self.ic.vbus)
+    # self.connect(self.ic.vdd.as_digital_source(), self.ic.rst)
 
-    self.regin_cap0 = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
-    self.regin_cap1 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
-    self.vdd_cap = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
-    # Vdd currently isn't externally exposed, but if externally used a 4.7uF capacitor is needed (Figure 5 Option 2)
+    self.crystal = self.Block(OscillatorCrystal(frequency=12*MHertz(tol=30e-6)))
+    self.connect(self.crystal.gnd, self.gnd)
+    self.connect(self.crystal.crystal, self.ic.osc)
+
+    # self.regin_cap0 = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
+    # self.regin_cap1 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
+    # self.vdd_cap = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
