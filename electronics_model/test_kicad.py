@@ -5,7 +5,7 @@ from typing import Type
 from . import *
 from . import test_netlist
 from .RefdesRefinementPass import RefdesRefinementPass
-from .BomBackend import BomTransform, BomBackend
+from .BomBackend import BomBackend
 
 
 class NetlistTestCase(unittest.TestCase):
@@ -13,8 +13,7 @@ class NetlistTestCase(unittest.TestCase):
     compiled = ScalaCompiler.compile(design)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
-    compiled2 = ScalaCompiler.compile(design)
-    BomBackend().run(compiled2)
+    BomBackend().run(compiled)
 
     return NetlistBackend().run(compiled)[0][1]
 

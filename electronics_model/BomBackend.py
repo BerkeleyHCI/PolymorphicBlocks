@@ -8,8 +8,8 @@ import csv
 
 
 class BomItem:
-    def __init__(self, designator, quantity, value, footprint, manufacturer, part_number, datasheet):
-        self.designator = designator
+    def __init__(self, refdes, quantity, value, footprint, manufacturer, part_number, datasheet):
+        self.refdes = refdes
         self.quantity = quantity
         self.value = value
         self.footprint = footprint
@@ -21,7 +21,7 @@ class BomItem:
 class BomBackend(BaseBackend):      # creates and populates .csv file
     def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, str]]:
         bom_list = BomTransform(design).run()
-        name = 'BOM.csv' # fix filename: os.path.splitext(__file__)[0]
+        name = os.path.splitext(os.path.basename(__file__))[0] + '_bom.csv'
         with open(name, 'w', newline='') as f:
             fieldnames = ['Ref Des', 'Quantity', 'Value', 'Footprint', 'Manufacturer', 'Part Number', 'Datasheet']
             thewriter = csv.DictWriter(f, fieldnames=fieldnames)
@@ -29,12 +29,12 @@ class BomBackend(BaseBackend):      # creates and populates .csv file
             thewriter.writeheader()      # creates the header
 
             for item in bom_list:
-                thewriter.writerow({'Ref Des' : item.designator, 'Quantity' : item.quantity, 'Value' : item.value,
+                thewriter.writerow({'Ref Des' : item.refdes, 'Quantity' : item.quantity, 'Value' : item.value,
                                     'Footprint' : item.footprint, 'Manufacturer' : item.manufacturer,
                                     'Part Number' : item.part_number, 'Datasheet' : item.datasheet})
 
         return [
-            (edgir.LocalPath(), "BOM.csv")
+            (edgir.LocalPath(), name)
         ]
 
 
@@ -47,7 +47,7 @@ class BomTransform(TransformUtil.Transform):
         tracker = True
         for item in self.bom_list:   # checks for multiple occurrences of the same component
             if str(self.design.get_value(context.path.to_tuple() + ('fp_footprint',))) == item.footprint:
-                item.designator += ' ' + str(self.design.get_value(context.path.to_tuple() + ('fp_refdes',)))
+                item.refdes += ' ' + str(self.design.get_value(context.path.to_tuple() + ('fp_refdes',)))
                 item.quantity += 1
                 tracker = False
                 break
