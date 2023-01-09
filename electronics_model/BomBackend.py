@@ -47,7 +47,7 @@ class BomTransform(TransformUtil.Transform):
         tracker = True
         for item in self.bom_list:   # checks for multiple occurrences of the same component
             if str(self.design.get_value(context.path.to_tuple() + ('fp_footprint',))) == item.footprint:
-                item.refdes += ' ' + str(self.design.get_value(context.path.to_tuple() + ('fp_refdes',)))
+                item.refdes += ', ' + str(self.design.get_value(context.path.to_tuple() + ('fp_refdes',)))
                 item.quantity += 1
                 tracker = False
                 break
