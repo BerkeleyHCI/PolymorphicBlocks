@@ -85,6 +85,7 @@ from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .SpiMemory_W25q import W25q
 from .UsbUart_Cp2102 import Cp2102
+from .UsbInterface_Ft232h import Ft232hl
 
 from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
 from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode

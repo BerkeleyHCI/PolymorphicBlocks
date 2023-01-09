@@ -37,7 +37,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     ))
 
     self.osc = self.Port(CrystalDriver(frequency_limits=12*MHertz(tol=30e-6),
-                                       voltage_out=self.pwr.link().voltage))
+                                       voltage_out=self.vccd.link().voltage))  # assumed
     self.ref = self.Port(Passive())  # connect 12k 1% resistor to GND
     self.usb = self.Port(UsbDevicePort())
 
@@ -52,6 +52,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
 
     self.nreset = self.Port(din_model, optional=True)
 
+    # TODO these should be aliased to the supported serial buses
     self.adbus0 = self.Port(dout_model, optional=True)
     self.adbus1 = self.Port(din_model, optional=True)
     self.adbus2 = self.Port(dout_model, optional=True)
@@ -78,7 +79,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
       {
         '40': self.vregin,
         '37': self.vcca,
-        '38': self.vcore,
+        '38': self.vcccore,
         '39': self.vccd,
         '12': self.vccio,
         '24': self.vccio,
@@ -141,7 +142,8 @@ class Ft232hl(PinMappable):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Ft232hl_Device())
-    self.pwr = self.Export(self.ic.regin, [Power])
+    # TODO connect to 3.3v from ferrite
+    self.pwr = self.Export(self.ic.vregin, [Power])
     self.gnd = self.Export(self.ic.gnd, [Common])
 
     self.usb = self.Export(self.ic.usb)
@@ -168,13 +170,34 @@ class Ft232hl(PinMappable):
 
   def contents(self) -> None:
     super().contents()
-    # self.connect(self.ic.regin, self.ic.vbus)
-    # self.connect(self.ic.vdd.as_digital_source(), self.ic.rst)
+
+    # connections from Figure 6.1, bus powered configuration
+    cap_model = DecouplingCapacitor(0.1*uFarad(tol=0.2))
+    self.vregin_cap0 = self.Block(DecouplingCapacitor(4.7*uFarad(tol=0.2))).connected(self.gnd, self.ic.vregin)
+    self.vregin_cap1 = self.Block(cap_model).connected(self.gnd, self.ic.vregin)
+
+    # TODO connect to 3.3v from ferrite
+    self.vphy_cap = self.Block(cap_model).connected(self.gnd, self.ic.vphy)
+
+    # TODO connect to 3.3v from ferrite
+    self.vpll_cap = self.Block(cap_model).connected(self.gnd, self.ic.vpll)
+
+    self.vcccore_cap = self.Block(cap_model).connected(self.gnd, self.ic.vcccore)
+    self.vcca_cap = self.Block(cap_model).connected(self.gnd, self.ic.vcca)
+
+    self.vccd_cap = self.Block(cap_model).connected(self.gnd, self.ic.vccd)
+
+    self.connect(self.ic.vccd, self.ic.vccio)
+    self.vccio_cap0 = self.Block(cap_model).connected(self.gnd, self.ic.vccio)
+    self.vccio_cap1 = self.Block(cap_model).connected(self.gnd, self.ic.vccio)
+    self.vccio_cap2 = self.Block(cap_model).connected(self.gnd, self.ic.vccio)
+
+    self.ref_res = self.Block(Resistor(12*kOhm(tol=0.01)))
+    self.connect(self.ref_res.a, self.ic.ref)
+    self.connect(self.ref_res.b.adapt_to(Ground()), self.gnd)
+
+    self.connect(self.ic.vccio.as_digital_source(), self.ic.nreset)
 
     self.crystal = self.Block(OscillatorCrystal(frequency=12*MHertz(tol=30e-6)))
     self.connect(self.crystal.gnd, self.gnd)
     self.connect(self.crystal.crystal, self.ic.osc)
-
-    # self.regin_cap0 = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
-    # self.regin_cap1 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.regin)
-    # self.vdd_cap = self.Block(DecouplingCapacitor(1.0*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
