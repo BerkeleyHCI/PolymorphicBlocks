@@ -67,6 +67,7 @@ class Cp2102_Device(DiscreteChip, FootprintBlock, JlcPart):
         '26': self.uart.tx,
         '27': self.dsr,
         '28': self.dtr,
+        '29': self.gnd,
       },
       mfr='Silicon Labs', part='CP2102',
       datasheet='https://www.silabs.com/documents/public/data-sheets/CP2102-9.pdf'
