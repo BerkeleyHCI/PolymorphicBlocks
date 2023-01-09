@@ -18,7 +18,7 @@ class BomItem:
         self.datasheet = datasheet
 
 
-class BomBackend(BaseBackend):      # creates and populates .csv file
+class GenerateBom(BaseBackend):      # creates and populates .csv file
     def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, str]]:
         bom_list = BomTransform(design).run()
         name = os.path.splitext(os.path.basename(__file__))[0] + '_bom.csv'
