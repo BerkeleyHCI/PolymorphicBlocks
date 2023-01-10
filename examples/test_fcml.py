@@ -301,11 +301,11 @@ class FcmlTest(JlcBoardTop):
     ) as imp:
       # FPGA BLOCK
       self.fpga = imp.Block(Ice40up5k_Sg48())
+      (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
+      (self.fpga_osc, ), _ = self.chain(imp.Block(Oscillator(48*MHertz(tol=0.005))), self.fpga.gpio.request('osc'))
 
       (self.fpga_sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.fpga.gpio.request('sw'))
       (self.fpga_led, ), _ = self.chain(self.fpga.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
-      (self.fpga_osc, ), _ = self.chain(imp.Block(Oscillator(48*MHertz(tol=0.005))), self.fpga.gpio.request('osc'))
-      (self.cdone, ), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
 
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
       (self.usb_fpga_bitbang, self.usb_fpga_esd), self.usb_fpga_chain = self.chain(
@@ -376,7 +376,8 @@ class FcmlTest(JlcBoardTop):
         (['mcu', 'swd_swo_pin'], 'GPIO0'),  # UART0 TX
         (['mcu', 'swd_tdi_pin'], 'GPIO1'),  # UART0 RX
         (['fpga', 'pin_assigns'], [
-          'sw=36',
+          'osc=IOB_45a_G1',  # use a global buffer input for clock
+          'sw=32',
           'led_0=21',
           'led_1=20',
           'led_2=19',

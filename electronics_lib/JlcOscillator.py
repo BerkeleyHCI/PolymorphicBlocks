@@ -16,7 +16,6 @@ class JlcOscillator_Device(Block):
     self.gnd = self.Port(Ground.empty())
     self.vcc = self.Port(VoltageSink.empty())
     self.out = self.Port(DigitalSource.empty())
-    self.st = self.Port(DigitalSink.empty())
 
     self.in_kicad_part = self.ArgParameter(in_kicad_part)
     self.in_kicad_value = self.ArgParameter(in_kicad_value)
@@ -27,10 +26,16 @@ class JlcOscillator_Device(Block):
 
 
 class Sh8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
-  FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'
+  FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'  # doesn't perfectly match datasheet recommended geometry
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
+    self.gnd.init_from(Ground())
+    self.vcc.init_from(VoltageSink(voltage_limits=(1.62, 3.62)*Volt,
+                                   current_draw=(0.0003, 3.5)*mAmp))  # 1.8 stdby typ to 3.3 max
+    self.out.init_from(DigitalSource.from_supply(self.gnd, self.vcc,
+                                                 0*mAmp(tol=0)))
+
     self.footprint(
       'X', self.FOOTPRINT,
       {
