@@ -18,7 +18,7 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
     def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
                  kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
         super().__init__()
-        self.ports = self.Port(Vector(Passive()))
+        self.ports = self.Port(Vector(Passive()), optional=True)
         self.kicad_refdes_prefix = self.ArgParameter(kicad_refdes_prefix)
         self.kicad_footprint = self.ArgParameter(kicad_footprint)
         self.kicad_part = self.ArgParameter(kicad_part)
@@ -30,6 +30,7 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
     def generate(self, kicad_pins: List[str]):
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
                    for pin_name in kicad_pins}
+        self.ports.defined()
         self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
