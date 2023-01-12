@@ -13,18 +13,25 @@ class NetlistTestCase(unittest.TestCase):
     compiled = ScalaCompiler.compile(design)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
-    GenerateBom().run(compiled)
-
-    return NetlistBackend().run(compiled)[0][1]
+    return NetlistBackend().run(compiled)[0][1], GenerateBom().run(compiled)[0][1]
 
   def test_basic_kicad(self):
     with open(os.path.splitext(os.path.basename(__file__))[0] + '_basic.net', 'w') as f:
-      f.write(self.generate_net(test_netlist.TestBasicCircuit))
+      f.write(self.generate_net(test_netlist.TestBasicCircuit)[0])
+
+    with open(os.path.splitext(os.path.basename(__file__))[0] + '_basic.csv', 'w') as f:
+      f.write(self.generate_net(test_netlist.TestBasicCircuit)[1])
 
   def test_multisink_kicad(self):
     with open(os.path.splitext(os.path.basename(__file__))[0] + '_multisink.net', 'w') as f:
-      f.write(self.generate_net(test_netlist.TestMultisinkCircuit))
+      f.write(self.generate_net(test_netlist.TestMultisinkCircuit)[0])
+
+    with open(os.path.splitext(os.path.basename(__file__))[0] + '_multisink.csv', 'w') as f:
+      f.write(self.generate_net(test_netlist.TestMultisinkCircuit)[1])
 
   def test_multinet_kicad(self):
     with open(os.path.splitext(os.path.basename(__file__))[0] + '_multinet.net', 'w') as f:
-      f.write(self.generate_net(test_netlist.TestMultinetCircuit))
+      f.write(self.generate_net(test_netlist.TestMultinetCircuit)[0])
+
+    with open(os.path.splitext(os.path.basename(__file__))[0] + '_multinet.csv', 'w') as f:
+      f.write(self.generate_net(test_netlist.TestMultinetCircuit)[1])
