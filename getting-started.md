@@ -190,6 +190,14 @@ Try building the example now:
   2. Then from the menu, click the Run option.  
      ![run menu](docs/ide/ide_run_blinky_menu.png)
      > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
+
+     > **Note on re-compiling behavior**: The IDE only re-compiles blocks when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
+     > If changes aren't recompiling, try making a change to the class code.
+     > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
+     > 
+     > While this works for most edits, some less common cases may not be detected:
+     > - Edits to `__init__` (including changed default arguments) do not update calling classes.
+     > - Edits to supporting files (such as part tables and imported schematics) that are used in block definitions are not tracked.
   3. The design should build, and you should get a run log that looks something like:
      ```
      Starting compilation of blinky_skeleton.BlinkyExample
