@@ -196,6 +196,7 @@ Try building the example now:
      > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
      > 
      > While this works for most edits, some less common cases may not be detected:
+     > - Edits outside the class are not tracked, even if it is a function called by the class.
      > - Edits to `__init__` (including changed default arguments) do not update calling classes.
      > - Edits to supporting files (such as part tables and imported schematics) that are used in block definitions are not tracked.
   3. The design should build, and you should get a run log that looks something like:
