@@ -37,6 +37,8 @@ class GenerateBom(BaseBackend):      # creates and populates .csv file
         bom_string = ''.join([row for row in text])
         text.close()
 
+        os.remove(name)     # gets rid of temporary .csv file
+
         return [
             (edgir.LocalPath(), bom_string)
         ]
