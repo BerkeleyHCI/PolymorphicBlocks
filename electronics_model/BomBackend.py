@@ -13,41 +13,32 @@ class BomItem(NamedTuple):
 
 
 class GenerateBom(BaseBackend):      # creates and populates .csv file
-    def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
+    def run(self, design: CompiledDesign, args=None) -> List[Tuple[edgir.LocalPath, str]]:
+        if args is None:
+            args = {}
         bom_list = BomTransform(design).run()
         name = os.path.splitext(os.path.basename(__file__))[0] + '_bom.csv'
 
-        with open(name, 'w', newline='') as f:
-            fieldnames = ['Id', 'Designator', 'Package', 'Quantity', 'Value', 'Designation']
+        with open(name, 'w', newline='') as f:  # writes to a csv file
+            fieldnames = ['Id', 'Designator', 'Package', 'Quantity', 'Value', 'Designation']    # header values
             thewriter = csv.DictWriter(f, fieldnames=fieldnames)
             thewriter.writeheader()      # creates the header
-            id = 1
 
-            for key in bom_list:
-                thewriter.writerow({'Id': str(id),
-                                    'Designator': '"' + ','.join(bom_list[key]) + '"',
+            for index, (key, value) in enumerate(bom_list.items(), 1):
+                thewriter.writerow({'Id': str(index),
+                                    'Designator': ','.join(bom_list[key]),
                                     'Package': key.footprint,
                                     'Quantity': len(bom_list[key]),
                                     'Value': key.value,
                                     'Designation': ''})
-                id += 1
-
             f.close()
 
-        return_string = ''
-        with open(name, 'r+') as f:
-            reader = csv.reader(f)
-            for row in reader:
-                for i in row:
-                    return_string += i + ','
-                return_string += '\n'
-            f.write(return_string)
-            f.close()
-
-        #os.remove(name)
+        text = open(name, "r")
+        bom_string = ''.join([row for row in text])
+        text.close()
 
         return [
-            (edgir.LocalPath(), return_string)
+            (edgir.LocalPath(), bom_string)
         ]
 
 
