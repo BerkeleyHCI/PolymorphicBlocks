@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from .SpiMemory_93Lc import E93Lc_B
 from .JlcPart import JlcPart
 
 
@@ -12,7 +13,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     ))
     self.vccd = self.Port(VoltageSource(  # is an output since VREGIN is +5v
       voltage_out=(3.0, 3.6)*Volt,  # not specified, inferred from limits of connected inputs
-      current_limits=(0, 60)*mAmp,  # not specified, inferred from draw of connected inputs
+      current_limits=(0, 62)*mAmp,  # not specified, inferred from draw of connected inputs + EEPROM
     ))
     self.vcccore = self.Port(VoltageSource(  # decouple with 0.1uF cap, recommended 1.62-1.98v
       voltage_out=(1.62, 1.98)*Volt,  # assumed from Vcore limits
@@ -46,8 +47,13 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
       input_threshold_abs=(0.8, 2.0)*Volt,  # Table 5.3
     )
     din_model = DigitalSink.from_bidir(dio_model)
+    dout_model = DigitalSource.from_bidir(dio_model)
 
     self.nreset = self.Port(din_model, optional=True)
+
+    self.eecs = self.Port(dout_model, optional=True)
+    self.eeclk = self.Port(dout_model, optional=True)
+    self.eedata = self.Port(dio_model, optional=True)
 
     # TODO these should be aliased to the supported serial buses
     self.adbus0 = self.Port(dio_model, optional=True)
@@ -103,10 +109,9 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
         '42': self.gnd,  # TEST
         '34': self.nreset,  # active-low reset
 
-        # TODO IMPLEMENT ME EEPROM
-        # '45': self.eecs,
-        # '44': self.eeclk,
-        # '43': self.eedata,
+        '45': self.eecs,
+        '44': self.eeclk,
+        '43': self.eedata,
 
         '13': self.adbus0,
         '14': self.adbus1,
@@ -247,3 +252,9 @@ class Ft232hl(GeneratorBlock):
     self.crystal = self.Block(OscillatorCrystal(frequency=12*MHertz(tol=30e-6)))
     self.connect(self.crystal.gnd, self.gnd)
     self.connect(self.crystal.crystal, self.ic.osc)
+
+    # optional EEPROM
+    self.eeprom = self.Block(E93Lc_B(Range.exact(2 * 1024)))  #
+    self.connect(self.eeprom.gnd, self.gnd)
+    self.connect(self.eeprom.pwr, self.ic.vccio)
+    self.connect(self.eeprom.cs, self.ic.eecs)
