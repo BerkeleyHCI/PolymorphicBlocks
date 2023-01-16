@@ -271,7 +271,7 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlo
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
       (2.5, 'AP2210K-2.5', 'C460340'),
-      # (3.0, 'AP2210K-3.0'),  # JLC part not available
+      (3.0, 'AP2210K-3.0', None),  # JLC part not available
       (3.3, 'AP2210K-3.3', 'C176959'),
       (5.0, 'AP2210K-5.0', 'C500758'),
     ]
@@ -293,7 +293,8 @@ class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlo
       mfr='Diodes Incorporated', part=part_number,
       datasheet='https://www.diodes.com/assets/Datasheets/AP2210.pdf',
     )
-    self.assign(self.lcsc_part, jlc_number)
+    if jlc_number is not None:
+      self.assign(self.lcsc_part, jlc_number)
     self.assign(self.actual_basic_part, False)
 
 
