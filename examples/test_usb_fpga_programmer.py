@@ -3,38 +3,28 @@ import unittest
 from edg import *
 
 
-class FpgaProgrammingHeader(JlcPart, FootprintBlock):
+class FpgaProgrammingHeader(Block):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
   def __init__(self):
     super().__init__()
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])
-    self.spi = self.Port(SpiSlave())
-    self.cs = self.Port(DigitalSink())
-    self.reset = self.Port(DigitalSource())
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.spi = self.Port(SpiSlave.empty())
+    self.cs = self.Port(DigitalSink.empty())
+    self.reset = self.Port(DigitalSink.empty())
 
   def contents(self):
     super().contents()
-
-    self.footprint(  # TODO this should use generic 1.27mm PassiveHeader
-      'J', 'Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD',  # TODO: pattern needs shroud
-      {
-        '1': self.pwr,
-        '2': self.cs,  # swd: swdio
-        '3': self.gnd,
-        '4': self.spi.sck,  # swd: swclk
-        '5': self.gnd,
-        '6': self.spi.mosi,  # DI; swd: swo
-        # '7': ,  # key pin technically doesn't exist
-        '8': self.spi.miso,  # DO; jtag: tdi or swd: NC
-        '9': self.gnd,
-        '10': self.reset,
-      },
-      mfr='XKB Connectivity', part='X1270WVS-2x05B-6TV01',
-      value='SWD'
-    )
-    self.assign(self.lcsc_part, 'C2962219')
-    self.assign(self.actual_basic_part, False)
+    self.conn = self.Block(PinHeader127DualShrouded(10))
+    self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))
+    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(Ground()),
+                 self.conn.pins.request('5').adapt_to(Ground()),
+                 self.conn.pins.request('9').adapt_to(Ground()))
+    self.connect(self.cs, self.conn.pins.request('2').adapt_to(DigitalSink()))  # swd: swdio
+    self.connect(self.spi.sck, self.conn.pins.request('4').adapt_to(DigitalSink()))  # swd: swclk
+    self.connect(self.spi.mosi, self.conn.pins.request('6').adapt_to(DigitalSink()))  # swd: swo
+    self.connect(self.spi.miso, self.conn.pins.request('8').adapt_to(DigitalSource()))  # swd: NC or jtag: tdi
+    self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
 
 
 class UsbFpgaProgrammerTest(JlcBoardTop):

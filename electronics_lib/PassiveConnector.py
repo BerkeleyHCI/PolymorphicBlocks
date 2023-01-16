@@ -58,6 +58,18 @@ class PinHeader254(PassiveConnector):
             "Generic", f"PinHeader2.54 1x{length}")
 
 
+class PinHeader127DualShrouded(PassiveConnector, JlcPart):
+  """Generic dual-row 1.27mm pin header in vertical through-hole pinned in zigzag."""
+  allowed_pins = [10]  # TODO support more
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    assert length == 10, "TODO support more lengths"
+    self.assign(self.lcsc_part, 'C2962219')
+    self.assign(self.actual_basic_part, False)
+    # TODO shrouded footprint
+    return (f'Connector_PinHeader_1.27mm:PinHeader_2x{length//2:02d}_P1.27mm_Vertical_SMD',
+            "Generic", f"PinHeader1.27 Shrouded 2x{length//2}")
+
+
 class JstPhKVertical(PassiveConnector):
   """JST B*B-PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = range(2, 16+1)
