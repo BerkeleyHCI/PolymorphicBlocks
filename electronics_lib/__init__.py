@@ -31,7 +31,7 @@ from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1
 
 from .Jumpers import SolderJumperTriangular
 
-from .DebugHeaders import SwdCortexTargetHeader, JlcSwdCortexTargetHeader
+from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket

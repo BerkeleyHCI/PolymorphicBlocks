@@ -414,7 +414,6 @@ class FcmlTest(JlcBoardTop):
         (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, JlcSwdCortexTargetHeader),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
         (HalfBridgeDriver, Ir2301),
