@@ -1,12 +1,40 @@
 import unittest
-from typing import Optional
+from typing import Optional, Dict
 
 from edg import *
 from .test_robotdriver import LipoConnector
 from .test_bldc import PowerOutConnector, CompactKeystone5015
 
 
-class MultilevelSwitchingCell(GeneratorBlock):
+class SeriesPowerDiode(KiCadImportableBlock):
+  """Series diode that propagates voltage"""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'Device:D'
+    return {'A': self.pwr_in, 'K': self.pwr_out}
+
+  @init_in_parent
+  def __init__(self, reverse_voltage: RangeExpr, current: RangeExpr, voltage_drop: RangeExpr) -> None:
+    super().__init__()
+
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+
+    self.diode = self.Block(Diode(
+      reverse_voltage=reverse_voltage, current=current,
+      voltage_drop=voltage_drop
+    ))
+
+    self.connect(self.pwr_in, self.diode.anode.adapt_to(VoltageSink(
+      voltage_limits=(-float('inf'), float('inf')),
+      current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.diode.cathode.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+      current_limits=Range.all()
+    )))
+
+
+class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
   """A switching cell for one level of a multilevel converter, consisting of a high FET,
   low FET, gate driver, isolator (if needed), and bootstrap circuit (for the gate driver).
 
@@ -48,79 +76,7 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.generator(self.generate, is_first, self.high_boot_out.is_connected())
 
   def generate(self, is_first: bool, high_boot_out_connected: bool):
-    # power path
-    fet_model = Fet.NFet(
-      drain_voltage=self.in_voltage,
-      drain_current=(0, self.high_out.link().current_drawn.upper()),
-      gate_voltage=self.low_boot_out.link().voltage,  # TODO account for boot diode drop
-      rds_on=self.fet_rds
-    )
-    self.low_fet = self.Block(fet_model)
-    self.connect(self.low_fet.source.adapt_to(VoltageSink(
-      current_draw=self.low_out.link().current_drawn
-    )), self.low_in)
-    self.connect(self.low_fet.drain.adapt_to(VoltageSource(
-      voltage_out=self.low_in.link().voltage
-    )), self.low_out)
-    self.high_fet = self.Block(fet_model)
-    self.connect(self.high_fet.drain.adapt_to(VoltageSink(
-      current_draw=self.high_out.link().current_drawn
-    )), self.high_in)
-    self.connect(self.high_fet.source.adapt_to(VoltageSource(
-      voltage_out=self.low_in.link().voltage
-    )), self.high_out)
-
-    if not is_first:  # first FETs rely on the main input capacitors
-      # size the flying cap for max voltage change at max current
-      # Q = C dv => C = I*t / dV
-      MAX_FLYING_CAP_DV_PERCENT = 0.08
-      capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
-      self.cap = self.Block(Capacitor(  # flying cap
-        capacitance=(capacitance, float('inf')*Farad),
-        voltage=self.in_voltage
-      ))
-      self.connect(self.cap.neg.adapt_to(VoltageSink()), self.low_in)
-      self.connect(self.cap.pos.adapt_to(VoltageSink()), self.high_in)
-
-    # bootstrap path
-    boot_diode_model = Diode(
-      reverse_voltage=self.in_voltage + self.low_boot_in.link().voltage,  # upper bound
-      current=(0, 0)*Amp,  # TODO model current draw, though it's probably negligibly small
-      voltage_drop=(0, 0.6)*Volt  # arbitrary to limit gate voltage droop
-    )
-    boot_cap_model = Capacitor(
-      capacitance=0.1*uFarad(tol=0.2),
-      voltage=self.low_boot_in.link().voltage
-    )
-    if is_first:
-      self.connect(self.low_boot_out, self.low_boot_in)
-    else:
-      self.low_boot_diode = self.Block(boot_diode_model)
-      low_boot = self.low_boot_diode.cathode.adapt_to(VoltageSource(
-        voltage_out=self.low_boot_in.link().voltage
-      ))
-      self.connect(self.low_boot_in, self.low_boot_diode.anode.adapt_to(VoltageSink(
-        current_draw=low_boot.link().current_drawn
-      )))
-      self.connect(self.low_boot_out, low_boot)
-      self.low_boot_cap = self.Block(boot_cap_model)
-      self.connect(self.low_boot_cap.neg.adapt_to(VoltageSink()), self.low_in)
-      self.connect(self.low_boot_cap.pos.adapt_to(VoltageSink()), low_boot)
-
-    self.high_boot_diode = self.Block(boot_diode_model)
-    high_boot = self.high_boot_diode.cathode.adapt_to(VoltageSource(
-      voltage_out=self.high_boot_in.link().voltage
-    ))
-    self.connect(self.high_boot_in, self.high_boot_diode.anode.adapt_to(VoltageSink(
-      current_draw=high_boot.link().current_drawn
-    )))
-    self.high_boot_cap = self.Block(boot_cap_model)
-    self.connect(self.high_boot_cap.neg.adapt_to(VoltageSink()), self.high_out)
-    self.connect(self.high_boot_cap.pos.adapt_to(VoltageSink()), high_boot)
-
-    if high_boot_out_connected:  # don't connect the port is it's not used since there isn't a downstream model
-      self.connect(self.high_boot_out, high_boot)  # TODO PLACEHOLDER
-
+    # control path is still defined in HDL
     # signal path
     if is_first:
       low_pwm: Port[DigitalLink] = self.low_pwm
@@ -147,16 +103,66 @@ class MultilevelSwitchingCell(GeneratorBlock):
     self.connect(self.driver.high_in, high_pwm)
     self.connect(self.driver.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
-    self.connect(self.driver.high_pwr, high_boot)
+    self.connect(self.driver.high_pwr, self.high_boot_out)
 
-    # gate resistors
-    gate_res_model = Resistor(self.gate_res)
-    self.low_gate_res = self.Block(gate_res_model)
-    self.connect(self.driver.low_out, self.low_gate_res.a.adapt_to(DigitalSink()))
-    self.connect(self.low_gate_res.b, self.low_fet.gate)
-    self.high_gate_res = self.Block(gate_res_model)
-    self.connect(self.driver.high_out, self.high_gate_res.a.adapt_to(DigitalSink()))
-    self.connect(self.high_gate_res.b, self.high_fet.gate)
+    # if high_boot_out_connected:  # don't connect the port is it's not used since there isn't a downstream model
+    #   self.connect(self.high_boot_out, high_boot)  # TODO PLACEHOLDER
+
+    # size the flying cap for max voltage change at max current
+    # Q = C dv => C = I*t / dV
+    MAX_FLYING_CAP_DV_PERCENT = 0.08
+    flying_cap_capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
+
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      locals={
+        'fet_model': Fet.NFet(
+          drain_voltage=self.in_voltage,
+          drain_current=(0, self.high_out.link().current_drawn.upper()),
+          gate_voltage=self.low_boot_out.link().voltage,  # TODO account for boot diode drop
+          rds_on=self.fet_rds
+        ),
+        'flying_cap_model': Capacitor(  # flying cap
+          capacitance=(flying_cap_capacitance, float('inf')*Farad),
+          voltage=self.in_voltage
+        ),
+        'boot_diode_model': SeriesPowerDiode(
+          reverse_voltage=self.in_voltage + self.low_boot_in.link().voltage,  # upper bound
+          current=(0, 0)*Amp,  # TODO model current draw, though it's probably negligibly small
+          voltage_drop=(0, 0.6)*Volt  # arbitrary to limit gate voltage droop
+        ),
+        'boot_cap_model': Capacitor(
+          capacitance=0.1*uFarad(tol=0.2),
+          voltage=self.low_boot_in.link().voltage
+        ),
+        'gate_res_model': Resistor(self.gate_res),
+      },
+      nodes={
+        'low_gate': self.driver.low_out,
+        'high_gate': self.driver.high_out,
+      },
+      conversions={
+        'low_fet.S': VoltageSink(
+          current_draw=self.low_out.link().current_drawn
+        ),
+        'low_fet.D': VoltageSource(
+          voltage_out=self.low_in.link().voltage
+        ),
+        'high_fet.D': VoltageSink(
+          current_draw=self.high_out.link().current_drawn
+        ),
+        'high_fet.S': VoltageSource(
+          voltage_out=self.low_in.link().voltage
+        ),
+        'cap.1': VoltageSink(),
+        'cap.2': VoltageSink(),
+        'low_boot_cap.1': VoltageSink(),
+        'low_boot_cap.2': VoltageSink(),
+        'high_boot_cap.1': VoltageSink(),
+        'high_boot_cap.2': VoltageSink(),
+        'low_gate_res.1': DigitalSink(),
+        'high_gate_res.1': DigitalSink(),
+      })
 
 
 class DiscreteMutlilevelBuckConverter(GeneratorBlock):
