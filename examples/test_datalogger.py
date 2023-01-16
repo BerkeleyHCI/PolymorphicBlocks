@@ -184,6 +184,9 @@ class TestDatalogger(BoardTop):
         (['eink', 'boost_ind', 'ignore_frequency'], True),
         # JLC does not have gate voltage tolerance specs, and the inferred one is low
         (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
+
+        # keep netlist footprints as libraries change
+        (['buffer', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
       ]
     )
 
