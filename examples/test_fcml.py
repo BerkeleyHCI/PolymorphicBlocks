@@ -112,7 +112,7 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
     flying_cap_capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
 
     self.import_kicad(
-      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      self.file_path("resources", f"{self.__class__.__name__}_{is_first}.kicad_sch"),
       locals={
         'fet_model': Fet.NFet(
           drain_voltage=self.in_voltage,
