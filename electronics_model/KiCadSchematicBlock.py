@@ -159,11 +159,11 @@ class KiCadSchematicBlock(Block):
                     raise ValueError(f"unknown label type {net_label.__class__}")
 
             for global_label_name in port_label_names:
-                if global_label_name in nodes:  # add nodes if needed
+                if global_label_name in nodes:  # nodes if needed
                     node = nodes[global_label_name]
                     if node is not None:
                         net_ports.insert(0, node)
-                if hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
+                elif hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
                     # connect to boundary port, but not links
                     net_ports.insert(0, getattr(self, global_label_name))
                 assert global_label_name in nodes or hasattr(self, global_label_name), \

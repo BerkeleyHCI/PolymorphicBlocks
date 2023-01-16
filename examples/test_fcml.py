@@ -140,6 +140,7 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
       nodes={
         'low_gate': self.driver.low_out,
         'high_gate': self.driver.high_out,
+        'high_boot_out': self.high_boot_out if high_boot_out_connected else None
       },
       conversions={
         'low_fet.S': VoltageSink(
