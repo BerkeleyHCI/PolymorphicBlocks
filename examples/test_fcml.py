@@ -105,9 +105,6 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
     self.connect(self.driver.high_gnd, self.high_out)
     self.connect(self.driver.high_pwr, self.high_boot_out)
 
-    # if high_boot_out_connected:  # don't connect the port is it's not used since there isn't a downstream model
-    #   self.connect(self.high_boot_out, high_boot)  # TODO PLACEHOLDER
-
     # size the flying cap for max voltage change at max current
     # Q = C dv => C = I*t / dV
     MAX_FLYING_CAP_DV_PERCENT = 0.08
@@ -140,7 +137,7 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
       nodes={
         'low_gate': self.driver.low_out,
         'high_gate': self.driver.high_out,
-        'high_boot_out': self.high_boot_out if high_boot_out_connected else None
+        'high_boot_out_node': self.high_boot_out if high_boot_out_connected else None
       },
       conversions={
         'low_fet.S': VoltageSink(
