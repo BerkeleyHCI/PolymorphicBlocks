@@ -63,3 +63,12 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(({(KiCadGlobalLabel, 'drain')}, {'Q1.1'}), nets)
     self.assertIn(({(KiCadGlobalLabel, 'gate')}, {'Q1.2'}), nets)
     self.assertIn(({(KiCadGlobalLabel, 'source')}, {'Q1.3'}), nets)
+
+  def test_connectedports(self):
+    """Schematic with two connected ports without components."""
+    with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_connectedports.kicad_sch"), "r") as file:
+      file_data = file.read()
+    sch = KiCadSchematic(file_data)
+    nets = [net_to_tuple(x) for x in sch.nets]
+
+    self.assertIn(({(KiCadGlobalLabel, 'a'), (KiCadGlobalLabel, 'b')}, {}), nets)
