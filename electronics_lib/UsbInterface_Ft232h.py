@@ -7,33 +7,31 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     super().__init__()
     self.gnd = self.Port(Ground())
     self.vregin = self.Port(VoltageSink(  # bus-powered: connect to VBUS
-      #voltage_limits=(4.0, 5.25)*Volt,  # Table 6
-      #current_draw=(0.080, 26)*mAmp  # TAble 3, suspended typ to normal max
+      voltage_limits=(3.6, 5.5)*Volt,  # Table 5.2 for VREGIN=5v
+      current_draw=(54, 54)*mAmp  # Table 5.2 typ for VREGIN=5v
     ))
     self.vccd = self.Port(VoltageSource(  # is an output since VREGIN is +5v
-      # voltage_out=(3.0, 3.6)*Volt,  # Table 6
-      # current_limits=(0, 100)*mAmp,  # Table 6 note
+      voltage_out=(3.0, 3.6)*Volt,  # not specified, inferred from limits of connected inputs
+      current_limits=(0, 60)*mAmp,  # not specified, inferred from draw of connected inputs
     ))
-    self.vcccore = self.Port(VoltageSource(  # decouple with 0.1uF cap
-      # voltage_out=(3.0, 3.6)*Volt,  # Table 6
-      # current_limits=(0, 100)*mAmp,  # Table 6 note
+    self.vcccore = self.Port(VoltageSource(  # decouple with 0.1uF cap, recommended 1.62-1.98v
+      voltage_out=(1.62, 1.98)*Volt,  # assumed from Vcore limits
+      current_limits=(0, 0)*mAmp,  # not specified, external sourcing disallowed
     ))
-    self.vcca = self.Port(VoltageSource(  # decouple with 0.1uF cap
-      # voltage_out=(3.0, 3.6)*Volt,  # Table 6
-      # current_limits=(0, 100)*mAmp,  # Table 6 note
+    self.vcca = self.Port(VoltageSource(  # 1.8v output, decouple with 0.1uF cap
+      voltage_out=(1.62, 1.98)*Volt,  # assumed from Vcore limits
     ))
 
     self.vphy = self.Port(VoltageSink(  # connect to 3v3 through 600R 0.5A ferrite
-      # voltage_limits=(2.9, 5.8)*Volt,  # Table 6 max VBUS threshold Table 2 maximum
-      # no current draw, is a sense input pin
+      voltage_limits=(3.0, 3.6)*Volt,  # Table 5.4
+      current_draw=(0.010, 60)*mAmp,  # Table 5.4 suspend typ to operating max
     ))
     self.vpll = self.Port(VoltageSink(  # connect to 3v3 through 600R 0.5A ferrite
-      # voltage_limits=(2.9, 5.8)*Volt,  # Table 6 max VBUS threshold Table 2 maximum
-      # no current draw, is a sense input pin
+      voltage_limits=(3.0, 3.6)*Volt,  # Table 5.4 - both VPHY and VPLL
     ))
     self.vccio = self.Port(VoltageSink(
-      # voltage_limits=(2.9, 5.8)*Volt,  # Table 6 max VBUS threshold Table 2 maximum
-      # no current draw, is a sense input pin
+      voltage_limits=(2.97, 3.63)*Volt,  # Table 5.2, "cells are 5v tolerant"
+      # current not specified
     ))
 
     self.osc = self.Port(CrystalDriver(frequency_limits=12*MHertz(tol=30e-6),
@@ -41,11 +39,11 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.ref = self.Port(Passive())  # connect 12k 1% resistor to GND
     self.usb = self.Port(UsbDevicePort())
 
-    dio_model = DigitalBidir.from_supply(
-      # self.gnd, self.vdd,
-      # current_limits=(-100, 100)*mAmp,  # Table 2, assumed sunk is symmetric since no source rating is given
-      # voltage_limit_abs=(-0.3, 5.8)*Volt,
-      # input_threshold_abs=(0.8, 2.0)*Volt,  # Table 4
+    dio_model = DigitalBidir.from_supply(  # except USB pins which are not 5v tolerant
+      self.gnd, self.vccio,
+      current_limits=(-16, 16)*mAmp,  # Table 5.1, assumed bidirectional
+      voltage_limit_abs=(-0.3, 5.8)*Volt,  # Table 5.1 high impedance bidirectional
+      input_threshold_abs=(0.8, 2.0)*Volt,  # Table 5.3
     )
     din_model = DigitalSink.from_bidir(dio_model)
     dout_model = DigitalSource.from_bidir(dio_model)
@@ -75,7 +73,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.acbus9 = self.Port(dio_model, optional=True)
 
     self.footprint(  # pinning in order of table in Section 3.3
-      'U', #'Package_DFN_QFN:QFN-28-1EP_5x5mm_P0.5mm_EP3.35x3.35mm',
+      'U', 'Package_QFP:LQFP-48_7x7mm_P0.5mm',
       {
         '40': self.vregin,
         '37': self.vcca,
@@ -106,9 +104,10 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
         '42': self.gnd,  # TEST
         '34': self.nreset,  # active-low reset
 
-        '45': self.eecs,
-        '44': self.eeclk,
-        '43': self.eedata,
+        # TODO IMPLEMENT ME EEPROM
+        # '45': self.eecs,
+        # '44': self.eeclk,
+        # '43': self.eedata,
 
         '13': self.adbus0,
         '14': self.adbus1,
@@ -137,7 +136,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Ft232hl(PinMappable):
+class Ft232hl(Block):
   """USB multiprotocol converter"""
   def __init__(self) -> None:
     super().__init__()
@@ -176,10 +175,10 @@ class Ft232hl(PinMappable):
     self.vregin_cap0 = self.Block(DecouplingCapacitor(4.7*uFarad(tol=0.2))).connected(self.gnd, self.ic.vregin)
     self.vregin_cap1 = self.Block(cap_model).connected(self.gnd, self.ic.vregin)
 
-    # TODO connect to 3.3v from ferrite
+    self.connect(self.ic.vccd, self.ic.vphy)  # TODO through a ferrite
     self.vphy_cap = self.Block(cap_model).connected(self.gnd, self.ic.vphy)
 
-    # TODO connect to 3.3v from ferrite
+    self.connect(self.ic.vccd, self.ic.vpll)  # TODO through a ferrite
     self.vpll_cap = self.Block(cap_model).connected(self.gnd, self.ic.vpll)
 
     self.vcccore_cap = self.Block(cap_model).connected(self.gnd, self.ic.vcccore)
@@ -196,7 +195,7 @@ class Ft232hl(PinMappable):
     self.connect(self.ref_res.a, self.ic.ref)
     self.connect(self.ref_res.b.adapt_to(Ground()), self.gnd)
 
-    self.connect(self.ic.vccio.as_digital_source(), self.ic.nreset)
+    self.connect(self.ic.vccd.as_digital_source(), self.ic.nreset)  # in concept driven by VccIO
 
     self.crystal = self.Block(OscillatorCrystal(frequency=12*MHertz(tol=30e-6)))
     self.connect(self.crystal.gnd, self.gnd)

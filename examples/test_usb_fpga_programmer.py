@@ -23,10 +23,10 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
   """USB UART converter board"""
   def contents(self) -> None:
     super().contents()
-    self.usb_uart = self.Block(UsbCReceptacle())
+    self.usb = self.Block(UsbCReceptacle())
 
-    self.vusb = self.connect(self.usb_uart.pwr)
-    self.gnd = self.connect(self.usb_uart.gnd)
+    self.vusb = self.connect(self.usb.pwr)
+    self.gnd = self.connect(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(
@@ -35,9 +35,10 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
     ) as imp:
       self.ft232 = imp.Block(Ft232hl())
       (self.usb_esd, ), self.usb_chain = self.chain(
-        self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
-      (self.led, ), _ = self.chain(
-        self.usbconv.nsuspend, imp.Block(IndicatorLed()))
+        self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
+      (self.led0, ), _ = self.chain(self.ft232.acbus0, imp.Block(IndicatorLed()))  # TXDEN
+      (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed()))  # RXLED
+      (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed()))  # TXLED
 
       # self.out = imp.Block(UartConnector())
       # self.connect(self.usbconv.uart, self.out.uart)
