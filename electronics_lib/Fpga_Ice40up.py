@@ -6,7 +6,7 @@ from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
-class Ice40TargetHeader(FootprintBlock):
+class Ice40TargetHeader(JlcPart, FootprintBlock):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
   def __init__(self):
     super().__init__()
@@ -19,7 +19,7 @@ class Ice40TargetHeader(FootprintBlock):
   def contents(self):
     super().contents()
 
-    self.footprint(
+    self.footprint(  # TODO this should use generic 1.27mm PassiveHeader
       'J', 'Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD',  # TODO: pattern needs shroud
       {
         '1': self.pwr,
@@ -33,31 +33,11 @@ class Ice40TargetHeader(FootprintBlock):
         '9': self.gnd,
         '10': self.reset,
       },
-      mfr='CNC Tech', part='3220-10-0300-00',
-      value='iCE40Prog'
+      mfr='XKB Connectivity', part='X1270WVS-2x05B-6TV01',
+      value='SWD'
     )
-
-
-class Ice40upConfigSelector(Block):
-  """A circuit that allows selection of either CRAM programming (programmer -> FPGA) or
-  flash programming (FPGA -> flash during FPGA config, otherwise programmer -> flash)
-  through jumpers.
-
-  See the UPduino circuit. This typically has the programmer and flash hard-tied,
-  then a 2x2 jumper grid that controls the directionality.
-  """
-  def __init__(self):
-    super().__init__()
-    self.fpga = self.Port(SpiSlave(DigitalBidir.empty()))
-    self.mem = self.Port(SpiMaster(DigitalBidir.empty()))
-    self.prog = self.Port(SpiSlave(DigitalBidir.empty()))
-
-  def contents(self):
-    super().contents()
-    self.fpga_so = self.Block(PassiveConnector(2))
-    self.fpga_si = self.Block(PassiveConnector(2))
-
-
+    self.assign(self.lcsc_part, 'C2962219')
+    self.assign(self.actual_basic_part, False)
 
 
 @abstract_block

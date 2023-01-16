@@ -171,10 +171,6 @@ class Ft232hl(GeneratorBlock):
     self.acbus8 = self.Export(self.ic.acbus8, optional=True)
     self.acbus9 = self.Export(self.ic.acbus9, optional=True)
 
-    self.uart_connected = self.Parameter(BoolExpr())
-    self.mpsse_connected = self.Parameter(BoolExpr())
-    self.adbus_connected = self.Parameter(BoolExpr())
-
     self.generator(self.generate, self.uart.is_connected(), self.mpsse.is_connected(), self.mpsse_cs.is_connected(),
                    self.adbus0.is_connected(), self.adbus1.is_connected(),
                    self.adbus2.is_connected(), self.adbus3.is_connected(),
@@ -184,36 +180,42 @@ class Ft232hl(GeneratorBlock):
   def generate(self, uart_connected: bool, mpsse_connected: bool, mpsse_cs_connected: bool,
                adbus0_connected: bool, adbus1_connected: bool, adbus2_connected: bool, adbus3_connected: bool,
                adbus4_connected: bool, adbus5_connected: bool, adbus6_connected: bool, adbus7_connected: bool) -> None:
-    # make connections
+    # make connections and pin mutual exclusion constraints
     if uart_connected:
       self.connect(self.uart.tx, self.ic.adbus0)
       self.connect(self.uart.rx, self.ic.adbus1)
-    self.assign(self.uart_connected, uart_connected)
+    self.require(self.uart.is_connected().implies(~self.mpsse.is_connected()))
+    self.require(self.uart.is_connected().implies(~self.adbus0.is_connected() & ~self.adbus1.is_connected()))
 
-    if mpsse_connected or mpsse_cs_connected:
+    if mpsse_connected:
       self.connect(self.mpsse.sck, self.ic.adbus0)
       self.connect(self.mpsse.mosi, self.ic.adbus1)
       self.connect(self.mpsse.miso, self.ic.adbus2)
-      self.connect(self.mpsse.cs, self.ic.adbus3)
-    self.assign(self.mpsse_connected, mpsse_connected or mpsse_cs_connected)
+    if mpsse_cs_connected:
+      self.connect(self.mpsse_cs, self.ic.adbus3)
+    # UART mutual exclusion already handled above
+    self.require(self.mpsse.is_connected().implies(
+      ~self.adbus0.is_connected() & ~self.adbus1.is_connected() & ~self.adbus2.is_connected()))
+    self.require(self.mpsse_cs.is_connected().implies(~self.adbus3.is_connected()))
 
-    any_adbus_connected = adbus0_connected or adbus1_connected or adbus2_connected or adbus3_connected or \
-                          adbus4_connected or adbus5_connected or adbus6_connected or adbus7_connected
-    if any_adbus_connected:
-      self.connect(self.adbus0, self.ic.adbus0)
-      self.connect(self.adbus1, self.ic.adbus1)
-      self.connect(self.adbus2, self.ic.adbus2)
-      self.connect(self.adbus3, self.ic.adbus3)
-      self.connect(self.adbus4, self.ic.adbus4)
-      self.connect(self.adbus5, self.ic.adbus5)
-      self.connect(self.adbus6, self.ic.adbus6)
-      self.connect(self.adbus7, self.ic.adbus7)
-    self.assign(self.adbus_connected, any_adbus_connected)
+    adbus_pairs = [
+      (adbus0_connected, self.adbus0, self.ic.adbus0),
+      (adbus1_connected, self.adbus1, self.ic.adbus1),
+      (adbus2_connected, self.adbus2, self.ic.adbus2),
+      (adbus3_connected, self.adbus3, self.ic.adbus3),
+      (adbus4_connected, self.adbus4, self.ic.adbus4),
+      (adbus5_connected, self.adbus5, self.ic.adbus5),
+      (adbus6_connected, self.adbus6, self.ic.adbus6),
+      (adbus7_connected, self.adbus7, self.ic.adbus7),
+    ]
+    for (port_connected, port, ic_port) in adbus_pairs:
+      if port_connected:
+        self.connect(port, ic_port)
 
-    self.require(self.uart_connected.implies((~self.mpsse_connected) & (~self.adbus_connected)))
-    self.require(self.mpsse_connected.implies((~self.uart_connected) & (~self.adbus_connected)))
-    self.require(self.adbus_connected.implies((~self.uart_connected) & (~self.mpsse_connected)))
-    self.require(self.uart_connected | self.mpsse_connected | self.adbus_connected)
+    self.require(self.uart.is_connected() | self.mpsse.is_connected() |
+                 self.adbus0.is_connected() | self.adbus1.is_connected() | self.adbus2.is_connected() |
+                 self.adbus3.is_connected() | self.adbus4.is_connected() | self.adbus5.is_connected() |
+                 self.adbus6.is_connected() | self.adbus7.is_connected())
 
     # connections from Figure 6.1, bus powered configuration
     cap_model = DecouplingCapacitor(0.1*uFarad(tol=0.2))

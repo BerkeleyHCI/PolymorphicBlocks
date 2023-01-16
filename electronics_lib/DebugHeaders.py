@@ -29,7 +29,7 @@ class JlcSwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector, JlcPart, Foot
   def contents(self):
     super().contents()
 
-    self.footprint(
+    self.footprint(  # TODO this should use generic 1.27mm PassiveHeader
       'J', 'Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD',  # TODO: pattern needs shroud
       {
         '1': self.pwr,
