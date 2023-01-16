@@ -160,7 +160,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23-6" (layer "F.Cu")
     (tedit 5F6F9B37) (tstamp 082c7c57-47cb-4836-8e61-32ad1a83f87d)
-    (at 110 30)
+    (at 80 51)
     (descr "SOT, 6 Pin (https://www.jedec.org/sites/default/files/docs/Mo-178c.PDF variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "electronics_lib.SpiMemory_93Lc.E93Lc_B")
@@ -355,7 +355,7 @@
 
   (footprint "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD" (layer "F.Cu")
     (tedit 59FED6E3) (tstamp 38570177-704f-4396-8c3b-ae66fc90c95f)
-    (at 85 55)
+    (at 90 55)
     (descr "surface-mounted straight pin header, 2x05, 1.27mm pitch, double rows")
     (tags "Surface mounted pin header SMD 2x05 1.27mm double row")
     (property "Sheetfile" "")
@@ -901,7 +901,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 79e5b84e-44af-41f9-9bbe-b001fd5da707)
-    (at 50 64)
+    (at 50 58 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCcPulldownResistor")
@@ -934,9 +934,9 @@
     (fp_line (start -0.8 -0.4125) (end 0.8 -0.4125) (layer "F.Fab") (width 0.1) (tstamp 74ee7b3c-e1f1-4542-a854-96209df262a9))
     (fp_line (start 0.8 -0.4125) (end 0.8 0.4125) (layer "F.Fab") (width 0.1) (tstamp ed87ec71-46e4-4dcf-a851-459146b3e714))
     (fp_line (start -0.8 0.4125) (end -0.8 -0.4125) (layer "F.Fab") (width 0.1) (tstamp eec3409e-b1a6-4995-a814-5c17481bba4a))
-    (pad "1" smd roundrect (at -0.825 0) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "1" smd roundrect (at -0.825 0 180) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 1 "gnd") (tstamp e3a9e323-9643-4653-bd7f-2c817f8f563c))
-    (pad "2" smd roundrect (at 0.825 0) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "2" smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 6 "usb.conn.B5") (tstamp ece11760-390f-4f06-a8cc-2d3b012270eb))
     (model "${KICAD6_3DMODEL_DIR}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl"
       (offset (xyz 0 0 0))
@@ -947,7 +947,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 86c672ef-0581-4f1a-837a-0122370e985d)
-    (at 49 68)
+    (at 50 52 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCcPulldownResistor")
@@ -980,9 +980,9 @@
     (fp_line (start -0.8 -0.4125) (end 0.8 -0.4125) (layer "F.Fab") (width 0.1) (tstamp 7175bcf9-e383-4900-8c78-c97bc98cdf9a))
     (fp_line (start -0.8 0.4125) (end -0.8 -0.4125) (layer "F.Fab") (width 0.1) (tstamp 932e0bfd-1dd1-46c8-b269-28579d0df9ce))
     (fp_line (start 0.8 -0.4125) (end 0.8 0.4125) (layer "F.Fab") (width 0.1) (tstamp eb1282e6-306a-4e6f-b827-81b7248f4434))
-    (pad "1" smd roundrect (at -0.825 0) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "1" smd roundrect (at -0.825 0 180) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 1 "gnd") (tstamp 40c208a8-4ec5-4b7e-8b05-bfd0ffae721e))
-    (pad "2" smd roundrect (at 0.825 0) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "2" smd roundrect (at 0.825 0 180) (size 0.8 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 5 "usb.conn.A5") (tstamp 4a21b8aa-2c76-4501-a3b1-394e95cf50b3))
     (model "${KICAD6_3DMODEL_DIR}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl"
       (offset (xyz 0 0 0))
@@ -1205,7 +1205,7 @@
 
   (footprint "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11" (layer "F.Cu")
     (tedit 5E1305FC) (tstamp aef8fdd4-feb8-4035-b014-9986e5b0600a)
-    (at 50 55 -90)
+    (at 42 55 -90)
     (descr "USB Type C, right-angle, SMT, https://datasheet.lcsc.com/szlcsc/1811141824_XKB-Enterprise-U262-161N-4BVC11_C319148.pdf")
     (tags "USB C Type-C Receptacle SMD")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCReceptacle")
@@ -1758,7 +1758,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23" (layer "F.Cu")
     (tedit 5FA16958) (tstamp fae9df40-c186-42bf-ad6e-867f0550c22b)
-    (at 146 48)
+    (at 50 55)
     (descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "")
