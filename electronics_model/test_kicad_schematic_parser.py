@@ -71,4 +71,4 @@ class KiCadSchematicParserTest(unittest.TestCase):
     sch = KiCadSchematic(file_data)
     nets = [net_to_tuple(x) for x in sch.nets]
 
-    self.assertIn(({(KiCadGlobalLabel, 'a'), (KiCadGlobalLabel, 'b')}, {}), nets)
+    self.assertIn(({(KiCadGlobalLabel, 'a'), (KiCadGlobalLabel, 'b')}, set()), nets)
