@@ -140,6 +140,27 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
+class Ft232EepromDriver(Block):
+  """Adapts the EECLK and EEDATA pins of the FT232 to the SPI of the EEPROM"""
+  def __init__(self):
+    super().__init__()
+    self.pwr = self.Port(VoltageSink.empty())
+    self.eeclk = self.Port(DigitalSink.empty())
+    self.eedata = self.Port(DigitalBidir.empty())
+    self.spi = self.Port(SpiMaster.empty())
+
+  def contents(self):
+    self.connect(self.eeclk, self.spi.sck)
+    self.connect(self.eedata, self.spi.mosi)
+    self.do_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.spi.miso)
+    self.do_res = self.Block(Resistor(2*kOhm(tol=0.05)))
+    self.connect(self.spi.miso, self.do_res.a.adapt_to(DigitalSink()))  # sink side port is ideal
+    self.connect(self.eedata, self.do_res.b.adapt_to(DigitalSource(
+      voltage_out=self.spi.miso.link().voltage,
+      output_thresholds=self.spi.miso.link().output_thresholds
+    )))
+
+
 class Ft232hl(GeneratorBlock):
   """USB multiprotocol converter"""
   def __init__(self) -> None:
@@ -258,3 +279,8 @@ class Ft232hl(GeneratorBlock):
     self.connect(self.eeprom.gnd, self.gnd)
     self.connect(self.eeprom.pwr, self.ic.vccio)
     self.connect(self.eeprom.cs, self.ic.eecs)
+    self.eeprom_spi = self.Block(Ft232EepromDriver())
+    self.connect(self.eeprom_spi.pwr, self.ic.vccio)
+    self.connect(self.eeprom_spi.eeclk, self.ic.eeclk)
+    self.connect(self.eeprom_spi.eedata, self.ic.eedata)
+    self.connect(self.eeprom_spi.spi, self.eeprom.spi)
