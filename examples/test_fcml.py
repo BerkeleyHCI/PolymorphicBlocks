@@ -77,7 +77,6 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
 
   def generate(self, is_first: bool, high_boot_out_connected: bool):
     # control path is still defined in HDL
-    # signal path
     if is_first:
       low_pwm: Port[DigitalLink] = self.low_pwm
       high_pwm: Port[DigitalLink] = self.high_pwm
@@ -103,7 +102,9 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
     self.connect(self.driver.high_in, high_pwm)
     self.connect(self.driver.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
-    self.connect(self.driver.high_pwr, self.high_boot_out)
+
+    if high_boot_out_connected:  # leave port disconnected if not used, otherwise it presents an unsolved interface
+      self.connect(self.driver.high_pwr, self.high_boot_out)  # schematic connected to boot diode
 
     # size the flying cap for max voltage change at max current
     # Q = C dv => C = I*t / dV
@@ -137,7 +138,7 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
       nodes={
         'low_gate': self.driver.low_out,
         'high_gate': self.driver.high_out,
-        'high_boot_out_node': self.high_boot_out if high_boot_out_connected else None
+        'high_boot_out_node': self.driver.high_pwr
       },
       conversions={
         'low_fet.S': VoltageSink(
