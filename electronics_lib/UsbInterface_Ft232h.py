@@ -46,19 +46,18 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
       input_threshold_abs=(0.8, 2.0)*Volt,  # Table 5.3
     )
     din_model = DigitalSink.from_bidir(dio_model)
-    dout_model = DigitalSource.from_bidir(dio_model)
 
     self.nreset = self.Port(din_model, optional=True)
 
     # TODO these should be aliased to the supported serial buses
-    self.adbus0 = self.Port(dout_model, optional=True)
-    self.adbus1 = self.Port(din_model, optional=True)
-    self.adbus2 = self.Port(dout_model, optional=True)
-    self.adbus3 = self.Port(din_model, optional=True)
-    self.adbus4 = self.Port(dout_model, optional=True)
-    self.adbus5 = self.Port(din_model, optional=True)
-    self.adbus6 = self.Port(din_model, optional=True)
-    self.adbus7 = self.Port(din_model, optional=True)
+    self.adbus0 = self.Port(dio_model, optional=True)
+    self.adbus1 = self.Port(dio_model, optional=True)
+    self.adbus2 = self.Port(dio_model, optional=True)
+    self.adbus3 = self.Port(dio_model, optional=True)
+    self.adbus4 = self.Port(dio_model, optional=True)
+    self.adbus5 = self.Port(dio_model, optional=True)
+    self.adbus6 = self.Port(dio_model, optional=True)
+    self.adbus7 = self.Port(dio_model, optional=True)
 
     # these are GPIOs
     self.acbus0 = self.Port(dio_model, optional=True)
@@ -136,7 +135,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Ft232hl(Block):
+class Ft232hl(GeneratorBlock):
   """USB multiprotocol converter"""
   def __init__(self) -> None:
     super().__init__()
@@ -147,14 +146,19 @@ class Ft232hl(Block):
 
     self.usb = self.Export(self.ic.usb)
 
-    self.adbus0 = self.Export(self.ic.adbus0, optional=True)
-    self.adbus1 = self.Export(self.ic.adbus1, optional=True)
-    self.adbus2 = self.Export(self.ic.adbus2, optional=True)
-    self.adbus3 = self.Export(self.ic.adbus3, optional=True)
-    self.adbus4 = self.Export(self.ic.adbus4, optional=True)
-    self.adbus5 = self.Export(self.ic.adbus5, optional=True)
-    self.adbus6 = self.Export(self.ic.adbus6, optional=True)
-    self.adbus7 = self.Export(self.ic.adbus7, optional=True)
+    # connect one of UART, MPSSE, or ADBUS pins
+    self.uart = self.Port(UartPort.empty(), optional=True)
+    self.mpsse = self.Port(SpiMaster.empty(), optional=True)
+    self.mpsse_cs = self.Port(DigitalSource.empty(), optional=True)
+
+    self.adbus0 = self.Port(DigitalSource.empty(), optional=True)
+    self.adbus1 = self.Port(DigitalSink.empty(), optional=True)
+    self.adbus2 = self.Port(DigitalSource.empty(), optional=True)
+    self.adbus3 = self.Port(DigitalSink.empty(), optional=True)
+    self.adbus4 = self.Port(DigitalSource.empty(), optional=True)
+    self.adbus5 = self.Port(DigitalSink.empty(), optional=True)
+    self.adbus6 = self.Port(DigitalSink.empty(), optional=True)
+    self.adbus7 = self.Port(DigitalSink.empty(), optional=True)
 
     self.acbus0 = self.Export(self.ic.acbus0, optional=True)
     self.acbus1 = self.Export(self.ic.acbus1, optional=True)
@@ -167,8 +171,49 @@ class Ft232hl(Block):
     self.acbus8 = self.Export(self.ic.acbus8, optional=True)
     self.acbus9 = self.Export(self.ic.acbus9, optional=True)
 
-  def contents(self) -> None:
-    super().contents()
+    self.uart_connected = self.Parameter(BoolExpr())
+    self.mpsse_connected = self.Parameter(BoolExpr())
+    self.adbus_connected = self.Parameter(BoolExpr())
+
+    self.generator(self.generate, self.uart.is_connected(), self.mpsse.is_connected(), self.mpsse_cs.is_connected(),
+                   self.adbus0.is_connected(), self.adbus1.is_connected(),
+                   self.adbus2.is_connected(), self.adbus3.is_connected(),
+                   self.adbus4.is_connected(), self.adbus5.is_connected(),
+                   self.adbus6.is_connected(), self.adbus7.is_connected())
+
+  def generate(self, uart_connected: bool, mpsse_connected: bool, mpsse_cs_connected: bool,
+               adbus0_connected: bool, adbus1_connected: bool, adbus2_connected: bool, adbus3_connected: bool,
+               adbus4_connected: bool, adbus5_connected: bool, adbus6_connected: bool, adbus7_connected: bool) -> None:
+    # make connections
+    if uart_connected:
+      self.connect(self.uart.tx, self.ic.adbus0)
+      self.connect(self.uart.rx, self.ic.adbus1)
+    self.assign(self.uart_connected, uart_connected)
+
+    if mpsse_connected or mpsse_cs_connected:
+      self.connect(self.mpsse.sck, self.ic.adbus0)
+      self.connect(self.mpsse.mosi, self.ic.adbus1)
+      self.connect(self.mpsse.miso, self.ic.adbus2)
+      self.connect(self.mpsse.cs, self.ic.adbus3)
+    self.assign(self.mpsse_connected, mpsse_connected or mpsse_cs_connected)
+
+    any_adbus_connected = adbus0_connected or adbus1_connected or adbus2_connected or adbus3_connected or \
+                          adbus4_connected or adbus5_connected or adbus6_connected or adbus7_connected
+    if any_adbus_connected:
+      self.connect(self.adbus0, self.ic.adbus0)
+      self.connect(self.adbus1, self.ic.adbus1)
+      self.connect(self.adbus2, self.ic.adbus2)
+      self.connect(self.adbus3, self.ic.adbus3)
+      self.connect(self.adbus4, self.ic.adbus4)
+      self.connect(self.adbus5, self.ic.adbus5)
+      self.connect(self.adbus6, self.ic.adbus6)
+      self.connect(self.adbus7, self.ic.adbus7)
+    self.assign(self.adbus_connected, any_adbus_connected)
+
+    self.require(self.uart_connected.implies((~self.mpsse_connected) & (~self.adbus_connected)))
+    self.require(self.mpsse_connected.implies((~self.uart_connected) & (~self.adbus_connected)))
+    self.require(self.adbus_connected.implies((~self.uart_connected) & (~self.mpsse_connected)))
+    self.require(self.uart_connected | self.mpsse_connected | self.adbus_connected)
 
     # connections from Figure 6.1, bus powered configuration
     cap_model = DecouplingCapacitor(0.1*uFarad(tol=0.2))

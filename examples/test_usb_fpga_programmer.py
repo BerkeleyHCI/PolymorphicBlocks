@@ -40,6 +40,8 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
       (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed()))  # RXLED
       (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed()))  # TXLED
 
+      (self.ledx, ), _ = self.chain(self.ft232.adbus0, imp.Block(IndicatorLed()))  # TXLED
+
       # self.out = imp.Block(UartConnector())
       # self.connect(self.usbconv.uart, self.out.uart)
 
