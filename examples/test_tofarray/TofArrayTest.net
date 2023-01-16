@@ -244,7 +244,7 @@
   (tstamps "15dd03c3"))
 (comp (ref "mcu.crystal.package")
   (value "X322512MSB4SI (Yangxing Tech) - 12MHz SMD Crystal Resonator 20pF ±10ppm ±30ppm -40℃~+85℃ SMD3225-4P Crystals ROHS")
-  (footprint "Crystal_SMD_3225-4Pin_3.2x2.5mm")
+  (footprint "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm")
   (property (name "Sheetname") (value "crystal"))
   (property (name "Sheetfile") (value "electronics_abstract_parts.AbstractCrystal.OscillatorCrystal"))
   (property (name "edg_path") (value "mcu.crystal.package"))
