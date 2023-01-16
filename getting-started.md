@@ -190,13 +190,21 @@ Try building the example now:
   2. Then from the menu, click the Run option.  
      ![run menu](docs/ide/ide_run_blinky_menu.png)
      > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
+
+     > **Note on re-compiling behavior**: The IDE only re-compiles block classes when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
+     > If changes aren't recompiling, try making a change to the class code.
+     > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
+     > 
+     > In particular, these changes may not trigger a recompile:
+     > - Any changes outside the class, even if the code is called by the class.
+     > - Changes to supporting files (such as part tables and imported schematics), even if they are referenced in the class.
+     > - Changes to `__init__` do not re-compile instantiating classes, even if default values have been updated.
   3. The design should build, and you should get a run log that looks something like:
      ```
      Starting compilation of blinky_skeleton.BlinkyExample
      Using interpreter from configured SDK [...]
      [... lots of compilation output here ...]
-     Run backend NetlistBackend
-     Wrote netlist to [...]
+     Completed: generate netlist: wrote [...]
      ```
   4. Unlike the command-line option, this generates a netlist in the same directory as `blinky_skeleton.py`.
      In the IDE, you can configure where this goes via the run options at the top right:  

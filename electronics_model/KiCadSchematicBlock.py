@@ -18,7 +18,7 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
     def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
                  kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
         super().__init__()
-        self.ports = self.Port(Vector(Passive()))
+        self.ports = self.Port(Vector(Passive()), optional=True)
         self.kicad_refdes_prefix = self.ArgParameter(kicad_refdes_prefix)
         self.kicad_footprint = self.ArgParameter(kicad_footprint)
         self.kicad_part = self.ArgParameter(kicad_part)
@@ -30,6 +30,7 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
     def generate(self, kicad_pins: List[str]):
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
                    for pin_name in kicad_pins}
+        self.ports.defined()
         self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
@@ -60,7 +61,7 @@ class KiCadSchematicBlock(Block):
         """Returns the Port from a symbol's pin, using the provided mapping and applying conversions as needed."""
         from .PassivePort import Passive
 
-        if pin.pin_number in mapping and pin.pin_name in mapping:
+        if pin.pin_number in mapping and pin.pin_name in mapping and pin.pin_number != pin.pin_name:
             raise ValueError(f"ambiguous pinning for {pin.refdes}.{pin.pin_number}, "
                              f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}")
         elif pin.pin_number in mapping:
@@ -71,7 +72,8 @@ class KiCadSchematicBlock(Block):
             raise ValueError(f"no pinning for {pin.refdes}.{pin.pin_number}, "
                              f"no mapping defined for either name ${pin.pin_name} or number ${pin.pin_number}")
 
-        if f"{pin.refdes}.{pin.pin_number}" in conversions and f"{pin.refdes}.{pin.pin_name}" in conversions:
+        if f"{pin.refdes}.{pin.pin_number}" in conversions and f"{pin.refdes}.{pin.pin_name}" in conversions\
+                and pin.pin_number != pin.pin_name:
             raise ValueError(f"ambiguous conversion for {pin.refdes}.{pin.pin_number}, "
                              f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}")
         elif f"{pin.refdes}.{pin.pin_number}" in conversions:

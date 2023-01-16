@@ -79,6 +79,8 @@ case class PartialCompile(
   def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
     PartialCompile(blocks ++ that.blocks, params ++ that.params)
   }
+
+  def isEmpty = blocks.isEmpty && params.isEmpty
 }
 
 
@@ -104,8 +106,8 @@ class AssignNamer() {
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
 class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
-               refinements: Refinements, partial: PartialCompile,
-               init: Boolean) {
+                        val refinements: Refinements, val partial: PartialCompile,
+                        init: Boolean) {
   // public constructor that does not expose init, which is internal only
   def this(inputDesignPb: schema.Design, library: edg.wir.Library,
            refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
