@@ -58,6 +58,7 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
 
     # Misc board
     self.duck = self.Block(DuckLogo())
+    self.lemur = self.Block(LemurLogo())
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
