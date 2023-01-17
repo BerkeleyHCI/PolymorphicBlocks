@@ -66,6 +66,7 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
       ],
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
+        (['vusb_protect', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
       ],
       class_refinements=[
       ],
