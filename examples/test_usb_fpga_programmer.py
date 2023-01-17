@@ -7,7 +7,7 @@ class FpgaProgrammingHeader(Block):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
   def __init__(self):
     super().__init__()
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.pwr = self.Port(VoltageSink.empty(), optional=True)
     self.gnd = self.Port(Ground.empty(), [Common])
     self.spi = self.Port(SpiSlave.empty())
     self.cs = self.Port(DigitalSink.empty())
@@ -55,7 +55,6 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
 
     # Misc board
     self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
