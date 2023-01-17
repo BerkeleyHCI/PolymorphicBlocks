@@ -298,6 +298,8 @@ class FcmlTest(JlcBoardTop):
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
       self.connect(self.conv.pwr_gate, self.vgate)
       self.connect(self.conv.pwr_ctl, self.v3v3)
+      self.tp_conv_out = self.Block(VoltageTestPoint()).connected(self.conv.pwr_out)
+      self.tp_conv_gnd = self.Block(VoltageTestPoint()).connected(self.conv.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -353,7 +355,6 @@ class FcmlTest(JlcBoardTop):
 
     # Misc board
     self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
     self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
