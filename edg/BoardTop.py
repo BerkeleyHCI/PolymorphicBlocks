@@ -77,6 +77,7 @@ class JlcBoardTop(BaseBoardTop):
         (Resistor, JlcResistor),
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
+        (FerriteBead, JlcFerriteBead),
         (ResistorArray, JlcResistorArray),
         (Crystal, JlcCrystal),
         (Oscillator, JlcOscillator),

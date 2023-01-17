@@ -244,19 +244,19 @@ class Ft232hl(GeneratorBlock):
                  self.adbus6.is_connected() | self.adbus7.is_connected())
 
     # connections from Figure 6.1, bus powered configuration
-    # TODO REPLACE WITH FERRITE
-    self.vbus_fb = self.Block(SeriesPowerResistor(1*Ohm(tol=0.05))).connected(self.pwr, self.ic.vregin)
+    self.vbus_fb = self.Block(SeriesPowerFerriteBead(hf_impedance=(600*Ohm(tol=0.25))))\
+      .connected(self.pwr, self.ic.vregin)
 
     cap_model = DecouplingCapacitor(0.1*uFarad(tol=0.2))
     self.vregin_cap0 = self.Block(DecouplingCapacitor(4.7*uFarad(tol=0.2))).connected(self.gnd, self.ic.vregin)
     self.vregin_cap1 = self.Block(cap_model).connected(self.gnd, self.ic.vregin)
 
-    # TODO REPLACE WITH FERRITE
-    self.vphy_fb = self.Block(SeriesPowerResistor(1*Ohm(tol=0.05))).connected(self.ic.vccd, self.ic.vphy)
+    self.vphy_fb = self.Block(SeriesPowerFerriteBead(hf_impedance=(600*Ohm(tol=0.25))))\
+      .connected(self.ic.vccd, self.ic.vphy)
     self.vphy_cap = self.Block(cap_model).connected(self.gnd, self.ic.vphy)
 
-    # TODO REPLACE WITH FERRITE
-    self.vpll_fb = self.Block(SeriesPowerResistor(1*Ohm(tol=0.05))).connected(self.ic.vccd, self.ic.vpll)
+    self.vpll_fb = self.Block(SeriesPowerFerriteBead(hf_impedance=(600*Ohm(tol=0.25))))\
+      .connected(self.ic.vccd, self.ic.vpll)
     self.vpll_cap = self.Block(cap_model).connected(self.gnd, self.ic.vpll)
 
     self.vcccore_cap = self.Block(cap_model).connected(self.gnd, self.ic.vcccore)
