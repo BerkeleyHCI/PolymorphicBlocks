@@ -41,12 +41,15 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # since USB is 5.25 max, we can't use the 5.2v Zener that is a basic part =(
+      self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
+
       self.ft232 = imp.Block(Ft232hl())
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
-      (self.led0, ), _ = self.chain(self.ft232.acbus0, imp.Block(IndicatorLed()))  # TXDEN
-      (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed()))  # RXLED
-      (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed()))  # TXLED
+      (self.led0, ), _ = self.chain(self.ft232.acbus0, imp.Block(IndicatorLed(Led.White)))  # TXDEN
+      (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed(Led.Yellow)))  # RXLED
+      (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed(Led.Red)))  # TXLED
 
       self.out = imp.Block(FpgaProgrammingHeader())
       self.connect(self.ft232.mpsse, self.out.spi)
@@ -62,7 +65,7 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
       instance_refinements=[
       ],
       instance_values=[
-        (['refdes_prefix'], '0'),  # unique refdes for panelization
+        (['refdes_prefix'], 'F'),  # unique refdes for panelization
       ],
       class_refinements=[
       ],

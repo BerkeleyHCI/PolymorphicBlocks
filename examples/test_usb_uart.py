@@ -33,6 +33,9 @@ class UsbUartTest(JlcBoardTop):
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # since USB is 5.25 max, we can't use the 5.2v Zener that is a basic part =(
+      self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
+
       self.usbconv = imp.Block(Cp2102())
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
@@ -53,7 +56,7 @@ class UsbUartTest(JlcBoardTop):
         (['out', 'conn'], PinHeader254),
       ],
       instance_values=[
-        (['refdes_prefix'], '1'),  # unique refdes for panelization
+        (['refdes_prefix'], 'U'),  # unique refdes for panelization
       ],
       class_refinements=[
       ],
