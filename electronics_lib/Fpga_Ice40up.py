@@ -12,7 +12,7 @@ class Ice40TargetHeader(FootprintBlock):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice this can power the target
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
-    self.spi = self.Port(SpiSlave.empty())  # TODO actually master, but multi-master busses aren't supported (yet)
+    self.spi = self.Port(SpiMaster.empty())
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
@@ -24,9 +24,9 @@ class Ice40TargetHeader(FootprintBlock):
                  self.conn.pins.request('5').adapt_to(Ground()),
                  self.conn.pins.request('9').adapt_to(Ground()))
     self.connect(self.cs, self.conn.pins.request('2').adapt_to(DigitalSource()))  # swd: swdio
-    self.connect(self.spi.sck, self.conn.pins.request('4').adapt_to(DigitalSink()))  # swd: swclk
-    self.connect(self.spi.mosi, self.conn.pins.request('6').adapt_to(DigitalSink()))  # swd: swo
-    self.connect(self.spi.miso, self.conn.pins.request('8').adapt_to(DigitalSource()))  # swd: NC or jtag: tdi
+    self.connect(self.spi.sck, self.conn.pins.request('4').adapt_to(DigitalSource()))  # swd: swclk
+    self.connect(self.spi.mosi, self.conn.pins.request('6').adapt_to(DigitalSource()))  # swd: swo
+    self.connect(self.spi.miso, self.conn.pins.request('8').adapt_to(DigitalSink()))  # swd: NC or jtag: tdi
     self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSource()))
 
 
@@ -302,7 +302,8 @@ class Ice40up(PinMappable, Fpga, IoController):
 
       # this defaults to flash programming, but to use CRAM programming you can swap the
       # SDI/SDO pins on the debug probe and disconnect the CS line
-      self.connect(self.ic.spi_config, self.mem.spi, self.prog.spi)
+      self.spi_merge = self.Block(MergedSpiMaster()).connected_from(self.ic.spi_config, self.prog.spi)
+      self.connect(self.spi_merge.out, self.mem.spi)
       self.connect(self.ic.spi_config_cs, self.prog.cs)
       (self.cs_jmp, ), _ = self.chain(self.ic.spi_config_cs, self.Block(DigitalJumper()), self.mem.cs)
       # SPI_SS_B is sampled on boot to determine boot config, needs to be high for PROM config

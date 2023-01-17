@@ -16,14 +16,14 @@ from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
 from .DigitalPorts import DigitalBidirAdapterOpenDrain
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
-from .UartPort import UartPort
-from .SpiPort import SpiMaster, SpiSlave
-from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave
-from .CanPort import CanControllerPort, CanTransceiverPort, CanPassivePort, CanDiffPort
-from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort
-from .SpeakerPort import SpeakerDriverPort, SpeakerPort
-from .CrystalPort import CrystalPort, CrystalDriver
-from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
+from .UartPort import UartPort, UartLink
+from .SpiPort import SpiMaster, SpiSlave, SpiLink
+from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave, I2cLink
+from .CanPort import CanControllerPort, CanTransceiverPort, CanLogicLink, CanPassivePort, CanDiffPort, CanDiffLink
+from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort, SwdLink
+from .SpeakerPort import SpeakerDriverPort, SpeakerPort, SpeakerLink
+from .CrystalPort import CrystalPort, CrystalDriver, CrystalLink
+from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbLink
 
 from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
