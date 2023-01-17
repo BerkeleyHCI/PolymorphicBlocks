@@ -66,23 +66,6 @@ class PowerOutConnector(Block):
     )), [Power])
 
 
-class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
-  """Keystone 5015 / 5017 but with an experimental compact footprint"""
-  def contents(self) -> None:
-    super().contents()
-    self.assign(self.lcsc_part, 'C238130')
-    self.assign(self.actual_basic_part, False)
-    self.footprint(
-      'TP', 'edg:TestPoint_TE_RCT_0805',
-      {
-        '1': self.io,
-      },
-      value=self.tp_name,
-      mfr='Keystone', part='5015',
-      datasheet='https://www.keyelco.com/userAssets/file/M65p55.pdf'
-    )
-
-
 class BldcDriverBoard(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """

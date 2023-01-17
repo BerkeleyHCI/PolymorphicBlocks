@@ -3,7 +3,7 @@ from typing import Optional, Dict
 
 from edg import *
 from .test_robotdriver import LipoConnector
-from .test_bldc import PowerOutConnector, CompactKeystone5015
+from .test_bldc import PowerOutConnector
 
 
 class SeriesPowerDiode(KiCadImportableBlock):
@@ -328,14 +328,16 @@ class FcmlTest(JlcBoardTop):
       (self.usb_mcu_esd, ), self.usb_mcu_chain = self.chain(
         self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
 
-      self.connect(self.mcu.gpio.request('fpga1'), self.fpga.gpio.request('mcu1'))
-      self.connect(self.mcu.gpio.request('fpga2'), self.fpga.gpio.request('mcu2'))
-      self.connect(self.mcu.gpio.request('fpga3'), self.fpga.gpio.request('mcu3'))
-      self.connect(self.mcu.gpio.request('fpga4'), self.fpga.gpio.request('mcu4'))
+      self.tp_fpga = ElementDict[DigitalTestPoint]()
+      for i in range(4):
+        (self.tp_fpga[i],), _ = self.chain(self.mcu.gpio.request(f'fpga{i}'),
+                                       self.Block(DigitalTestPoint()),
+                                       self.fpga.gpio.request(f'mcu{i}'))
 
       # FCML CONTROL BLOCK
-      (self.pwm_filter, ), _ = self.chain(
+      (self.pwm_filter, self.tp_pwm), _ = self.chain(
         self.fpga.gpio.request_vector('pwm'),
+        self.Block(DigitalArrayTestPoint()),
         imp.Block(DigitalLowPassRcArray(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))),
         self.conv.pwms)
 
@@ -373,10 +375,10 @@ class FcmlTest(JlcBoardTop):
           'conv_in_sense=38',
           'conv_out_sense=39',
 
-          'fpga1=14',
-          'fpga2=13',
-          'fpga3=12',
-          'fpga4=11',
+          'fpga0=14',
+          'fpga1=13',
+          'fpga2=12',
+          'fpga3=11',
         ]),
         (['mcu', 'swd_swo_pin'], 'GPIO0'),  # UART0 TX
         (['mcu', 'swd_tdi_pin'], 'GPIO1'),  # UART0 RX
@@ -399,10 +401,10 @@ class FcmlTest(JlcBoardTop):
           'usb_dp=26',
           'usb_dp_pull=27',
 
-          'mcu1=2',
-          'mcu2=3',
-          'mcu3=4',
-          'mcu4=6',
+          'mcu0=2',
+          'mcu1=3',
+          'mcu2=4',
+          'mcu3=6',
        ]),
 
         # flying caps need to be beefier for high current rating (which isn't modeled)
