@@ -1,5 +1,5 @@
+import io
 from typing import List, Tuple, Dict, NamedTuple
-import os
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
@@ -17,30 +17,17 @@ class GenerateBom(BaseBackend):      # creates and populates .csv file
         if args is None:
             args = {}
         bom_list = BomTransform(design).run()
-        name = os.path.splitext(os.path.basename(__file__))[0] + '_bom.csv'
 
-        with open(name, 'w', newline='') as f:  # writes to a csv file
-            fieldnames = ['Id', 'Designator', 'Package', 'Quantity', 'Value', 'Designation']    # header values
-            thewriter = csv.DictWriter(f, fieldnames=fieldnames)
-            thewriter.writeheader()      # creates the header
-
-            for index, (key, value) in enumerate(bom_list.items(), 1):
-                thewriter.writerow({'Id': str(index),
-                                    'Designator': ','.join(bom_list[key]),
-                                    'Package': key.footprint,
-                                    'Quantity': len(bom_list[key]),
-                                    'Value': key.value,
-                                    'Designation': ''})
-            f.close()
-
-        text = open(name, "r")
-        bom_string = ''.join([row for row in text])
-        text.close()
-
-        os.remove(name)     # gets rid of temporary .csv file
+        bom_string = io.StringIO()
+        csv_data = ['Id', 'Designator', 'Package', 'Quantity', 'Value', 'Designation']  # populates headers
+        writer = csv.writer(bom_string, lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(csv_data)
+        for index, (key, value) in enumerate(bom_list.items(), 1):  # populates the rest of the rows
+            csv_data = [str(index), ','.join(bom_list[key]), key.footprint, len(bom_list[key]), key.value, '']
+            writer.writerow(csv_data)
 
         return [
-            (edgir.LocalPath(), bom_string)
+            (edgir.LocalPath(), bom_string.getvalue())
         ]
 
 
