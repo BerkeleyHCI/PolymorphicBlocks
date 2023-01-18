@@ -88,7 +88,7 @@ class JlcBoardTop(BaseBoardTop):
         (Diode, JlcDiode),
         (Fet, JlcFet),
 
-        (UsbEsdDiode, Esda5v3l),
+        (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part
         (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory

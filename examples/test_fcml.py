@@ -423,6 +423,7 @@ class FcmlTest(JlcBoardTop):
         (HalfBridgeDriver, Ir2301),
         (DigitalIsolator, Cbmud1200l),
         (LinearRegulator, Ap2204k),  # for all the switching cells
+        (UsbEsdDiode, Pgb102st23),  # for common parts with the rest of the panel
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),

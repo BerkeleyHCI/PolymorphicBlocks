@@ -59,7 +59,7 @@ from .IoExpander_Pcf8574 import Pcf8574
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
 from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle
-from .UsbPorts import UsbEsdDiode, Tpd2e009, Esda5v3l
+from .UsbPorts import UsbEsdDiode, Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
 

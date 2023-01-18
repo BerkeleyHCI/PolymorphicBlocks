@@ -188,7 +188,7 @@ class UsbEsdDiode(TvsDiode):
     self.usb = self.Port(UsbPassivePort(), [InOut])
 
 
-class Tpd2e009(UsbEsdDiode, FootprintBlock):
+class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
   def contents(self):
     # Note, also compatible: https://www.diodes.com/assets/Datasheets/DT1452-02SO.pdf
     # PESD5V0X1BT,215 (different architecture, but USB listed as application)
@@ -205,10 +205,11 @@ class Tpd2e009(UsbEsdDiode, FootprintBlock):
     )
 
 
-class Esda5v3l(UsbEsdDiode, FootprintBlock, JlcPart):
+class Pesd5v0x1bt(UsbEsdDiode, FootprintBlock, JlcPart):
+  """Ultra low capacitance ESD protection diode (0.9pF typ), suitable for USB and GbE"""
   def contents(self):
     super().contents()
-    self.assign(self.lcsc_part, 'C87911')
+    self.assign(self.lcsc_part, 'C456094')
     self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23',
@@ -217,6 +218,24 @@ class Esda5v3l(UsbEsdDiode, FootprintBlock, JlcPart):
         '2': self.usb.dp,
         '3': self.gnd,
       },
-      mfr='STMicroelectronics', part='ESDA5V3L',
-      datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/eb/9f/a7/ac/7b/b6/46/7f/CD00002057.pdf/files/CD00002057.pdf/jcr:content/translations/en.CD00002057.pdf'
+      mfr='Nexperia', part='PESD5V0X1BT',
+      datasheet='https://assets.nexperia.com/documents/data-sheet/PESD5V0X1BT.pdf'
+    )
+
+
+class Pgb102st23(UsbEsdDiode, FootprintBlock, JlcPart):
+  """ESD suppressor, suitable for high speed protocols including USB2.0, 0.12pF typ"""
+  def contents(self):
+    super().contents()
+    self.assign(self.lcsc_part, 'C126830')
+    self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23',
+      {
+        '1': self.usb.dm,
+        '2': self.usb.dp,
+        '3': self.gnd,
+      },
+      mfr='Littelfuse', part='PGB102ST23',
+      datasheet='https://www.littelfuse.com/~/media/electronics/datasheets/pulseguard_esd_suppressors/littelfuse_pulseguard_pgb1_datasheet.pdf.pdf'
     )
