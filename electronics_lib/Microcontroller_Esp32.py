@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Esp32_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
   """Base class for ESP32 series microcontrollrs with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
@@ -15,12 +15,12 @@ class Esp32_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Foot
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(VoltageSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 5.2, table 14, most restrictive limits
       current_draw=(0.001, 370) * mAmp  # from power off (table 8) to RF working (WRROM datasheet table 9)
       # # TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     self.dio_model = dio_model = DigitalBidir.from_supply(  # section 5.2, table 15
       self.gnd, self.pwr,
@@ -225,21 +225,17 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self.ic = self.Block(Esp32_Wroom_32_Device(pin_assigns=self.pin_assigns))
-
   def contents(self) -> None:
     super().contents()
-    self.connect(self.pwr, self.ic.pwr)
-    self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic)
-    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.ic = imp.Block(Esp32_Wroom_32_Device(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 

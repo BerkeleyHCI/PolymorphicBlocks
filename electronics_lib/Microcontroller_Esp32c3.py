@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Esp32c3_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -16,12 +16,12 @@ class Esp32c3_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Fo
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(VoltageSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
       current_draw=(0.001, 335) * mAmp  # section 4.6, from power off to RF active
       # TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,
@@ -167,16 +167,15 @@ class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
   def contents(self) -> None:
     super().contents()
-    self.ic = self.Block(Esp32c3_Wroom02_Device(pin_assigns=self.pin_assigns))
-    self.connect(self.pwr, self.ic.pwr)
-    self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic)
-    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.ic = imp.Block(Esp32c3_Wroom02_Device(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
