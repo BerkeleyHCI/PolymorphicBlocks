@@ -1188,10 +1188,17 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     combinedConstrNames foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr => constr.connectUpdateRef {
         case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
-          require(portElements.contains(suggestedName), s"suggested name $suggestedName not in array $portElements")
-          ValueExpr.Ref((record.portPath :+ suggestedName):_*)
+          if (portElements.contains(suggestedName)) {
+            ValueExpr.Ref((record.portPath :+ suggestedName):_*)
+          } else {
+            ValueExpr.RefAllocate(record.portPath, Some(f"not in array: $suggestedName"))
+          }
         case ValueExpr.RefAllocate(record.portPath, None) =>
-          ValueExpr.Ref((record.portPath :+ freeNames.next()):_*)
+          if (freeNames.hasNext) {
+            ValueExpr.Ref((record.portPath :+ freeNames.next()): _*)
+          } else {
+            ValueExpr.RefAllocate(record.portPath, Some(f"no free ports"))
+          }
       } }
     }
 
@@ -1207,10 +1214,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     import edg.ExprBuilder.ValueExpr
-    val allocatedIndexToConstraint = combinedConstrNames.map { constrName =>
+    val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
       parentBlock.getConstraints(constrName).connectMapRef {
-        case ValueExpr.Ref(record.portPath :+ index) => (Seq(index), constrName)
-        case ValueExpr.Ref(record.portPath :+ index :+ interior) => (Seq(index, interior), constrName)  // for link arrays
+        case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), constrName))
+        case ValueExpr.Ref(record.portPath :+ index :+ interior) => Some((Seq(index, interior), constrName))  // for link arrays
+        case ValueExpr.RefAllocate(record.portPath, _) => None  // allocate should be resolved by here, except for bad designs
       }
     }.toMap
 
