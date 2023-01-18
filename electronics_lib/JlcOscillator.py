@@ -25,7 +25,7 @@ class JlcOscillator_Device(Block):
     self.in_actual_basic_part = self.ArgParameter(in_actual_basic_part)
 
 
-class Sh8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
+class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
   FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'  # doesn't perfectly match datasheet recommended geometry
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -54,7 +54,7 @@ class JlcOscillator(TableOscillator, JlcTablePart, Block):
   """TODO: this technically shouldn't be a JlcPart?
   TODO: this also really shouldn't provide the decoupling capacitor, but it's convenient for now"""
   SERIES_DEVICE_MAP = {
-    'SG-8101CG': Sh8101cg_Device,
+    'SG-8101CG': Sg8101cg_Device,
   }
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(±\S+ppm) .* (\S+MHz) .* Pre-programmed Oscillators .*"),

@@ -122,6 +122,10 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
                 self.ins.hull(lambda x: x.link().voltage))
     self.assign(self.out.output_thresholds,
                 self.ins.intersection(lambda x: x.link().output_thresholds))
+    self.assign(self.out.pullup_capable,
+                self.ins.any(lambda x: x.link().pullup_capable))
+    self.assign(self.out.pulldown_capable,
+                self.ins.any(lambda x: x.link().pulldown_capable))
 
   def connected_from(self, *ins: Port[DigitalLink]) -> 'MergedDigitalSource':
     for in_port in ins:
