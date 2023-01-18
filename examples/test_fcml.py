@@ -427,6 +427,7 @@ class FcmlTest(JlcBoardTop):
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (Fet, ['footprint_spec'], 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm'),  # don't seem to be alternatives
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ],
     )
 
