@@ -40,7 +40,7 @@ class UsbUartTest(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
       (self.led, ), _ = self.chain(
-        self.usbconv.nsuspend, imp.Block(IndicatorLed()))
+        self.usbconv.nsuspend, imp.Block(IndicatorLed(Led.White)))
 
       self.out = imp.Block(UartConnector())
       self.connect(self.usbconv.uart, self.out.uart)
