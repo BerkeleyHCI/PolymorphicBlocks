@@ -7,11 +7,17 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    # Additional ports (on top of IoController)
+    # Additional ports (on top of BaseIoController)
+    self.pwr = self.Port(VoltageSink(
+      voltage_limits=(3.0, 3.6)*Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
+      current_draw=(0, 50.3)*mAmp  # Table 13, TODO propagate current consumption from IO ports
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+
     self.nrst = self.Port(DigitalSink.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
@@ -36,13 +42,6 @@ class Stm32f103Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlo
 
   def contents(self) -> None:
     super().contents()
-
-    # Ports with shared references
-    self.pwr.init_from(VoltageSink(
-      voltage_limits=(3.0, 3.6)*Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
-      current_draw=(0, 50.3)*mAmp  # Table 13, TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
 
     # Port models
     dio_ft_model = DigitalBidir.from_supply(

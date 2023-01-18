@@ -6,9 +6,17 @@ from electronics_lib import OscillatorCrystal
 
 
 @abstract_block
-class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
+
+    # Ports with shared references
+    self.pwr = self.Port(VoltageSink(
+      voltage_limits=(2.4, 3.6) * Volt,
+      current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
+      # TODO propagate current consumption from IO ports
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     # Additional ports (on top of IoController)
     # Crystals from table 15, 32, 33
@@ -28,14 +36,6 @@ class Lpc1549Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock
 
   def contents(self) -> None:
     super().contents()
-
-    # Ports with shared references
-    self.pwr.init_from(VoltageSink(
-      voltage_limits=(2.4, 3.6) * Volt,
-      current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
-      # TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
 
     # Port models
     dio_5v_model = DigitalBidir.from_supply(

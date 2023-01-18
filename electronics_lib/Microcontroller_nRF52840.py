@@ -5,12 +5,19 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock):
+class Nrf52840Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
 
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
+
+    self.pwr = self.Port(VoltageSink(
+      voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
+      current_draw=(0, 212 / 64 + 4.8) * mAmp  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
+      # TODO propagate current consumption from IO ports
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     self.pwr_usb = self.Port(VoltageSink(
       voltage_limits=(4.35, 5.5)*Volt,
@@ -35,14 +42,6 @@ class Nrf52840Base_Device(PinMappable, IoController, DiscreteChip, GeneratorBloc
 
   def contents(self) -> None:
     super().contents()
-
-    # Ports with shared references
-    self.pwr.init_from(VoltageSink(
-      voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
-      current_draw=(0, 212 / 64 + 4.8) * mAmp  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
-      # TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
 
     self.system_pinmaps = VariantPinRemapper({
       'Vdd': self.pwr,
