@@ -4,7 +4,7 @@ from .JlcPart import JlcPart
 
 class E93Lc_B_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   PARTS = [
-    # 96LC56B seems to be the most popular version
+    # 93LC56B seems to be the most popular version
     (2*1024, '93LC56B', 'https://ww1.microchip.com/downloads/en/DeviceDoc/21794G.pdf',
      'C190271', False),  # BT-I/OT variant
     # rest are out of stock at JLC in OT package
