@@ -4,8 +4,9 @@ from contextlib import suppress
 from typing import Type
 
 from edg_core import Block, ScalaCompiler, CompiledDesign
-from electronics_model import NetlistBackend
+from electronics_model import NetlistBackend, BomBackend
 from electronics_model.RefdesRefinementPass import RefdesRefinementPass
+from electronics_model.BomBackend import GenerateBom
 
 
 def compile_board(design: Type[Block], target_dir: str, target_name: str) -> CompiledDesign:
@@ -15,15 +16,19 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
 
   design_filename = os.path.join(target_dir, f'{target_name}.edg')
   netlist_filename = os.path.join(target_dir, f'{target_name}.net')
+  bom_filename = os.path.join(target_dir, f'{target_name}.csv')
 
   with suppress(FileNotFoundError):
     os.remove(design_filename)
   with suppress(FileNotFoundError):
     os.remove(netlist_filename)
+  with suppress(FileNotFoundError):
+    os.remove(bom_filename)
 
   compiled = ScalaCompiler.compile(design)
   compiled.append_values(RefdesRefinementPass().run(compiled))
   netlist_all = NetlistBackend().run(compiled)
+  bom_all = GenerateBom().run(compiled)
   assert len(netlist_all) == 1
 
   with open(design_filename, 'wb') as raw_file:
@@ -31,6 +36,9 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
 
   with open(netlist_filename, 'w', encoding='utf-8') as net_file:
     net_file.write(netlist_all[0][1])
+
+  with open(bom_filename, 'w') as bom_file:
+    bom_file.write(bom_all[0][1])
 
   return compiled
 

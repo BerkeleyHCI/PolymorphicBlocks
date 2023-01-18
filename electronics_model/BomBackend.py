@@ -23,7 +23,7 @@ class GenerateBom(BaseBackend):      # creates and populates .csv file
         writer = csv.writer(bom_string, lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(csv_data)
         for index, (key, value) in enumerate(bom_list.items(), 1):  # populates the rest of the rows
-            csv_data = [str(index), ','.join(bom_list[key]), key.footprint, len(bom_list[key]), key.value, '']
+            csv_data = [str(index), ','.join(bom_list[key]), key.footprint, str(len(bom_list[key])), key.value, '']
             writer.writerow(csv_data)
 
         return [
@@ -41,7 +41,7 @@ class BomTransform(TransformUtil.Transform):
             bom_item = BomItem(footprint=str(self.design.get_value(context.path.to_tuple() + ('fp_footprint',))),
                                value=str(self.design.get_value(context.path.to_tuple() + ('fp_value',))),)
             refdes = self.design.get_value(context.path.to_tuple() + ('fp_refdes',))
-            self.bom_list.setdefault(bom_item, []).append(refdes)
+            self.bom_list.setdefault(bom_item, []).append(str(refdes))
 
     def run(self) -> Dict[BomItem, List[str]]:
         self.transform_design(self.design.design)
