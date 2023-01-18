@@ -31,7 +31,7 @@ class Ice40TargetHeader(FootprintBlock):
 
 
 @abstract_block
-class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class Ice40up_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
   @staticmethod
   def make_dio_model(gnd: VoltageSink, vccio: VoltageSink):
@@ -47,12 +47,11 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    # for this, pwr is defined as SPI_VccIO1, the most likely system-wide supply
-    self.pwr.init_from(VoltageSink(
+    self.gnd = self.Port(Ground(), [Common])
+    self.vccio_1 = self.Port(VoltageSink(
       voltage_limits=(1.71, 3.46)*Volt,  # table 4.2
       current_draw=(0.0005, 9) * mAmp  # table 4.6, static to startup peak; no max given
     ))
-    self.gnd.init_from(Ground())
 
     vccio_model = VoltageSink(
       voltage_limits=(1.71, 3.46)*Volt,  # table 4.2
@@ -76,7 +75,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
 
     pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
     dpio0_model = pio0_model  # differential capability currently not modeled
-    pio1_model = self.make_dio_model(self.gnd, self.pwr)
+    pio1_model = self.make_dio_model(self.gnd, self.vccio_1)
     dpio1_model = pio1_model
     pio2_model = self.make_dio_model(self.gnd, self.vccio_2)
     dpio2_model = pio2_model
@@ -92,7 +91,7 @@ class Ice40up_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jl
     self.system_pinmaps = VariantPinRemapper({  # names consistent with pinout spreadsheet
       'VCCPLL': self.vcc_pll,
       'VCC': self.vcc,
-      'SPI_Vccio1': self.pwr,
+      'SPI_Vccio1': self.vccio_1,
       'VCCIO_0': self.vccio_0,
       'VCCIO_2': self.vccio_2,
       'VPP_2V5': self.vpp_2v5,
@@ -276,13 +275,6 @@ class Ice40up(PinMappable, Fpga, IoController):
 
   def contents(self):
     super().contents()
-    self.ic = self.Block(self.DEVICE(pin_assigns=self.pin_assigns))
-
-    self.connect(self.pwr, self.ic.pwr, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
-    self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic)
-    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
-    self.connect(self.ic.cdone, self.cdone)
 
     # schematics don't seem to be available for the official reference designs,
     # so the decoupling caps are kind of arbitrary (except the PLL)
@@ -292,6 +284,12 @@ class Ice40up(PinMappable, Fpga, IoController):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+      self.connect(self.pwr, self.ic.vccio_1, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+      self.connect(self.ic.cdone, self.cdone)
+
       self.vcc_reg = imp.Block(LinearRegulator((1.14, 1.26)*Volt))
       self.reset_pu = imp.Block(PullupResistor(10*kOhm(tol=0.05))).connected(io=self.ic.creset_b)
 

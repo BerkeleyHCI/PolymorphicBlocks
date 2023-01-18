@@ -6,9 +6,15 @@ from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
+
+    self.pwr = self.Port(VoltageSink(
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
+      current_draw=(1.2, 4.3)*mAmp  # Table 628, TODO propagate current consumption from IO ports
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     # note: IOVDD is self.pwr
     self.dvdd = self.Port(VoltageSink(  # Digital Core
@@ -49,12 +55,6 @@ class Rp2040_Device(PinMappable, IoController, DiscreteChip, GeneratorBlock, Jlc
 
   def contents(self) -> None:
     super().contents()
-
-    self.pwr.init_from(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
-      current_draw=(1.2, 4.3)*mAmp  # Table 628, TODO propagate current consumption from IO ports
-    ))
-    self.gnd.init_from(Ground())
 
     # Port models
     dio_ft_model = DigitalBidir.from_supply(  # Table 623
