@@ -1,4 +1,4 @@
-from typing import List, Dict, Set, Type
+from typing import List, Dict
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
@@ -8,7 +8,9 @@ from .PinMappable import AllocatedResource
 class BaseIoController(Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
-  Pin assignments are handled via refinements and can be assigned to pins' allocated names."""
+  Pin assignments are handled via refinements and can be assigned to pins' allocated names.
+
+  This should not be instantiated as a generic block."""
   def __init__(self) -> None:
     super().__init__()
 
@@ -86,7 +88,7 @@ class BaseIoController(Block):
 
 @abstract_block
 class IoController(BaseIoController):
-  """An IO controller that takes input power."""
+  """An abstract, generic IO controller with common IOs and power ports."""
   def __init__(self) -> None:
     super().__init__()
 
