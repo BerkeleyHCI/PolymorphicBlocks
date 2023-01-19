@@ -9,3 +9,4 @@ class BlinkyExample(SimpleBoardTop):
 
 if __name__ == "__main__":
   compile_board_inplace(BlinkyExample)
+  
