@@ -45,6 +45,8 @@ class BomTransform(TransformUtil.Transform):
         if footprint is not None and refdes is not None:
             value = self.design.get_value(context.path.to_tuple() + ('fp_value',)) or ''
             jlc_number = self.design.get_value(context.path.to_tuple() + ('lcsc_part',)) or ''
+            assert isinstance(footprint, str) and isinstance(refdes, str) \
+                   and isinstance(jlc_number, str) and isinstance(value, str)
             bom_item = BomItem(footprint=footprint, value=value, jlc_number=jlc_number)
             self.bom_list.setdefault(bom_item, []).append(refdes)
 
