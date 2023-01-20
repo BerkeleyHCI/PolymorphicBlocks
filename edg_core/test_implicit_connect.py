@@ -4,7 +4,7 @@ import unittest
 import edgir
 from . import *
 from .test_common import TestBlockSource, TestBlockSink, TestPortSink, ImplicitSink, TestBlockImplicitSink
-from .EdslUserExceptions import EdgContextError
+from .HdlUserExceptions import EdgContextError
 
 
 class ImplicitConnectBlock(Block):

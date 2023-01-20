@@ -7,7 +7,7 @@ from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
-from .EdslUserExceptions import BlockDefinitionError
+from .HdlUserExceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
