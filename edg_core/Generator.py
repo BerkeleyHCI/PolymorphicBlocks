@@ -7,7 +7,7 @@ from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding, Nam
 from .Blocks import BlockElaborationState
 from .ConstraintExpr import ConstraintExpr
 from .Core import non_library
-from .Exceptions import *
+from .EdslUserExceptions import *
 from .HierarchyBlock import Block
 from .Ports import BasePort, Port
 

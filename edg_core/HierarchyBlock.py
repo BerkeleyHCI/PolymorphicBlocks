@@ -11,7 +11,7 @@ from .Blocks import BaseBlock, Connection, BlockElaborationState
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
-from .Exceptions import *
+from .EdslUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut

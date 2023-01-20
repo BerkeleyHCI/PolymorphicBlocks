@@ -9,7 +9,7 @@ from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
-from .Exceptions import *
+from .EdslUserExceptions import *
 from .IdentityDict import IdentityDict
 
 if TYPE_CHECKING:
