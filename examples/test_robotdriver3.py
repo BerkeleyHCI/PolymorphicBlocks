@@ -29,8 +29,8 @@ class RobotDriver3(JlcBoardTop):
         self.Block(VoltageTestPoint()),
 
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
+        self.Block(VoltageTestPoint()),
       )
       self.vbatt = self.connect(self.fuse.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
