@@ -252,8 +252,6 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
 class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
-  Also may be called Freenove ESP32-WROVER-CAM
-
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
   Board used: https://amazon.com/ESP32-WROVER-Contained-Compatible-Bluetooth-Tutorials/dp/B09BC1N9LL
 
