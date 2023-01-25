@@ -250,7 +250,9 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
 
 
 class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
-  """ESP32-WROVER-DEV breakout with camera
+  """ESP32-WROVER-DEV breakout with camera.
+
+  Also may be called Freenove ESP32-WROVER-CAM
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
   Board used: https://amazon.com/ESP32-WROVER-Contained-Compatible-Bluetooth-Tutorials/dp/B09BC1N9LL
@@ -259,21 +261,51 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
   Up is defined from the text orientation (antenna is on top).
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    'Vdd': '1',
-    'Vss': [''],  # 39 is EP
-    'CHIP_PU': '2',  # aka EN
+    'Vdd': '1',  # 3v3
+    # 19, 20: Vcc 5vUSB?
+    'Vss': ['14', '21', '29', '30', '34', '40'],
+    # 'CHIP_PU': '2',  # aka EN, assumed internally controlled
 
-    'GPIO0': '27',
-    'GPIO2': '26',
+    # 'GPIO2': '26',  # fixed strapping pin
+    # 'GPIO0': '27',  # fixed strapping pin
 
-    'U0RXD': '36',
-    'U0TXD': '37',
+    # 'U0RXD': '36',  # fixed programming pin
+    # 'U0TXD': '37',  # fixed programming pin
   }
 
   RESOURCE_PIN_REMAP = {
     'SENSOR_VP': '3',
     'SENSOR_VN': '4',
+    'VDET_1': '5',  # input only GPIO34
+    'VDET_2': '6',  # input only GPIO35
+    '32K_XP': '7',  # GPIO32
+    '32K_XN': '8',  # GPIO33
+    'GPIO25': '9',
+    'GPIO26': '10',
+    'GPIO27': '11',
+    'GPIO14': '12',
+    'GPIO12': '13',
 
+    'GPIO13': '15',  # SD2
+    'SD_DATA_2': '16',  # SD2
+    'SD_DATA_3': '17',  # SD2
+    'SD_CMD': '18',  # CMD
+
+    'SD_CLK': '22',  # SD0
+    'SD_DATA_0': '23',  # SD1
+    'SD_DATA_1': '24',  # SD1
+    'MTDO': '25',  # GPIO15
+
+    'GPIO4': '28',
+
+    'GPIO5': '31',
+    'GPIO18': '32',
+    'GPIO19': '33',
+
+    'GPIO21': '35',
+
+    'GPIO22': '38',
+    'GPIO23': '39',
   }
 
   def generate(self, assignments: List[str],
