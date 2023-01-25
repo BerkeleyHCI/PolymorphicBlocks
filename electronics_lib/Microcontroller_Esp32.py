@@ -247,3 +247,52 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
 
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
+
+
+class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
+  """ESP32-WROVER-DEV breakout with camera
+
+  Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
+  Board used: https://amazon.com/ESP32-WROVER-Contained-Compatible-Bluetooth-Tutorials/dp/B09BC1N9LL
+
+  Top left is pin 1, going down the left side then up the right side.
+  Up is defined from the text orientation (antenna is on top).
+  """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '1',
+    'Vss': [''],  # 39 is EP
+    'CHIP_PU': '2',  # aka EN
+
+    'GPIO0': '27',
+    'GPIO2': '26',
+
+    'U0RXD': '36',
+    'U0TXD': '37',
+  }
+
+  RESOURCE_PIN_REMAP = {
+    'SENSOR_VP': '3',
+    'SENSOR_VN': '4',
+
+  }
+
+  def generate(self, assignments: List[str],
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               can_requests: List[str]) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SpiMaster, spi_requests), (I2cMaster, i2c_requests), (UartPort, uart_requests),
+      (CanControllerPort, can_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+    ], assignments)
+    self.generator_set_allocation(allocated)
+
+    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+
+    self.footprint(
+      # 'U', 'RF_Module:ESP32-WROOM-32',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='', part='ESP32-WROVER-DEV',
+    )
