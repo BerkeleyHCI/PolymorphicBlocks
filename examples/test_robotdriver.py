@@ -19,27 +19,30 @@ class LipoConnector(Battery):
 
 
 class MotorConnector(Block):
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
     self.a = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
-      current_draw=(-600, 600)*mAmp
+      current_draw=current_draw
     )))
     self.b = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(
-      current_draw=(-600, 600)*mAmp
+      current_draw=current_draw
     )))
 
 
 class PwmConnector(Block):
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike):
     super().__init__()
     self.conn = self.Block(PinHeader254())
 
     self.pwm = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink()),
                            [Input])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
-                           [Power])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      current_draw=current_draw
+    )), [Power])
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
 
@@ -161,10 +164,10 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver1.bin1)
       self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver1.bin2)
 
-      self.m1_a = self.Block(MotorConnector())
+      self.m1_a = self.Block(MotorConnector((-600, 600)*mAmp))
       self.connect(self.m1_a.a, self.motor_driver1.aout1)
       self.connect(self.m1_a.b, self.motor_driver1.aout2)
-      self.m1_b = self.Block(MotorConnector())
+      self.m1_b = self.Block(MotorConnector((-600, 600)*mAmp))
       self.connect(self.m1_b.a, self.motor_driver1.bout1)
       self.connect(self.m1_b.b, self.motor_driver1.bout2)
 
@@ -176,14 +179,14 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.mcu.gpio.request('motor_2b2'), self.motor_driver2.bin2)
       self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
 
-      self.m2_a = self.Block(MotorConnector())
+      self.m2_a = self.Block(MotorConnector((-600, 600)*mAmp))
       self.connect(self.m2_a.a, self.motor_driver2.aout1)
       self.connect(self.m2_a.b, self.motor_driver2.aout2)
-      self.m2_b = self.Block(MotorConnector())
+      self.m2_b = self.Block(MotorConnector((-600, 600)*mAmp))
       self.connect(self.m2_b.a, self.motor_driver2.bout1)
       self.connect(self.m2_b.b, self.motor_driver2.bout2)
 
-    self.servo = self.Block(PwmConnector())
+    self.servo = self.Block(PwmConnector((0, 0)*mAmp))  # TODO current modeling
     self.connect(self.vbatt, self.servo.pwr)
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)

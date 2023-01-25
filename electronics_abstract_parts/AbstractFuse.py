@@ -8,18 +8,14 @@ from .StandardPinningFootprint import StandardPinningFootprint
 @abstract_block
 class Fuse(DiscreteComponent, DiscreteApplication):
   @init_in_parent
-  def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = Default(RangeExpr.ALL),
-               voltage: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+  def __init__(self, trip_current: RangeLike) -> None:
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
     super().__init__()
 
     self.trip_current = self.ArgParameter(trip_current)  # current at which this will trip
     self.actual_trip_current = self.Parameter(RangeExpr())
 
-    self.hold_current = self.ArgParameter(hold_current)  # current within at which this will NOT trip
     self.actual_hold_current = self.Parameter(RangeExpr())
-
-    self.voltage = self.ArgParameter(voltage)  # operating voltage
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Input])
@@ -33,15 +29,19 @@ class Fuse(DiscreteComponent, DiscreteApplication):
     ))
 
     self.require(self.actual_trip_current.within(self.trip_current),
-                 "fuse rating not within specified rating")
+                 "trip current not within specified rating")
+    self.require(self.actual_hold_current.within(self.pwr_out.link().current_drawn),
+                 "hold current not within specified rating")
+    self.require(self.pwr_in.link().voltage.within(self.actual_voltage_rating),
+                 "operating voltage not within rating")
 
     self.description = DescriptionString(
       "<b>trip current:</b> ", DescriptionString.FormatUnits(self.actual_trip_current, "A"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.trip_current, "A"), "\n",
       "<b>hold current:</b> ", DescriptionString.FormatUnits(self.actual_hold_current, "A"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.hold_current, "A"), "\n",
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.pwr_out.link().current_drawn, "A"), "\n",
       "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V")
     )
 
 
@@ -80,7 +80,8 @@ class TableFuse(FuseStandardPinning, PartsTableFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.trip_current, self.hold_current, self.voltage, self.part, self.footprint_spec)
+    # self.generator(self.select_part, self.trip_current, self.pwr_out.link().current_drawn, self.pwr_in.link().voltage,
+    #                self.part, self.footprint_spec)
 
   def select_part(self, trip_current: Range, hold_current: Range, voltage: Range,
                   part_spec: str, footprint_spec: str) -> None:
