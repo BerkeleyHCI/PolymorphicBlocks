@@ -27,7 +27,7 @@ class CalSolCanBlock(CalSolSubcircuit):
     self.conn = self.Block(CalSolCanConnector())
     self.connect(self.can, self.conn.differential)
 
-    self.can_fuse = self.Block(CanFuse())
+    self.can_fuse = self.Block(SeriesPowerPptcFuse(150 * mAmp(tol=0.1)))
     self.connect(self.conn.pwr, self.can_pwr, self.can_fuse.pwr_in)
     self.connect(self.conn.gnd, self.can_gnd)
 
@@ -64,8 +64,8 @@ class CanFuse(PptcFuse, FootprintBlock):
     self.footprint(
       'F', 'Resistor_SMD:R_0603_1608Metric',
       {
-        '1': self.pwr_in,
-        '2': self.pwr_out,
+        '1': self.a,
+        '2': self.b,
       },
       part='0ZCM0005FF2G'
     )

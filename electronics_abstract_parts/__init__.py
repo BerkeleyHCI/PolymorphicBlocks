@@ -49,7 +49,7 @@ from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
 from .AbstractPowerConverters import DcDcConverter, LinearRegulator, LinearRegulatorDevice, DcDcSwitchingConverter
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
-from .AbstractFuse import Fuse, PptcFuse, FuseStandardPinning, TableFuse
+from .AbstractFuse import Fuse, PptcFuse, FuseStandardPinning, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector

@@ -23,8 +23,8 @@ class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, FootprintBlock):
     (re.compile("(\S+V) (\S+A) (?:\S+A) (\S+A) .* Resettable Fuses.*"),
      lambda match: {
        TableFuse.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
-       TableFuse.TRIP_CURRENT: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
-       TableFuse.HOLD_CURRENT: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'A')),
+       TableFuse.TRIP_CURRENT: Range.exact(PartParserUtil.parse_value(match.group(2), 'A')),
+       TableFuse.HOLD_CURRENT: Range.exact(PartParserUtil.parse_value(match.group(3), 'A')),
      }),
   ]
 

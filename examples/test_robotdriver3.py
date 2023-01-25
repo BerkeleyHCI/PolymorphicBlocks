@@ -24,7 +24,7 @@ class RobotDriver3(JlcBoardTop):
     ) as imp:
       (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.batt.pwr,
-        imp.Block(PptcFuse((2, 4)*Amp)),
+        imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()),
 
@@ -48,6 +48,7 @@ class RobotDriver3(JlcBoardTop):
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
+      self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
@@ -60,19 +61,20 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.motor_driver1 = imp.Block(Drv8833())
-      self.connect(self.vbatt, self.motor_driver1.pwr)
-      self.connect(self.mcu.gpio.request('motor_1a1'), self.motor_driver1.ain1)
-      self.connect(self.mcu.gpio.request('motor_1a2'), self.motor_driver1.ain2)
-      self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver1.bin1)
-      self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver1.bin2)
+      self.motor_driver = imp.Block(Drv8833())
+      self.connect(self.vbatt, self.motor_driver.pwr)
+      self.connect(self.mcu.gpio.request('motor_1a1'), self.motor_driver.ain1)
+      self.connect(self.mcu.gpio.request('motor_1a2'), self.motor_driver.ain2)
+      self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver.bin1)
+      self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver.bin2)
+      self.connect(self.motor_driver.sleep, self.fuse.pwr_out.as_digital_source())
 
-      self.m1_a = self.Block(MotorConnector((-500, 500)*mAmp))
-      self.connect(self.m1_a.a, self.motor_driver1.aout1)
-      self.connect(self.m1_a.b, self.motor_driver1.aout2)
-      self.m1_b = self.Block(MotorConnector((-500, 500)*mAmp))
-      self.connect(self.m1_b.a, self.motor_driver1.bout1)
-      self.connect(self.m1_b.b, self.motor_driver1.bout2)
+      self.motor_a = self.Block(MotorConnector((-500, 500) * mAmp))
+      self.connect(self.motor_a.a, self.motor_driver.aout1)
+      self.connect(self.motor_a.b, self.motor_driver.aout2)
+      self.motor_b = self.Block(MotorConnector((-500, 500) * mAmp))
+      self.connect(self.motor_b.a, self.motor_driver.bout1)
+      self.connect(self.motor_b.b, self.motor_driver.bout2)
 
     self.servo = self.Block(PwmConnector((0, 200)*mAmp))
     self.connect(self.vbatt, self.servo.pwr)
