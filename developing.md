@@ -23,7 +23,7 @@ mypy .
 
 Or faster, with mypy in daemon mode:
 ```
-dmypy run -- --follow-imports=error .
+dmypy run .
 ```
 
 Or, using the [Mypy plugin for Intellij](https://plugins.jetbrains.com/plugin/13348-mypy-official-).
