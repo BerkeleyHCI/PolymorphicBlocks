@@ -285,14 +285,14 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
     'GPIO14': '12',
     'GPIO12': '13',
 
-    'GPIO13': '15',  # SD2
-    'SD_DATA_2': '16',  # SD2
-    'SD_DATA_3': '17',  # SD2
-    'SD_CMD': '18',  # CMD
+    'GPIO13': '15',
+    # 'SD_DATA_2': '16',  # FLASH_D2, SD2
+    # 'SD_DATA_3': '17',  # DLASH_D3, SD3
+    # 'SD_CMD': '18',  # FLASH_CMD, CMD
 
-    'SD_CLK': '22',  # SD0
-    'SD_DATA_0': '23',  # SD1
-    'SD_DATA_1': '24',  # SD1
+    # 'SD_CLK': '22',  # FLASH_CLK, SD0
+    #'SD_DATA_0': '23',  # FLASH_D0, SD1
+    # 'SD_DATA_1': '24',  # FLASH_D1, SD1
     'MTDO': '25',  # GPIO15
 
     # 'GPIO4': '28',  # camera CSI_Y2
