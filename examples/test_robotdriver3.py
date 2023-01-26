@@ -42,7 +42,8 @@ class RobotDriver3(JlcBoardTop):
       self.mcu = imp.Block(IoController())
       self.i2c = self.mcu.i2c.request('i2c')
 
-      self.tof = imp.Block(Vl53l0xArray(2))
+      # TODO first one XSHUT should be tied high (AVdd)
+      self.tof = imp.Block(Vl53l0xArray(4))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
