@@ -22,15 +22,15 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, s2elf.prot_3v3), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()),
 
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
-        self.Block(VoltageTestPoint()),
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt)),
+        self.Block(VoltageTestPoint())
       )
       self.vbatt = self.connect(self.fuse.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
@@ -89,7 +89,7 @@ class RobotDriver3(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32_Wroom_32),
+        (['mcu'], Esp32_Wrover_Dev),
         (['reg_3v3'], Ap3418),
       ],
       instance_values=[

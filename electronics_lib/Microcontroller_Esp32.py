@@ -249,7 +249,7 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
       self.connect(self.uart0.uart, self.ic.uart0)
 
 
-class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
+class Esp32_Wrover_Dev(Esp32_Device, IoController, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
@@ -263,13 +263,13 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
     'Vdd': '1',  # 3v3, output of internal AMS1117-3.3V LDO
     # 19, 20: Vcc 5vUSB, input to internal LDO
     'Vss': ['14', '21', '29', '30', '34', '40'],
-    # 'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
+    'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
 
-    # 'GPIO2': '26',  # fixed strapping pin, drives LED on PCB
-    # 'GPIO0': '27',  # fixed strapping pin, switch w/ pulldown on chip
+    'GPIO2': '26',  # fixed strapping pin, drives LED on PCB
+    'GPIO0': '27',  # fixed strapping pin, switch w/ pulldown on chip
 
-    # 'U0RXD': '36',  # fixed programming pin, board connected to USB UART w/ jumper
-    # 'U0TXD': '37',  # fixed programming pin, board connected to USB UART w/ jumper
+    'U0RXD': '36',  # fixed programming pin, board connected to USB UART w/ jumper
+    'U0TXD': '37',  # fixed programming pin, board connected to USB UART w/ jumper
   }
 
   RESOURCE_PIN_REMAP = {
