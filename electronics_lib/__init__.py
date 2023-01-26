@@ -27,7 +27,7 @@ from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 
-from .PassiveConnector import PassiveConnector, PinHeader254, PinHeader127DualShrouded
+from .PassiveConnector import PassiveConnector, PinHeader254, PinSocket254, PinHeader127DualShrouded
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 

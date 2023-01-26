@@ -83,10 +83,10 @@ class RobotDriver3(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32_Wrover_Dev),
         (['reg_3v3'], Ap3418),
-        (['tof', 'elt[0]', 'conn'], PinHeader254),
-        (['tof', 'elt[1]', 'conn'], PinHeader254),
-        (['tof', 'elt[2]', 'conn'], PinHeader254),
-        (['tof', 'elt[3]', 'conn'], PinHeader254),
+        (['tof', 'elt[0]', 'conn'], PinSocket254),
+        (['tof', 'elt[1]', 'conn'], PinSocket254),
+        (['tof', 'elt[2]', 'conn'], PinSocket254),
+        (['tof', 'elt[3]', 'conn'], PinSocket254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

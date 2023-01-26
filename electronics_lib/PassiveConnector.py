@@ -58,6 +58,14 @@ class PinHeader254(PassiveConnector):
             "Generic", f"PinHeader2.54 1x{length}")
 
 
+class PinSocket254(PassiveConnector):
+  """Generic 2.54mm pin socket in vertical through-hole."""
+  allowed_pins = range(2, 16+1)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_PinSocket_2.54mm:PinSocket_1x{length:02d}_P2.54mm_Vertical',
+            "Generic", f"PinSocket2.54 1x{length}")
+
+
 class PinHeader127DualShrouded(PassiveConnector, JlcPart):
   """Generic dual-row 1.27mm pin header in vertical through-hole pinned in zigzag."""
   allowed_pins = [10]  # TODO support more
