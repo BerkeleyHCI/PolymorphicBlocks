@@ -3,7 +3,6 @@ import unittest
 from edg import *
 
 from .test_robotdriver import LipoConnector
-from .test_robotdriver import MotorConnector
 from .test_robotdriver import PwmConnector
 
 
@@ -43,43 +42,37 @@ class RobotDriver3(JlcBoardTop):
       self.mcu = imp.Block(IoController())
       self.i2c = self.mcu.i2c.request('i2c')
 
-      self.tof = imp.Block(Vl53l0xArray(4))
+      self.tof = imp.Block(Vl53l0xArray(2))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
-      self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
       self.connect(self.i2c, self.imu.i2c)
 
-      self.leds = imp.Block(IndicatorSinkLedArray(4))
-      self.connect(self.mcu.gpio.request_vector('led'), self.leds.signals)
+      # IO EXPANDER
+      self.expander = imp.Block(Pcf8574(0))
+      self.connect(self.i2c, self.expander.i2c)
+      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
 
-    # MOTORS AND SERVOS
+      self.leds = imp.Block(IndicatorSinkLedArray(4))
+      self.connect(self.expander.io.request_vector('led'), self.leds.signals)
+
+    # VBATT DOMAIN
     with self.implicit_connect(
+        ImplicitConnect(self.vbatt, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.motor_driver = imp.Block(Drv8833())
-      self.connect(self.vbatt, self.motor_driver.pwr)
-      self.connect(self.mcu.gpio.request('motor_1a1'), self.motor_driver.ain1)
-      self.connect(self.mcu.gpio.request('motor_1a2'), self.motor_driver.ain2)
-      self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver.bin1)
-      self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver.bin2)
-      self.connect(self.motor_driver.sleep, self.fuse.pwr_out.as_digital_source())
+      self.servo = ElementDict[PwmConnector]()
+      for i in range(4):
+        servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
+        self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
-      self.motor_a = self.Block(MotorConnector((-500, 500) * mAmp))
-      self.connect(self.motor_a.a, self.motor_driver.aout1)
-      self.connect(self.motor_a.b, self.motor_driver.aout2)
-      self.motor_b = self.Block(MotorConnector((-500, 500) * mAmp))
-      self.connect(self.motor_b.a, self.motor_driver.bout1)
-      self.connect(self.motor_b.b, self.motor_driver.bout2)
-
-    self.servo = self.Block(PwmConnector((0, 200)*mAmp))
-    self.connect(self.vbatt, self.servo.pwr)
-    self.connect(self.gnd, self.servo.gnd)
-    self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
+      self.ws2812bArray = imp.Block(NeopixelArray(5))
+      # TODO needs IO
+      # self.connect(self.mcu.gpio.request('ledArray'), self.ws2812bArray.din)
 
     # Misc board
     self.lemur = self.Block(LemurLogo())
@@ -95,6 +88,8 @@ class RobotDriver3(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
 
+        ]),
+        (['expander', 'pin_assigns'], [
         ]),
 
         # JLC does not have frequency specs, must be checked TODO

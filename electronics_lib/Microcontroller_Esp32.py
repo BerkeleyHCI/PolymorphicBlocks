@@ -323,7 +323,7 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
 
     self.footprint(
-      # 'U', 'RF_Module:ESP32-WROOM-32',
+      'U', 'RF_Module:ESP32-WROOM-32',  # TODO proper footprint
       dict(chain(system_pins.items(), io_pins.items())),
       mfr='', part='ESP32-WROVER-DEV',
     )
