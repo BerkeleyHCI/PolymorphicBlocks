@@ -249,7 +249,7 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
       self.connect(self.uart0.uart, self.ic.uart0)
 
 
-class Esp32_Wrover_Dev(Esp32_Device, IoController, FootprintBlock):
+class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
@@ -282,10 +282,10 @@ class Esp32_Wrover_Dev(Esp32_Device, IoController, FootprintBlock):
     # 'GPIO25': '9',  # camera CSI_VYSNC
     # 'GPIO26': '10',  # camera I2C_SDA
     # 'GPIO27': '11',  # camera I2C_SCL
-    'GPIO14': '12',
-    'GPIO12': '13',
+    'MTMS': '12',  # GPIO14
+    'MTDI': '13',  # GPIO12
 
-    'GPIO13': '15',
+    'MTCK': '15',  # GPIO13
     # 'SD_DATA_2': '16',  # FLASH_D2, SD2
     # 'SD_DATA_3': '17',  # DLASH_D3, SD3
     # 'SD_CMD': '18',  # FLASH_CMD, CMD

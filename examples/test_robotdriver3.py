@@ -22,7 +22,7 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, s2elf.prot_3v3), _ = self.chain(
+      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
