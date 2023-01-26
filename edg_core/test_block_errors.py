@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from .Exceptions import *
+from .HdlUserExceptions import *
 from .test_common import TestPortSource, TestBlockSource, TestBlockSink, TestBlockImplicitSink
 
 

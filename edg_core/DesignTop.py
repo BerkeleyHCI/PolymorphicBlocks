@@ -3,7 +3,7 @@ from typing import TypeVar, Union, List, Tuple, Dict, Type
 import edgir
 from .Ports import Port
 from .ConstraintExpr import ConstraintExpr
-from .Exceptions import BlockDefinitionError
+from .HdlUserExceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Blocks import BlockElaborationState
 from .HierarchyBlock import Block

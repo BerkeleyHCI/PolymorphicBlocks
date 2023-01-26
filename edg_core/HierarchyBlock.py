@@ -11,7 +11,7 @@ from .Blocks import BaseBlock, Connection, BlockElaborationState
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
-from .Exceptions import *
+from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut
@@ -364,7 +364,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Block))
 
     for i, elt in list(enumerate(elts))[1:-1]:
-      elt = assert_type(elt, (Block), f"middle arguments elts[{i}] to chain")
+      elt = assert_cast(elt, (Block), f"middle arguments elts[{i}] to chain")
       if elt._get_ports_by_tag({Input}) and elt._get_ports_by_tag({Output}):
         in_ports = elt._get_ports_by_tag({Input})
         out_ports = elt._get_ports_by_tag({Output})
@@ -453,7 +453,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       raise BlockDefinitionError(self, "optional ports cannot have implicit connection tags",
                                  "port can either be optional or have implicit connection tags")
     for tag in tags:
-      tag = assert_type(tag, PortTag, "tag for Port(...)")
+      tag = assert_cast(tag, PortTag, "tag for Port(...)")
 
     port = super().Port(tpe, optional=optional)
 

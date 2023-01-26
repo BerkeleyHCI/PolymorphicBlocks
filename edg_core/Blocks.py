@@ -10,7 +10,7 @@ from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
 from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
-from .Exceptions import *
+from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .Ports import BasePort, Port
