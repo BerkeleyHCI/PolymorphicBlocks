@@ -21,7 +21,7 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
@@ -71,7 +71,7 @@ class RobotDriver3(JlcBoardTop):
         servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
         self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
-      self.ws2812bArray = imp.Block(NeopixelArray(5))
+      self.ws2812bArray = imp.Block(NeopixelArray(6))
       self.connect(self.mcu.io2, self.ws2812bArray.din)
 
     # Misc board
@@ -84,6 +84,10 @@ class RobotDriver3(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32_Wrover_Dev),
         (['reg_3v3'], Ap3418),
+        (['tof', 'elt[0]', 'conn'], PinHeader254),
+        (['tof', 'elt[1]', 'conn'], PinHeader254),
+        (['tof', 'elt[2]', 'conn'], PinHeader254),
+        (['tof', 'elt[3]', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -91,7 +95,7 @@ class RobotDriver3(JlcBoardTop):
         ]),
         (['expander', 'pin_assigns'], [
         ]),
-        (['mcu', 'ic', 'footprint'], 'edg:ESP32-WROVER-DEV_Chicken'),
+        (['mcu', 'ic', 'fp_footprint'], 'edg:ESP32-WROVER-DEV_Chicken'),
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
