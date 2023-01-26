@@ -39,7 +39,7 @@ class RobotDriver3(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(IoController())
+      self.mcu = imp.Block(Esp32_Wrover_Dev())  # allows us to use IO2
       self.i2c = self.mcu.i2c.request('i2c')
 
       # TODO first one XSHUT should be tied high (AVdd)
@@ -72,8 +72,7 @@ class RobotDriver3(JlcBoardTop):
         self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
       self.ws2812bArray = imp.Block(NeopixelArray(5))
-      # TODO needs IO
-      # self.connect(self.mcu.gpio.request('ledArray'), self.ws2812bArray.din)
+      self.connect(self.mcu.io2, self.ws2812bArray.din)
 
     # Misc board
     self.lemur = self.Block(LemurLogo())
@@ -92,6 +91,7 @@ class RobotDriver3(JlcBoardTop):
         ]),
         (['expander', 'pin_assigns'], [
         ]),
+        (['mcu', 'ic', 'footprint'], 'edg:ESP32-WROVER-DEV_Chicken'),
 
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),

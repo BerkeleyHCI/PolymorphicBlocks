@@ -39,7 +39,9 @@ class Esp32_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, 
       pullup_capable=True, pulldown_capable=True,
     )
 
-    self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
+    self.chip_pu = self.Port(dio_model, optional=True)  # power control, must NOT be left floating, table 1
+    self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
+    self.require(self.has_chip_pu.implies(self.chip_pu.is_connected()), "EN not connected")
 
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
@@ -210,6 +212,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.has_chip_pu, True)
 
     self.assign(self.lcsc_part, 'C701342')
     self.assign(self.actual_basic_part, False)
@@ -249,7 +252,7 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
       self.connect(self.uart0.uart, self.ic.uart0)
 
 
-class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
+class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
@@ -321,9 +324,31 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
     self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.has_chip_pu, False)
 
     self.footprint(
-      'U', 'RF_Module:ESP32-WROOM-32',  # TODO proper footprint
+      'U', 'edg:ESP32-WROVER-DEV',
       dict(chain(system_pins.items(), io_pins.items())),
       mfr='', part='ESP32-WROVER-DEV',
     )
+
+
+class Esp32_Wrover_Dev(PinMappable, Microcontroller, IoController, Block):
+  """Wrapper around Esp32_Wover_Dev fitting the IoController interface
+  """
+  def __init__(self):
+    super().__init__()
+    self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # allow this to be connected
+
+  def contents(self) -> None:
+    super().contents()
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+      self.connect(self.io2, self.ic.io2)
