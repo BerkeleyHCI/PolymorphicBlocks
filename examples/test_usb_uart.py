@@ -28,7 +28,7 @@ class UsbUartTest(JlcBoardTop):
     self.vusb = self.connect(self.usb_uart.pwr)
     self.gnd = self.connect(self.usb_uart.gnd)
 
-    # POWER
+    # 5v DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
@@ -42,6 +42,15 @@ class UsbUartTest(JlcBoardTop):
       (self.led, ), _ = self.chain(
         self.usbconv.nsuspend, imp.Block(IndicatorLed(Led.White)))
 
+      # for target power only
+      self.reg_3v3 = imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
+      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+    # 3v3 DOMAIN
+    with self.implicit_connect(
+        ImplicitConnect(self.v3v3, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
       self.out = imp.Block(UartConnector())
       self.connect(self.usbconv.uart, self.out.uart)
 
@@ -54,6 +63,7 @@ class UsbUartTest(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['out', 'conn'], PinHeader254),
+        (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
         (['refdes_prefix'], 'U'),  # unique refdes for panelization
