@@ -254,33 +254,34 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
   Board used: https://amazon.com/ESP32-WROVER-Contained-Compatible-Bluetooth-Tutorials/dp/B09BC1N9LL
+  Board internal schematic: https://github.com/Freenove/Freenove_ESP32_WROVER_Board/blob/f710fd6976e76ab76c29c2ee3042cd7bac22c3d6/Datasheet/ESP32_Schematic.pdf
 
   Top left is pin 1, going down the left side then up the right side.
   Up is defined from the text orientation (antenna is on top).
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    'Vdd': '1',  # 3v3
-    # 19, 20: Vcc 5vUSB?
+    'Vdd': '1',  # 3v3, output of internal AMS1117-3.3V LDO
+    # 19, 20: Vcc 5vUSB, input to internal LDO
     'Vss': ['14', '21', '29', '30', '34', '40'],
-    # 'CHIP_PU': '2',  # aka EN, assumed internally controlled
+    # 'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
 
-    # 'GPIO2': '26',  # fixed strapping pin
-    # 'GPIO0': '27',  # fixed strapping pin
+    # 'GPIO2': '26',  # fixed strapping pin, drives LED on PCB
+    # 'GPIO0': '27',  # fixed strapping pin, switch w/ pulldown on chip
 
-    # 'U0RXD': '36',  # fixed programming pin
-    # 'U0TXD': '37',  # fixed programming pin
+    # 'U0RXD': '36',  # fixed programming pin, board connected to USB UART w/ jumper
+    # 'U0TXD': '37',  # fixed programming pin, board connected to USB UART w/ jumper
   }
 
   RESOURCE_PIN_REMAP = {
-    'SENSOR_VP': '3',
-    'SENSOR_VN': '4',
-    'VDET_1': '5',  # input only GPIO34
-    'VDET_2': '6',  # input only GPIO35
+    # 'SENSOR_VP': '3',  # camera CSI_Y6
+    # 'SENSOR_VN': '4',  # camera CSI_Y7
+    # 'VDET_1': '5',  # input only GPIO34, CSI_Y8
+    # 'VDET_2': '6',  # input only GPIO35, CSI_Y9
     '32K_XP': '7',  # GPIO32
     '32K_XN': '8',  # GPIO33
-    'GPIO25': '9',
-    'GPIO26': '10',
-    'GPIO27': '11',
+    # 'GPIO25': '9',  # camera CSI_VYSNC
+    # 'GPIO26': '10',  # camera I2C_SDA
+    # 'GPIO27': '11',  # camera I2C_SCL
     'GPIO14': '12',
     'GPIO12': '13',
 
@@ -294,16 +295,16 @@ class Esp32_Wrover_Dev(Esp32_Device, FootprintBlock):
     'SD_DATA_1': '24',  # SD1
     'MTDO': '25',  # GPIO15
 
-    'GPIO4': '28',
+    # 'GPIO4': '28',  # camera CSI_Y2
 
-    'GPIO5': '31',
-    'GPIO18': '32',
-    'GPIO19': '33',
+    # 'GPIO5': '31',  # camera CSI_Y3
+    # 'GPIO18': '32',  # camera CSI_Y4
+    # 'GPIO19': '33',  # camera CSI_Y5
 
-    'GPIO21': '35',
+    # 'GPIO21': '35',  # camera XCLK
 
-    'GPIO22': '38',
-    'GPIO23': '39',
+    # 'GPIO22': '38',  # camera CSI_PCLK
+    # 'GPIO23': '39',  # camera CSI_HREF
   }
 
   def generate(self, assignments: List[str],
