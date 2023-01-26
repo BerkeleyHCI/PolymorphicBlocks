@@ -62,6 +62,7 @@ class Mag_Qmc5883l(Block):
         super().__init__()
         self.ic = self.Block(Mag_Qmc5883l_Device())
         self.vdd = self.Export(self.ic.vdd, [Power])
+        self.connect(self.vdd, self.ic.vddio)
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
         self.drdy = self.Export(self.ic.drdy, optional=True)
