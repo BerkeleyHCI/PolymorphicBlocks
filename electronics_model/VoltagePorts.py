@@ -101,6 +101,12 @@ class VoltageBase(CircuitPort[VoltageLink]):
 #     self.isolation_domain = self.Parameter(RefParameter())  # semantics TBD
 #     self.reference = self.Parameter(RefParameter())  # semantics TBD, ideally some concept of implicit domains
 
+  # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
+  def as_digital_source(self) -> DigitalSource:
+    return self._convert(VoltageSinkAdapterDigitalSource())
+
+  def as_analog_source(self) -> AnalogSource:
+    return self._convert(VoltageSinkAdapterAnalogSource())
 
 class VoltageSink(VoltageBase):
   @staticmethod
@@ -166,12 +172,6 @@ class VoltageSource(VoltageBase):
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
-
-  def as_digital_source(self) -> DigitalSource:
-    return self._convert(VoltageSinkAdapterDigitalSource())
-
-  def as_analog_source(self) -> AnalogSource:
-    return self._convert(VoltageSinkAdapterAnalogSource())
 
 
 Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below

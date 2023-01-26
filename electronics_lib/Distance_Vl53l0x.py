@@ -122,23 +122,27 @@ class Vl53l0xApplication(Vl53l0x):
 
 
 class Vl53l0xArray(GeneratorBlock):
-  """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1."""
+  """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
   @init_in_parent
-  def __init__(self, count: IntLike):
+  def __init__(self, count: IntLike, *, first_xshut_fixed: BoolLike = False):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
     self.i2c = self.Port(I2cSlave.empty())
     self.xshut = self.Port(Vector(DigitalSink.empty()))
     self.gpio1 = self.Port(Vector(DigitalBidir.empty()), optional=True)
-    self.generator(self.generate, count)
+    self.generator(self.generate, count, first_xshut_fixed)
 
-  def generate(self, count: int):
+  def generate(self, count: int, first_xshut_fixed: bool):
     self.elt = ElementDict[Vl53l0x]()
     for elt_i in range(count):
       elt = self.elt[str(elt_i)] = self.Block(Vl53l0x())
       self.connect(self.pwr, elt.pwr)
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)
-      self.connect(self.xshut.append_elt(DigitalSink.empty(), str(elt_i)), elt.xshut)
+      if first_xshut_fixed and elt_i == 0:
+        self.connect(elt.pwr.as_digital_source(), elt.xshut)
+      else:
+        self.connect(self.xshut.append_elt(DigitalSink.empty(), str(elt_i)), elt.xshut)
+
       self.connect(self.gpio1.append_elt(DigitalBidir.empty(), str(elt_i)), elt.gpio1)

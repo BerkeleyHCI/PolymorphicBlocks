@@ -42,8 +42,7 @@ class RobotDriver3(JlcBoardTop):
       self.mcu = imp.Block(Esp32_Wrover_Dev())  # allows us to use IO2
       self.i2c = self.mcu.i2c.request('i2c')
 
-      # TODO first one XSHUT should be tied high (AVdd)
-      self.tof = imp.Block(Vl53l0xArray(4))
+      self.tof = imp.Block(Vl53l0xArray(4, first_xshut_fixed=True))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
