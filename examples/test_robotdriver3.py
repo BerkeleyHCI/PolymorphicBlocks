@@ -50,7 +50,8 @@ class RobotDriver3(JlcBoardTop):
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
-      self.connect(self.i2c, self.imu.i2c)
+      self.mag = imp.Block(Mag_Qmc5883l())
+      self.connect(self.i2c, self.imu.i2c, self.mag.i2c)
 
       # IO EXPANDER
       self.expander = imp.Block(Pcf8574(0))

@@ -14,15 +14,14 @@ class Imu_Lsm6ds3trc_Device(DiscreteChip, FootprintBlock, JlcPart):
         ))
         self.gnd = self.Port(Ground())
 
-        # TODO figure out how to initialize pins
-        din_model = DigitalBidir.from_supply(
+        dio_model = DigitalBidir.from_supply(
             self.gnd, self.vddio,
             voltage_limit_abs=(-0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
             # datasheet states abs volt to be [0.3, VDD_IO+0.3], likely a typo
             current_limits=(-4, 4)*mAmp,
             input_threshold_factor=(0.3, 0.7)
         )
-        self.i2c = self.Port(I2cSlave(din_model))
+        self.i2c = self.Port(I2cSlave(dio_model))
 
         dout_model = DigitalSingleSource.low_from_supply(self.gnd)
         self.int1 = self.Port(dout_model, optional=True)

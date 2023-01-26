@@ -104,4 +104,5 @@ from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
 
-from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc_Device, Imu_Lsm6ds3trc
+from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
+from .Mag_Qmc5883l import Mag_Qmc5883l
