@@ -108,6 +108,9 @@ class RobotDriver3(JlcBoardTop):
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
       ],
+      class_values=[
+        # (Capacitor, ['voltage_rating_derating'], 2.0),
+      ],
     )
 
 

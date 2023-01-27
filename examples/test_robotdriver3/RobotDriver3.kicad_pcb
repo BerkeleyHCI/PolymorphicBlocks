@@ -1120,7 +1120,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp 4120c71c-b0a5-4e6a-8bb0-c448cc83758b)
-    (at 109 72)
+    (at 100 73)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
@@ -1177,7 +1177,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp 4218e13c-6a6a-4999-965b-0f4df7d61612)
-    (at 117 43)
+    (at 120 34)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
@@ -2223,7 +2223,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp 86d21012-fca1-42a7-ae87-9e48781438b4)
-    (at 117 77)
+    (at 120 86)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
@@ -2280,7 +2280,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp 8ae6e36f-9b69-481a-a2ed-ca4b06513608)
-    (at 109 48)
+    (at 100 47)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
@@ -2337,7 +2337,7 @@
 
   (footprint "Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical" (layer "F.Cu")
     (tedit 5A19A430) (tstamp 8d480ebe-7589-4aea-bc06-136911684486)
-    (at 97.025 53.675)
+    (at 100.025 53.675)
     (descr "Through hole straight socket strip, 1x06, 2.54mm pitch, single row (from Kicad 4.0.7), script generated")
     (tags "Through hole socket strip THT 1x06 2.54mm single row")
     (property "Sheetfile" "electronics_lib.Distance_Vl53l0x.Vl53l0xArray")
@@ -3441,7 +3441,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp d3ef4753-8ad2-4250-b437-2a4e64c943b4)
-    (at 130 35)
+    (at 140 22)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
@@ -3760,7 +3760,7 @@
 
   (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm" (layer "F.Cu")
     (tedit 5AA4B285) (tstamp fac77604-79e9-4642-9722-9e5c86a77446)
-    (at 130 85)
+    (at 140 99)
     (descr "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
     (tags "LED RGB NeoPixel")
     (property "Sheetfile" "electronics_lib.Neopixel.NeopixelArray")
