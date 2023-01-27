@@ -63,5 +63,9 @@ class Ap3418(DiscreteBuckConverter):
           rated_current=1.5*Amp),
         dutycycle_limit=(0, 1)
       ))
-      self.connect(self.power_path.pwr_out, self.pwr_out)
+      # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
+      # and then the power path can generate
+      (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
+                                          self.Block(ForcedVoltage(self.fb.actual_input_voltage)),
+                                          self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
