@@ -1,6 +1,7 @@
 import unittest
 
 from edg import *
+from electronics_lib.CalSolBlocks import CanFuse
 
 
 class LightsConnector(Connector, FootprintBlock):
@@ -157,6 +158,8 @@ class TestHighSwitch(BoardTop):
           'light_51=45',
         ]),
         (['mcu', 'swd_swo_pin'], 'PIO0_8'),
+        # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
+        (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
         (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
         # JLC does not have gate charge spec, so ignore the power calc TODO
@@ -186,7 +189,10 @@ class TestHighSwitch(BoardTop):
         (['light[4]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['light[5]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['light[5]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-      ]
+      ],
+      class_refinements=[
+        (PptcFuse, CanFuse)
+      ],
     )
 
 

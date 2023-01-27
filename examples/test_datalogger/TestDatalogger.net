@@ -511,7 +511,7 @@
   (footprint "Resistor_SMD:R_0603_1608Metric")
   (property (name "Sheetname") (value "can"))
   (property (name "Sheetfile") (value "electronics_lib.CalSolBlocks.CalSolCanBlock"))
-  (property (name "edg_path") (value "can.can_fuse"))
+  (property (name "edg_path") (value "can.can_fuse.fuse"))
   (property (name "edg_short_path") (value "can.can_fuse"))
   (property (name "edg_refdes") (value "F1"))
   (property (name "edg_part") (value "0ZCM0005FF2G"))

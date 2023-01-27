@@ -1,6 +1,7 @@
 import unittest
 
 from edg import *
+from electronics_lib.CalSolBlocks import CanFuse
 
 
 class TestDatalogger(BoardTop):
@@ -179,6 +180,8 @@ class TestDatalogger(BoardTop):
         (['mcu', 'swd_swo_pin'], 'PIO0_8'),
 
         (['pwr_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.6)),  # trade higher Imax for lower L
+        # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
+        (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
         (['pwr_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
         (['eink', 'boost_ind', 'ignore_frequency'], True),
@@ -187,7 +190,10 @@ class TestDatalogger(BoardTop):
 
         # keep netlist footprints as libraries change
         (['buffer', 'fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
-      ]
+      ],
+      class_refinements=[
+        (PptcFuse, CanFuse)
+      ],
     )
 
 
