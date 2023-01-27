@@ -55,7 +55,11 @@ class TestPortConstPropLink(Link):
     self.a = self.Port(TestPortConstPropPort())
     self.b = self.Port(TestPortConstPropPort())
 
-    self.assign(self.b.float_param, self.a.float_param)  # first connected is source
+    self.a_float_param = self.Parameter(FloatExpr())
+    self.b_float_param = self.Parameter(FloatExpr())
+
+    self.assign(self.a_float_param, self.a.float_param)
+    self.assign(self.b_float_param, self.b.float_param)
 
 
 class TestPortConstPropPort(Port[TestPortConstPropLink]):
@@ -83,7 +87,7 @@ class TestPortConstPropTopBlock(Block):
   def __init__(self) -> None:
     super().__init__()
     self.block1 = self.Block(TestPortConstPropInnerBlock())
-    self.block2 = self.Block(TestPortConstPropOuterBlock())
+    self.block2 = self.Block(TestPortConstPropOuterBlock())  # dummy, just to infer a connection
     self.link = self.connect(self.block1.port, self.block2.port)
     self.assign(self.block1.port.float_param, 3.5)
 
@@ -95,9 +99,7 @@ class ConstPropPortTestCase(unittest.TestCase):
   def test_port_param_prop(self) -> None:
     self.assertEqual(self.compiled.get_value(['block1', 'port', 'float_param']), 3.5)
     self.assertEqual(self.compiled.get_value(['link', 'a', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['link', 'b', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['block2', 'port', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['block2', 'inner', 'port', 'float_param']), 3.5)
+    self.assertEqual(self.compiled.get_value(['link', 'a_float_param']), 3.5)
 
   def test_connected_link(self) -> None:
     self.assertEqual(self.compiled.get_value(['block1', 'port', edgir.IS_CONNECTED]), True)
@@ -152,7 +154,7 @@ class TestPortConstPropBundleTopBlock(Block):
 
   def contents(self) -> None:
     self.block1 = self.Block(TestPortConstPropBundleInnerBlock())
-    self.block2 = self.Block(TestPortConstPropBundleInnerBlock())
+    self.block2 = self.Block(TestPortConstPropBundleInnerBlock())  # dummy, just to infer a connection
     self.link = self.connect(self.block1.port, self.block2.port)
 
     self.assign(self.block1.port.elt1.float_param, 3.5)
@@ -173,14 +175,8 @@ class ConstPropBundleTestCase(unittest.TestCase):
     self.assertEqual(self.compiled.get_value(['link', 'elt1_link', 'a', 'float_param']), 3.5)
     self.assertEqual(self.compiled.get_value(['link', 'elt2_link', 'a', 'float_param']), 6.0)
 
-    self.assertEqual(self.compiled.get_value(['link', 'elt1_link', 'b', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['link', 'elt2_link', 'b', 'float_param']), 6.0)
-
-    self.assertEqual(self.compiled.get_value(['link', 'b', 'elt1', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['link', 'b', 'elt2', 'float_param']), 6.0)
-
-    self.assertEqual(self.compiled.get_value(['block2', 'port', 'elt1', 'float_param']), 3.5)
-    self.assertEqual(self.compiled.get_value(['block2', 'port', 'elt2', 'float_param']), 6.0)
+    self.assertEqual(self.compiled.get_value(['link', 'elt1_link', 'a_float_param']), 3.5)
+    self.assertEqual(self.compiled.get_value(['link', 'elt2_link', 'a_float_param']), 6.0)
 
   def test_connected_link(self) -> None:
     self.assertEqual(self.compiled.get_value(['block1', 'port', edgir.IS_CONNECTED]), True)
