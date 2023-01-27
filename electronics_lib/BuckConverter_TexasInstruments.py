@@ -66,7 +66,11 @@ class Tps561201(DiscreteBuckConverter):
                                                        self.ripple_current_factor,
                                                        rated_current=1.2*Amp)
       ))
-      self.connect(self.power_path.pwr_out, self.pwr_out)
+      # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
+      # and then the power path can generate
+      (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
+                                          self.Block(ForcedVoltage(self.fb.actual_input_voltage)),
+                                          self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
 
@@ -149,5 +153,9 @@ class Tps54202h(DiscreteBuckConverter):
                                                        self.ripple_current_factor,
                                                        rated_current=2*Amp)
       ))
-      self.connect(self.power_path.pwr_out, self.pwr_out)
+      # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
+      # and then the power path can generate
+      (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
+                                          self.Block(ForcedVoltage(self.fb.actual_input_voltage)),
+                                          self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

@@ -52,8 +52,8 @@ class CalSolCanBlock(CalSolSubcircuit):
 
 
 class CanFuse(PptcFuse, FootprintBlock):
-  def __init__(self):
-    super().__init__()
+  def __init__(self, trip_current):
+    super().__init__(trip_current)
     self.assign(self.actual_trip_current, 150*mAmp(tol=0))
     self.assign(self.actual_hold_current, 50*mAmp(tol=0))
     self.assign(self.actual_voltage_rating, (0, 15)*Volt)

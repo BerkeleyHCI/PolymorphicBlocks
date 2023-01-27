@@ -86,7 +86,11 @@ class Xc9142(DiscreteBoostConverter):
                                                        self.ripple_current_factor,
                                                        rated_current=self.ic.vout.current_limits.lower())
       ))
-      self.connect(self.power_path.pwr_out, self.pwr_out)
+      # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
+      # and then the power path can generate
+      (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
+                                          self.Block(ForcedVoltage(self.ic.vout.voltage_out)),
+                                          self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
       # CE resistor: recommended through a <1M resistor; must not be left open
