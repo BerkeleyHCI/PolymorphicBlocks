@@ -63,7 +63,7 @@ class UsbUartTest(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['out', 'conn'], PinHeader254),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap2204k),
       ],
       instance_values=[
         (['refdes_prefix'], 'U'),  # unique refdes for panelization
