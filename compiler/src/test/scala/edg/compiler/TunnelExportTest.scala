@@ -178,8 +178,8 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         "blockPortVal" -> ValueExpr.Assign(Ref("block", "portVal"), ValueExpr.Literal(2.0)),
         "blockConnect" -> Constraint.Connected(Ref("block", "port"), Ref.Allocate(Ref("link", "ports"))),
 
-        "packedAssign" -> Constraint.Assign(Ref("packedBlock", "port0Val"), ValueExpr.Ref("container", "inner", "portVal")),
-        "packedAssign" -> Constraint.Assign(Ref("packedBlock", "port1Val"), ValueExpr.Ref("block", "portVal")),
+        "packed0Assign" -> Constraint.Assign(Ref("packedBlock", "port0Val"), ValueExpr.Ref("container", "inner", "portVal")),
+        "packed1Assign" -> Constraint.Assign(Ref("packedBlock", "port1Val"), ValueExpr.Ref("block", "portVal")),
         // Test tunnel export both directly within the top block, and nested one level deep
         "packed0Export" -> Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref.Allocate(Ref("packedBlock", "ports"), Some("0"))),
         "packed1Export" -> Constraint.ExportedTunnel(Ref("block", "port"), Ref.Allocate(Ref("packedBlock", "ports"), Some("1"))),
