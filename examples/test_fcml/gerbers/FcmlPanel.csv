@@ -92,12 +92,14 @@ Id,Designator,Package,Quantity,Designation,Supplier and Ref,JLCPCB Part #
 3,"UR1,UR2",Resistor_SMD:R_0603_1608Metric,2,±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS,,C23186
 4,UD1,Diode_SMD:D_SOD-123,1,5μA@3V 11Ω Single 5.49V~5.71V 500mW 5.6V SOD-123 Zener Diodes ROHS,,C268592
 5,UU1,Package_DFN_QFN:QFN-28-1EP_5x5mm_P0.5mm_EP3.35x3.35mm,1,,,C6568
-6,"UC1,UC3",Capacitor_SMD:C_0603_1608Metric,2,50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15849
+6,"UC1,UC3,UC4",Capacitor_SMD:C_0603_1608Metric,3,50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15849
 7,UC2,Capacitor_SMD:C_0603_1608Metric,1,50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C14663
 8,UU2,Package_TO_SOT_SMD:SOT-23,1,,,C126830
 9,UD2,LED_SMD:LED_0603_1608Metric,1,White 0603 Light Emitting Diodes (LED) RoHS,,C2290
 10,UR3,Resistor_SMD:R_0603_1608Metric,1,±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS,,C21190
-11,UJ2,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,1,,,
-12,UU3,edg:Symbol_Duckling,1,Duck,,
-13,UU4,edg:Symbol_LemurSmall,1,Lemur,,
-14,UU5,edg:Indicator_IdDots_4,1,IdDots4,,
+11,UU3,Package_TO_SOT_SMD:SOT-23-5,1,,,C112032
+12,UC5,Capacitor_SMD:C_1206_3216Metric,1,50V 2.2uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C50254
+13,UJ2,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,1,,,
+14,UU4,edg:Symbol_Duckling,1,Duck,,
+15,UU5,edg:Symbol_LemurSmall,1,Lemur,,
+16,UU6,edg:Indicator_IdDots_4,1,IdDots4,,

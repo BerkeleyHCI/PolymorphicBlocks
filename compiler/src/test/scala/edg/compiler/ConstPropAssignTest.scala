@@ -29,7 +29,6 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
   }
 
-
   it should "fire callbacks" in {
     var lastSolved: Option[IndirectDesignPath] = None
     val constProp = new ConstProp() {

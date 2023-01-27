@@ -6,7 +6,7 @@ import edgir
 from .Array import BaseVector, DerivedVector
 from .Blocks import BaseBlock, Connection, DescriptionString
 from .Core import Refable, non_library
-from .Exceptions import *
+from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
 
