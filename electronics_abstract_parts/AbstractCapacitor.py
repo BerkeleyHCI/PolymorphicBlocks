@@ -14,11 +14,17 @@ from .StandardPinningFootprint import StandardPinningFootprint
 class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   @init_in_parent
-  def __init__(self, capacitance: RangeLike, voltage: RangeLike) -> None:
+  def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
+               voltage_rating_derating: FloatLike = 1.0) -> None:
     super().__init__()
 
     self.capacitance = self.ArgParameter(capacitance)
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
+
+    # this is the scaling derating factor applied to the rated voltage spec
+    # eg, a value of 2 would mean the labeled rated voltage must be 2x the actual voltage
+    # this does not apply to capacitance derating, which is handled separately
+    self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
 
     self.actual_capacitance = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
@@ -114,7 +120,8 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
   @init_in_parent
   def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.capacitance, self.voltage, single_nominal_capacitance,
+    self.generator(self.select_part, self.capacitance, self.voltage,
+                   single_nominal_capacitance, self.voltage_rating_derating,
                    self.part, self.footprint_spec)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
@@ -123,13 +130,14 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
     # the description string in the main superclass
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
-                  part_spec: str, footprint_spec: str) -> None:
+                  voltage_rating_derating: float, part_spec: str, footprint_spec: str) -> None:
+    derated_voltage = voltage * voltage_rating_derating
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltererd_parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
+        derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
         Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
     ))
 
