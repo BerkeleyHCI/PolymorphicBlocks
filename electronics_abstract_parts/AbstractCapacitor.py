@@ -15,7 +15,7 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
-               voltage_rating_derating: FloatLike = 1.0) -> None:
+               voltage_rating_derating: FloatLike = 0.5) -> None:
     super().__init__()
 
     self.capacitance = self.ArgParameter(capacitance)
