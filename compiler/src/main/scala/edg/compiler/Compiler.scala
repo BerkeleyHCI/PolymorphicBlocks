@@ -207,10 +207,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val toLinkPort = resolvePort(connect.toLinkPortPath).asInstanceOf[wir.HasParams]
     val connectedParam = toLinkPort.getParams.keys.map(IndirectStep.Element(_))
     for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
-      constProp.addEquality(
+      constProp.addAssignEqual(
         connect.toLinkPortPath.asIndirect + connectedStep,
         connect.toBlockPortPath.asIndirect + connectedStep,
-//        connect.root, "connect"
+        connect.root, "connect"
       )
     }
 
