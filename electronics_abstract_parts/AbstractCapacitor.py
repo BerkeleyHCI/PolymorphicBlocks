@@ -22,7 +22,8 @@ class UnpolarizedCapacitor(PassiveComponent):
     self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
 
     # this is the scaling derating factor applied to the rated voltage spec
-    # eg, a value of 2 would mean the labeled rated voltage must be 2x the actual voltage
+    # eg, a value of 0.5 would mean the labeled rated voltage must be 2x the actual voltage
+    # 0.5 is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
     # this does not apply to capacitance derating, which is handled separately
     self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
 
@@ -131,7 +132,7 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
                   voltage_rating_derating: float, part_spec: str, footprint_spec: str) -> None:
-    derated_voltage = voltage * voltage_rating_derating
+    derated_voltage = voltage / voltage_rating_derating
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltererd_parts = self._get_table().filter(lambda row: (
