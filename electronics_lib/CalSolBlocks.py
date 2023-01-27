@@ -52,7 +52,7 @@ class CalSolCanBlock(CalSolSubcircuit):
 
 
 class CanFuse(PptcFuse, FootprintBlock):
-  def __init__(self, trip_current):
+  def __init__(self, trip_current: RangeLike = (100, 200)*mAmp):
     super().__init__(trip_current)
     self.assign(self.actual_trip_current, 150*mAmp(tol=0))
     self.assign(self.actual_hold_current, 50*mAmp(tol=0))

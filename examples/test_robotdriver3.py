@@ -109,7 +109,7 @@ class RobotDriver3(JlcBoardTop):
         (Neopixel, Ws2812b),
       ],
       class_values=[
-        # (Capacitor, ['voltage_rating_derating'], 0.5),
+        (Capacitor, ['voltage_rating_derating'], 0.5),
       ],
     )
 
