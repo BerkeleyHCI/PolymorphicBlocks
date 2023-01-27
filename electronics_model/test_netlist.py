@@ -33,13 +33,15 @@ class TestBaseFakeSink(Block):  # abstract base class to support multipacking
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(VoltageSink())
-    self.neg = self.Port(VoltageSink())
+    self.pos = self.Port(VoltageSink.empty())
+    self.neg = self.Port(VoltageSink.empty())
 
 
 class TestFakeSink(TestBaseFakeSink, FootprintBlock):
   def contents(self) -> None:
     super().contents()
+    self.pos.init_from(VoltageSink())
+    self.neg.init_from(VoltageSink())
     self.footprint(  # load resistor
       'R', 'Resistor_SMD:R_0603_1608Metric',
       {

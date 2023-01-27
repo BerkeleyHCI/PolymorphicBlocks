@@ -50,7 +50,6 @@ class Ap3012(DiscreteBoostConverter):
         impedance=(1, 10) * kOhm,
         assumed_input_voltage=self.output_voltage
       ))
-      self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
       self.connect(self.fb.input, self.pwr_out)
       self.connect(self.fb.output, self.ic.fb)
 
