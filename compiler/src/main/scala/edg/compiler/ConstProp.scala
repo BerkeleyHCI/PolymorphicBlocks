@@ -118,6 +118,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
 
     var readyList = Set[IndirectDesignPath]()
     do {
+      // ignore params where we haven't seen the decl yet, to allow forced-assign when the block is expanded
       readyList = (params.getReady -- frozenParams).filter { elt =>
         DesignPath.fromIndirectOption(elt) match {
           case Some(elt) => paramTypes.keySet.contains(elt)
