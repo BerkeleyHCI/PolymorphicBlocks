@@ -60,11 +60,7 @@ class Ap3012(DiscreteBoostConverter):
                                                        self.ripple_current_factor,
                                                        rated_current=0.5*Amp)
       ))
-      # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
-      # and then the power path can generate
-      (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
-                                          self.Block(ForcedVoltage(self.fb.actual_input_voltage)),
-                                          self.pwr_out)
+      self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
       self.rect = self.Block(Diode(
@@ -75,6 +71,6 @@ class Ap3012(DiscreteBoostConverter):
       ))
       self.connect(self.ic.sw, self.rect.anode.adapt_to(VoltageSink()))
       self.connect(self.pwr_out, self.rect.cathode.adapt_to(VoltageSource(
-        voltage_out=self.pwr_out.voltage_out,  # TODO cyclic dependency?
+        voltage_out=self.fb.actual_input_voltage,
         current_limits=(0, 0.5)*Amp  # TODO proper switch current modeling?
       )))
