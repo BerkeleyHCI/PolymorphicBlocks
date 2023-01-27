@@ -54,7 +54,6 @@ class Ltc3429(DiscreteBoostConverter):
         impedance=(40, 400) * kOhm,  # about 25 MOhm worst case input impedance, this is 100x below
         assumed_input_voltage=self.output_voltage
       ))
-      self.assign(self.pwr_out.voltage_out, self.fb.actual_input_voltage)
       self.connect(self.fb.input, self.pwr_out)
 
       self.ic = imp.Block(Ltc3429_Device(self.fb.actual_input_voltage))

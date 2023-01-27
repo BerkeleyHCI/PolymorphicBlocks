@@ -159,8 +159,6 @@ class FetPowerGate(KiCadSchematicBlock, Block):
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-
     self.btn_out = self.Port(DigitalSingleSource.empty())
     self.control = self.Port(DigitalSink.empty())  # digital level control - gnd-referenced NFET gate
 
