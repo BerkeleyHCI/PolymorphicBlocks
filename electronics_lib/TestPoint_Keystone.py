@@ -34,3 +34,20 @@ class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
       mfr='Keystone', part='5015',
       datasheet='https://www.keyelco.com/userAssets/file/M65p55.pdf'
     )
+
+
+class Keystone5000(TestPoint, FootprintBlock, JlcPart):
+  """Keystone 5000-5004 series PTH test mini points"""
+  def contents(self) -> None:
+    super().contents()
+    self.assign(self.lcsc_part, 'C238122')
+    self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'TP', 'TestPoint:TestPoint_Keystone_5000-5004_Miniature',
+      {
+        '1': self.io,
+      },
+      value=self.tp_name,
+      mfr='Keystone', part='5001',
+      datasheet='https://www.keyelco.com/userAssets/file/M65p56.pdf'
+    )

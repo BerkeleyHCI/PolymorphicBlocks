@@ -16,20 +16,24 @@ class RobotDriver3(JlcBoardTop):
 
     self.gnd = self.connect(self.batt.gnd)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
+    self.tp_gnd2 = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
 
     # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_in, self.tp_in, self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+      (self.fuse, self.prot_in, self.tp_in, self.tp_in2,
+       self.reg_3v3, self.prot_3v3, self.tp_3v3, self.tp_3v32), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()),
+        self.Block(VoltageTestPoint()),
 
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt)),
-        self.Block(VoltageTestPoint())
+        self.Block(VoltageTestPoint()),
+      self.Block(VoltageTestPoint()),
       )
       self.vbatt = self.connect(self.fuse.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
@@ -88,6 +92,10 @@ class RobotDriver3(JlcBoardTop):
         (['tof', 'elt[1]', 'conn'], PinSocket254),
         (['tof', 'elt[2]', 'conn'], PinSocket254),
         (['tof', 'elt[3]', 'conn'], PinSocket254),
+
+        (['tp_in2', 'tp'], Keystone5000),
+        (['tp_3v32', 'tp'], Keystone5000),
+        (['tp_gnd2', 'tp'], Keystone5000),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -103,8 +111,8 @@ class RobotDriver3(JlcBoardTop):
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+        (TestPoint, CompactKeystone5015),
         (Vl53l0x, Vl53l0xConnector),
-        (TestPoint, TeRc),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
       ],
