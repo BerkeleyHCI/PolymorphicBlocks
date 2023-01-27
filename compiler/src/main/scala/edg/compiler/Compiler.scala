@@ -466,10 +466,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
-    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-      path, "name")
-    processParamDeclarations(path, newBlock)
-
     newBlock.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newBlock, port)
     }
@@ -588,6 +584,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       case block: wir.Generator => runGenerator(path, block)
       case _ =>  // ignored
     }
+
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+      path, "name")
+    processParamDeclarations(path, block)
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
