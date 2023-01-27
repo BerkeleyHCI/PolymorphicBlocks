@@ -27,7 +27,7 @@ object ElaborateRecord {
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
   // connectedLink and linkParams.
-  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath)
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, root: DesignPath)
       extends ElaborateTask
 
   // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
@@ -135,6 +135,12 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
   if (init) {  // seed only on the initial object creation (and not forks, which would duplicate work)
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
+
+    // this is done inside expandBlock which isn't called for the root
+    constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""),
+      DesignPath(), "name")
+    processParamDeclarations(DesignPath(), root)
+
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
       constProp.setForcedValue(path, value, "path refinement")
     }
@@ -203,7 +209,8 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
       constProp.addEquality(
         connect.toLinkPortPath.asIndirect + connectedStep,
-        connect.toBlockPortPath.asIndirect + connectedStep
+        connect.toBlockPortPath.asIndirect + connectedStep,
+//        connect.root, "connect"
       )
     }
 
@@ -212,7 +219,8 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getPorts.keys) {
           elaboratePending.addNode(
-            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName),
+            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
+              connect.root),
             Seq()
           )
           constProp.setConnection(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName)
@@ -354,7 +362,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
           require(!isInLink)
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort),
+            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort, blockPath),
             Seq(ElaborateRecord.Port(blockPath ++ linkPort))
           )
           constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
@@ -365,13 +373,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
           if (!isInLink) {
             elaboratePending.addNode(
-              ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+              ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
               Seq(ElaborateRecord.Port(blockPath ++ extPort))
             )
             constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
           } else {  // for links, the internal port is towards the inner link, so the args are flipped
             elaboratePending.addNode(
-              ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort),
+              ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort, blockPath),
               Seq(ElaborateRecord.Port(blockPath ++ intPort))
             )
             constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
@@ -383,7 +391,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
           require(!isInLink)
           elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort),
+            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
             Seq(ElaborateRecord.Port(blockPath ++ extPort))
           )
           constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
@@ -465,6 +473,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val (parentPath, blockName) = path.split
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
+
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
+      path, "name")
+    processParamDeclarations(path, newBlock)
 
     newBlock.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newBlock, port)
@@ -584,10 +596,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       case block: wir.Generator => runGenerator(path, block)
       case _ =>  // ignored
     }
-
-    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-      path, "name")
-    processParamDeclarations(path, block)
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
