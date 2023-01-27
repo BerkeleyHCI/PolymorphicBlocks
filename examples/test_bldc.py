@@ -275,6 +275,10 @@ class BldcDriverBoard(JlcBoardTop):
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
       ],
+      class_values=[
+        # for compatibility, this board was manufactured before derating was supported and does not compile otherwise
+        (Capacitor, ["voltage_rating_derating"], 1.0),
+      ],
     )
 
 
