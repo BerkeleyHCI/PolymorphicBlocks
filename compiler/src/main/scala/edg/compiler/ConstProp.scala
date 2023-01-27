@@ -148,8 +148,15 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
       connectedLink.setValue(ready, DesignPath())
     }
 
-    while ((params.getReady -- frozenParams).nonEmpty) {
-      (params.getReady -- frozenParams).foreach { constrTarget =>
+    var readyList = Set[IndirectDesignPath]()
+    do {
+      readyList = (params.getReady -- frozenParams).filter { elt =>
+        DesignPath.fromIndirectOption(elt) match {
+          case Some(elt) => paramTypes.keySet.contains(elt)
+          case None => true
+        }
+      }
+      readyList.foreach { constrTarget =>
         val assign = paramAssign(constrTarget)
         new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
           case ExprResult.Result(result) =>
@@ -168,7 +175,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
             params.addNode(constrTarget, missingCorrected.toSeq, update = true)
         }
       }
-    }
+    } while (readyList.nonEmpty)
   }
 
   protected def propagateEquality(dst: IndirectDesignPath, src: IndirectDesignPath, value: ExprValue): Unit = {
@@ -213,6 +220,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
     paramTypes.put(target, paramType)
+    update()
   }
 
   def setConnectedLink(linkPath: DesignPath, portPath: DesignPath): Unit = {

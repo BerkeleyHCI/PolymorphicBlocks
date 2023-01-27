@@ -58,6 +58,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
+    constProp.addDeclaration(DesignPath() + "ref", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "ref1", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "ref2", ValInit.Integer)
+
     constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(0))
     constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
     constProp.addAssignValue(IndirectDesignPath() + "ref2", IntValue(2))
@@ -75,6 +79,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
 
+    constProp.addDeclaration(DesignPath() + "ref1", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
 
     evalTest.map(
@@ -94,6 +99,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
 
+    constProp.addDeclaration(DesignPath() + "cond", ValInit.Boolean)
     constProp.addAssignValue(IndirectDesignPath() + "cond", BooleanValue(true))
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref1")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref2")))
@@ -102,6 +108,8 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   it should "resolve if-then-else with only the branch taken available" in {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
+
+    constProp.addDeclaration(DesignPath() + "ref", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(42))
 
     evalTest.map(
@@ -120,6 +128,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     evalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "container" + IndirectStep.Elements)))
+
+    constProp.addDeclaration(DesignPath() + "container" + "0" + "inner", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
 
     constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
       ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
@@ -143,6 +155,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   it should "resolve arrays and reduction ops" in {
     val constProp = new ConstProp()
     val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
+
+    constProp.addDeclaration(DesignPath() + "container" + "0" + "inner", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
 
     constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
       ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
