@@ -125,6 +125,7 @@ class RobotDriver3(JlcBoardTop):
       ],
       class_values=[
         (Capacitor, ['voltage_rating_derating'], 0.5),
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ],
     )
 

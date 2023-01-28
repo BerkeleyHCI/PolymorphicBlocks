@@ -42,6 +42,7 @@ PART_ROTATIONS = {
   'C6568': -90,  # CP2102 USB UART
   'C155612': 180,  # SOT-223 1.2v reg
   'C190271': 180,  # SOT-23-6 93LC56 EEPROM
+  'C976032': -90,  # QMC3883L
 }
 
 if __name__ == '__main__':
