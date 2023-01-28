@@ -60,10 +60,11 @@ class RobotDriver3(JlcBoardTop):
       # IO EXPANDER
       self.expander = imp.Block(Pcf8574(0))
       self.connect(self.i2c, self.expander.i2c)
-      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
 
       self.leds = imp.Block(IndicatorSinkLedArray(4))
       self.connect(self.expander.io.request_vector('led'), self.leds.signals)
+
+      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
 
     # VBATT DOMAIN
     with self.implicit_connect(
