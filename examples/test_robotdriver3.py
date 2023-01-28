@@ -79,6 +79,11 @@ class RobotDriver3(JlcBoardTop):
       self.ws2812bArray = imp.Block(NeopixelArray(6))
       self.connect(self.mcu.io2, self.ws2812bArray.din)
 
+    # Mounting holes
+    self.m = ElementDict[MountingHole]()
+    for i in range(2):
+      self.m[i] = self.Block(MountingHole())
+
     # Misc board
     self.lemur = self.Block(LemurLogo())
     self.duck = self.Block(DuckLogo())
@@ -116,6 +121,7 @@ class RobotDriver3(JlcBoardTop):
         (Vl53l0x, Vl53l0xConnector),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
+        (MountingHole, MountingHole_M3),
       ],
       class_values=[
         (Capacitor, ['voltage_rating_derating'], 0.5),
