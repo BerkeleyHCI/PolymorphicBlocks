@@ -169,12 +169,12 @@ Ref,Val,Package,PosX,PosY,Rot,Side
 "R37","","R_0603_1608Metric",34.000000,-138.000000,180.000000,top
 "R38","","R_0603_1608Metric",42.000000,-142.000000,180.000000,top
 "R39","","R_0603_1608Metric",38.000000,-142.000000,180.000000,top
+"REF**","MouseBites","HalfMouseBites_Recessed",105.000000,-159.000000,90.000000,top
+"REF**","MouseBites","HalfMouseBites",115.000000,-152.000000,180.000000,top
 "REF**","MouseBites","HalfMouseBites_Recessed",105.000000,-122.000000,-90.000000,top
-"REF**","MouseBites","HalfMouseBites_Recessed",115.000000,-152.000000,0.000000,top
 "REF**","MouseBites","HalfMouseBites",105.000000,-159.000000,-90.000000,top
 "REF**","MouseBites","HalfMouseBites_Recessed",105.000000,-122.000000,90.000000,top
-"REF**","MouseBites","HalfMouseBites",115.000000,-152.000000,180.000000,top
-"REF**","MouseBites","HalfMouseBites_Recessed",105.000000,-159.000000,90.000000,top
+"REF**","MouseBites","HalfMouseBites_Recessed",115.000000,-152.000000,0.000000,top
 "SW1","5.1mm switch","SW_SPST_SKQG_WithoutStem",90.000000,-137.000000,0.000000,top
 "SW2","5.1mm switch","SW_SPST_SKQG_WithoutStem",40.000000,-137.000000,0.000000,top
 "TP1","5015 (Keystone) - vusb","TestPoint_TE_RCT_0805",30.000000,-140.000000,0.000000,top
