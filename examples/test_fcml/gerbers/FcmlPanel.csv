@@ -6,7 +6,7 @@ Id,Designator,Package,Quantity,Designation,Supplier and Ref,JLCPCB Part #
 5,TP1,edg:TestPoint_TE_RCT_0805,1,vusb,,C5199798
 6,"TP2,TP6",edg:TestPoint_TE_RCT_0805,2,gnd,,C5199798
 7,U1,Package_TO_SOT_SMD:SOT-223-3_TabPin2,1,,,C86781
-8,"C1,C14,C15,C16,C19,C20,C21,C22,C25,C26,C29,C30,C31,C32,C35,C36,C37,C39,C40,C41,C42,C43,C44,C46,C47,C48,C49,C50,C51,C52,C53,C54,C56,C57,C58",Capacitor_SMD:C_0603_1608Metric,35,50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C14663
+8,"C1,C14,C15,C16,C19,C20,C21,C22,C25,C26,C29,C30,C31,C32,C35,C36,C39,C40,C41,C42,C43,C44,C46,C47,C48,C49,C50,C51,C52,C53,C54,C56,C57,C58",Capacitor_SMD:C_0603_1608Metric,34,50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C14663
 9,"C2,C3",Capacitor_SMD:C_0805_2012Metric,2,25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C1779
 10,TP3,edg:TestPoint_TE_RCT_0805,1,v3v3,,C5199798
 11,D1,Diode_SMD:D_SOD-123,1,5μA@1V 90Ω Single 3.6V~3.8V 350mW 3.4V SOD-123 Zener Diodes ROHS,,C499796
@@ -14,7 +14,7 @@ Id,Designator,Package,Quantity,Designation,Supplier and Ref,JLCPCB Part #
 13,R5,Resistor_SMD:R_0603_1608Metric,1,±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 68kΩ 0603 Chip Resistor - Surface Mount ROHS,,C23231
 14,R6,Resistor_SMD:R_0603_1608Metric,1,±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 11kΩ 0603 Chip Resistor - Surface Mount ROHS,,C25950
 15,L1,Inductor_SMD:L_1210_3225Metric,1,500mA 33uH ±10% 410mΩ 1210 Inductors (SMD) ROHS,,C223226
-16,"C4,C38,C45",Capacitor_SMD:C_0805_2012Metric,3,X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15850
+16,"C4,C45",Capacitor_SMD:C_0805_2012Metric,2,X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15850
 17,D2,Diode_SMD:D_SOD-123,1,20V 390mV@500mA 500mA SOD-123 Schottky Barrier Diodes (SBD) ROHS,,C475609
 18,TP4,edg:TestPoint_TE_RCT_0805,1,vgate,,C5199798
 19,L2,Inductor_SMD:L_Taiyo-Yuden_NR-80xx,1,"4.1A 4.7uH ±30% 23.4mΩ SMD,8x8x4.2mm Power Inductors ROHS",,C92947
@@ -25,14 +25,14 @@ Id,Designator,Package,Quantity,Designation,Supplier and Ref,JLCPCB Part #
 24,"Q1,Q2,Q3,Q4,Q5,Q6",Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,6,"30V 12A 2.5W 9.5mΩ@10V,12A 2.5V@250μA N Channel SOP-8 MOSFETs ROHS",,C508461
 25,"D3,D4,D5,D6,D7",Diode_SMD:D_SOD-123,5,40V 600mV@1A 1A SOD-123 Schottky Barrier Diodes (SBD) ROHS,,C8598
 26,"U4,U7",Package_TO_SOT_SMD:SOT-23-5,2,,,C112032
-27,"C17,C27,C55,C59",Capacitor_SMD:C_0603_1608Metric,4,50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15849
+27,"C17,C27,C37,C38,C55,C59",Capacitor_SMD:C_0603_1608Metric,6,50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C15849
 28,"C18,C28",Capacitor_SMD:C_1206_3216Metric,2,50V 2.2uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS,,C50254
 29,"U5,U8",Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,2,,,C476470
 30,TP5,edg:TestPoint_TE_RCT_0805,1,_conv_pwr_out_link,,C5199798
 31,U10,Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.3x5.3mm,1,,,C2678152
-32,U11,Package_TO_SOT_SMD:SOT-223-3_TabPin2,1,,,C155612
+32,U11,Package_TO_SOT_SMD:SOT-23-5,1,,,C73478
 33,"R13,R14",Resistor_SMD:R_0603_1608Metric,2,±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 10kΩ 0603 Chip Resistor - Surface Mount ROHS,,C25804
-34,"U12,U15",Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,2,,,C97521
+34,"U12,U15",Package_SO:SOIC-8_5.23x5.23mm_P1.27mm,2,,,C97521
 35,"J5,J6",Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD,2,,,C2962219
 36,JP1,Jumper:SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm,1,,,
 37,R15,Resistor_SMD:R_0603_1608Metric,1,±1% 1/10W Thick Film Resistors 75V ±200ppm/℃ -55℃~+155℃ 100Ω 0603 Chip Resistor - Surface Mount ROHS,,C22775

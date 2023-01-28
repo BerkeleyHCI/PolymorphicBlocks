@@ -363,7 +363,7 @@ class FcmlTest(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Rp2040),
         (['reg_3v3'], Ldl1117),
-        (['fpga', 'vcc_reg'], Ld1117),
+        (['fpga', 'vcc_reg'], Lp5907),
         (['reg_vgate'], Ap3012),
       ],
       instance_values=[
