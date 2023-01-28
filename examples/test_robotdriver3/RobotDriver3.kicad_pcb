@@ -2942,7 +2942,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp a9d07d39-e907-4db1-a91d-7fb0e233ea7c)
-    (at 168 26 180)
+    (at 178 30)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.IoExpander_Pcf8574.Pcf8574")
@@ -2975,9 +2975,9 @@
     (fp_line (start 0.8 -0.4) (end 0.8 0.4) (layer "F.Fab") (width 0.1) (tstamp 3a53c315-6242-49c2-86f6-62470c30d723))
     (fp_line (start 0.8 0.4) (end -0.8 0.4) (layer "F.Fab") (width 0.1) (tstamp 4cf94691-3e32-49b3-acc6-11ed0728cc44))
     (fp_line (start -0.8 0.4) (end -0.8 -0.4) (layer "F.Fab") (width 0.1) (tstamp 81d5d82b-a23d-4d48-b637-22445d2c6642))
-    (pad "1" smd roundrect (at -0.775 0 180) (size 0.9 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "1" smd roundrect (at -0.775 0) (size 0.9 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 5 "v3v3") (tstamp f5fa47ab-ead0-4b0e-a254-a7f526645e1c))
-    (pad "2" smd roundrect (at 0.775 0 180) (size 0.9 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
+    (pad "2" smd roundrect (at 0.775 0) (size 0.9 0.95) (layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.25)
       (net 1 "gnd") (tstamp bb52f799-524a-43e5-9818-29ec396e4626))
     (model "${KICAD6_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
       (offset (xyz 0 0 0))
