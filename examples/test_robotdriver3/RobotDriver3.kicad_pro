@@ -398,7 +398,7 @@
       "idf": "",
       "netlist": "../RobotDriver3.net",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../../Downloads/RobotDriver3.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
