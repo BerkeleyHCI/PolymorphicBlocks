@@ -315,7 +315,7 @@ class Ap2210(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -329,24 +329,24 @@ class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
 
   def select_part(self, output_voltage: Range):
     parts = [  # output voltage, Table in 6.5 tolerance varies by output voltage
-      (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB '),
-      (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB'),
-      (Range.from_tolerance(1.8, 0.02), 'LP5907MFX-1.8/NOPB'),
-      (Range.from_tolerance(2.5, 0.02), 'LP5907MFX-2.5/NOPB'),
-      # (Range.from_tolerance(2.8, 0.02), 'LP5907MFX-2.8/NOPB '),
-      # (Range.from_tolerance(2.85, 0.02), 'LP5907MFX-2.85/NOPB '),
-      # (Range.from_tolerance(2.9, 0.02), 'LP5907MFX-2.9/NOPB'),
-      (Range.from_tolerance(3.0, 0.02), 'LP5907MFX-3.0/NOPB'),
-      # (Range.from_tolerance(3.1, 0.02), 'LP5907MFX-3.1/NOPB'),
-      # (Range.from_tolerance(3.2, 0.02), 'LP5907MFX-3.2/NOPB'),
-      (Range.from_tolerance(3.3, 0.02), 'LP5907MFX-3.3/NOPB'),
-      (Range.from_tolerance(4.5, 0.02), 'LP5907MFX-4.5/NOPB'),
+      (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB', 'C73478'),
+      (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB', 'C133570'),
+      (Range.from_tolerance(1.8, 0.02), 'LP5907MFX-1.8/NOPB', 'C92498'),
+      (Range.from_tolerance(2.5, 0.02), 'LP5907MFX-2.5/NOPB', 'C165132'),
+      # (Range.from_tolerance(2.8, 0.02), 'LP5907MFX-2.8/NOPB', 'C186700'),
+      # (Range.from_tolerance(2.85, 0.02), 'LP5907MFX-2.85/NOPB', 'C2877840'),  # zero stock JLC
+      # (Range.from_tolerance(2.9, 0.02), 'LP5907MFX-2.9/NOPB', None),
+      (Range.from_tolerance(3.0, 0.02), 'LP5907MFX-3.0/NOPB', 'C475492'),
+      # (Range.from_tolerance(3.1, 0.02), 'LP5907MFX-3.1/NOPB', None),
+      # (Range.from_tolerance(3.2, 0.02), 'LP5907MFX-3.2/NOPB', None),
+      (Range.from_tolerance(3.3, 0.02), 'LP5907MFX-3.3/NOPB', 'C80670'),
+      (Range.from_tolerance(4.5, 0.02), 'LP5907MFX-4.5/NOPB', 'C529554'),
     ]
     # TODO should prefer parts by closeness to nominal (center) specified voltage
-    suitable_parts = [(part_out, part_number) for part_out, part_number in parts
-                      if part_out in output_voltage]
+    suitable_parts = [part for part in parts
+                      if part[0] in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
-    part_output_voltage, part_number = suitable_parts[0]
+    part_output_voltage, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage)
     self.footprint(
@@ -361,6 +361,8 @@ class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
       mfr='Texas Instruments', part=part_number,
       datasheet='https://www.ti.com/lit/ds/symlink/lp5907.pdf',
     )
+    self.assign(self.lcsc_part, jlc_number)
+    self.assign(self.actual_basic_part, False)
 
 
 class Lp5907(LinearRegulator):

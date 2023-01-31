@@ -363,7 +363,7 @@ class FcmlTest(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Rp2040),
         (['reg_3v3'], Ldl1117),
-        (['fpga', 'vcc_reg'], Ld1117),
+        (['fpga', 'vcc_reg'], Lp5907),
         (['reg_vgate'], Ap3012),
       ],
       instance_values=[
@@ -423,7 +423,7 @@ class FcmlTest(JlcBoardTop):
         (HalfBridgeDriver, Ir2301),
         (DigitalIsolator, Cbmud1200l),
         (LinearRegulator, Ap2204k),  # for all the switching cells
-
+        (UsbEsdDiode, Pgb102st23),  # for common parts with the rest of the panel
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),

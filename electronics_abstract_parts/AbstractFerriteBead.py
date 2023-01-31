@@ -1,9 +1,9 @@
 from typing import Optional, cast
 
 from electronics_model import *
-from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
+from .Categories import *
 from .StandardPinningFootprint import StandardPinningFootprint
 
 

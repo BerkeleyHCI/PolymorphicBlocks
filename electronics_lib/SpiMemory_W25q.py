@@ -45,7 +45,7 @@ class W25q_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
 
     self.assign(self.actual_size, part_size)
     self.footprint(
-      'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+      'U', 'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm',
       {
         '1': self.cs,
         '2': self.spi.miso,
