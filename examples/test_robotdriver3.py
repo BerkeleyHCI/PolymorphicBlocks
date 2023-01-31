@@ -105,7 +105,6 @@ class RobotDriver3(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-
         ]),
         (['expander', 'pin_assigns'], [
         ]),
@@ -124,7 +123,6 @@ class RobotDriver3(JlcBoardTop):
         (MountingHole, MountingHole_M3),
       ],
       class_values=[
-        (Capacitor, ['voltage_rating_derating'], 0.5),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ],
     )
