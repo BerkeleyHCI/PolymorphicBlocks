@@ -139,7 +139,8 @@ class BuckConverterPowerPath(GeneratorBlock):
                efficiency: RangeLike = Default((0.9, 1.0)),  # from TI reference
                input_voltage_ripple: FloatLike = Default(75*mVolt),
                output_voltage_ripple: FloatLike = Default(25*mVolt),
-               dutycycle_limit: RangeLike = Default((0.1, 0.9))):  # arbitrary
+               dutycycle_limit: RangeLike = Default((0.1, 0.9)),
+               inductor_scale: IntLike = Default(1)):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
@@ -158,7 +159,8 @@ class BuckConverterPowerPath(GeneratorBlock):
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
-                   input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
+                   input_voltage_ripple, output_voltage_ripple, dutycycle_limit,
+                   inductor_scale)
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
@@ -184,7 +186,7 @@ class BuckConverterPowerPath(GeneratorBlock):
                         output_current: Range, inductor_current_ripple: Range,
                         efficiency: Range,
                         input_voltage_ripple: float, output_voltage_ripple: float,
-                        dutycycle_limit: Range) -> None:
+                        dutycycle_limit: Range, inductor_scale: int) -> None:
     dutycycle = output_voltage / input_voltage / efficiency
     self.assign(self.actual_dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
@@ -201,7 +203,7 @@ class BuckConverterPowerPath(GeneratorBlock):
                       (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
     self.assign(self.peak_current, output_current.upper + inductor_current_ripple.upper / 2)
     self.inductor = self.Block(Inductor(
-      inductance=(inductance_min, inductance_max)*Henry,
+      inductance=(inductance_min/inductor_scale, inductance_max/inductor_scale)*Henry,
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))

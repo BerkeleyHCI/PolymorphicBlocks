@@ -66,23 +66,6 @@ class PowerOutConnector(Block):
     )), [Power])
 
 
-class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
-  """Keystone 5015 / 5017 but with an experimental compact footprint"""
-  def contents(self) -> None:
-    super().contents()
-    self.assign(self.lcsc_part, 'C238130')
-    self.assign(self.actual_basic_part, False)
-    self.footprint(
-      'TP', 'edg:TestPoint_TE_RCT_0805',
-      {
-        '1': self.io,
-      },
-      value=self.tp_name,
-      mfr='Keystone', part='5015',
-      datasheet='https://www.keyelco.com/userAssets/file/M65p55.pdf'
-    )
-
-
 class BldcDriverBoard(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
@@ -211,6 +194,7 @@ class BldcDriverBoard(JlcBoardTop):
       self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
       self.connect(self.conv.pwr_out, self.conv_out.pwr)
 
+      # TODO update to use VoltageSenseDivider
       div_model = VoltageDivider(output_voltage=(1.0, 3.3)*Volt, impedance=(100, 1000) * Ohm)
       (self.conv_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model), self.mcu.adc.request('conv_sense'))
 
@@ -249,7 +233,7 @@ class BldcDriverBoard(JlcBoardTop):
           'sw1=38',
           'rgb=40',
 
-          'i2c=I2C1',
+          'i2c=I2C1',  # TODO this should be inferred, see issue 169
           'i2c.scl=42',
           'i2c.sda=43',
           'pd_int=45',
@@ -269,6 +253,9 @@ class BldcDriverBoard(JlcBoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
         (['conv', 'power_path', 'inductor', 'lcsc_part'], 'C497840'),  # selected part out of stock
+
+        # keep netlist footprints as libraries change
+        (['conv', 'in_high_switch', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
       ],
       class_refinements=[
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),

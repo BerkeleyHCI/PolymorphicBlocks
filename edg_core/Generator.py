@@ -49,6 +49,8 @@ class GeneratorBlock(Block):
   ConstrCastable9 = TypeVar('ConstrCastable9', bound=Any)
   ConstrType10 = TypeVar('ConstrType10', bound=Any)
   ConstrCastable10 = TypeVar('ConstrCastable10', bound=Any)
+  ConstrType11 = TypeVar('ConstrType11', bound=Any)
+  ConstrCastable11 = TypeVar('ConstrCastable11', bound=Any)
 
   # These are super ugly, both in that it's manually enumerating all the possible argument numbers
   # (but there's precedent in how Scala's libraries are written!) and that the generator can't actually take
@@ -145,6 +147,23 @@ class GeneratorBlock(Block):
                 req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]],
                 req9: Union[ConstrCastable9, ConstraintExpr[ConstrType9, ConstrCastable9]],
                 req10: Union[ConstrCastable10, ConstraintExpr[ConstrType10, ConstrCastable10]]) -> None: ...
+
+  @overload
+  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
+                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
+                                    ConstrType9, ConstrType10, ConstrType11], None],
+                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
+                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
+                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
+                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
+                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
+                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
+                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]],
+                req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]],
+                req9: Union[ConstrCastable9, ConstraintExpr[ConstrType9, ConstrCastable9]],
+                req10: Union[ConstrCastable9, ConstraintExpr[ConstrType10, ConstrCastable10]],
+                req11: Union[ConstrCastable11, ConstraintExpr[ConstrType11, ConstrCastable11]]) -> None: ...
+
 
   # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
   def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr) -> None:  # type: ignore

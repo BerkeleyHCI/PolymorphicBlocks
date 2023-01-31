@@ -94,6 +94,16 @@ class FetStandardPinning(Fet, StandardPinningFootprint[Fet]):
       '2': block.drain,
       '3': block.source,
     },
+    'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+      '6': block.drain,
+      '7': block.drain,
+      '8': block.drain,
+    },
     'Package_SO:PowerPAK_SO-8_Single': lambda block: {
       '1': block.source,
       '2': block.source,

@@ -95,7 +95,7 @@ class TestHighSwitch(BoardTop):
       self.can_pwr_load = self.Block(VoltageLoad())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
-      (self.vsense, ), _ = self.chain(
+      (self.vsense, ), _ = self.chain(  # TODO update to use VoltageSenseDivider
         self.vin,
         imp.Block(VoltageDivider(output_voltage=3 * Volt(tol=0.15), impedance=(100, 1000) * Ohm)),
         self.mcu.adc.request('vsense'))
@@ -172,6 +172,20 @@ class TestHighSwitch(BoardTop):
         (['light[4]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
         (['light[5]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
         (['light[5]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
+
+        # keep netlist footprints as libraries change
+        (['light[0]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[0]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[1]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[1]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[2]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[2]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[3]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[3]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[4]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[4]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[5]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[5]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
       ]
     )
 

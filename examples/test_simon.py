@@ -112,6 +112,12 @@ class TestSimon(BoardTop):
         ]),
         # JLC does not have frequency specs, must be checked TODO
         (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+
+        # keep netlist footprints as libraries change
+        (['btn_drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['btn_drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['btn_drv[2]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['btn_drv[3]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
       ],
       instance_refinements=[
         (['spk', 'conn'], JstPhKVertical),

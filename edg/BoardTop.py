@@ -3,6 +3,12 @@ from electronics_lib import *
 
 class BaseBoardTop(DesignTop):
   """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.refdes_prefix = self.Parameter(StringExpr())
+    self.assign(self.refdes_prefix, "")  # override with refinements
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
@@ -18,7 +24,9 @@ class BaseBoardTop(DesignTop):
         (Led, SmtLed),
         (RgbLedCommonAnode, SmtRgbLed),
         (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
+        (Oscillator, JlcOscillator),  # TODO: replace with non-distributor parts list
 
+        (Jumper, SolderJumperTriangular),
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
         (Fpc050, HiroseFh12sh),
@@ -69,8 +77,10 @@ class JlcBoardTop(BaseBoardTop):
         (Resistor, JlcResistor),
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
+        (FerriteBead, JlcFerriteBead),
         (ResistorArray, JlcResistorArray),
         (Crystal, JlcCrystal),
+        (Oscillator, JlcOscillator),
 
         (Switch, JlcSwitch),
         (Led, JlcLed),
@@ -78,8 +88,9 @@ class JlcBoardTop(BaseBoardTop):
         (Diode, JlcDiode),
         (Fet, JlcFet),
 
-        (UsbEsdDiode, Esda5v3l),
+        (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
+        (SpiMemory, W25q),  # 128M version is a basic part
         (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts

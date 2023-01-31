@@ -225,9 +225,6 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-
   def contents(self) -> None:
     super().contents()
 

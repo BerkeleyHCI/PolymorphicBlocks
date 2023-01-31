@@ -18,7 +18,7 @@ class Led(DiscreteSemiconductor):
   Any: LedColor = ""
 
   @init_in_parent
-  def __init__(self, color: LedColorLike = Any):
+  def __init__(self, color: LedColorLike = Default(Any)):
     super().__init__()
 
     self.color = self.ArgParameter(color)
@@ -42,7 +42,7 @@ class RgbLedCommonAnode(DiscreteSemiconductor):
 class IndicatorLed(Light):
   """High-side-driven (default, "common cathode") indicator LED"""
   @init_in_parent
-  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers.
@@ -58,7 +58,7 @@ class IndicatorLed(Light):
 
     self.require(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
-    self.package = self.Block(Led())
+    self.package = self.Block(Led(color))
     self.res = self.Block(Resistor(
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
                   self.signal.link().output_thresholds.upper() / self.target_current_draw.lower())))
@@ -71,16 +71,38 @@ class IndicatorLed(Light):
     self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
 
+class IndicatorLedArray(Light, GeneratorBlock):
+  """An array of IndicatorLed, just a convenience wrapper."""
+  @init_in_parent
+  def __init__(self, count: IntLike, color: LedColorLike = Default(Led.Any), *,
+               current_draw: RangeLike = (1, 10) * mAmp):
+    super().__init__()
+    self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
+    self.gnd = self.Port(VoltageSink.empty(), [Common])
+
+    self.color = self.ArgParameter(color)
+    self.current_draw = self.ArgParameter(current_draw)
+    self.generator(self.generate, count)
+
+  def generate(self, count: int):
+    self.led = ElementDict[IndicatorLed]()
+    for led_i in range(count):
+      led = self.led[str(led_i)] = self.Block(IndicatorLed(self.color, current_draw=self.current_draw))
+      self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
+      self.connect(led.gnd, self.gnd)
+
+
 @abstract_block
 class IndicatorSinkLed(Light, Block):
   """Abstract part for an low-side-driven ("common anode") indicator LED"""
   @init_in_parent
-  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers."""
     super().__init__()
 
+    self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
 
     self.signal = self.Port(DigitalSink.empty(), [InOut])
@@ -95,7 +117,7 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
 
     self.require(self.signal.current_draw.within((-self.current_draw.upper(), 0)))
 
-    self.package = self.Block(Led())
+    self.package = self.Block(Led(self.color))
     self.res = self.Block(Resistor(
       resistance=(self.signal.link().voltage.upper() / self.current_draw.upper(),
                   self.signal.link().output_thresholds.upper() / self.current_draw.lower())))
@@ -113,18 +135,20 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
 class IndicatorSinkLedArray(Light, GeneratorBlock):
   """An array of IndicatorSinkLed, just a convenience wrapper."""
   @init_in_parent
-  def __init__(self, count: IntLike, current_draw: RangeLike = (1, 10) * mAmp):
+  def __init__(self, count: IntLike, color: LedColorLike = Default(Led.Any), *,
+               current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
     self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
     self.pwr = self.Port(VoltageSink.empty(), [Power])
 
+    self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
     self.generator(self.generate, count)
 
   def generate(self, count: int):
     self.led = ElementDict[IndicatorSinkLed]()
     for led_i in range(count):
-      led = self.led[str(led_i)] = self.Block(IndicatorSinkLed(self.current_draw))
+      led = self.led[str(led_i)] = self.Block(IndicatorSinkLed(self.color, current_draw=self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
       self.connect(led.pwr, self.pwr)
 
@@ -132,7 +156,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
 class VoltageIndicatorLed(Light):
   """LED connected to a voltage rail as an indicator that there is voltage present"""
   @init_in_parent
-  def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """
     TODO: support non single color wavelength (eg, color temperature?)
     TODO: support brightness
@@ -146,7 +170,7 @@ class VoltageIndicatorLed(Light):
 
     self.require(self.signal.current_draw.within(current_draw))
 
-    self.package = self.Block(Led())
+    self.package = self.Block(Led(color))
     self.res = self.Block(Resistor(
       resistance=(self.signal.link().voltage.upper() / self.target_current_draw.upper(),
                   self.signal.link().voltage.lower() / self.target_current_draw.lower())))

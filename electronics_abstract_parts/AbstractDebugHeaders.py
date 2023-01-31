@@ -8,9 +8,9 @@ class SwdCortexTargetConnector(ProgrammingConnector):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink(), [Power])  # in practice these are commonly used as sources
-    self.gnd = self.Port(Ground(), [Common])
-    self.swd = self.Port(SwdHostPort(), [Output])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice these are commonly used as sources
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.swd = self.Port(SwdHostPort.empty(), [Output])
 
 
 @abstract_block
@@ -21,5 +21,5 @@ class SwdCortexTargetWithSwoTdiConnector(SwdCortexTargetConnector):
   def __init__(self) -> None:
     super().__init__()
 
-    self.swo = self.Port(DigitalBidir(), optional=True)
-    self.tdi = self.Port(DigitalBidir(), optional=True)
+    self.swo = self.Port(DigitalBidir.empty(), optional=True)
+    self.tdi = self.Port(DigitalBidir.empty(), optional=True)

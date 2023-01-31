@@ -47,6 +47,7 @@ class KiCadSchematicBlock(Block):
     Global net labels must be connected to external ports (by name matching) or nodes (specified by the
     nodes mapping). Nodes can be None, in which case the global label is not connected (but this is
     different from a no-connect, in that the node can be connected elsewhere such as in the HDL).
+    Nodes must be mutually exclusive with external ports.
 
     Net labels are used for internal schematic connectivity and net naming. Net label names are used
     as link names, and must not collide with any existing object member.
@@ -159,11 +160,13 @@ class KiCadSchematicBlock(Block):
                     raise ValueError(f"unknown label type {net_label.__class__}")
 
             for global_label_name in port_label_names:
-                if global_label_name in nodes:  # add nodes if needed
+                if global_label_name in nodes:  # nodes if needed
+                    assert not hasattr(self, global_label_name), \
+                        f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
                         net_ports.insert(0, node)
-                if hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
+                elif hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
                     # connect to boundary port, but not links
                     net_ports.insert(0, getattr(self, global_label_name))
                 assert global_label_name in nodes or hasattr(self, global_label_name), \

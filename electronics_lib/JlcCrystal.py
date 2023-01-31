@@ -6,7 +6,7 @@ from .JlcPart import JlcTablePart, DescriptionParser
 
 class JlcCrystal(TableCrystal, JlcTablePart, FootprintBlock):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
-    ('X3225', 'SMD-3225_4P'): 'Crystal_SMD_3225-4Pin_3.2x2.5mm',
+    ('X3225', 'SMD-3225_4P'): 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [

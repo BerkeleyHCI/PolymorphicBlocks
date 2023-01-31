@@ -142,8 +142,9 @@ class BaseVoltageDivider(Filter, Block):
     self.actual_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
     self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
 
+
 class VoltageDivider(BaseVoltageDivider):
-  """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
+  """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike) -> None:
@@ -155,6 +156,27 @@ class VoltageDivider(BaseVoltageDivider):
     ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
     self.require(ratio_lower <= ratio_upper,
                    "can't generate divider to create output voltage of tighter tolerance than input voltage")
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
+
+
+class VoltageSenseDivider(BaseVoltageDivider):
+  """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
+  of the appropriate magnitude (as a fraction of the input voltage).
+  Unlike the normal VoltageDivider, the output is defined in terms of full scale voltage - that is, the voltage
+  output at the maximum input voltage, which makes the tolerance specification more useful for sensing applications
+  with variable input voltage.
+
+  TODO: can this be unified with VoltageDivider?"""
+  @init_in_parent
+  def __init__(self, *, full_scale_voltage: RangeLike, impedance: RangeLike) -> None:
+    super().__init__(impedance=impedance)
+
+    self.full_scale_voltage = self.ArgParameter(full_scale_voltage)
+
+    ratio_lower = self.full_scale_voltage.lower() / self.input.link().voltage.upper()
+    ratio_upper = self.full_scale_voltage.upper() / self.input.link().voltage.upper()
+    self.require(ratio_lower <= ratio_upper,
+                 "can't generate divider to create output voltage of tighter tolerance than input voltage")
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 

@@ -99,6 +99,40 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
     return self
 
 
+class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.ins = self.Port(Vector(DigitalSink.empty()))
+    self.out = self.Port(DigitalSource(
+      voltage_out=RangeExpr(),
+      output_thresholds=RangeExpr(),
+      pullup_capable=BoolExpr(), pulldown_capable=BoolExpr()
+    ))
+    self.generator(self.generate, self.ins.requested())
+
+  def generate(self, in_requests: List[str]):
+    self.ins.defined()
+    for in_request in in_requests:
+      self.ins.append_elt(DigitalSink(
+        current_draw=self.out.link().current_drawn,
+      ), in_request)
+
+    self.assign(self.out.voltage_out,
+                self.ins.hull(lambda x: x.link().voltage))
+    self.assign(self.out.output_thresholds,
+                self.ins.intersection(lambda x: x.link().output_thresholds))
+    self.assign(self.out.pullup_capable,
+                self.ins.any(lambda x: x.link().pullup_capable))
+    self.assign(self.out.pulldown_capable,
+                self.ins.any(lambda x: x.link().pulldown_capable))
+
+  def connected_from(self, *ins: Port[DigitalLink]) -> 'MergedDigitalSource':
+    for in_port in ins:
+      cast(Block, builder.get_enclosing_block()).connect(in_port, self.ins.request())
+    return self
+
+
 class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorBlock):
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Merge')  # can be any merge
@@ -109,7 +143,6 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
 
   def __init__(self) -> None:
     super().__init__()
-
     self.output = self.Port(AnalogSource(
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL,  # limits checked in the link, this port is ideal
@@ -137,6 +170,33 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
   def connected_from(self, *inputs: Port[AnalogLink]) -> 'MergedAnalogSource':
     for input in inputs:
       cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.request())
+    return self
+
+
+class MergedSpiMaster(DummyDevice, GeneratorBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.ins = self.Port(Vector(SpiSlave.empty()))
+    self.out = self.Port(SpiMaster.empty())
+    self.generator(self.generate, self.ins.requested())
+
+  def generate(self, in_requests: List[str]):
+    self.sck_merge = self.Block(MergedDigitalSource())
+    self.connect(self.sck_merge.out, self.out.sck)
+    self.mosi_merge = self.Block(MergedDigitalSource())
+    self.connect(self.mosi_merge.out, self.out.mosi)
+    miso_net = self.connect(self.out.miso)  # can be directly connected
+
+    self.ins.defined()
+    for in_request in in_requests:
+      in_port = self.ins.append_elt(SpiSlave.empty(), in_request)
+      self.connect(miso_net, in_port.miso)
+      self.connect(self.sck_merge.ins.request(in_request), in_port.sck)
+      self.connect(self.mosi_merge.ins.request(in_request), in_port.mosi)
+
+  def connected_from(self, *ins: Port[SpiLink]) -> 'MergedSpiMaster':
+    for in_port in ins:
+      cast(Block, builder.get_enclosing_block()).connect(in_port, self.ins.request())
     return self
 
 

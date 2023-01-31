@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Ap3012_Device(DiscreteChip, FootprintBlock):
+class Ap3012_Device(DiscreteChip, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -26,9 +27,11 @@ class Ap3012_Device(DiscreteChip, FootprintBlock):
         '4': self.pwr_in,  # /SHDN
         '5': self.pwr_in,
       },
-      mfr='Diodes Incorporated', part='AP3012KTR-G1',
+      mfr='Diodes Incorporated', part='AP3012K',
       datasheet='https://www.diodes.com/assets/Datasheets/AP3012.pdf'
     )
+    self.assign(self.lcsc_part, 'C460356')
+    self.assign(self.actual_basic_part, False)
 
 
 class Ap3012(DiscreteBoostConverter):

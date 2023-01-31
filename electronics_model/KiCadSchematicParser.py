@@ -264,8 +264,10 @@ class KiCadSchematic:
     # traverse the graph and build up nets
     seen_points: Set[PointType] = set()
     self.nets: List[ParsedNet] = []
-    for pin in symbol_pins:  # traverse in symbol / pin order to preserve ordering
-      if pin.pt in seen_points:
+    # roughly preserves symbol ordering
+    all_points = list(itertools.chain(pin_points.keys(), label_points.keys()))
+    for point in all_points:  # traverse in symbol / pin order to preserve ordering
+      if point in seen_points:
         continue  # already seen and part of another net
       net_pins: List[KiCadPin] = []
       net_labels: List[KiCadBaseLabel] = []
@@ -281,5 +283,5 @@ class KiCadSchematic:
         for point2 in edges.get(point, []):
           traverse_point(point2)
 
-      traverse_point(pin.pt)
+      traverse_point(point)
       self.nets.append(ParsedNet(net_labels, net_pins))

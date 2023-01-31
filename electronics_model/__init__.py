@@ -6,6 +6,7 @@ from .VoltagePorts import CircuitPort
 from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry
 from .Units import Volt, mVolt, Watt, Amp, mAmp, uAmp, nAmp, pAmp
 from .Units import Second, mSecond, uSecond, nSecond, Hertz, kHertz, MHertz
+from .Units import Bit, kiBit, MiBit
 from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
@@ -15,14 +16,14 @@ from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
 from .DigitalPorts import DigitalBidirAdapterOpenDrain
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
-from .UartPort import UartPort
-from .SpiPort import SpiMaster, SpiSlave
-from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave
-from .CanPort import CanControllerPort, CanTransceiverPort, CanPassivePort, CanDiffPort
-from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort
-from .SpeakerPort import SpeakerDriverPort, SpeakerPort
-from .CrystalPort import CrystalPort, CrystalDriver
-from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort
+from .UartPort import UartPort, UartLink
+from .SpiPort import SpiMaster, SpiSlave, SpiLink
+from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave, I2cLink
+from .CanPort import CanControllerPort, CanTransceiverPort, CanLogicLink, CanPassivePort, CanDiffPort, CanDiffLink
+from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort, SwdLink
+from .SpeakerPort import SpeakerDriverPort, SpeakerPort, SpeakerLink
+from .CrystalPort import CrystalPort, CrystalDriver, CrystalLink
+from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbLink
 
 from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 

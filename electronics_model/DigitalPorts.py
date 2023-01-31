@@ -9,6 +9,23 @@ from .Units import Volt
 
 
 class DigitalLink(CircuitLink):
+  """A link for digital IOs. Because of the wide variations on digital IOs, this is kind of a beast.
+
+  Overall, this means a port that deals with signals that can be driven to two levels, high or low.
+  The types of ports are:
+  - Source: can drive both high or low, but not read.
+  - Single source: can drive either high or low, but not the other, and cannot read.
+    Example: open-drain outputs, pull-up resistors.
+  - Sink: cannot drive, but can read.
+  - Bidir: can drive both high and low, and can read.
+
+  Single sources are complex, since they require a complementary weak signal driver (pull-up).
+  Pull-ups can either be explicit (discrete resistor) or part of a Bidir (configurable pull-ups
+  are common on many microcontroller pins).
+
+  Weak signal drivers (pull up resistors) do not need a complementary single source, since they
+  may simply be used to provide a default.
+  """
   # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
 
   def __init__(self) -> None:
@@ -401,21 +418,21 @@ class DigitalBidirBridge(CircuitPortBridge):
 
 class DigitalSingleSource(DigitalBase):
   @staticmethod
-  def low_from_supply(neg: Port[VoltageLink]) -> DigitalSingleSource:
+  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      pulldown_capable=False,
-      low_signal_driver=True
+      pulldown_capable=is_pulldown,
+      low_signal_driver=not is_pulldown
     )
 
   @staticmethod
-  def high_from_supply(pos: Port[VoltageLink]) -> DigitalSingleSource:
+  def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      pullup_capable=False,
-      high_signal_driver=True
+      pullup_capable=is_pullup,
+      high_signal_driver=not is_pullup
     )
 
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),

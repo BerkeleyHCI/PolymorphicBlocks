@@ -156,8 +156,8 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   def implies(self, target: BoolLike) -> BoolExpr:
     return self._create_binary_op(self, self._to_expr_type(target), BoolOp.implies)
 
-  def __bnot__(self) -> BoolExpr:
-    return self._new_bind(UnaryOpBinding(self,BoolOp.op_not))
+  def __invert__(self) -> BoolExpr:
+    return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
 
 
   IteType = TypeVar('IteType', bound=ConstraintExpr)

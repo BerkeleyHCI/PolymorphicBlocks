@@ -34,7 +34,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
   def contents(self) -> None:
     # Note, B-grade chip has lower INL (+/-1 LSB) compared to C-grade (+/-2 LSB)
     self.footprint(
-      'U', 'Package_SO:SO-8_3.9x4.9mm_P1.27mm',
+      'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
         '1': self.vref,
         '2': self.inp,
