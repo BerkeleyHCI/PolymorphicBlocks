@@ -1,5 +1,4 @@
-import re
-from typing import Optional, cast, Mapping
+from typing import Optional, cast
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow

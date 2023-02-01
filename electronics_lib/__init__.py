@@ -20,13 +20,14 @@ from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch
+from .JlcPptcFuse import JlcPptcFuse
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 
-from .PassiveConnector import PassiveConnector, PinHeader254, PinHeader127DualShrouded
+from .PassiveConnector import PassiveConnector, PinHeader254, PinSocket254, PinHeader127DualShrouded
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
 
@@ -51,7 +52,7 @@ from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
-from .Microcontroller_Esp32 import Esp32_Wroom_32
+from .Microcontroller_Esp32 import Esp32_Wroom_32, Esp32_Wrover_Dev
 from .Microcontroller_Rp2040 import Rp2040
 from .Fpga_Ice40up import Ice40up5k_Sg48
 
@@ -63,7 +64,7 @@ from .UsbPorts import UsbEsdDiode, Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
 
-from .TestPoint_Keystone import Keystone5015, CompactKeystone5015
+from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc
 
 from .AdcSpi_Mcp3201 import Mcp3201
@@ -103,4 +104,5 @@ from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
 
-from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc_Device, Imu_Lsm6ds3trc
+from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
+from .Mag_Qmc5883l import Mag_Qmc5883l

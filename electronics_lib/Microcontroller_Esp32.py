@@ -39,7 +39,9 @@ class Esp32_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, 
       pullup_capable=True, pulldown_capable=True,
     )
 
-    self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
+    self.chip_pu = self.Port(dio_model, optional=True)  # power control, must NOT be left floating, table 1
+    self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
+    self.require(self.has_chip_pu.implies(self.chip_pu.is_connected()), "EN not connected")
 
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
@@ -210,6 +212,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     self.generator_set_allocation(allocated)
 
     io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.has_chip_pu, True)
 
     self.assign(self.lcsc_part, 'C701342')
     self.assign(self.actual_basic_part, False)
@@ -247,3 +250,105 @@ class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
 
       self.uart0 = imp.Block(EspProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
+
+
+class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
+  """ESP32-WROVER-DEV breakout with camera.
+
+  Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
+  Board used: https://amazon.com/ESP32-WROVER-Contained-Compatible-Bluetooth-Tutorials/dp/B09BC1N9LL
+  Board internal schematic: https://github.com/Freenove/Freenove_ESP32_WROVER_Board/blob/f710fd6976e76ab76c29c2ee3042cd7bac22c3d6/Datasheet/ESP32_Schematic.pdf
+
+  Top left is pin 1, going down the left side then up the right side.
+  Up is defined from the text orientation (antenna is on top).
+  """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '1',  # 3v3, output of internal AMS1117-3.3V LDO
+    # 19, 20: Vcc 5vUSB, input to internal LDO
+    'Vss': ['14', '21', '29', '30', '34', '40'],
+    'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
+
+    'GPIO2': '26',  # fixed strapping pin, drives LED on PCB
+    'GPIO0': '27',  # fixed strapping pin, switch w/ pulldown on chip
+
+    'U0RXD': '36',  # fixed programming pin, board connected to USB UART w/ jumper
+    'U0TXD': '37',  # fixed programming pin, board connected to USB UART w/ jumper
+  }
+
+  RESOURCE_PIN_REMAP = {
+    # 'SENSOR_VP': '3',  # camera CSI_Y6
+    # 'SENSOR_VN': '4',  # camera CSI_Y7
+    # 'VDET_1': '5',  # input only GPIO34, CSI_Y8
+    # 'VDET_2': '6',  # input only GPIO35, CSI_Y9
+    '32K_XP': '7',  # GPIO32
+    '32K_XN': '8',  # GPIO33
+    # 'GPIO25': '9',  # camera CSI_VYSNC
+    # 'GPIO26': '10',  # camera I2C_SDA
+    # 'GPIO27': '11',  # camera I2C_SCL
+    'MTMS': '12',  # GPIO14
+    'MTDI': '13',  # GPIO12
+
+    'MTCK': '15',  # GPIO13
+    # 'SD_DATA_2': '16',  # FLASH_D2, SD2
+    # 'SD_DATA_3': '17',  # DLASH_D3, SD3
+    # 'SD_CMD': '18',  # FLASH_CMD, CMD
+
+    # 'SD_CLK': '22',  # FLASH_CLK, SD0
+    #'SD_DATA_0': '23',  # FLASH_D0, SD1
+    # 'SD_DATA_1': '24',  # FLASH_D1, SD1
+    'MTDO': '25',  # GPIO15
+
+    # 'GPIO4': '28',  # camera CSI_Y2
+
+    # 'GPIO5': '31',  # camera CSI_Y3
+    # 'GPIO18': '32',  # camera CSI_Y4
+    # 'GPIO19': '33',  # camera CSI_Y5
+
+    # 'GPIO21': '35',  # camera XCLK
+
+    # 'GPIO22': '38',  # camera CSI_PCLK
+    # 'GPIO23': '39',  # camera CSI_HREF
+  }
+
+  def generate(self, assignments: List[str],
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               can_requests: List[str]) -> None:
+    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+
+    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (SpiMaster, spi_requests), (I2cMaster, i2c_requests), (UartPort, uart_requests),
+      (CanControllerPort, can_requests),
+      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+    ], assignments)
+    self.generator_set_allocation(allocated)
+
+    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.has_chip_pu, False)
+
+    self.footprint(
+      'U', 'edg:ESP32-WROVER-DEV',
+      dict(chain(system_pins.items(), io_pins.items())),
+      mfr='', part='ESP32-WROVER-DEV',
+    )
+
+
+class Esp32_Wrover_Dev(PinMappable, Microcontroller, IoController, Block):
+  """Wrapper around Esp32_Wover_Dev fitting the IoController interface
+  """
+  def __init__(self):
+    super().__init__()
+    self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # allow this to be connected
+
+  def contents(self) -> None:
+    super().contents()
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
+      self.connect(self.io2, self.ic.io2)
