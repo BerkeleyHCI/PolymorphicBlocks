@@ -50,7 +50,7 @@ object CompilerError {
 
   sealed trait AssertionError extends CompilerError
   case class FailedAssertion(root: DesignPath, constrName: String,
-                             value: expr.ValueExpr, result: ExprValue) extends AssertionError {
+                             value: expr.ValueExpr, result: ExprValue, compiler: Compiler) extends AssertionError {
     override def toString: String =
       s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
   }
