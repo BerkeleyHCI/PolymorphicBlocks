@@ -50,9 +50,9 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "float", ValInit.Floating)
     constProp.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
 
-    constProp.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
-    constProp.getType(DesignPath() + "float") should equal(Some(classOf[FloatValue]))
-    constProp.getType(DesignPath() + "boolean") should equal(Some(classOf[BooleanValue]))
+    constProp.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))
+    constProp.getType(IndirectDesignPath() + "float") should equal(Some(classOf[FloatValue]))
+    constProp.getType(IndirectDesignPath() + "boolean") should equal(Some(classOf[BooleanValue]))
   }
 
   it should "track types of clones separately" in {
@@ -61,13 +61,13 @@ class ConstPropTypeTest extends AnyFlatSpec {
 
     val constProp2 = new ConstProp()
     constProp2.initFrom(constProp1)
-    constProp1.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
-    constProp2.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
+    constProp1.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))
+    constProp2.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
 
     constProp1.addDeclaration(DesignPath() + "float", ValInit.Floating)  // add different types
     constProp2.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
-    constProp1.getType(DesignPath() + "boolean") should equal(None)  // types should be independent
-    constProp2.getType(DesignPath() + "float") should equal(None)
+    constProp1.getType(IndirectDesignPath() + "boolean") should equal(None)  // types should be independent
+    constProp2.getType(IndirectDesignPath() + "float") should equal(None)
 
     constProp1.getUnsolved should equal(Set(
       DesignPath() + "int",
