@@ -23,7 +23,7 @@ class DesignAssertionCheck(compiler: Compiler) extends
         compiler.evaluateExpr(containingPath, constr) match {
           case ExprResult.Result(BooleanValue(true)) => None
           case ExprResult.Result(result) =>
-            Some(CompilerError.FailedAssertion(containingPath, constrName, constr, result))
+            Some(CompilerError.FailedAssertion(containingPath, constrName, constr, result, compiler))
           case ExprResult.Missing(missing) =>
             Some(CompilerError.MissingAssertion(containingPath, constrName, constr, missing))
         }
