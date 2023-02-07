@@ -199,7 +199,7 @@ class ProtectionZenerDiode(DiscreteApplication):
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
     self.connect(self.diode.cathode.adapt_to(VoltageSink(
-      voltage_limits=(0, self.voltage.lower()),
+      voltage_limits=(0, self.diode.actual_zener_voltage.lower()),
       current_draw=(0, 0)*Amp  # TODO should be leakage current
     )), self.pwr)
     self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
