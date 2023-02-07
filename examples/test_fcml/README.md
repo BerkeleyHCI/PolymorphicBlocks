@@ -23,7 +23,10 @@ Programming
     
 Errata for v1
 - RP2040 does not run code from flash - perhaps it needs all 4 QSPI IO pins?
+  - [Thread on flash config in second stage bootloader](https://forums.raspberrypi.com/viewtopic.php?t=317631), [similar issue](https://forums.raspberrypi.com/viewtopic.php?t=333055)
+  - [Thread on using QSPI pins as GPIO and alternate second-stage bootloaders](https://forums.raspberrypi.com/viewtopic.php?t=338586)
 - RP2040 does not debug with CMSIS-DAP
+  - Potentially related to multidrop support in the debug probe?
 
 Potential improvements for v2
 - Converter in connectors: rotated 90 degrees, balanced lengths to V+ and V-
