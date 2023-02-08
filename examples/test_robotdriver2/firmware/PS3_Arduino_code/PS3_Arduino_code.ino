@@ -44,7 +44,11 @@ public:
 
     if (state == DISCONNECTED) {
       for (int i = 0; i < LEDS_COUNT; i++) {
-        strip.setLedColorData(i, 255, 0, 0);
+        if (loop_count % 5 == 0) {
+          strip.setLedColorData(i, 255, 0, 0);
+        } else {
+          strip.setLedColorData(i, 0, 0, 0);
+        }
       }
       strip.show();
     } else {
