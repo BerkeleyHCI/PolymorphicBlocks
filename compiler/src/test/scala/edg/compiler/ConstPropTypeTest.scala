@@ -18,24 +18,24 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "b", ValInit.Integer)
     constProp.addDeclaration(DesignPath() + "c", ValInit.Integer)
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "a",
-      DesignPath() + "b",
-      DesignPath() + "c",
+      IndirectDesignPath() + "a",
+      IndirectDesignPath() + "b",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "a",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "b",
-      DesignPath() + "c",
+      IndirectDesignPath() + "b",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "b",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "c",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "c",
@@ -70,23 +70,23 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp2.getType(IndirectDesignPath() + "float") should equal(None)
 
     constProp1.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "float",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "float",
     ))
     constProp2.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "boolean",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "boolean",
     ))
 
     constProp1.addAssignExpr(IndirectDesignPath() + "int",  // unsolved should be independent
       ValueExpr.Literal(1)
     )
     constProp1.getUnsolved should equal(Set(
-      DesignPath() + "float",
+      IndirectDesignPath() + "float",
     ))
     constProp2.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "boolean",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "boolean",
     ))
   }
 }
