@@ -68,7 +68,7 @@ class HighSideSwitch(Block):
     )), self.pwr)
     self.connect(self.drv.drain.adapt_to(DigitalSource(
       voltage_out=(0, self.pwr.link().voltage.upper()),
-      # no current limits, current draw is set by the connected load
+      current_limits=self.drv.actual_drain_current_rating,
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     )), self.output)
     self.connect(self.pre.drain.adapt_to(DigitalSource()),
