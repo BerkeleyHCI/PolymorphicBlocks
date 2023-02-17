@@ -1319,6 +1319,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // Primarily used for unit tests, TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)
 
+  def getParamType(param: IndirectDesignPath): Option[Class[_ <: ExprValue]] = constProp.getType(param)
   def getParamValue(param: IndirectDesignPath): Option[ExprValue] = constProp.getValue(param)
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
   def getConnectedLink(port: DesignPath): Option[DesignPath] = constProp.getConnectedLink(port)
