@@ -50,7 +50,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
   private val params = DependencyGraph[IndirectDesignPath, ExprValue]()
-  private val paramTypes = mutable.HashMap[DesignPath, Class[_ <: ExprValue]]()  // only record types of authoritative elements
+  private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()  // only record types of authoritative elements
 
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
@@ -119,9 +119,10 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
     var readyList = Set[IndirectDesignPath]()
     do {
       // ignore params where we haven't seen the decl yet, to allow forced-assign when the block is expanded
+      // TODO support this for all params, including indirect ones (eg, name)
       readyList = (params.getReady -- frozenParams).filter { elt =>
         DesignPath.fromIndirectOption(elt) match {
-          case Some(elt) => paramTypes.keySet.contains(elt)
+          case Some(elt) => paramTypes.keySet.contains(elt.asIndirect)
           case None => true
         }
       }
@@ -148,7 +149,8 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   // API methods
   //
   def addDeclaration(target: DesignPath, decl: init.ValInit): Unit = {
-    require(!paramTypes.isDefinedAt(target), s"redeclaration of $target")
+    // TODO support explicit type for indirect paths
+    require(!paramTypes.isDefinedAt(target.asIndirect), s"redeclaration of $target")
     val paramType = decl.`val` match {
       case init.ValInit.Val.Floating(_) => classOf[FloatValue]
       case init.ValInit.Val.Integer(_) => classOf[IntValue]
@@ -165,7 +167,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
       }
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
-    paramTypes.put(target, paramType)
+    paramTypes.put(target.asIndirect, paramType)
     update()
   }
 
@@ -272,7 +274,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
   /**
     * Returns the type (as a class of ExprValue) of a parameter.
     */
-  def getType(param: DesignPath): Option[Class[_ <: ExprValue]] = {
+  def getType(param: IndirectDesignPath): Option[Class[_ <: ExprValue]] = {
     paramTypes.get(param)
   }
 
@@ -280,8 +282,8 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
     * Returns all parameters with a definition (eg, ValInit) but missing a concrete assignment.
     * Ignores indirect references.
     */
-  def getUnsolved: Set[DesignPath] = {
-    paramTypes.keySet.toSet -- params.knownValueKeys.flatMap(DesignPath.fromIndirectOption)
+  def getUnsolved: Set[IndirectDesignPath] = {
+    paramTypes.keySet.toSet -- params.knownValueKeys
   }
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap

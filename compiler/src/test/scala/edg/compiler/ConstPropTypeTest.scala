@@ -18,24 +18,24 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "b", ValInit.Integer)
     constProp.addDeclaration(DesignPath() + "c", ValInit.Integer)
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "a",
-      DesignPath() + "b",
-      DesignPath() + "c",
+      IndirectDesignPath() + "a",
+      IndirectDesignPath() + "b",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "a",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "b",
-      DesignPath() + "c",
+      IndirectDesignPath() + "b",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "b",
       ValueExpr.Literal(1)
     )
     constProp.getUnsolved should equal(Set(
-      DesignPath() + "c",
+      IndirectDesignPath() + "c",
     ))
 
     constProp.addAssignExpr(IndirectDesignPath() + "c",
@@ -50,9 +50,9 @@ class ConstPropTypeTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "float", ValInit.Floating)
     constProp.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
 
-    constProp.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
-    constProp.getType(DesignPath() + "float") should equal(Some(classOf[FloatValue]))
-    constProp.getType(DesignPath() + "boolean") should equal(Some(classOf[BooleanValue]))
+    constProp.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))
+    constProp.getType(IndirectDesignPath() + "float") should equal(Some(classOf[FloatValue]))
+    constProp.getType(IndirectDesignPath() + "boolean") should equal(Some(classOf[BooleanValue]))
   }
 
   it should "track types of clones separately" in {
@@ -61,32 +61,32 @@ class ConstPropTypeTest extends AnyFlatSpec {
 
     val constProp2 = new ConstProp()
     constProp2.initFrom(constProp1)
-    constProp1.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))
-    constProp2.getType(DesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
+    constProp1.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))
+    constProp2.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
 
     constProp1.addDeclaration(DesignPath() + "float", ValInit.Floating)  // add different types
     constProp2.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
-    constProp1.getType(DesignPath() + "boolean") should equal(None)  // types should be independent
-    constProp2.getType(DesignPath() + "float") should equal(None)
+    constProp1.getType(IndirectDesignPath() + "boolean") should equal(None)  // types should be independent
+    constProp2.getType(IndirectDesignPath() + "float") should equal(None)
 
     constProp1.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "float",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "float",
     ))
     constProp2.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "boolean",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "boolean",
     ))
 
     constProp1.addAssignExpr(IndirectDesignPath() + "int",  // unsolved should be independent
       ValueExpr.Literal(1)
     )
     constProp1.getUnsolved should equal(Set(
-      DesignPath() + "float",
+      IndirectDesignPath() + "float",
     ))
     constProp2.getUnsolved should equal(Set(
-      DesignPath() + "int",
-      DesignPath() + "boolean",
+      IndirectDesignPath() + "int",
+      IndirectDesignPath() + "boolean",
     ))
   }
 }

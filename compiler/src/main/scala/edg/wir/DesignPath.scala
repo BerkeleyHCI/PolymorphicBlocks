@@ -21,19 +21,19 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.Name(name))
     }
   }
-  object IsConnected extends IndirectStep {
+  case object IsConnected extends IndirectStep {
     override def toString: String = "IS_CONNECTED"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
     }
   }
-  object Length extends IndirectStep {
+  case object Length extends IndirectStep {
     override def toString: String = "LENGTH"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH))
     }
   }
-  object Elements extends IndirectStep {
+  case object Elements extends IndirectStep {
     override def toString: String = "ELEMENTS"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS))
@@ -45,19 +45,19 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
     }
   }
-  object Allocated extends IndirectStep {
+  case object Allocated extends IndirectStep {
     override def toString: String = "ALLOCATED"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED))
     }
   }
-  object Name extends IndirectStep {
+  case object Name extends IndirectStep {
     override def toString: String = "NAME"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME))
     }
   }
-  object ConnectedLink extends IndirectStep {  // block-side port -> link
+  case object ConnectedLink extends IndirectStep {  // block-side port -> link
     override def toString: String = "CONNECTED_LINK"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK))
