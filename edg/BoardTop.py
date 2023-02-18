@@ -29,7 +29,7 @@ class BaseBoardTop(DesignTop):
         (Jumper, SolderJumperTriangular),
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
-        (Fpc050, HiroseFh12sh),
+        (Fpc050Bottom, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
         (TestPoint, TeRc),
 
@@ -89,6 +89,7 @@ class JlcBoardTop(BaseBoardTop):
         (Diode, JlcDiode),
         (Fet, JlcFet),
 
+        (Fpc050Bottom, Afc01),
         (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part

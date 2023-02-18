@@ -1,13 +1,12 @@
-from typing import *
 from electronics_abstract_parts import *
-from electronics_lib import Fpc050
+from electronics_lib import Fpc050Bottom
 
 
 class Qt096t_if09_Device(DiscreteChip):
   def __init__(self) -> None:
     super().__init__()
 
-    self.conn = self.Block(Fpc050(length=8))
+    self.conn = self.Block(Fpc050Bottom(length=8))
 
     # both Vdd and VddI
     self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(

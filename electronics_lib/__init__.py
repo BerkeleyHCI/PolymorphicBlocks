@@ -29,7 +29,7 @@ from .Opamp_Lmv321 import Lmv321
 
 from .PassiveConnector import PassiveConnector, PinHeader254, PinSocket254, PinHeader127DualShrouded
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
-from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Te1734839
+from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Afc01, Te1734839
 
 from .Jumpers import SolderJumperTriangular
 

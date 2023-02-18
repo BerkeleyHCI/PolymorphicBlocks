@@ -1,5 +1,5 @@
 from electronics_abstract_parts import *
-from electronics_lib import Fpc050
+from electronics_lib import Fpc050Bottom
 
 
 class Er_Oled_091_3_Device(DiscreteChip):
@@ -9,7 +9,7 @@ class Er_Oled_091_3_Device(DiscreteChip):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050(length=15))
+        self.conn = self.Block(Fpc050Bottom(length=15))
 
         self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9)*Volt,
