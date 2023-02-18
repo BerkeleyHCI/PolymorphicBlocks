@@ -4,7 +4,7 @@ from edg import *
 from .test_usb_uart import UartConnector
 
 
-class EhBuddyTest(JlcBoardTop):
+class EhBuddyBoard(JlcBoardTop):
   """Test board for an energy harvesting development project, that can control power to and
   communicate with the DUT.
   """
@@ -90,4 +90,4 @@ class EhBuddyTest(JlcBoardTop):
 
 class EhBuddyTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(EhBuddyTest)
+    compile_board_inplace(EhBuddyBoard)
