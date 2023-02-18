@@ -106,7 +106,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 015859b3-dc14-4d6d-a251-f3181a2ce660)
-    (at 86 100)
+    (at 134 58)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -152,7 +152,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 0820e748-6fd5-4046-ac6b-5d88b7461a7d)
-    (at 108 109)
+    (at 156 67)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.DigitalAmplifiers.HighSideSwitch")
@@ -198,7 +198,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 0dd5024b-5d4b-4d6c-8f1b-720ea7672903)
-    (at 76 93)
+    (at 124 51)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -244,7 +244,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23" (layer "F.Cu")
     (tedit 5FA16958) (tstamp 237f711f-2fee-4afb-86f9-6f0bb8e6c1e9)
-    (at 69 90)
+    (at 117 48)
     (descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "")
@@ -295,7 +295,7 @@
 
   (footprint "RF_Module:ESP-WROOM-02" (layer "F.Cu")
     (tedit 61FED727) (tstamp 23f61148-2943-453c-b265-39b1f50f6260)
-    (at 90 90)
+    (at 138 48)
     (descr "https://www.espressif.com/sites/default/files/documentation/0c-esp-wroom-02_datasheet_en.pdf")
     (tags "ESP WROOM-02 espressif esp8266ex")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -417,10 +417,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 76 82.9)
-          (xy 104 82.9)
-          (xy 104 71.9)
-          (xy 76 71.9)
+          (xy 124 40.9)
+          (xy 152 40.9)
+          (xy 152 29.9)
+          (xy 124 29.9)
         )
       )
     )
@@ -433,7 +433,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp 2f4b8279-babb-4521-8ad5-e68d16a82d35)
-    (at 59 99)
+    (at 107 57)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -479,7 +479,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp 397fb497-366b-4bd3-a3f4-49db3c9ababe)
-    (at 69 99)
+    (at 117 57)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -525,7 +525,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23-5" (layer "F.Cu")
     (tedit 5F6F9B37) (tstamp 39f6333e-617e-4fbc-aee9-98c89b1980c1)
-    (at 95 109 90)
+    (at 143 67 90)
     (descr "SOT, 5 Pin (https://www.jedec.org/sites/default/files/docs/Mo-178c.PDF variant AA), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "electronics_lib.Opamp_Lmv321.Lmv321")
@@ -580,7 +580,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp 3abbf243-ec0d-40e1-904a-e74da0f8a838)
-    (at 82 102 180)
+    (at 130 60 180)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -628,7 +628,7 @@
 
   (footprint "Diode_SMD:D_SOD-123" (layer "F.Cu")
     (tedit 58645DC7) (tstamp 419a0e94-1e4d-4784-8583-75386f022406)
-    (at 58 105 -90)
+    (at 106 63 -90)
     (descr "SOD-123")
     (tags "SOD-123")
     (property "Sheetfile" "")
@@ -682,7 +682,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 481badcf-ab6b-40a8-8f25-c660f0f952cd)
-    (at 98 111 90)
+    (at 146 69 90)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.OpampCircuits.DifferentialAmplifier")
@@ -728,7 +728,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 49d35bb1-ac78-433f-aad1-c9baf827dd92)
-    (at 76 84 180)
+    (at 124 42 180)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -774,7 +774,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 5b628ac9-d3e0-4be8-b9f2-585ca7bbfa5a)
-    (at 86 102)
+    (at 134 60)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -820,7 +820,7 @@
 
   (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (layer "F.Cu")
     (tedit 59FED5CC) (tstamp 64c79072-7a98-401d-b5c6-696d2ce7f19b)
-    (at 109 86.2)
+    (at 157 44.2)
     (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
     (tags "Through hole pin header THT 1x04 2.54mm single row")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -875,7 +875,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 668de4e8-556d-45b8-8b71-e1e437135268)
-    (at 91 108 180)
+    (at 139 66 180)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.Opamp_Lmv321.Lmv321")
@@ -921,7 +921,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp 698af9eb-e993-4948-8076-cfdfa0e63087)
-    (at 58 114)
+    (at 106 72)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -947,7 +947,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp 718d6d6d-20d6-4872-8aae-e81953961d60)
-    (at 118 83)
+    (at 166 41)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -973,7 +973,7 @@
 
   (footprint "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11" (layer "F.Cu")
     (tedit 5E1305FC) (tstamp 76ee8c49-288d-4ca6-8081-bc6dc0fee431)
-    (at 60 90 -90)
+    (at 108 48 -90)
     (descr "USB Type C, right-angle, SMT, https://datasheet.lcsc.com/szlcsc/1811141824_XKB-Enterprise-U262-161N-4BVC11_C319148.pdf")
     (tags "USB C Type-C Receptacle SMD")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCReceptacle")
@@ -1058,7 +1058,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 82b60735-437d-4cbe-80da-a74bd5bfef13)
-    (at 100 111 90)
+    (at 148 69 90)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.OpampCircuits.DifferentialAmplifier")
@@ -1104,7 +1104,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 88025991-3fa0-4256-a147-d8c79c962945)
-    (at 76 90)
+    (at 124 48)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.PassiveFilters.PullupDelayRc")
@@ -1150,7 +1150,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23" (layer "F.Cu")
     (tedit 5FA16958) (tstamp 8d0fa9bb-ed12-422c-8d0d-0cf6d0d9b9fd)
-    (at 108 112)
+    (at 156 70)
     (descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "electronics_abstract_parts.DigitalAmplifiers.HighSideSwitch")
@@ -1201,7 +1201,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp 8fa08ce8-04d7-4d3e-82c9-11884713e8e1)
-    (at 82 104 180)
+    (at 130 62 180)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -1249,7 +1249,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 9519245c-aa7e-4dad-b643-a865f10e3332)
-    (at 90 111 90)
+    (at 138 69 90)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.OpampCircuits.DifferentialAmplifier")
@@ -1295,7 +1295,7 @@
 
   (footprint "edg:Indicator_IdDots_4" (layer "F.Cu")
     (tedit 5D81DE50) (tstamp 965e99bd-d983-4f62-be5b-a8218325e53c)
-    (at 74 112)
+    (at 122 70)
     (property "Sheetfile" "")
     (property "Sheetname" "")
     (property "edg_part" "")
@@ -1362,7 +1362,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp 9d825c38-2325-4239-a799-93259bc24f81)
-    (at 95 113)
+    (at 143 71)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractResistor.CurrentSenseResistor")
@@ -1408,7 +1408,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp b7984764-c904-4e92-945f-d0805d6c58a4)
-    (at 103 87)
+    (at 151 45)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -1454,7 +1454,7 @@
 
   (footprint "Button_Switch_SMD:SW_SPST_SKQG_WithoutStem" (layer "F.Cu")
     (tedit 61D4AA89) (tstamp b9bb6eb0-fe69-4b31-a5ff-a743d5160b9c)
-    (at 95 102)
+    (at 143 60)
     (descr "ALPS 5.2mm Square Low-profile Type (Surface Mount) SKQG Series, Without stem, http://www.alps.com/prod/info/E/HTML/Tact/SurfaceMount/SKQG/SKQGAEE010.html")
     (tags "SPST Button Switch")
     (property "Sheetfile" "")
@@ -1529,10 +1529,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 96 100.7)
-          (xy 99 100.7)
-          (xy 99 103.3)
-          (xy 96 103.3)
+          (xy 144 58.7)
+          (xy 147 58.7)
+          (xy 147 61.3)
+          (xy 144 61.3)
         )
       )
     )
@@ -1543,10 +1543,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 91 100.7)
-          (xy 94 100.7)
-          (xy 94 103.3)
-          (xy 91 103.3)
+          (xy 139 58.7)
+          (xy 142 58.7)
+          (xy 142 61.3)
+          (xy 139 61.3)
         )
       )
     )
@@ -1559,7 +1559,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp bd1dc27f-fefc-412c-8ce4-aca30a3b7e0e)
-    (at 92 111 90)
+    (at 140 69 90)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.OpampCircuits.DifferentialAmplifier")
@@ -1605,7 +1605,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp be2d1c46-dab3-437a-8db2-d7f872b46777)
-    (at 86 104)
+    (at 134 62)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -1651,7 +1651,7 @@
 
   (footprint "Button_Switch_SMD:SW_SPST_SKQG_WithoutStem" (layer "F.Cu")
     (tedit 61D4AA89) (tstamp c31baf52-3a6b-4d9a-a61c-cee42a4e8bb0)
-    (at 109 102)
+    (at 157 60)
     (descr "ALPS 5.2mm Square Low-profile Type (Surface Mount) SKQG Series, Without stem, http://www.alps.com/prod/info/E/HTML/Tact/SurfaceMount/SKQG/SKQGAEE010.html")
     (tags "SPST Button Switch")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -1726,10 +1726,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 110 100.7)
-          (xy 113 100.7)
-          (xy 113 103.3)
-          (xy 110 103.3)
+          (xy 158 58.7)
+          (xy 161 58.7)
+          (xy 161 61.3)
+          (xy 158 61.3)
         )
       )
     )
@@ -1740,10 +1740,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 105 100.7)
-          (xy 108 100.7)
-          (xy 108 103.3)
-          (xy 105 103.3)
+          (xy 153 58.7)
+          (xy 156 58.7)
+          (xy 156 61.3)
+          (xy 153 61.3)
         )
       )
     )
@@ -1756,7 +1756,7 @@
 
   (footprint "Capacitor_SMD:C_0805_2012Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp c603705d-8ee8-4407-80a2-bc1a7a0b2399)
-    (at 76 86 180)
+    (at 124 44 180)
     (descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -1802,7 +1802,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-223-3_TabPin2" (layer "F.Cu")
     (tedit 5A02FF57) (tstamp c88ba3f5-fdd6-4933-90b4-8b627a986f7e)
-    (at 64 105 180)
+    (at 112 63 180)
     (descr "module CMS SOT223 4 pins")
     (tags "CMS SOT")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -1855,7 +1855,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp c90e546a-8332-451f-9ea8-b52c0591b711)
-    (at 76 88 180)
+    (at 124 46 180)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_abstract_parts.PassiveFilters.PullupDelayRc")
@@ -1901,7 +1901,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp dd528780-6f90-41f7-afb8-e972dacab543)
-    (at 58 83)
+    (at 106 41)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -1927,7 +1927,7 @@
 
   (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (layer "F.Cu")
     (tedit 59FED5CC) (tstamp de373ad1-a248-4f2d-8339-a060aedeac0f)
-    (at 118 86.2)
+    (at 166 44.2)
     (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
     (tags "Through hole pin header THT 1x04 2.54mm single row")
     (property "Sheetfile" "")
@@ -1982,7 +1982,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp e681023a-b3ab-4291-9c6a-672ddec645c8)
-    (at 69 93 180)
+    (at 117 51 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCcPulldownResistor")
@@ -2028,7 +2028,7 @@
 
   (footprint "Capacitor_SMD:C_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp e7ab481e-5c81-43d9-b741-52adba26d91f)
-    (at 64 99 180)
+    (at 112 57 180)
     (descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -2074,7 +2074,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23" (layer "F.Cu")
     (tedit 5FA16958) (tstamp e9445b5d-4730-4e98-8195-f2874da15396)
-    (at 113 110)
+    (at 161 68)
     (descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "electronics_abstract_parts.DigitalAmplifiers.HighSideSwitch")
@@ -2125,7 +2125,7 @@
 
   (footprint "Capacitor_SMD:C_0805_2012Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp f210b112-b397-4987-b435-a5f4679919ba)
-    (at 64 111)
+    (at 112 69)
     (descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.LinearRegulators.Ldl1117")
@@ -2171,7 +2171,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp f3272b63-cd95-446c-b831-55b8a5ab6a7b)
-    (at 59 111)
+    (at 107 69)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -2217,7 +2217,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEF1) (tstamp f44f3e62-3dfc-41e7-abab-d47c520e7b46)
-    (at 82 100 180)
+    (at 130 58 180)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "electronics_abstract_parts.AbstractLed.IndicatorLed")
@@ -2265,7 +2265,7 @@
 
   (footprint "edg:Symbol_Duckling" (layer "F.Cu")
     (tedit 5D8A7175) (tstamp f6d917f4-99c0-4f07-9ec2-e922aa421a9d)
-    (at 74 108)
+    (at 122 66)
     (descr "Duckling")
     (property "Sheetfile" "")
     (property "Sheetname" "")
@@ -2298,22 +2298,22 @@
     (fp_line (start 0.382558 1.56145) (end 0.273702 1.202597) (layer "F.Cu") (width 0.2) (tstamp c452e932-a03a-4d30-bb15-72420478abba))
     (fp_line (start -0.51095 1.424715) (end -0.201673 1.39873) (layer "F.Cu") (width 0.2) (tstamp d4725947-fc79-4b69-9051-3c89bab8e916))
     (fp_line (start -1.072198 1.25) (end -0.807277 1.374087) (layer "F.Cu") (width 0.2) (tstamp fc4f063f-cd71-4d06-95fe-55d20ec55827))
-    (fp_arc (start 0.819911 1.686455) (mid 0.561228 1.658966) (end 0.320058 1.56145) (layer "F.Cu") (width 0.16) (tstamp 052a8ef3-935b-4ea1-8a72-2038b435e45a))
+    (fp_arc (start 0.819911 1.686455) (mid 0.561228 1.658965) (end 0.320058 1.56145) (layer "F.Cu") (width 0.16) (tstamp 052a8ef3-935b-4ea1-8a72-2038b435e45a))
     (fp_arc (start -0.809366 0.547561) (mid -0.66162 0.021386) (end -0.303506 -0.391461) (layer "F.Cu") (width 0.2) (tstamp 05c62d5d-ed5f-495a-90ed-47a1718941a0))
     (fp_arc (start 0.575946 0.000734) (mid 0.159981 0.670103) (end -0.573812 0.957555) (layer "F.Cu") (width 0.16) (tstamp 0b140a05-b422-4038-8c9e-11b74702335d))
     (fp_arc (start 0.28661 1.89391) (mid 0.027927 1.866421) (end -0.213243 1.768905) (layer "F.Cu") (width 0.16) (tstamp 1ba472c2-6404-4585-8276-6f8a6e8220ab))
-    (fp_arc (start 0.820058 1.56145) (mid 0.757558 1.49895) (end 0.820058 1.43645) (layer "F.Cu") (width 0.16) (tstamp 1caf0e7d-bb12-4817-b1c5-d66faa62367a))
+    (fp_arc (start 0.820058 1.56145) (mid 0.75756 1.49895) (end 0.820058 1.43645) (layer "F.Cu") (width 0.16) (tstamp 1caf0e7d-bb12-4817-b1c5-d66faa62367a))
     (fp_arc (start -1.09375 1.894429) (mid 0.000001 -2.187499) (end 1.093749 1.89443) (layer "F.Cu") (width 0.2) (tstamp 4c8728e4-d947-4d02-abef-7162114983f0))
     (fp_arc (start 0.37926 -1.407352) (mid 0.5 -1.499999) (end 0.62074 -1.407352) (layer "F.Cu") (width 0.16) (tstamp 660696f9-f082-4d13-8489-30773922f074))
     (fp_arc (start 0.286757 1.768905) (mid 0.224257 1.706405) (end 0.286757 1.643905) (layer "F.Cu") (width 0.16) (tstamp 6a949d6e-e520-4276-a5c2-4675592507e3))
-    (fp_arc (start 0.820058 1.68645) (mid 0.757558 1.62395) (end 0.820058 1.56145) (layer "F.Cu") (width 0.16) (tstamp 6d89efcc-afc3-4350-8aad-9f3e377010bc))
+    (fp_arc (start 0.820058 1.68645) (mid 0.75756 1.62395) (end 0.820058 1.56145) (layer "F.Cu") (width 0.16) (tstamp 6d89efcc-afc3-4350-8aad-9f3e377010bc))
     (fp_arc (start -0.213115 1.768832) (mid 0.02807 1.671354) (end 0.286757 1.643905) (layer "F.Cu") (width 0.16) (tstamp 94ea2894-d4ad-4840-b669-e488a6227dca))
     (fp_arc (start -0.573838 0.957346) (mid -0.465724 0.276787) (end -0.013396 -0.243068) (layer "F.Cu") (width 0.16) (tstamp a2eb98e7-5f1a-48f4-92ef-02e45249401f))
     (fp_arc (start 0.03125 -0.762861) (mid -0.117369 -0.560252) (end -0.303506 -0.391461) (layer "F.Cu") (width 0.2) (tstamp a8a04978-6ca3-4813-a9fd-35ecc2638141))
-    (fp_arc (start 1.178844 -0.891296) (mid 0.969127 -0.866753) (end 0.763205 -0.913443) (layer "F.Cu") (width 0.16) (tstamp c24df643-4bdd-4f3f-9d0c-92e004cc6be9))
+    (fp_arc (start 1.178844 -0.891296) (mid 0.969127 -0.866752) (end 0.763205 -0.913443) (layer "F.Cu") (width 0.16) (tstamp c24df643-4bdd-4f3f-9d0c-92e004cc6be9))
     (fp_arc (start 0.286757 1.893905) (mid 0.224257 1.831405) (end 0.286757 1.768905) (layer "F.Cu") (width 0.16) (tstamp c3fb5eaa-e45a-4266-a3c0-094ac2f879c8))
-    (fp_arc (start 0.320186 1.561377) (mid 0.561371 1.463899) (end 0.820058 1.43645) (layer "F.Cu") (width 0.16) (tstamp c52c0605-34c8-45d0-8196-a6b54023857d))
-    (fp_arc (start 1.178836 -0.891151) (mid 1.000173 -1.003684) (end 0.869178 -1.169286) (layer "F.Cu") (width 0.16) (tstamp cefffc0f-e5b6-44d5-bdfc-5d7fb3eb0514))
+    (fp_arc (start 0.320186 1.561377) (mid 0.561371 1.4639) (end 0.820058 1.43645) (layer "F.Cu") (width 0.16) (tstamp c52c0605-34c8-45d0-8196-a6b54023857d))
+    (fp_arc (start 1.178836 -0.891151) (mid 1.000172 -1.003683) (end 0.869178 -1.169286) (layer "F.Cu") (width 0.16) (tstamp cefffc0f-e5b6-44d5-bdfc-5d7fb3eb0514))
     (fp_arc (start -0.809364 0.547562) (mid -0.886856 0.918958) (end -1.072198 1.25) (layer "F.Cu") (width 0.2) (tstamp db273335-7018-41b4-ab50-517750a59275))
     (fp_circle (center 0 0) (end 2.5 0) (layer "F.Cu") (width 0.2) (fill none) (tstamp 8e9fa671-051d-4f13-b7d1-9019e4a2f3b7))
     (fp_circle (center 0.3125 -1.25) (end 0.875 -1.25) (layer "F.Cu") (width 0.2) (fill none) (tstamp 94b1e89f-de77-4ce8-a97f-9ee813fbb5c4))
@@ -2322,7 +2322,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tedit 5F68FEEE) (tstamp fab93e97-fe93-4b2d-8913-2a2c54786996)
-    (at 69 87 180)
+    (at 117 45 180)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "electronics_lib.UsbPorts.UsbCcPulldownResistor")
@@ -2366,36 +2366,18 @@
     )
   )
 
-  (gr_rect (start 56 81) (end 120 116) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 5208c7a5-33c9-4bcf-a728-2dfb51625a10))
-  (dimension (type aligned) (layer "Cmts.User") (tstamp a75d9d83-c1cc-4f62-b545-9d29e7b874c2)
-    (pts (xy 134 42) (xy 134 54))
-    (height 2)
-    (gr_text "12.0000 mm" (at 130.85 48 90) (layer "Cmts.User") (tstamp a75d9d83-c1cc-4f62-b545-9d29e7b874c2)
-      (effects (font (size 1 1) (thickness 0.15)))
-    )
-    (format (units 3) (units_format 1) (precision 4))
-    (style (thickness 0.1) (arrow_length 1.27) (text_position_mode 0) (extension_height 0.58642) (extension_offset 0.5) keep_text_aligned)
-  )
-  (dimension (type aligned) (layer "Cmts.User") (tstamp d6f92729-0897-4fe3-8dd0-63932d5b620e)
-    (pts (xy 169 42) (xy 134 42))
-    (height 3)
-    (gr_text "35.0000 mm" (at 151.5 37.85) (layer "Cmts.User") (tstamp d6f92729-0897-4fe3-8dd0-63932d5b620e)
-      (effects (font (size 1 1) (thickness 0.15)))
-    )
-    (format (units 3) (units_format 1) (precision 4))
-    (style (thickness 0.1) (arrow_length 1.27) (text_position_mode 0) (extension_height 0.58642) (extension_offset 0.5) keep_text_aligned)
-  )
+  (gr_rect (start 104 39) (end 168 74) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 5208c7a5-33c9-4bcf-a728-2dfb51625a10))
 
   (zone (net 1) (net_name "gnd") (layers F&B.Cu) (tstamp 69cc3168-ddb2-4d32-a49c-e4ddc18a49b1) (hatch edge 0.508)
     (connect_pads (clearance 0.254))
     (min_thickness 0.2) (filled_areas_thickness no)
-    (fill yes (thermal_gap 0.2) (thermal_bridge_width 0.2))
+    (fill (thermal_gap 0.2) (thermal_bridge_width 0.2))
     (polygon
       (pts
-        (xy 170 55)
-        (xy 133 55)
-        (xy 133 41)
-        (xy 170 41)
+        (xy 169 75)
+        (xy 103 75)
+        (xy 103 38)
+        (xy 169 38)
       )
     )
   )
