@@ -120,6 +120,9 @@ class SwitchControllerBoard(JlcBoardTop):
       ],
       class_values=[
         (Er_Oled_091_3, ['device', 'vbat_min'], 3.2),  # allow this to work off 3.3 with tolerance
+        (Esp32_Wroom_32, ['ic', 'lcsc_part'], 'C701341'),  # -N4 version which is economic PCBA compatible
+        (Keystone5015, ['lcsc_part'], 'C5199798'),  # compatible RH-5015
+        (Ld1117, ['ic', 'lcsc_part'], 'C115288'),  # LD1117A which is still in stock
       ]
     )
 
