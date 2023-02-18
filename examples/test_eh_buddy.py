@@ -74,7 +74,7 @@ class EhBuddyBoard(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32c3_Wroom02),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ld1117),
 
         (['target', 'conn'], PinHeader254),
       ],
