@@ -67,7 +67,7 @@ class SwitchControllerBoard(JlcBoardTop):
       self.connect(self.mcu.uart.request('dut'), self.conn.uart)
 
       self.isense = imp.Block(OpampCurrentSensor(
-        resistance=(0, 100)*mOhm,
+        resistance=100*mOhm(tol=0.05),
         ratio=Range.from_tolerance(50, 0.05),
         input_impedance=10*kOhm(tol=0.05)
       ))
