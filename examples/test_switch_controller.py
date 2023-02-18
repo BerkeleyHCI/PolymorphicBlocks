@@ -37,13 +37,27 @@ class SwitchControllerBoard(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
-      # (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
 
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+
+      self.lcd = imp.Block(Er_Oled_091_3())
+      self.connect(self.mcu.spi.request('spi'), self.lcd.spi)
+      self.connect(self.lcd.cs, self.mcu.gpio.request('lcd_cs'))
+      self.connect(self.lcd.reset, self.mcu.gpio.request('lcd_reset'))
+      self.connect(self.lcd.dc, self.mcu.gpio.request('lcd_dc'))
+
+    # 5v DOMAIN
+    with self.implicit_connect(
+        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.usb_uart = imp.Block(Cp2102())
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.usb_uart.usb)
+      self.connect(self.usb_uart.uart, self.mcu.uart.request('uart'))
 
     # Switched Domain
     with self.implicit_connect(
@@ -85,6 +99,9 @@ class SwitchControllerBoard(JlcBoardTop):
       class_refinements=[
         (PassiveConnector, PinHeader254),
       ],
+      class_values=[
+        (Er_Oled_091_3, ['device', 'vbat_min'], 3.2),  # allow this to work off 3.3 with tolerance
+      ]
     )
 
 
