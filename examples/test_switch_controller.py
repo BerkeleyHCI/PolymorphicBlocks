@@ -11,7 +11,7 @@ class SwitchControllerBoard(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
+    self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
 
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
@@ -37,7 +37,7 @@ class SwitchControllerBoard(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      # (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
 
@@ -49,7 +49,7 @@ class SwitchControllerBoard(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.conn = imp.Block(UartConnector(pwr_current_draw=(0, 150)*mAmp))
+      self.conn = imp.Block(UartConnector(pwr_current_draw=(0, 1)*Amp))
       self.connect(self.mcu.uart.request('dut'), self.conn.uart)
 
       self.isense = imp.Block(OpampCurrentSensor(

@@ -116,8 +116,8 @@ class UsbCReceptacle(UsbConnector, GeneratorBlock):
       self.connect(self.cc_pull.gnd, self.gnd)
       self.require(self.pwr.voltage_out == UsbConnector.USB2_VOLTAGE_RANGE,
                    "when CC not connected, port restricted to USB 2.0 voltage")
-      self.require(self.pwr.current_limits == UsbConnector.USB2_CURRENT_LIMITS,
-                   "when CC not connected, port restricted to USB 2.0 current")
+      # note that the DFP (power source) can provide the max current, however the UFP (device)
+      # should sense the voltage at CC to determine the amount of current allowed
 
     # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
     self.connect(self.gnd, self.conn.shield.adapt_to(Ground()))
