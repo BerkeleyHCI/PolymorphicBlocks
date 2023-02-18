@@ -2074,7 +2074,7 @@
 
   (footprint "Package_TO_SOT_SMD:SOT-23" (layer "F.Cu")
     (tedit 5FA16958) (tstamp e9445b5d-4730-4e98-8195-f2874da15396)
-    (at 112 110)
+    (at 113 110)
     (descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
     (tags "SOT TO_SOT_SMD")
     (property "Sheetfile" "electronics_abstract_parts.DigitalAmplifiers.HighSideSwitch")
