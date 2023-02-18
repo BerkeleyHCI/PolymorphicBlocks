@@ -22,6 +22,6 @@
   (fp_line (start 8.21 5.96) (end 8.21 -2.04) (layer "Cmts.User") (width 0.12) (tstamp 51d07c79-0644-4a9c-a6ae-4e857dcf0cda))
   (fp_line (start 18.3 5.96) (end 18.3 -2.04) (layer "Cmts.User") (width 0.12) (tstamp 659f9f7d-78f0-4229-98fe-97d622c0c230))
   (fp_line (start 8.21 5.96) (end 10.71 5.96) (layer "Cmts.User") (width 0.12) (tstamp a4a9479f-5b40-4b42-b589-1f3a33e598c9))
-  (fp_line (start 8.71 4.96) (end 8.71 4.96) (layer "Cmts.User") (width 0.25) (tstamp ce9c67b2-caea-4290-a932-bab94786f6bc))
+  (fp_line (start 8.71 5.46) (end 8.71 5.46) (layer "Cmts.User") (width 0.25) (tstamp ce9c67b2-caea-4290-a932-bab94786f6bc))
   (fp_line (start 10.71 -2.04) (end 8.21 -2.04) (layer "Cmts.User") (width 0.12) (tstamp f944bec0-aec9-443d-8bc4-b56a258dcdaf))
 )
