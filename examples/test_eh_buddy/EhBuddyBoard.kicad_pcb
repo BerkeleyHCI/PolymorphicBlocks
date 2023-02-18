@@ -433,7 +433,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp 2f4b8279-babb-4521-8ad5-e68d16a82d35)
-    (at 58 99)
+    (at 59 99)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -479,7 +479,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp 397fb497-366b-4bd3-a3f4-49db3c9ababe)
-    (at 70 99)
+    (at 69 99)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -921,7 +921,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp 698af9eb-e993-4948-8076-cfdfa0e63087)
-    (at 57 114)
+    (at 58 114)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -1651,7 +1651,7 @@
 
   (footprint "Button_Switch_SMD:SW_SPST_SKQG_WithoutStem" (layer "F.Cu")
     (tedit 61D4AA89) (tstamp c31baf52-3a6b-4d9a-a61c-cee42a4e8bb0)
-    (at 109 101)
+    (at 109 102)
     (descr "ALPS 5.2mm Square Low-profile Type (Surface Mount) SKQG Series, Without stem, http://www.alps.com/prod/info/E/HTML/Tact/SurfaceMount/SKQG/SKQGAEE010.html")
     (tags "SPST Button Switch")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32c3.Esp32c3_Wroom02")
@@ -1726,10 +1726,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 110 99.7)
-          (xy 113 99.7)
-          (xy 113 102.3)
-          (xy 110 102.3)
+          (xy 110 100.7)
+          (xy 113 100.7)
+          (xy 113 103.3)
+          (xy 110 103.3)
         )
       )
     )
@@ -1740,10 +1740,10 @@
       (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
       (polygon
         (pts
-          (xy 105 99.7)
-          (xy 108 99.7)
-          (xy 108 102.3)
-          (xy 105 102.3)
+          (xy 105 100.7)
+          (xy 108 100.7)
+          (xy 108 103.3)
+          (xy 105 103.3)
         )
       )
     )
@@ -1901,7 +1901,7 @@
 
   (footprint "edg:JlcToolingHole_1.152mm" (layer "F.Cu")
     (tedit 619E07CC) (tstamp dd528780-6f90-41f7-afb8-e972dacab543)
-    (at 57 83)
+    (at 58 83)
     (descr "Tooling holes for JLC assembly, 1.152 mm hole + 1.3mm soldermask opening")
     (property "Sheetfile" "edg.BoardTop.JlcToolingHoles")
     (property "Sheetname" "jlc_th")
@@ -2171,7 +2171,7 @@
 
   (footprint "TestPoint:TestPoint_Keystone_5015_Micro-Minature" (layer "F.Cu")
     (tedit 5A0F774F) (tstamp f3272b63-cd95-446c-b831-55b8a5ab6a7b)
-    (at 58 111)
+    (at 59 111)
     (descr "SMT Test Point- Micro Miniature 5015, http://www.keyelco.com/product-pdf.cfm?p=1353")
     (tags "Test Point")
     (property "Sheetfile" "")
@@ -2366,7 +2366,7 @@
     )
   )
 
-  (gr_rect (start 55 81) (end 120 116) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 5208c7a5-33c9-4bcf-a728-2dfb51625a10))
+  (gr_rect (start 56 81) (end 120 116) (layer "Edge.Cuts") (width 0.0381) (fill none) (tstamp 5208c7a5-33c9-4bcf-a728-2dfb51625a10))
   (dimension (type aligned) (layer "Cmts.User") (tstamp a75d9d83-c1cc-4f62-b545-9d29e7b874c2)
     (pts (xy 134 42) (xy 134 54))
     (height 2)
