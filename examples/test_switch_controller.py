@@ -4,7 +4,7 @@ from edg import *
 from .test_usb_uart import UartConnector
 
 
-class EhBuddyBoard(JlcBoardTop):
+class SwitchControllerBoard(JlcBoardTop):
   """Test board for an energy harvesting development project, that can control power to and
   communicate with the DUT.
   """
@@ -73,7 +73,7 @@ class EhBuddyBoard(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32c3_Wroom02),
+        (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ld1117),
 
         (['target', 'conn'], PinHeader254),
@@ -88,6 +88,6 @@ class EhBuddyBoard(JlcBoardTop):
     )
 
 
-class EhBuddyTestCase(unittest.TestCase):
+class SwitchControllerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(EhBuddyBoard)
+    compile_board_inplace(SwitchControllerBoard)
