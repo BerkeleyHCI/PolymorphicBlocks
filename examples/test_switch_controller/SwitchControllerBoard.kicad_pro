@@ -215,7 +215,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "../EhBuddyTest.net",
+      "netlist": "../SwitchControllerBoard.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
