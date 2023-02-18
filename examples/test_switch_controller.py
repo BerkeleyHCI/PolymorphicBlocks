@@ -94,6 +94,25 @@ class SwitchControllerBoard(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'uart.tx=11',
+          'uart.rx=10',
+
+          'ledg=12',
+          'ledr=13',
+          'ledb=14',
+          'sw1=16',
+
+          'dut.tx=28',
+          'dut.rx=27',
+          'sw=26',
+          'isense=23',
+
+          'spi.mosi=36',
+          'spi.sck=33',
+          'spi.miso=NC',
+          'lcd_dc=31',
+          'lcd_reset=30',
+          'lcd_cs=29',
         ]),
       ],
       class_refinements=[

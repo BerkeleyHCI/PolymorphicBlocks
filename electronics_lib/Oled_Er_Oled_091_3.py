@@ -6,7 +6,7 @@ class Er_Oled_091_3_Outline(DiscreteChip, FootprintBlock):
     """Footprint for OLED panel outline"""
     def contents(self) -> None:
         super().contents()
-        self.footprint('Q', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
+        self.footprint('U', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
                        'EastRising', 'ER-OLED-0.91-e')
 
 
