@@ -2,6 +2,14 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050Bottom
 
 
+class Er_Oled_091_3_Outline(DiscreteChip, FootprintBlock):
+    """Footprint for OLED panel outline"""
+    def contents(self) -> None:
+        super().contents()
+        self.footprint('Q', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
+                       'EastRising', 'ER-OLED-0.91-e')
+
+
 class Er_Oled_091_3_Device(DiscreteChip):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
     internal DC/DC
@@ -10,6 +18,7 @@ class Er_Oled_091_3_Device(DiscreteChip):
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=15))
+        self.lcd = self.Block(Er_Oled_091_3_Outline())  # for device outline
 
         self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9)*Volt,
