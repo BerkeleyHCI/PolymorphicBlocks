@@ -51,9 +51,19 @@ class EhBuddyTest(JlcBoardTop):
     ) as imp:
       self.conn = imp.Block(UartConnector(pwr_current_draw=(0, 150)*mAmp))
       self.connect(self.mcu.uart.request('dut'), self.conn.uart)
+
+      self.isense = imp.Block(OpampCurrentSensor(
+        resistance=(0, 100)*mOhm,
+        ratio=Range.from_tolerance(50, 0.05),
+        input_impedance=10*kOhm(tol=0.05)
+      ))
+      self.connect(self.vusb, self.isense.pwr_in)
+      self.connect(self.v3v3, self.isense.pwr)
+      self.connect(self.isense.out, self.mcu.adc.request('isense'))
+      self.connect(self.isense.ref, self.isense.gnd.as_analog_source())
       self.sw = imp.Block(HighSideSwitch())
       self.connect(self.mcu.gpio.request('sw'), self.sw.control)
-      self.connect(self.vusb, self.sw.pwr)
+      self.connect(self.isense.pwr_out, self.sw.pwr)
       self.connect(self.sw.output.as_voltage_source(), self.conn.pwr)
 
     # Misc board
