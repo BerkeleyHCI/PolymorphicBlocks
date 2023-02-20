@@ -43,7 +43,7 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
       raise ValueError(f"no resistor package for {power.upper} W power")
 
     self.assign(self.actual_resistance, selected_range)
-    self.assign(self.actual_power_rating, suitable_packages[0][0])
+    self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
     self.footprint(
       'R', suitable_packages[0][1],
