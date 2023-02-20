@@ -159,7 +159,7 @@ class Afc01(Fpc050Bottom, JlcPart):
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
   _afc01_pins = set(range(4, 60+1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
-  PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23
+  PART_NUMBERS = {  # partial list of the ones currently used
     8: 'C262657',
     15: 'C262664',
     30: 'C262671',
