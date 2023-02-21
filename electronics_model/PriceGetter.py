@@ -1,8 +1,6 @@
-import io
-from typing import List, Tuple, Dict, NamedTuple
+from typing import List, Tuple, Dict
 
 import edgir
-import electronics_lib.resources
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
 import os
 import csv
@@ -68,3 +66,4 @@ class GeneratePrice(BaseBackend):      # creates and populates .csv file
         return [
             (edgir.LocalPath(), str(total_price))
         ]
+    
