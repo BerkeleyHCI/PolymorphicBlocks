@@ -10,7 +10,7 @@ import re
 
 
 class GetPrice:
-    def run(self, lcsc_part_number: str, quantity: int) -> float:
+    def run(lcsc_part_number: str, quantity: int) -> float:
         cur_path = os.path.dirname(__file__)
         parts_library = os.path.relpath(
             '..\\electronics_lib\\resources\\Pruned_JLCPCB SMT Parts Library(20220419).csv', cur_path)
@@ -36,3 +36,35 @@ class GetPrice:
             # for the case when quantity_group is ["lower-bound", "price per part"]:
             elif length == 2:
                 return quantity * float(quantity_group[1])
+
+
+class PriceTransform(TransformUtil.Transform):
+    def __init__(self, design: CompiledDesign):
+        self.design = design
+        self.part_list: Dict[str, int] = {}
+
+    def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
+        lcsc_part_number: str = self.design.get_value(context.path.to_tuple() + ('lcsc_part',)) or None
+        if lcsc_part_number is not None:
+            try:
+                self.part_list[lcsc_part_number] += 1
+            except KeyError:
+                self.part_list[lcsc_part_number] = 1
+
+    def run(self) -> Dict[str, int]:
+        self.transform_design(self.design.design)
+        return self.part_list
+
+
+class GeneratePrice(BaseBackend):      # creates and populates .csv file
+    def run(self, design: CompiledDesign, args=None) -> List[Tuple[edgir.LocalPath, str]]:
+        if args is None:
+            args = {}
+        price_list = PriceTransform(design).run()
+        total_price = 0
+        for lcsc_part_number, quantity in price_list:
+            price_list += GetPrice.run(lcsc_part_number, quantity)
+
+        return [
+            (edgir.LocalPath(), str(total_price))
+        ]
