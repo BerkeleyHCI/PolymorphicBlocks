@@ -4,6 +4,7 @@ from typing import TypeVar, Type, Mapping
 from edg_core import *
 
 
+@non_library
 class KiCadImportableBlock(Block):
   """A mixin for a Block that also defines a pin mapping for KiCad symbol(s),
   allowing this to be used in a schematic.
@@ -15,6 +16,7 @@ class KiCadImportableBlock(Block):
     raise NotImplementedError  # implement me
 
 
+@non_library
 class KiCadInstantiableBlock(KiCadImportableBlock):
   """A mixin for a Block that allows the block to be instantiated from a KiCad symbol
   by parsing the symbol and properties.

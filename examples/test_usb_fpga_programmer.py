@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class FpgaProgrammingHeader(Block):
+class FpgaProgrammingHeader(Connector, Block):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
   def __init__(self):
     super().__init__()

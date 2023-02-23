@@ -6,7 +6,7 @@ from .test_robotdriver import LipoConnector
 from .test_bldc import PowerOutConnector
 
 
-class SeriesPowerDiode(KiCadImportableBlock):
+class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
   """Series diode that propagates voltage"""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Device:D'
@@ -34,7 +34,7 @@ class SeriesPowerDiode(KiCadImportableBlock):
     )))
 
 
-class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
+class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, GeneratorBlock):
   """A switching cell for one level of a multilevel converter, consisting of a high FET,
   low FET, gate driver, isolator (if needed), and bootstrap circuit (for the gate driver).
 
@@ -164,7 +164,7 @@ class MultilevelSwitchingCell(KiCadSchematicBlock, GeneratorBlock):
       })
 
 
-class DiscreteMutlilevelBuckConverter(GeneratorBlock):
+class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   """Flying capacitor multilevel buck converter. Trades more switches for smaller inductor size:
   for number of levels N, inductor value is reduced by a factor of (N-1)^2.
   2 levels is standard switching converter (1 pair of switches in a synchronous topology).

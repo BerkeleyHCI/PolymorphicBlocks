@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Mcp4921_Device(DiscreteChip, FootprintBlock):
+class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.vdd = self.Port(VoltageSink(
@@ -50,7 +50,7 @@ class Mcp4921_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Mcp4921(Block):
+class Mcp4921(DigitalToAnalog, Block):
   """MCP4921 12-bit 4.5uS DAC.
   Other chips in series:
   MCP4901 (8 bits), MCP4911 (10 bits), and others with 2 channels or internal Vref

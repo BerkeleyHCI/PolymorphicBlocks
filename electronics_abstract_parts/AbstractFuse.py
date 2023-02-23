@@ -8,7 +8,7 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class Fuse(DiscreteComponent, DiscreteApplication):
+class Fuse(InternalSubcircuit, Block):
   @init_in_parent
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = Default(RangeExpr.ALL),
                voltage: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
@@ -47,7 +47,7 @@ class PptcFuse(Fuse):
   """PPTC self-resetting fuse"""
 
 
-@abstract_block
+@non_library
 class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -67,7 +67,7 @@ class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
   }
 
 
-@abstract_block
+@non_library
 class TableFuse(FuseStandardPinning, PartsTableFootprint, GeneratorBlock):
   TRIP_CURRENT = PartsTableColumn(Range)
   HOLD_CURRENT = PartsTableColumn(Range)
@@ -107,7 +107,7 @@ class TableFuse(FuseStandardPinning, PartsTableFootprint, GeneratorBlock):
     )
 
 
-class SeriesPowerPptcFuse(DiscreteApplication):
+class SeriesPowerPptcFuse(Protection):
   """Series fuse for power applications"""
   @init_in_parent
   def __init__(self, trip_current: RangeLike) -> None:

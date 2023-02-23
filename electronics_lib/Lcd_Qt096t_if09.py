@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050Bottom
 
 
-class Qt096t_if09_Device(DiscreteChip):
+class Qt096t_if09_Device(InternalSubcircuit, Block):
   def __init__(self) -> None:
     super().__init__()
 

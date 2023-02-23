@@ -32,7 +32,7 @@ class LibraryElementIndexer:
       if inspect.ismodule(member):  # recurse into visible modules
         self._search_module(member)
 
-      if inspect.isclass(member) and issubclass(member, LibraryElement) \
+      if inspect.isclass(member) and issubclass(member, LibraryElement) and not issubclass(member, DesignTop) \
           and member not in self.seen_elements \
           and (member, 'non_library') not in member._elt_properties:  # process elements
         self.seen_elements.add(member)

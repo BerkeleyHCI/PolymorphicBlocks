@@ -49,7 +49,7 @@ class MountingHole_M4(MountingHole):
   VALUE = 'M4'
 
 
-class JlcToolingHole(FootprintBlock):
+class JlcToolingHole(Mechanical, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(

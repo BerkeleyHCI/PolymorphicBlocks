@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class BldcConnector(Block):
+class BldcConnector(Connector, Block):
   """Parameterizable-current connector to an external BLDC motor."""
   @init_in_parent
   def __init__(self, max_current: FloatLike):
@@ -20,7 +20,7 @@ class BldcConnector(Block):
       self.connect(phase_i, self.conn.pins.request(i).adapt_to(phase_model))
 
 
-class MagneticEncoder(Block):
+class MagneticEncoder(Connector, Magnetometer, Block):
   """Connector to AS5600 mangetic encoder,
   https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf"""
   def __init__(self):
@@ -38,7 +38,7 @@ class MagneticEncoder(Block):
                            [Common])
 
 
-class I2cConnector(Block):
+class I2cConnector(Connector, Block):
   """Generic I2C connector, QWIIC pinning (gnd/vcc/sda/scl)"""
   def __init__(self):
     super().__init__()
@@ -54,7 +54,7 @@ class I2cConnector(Block):
     self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 
 
-class PowerOutConnector(Block):
+class PowerOutConnector(Connector, Block):
   """Parameterized current draw voltage output connector"""
   @init_in_parent
   def __init__(self, current: RangeLike):

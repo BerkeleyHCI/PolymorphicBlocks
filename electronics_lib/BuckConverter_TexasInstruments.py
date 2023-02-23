@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Tps561201_Device(DiscreteChip, FootprintBlock):
+class Tps561201_Device(InternalSubcircuit, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -74,7 +74,7 @@ class Tps561201(DiscreteBuckConverter):
       self.connect(self.power_path.switch, self.ic.sw)
 
 
-class Tps54202h_Device(DiscreteChip, FootprintBlock):
+class Tps54202h_Device(InternalSubcircuit, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()

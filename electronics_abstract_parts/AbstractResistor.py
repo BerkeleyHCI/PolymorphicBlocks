@@ -53,7 +53,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     )
 
 
-@abstract_block
+@non_library
 class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -84,7 +84,7 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
   }
 
 
-@abstract_block
+@non_library
 class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
@@ -205,7 +205,6 @@ class SeriesPowerResistor(DiscreteApplication):
     return self
 
 
-from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
 class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
@@ -228,11 +227,8 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   def generate(self, sense_in_connected: bool):
     super().contents()
 
-    # TODO dehack with better adapters that also handle bridging
     if sense_in_connected:
-      self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.pwr_in, self.pwr_adapter.src)
-      self.connect(self.pwr_adapter.dst, self.sense_in)
+      self.connect(self.pwr_in.as_analog_source(), self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \

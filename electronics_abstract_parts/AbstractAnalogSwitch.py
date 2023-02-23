@@ -1,10 +1,11 @@
 from typing import List, cast, Optional, Dict
 
 from electronics_model import *
+from .Categories import Interface
 
 
 @abstract_block
-class AnalogSwitch(KiCadImportableBlock, Block):
+class AnalogSwitch(Interface, KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
@@ -94,7 +95,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.assign(self.analog_on_resistance, all_switches[0].analog_on_resistance * switch_stage)
 
 
-class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
+class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
@@ -143,7 +144,7 @@ class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
     return self
 
 
-class AnalogDemuxer(GeneratorBlock):
+class AnalogDemuxer(Interface, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides demuxing functionality - multiple source ports, one sink port.
   """
   def __init__(self) -> None:

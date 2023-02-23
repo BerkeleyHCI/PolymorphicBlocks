@@ -59,8 +59,9 @@ from .Fpga_Ice40up import Ice40up5k_Sg48
 from .IoExpander_Pcf8574 import Pcf8574
 
 from .PowerConnectors import PowerBarrelJack, Pj_102a
-from .UsbPorts import UsbConnector, UsbAReceptacle, UsbCReceptacle, UsbDeviceConnector, UsbMicroBReceptacle
-from .UsbPorts import UsbEsdDiode, Tpd2e009, Pesd5v0x1bt, Pgb102st23
+from .CanBlocks import Pesd1can
+from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbMicroBReceptacle
+from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
 
@@ -90,9 +91,6 @@ from .SpiMemory_W25q import W25q
 from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
-
-from .CalSolBlocks import CalSolCanBlock, CalSolPowerConnector
-from .CalSolBlocks import CalSolCanConnector, CalSolCanConnectorRa, M12CanConnector, CanEsdDiode
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332

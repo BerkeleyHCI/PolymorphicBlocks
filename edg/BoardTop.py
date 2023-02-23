@@ -31,6 +31,7 @@ class BaseBoardTop(DesignTop):
 
         (Fpc050Bottom, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
+        (CanEsdDiode, Pesd1can),
         (TestPoint, TeRc),
 
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
@@ -57,7 +58,7 @@ class SimpleBoardTop(BaseBoardTop):
     )
     
     
-class JlcToolingHoles(Block):
+class JlcToolingHoles(Mechanical, Block):
   def contents(self):
     super().contents()
     self.th1 = self.Block(JlcToolingHole())

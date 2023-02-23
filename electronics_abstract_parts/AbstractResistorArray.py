@@ -44,7 +44,7 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     )
 
 
-@abstract_block
+@non_library
 class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[ResistorArray]):
   # TODO some way to ensure the resistor count is sufficient?
   FOOTPRINT_PINNING_MAP = {  # these are all the footprints in KiCad as of 2022 05 31
@@ -80,7 +80,7 @@ class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[Resis
   }
 
 
-@abstract_block
+@non_library
 class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)

@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Nlas4157_Device(FootprintBlock):
+class Nlas4157_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
 

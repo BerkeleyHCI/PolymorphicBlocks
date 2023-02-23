@@ -7,7 +7,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -258,7 +258,7 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
   JLC_BASIC_PART = True
 
 
-class UsbDpPullUp(Block):
+class UsbDpPullUp(InternalSubcircuit, Block):
   @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()

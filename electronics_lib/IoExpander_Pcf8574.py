@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, GeneratorBlock):
+class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
   @init_in_parent
   def __init__(self, addr_lsb: IntLike, **kwags) -> None:
     super().__init__(**kwags)
@@ -76,7 +76,7 @@ class Pcf8574_Device(PinMappable, DiscreteChip, FootprintBlock, JlcPart, Generat
     self.assign(self.lcsc_part, "C86832")
 
 
-class Pcf8574(PinMappable):
+class Pcf8574(Interface, PinMappable):
   """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
   @init_in_parent
   def __init__(self, addr_lsb: IntLike = Default(0)) -> None:
