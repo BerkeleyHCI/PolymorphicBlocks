@@ -162,6 +162,7 @@ class Afc01(Fpc050Bottom, JlcPart):
   PART_NUMBERS = {  # partial list of the ones currently used
     8: 'C262657',
     15: 'C262664',
+    24: 'C262669',
     30: 'C262671',
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
@@ -169,7 +170,7 @@ class Afc01(Fpc050Bottom, JlcPart):
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC01-S{length:03d}FCA-00")  # CA is T&R packaging
+            "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is T&R packaging
 
 
 class Te1734839(Fpc050Top):
