@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class UartConnector(Block):
+class UartConnector(Connector, Block):
   """UART connector, follows the TXD, RXD, GND, +5 pinning of cheap CP2102 dongles."""
   def __init__(self):
     super().__init__()

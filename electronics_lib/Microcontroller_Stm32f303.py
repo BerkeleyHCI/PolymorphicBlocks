@@ -141,7 +141,7 @@ class Stm32f303Base_Device():
     ])
 
 
-class Nucleo_F303k8(PinMappable, BaseIoController, GeneratorBlock, FootprintBlock):
+class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlock, FootprintBlock):
   """Nucleo32 F303K8 configured as power source from USB."""
 
   RESOURCE_PIN_REMAP = {

@@ -77,7 +77,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
     )
 
 
-@abstract_block
+@non_library
 class FetStandardPinning(Fet, StandardPinningFootprint[Fet]):
   FOOTPRINT_PINNING_MAP = {
     'Package_TO_SOT_SMD:SOT-23': lambda block: {
@@ -126,7 +126,7 @@ class BaseTableFet(Fet):
   CHANNEL = PartsTableColumn(str)  # either 'P' or 'N'
 
 
-@abstract_block
+@non_library
 class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -199,7 +199,7 @@ class SwitchFet(Fet):
     self.drive_current = self.ArgParameter(drive_current)  # positive is turn-on drive, negative is turn-off drive
 
 
-@abstract_block
+@non_library
 class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)

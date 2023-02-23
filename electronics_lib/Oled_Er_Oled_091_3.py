@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050
 
 
-class Er_Oled_091_3_Device(DiscreteChip):
+class Er_Oled_091_3_Device(InternalSubcircuit, Block):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
     internal DC/DC
     https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""
@@ -55,7 +55,7 @@ class Er_Oled_091_3_Device(DiscreteChip):
         self.c1n = self.Export(self.conn.pins.request('4'))
 
 
-class Er_Oled_091_3(Lcd, Block):
+class Er_Oled_091_3(Oled, Block):
     """SSD1306-based 0.91" 128x32 monochrome OLED.
     TODO (maybe?) add the power gating circuit in the reference schematic"""
     def __init__(self) -> None:

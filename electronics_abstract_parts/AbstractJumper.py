@@ -1,8 +1,9 @@
 from electronics_model import *
+from .Categories import Testing, TypedJumper
 
 
 @abstract_block
-class Jumper(Block):
+class Jumper(Testing, Block):
   """A two-ported passive-typed jumper (a disconnect-able connection), though is treated
   as always connected for model purposes.
 
@@ -13,7 +14,7 @@ class Jumper(Block):
     self.b = self.Port(Passive())
 
 
-class DigitalJumper(Block):
+class DigitalJumper(TypedJumper, Block):
   def __init__(self):
     super().__init__()
     self.input = self.Port(DigitalSink.empty(), [Input])

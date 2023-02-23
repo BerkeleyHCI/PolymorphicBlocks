@@ -36,7 +36,7 @@ class Inductor(PassiveComponent):
     )
 
 
-@abstract_block
+@non_library
 class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -68,7 +68,7 @@ class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
   }
 
 
-@abstract_block
+@non_library
 class TableInductor(InductorStandardPinning, PartsTableFootprint, GeneratorBlock):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies

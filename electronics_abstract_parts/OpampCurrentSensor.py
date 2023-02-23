@@ -1,10 +1,11 @@
 from typing import Dict
 
 from electronics_abstract_parts import CurrentSenseResistor, DifferentialAmplifier
+from .Categories import Sensor
 from electronics_model import *
 
 
-class OpampCurrentSensor(KiCadImportableBlock, Block):
+class OpampCurrentSensor(Sensor, KiCadImportableBlock, Block):
   """Current sensor block using a resistive sense element and an opamp-based differential amplifier.
   For a positive current (flowing from pwr_in -> pwr_out), this generates a positive voltage on the output.
   Output reference can be floating (eg, at Vdd/2) to allow bidirectional current sensing.

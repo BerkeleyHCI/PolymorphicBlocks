@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32 series microcontrollrs with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
@@ -224,7 +224,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32_Wroom_32(PinMappable, Microcontroller, IoController, Block):
+class Esp32_Wroom_32(PinMappable, Microcontroller, Radiofrequency, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
@@ -333,7 +333,7 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     )
 
 
-class Esp32_Wrover_Dev(PinMappable, Microcontroller, IoController, Block):
+class Esp32_Wrover_Dev(PinMappable, Microcontroller, Radiofrequency, IoController, Block):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   def __init__(self):

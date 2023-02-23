@@ -7,7 +7,7 @@ from .Categories import *
 
 
 @abstract_block
-class TestPoint(Block):
+class TestPoint(Testing, Block):
   """Abstract test point that can take a name as a string, used as the footprint value.
   """
   @init_in_parent
@@ -17,7 +17,7 @@ class TestPoint(Block):
     self.tp_name = self.ArgParameter(name)
 
 
-class VoltageTestPoint(Block):
+class VoltageTestPoint(TypedTestPoint, Block):
   """Test point with a VoltageSink port."""
   def __init__(self):
     super().__init__()
@@ -30,7 +30,7 @@ class VoltageTestPoint(Block):
     return self
 
 
-class DigitalTestPoint(Block):
+class DigitalTestPoint(TypedTestPoint, Block):
   """Test point with a DigitalSink port."""
   def __init__(self):
     super().__init__()
@@ -43,7 +43,7 @@ class DigitalTestPoint(Block):
     return self
 
 
-class DigitalArrayTestPoint(GeneratorBlock):
+class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
   def __init__(self):
     super().__init__()
@@ -57,7 +57,7 @@ class DigitalArrayTestPoint(GeneratorBlock):
       self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
-class AnalogTestPoint(Block):
+class AnalogTestPoint(TypedTestPoint, Block):
   """Test point with a AnalogSink port."""
   def __init__(self):
     super().__init__()
@@ -70,7 +70,7 @@ class AnalogTestPoint(Block):
     return self
 
 
-class I2cTestPoint(Block):
+class I2cTestPoint(TypedTestPoint, Block):
   """Two test points for I2C SDA and SCL"""
   def __init__(self):
     super().__init__()
@@ -85,7 +85,7 @@ class I2cTestPoint(Block):
     return self
 
 
-class CanControllerTestPoint(Block):
+class CanControllerTestPoint(TypedTestPoint, Block):
   """Two test points for CAN controller-side TXD and RXD"""
   def __init__(self):
     super().__init__()

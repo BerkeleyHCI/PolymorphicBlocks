@@ -4,7 +4,7 @@ from electronics_model import *
 
 StandardPinningType = TypeVar('StandardPinningType', bound=Block)
 PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
-@abstract_block
+@non_library
 class StandardPinningFootprint(FootprintBlock, Generic[StandardPinningType]):
   """An infrastructural block that provides table to provide standard pin mapping from footprints."""
 

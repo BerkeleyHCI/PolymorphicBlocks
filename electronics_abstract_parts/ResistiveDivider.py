@@ -4,7 +4,8 @@ from math import log10, ceil
 from typing import List, Tuple
 
 from electronics_model import *
-from . import AnalogFilter, DiscreteApplication, Resistor, Filter
+from . import AnalogFilter, Resistor, Filter
+from .Categories import InternalSubcircuit, DiscreteApplication
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
 
@@ -54,7 +55,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class ResistiveDivider(DiscreteApplication, GeneratorBlock):
+class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
 
   @init_in_parent
@@ -110,7 +111,7 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                 1 / (self.top_res.actual_resistance / self.bottom_res.actual_resistance + 1))
 
 
-@abstract_block
+@non_library
 class BaseVoltageDivider(Filter, Block):
   """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
   an analog constant-voltage signal.
@@ -143,7 +144,7 @@ class BaseVoltageDivider(Filter, Block):
     self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
 
 
-class VoltageDivider(BaseVoltageDivider):
+class VoltageDivider(DiscreteApplication, BaseVoltageDivider):
   """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
@@ -159,7 +160,7 @@ class VoltageDivider(BaseVoltageDivider):
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
-class VoltageSenseDivider(BaseVoltageDivider):
+class VoltageSenseDivider(DiscreteApplication, BaseVoltageDivider):
   """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage).
   Unlike the normal VoltageDivider, the output is defined in terms of full scale voltage - that is, the voltage
@@ -180,7 +181,7 @@ class VoltageSenseDivider(BaseVoltageDivider):
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
-class FeedbackVoltageDivider(BaseVoltageDivider):
+class FeedbackVoltageDivider(DiscreteApplication, BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent

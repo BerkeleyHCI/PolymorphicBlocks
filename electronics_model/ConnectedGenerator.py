@@ -52,11 +52,11 @@ class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, Lin
     return self
 
 
-class VoltageSourceConnected(BaseConnectedGenerator[VoltageSource, VoltageSink, VoltageLink]):
+class VoltageSourceConnected(InternalBlock, BaseConnectedGenerator[VoltageSource, VoltageSink, VoltageLink]):
   OUTPUT_TYPE = VoltageSource
   INPUTS_TYPE = VoltageSink
 
 
-class DigitalSourceConnected(BaseConnectedGenerator[DigitalSource, DigitalSink, DigitalLink]):
+class DigitalSourceConnected(InternalBlock, BaseConnectedGenerator[DigitalSource, DigitalSink, DigitalLink]):
   OUTPUT_TYPE = DigitalSource
   INPUTS_TYPE = DigitalSink

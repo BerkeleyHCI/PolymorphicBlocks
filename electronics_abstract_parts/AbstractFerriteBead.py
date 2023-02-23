@@ -35,7 +35,7 @@ class FerriteBead(PassiveComponent):
     )
 
 
-@abstract_block
+@non_library
 class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBead]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -55,7 +55,7 @@ class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBe
   }
 
 
-@abstract_block
+@non_library
 class TableFerriteBead(FerriteBeadStandardPinning, PartsTableFootprint, GeneratorBlock):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)

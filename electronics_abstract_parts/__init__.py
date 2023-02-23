@@ -4,14 +4,17 @@ from electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTablePart, PartsTableFootprint
 
-from .Categories import DiscreteComponent, DiscreteChip, DiscreteSemiconductor, PassiveComponent
+from .Categories import DummyDevice
+from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
-from .Categories import IntegratedCircuit, Microcontroller, Fpga, Memory, RealtimeClock, PowerConditioner
-from .Categories import Connector, BarrelJack, ProgrammingConnector
+from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
+from .Categories import Interface, AnalogToDigital, DigitalToAnalog
+from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
+from .Categories import Connector, ProgrammingConnector
 from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
-from .Categories import SpecificApplicationSubcircuit
-from .Categories import Label, Mechanical
+from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
 
@@ -57,7 +60,8 @@ from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, Di
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 
-from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
+from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
+from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode
 from .GateDrivers import HalfBridgeDriver
 from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup

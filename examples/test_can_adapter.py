@@ -1,6 +1,7 @@
 import unittest
 
 from edg import *
+from .test_high_switch import CalSolCanConnectorRa
 
 
 class CanAdapter(BoardTop):
@@ -50,7 +51,6 @@ class CanAdapter(BoardTop):
     self.connect(self.mcu.gpio.request_vector('rgb_can'), self.rgb_can.signals)
 
     # Isolated CAN Domain
-    # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
     self.can = self.Block(CalSolCanConnectorRa())
     self.can_vcan = self.connect(self.can.pwr)
     self.can_gnd = self.connect(self.can.gnd)

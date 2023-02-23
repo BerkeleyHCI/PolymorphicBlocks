@@ -73,7 +73,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     self.neg = self.Port(Passive.empty())
 
 
-@abstract_block
+@non_library
 class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
   # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
   FOOTPRINT_PINNING_MAP = {
@@ -93,7 +93,7 @@ class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
   }
 
 
-@abstract_block
+@non_library
 class TableCapacitor(Capacitor):
   """Abstract table-based capacitor, providing some interface column definitions.
   DO NOT USE DIRECTLY - this provides no selection logic implementation."""
@@ -102,7 +102,7 @@ class TableCapacitor(Capacitor):
   VOLTAGE_RATING = PartsTableColumn(Range)
 
 
-@abstract_block
+@non_library
 class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)

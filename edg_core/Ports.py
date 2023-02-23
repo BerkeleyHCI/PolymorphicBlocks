@@ -171,13 +171,13 @@ class Port(BasePort, Generic[PortLinkType]):
     from .HierarchyBlock import Block
 
     block_parent = self._block_parent()
-    if block_parent is None or block_parent._parent is None:
+    if block_parent is None:
       raise UnconnectableError(f"{self} must be bound to instantiate an adapter")
 
-    enclosing_block = block_parent._parent
-    if enclosing_block is not builder.get_enclosing_block():
-      raise UnconnectableError(f"can only create adapters on ports of subblocks")
+    enclosing_block = builder.get_enclosing_block()
     assert isinstance(enclosing_block, Block)
+    if (block_parent is not enclosing_block) and (block_parent._parent is not enclosing_block):
+      raise UnconnectableError(f"can only create adapters on own ports or subblock ports")
 
     adapter_inst = enclosing_block.Block(adapter)
     enclosing_block.manager.add_element(

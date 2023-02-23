@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class LipoConnector(Battery):
+class LipoConnector(Connector, Battery):
   @init_in_parent
   def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
                actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
@@ -18,7 +18,7 @@ class LipoConnector(Battery):
     self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
 
 
-class MotorConnector(Block):
+class MotorConnector(Connector, Block):
   @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
@@ -32,7 +32,7 @@ class MotorConnector(Block):
     )))
 
 
-class PwmConnector(Block):
+class PwmConnector(Connector, Block):
   @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
@@ -47,7 +47,7 @@ class PwmConnector(Block):
                            [Common])
 
 
-class LedConnector(Block):
+class LedConnector(Connector, Block):
   """Connector for external WS2812s."""
   # TODO Change num_leds to the number of external WS2812s to update the current draw.
   def __init__(self):

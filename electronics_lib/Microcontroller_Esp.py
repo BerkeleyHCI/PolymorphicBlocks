@@ -20,15 +20,3 @@ class EspProgrammingHeader(ProgrammingConnector):
     self.connect(self.uart.rx, self.conn.pins.request('2').adapt_to(DigitalSink()))
     self.connect(self.uart.tx, self.conn.pins.request('3').adapt_to(DigitalSource()))
     self.connect(self.gnd, self.conn.pins.request('4').adapt_to(Ground()))
-
-
-class PulldownJumper(Block):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.io = self.Port(DigitalSource.empty(), [Output])
-
-    self.conn = self.Block(PassiveConnector())
-    self.connect(self.io, self.conn.pins.request('1').adapt_to(DigitalSource()))
-    self.connect(self.gnd, self.conn.pins.request('2').adapt_to(VoltageSink()))

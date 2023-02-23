@@ -47,7 +47,7 @@ class PptcFuse(Fuse):
   """PPTC self-resetting fuse"""
 
 
-@abstract_block
+@non_library
 class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -67,7 +67,7 @@ class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
   }
 
 
-@abstract_block
+@non_library
 class TableFuse(FuseStandardPinning, PartsTableFootprint, GeneratorBlock):
   TRIP_CURRENT = PartsTableColumn(Range)
   HOLD_CURRENT = PartsTableColumn(Range)

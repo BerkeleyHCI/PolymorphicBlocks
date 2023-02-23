@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class E93Lc_B_Device(DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PARTS = [
     # 93LC56B seems to be the most popular version
     (2*1024, '93LC56B', 'https://ww1.microchip.com/downloads/en/DeviceDoc/21794G.pdf',
