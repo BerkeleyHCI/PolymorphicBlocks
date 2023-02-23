@@ -107,7 +107,7 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
       self.connect(self.gnd, elt.gnd)
 
 
-class LowPassRcDac(AnalogFilter, Block):
+class LowPassRcDac(DigitalToAnalog, Block):
   """Low-pass RC filter used as a simple DAC by filtering out a PWM signal.
   The cutoff frequency of the filter should be sufficiently beneath the PWM frequency,
   but enough above baseband to not distort the signal.

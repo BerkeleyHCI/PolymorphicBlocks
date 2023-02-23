@@ -194,7 +194,7 @@ class Tpa2005d1(Interface, GeneratorBlock):
 
 
 @abstract_block
-class Speaker(DiscreteApplication):
+class Speaker(HumanInterface):
   """Abstract speaker part with speaker input port."""
   def __init__(self):
     super().__init__()

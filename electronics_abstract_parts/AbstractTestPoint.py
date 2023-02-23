@@ -7,7 +7,7 @@ from .Categories import *
 
 
 @abstract_block
-class TestPoint(Testing, Block):
+class TestPoint(InternalSubcircuit, Block):
   """Abstract test point that can take a name as a string, used as the footprint value.
   """
   @init_in_parent

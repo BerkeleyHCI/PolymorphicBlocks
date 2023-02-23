@@ -1,10 +1,11 @@
 from typing import Mapping
 
 from electronics_model import *
+from .Categories import Analog
 
 
 @abstract_block
-class Opamp(KiCadInstantiableBlock, Block):
+class Opamp(Analog, KiCadInstantiableBlock, Block):
   """Base class for opamps. Parameters need to be more restricted in subclasses.
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:

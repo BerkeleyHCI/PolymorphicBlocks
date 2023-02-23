@@ -3,7 +3,7 @@ from .Categories import *
 
 
 @abstract_block
-class Battery(DiscreteApplication):
+class Battery(PowerSource):
   @init_in_parent
   def __init__(self, voltage: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO), *,

@@ -5,18 +5,24 @@ from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
 from .DigitalPorts import DigitalLink, DigitalSink, DigitalSource
 
 
-OutputType = TypeVar('OutputType', bound=Port)
-InputsType = TypeVar('InputsType', bound=Port)
-LinkType = TypeVar('LinkType', bound=Link)
-SelfType = TypeVar('SelfType', bound='BaseConnectedGenerator')
-@non_library  # this can't be instantiated
-class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, LinkType]):
-  """A template for a utility block that takes in an input port that may be connected
+@abstract_block  # really this is just a category
+class DefaultConnectionBlock(InternalBlock):
+  """A utility block that takes in an input port that may be connected
   and an output port that is required, and if the input is not present, connects the
   output to a default port.
   If the input is present, the default port presents an 'ideal' port. - TODO can this be a true disconnect?
   If the input is not present, the default port is connected to the output.
   """
+  pass
+
+
+OutputType = TypeVar('OutputType', bound=Port)
+InputsType = TypeVar('InputsType', bound=Port)
+LinkType = TypeVar('LinkType', bound=Link)
+SelfType = TypeVar('SelfType', bound='BaseConnectedGenerator')
+@non_library  # this can't be instantiated
+class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[OutputType, InputsType, LinkType]):
+  """The template actually lives here"""
   INPUTS_TYPE: Type[Port]
   OUTPUT_TYPE: Type[Port]
 
@@ -52,11 +58,11 @@ class BaseConnectedGenerator(GeneratorBlock, Generic[OutputType, InputsType, Lin
     return self
 
 
-class VoltageSourceConnected(InternalBlock, BaseConnectedGenerator[VoltageSource, VoltageSink, VoltageLink]):
+class VoltageSourceConnected(BaseConnectedGenerator[VoltageSource, VoltageSink, VoltageLink]):
   OUTPUT_TYPE = VoltageSource
   INPUTS_TYPE = VoltageSink
 
 
-class DigitalSourceConnected(InternalBlock, BaseConnectedGenerator[DigitalSource, DigitalSink, DigitalLink]):
+class DigitalSourceConnected(BaseConnectedGenerator[DigitalSource, DigitalSink, DigitalLink]):
   OUTPUT_TYPE = DigitalSource
   INPUTS_TYPE = DigitalSink

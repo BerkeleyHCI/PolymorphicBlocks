@@ -183,7 +183,7 @@ class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint,
     )
 
 
-class ProtectionZenerDiode(DiscreteApplication):
+class ProtectionZenerDiode(Protection):
   """Zener diode reversed across a power rail to provide transient overvoltage protection (and become an incandescent
   indicator on a reverse voltage)"""
   @init_in_parent

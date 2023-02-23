@@ -4,7 +4,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
+class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """A base Block that is an elastic n-ported connector with passive type.
   Intended as an infrastructural block where a particular connector series is not fixed,
   but can be selected through the refinements system.
