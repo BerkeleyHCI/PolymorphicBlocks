@@ -59,7 +59,7 @@ class Xbee_S3b_Device(Internal, FootprintBlock):
     )
 
 
-class Xbee_S3b(Radiofrequency, FootprintBlock):
+class Xbee_S3b(Interface, Radiofrequency, FootprintBlock):
   """XBee-PRO 900HP, product numbers XBP9B-*"""
   def __init__(self) -> None:
     super().__init__()
@@ -82,7 +82,7 @@ class Xbee_S3b(Radiofrequency, FootprintBlock):
     )).connected(self.gnd, self.pwr)
 
 
-class BlueSmirf(Radiofrequency, FootprintBlock):
+class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
   """SlueSMiRF Gold/Silver"""
   def __init__(self) -> None:
     super().__init__()

@@ -7,7 +7,7 @@ from .PartsTablePart import PartsTableFootprint
 from .StandardPinningFootprint import StandardPinningFootprint
 
 
-@abstract_block
+@non_library
 class BaseDiode(DiscreteSemiconductor):
   """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
   """

@@ -2,24 +2,6 @@ from electronics_model import Block, abstract_block
 
 
 @abstract_block
-class DiscreteComponent(Block):
-  """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
-  pass
-
-
-@abstract_block
-class DiscreteSemiconductor(DiscreteComponent):
-  """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
-  pass
-
-
-@abstract_block
-class PassiveComponent(DiscreteComponent):
-  """Passives components, typically used as part of an application circuit."""
-  pass
-
-
-@abstract_block
 class DiscreteApplication(Block):
   """Subcircuit around a single discrete (and usually passive) component."""
   pass
@@ -232,6 +214,24 @@ class TypedJumper(Testing):
 @abstract_block
 class Internal(Block):
   """Internal blocks that are primarily an implementation detail or not re-usable"""
+  pass
+
+
+@abstract_block
+class DiscreteComponent(Internal, Block):
+  """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
+  pass
+
+
+@abstract_block
+class DiscreteSemiconductor(DiscreteComponent):
+  """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
+  pass
+
+
+@abstract_block
+class PassiveComponent(DiscreteComponent):
+  """Passives components, typically used as part of an application circuit."""
   pass
 
 
