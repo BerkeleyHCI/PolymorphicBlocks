@@ -22,3 +22,11 @@ class IsolatedCanTransceiver(CanTransceiver):
 
     self.can_pwr = self.Port(VoltageSink.empty())  # no implicit connect tags for isolated side
     self.can_gnd = self.Port(Ground.empty())
+
+
+@abstract_block
+class CanEsdDiode(TvsDiode):
+  def __init__(self) -> None:
+    super().__init__()
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.can = self.Port(CanDiffPort.empty(), [InOut])

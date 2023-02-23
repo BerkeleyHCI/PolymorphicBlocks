@@ -7,7 +7,7 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # nee
 from edg import *
 
 
-class GatedEmitterFollower(KiCadSchematicBlock, KiCadImportableBlock, Block):
+class GatedEmitterFollower(Internal, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower, where each transistor can have its input gated independently,
   and a transistor with a disabled input will turn off.
 
@@ -81,7 +81,7 @@ class GatedEmitterFollower(KiCadSchematicBlock, KiCadImportableBlock, Block):
       })
 
 
-class ErrorAmplifier(KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
+class ErrorAmplifier(Internal, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
   """Not really a general error amplifier circuit, but a subcircuit that performs that function in
   the context of this SMU analog feedback block.
 

@@ -60,7 +60,8 @@ from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, Di
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 
-from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver
+from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
+from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode
 from .GateDrivers import HalfBridgeDriver
 from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup

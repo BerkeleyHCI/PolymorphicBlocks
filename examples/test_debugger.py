@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class SwdSourceBitBang(Block):
+class SwdSourceBitBang(Internal, Block):
   def __init__(self) -> None:
     super().__init__()
     self.reset_in = self.Port(DigitalSink.empty())
