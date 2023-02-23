@@ -55,7 +55,7 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Block):
         self.c1n = self.Export(self.conn.pins.request('4'))
 
 
-class Er_Oled_091_3(Lcd, Block):
+class Er_Oled_091_3(Oled, Block):
     """SSD1306-based 0.91" 128x32 monochrome OLED.
     TODO (maybe?) add the power gating circuit in the reference schematic"""
     def __init__(self) -> None:
