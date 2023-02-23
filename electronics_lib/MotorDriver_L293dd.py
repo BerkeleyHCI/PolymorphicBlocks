@@ -72,7 +72,7 @@ class L293dd_Device(Internal, FootprintBlock):
         )
 
 
-class L293dd(MotorDriver, Block):
+class L293dd(BrushedMotorDriver, Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(L293dd_Device())

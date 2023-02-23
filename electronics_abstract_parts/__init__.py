@@ -10,8 +10,8 @@ from .Categories import DiscreteApplication, TvsDiode
 from .Categories import Filter, AnalogFilter, DigitalFilter
 from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
 from .Categories import Interface, AnalogToDigital, DigitalToAnalog
-from .Categories import PowerConditioner, MotorDriver
-from .Categories import Connector, BarrelJack, ProgrammingConnector
+from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
+from .Categories import Connector, ProgrammingConnector
 from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
 from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, Internal, Mechanical

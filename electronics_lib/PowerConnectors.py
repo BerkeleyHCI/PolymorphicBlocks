@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class PowerBarrelJack(BarrelJack):
+class PowerBarrelJack(Connector, Block):
   """Barrel jack that models a configurable voltage / max current power supply."""
   @init_in_parent
   def __init__(self,

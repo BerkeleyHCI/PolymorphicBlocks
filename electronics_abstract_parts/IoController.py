@@ -2,6 +2,7 @@ from typing import List, Dict
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
+from .Categories import ProgrammableController
 
 
 @non_library
@@ -87,7 +88,7 @@ class BaseIoController(Block):
 
 
 @abstract_block
-class IoController(BaseIoController):
+class IoController(ProgrammableController, BaseIoController):
   """An abstract, generic IO controller with common IOs and power ports."""
   def __init__(self) -> None:
     super().__init__()

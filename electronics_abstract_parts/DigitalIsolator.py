@@ -1,8 +1,9 @@
 from electronics_model import *
+from .Categories import Interface
 
 
 @abstract_block
-class DigitalIsolator(Block):
+class DigitalIsolator(Interface, Block):
   """Multichannel digital isolator, shifts logic signals between different logic voltages
   and isolation domains. Supports arbitrary channels in either direction, but it needs to
   map down to a single chip (or be multipacked).

@@ -1,10 +1,10 @@
 from electronics_model import *
 from .AbstractFets import SwitchFet
 from .AbstractResistor import Resistor
-from .Categories import PowerConditioner
+from .Categories import PowerSwitch
 
 
-class HighSideSwitch(PowerConditioner, Block):
+class HighSideSwitch(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = Default(10000*Ohm(tol=0.01)), max_rds: FloatLike = Default(1 * Ohm),
                frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
@@ -77,7 +77,7 @@ class HighSideSwitch(PowerConditioner, Block):
                  self.pull.b.adapt_to(DigitalBidir()))
 
 
-class HalfBridgeNFet(PowerConditioner, Block):
+class HalfBridgeNFet(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, max_rds: FloatLike = Default(1*Ohm), frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()  # TODO MODEL ALL THESE

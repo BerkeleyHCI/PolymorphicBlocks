@@ -104,7 +104,7 @@ class Drv8313_Device(Internal, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C92482')
 
 
-class Drv8313(MotorDriver, Block):
+class Drv8313(BldcDriver, Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())

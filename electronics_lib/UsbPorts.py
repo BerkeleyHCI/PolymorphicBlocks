@@ -9,17 +9,27 @@ class UsbConnector(Connector):
   USB2_CURRENT_LIMITS = (0, 0.5)*Amp
 
 
-class UsbAReceptacle(UsbConnector, FootprintBlock):
+@abstract_block
+class UsbHostConnector(UsbConnector):
+  """Abstract base class for a USB 2.0 device-side port connector"""
   def __init__(self) -> None:
     super().__init__()
-    self.pwr = self.Port(VoltageSink(
+    self.pwr = self.Port(VoltageSink.empty(), optional=True)
+    self.gnd = self.Port(GroundSource.empty())
+
+    self.usb = self.Port(UsbDevicePort.empty(), optional=True)
+
+
+class UsbAReceptacle(UsbHostConnector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+    self.pwr.init_from(VoltageSink(
       voltage_limits=self.USB2_VOLTAGE_RANGE,
       current_draw=self.USB2_CURRENT_LIMITS
-    ), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    ))
+    self.gnd.init_from(Ground())
 
-    self.usb = self.Port(UsbDevicePort(), optional=True)
-    self.shield = self.Port(Passive(), optional=True)
+    self.usb.init_from(UsbDevicePort())
 
   def contents(self):
     super().contents()
@@ -32,14 +42,14 @@ class UsbAReceptacle(UsbConnector, FootprintBlock):
         '2': self.usb.dm,
         '3': self.usb.dp,
 
-        '5': self.shield,
+        '5': self.gnd,  # shield
       },
       mfr='Molex', part='105057',
       datasheet='https://www.molex.com/pdm_docs/sd/1050570001_sd.pdf'
     )
 
 
-class UsbCReceptacle_Device(FootprintBlock, JlcPart):
+class UsbCReceptacle_Device(Internal, FootprintBlock, JlcPart):
   """Raw USB Type-C Receptacle
   Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
   up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
@@ -91,7 +101,18 @@ class UsbCReceptacle_Device(FootprintBlock, JlcPart):
     )
 
 
-class UsbCReceptacle(UsbConnector, GeneratorBlock):
+@abstract_block
+class UsbDeviceConnector(UsbConnector):
+  """Abstract base class for a USB 2.0 device-side port connector"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.pwr = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd = self.Port(GroundSource.empty())
+
+    self.usb = self.Port(UsbHostPort.empty(), optional=True)
+
+
+class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
   """USB Type-C Receptacle that automatically generates the CC resistors if CC is not connected."""
   @init_in_parent
   def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
@@ -99,9 +120,9 @@ class UsbCReceptacle(UsbConnector, GeneratorBlock):
     super().__init__()
 
     self.conn = self.Block(UsbCReceptacle_Device(voltage_out=voltage_out, current_limits=current_limits))
-    self.pwr = self.Export(self.conn.pwr, optional=True)
-    self.gnd = self.Export(self.conn.gnd)
-    self.usb = self.Export(self.conn.usb, optional=True)
+    self.connect(self.pwr, self.conn.pwr)
+    self.connect(self.gnd, self.conn.gnd)
+    self.connect(self.usb, self.conn.usb)
     self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
 
     self.generator(self.generate, self.pwr.is_connected(), self.cc.is_connected())
@@ -121,17 +142,6 @@ class UsbCReceptacle(UsbConnector, GeneratorBlock):
 
     # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
     self.connect(self.gnd, self.conn.shield.adapt_to(Ground()))
-
-
-@abstract_block
-class UsbDeviceConnector(UsbConnector):
-  """Abstract base class for a USB 2.0 device-side port connector"""
-  def __init__(self) -> None:
-    super().__init__()
-    self.pwr = self.Port(VoltageSource.empty(), optional=True)
-    self.gnd = self.Port(GroundSource.empty())
-
-    self.usb = self.Port(UsbHostPort.empty(), optional=True)
 
 
 class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
@@ -158,7 +168,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
 
         # '4': TODO: ID pin
 
-        '6': self.gnd,  # actually shield
+        '6': self.gnd,  # shield
       },
       mfr='Molex', part='105017-0001',
       datasheet='https://www.molex.com/pdm_docs/sd/1050170001_sd.pdf'

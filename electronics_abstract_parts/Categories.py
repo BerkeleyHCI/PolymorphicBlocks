@@ -110,23 +110,36 @@ class Radiofrequency(Block):
 
 @abstract_block
 class PowerConditioner(Block):
+  """Power conditioning circuits that provide a stable and/or safe power supply, eg voltage regulators"""
   pass
 
 
 @abstract_block
-class MotorDriver(PowerConditioner):
+class PowerSwitch(Block):
+  """Power switching circuits, eg FET switches and motor drivers"""
+  pass
+
+
+@abstract_block
+class MotorDriver(PowerSwitch):
+  pass
+
+
+@abstract_block
+class BrushedMotorDriver(MotorDriver):
+  """A brushed motor driver, or at least the power stage for one."""
+  pass
+
+
+@abstract_block
+class BldcDriver(MotorDriver):
+  """A brushless motor driver, or at least the power stage for one - may be as simple a 3 half-bridges."""
   pass
 
 
 @abstract_block
 class Connector(Block):
   """Connectors, including card sockets."""
-  pass
-
-
-@abstract_block
-class BarrelJack(Connector):
-  """Barrel jack input (socket - pin side)."""
   pass
 
 

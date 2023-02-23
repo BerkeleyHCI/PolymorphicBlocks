@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Cbmud1200l_Device(JlcPart, FootprintBlock):
+class Cbmud1200l_Device(Internal, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.gnd1 = self.Port(VoltageSink())  # can be any voltage
