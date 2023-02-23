@@ -180,8 +180,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
-      power=(current_draw.lower() * current_draw.lower() * self.resistance.lower(),
-             current_draw.upper() * current_draw.upper() * self.resistance.upper())
+      power=current_draw * current_draw * self.resistance
     ))
 
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
@@ -192,6 +191,9 @@ class SeriesPowerResistor(DiscreteApplication):
       voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
       current_limits=Range.all()
     )))
+
+    self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
+    self.require(self.actual_power.within(self.res.actual_power_rating))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
