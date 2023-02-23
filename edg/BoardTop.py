@@ -57,7 +57,7 @@ class SimpleBoardTop(BaseBoardTop):
     )
     
     
-class JlcToolingHoles(Block):
+class JlcToolingHoles(Mechanical, Block):
   def contents(self):
     super().contents()
     self.th1 = self.Block(JlcToolingHole())

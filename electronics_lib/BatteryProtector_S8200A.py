@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
+class BatteryProtector_S8200A_Device(Internal, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -32,7 +32,7 @@ class BatteryProtector_S8200A_Device(DiscreteChip, FootprintBlock):
       datasheet='https://www.mouser.com/datasheet/2/360/S8200A_E-1365901.pdf'
     )
 
-class BatteryProtector_S8200A(Block):
+class BatteryProtector_S8200A(PowerConditioner, Block):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()

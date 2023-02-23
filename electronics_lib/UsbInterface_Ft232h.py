@@ -3,7 +3,7 @@ from .SpiMemory_93Lc import E93Lc_B
 from .JlcPart import JlcPart
 
 
-class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
+class Ft232hl_Device(Internal, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
@@ -140,7 +140,7 @@ class Ft232hl_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Ft232EepromDriver(Block):
+class Ft232EepromDriver(Internal, Block):
   """Adapts the EECLK and EEDATA pins of the FT232 to the SPI of the EEPROM"""
   def __init__(self):
     super().__init__()
@@ -161,7 +161,7 @@ class Ft232EepromDriver(Block):
     )))
 
 
-class Ft232hl(GeneratorBlock):
+class Ft232hl(Interface, GeneratorBlock):
   """USB multiprotocol converter"""
   def __init__(self) -> None:
     super().__init__()

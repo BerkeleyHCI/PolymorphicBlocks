@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Xbee_S3b_Device(DiscreteChip, FootprintBlock):
+class Xbee_S3b_Device(Internal, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -59,7 +59,7 @@ class Xbee_S3b_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Xbee_S3b(IntegratedCircuit, FootprintBlock):
+class Xbee_S3b(Radiofrequency, FootprintBlock):
   """XBee-PRO 900HP, product numbers XBP9B-*"""
   def __init__(self) -> None:
     super().__init__()
@@ -82,7 +82,7 @@ class Xbee_S3b(IntegratedCircuit, FootprintBlock):
     )).connected(self.gnd, self.pwr)
 
 
-class BlueSmirf(IntegratedCircuit, FootprintBlock):
+class BlueSmirf(Radiofrequency, FootprintBlock):
   """SlueSMiRF Gold/Silver"""
   def __init__(self) -> None:
     super().__init__()

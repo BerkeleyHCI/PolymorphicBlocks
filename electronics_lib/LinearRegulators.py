@@ -162,7 +162,7 @@ class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBl
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2204k_Block(Block):
+class Ap2204k_Block(Internal, Block):
   """AP2204 application circuit with the EN pin available."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:

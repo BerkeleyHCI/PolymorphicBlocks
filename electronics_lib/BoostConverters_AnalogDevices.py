@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Ltc3429_Device(DiscreteChip, FootprintBlock):
+class Ltc3429_Device(Internal, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()

@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Mcp3561_Device(DiscreteChip, FootprintBlock):
+class Mcp3561_Device(Internal, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.avdd = self.Port(VoltageSink(
@@ -67,7 +67,7 @@ class Mcp3561_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Mcp3561(Block):
+class Mcp3561(AnalogToDigital, Block):
   """MCP3561R up-to-24-bit delta-sigma ADC with internal voltage reference.
   """
   def __init__(self) -> None:

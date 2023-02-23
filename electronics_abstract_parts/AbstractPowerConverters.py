@@ -35,7 +35,7 @@ class LinearRegulator(DcDcConverter):
 
 
 @abstract_block
-class LinearRegulatorDevice(DiscreteChip):
+class LinearRegulatorDevice(Internal, Block):
   """Abstract base class that provides a default model with common functionality for a linear regulator chip.
   Does not include supporting components like capacitors.
   """
@@ -119,7 +119,7 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckConverterPowerPath(GeneratorBlock):
+class BuckConverterPowerPath(Internal, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
   Main assumptions in component sizing:
@@ -243,7 +243,7 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BoostConverterPowerPath(GeneratorBlock):
+class BoostConverterPowerPath(Internal, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a synchronous boost converter.
 
   Main assumptions in component sizing
@@ -359,7 +359,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckBoostConverterPowerPath(GeneratorBlock):
+class BuckBoostConverterPowerPath(Internal, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a 4-switch buck-boost converter.
 
   Main assumptions in component sizing

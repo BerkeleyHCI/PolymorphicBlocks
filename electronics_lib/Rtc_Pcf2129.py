@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Pcf2129_Device(DiscreteChip, FootprintBlock):
+class Pcf2129_Device(Internal, FootprintBlock):
   """RTC with integrated crystal. SO-16 version"""
   def __init__(self) -> None:
     super().__init__()

@@ -4,7 +4,7 @@ from electronics_model import *
 from .PinMappable import AllocatedResource
 
 
-@abstract_block
+@non_library
 class BaseIoController(Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).

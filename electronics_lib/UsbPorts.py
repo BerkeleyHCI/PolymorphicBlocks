@@ -165,7 +165,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
     )
 
 
-class UsbCcPulldownResistor(Block):
+class UsbCcPulldownResistor(Internal, Block):
   """Pull-down resistors on the CC lines for a device to request power from a type-C UFP port,
   without needing a USB PD IC."""
   def __init__(self) -> None:

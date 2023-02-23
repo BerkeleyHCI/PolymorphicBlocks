@@ -3,7 +3,7 @@ from .Categories import *
 
 
 @abstract_block
-class CanTransceiver(IntegratedCircuit, Block):
+class CanTransceiver(Interface, Block):
   """Abstract CAN transceiver"""
   def __init__(self) -> None:
     super().__init__()

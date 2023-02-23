@@ -4,7 +4,7 @@ import re
 from electronics_abstract_parts import *
 
 
-@abstract_block
+@non_library
 class JlcPart(Block):
   """Provides additional data fields for JLCPCB parts for their SMT service.
   By default, this does not check for basic parts, but that can be changed in refinements.
@@ -22,7 +22,7 @@ class JlcPart(Block):
 DescriptionParser = Tuple[re.Pattern,
                           Callable[[re.Match], Dict[PartsTableColumn, Any]]]
 
-@abstract_block
+@non_library
 class JlcTablePart(JlcPart, PartsTableFootprint):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   PART_NUMBER_COL = 'MFR.Part'  # used only for translation to the PartsTableFootprint col

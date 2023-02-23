@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Nrf52840Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock):
+class Nrf52840Base_Device(PinMappable, BaseIoController, Internal, GeneratorBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
 
@@ -246,7 +246,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
     )
 
 
-class Holyiot_18010(PinMappable, Microcontroller, IoController):
+class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -355,7 +355,7 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
     )
 
 
-class Mdbt50q_UsbSeriesResistor(Block):
+class Mdbt50q_UsbSeriesResistor(Internal, Block):
   def __init__(self):
     super().__init__()
     self.usb_inner = self.Port(UsbHostPort().empty())
@@ -368,7 +368,8 @@ class Mdbt50q_UsbSeriesResistor(Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
+                   GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)

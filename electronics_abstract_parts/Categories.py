@@ -14,12 +14,6 @@ class DiscreteComponent(Block):
 
 
 @abstract_block
-class DiscreteChip(DiscreteComponent):
-  """Chip, typically used as the main device in an application circuit."""
-  pass
-
-
-@abstract_block
 class DiscreteSemiconductor(DiscreteComponent):
   """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
   pass
@@ -62,55 +56,77 @@ class DigitalFilter(Filter):
 
 
 @abstract_block
-class IntegratedCircuit(Block):
-  """Application circuit around an integrated circuit (chip)."""
+class ProgrammableController(Block):
+  """General programmable controller."""
   pass
 
 
 @abstract_block
-class Microcontroller(IntegratedCircuit):
+class Microcontroller(ProgrammableController):
   """Microcontroller (with embedded-class processor) with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class Fpga(IntegratedCircuit):
+class Fpga(ProgrammableController):
   """FPGA with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class Memory(IntegratedCircuit):
+class Memory(Block):
   """Memory device (including sockets and card sockets) with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class RealtimeClock(IntegratedCircuit):
+class RealtimeClock(Block):
   """Realtime clock device."""
   pass
 
 
 @abstract_block
-class PowerConditioner(IntegratedCircuit):
+class Interface(Block):
+  """Interface devices, eg CAN transceiver (CAN <-> SPI / I2C interface),
+  and including analog interfaces (ADCs, DACs)."""
+  pass
+
+
+@abstract_block
+class AnalogToDigital(Interface):
+  pass
+
+
+@abstract_block
+class DigitalToAnalog(Interface):
+  pass
+
+
+@abstract_block
+class Radiofrequency(Block):
+  """Radiofrequency devices."""
+  pass
+
+
+@abstract_block
+class PowerConditioner(Block):
+  pass
+
+
+@abstract_block
+class MotorDriver(PowerConditioner):
   pass
 
 
 @abstract_block
 class Connector(Block):
-  """Connecctors, including card sockets."""
+  """Connectors, including card sockets."""
   pass
 
 
 @abstract_block
 class BarrelJack(Connector):
   """Barrel jack input (socket - pin side)."""
-  pass
-
-
-@abstract_block
-class ProgrammingConnector(Connector):
-  """Programming / debug / JTAG connectors."""
   pass
 
 
@@ -151,14 +167,64 @@ class Light(Optoelectronic):
 
 
 @abstract_block
-class SpecificApplicationSubcircuit(Block):
-  """Subcircuit with a specific application, likely not generally applicable."""
+class Sensor(Block):
+  """Any kind of sensor with any interface. Multi-packed sensors may inherit from multiple categories"""
+  pass
+
+
+@abstract_block
+class Accelerometer(Sensor):
+  pass
+
+
+@abstract_block
+class Gyroscope(Sensor):
+  pass
+
+
+@abstract_block
+class Magnetometer(Sensor):
+  pass
+
+
+@abstract_block
+class DistanceSensor(Sensor):
   pass
 
 
 @abstract_block
 class Mechanical(Block):
   """Nonelectrical footprint, including plated and NPTH mounting holes."""
+  pass
+
+
+@abstract_block
+class Testing(Block):
+  """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
+  pass
+
+
+@abstract_block
+class ProgrammingConnector(Connector, Testing):
+  """Programming / debug / JTAG connectors."""
+  pass
+
+
+@abstract_block
+class TypedTestPoint(Testing):
+  """Test point with a typed port (eg, VoltageSink, instead of Passive)."""
+  pass
+
+
+@abstract_block
+class TypedJumper(Testing):
+  """Jumper with typed ports (eg, VoltageSource-VoltageSink, instead of Passive)."""
+  pass
+
+
+@abstract_block
+class Internal(Block):
+  """Internal blocks that are only meant to be used in one place"""
   pass
 
 

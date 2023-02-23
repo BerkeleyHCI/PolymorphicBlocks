@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class L293dd_Device(DiscreteChip, FootprintBlock):
+class L293dd_Device(Internal, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.vss = self.Port(VoltageSink(  # logic supply voltage
@@ -72,7 +72,7 @@ class L293dd_Device(DiscreteChip, FootprintBlock):
         )
 
 
-class L293dd(Block):
+class L293dd(MotorDriver, Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(L293dd_Device())

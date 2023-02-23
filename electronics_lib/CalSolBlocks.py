@@ -4,7 +4,7 @@ from .LinearRegulators import Ap2204k
 
 
 @abstract_block
-class CalSolSubcircuit(SpecificApplicationSubcircuit):
+class CalSolSubcircuit(Block):
   pass
 
 

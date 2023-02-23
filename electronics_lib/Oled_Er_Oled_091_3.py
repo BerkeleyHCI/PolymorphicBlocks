@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050
 
 
-class Er_Oled_091_3_Device(DiscreteChip):
+class Er_Oled_091_3_Device(Internal, Block):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
     internal DC/DC
     https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""

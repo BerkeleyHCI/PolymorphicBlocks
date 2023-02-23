@@ -4,7 +4,7 @@ from typing import List, Dict
 from edg import *
 
 
-class CharlieplexedLedMatrix(GeneratorBlock):
+class CharlieplexedLedMatrix(Light, GeneratorBlock):
   """A LED matrix that saves on IO pins by charlieplexing, only requiring max(rows + 1, cols) GPIOs to control.
   Requires IOs that can tri-state, and requires scanning through rows (so not all LEDs are simultaneously on).
 

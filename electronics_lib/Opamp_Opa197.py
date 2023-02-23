@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Opa197_Device(DiscreteChip, FootprintBlock):
+class Opa197_Device(Internal, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

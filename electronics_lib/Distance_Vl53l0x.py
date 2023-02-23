@@ -31,7 +31,7 @@ class Vl53l0x_DeviceBase():
     )
 
 
-class Vl53l0x_Device(Vl53l0x_DeviceBase, DiscreteChip, JlcPart, FootprintBlock):
+class Vl53l0x_Device(Vl53l0x_DeviceBase, Internal, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -70,7 +70,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, DiscreteChip, JlcPart, FootprintBlock):
 
 
 @abstract_block
-class Vl53l0x(Block):
+class Vl53l0x(DistanceSensor, Block):
   """Abstract base class for VL53L0x application circuits"""
   def __init__(self) -> None:
     super().__init__()
@@ -121,7 +121,7 @@ class Vl53l0xApplication(Vl53l0x):
     self.vdd_cap[1] = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
 
-class Vl53l0xArray(GeneratorBlock):
+class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
   @init_in_parent
   def __init__(self, count: IntLike, *, first_xshut_fixed: BoolLike = False):

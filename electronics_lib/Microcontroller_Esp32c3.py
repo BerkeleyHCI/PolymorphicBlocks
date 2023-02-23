@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32c3_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Esp32c3_Device(PinMappable, BaseIoController, Internal, GeneratorBlock):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -163,7 +163,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32c3_Wroom02(PinMappable, Microcontroller, IoController, Block):
+class Esp32c3_Wroom02(PinMappable, Microcontroller, Radiofrequency, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
   def contents(self) -> None:
     super().contents()
