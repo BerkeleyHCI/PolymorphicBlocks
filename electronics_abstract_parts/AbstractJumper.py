@@ -1,9 +1,9 @@
 from electronics_model import *
-from .Categories import Testing, TypedJumper
+from .Categories import InternalSubcircuit, TypedJumper
 
 
 @abstract_block
-class Jumper(Testing, Block):
+class Jumper(InternalSubcircuit, Block):
   """A two-ported passive-typed jumper (a disconnect-able connection), though is treated
   as always connected for model purposes.
 
