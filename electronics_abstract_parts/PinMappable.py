@@ -5,7 +5,6 @@ from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable
 from electronics_model import *
 
 
-@abstract_block
 @non_library
 class PinMappable(Block):
   """Abstract base class for pin-mappable devices. Provides a named initializer argument for user-defined explicit

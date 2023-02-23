@@ -24,7 +24,8 @@ class Crystal(DiscreteComponent):
       "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F")
     )
 
-@abstract_block
+
+@non_library
 class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
@@ -42,7 +43,7 @@ class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
   }
 
 
-@abstract_block
+@non_library
 class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)

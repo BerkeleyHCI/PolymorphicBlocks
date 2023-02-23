@@ -15,7 +15,7 @@ class UsbHostConnector(UsbConnector):
   def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), optional=True)
-    self.gnd = self.Port(GroundSource.empty())
+    self.gnd = self.Port(Ground.empty())
 
     self.usb = self.Port(UsbDevicePort.empty(), optional=True)
 

@@ -2,12 +2,6 @@ from electronics_model import Block, abstract_block
 
 
 @abstract_block
-class DummyDevice(Block):
-  """Non-physical "device" used to affect parameters."""
-  pass
-
-
-@abstract_block
 class DiscreteComponent(Block):
   """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
   pass
@@ -237,7 +231,13 @@ class TypedJumper(Testing):
 
 @abstract_block
 class Internal(Block):
-  """Internal blocks that are only meant to be used in one place"""
+  """Internal blocks that are primarily an implementation detail or not re-usable"""
+  pass
+
+
+@abstract_block
+class DummyDevice(Internal):
+  """Non-physical "device" used to affect parameters."""
   pass
 
 

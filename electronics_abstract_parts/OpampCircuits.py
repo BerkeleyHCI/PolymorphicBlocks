@@ -8,7 +8,7 @@ from .Categories import AnalogFilter
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
-class OpampFollower(KiCadSchematicBlock, AnalogFilter):
+class OpampFollower(AnalogFilter, KiCadSchematicBlock):
   """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
   def __init__(self):
     super().__init__()
@@ -52,7 +52,7 @@ class AmplifierValues(ESeriesRatioValue):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class Amplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
+class Amplifier(AnalogFilter, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
   """Opamp non-inverting amplifier, outputs a scaled-up version of the input signal.
 
   From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Non-inverting_amplifier:
@@ -163,7 +163,7 @@ class DifferentialValues(ESeriesRatioValue):
            self.input_impedance.intersects(spec.input_impedance)
 
 
-class DifferentialAmplifier(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
+class DifferentialAmplifier(AnalogFilter, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
   """Opamp differential amplifier, outputs the difference between the input nodes, scaled by some factor,
   and offset from some reference node.
   This implementation uses the same resistance for the two input resistors (R1, R2),
@@ -289,7 +289,7 @@ class IntegratorValues(ESeriesRatioValue):
            self.capacitance.intersects(spec.capacitance)
 
 
-class IntegratorInverting(KiCadSchematicBlock, KiCadImportableBlock, AnalogFilter, GeneratorBlock):
+class IntegratorInverting(AnalogFilter, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 

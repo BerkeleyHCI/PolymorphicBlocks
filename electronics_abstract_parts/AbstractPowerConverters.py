@@ -34,8 +34,8 @@ class LinearRegulator(DcDcConverter):
   around a linear regulator step-down converter."""
 
 
-@abstract_block
-class LinearRegulatorDevice(Internal, Block):
+@non_library
+class LinearRegulatorDevice(Block):
   """Abstract base class that provides a default model with common functionality for a linear regulator chip.
   Does not include supporting components like capacitors.
   """
@@ -104,6 +104,7 @@ class DcDcSwitchingConverter(DcDcConverter):
     self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
     self.frequency = self.Parameter(RangeExpr())
+
 
 @abstract_block
 class BuckConverter(DcDcSwitchingConverter):

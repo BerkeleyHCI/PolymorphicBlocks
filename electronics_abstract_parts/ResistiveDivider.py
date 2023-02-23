@@ -111,7 +111,7 @@ class ResistiveDivider(Internal, GeneratorBlock):
                 1 / (self.top_res.actual_resistance / self.bottom_res.actual_resistance + 1))
 
 
-@abstract_block
+@non_library
 class BaseVoltageDivider(Filter, Block):
   """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
   an analog constant-voltage signal.
