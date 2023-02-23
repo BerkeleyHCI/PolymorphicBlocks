@@ -1,5 +1,5 @@
 from electronics_model import *
-from .Categories import Connector, TvsDiode
+from .Categories import Connector, TvsDiode, PowerSource
 
 
 @abstract_block
@@ -22,7 +22,7 @@ class UsbHostConnector(UsbConnector):
 
 
 @abstract_block
-class UsbDeviceConnector(UsbConnector):
+class UsbDeviceConnector(UsbConnector, PowerSource):
   """Abstract base class for a USB 2.0 device-side port connector"""
   def __init__(self) -> None:
     super().__init__()

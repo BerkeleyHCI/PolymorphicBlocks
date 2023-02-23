@@ -7,12 +7,13 @@ from .PartsTablePart import PartsTablePart, PartsTableFootprint
 from .Categories import DummyDevice
 from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication, TvsDiode
+from .Categories import Analog, OpampApplication
 from .Categories import Filter, AnalogFilter, DigitalFilter
 from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
 from .Categories import Interface, AnalogToDigital, DigitalToAnalog
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
-from .Categories import Connector, ProgrammingConnector
-from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
+from .Categories import PowerSource, Connector, ProgrammingConnector
+from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
 from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
 

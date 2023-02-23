@@ -21,7 +21,7 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
     self.voltage = self.ArgParameter(voltage)
 
 
-class DigitalSwitch(DiscreteApplication):
+class DigitalSwitch(HumanInterface):
   def __init__(self) -> None:
     super().__init__()
 

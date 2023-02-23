@@ -8,8 +8,14 @@ class DiscreteApplication(Block):
 
 
 @abstract_block
-class TvsDiode(DiscreteApplication):
-  """Any kind of TVS diode, including multiple channel configurations."""
+class Analog(Block):
+  """Analog blocks that don't fit into one of the other categories"""
+  pass
+
+
+@abstract_block
+class OpampApplication(Analog):
+  """Opamp-based circuits, typically one that perform some function on signals"""
   pass
 
 
@@ -120,13 +126,19 @@ class Connector(Block):
 
 
 @abstract_block
-class Optoelectronic(Block):
-  """Optoelectronic components."""
+class PowerSource(Block):
+  """Power sources, including connectors that also supply power."""
   pass
 
 
 @abstract_block
-class Display(Optoelectronic):
+class HumanInterface(Block):
+  """Devices for human interface, eg switches, displays, LEDs"""
+  pass
+
+
+@abstract_block
+class Display(HumanInterface):
   """Pixel displays."""
   pass
 
@@ -150,7 +162,7 @@ class EInk(Display):
 
 
 @abstract_block
-class Light(Optoelectronic):
+class Light(HumanInterface):
   """Discrete lights."""
   pass
 
@@ -184,6 +196,18 @@ class DistanceSensor(Sensor):
 @abstract_block
 class Mechanical(Block):
   """Nonelectrical footprint, including plated and NPTH mounting holes."""
+  pass
+
+
+@abstract_block
+class Protection(Block):
+  """Circuit protection elements, eg TVS diodes, fuses"""
+  pass
+
+
+@abstract_block
+class TvsDiode(Protection):
+  """Any kind of TVS diode, including multiple channel configurations."""
   pass
 
 
