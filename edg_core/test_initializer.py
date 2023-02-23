@@ -11,7 +11,7 @@ class TestSingleInitializerBlock(Block):
     self.bundle_port = self.Port(TestBundle(42, 1, -1), optional=True)
 
 
-class InternalBlock(Block):
+class TestInternalBlock(Block):
   @init_in_parent
   def __init__(self, inner_param: FloatLike = 3.0, bundle_param: FloatLike = FloatExpr()) -> None:
     super().__init__()
@@ -26,19 +26,19 @@ class TestNestedBlock(Block):
 
   def contents(self) -> None:
     super().contents()
-    self.inner = self.Block(InternalBlock(62, 31))
+    self.inner = self.Block(TestInternalBlock(62, 31))
 
 
 class TestDefaultBlock(Block):
   def contents(self) -> None:
     super().contents()
-    self.inner = self.Block(InternalBlock())
+    self.inner = self.Block(TestInternalBlock())
 
 
 class TestMultipleInstantiationBlock(Block):
   def contents(self) -> None:
     super().contents()
-    model = InternalBlock()
+    model = TestInternalBlock()
     self.inner1 = self.Block(model)
     self.inner2 = self.Block(model)
 
@@ -71,7 +71,7 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(pb.constraints[4].value, edgir.AssignLit(['inner', 'bundle_param'], 31.0))
 
   def test_nested_inner(self):
-    pb = InternalBlock()._elaborated_def_to_proto()
+    pb = TestInternalBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 3)  # should not generate initializers for constructors
     self.assertEqual(pb.constraints[0].name, "(init)inner_bundle.float_param")
