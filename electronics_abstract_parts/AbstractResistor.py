@@ -166,7 +166,7 @@ class PulldownResistor(DiscreteApplication):
     return self
 
 
-class SeriesPowerResistor(InternalSubcircuit, DiscreteApplication):
+class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
@@ -203,7 +203,7 @@ class SeriesPowerResistor(InternalSubcircuit, DiscreteApplication):
     return self
 
 
-class CurrentSenseResistor(InternalSubcircuit, DiscreteApplication, GeneratorBlock):
+class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
   def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
