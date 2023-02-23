@@ -89,7 +89,7 @@ class FootprintBlock(Block):
 
 
 @abstract_block
-class NetBlock(NetBaseBlock, Block):
+class NetBlock(InternalBlock, NetBaseBlock, Block):
   def contents(self):
     super().contents()
     self.net()

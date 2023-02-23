@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Pcf8574_Device(PinMappable, Internal, FootprintBlock, JlcPart, GeneratorBlock):
+class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
   @init_in_parent
   def __init__(self, addr_lsb: IntLike, **kwags) -> None:
     super().__init__(**kwags)

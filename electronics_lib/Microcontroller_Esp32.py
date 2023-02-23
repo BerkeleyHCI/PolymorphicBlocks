@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32_Device(PinMappable, BaseIoController, Internal, GeneratorBlock, FootprintBlock):
+class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32 series microcontrollrs with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf

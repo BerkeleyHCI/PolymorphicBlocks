@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Xbee_S3b_Device(Internal, FootprintBlock):
+class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
 

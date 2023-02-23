@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Cp2102_Device(Internal, FootprintBlock, JlcPart):
+class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())

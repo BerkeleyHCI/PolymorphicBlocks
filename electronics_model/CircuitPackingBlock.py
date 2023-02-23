@@ -6,14 +6,15 @@ from edg_core import *
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
-@non_library
-class NetPackingBlock(Block):
+@abstract_block
+class NetPackingBlock(InternalBlock, Block):
   def packed(self, source: BasePort, dst: BasePort) -> None:
     """Asserts that sources are all connected to the same net, and connects all of dsts to that net."""
     self.nets_packed = self.Metadata({
       'src': self._ports.name_of(source),
       'dst': self._ports.name_of(dst)
     })
+
 
 class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
   """Takes in several VoltageSink connections that are of the same net (asserted in netlister),

@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Nrf52840Base_Device(PinMappable, BaseIoController, Internal, GeneratorBlock):
+class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
 
@@ -355,7 +355,7 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
     )
 
 
-class Mdbt50q_UsbSeriesResistor(Internal, Block):
+class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
   def __init__(self):
     super().__init__()
     self.usb_inner = self.Port(UsbHostPort().empty())

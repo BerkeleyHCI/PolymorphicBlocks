@@ -1,12 +1,16 @@
-from typing import cast, Generic
-from .Ports import Port
-from .HierarchyBlock import Block
+from typing import Generic
+
 from .Builder import builder
+from .HierarchyBlock import abstract_block
+from .Categories import InternalBlock
 from .HdlUserExceptions import *
+from .HierarchyBlock import Block
+from .Ports import Port
 
 
 NotConnectablePortType = TypeVar('NotConnectablePortType', bound=Port, covariant=True)
-class NotConnectableBlock(Block, Generic[NotConnectablePortType]):
+@abstract_block
+class NotConnectableBlock(InternalBlock, Block, Generic[NotConnectablePortType]):
   def __init__(self):
     super().__init__()
     self.port: NotConnectablePortType

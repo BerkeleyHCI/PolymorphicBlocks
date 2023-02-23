@@ -31,7 +31,7 @@ class Vl53l0x_DeviceBase():
     )
 
 
-class Vl53l0x_Device(Vl53l0x_DeviceBase, Internal, JlcPart, FootprintBlock):
+class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 

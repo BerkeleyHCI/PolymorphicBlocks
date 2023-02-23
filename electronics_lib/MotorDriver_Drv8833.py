@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Drv8833_Device(Internal, FootprintBlock, JlcPart):
+class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.vm = self.Port(VoltageSink(

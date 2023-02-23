@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class W25q_Device(Internal, GeneratorBlock, JlcPart, FootprintBlock):
+class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PARTS = [
     # prefer the basic part version
     (128*1024*1024, 'W25Q128JVSIQ', 'https://www.winbond.com/resource-files/W25Q128JV%20RevI%2008232021%20Plus.pdf',

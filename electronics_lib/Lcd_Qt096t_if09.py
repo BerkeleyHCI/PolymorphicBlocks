@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050
 
 
-class Qt096t_if09_Device(Internal, Block):
+class Qt096t_if09_Device(InternalSubcircuit, Block):
   def __init__(self) -> None:
     super().__init__()
 

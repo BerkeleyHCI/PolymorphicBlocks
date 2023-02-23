@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Tlv9061_Device(Internal, FootprintBlock):
+class Tlv9061_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

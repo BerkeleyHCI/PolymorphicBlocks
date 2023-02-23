@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Mcp3201_Device(Internal, FootprintBlock):
+class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.vdd = self.Port(VoltageSink(

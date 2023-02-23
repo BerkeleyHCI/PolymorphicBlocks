@@ -120,7 +120,7 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckConverterPowerPath(Internal, GeneratorBlock):
+class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
   Main assumptions in component sizing:
@@ -244,7 +244,7 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BoostConverterPowerPath(Internal, GeneratorBlock):
+class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a synchronous boost converter.
 
   Main assumptions in component sizing
@@ -360,7 +360,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckBoostConverterPowerPath(Internal, GeneratorBlock):
+class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a 4-switch buck-boost converter.
 
   Main assumptions in component sizing

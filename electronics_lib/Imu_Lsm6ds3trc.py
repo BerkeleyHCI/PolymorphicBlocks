@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Imu_Lsm6ds3trc_Device(Internal, FootprintBlock, JlcPart):
+class Imu_Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(

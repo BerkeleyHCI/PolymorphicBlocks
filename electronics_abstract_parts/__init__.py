@@ -14,7 +14,7 @@ from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotor
 from .Categories import Connector, ProgrammingConnector
 from .Categories import Optoelectronic, Display, Lcd, Oled, EInk, Light
 from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor
-from .Categories import Label, Testing, TypedJumper, TypedTestPoint, Internal, Mechanical
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
 

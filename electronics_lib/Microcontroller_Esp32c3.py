@@ -7,7 +7,7 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32c3_Device(PinMappable, BaseIoController, Internal, GeneratorBlock):
+class Esp32c3_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
   PlatformIO: use board ID esp32-c3-devkitm-1
 

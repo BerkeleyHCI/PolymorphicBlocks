@@ -34,7 +34,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
     )))
 
 
-class MultilevelSwitchingCell(Internal, KiCadSchematicBlock, GeneratorBlock):
+class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, GeneratorBlock):
   """A switching cell for one level of a multilevel converter, consisting of a high FET,
   low FET, gate driver, isolator (if needed), and bootstrap circuit (for the gate driver).
 

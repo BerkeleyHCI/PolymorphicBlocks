@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Xc9142_Device(Internal, FootprintBlock, GeneratorBlock):
+class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
   parts_output_voltage_current = [  # from Table 2, Vout and Ilim
     ('18', Range(1.764, 1.836), Range(0.96, 2.30)),
     ('25', Range(2.450, 2.550), Range(1.19, 2.30)),

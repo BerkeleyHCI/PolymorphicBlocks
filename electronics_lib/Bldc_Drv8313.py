@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Drv8313_Device(Internal, FootprintBlock, JlcPart):
+class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vm = self.Port(VoltageSink(  # one 0.1uF capacitor per supply pin and a bulk Vm capacitor

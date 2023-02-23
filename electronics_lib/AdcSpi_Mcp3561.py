@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Mcp3561_Device(Internal, FootprintBlock):
+class Mcp3561_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.avdd = self.Port(VoltageSink(

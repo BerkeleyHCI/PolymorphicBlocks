@@ -31,7 +31,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
 
 
 @abstract_block
-class Ice40up_Device(PinMappable, BaseIoController, Internal, GeneratorBlock, JlcPart, FootprintBlock):
+class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
   @staticmethod
   def make_dio_model(gnd: VoltageSink, vccio: VoltageSink):

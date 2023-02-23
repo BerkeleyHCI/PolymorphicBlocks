@@ -5,7 +5,7 @@ from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
-class Lm4871_Device(Internal, FootprintBlock):
+class Lm4871_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -89,7 +89,7 @@ class Lm4871(Interface, Block):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Tpa2005d1_Device(Internal, JlcPart, FootprintBlock):
+class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
 

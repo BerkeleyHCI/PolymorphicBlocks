@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class L293dd_Device(Internal, FootprintBlock):
+class L293dd_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.vss = self.Port(VoltageSink(  # logic supply voltage

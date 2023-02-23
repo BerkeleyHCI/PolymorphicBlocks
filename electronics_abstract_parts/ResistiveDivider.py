@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from electronics_model import *
 from . import AnalogFilter, Resistor, Filter
-from .Categories import Internal, DiscreteApplication
+from .Categories import InternalSubcircuit, DiscreteApplication
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
 
@@ -55,7 +55,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class ResistiveDivider(Internal, GeneratorBlock):
+class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
 
   @init_in_parent

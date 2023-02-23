@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ap3012_Device(Internal, JlcPart, FootprintBlock):
+class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()

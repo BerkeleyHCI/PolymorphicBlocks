@@ -31,7 +31,7 @@ class UsbAReceptacle(UsbHostConnector, FootprintBlock):
     )
 
 
-class UsbCReceptacle_Device(Internal, FootprintBlock, JlcPart):
+class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   """Raw USB Type-C Receptacle
   Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
   up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
@@ -146,7 +146,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
     )
 
 
-class UsbCcPulldownResistor(Internal, Block):
+class UsbCcPulldownResistor(InternalSubcircuit, Block):
   """Pull-down resistors on the CC lines for a device to request power from a type-C UFP port,
   without needing a USB PD IC."""
   def __init__(self) -> None:

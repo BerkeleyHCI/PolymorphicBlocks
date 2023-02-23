@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class BatteryProtector_S8200A_Device(Internal, FootprintBlock):
+class BatteryProtector_S8200A_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
