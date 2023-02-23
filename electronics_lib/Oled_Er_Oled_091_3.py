@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from electronics_lib import Fpc050Bottom
 
 
-class Er_Oled_091_3_Outline(DiscreteChip, FootprintBlock):
+class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for OLED panel outline"""
     def contents(self) -> None:
         super().contents()
