@@ -236,7 +236,7 @@ class PassiveComponent(DiscreteComponent):
 
 
 @abstract_block
-class DummyDevice(InternalSubcircuit):
+class DummyDevice(InternalBlock):
   """Non-physical "device" used to affect parameters."""
   pass
 
