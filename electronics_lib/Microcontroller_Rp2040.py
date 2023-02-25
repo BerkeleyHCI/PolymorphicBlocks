@@ -6,7 +6,7 @@ from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -210,7 +210,7 @@ class Rp2040_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock,
     self.assign(self.actual_basic_part, False)
 
 
-class Rp2040Usb(Block):
+class Rp2040Usb(InternalSubcircuit, Block):
   """Supporting passives for USB for RP2040"""
   def __init__(self) -> None:
     super().__init__()

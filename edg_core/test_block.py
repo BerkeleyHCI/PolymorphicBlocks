@@ -14,7 +14,16 @@ class TestBlockBase(Block):
     self.base_port_constr = self.Port(TestPortBase(self.base_float), optional=True)
 
 
-class TestBlock(TestBlockBase):
+class TestBlockSecondBase(Block):
+  pass
+
+
+@non_library
+class TestBlockSecondNonLibrary(Block):
+  pass
+
+
+class TestBlock(TestBlockBase, TestBlockSecondBase):
   def __init__(self) -> None:
     super().__init__()
     self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
@@ -64,8 +73,9 @@ class BlockProtoTestCase(unittest.TestCase):
   def test_superclass(self) -> None:
     self.assertEqual(self.pb.self_class.target.name, "edg_core.test_block.TestBlock")
     self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_block.TestBlock")
-    self.assertEqual(len(self.pb.superclasses), 1)
+    self.assertEqual(len(self.pb.superclasses), 2)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondBase")
 
     self.assertEqual(self.pb.params[0].name, "base_float")
     self.assertTrue(self.pb.params[0].value.HasField('floating'))

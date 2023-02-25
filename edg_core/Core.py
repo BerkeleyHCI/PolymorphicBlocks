@@ -257,8 +257,16 @@ class HasMetadata(LibraryElement):
   BaseType = TypeVar('BaseType', bound='HasMetadata')
   @classmethod
   def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
-    return [bcls for bcls in cls.__bases__
-            if issubclass(bcls, base_type) and (bcls, 'non_library') not in bcls._elt_properties]
+    bases: List[Type] = []
+    for bcls in cls.__bases__:
+      if bcls not in bases and issubclass(bcls, base_type):
+        if (bcls, 'non_library') in bcls._elt_properties:
+          for bcls_bases in bcls._get_bases_of(base_type):
+            if bcls_bases not in bases:
+              bases.append(bcls_bases)
+        else:
+          bases.append(bcls)
+    return bases
 
   def _populate_metadata(self, pb: edgir.Metadata, src: Any,
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:

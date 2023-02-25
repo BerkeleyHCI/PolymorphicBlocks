@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart, JlcTablePart, DescriptionParser
 
 
-class JlcOscillator_Device(Block):
+class JlcOscillator_Device(InternalSubcircuit, Block):
   """Base oscillator device definition, that takes in the part data from the containing part table.
   Defines a standard interface, and specifies the footprint here."""
   FOOTPRINT: str

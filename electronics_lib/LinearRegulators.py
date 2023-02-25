@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcPart
 
 
-class Ld1117_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -55,7 +55,7 @@ class Ld1117(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ldl1117_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -109,7 +109,7 @@ class Ldl1117(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -162,7 +162,7 @@ class Ap2204k_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBl
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2204k_Block(Block):
+class Ap2204k_Block(InternalSubcircuit, Block):
   """AP2204 application circuit with the EN pin available."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
@@ -199,7 +199,7 @@ class Ap2204k(LinearRegulator):
     self.connect(bridge.inner_link.as_digital_source(), self.ic.en)
 
 
-class Xc6209_Device(LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
   # Also pin-compatible with MCP1802 and NJM2882F (which has a noise bypass pin)
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
@@ -255,7 +255,7 @@ class Xc6209(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ap2210_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -315,7 +315,7 @@ class Ap2210(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Lp5907_Device(LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()

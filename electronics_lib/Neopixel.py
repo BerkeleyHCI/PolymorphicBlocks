@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Neopixel(Block):
+class Neopixel(Light, Block):
     """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
         super().__init__()
@@ -12,7 +12,7 @@ class Neopixel(Block):
         self.dout = self.Port(DigitalSource.empty(), optional=True)
 
 
-class Ws2812b(Neopixel, DiscreteChip, FootprintBlock, JlcPart):
+class Ws2812b(Neopixel, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd.init_from(VoltageSink(
@@ -51,7 +51,7 @@ class Ws2812b(Neopixel, DiscreteChip, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Sk6812Mini_E(Neopixel, DiscreteChip, FootprintBlock):
+class Sk6812Mini_E(Neopixel, FootprintBlock):
     """SK6812MINI-E reverse-mount Neopixel RGB LED, commonly used for keyboard lighting.
     Note: while listed as JLC C5149201, it seems non-stocked and is standard assembly only."""
     def __init__(self) -> None:
@@ -85,7 +85,7 @@ class Sk6812Mini_E(Neopixel, DiscreteChip, FootprintBlock):
         )
 
 
-class NeopixelArray(GeneratorBlock):
+class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
 
     @init_in_parent

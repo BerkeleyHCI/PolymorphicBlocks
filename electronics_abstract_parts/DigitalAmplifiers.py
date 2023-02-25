@@ -1,9 +1,10 @@
 from electronics_model import *
 from .AbstractFets import SwitchFet
 from .AbstractResistor import Resistor
+from .Categories import PowerSwitch
 
 
-class HighSideSwitch(Block):
+class HighSideSwitch(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = Default(10000*Ohm(tol=0.01)), max_rds: FloatLike = Default(1 * Ohm),
                frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
@@ -68,7 +69,7 @@ class HighSideSwitch(Block):
     )), self.pwr)
     self.connect(self.drv.drain.adapt_to(DigitalSource(
       voltage_out=(0, self.pwr.link().voltage.upper()),
-      # no current limits, current draw is set by the connected load
+      current_limits=self.drv.actual_drain_current_rating,
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     )), self.output)
     self.connect(self.pre.drain.adapt_to(DigitalSource()),
@@ -76,7 +77,7 @@ class HighSideSwitch(Block):
                  self.pull.b.adapt_to(DigitalBidir()))
 
 
-class HalfBridgeNFet(Block):
+class HalfBridgeNFet(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, max_rds: FloatLike = Default(1*Ohm), frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()  # TODO MODEL ALL THESE

@@ -34,8 +34,8 @@ class LinearRegulator(DcDcConverter):
   around a linear regulator step-down converter."""
 
 
-@abstract_block
-class LinearRegulatorDevice(DiscreteChip):
+@non_library
+class LinearRegulatorDevice(Block):
   """Abstract base class that provides a default model with common functionality for a linear regulator chip.
   Does not include supporting components like capacitors.
   """
@@ -105,6 +105,7 @@ class DcDcSwitchingConverter(DcDcConverter):
 
     self.frequency = self.Parameter(RangeExpr())
 
+
 @abstract_block
 class BuckConverter(DcDcSwitchingConverter):
   """Step-down switching converter"""
@@ -119,7 +120,7 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckConverterPowerPath(GeneratorBlock):
+class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
   Main assumptions in component sizing:
@@ -243,7 +244,7 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BoostConverterPowerPath(GeneratorBlock):
+class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a synchronous boost converter.
 
   Main assumptions in component sizing
@@ -359,7 +360,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class BuckBoostConverterPowerPath(GeneratorBlock):
+class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a 4-switch buck-boost converter.
 
   Main assumptions in component sizing

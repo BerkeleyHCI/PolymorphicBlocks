@@ -4,7 +4,7 @@ from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
-@abstract_block
+@non_library
 class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
@@ -13,7 +13,6 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
   A series of 0 means exact, but tolerance is still checked.
   """
-
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
@@ -43,13 +42,14 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
       raise ValueError(f"no resistor package for {power.upper} W power")
 
     self.assign(self.actual_resistance, selected_range)
-    self.assign(self.actual_power_rating, suitable_packages[0][0])
+    self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
     self.footprint(
       'R', suitable_packages[0][1],
       self._make_pinning(suitable_packages[0][1]),
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
+
 
 class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)

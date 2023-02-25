@@ -1,8 +1,9 @@
 from electronics_model import *
+from .Categories import PowerSwitch
 
 
 @abstract_block
-class HalfBridgeDriver(Block):
+class HalfBridgeDriver(PowerSwitch, Block):
   """Half-bridge driver with independent low / high control for driving two NMOS devices,
   with a high-side driver that allows a voltage offset from the main gnd.
 

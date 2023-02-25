@@ -6,7 +6,7 @@ from .Categories import *
 
 
 @abstract_block
-class Oscillator(DiscreteComponent):
+class Oscillator(DiscreteApplication):
   """Device that generates a digital clock signal given power."""
   @init_in_parent
   def __init__(self, frequency: RangeLike) -> None:
@@ -25,7 +25,7 @@ class Oscillator(DiscreteComponent):
     )
 
 
-@abstract_block
+@non_library
 class TableOscillator(Oscillator, PartsTableFootprint, GeneratorBlock):
   """Provides basic part table matching functionality for oscillators, by frequency only.
   Unlike other table-based passive components, additional pin modeling is required.

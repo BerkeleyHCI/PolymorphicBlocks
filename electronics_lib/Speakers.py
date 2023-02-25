@@ -5,7 +5,7 @@ from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
-class Lm4871_Device(DiscreteChip, FootprintBlock):
+class Lm4871_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -44,7 +44,7 @@ class Lm4871_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Lm4871(IntegratedCircuit):
+class Lm4871(Interface, Block):
   def __init__(self):
     super().__init__()
     # TODO should be a SpeakerDriver abstract part
@@ -89,7 +89,7 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Tpa2005d1_Device(DiscreteChip, JlcPart, FootprintBlock):
+class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -132,7 +132,7 @@ class Tpa2005d1_Device(DiscreteChip, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
+class Tpa2005d1(Interface, GeneratorBlock):
   """TPA2005D1 configured in single-ended input mode.
   Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
   @init_in_parent
@@ -194,7 +194,7 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
 
 
 @abstract_block
-class Speaker(DiscreteApplication):
+class Speaker(HumanInterface):
   """Abstract speaker part with speaker input port."""
   def __init__(self):
     super().__init__()

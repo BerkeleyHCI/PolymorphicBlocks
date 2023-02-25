@@ -5,6 +5,7 @@ from electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 
 
+@non_library
 class PartsTablePart(Block):
   """A 'mixin' for a part that contains a (cached) parts table and filters based on it.
   Subclasses should implement _make_table, which returns the underlying parts table.
@@ -40,6 +41,7 @@ class PartsTablePart(Block):
     self.matching_parts = self.Parameter(ArrayStringExpr())
 
 
+@non_library
 class PartsTableFootprint(PartsTablePart, Block):
   """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param.
   This Block doesn't need to directly be a footprint, only that the part search can filter on footprint."""

@@ -2,7 +2,7 @@ import inspect
 import os
 from typing import Type, Any, Optional, Mapping, Dict, List
 
-from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike
+from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
@@ -10,6 +10,7 @@ from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
 
 
+@non_library
 class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
     """A footprint block that is fully defined (both value fields and structural pins) by its argument parameters
     and has all passive ports.
@@ -35,6 +36,7 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
 
+@non_library
 class KiCadSchematicBlock(Block):
     """A schematic block that can instantiate and connect components based on an imported Kicad schematic.
     Symbols on those schematics can either be inline Python that instantiates a KiCadImportableBlock

@@ -53,7 +53,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     )
 
 
-@abstract_block
+@non_library
 class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
   FOOTPRINT_PINNING_MAP = {
     (
@@ -84,7 +84,7 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
   }
 
 
-@abstract_block
+@non_library
 class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
@@ -180,8 +180,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
-      power=(current_draw.lower() * current_draw.lower() * self.resistance.lower(),
-             current_draw.upper() * current_draw.upper() * self.resistance.upper())
+      power=current_draw * current_draw * self.resistance
     ))
 
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
@@ -193,6 +192,9 @@ class SeriesPowerResistor(DiscreteApplication):
       current_limits=Range.all()
     )))
 
+    self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
+    self.require(self.actual_power.within(self.res.actual_power_rating))
+
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
@@ -203,7 +205,6 @@ class SeriesPowerResistor(DiscreteApplication):
     return self
 
 
-from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
 class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
@@ -226,11 +227,8 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   def generate(self, sense_in_connected: bool):
     super().contents()
 
-    # TODO dehack with better adapters that also handle bridging
     if sense_in_connected:
-      self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.pwr_in, self.pwr_adapter.src)
-      self.connect(self.pwr_adapter.dst, self.sense_in)
+      self.connect(self.pwr_in.as_analog_source(), self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \

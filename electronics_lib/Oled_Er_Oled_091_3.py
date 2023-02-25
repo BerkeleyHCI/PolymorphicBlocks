@@ -1,15 +1,24 @@
 from electronics_abstract_parts import *
-from electronics_lib import Fpc050
+from electronics_lib import Fpc050Bottom
 
 
-class Er_Oled_091_3_Device(DiscreteChip):
+class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
+    """Footprint for OLED panel outline"""
+    def contents(self) -> None:
+        super().contents()
+        self.footprint('U', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
+                       'EastRising', 'ER-OLED-0.91-e')
+
+
+class Er_Oled_091_3_Device(InternalSubcircuit, Block):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
     internal DC/DC
     https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050(length=15))
+        self.conn = self.Block(Fpc050Bottom(length=15))
+        self.lcd = self.Block(Er_Oled_091_3_Outline())  # for device outline
 
         self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9)*Volt,
@@ -55,7 +64,7 @@ class Er_Oled_091_3_Device(DiscreteChip):
         self.c1n = self.Export(self.conn.pins.request('4'))
 
 
-class Er_Oled_091_3(Lcd, Block):
+class Er_Oled_091_3(Oled, Block):
     """SSD1306-based 0.91" 128x32 monochrome OLED.
     TODO (maybe?) add the power gating circuit in the reference schematic"""
     def __init__(self) -> None:

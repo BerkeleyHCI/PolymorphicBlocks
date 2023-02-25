@@ -6,7 +6,7 @@ from electronics_lib import OscillatorCrystal
 
 
 @abstract_block
-class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -323,7 +323,7 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
   PART = 'LPC1549JBD64'
 
 
-class Lpc1549SwdPull(Block):
+class Lpc1549SwdPull(InternalSubcircuit, Block):
   def __init__(self):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])

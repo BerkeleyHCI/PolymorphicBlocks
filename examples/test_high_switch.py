@@ -1,7 +1,184 @@
+# As the first solar car board, the solar car specific libraries have been moved here.
+# Most of these are parts and subcircuits specific to Tachyon-era electronics and
+# are no longer used on newer cars.
+# These are no longer maintained, only seeing incremental changes to keep examples building,
+# as long as these examples continue being unit tests.
+# These are not part of the main libraries to avoid these being indexed, since these
+# are not likely to be generally useful and may reference parts and footprints
+# that are not widely available.
+
 import unittest
 
 from edg import *
-from electronics_lib.CalSolBlocks import CanFuse
+
+
+class CalSolCanBlock(Block):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.can_pwr = self.Port(VoltageSource.empty(), optional=True)
+    self.can_gnd = self.Port(GroundSource.empty(), optional=True)
+
+    self.controller = self.Port(CanTransceiverPort.empty(), [Input])
+    self.can = self.Port(CanDiffPort.empty(), optional=True)
+
+  def contents(self):
+    super().contents()
+
+    self.conn = self.Block(CalSolCanConnector())
+    self.connect(self.can, self.conn.differential)
+
+    self.can_fuse = self.Block(SeriesPowerPptcFuse(150 * mAmp(tol=0.1)))
+    self.connect(self.conn.pwr, self.can_pwr, self.can_fuse.pwr_in)
+    self.connect(self.conn.gnd, self.can_gnd)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.can_fuse.pwr_out, [Power]),
+        ImplicitConnect(self.can_gnd, [Common]),
+    ) as imp:
+      self.reg = imp.Block(Ap2204k(5*Volt(tol=0.05)))  # TODO: replace with generic LinearRegulator?
+
+      self.esd = imp.Block(CanEsdDiode())
+      self.connect(self.esd.can, self.can)
+
+    with self.implicit_connect(  # Logic-side implicit
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.transceiver = imp.Block(Iso1050dub())
+      self.connect(self.transceiver.controller, self.controller)
+      self.connect(self.transceiver.can, self.can)
+      self.connect(self.transceiver.can_pwr, self.reg.pwr_out)
+      self.connect(self.transceiver.can_gnd, self.can_gnd)
+
+
+class CanFuse(PptcFuse, FootprintBlock):
+  def __init__(self, trip_current: RangeLike = (100, 200)*mAmp):
+    super().__init__(trip_current)
+
+  def contents(self):
+    super().contents()
+
+    self.assign(self.actual_trip_current, 150*mAmp(tol=0))
+    self.assign(self.actual_hold_current, 50*mAmp(tol=0))
+    self.assign(self.actual_voltage_rating, (0, 15)*Volt)
+
+    self.footprint(
+      'F', 'Resistor_SMD:R_0603_1608Metric',
+      {
+        '1': self.a,
+        '2': self.b,
+      },
+      part='0ZCM0005FF2G'
+    )
+
+
+class CalSolPowerConnector(Connector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSource(
+      voltage_out=12 * Volt(tol=0.1),
+      current_limits=(0, 3) * Amp  # TODO get actual limits from LVPDB?
+    ))
+    self.gnd = self.Port(GroundSource())
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'calisco:Molex_DuraClik_vert_3pin',
+      {
+        '1': self.gnd,
+        '2': self.pwr,
+        '3': self.gnd,
+      },
+      mfr='Molex', part='5600200320'
+    )
+
+
+class CalSolCanConnector(Connector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSource(
+      voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+      current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
+    ))
+    self.gnd = self.Port(GroundSource())
+    self.differential = self.Port(CanDiffPort(), [Output])
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'calisco:Molex_DuraClik_vert_5pin',
+      {
+        # 1 is SHLD
+        '2': self.pwr,
+        '3': self.gnd,
+        '4': self.differential.canh,
+        '5': self.differential.canl,
+      },
+      mfr='Molex', part='5600200520'
+    )
+
+
+class CalSolCanConnectorRa(Connector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSource(
+      voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+      current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
+    ))
+    self.gnd = self.Port(GroundSource())
+    self.differential = self.Port(CanDiffPort(), [Output])
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'calisco:Molex_DuraClik_502352_1x05_P2.00mm_Horizontal',
+      {
+        # 1 is SHLD
+        '2': self.pwr,
+        '3': self.gnd,
+        '4': self.differential.canh,
+        '5': self.differential.canl,
+      },
+      mfr='Molex', part='5023520500'
+    )
+
+
+class M12CanConnector(Connector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSource(
+      voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+      current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
+    ))
+    self.gnd = self.Port(GroundSource())
+    self.differential = self.Port(CanDiffPort(), [Output])
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'calisco:PhoenixContact_M12-5_Pin_SACC-DSIV-MS-5CON-L90',
+      {
+        # 1 is SHLD
+        '2': self.pwr,
+        '3': self.gnd,
+        '4': self.differential.canh,
+        '5': self.differential.canl,
+      },
+      mfr='Phoenix Contact', part='SACC-DSIV-MS-5CON-L90'
+    )
 
 
 class LightsConnector(Connector, FootprintBlock):

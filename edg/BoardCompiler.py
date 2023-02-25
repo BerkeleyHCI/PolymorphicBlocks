@@ -32,7 +32,7 @@ def compile_board(design: Type[Block], target_dir: str, target_name: str) -> Com
   assert len(netlist_all) == 1
 
   with open(design_filename, 'wb') as raw_file:
-    raw_file.write(compiled.contents.SerializeToString())
+    raw_file.write(compiled.design.SerializeToString())
 
   with open(netlist_filename, 'w', encoding='utf-8') as net_file:
     net_file.write(netlist_all[0][1])

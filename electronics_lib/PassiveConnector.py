@@ -4,7 +4,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class PassiveConnector(Connector, GeneratorBlock, FootprintBlock):
+class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """A base Block that is an elastic n-ported connector with passive type.
   Intended as an infrastructural block where a particular connector series is not fixed,
   but can be selected through the refinements system.
@@ -152,6 +152,25 @@ class HiroseFh12sh(Fpc050Bottom):
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
             "Hirose", f"FH12-{length}S-0.5SH")
+
+
+class Afc01(Fpc050Bottom, JlcPart):
+  """Jushuo AFC01 series bottom-entry 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
+  and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
+  _afc01_pins = set(range(4, 60+1))  # as listed by the part table
+  allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
+  PART_NUMBERS = {  # partial list of the ones currently used
+    8: 'C262657',
+    15: 'C262664',
+    24: 'C262669',
+    30: 'C262671',
+  }
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    # TODO this isn't the intended hook and uses side effects, but it works for now
+    self.assign(self.lcsc_part, self.PART_NUMBERS[length])
+    self.assign(self.actual_basic_part, False)
+    return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
+            "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is T&R packaging
 
 
 class Te1734839(Fpc050Top):

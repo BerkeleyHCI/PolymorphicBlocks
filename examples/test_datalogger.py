@@ -1,7 +1,7 @@
 import unittest
 
 from edg import *
-from electronics_lib.CalSolBlocks import CanFuse
+from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
 class TestDatalogger(BoardTop):

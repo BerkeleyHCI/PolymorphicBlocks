@@ -3,15 +3,15 @@ from __future__ import annotations
 from typing import *
 
 import edgir
-from .Core import Refable, non_library
+from .Categories import InternalBlock
+from .Core import Refable
+from .HierarchyBlock import Block, abstract_block
 from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
-from .Blocks import BaseBlock
-from .HierarchyBlock import Block, abstract_block
 
 
 @abstract_block
-class PortBridge(Block):
+class PortBridge(InternalBlock, Block):
   """Defines rules for connecting the internal port of a hierarchy block to a link.
   Only needed if the internal port connects to an internal link and is NOT a one-to-one forwarding port.
 
@@ -46,7 +46,7 @@ class PortBridge(Block):
 
 AdapterDstType = TypeVar('AdapterDstType', bound=Port)
 @abstract_block
-class PortAdapter(Block, Generic[AdapterDstType]):
+class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   """Defines an adapter from one port type to another port type. This behaves as a normal block, and both the src and
    dst are connected with normal connect semantics. Should only be inferred on internal block ports."""
   def __init__(self):

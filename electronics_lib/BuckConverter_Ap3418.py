@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ap3418_Device(DiscreteChip, FootprintBlock, JlcPart):
+class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   @init_in_parent
   def __init__(self):
     super().__init__()
