@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
