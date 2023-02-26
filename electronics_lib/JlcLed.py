@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcTablePart
 
 
-class JlcLed(Led, GeneratorBlock, JlcTablePart, FootprintBlock):
+class JlcLed(Led, GeneratorBlock, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     'LED_0603': 'LED_SMD:LED_0603_1608Metric',
     'LED_0805': 'LED_SMD:LED_0805_2012Metric',

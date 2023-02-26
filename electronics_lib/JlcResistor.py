@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart
 
 
-class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
+class JlcResistor(TableResistor, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0603': 'Resistor_SMD:R_0603_1608Metric',
     '0805': 'Resistor_SMD:R_0805_2012Metric',

@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @non_library
-class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
+class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.

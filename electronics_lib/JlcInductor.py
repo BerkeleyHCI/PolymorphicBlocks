@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart, DescriptionParser
 
 
-class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
+class JlcInductor(TableInductor, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     'L0603': 'Inductor_SMD:L_0603_1608Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',

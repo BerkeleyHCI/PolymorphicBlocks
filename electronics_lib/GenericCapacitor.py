@@ -1,11 +1,10 @@
 from typing import NamedTuple, Dict, Optional
 import math
 
-from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
-class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
+class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock):
   """
   Generic SMT ceramic capacitor (MLCC) picker that chooses a common value (E-series) based on rules
   specifying what capacitances / voltage ratings are available in what packages.

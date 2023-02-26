@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart, JlcTablePart
 
 
-class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
+class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',
