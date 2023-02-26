@@ -55,8 +55,8 @@ class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     # (1.0/32, '01005'),  # KiCad doesn't seem to have a default footprint this small
-    # (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
-    # (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
+    (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
+    (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
     (1.0/10, 'Resistor_SMD:R_0603_1608Metric'),
     (1.0/8, 'Resistor_SMD:R_0805_2012Metric'),
     (1.0/4, 'Resistor_SMD:R_1206_3216Metric'),

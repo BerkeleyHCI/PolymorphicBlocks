@@ -7,15 +7,18 @@ from .JlcPart import JlcTablePart, DescriptionParser
 
 class JlcInductor(TableInductor, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
-    'L0603': 'Inductor_SMD:L_0603_1608Metric',
+    '0402': 'Inductor_SMD:L_0402_1005Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',
-    'L0805': 'Inductor_SMD:L_0805_2012Metric',
     '0805': 'Inductor_SMD:L_0805_2012Metric',
-    'L1206': 'Inductor_SMD:L_1206_3216Metric',
     '1206': 'Inductor_SMD:L_1206_3216Metric',
     '1210': 'Inductor_SMD:L_1210_3225Metric',
-    'L1210': 'Inductor_SMD:L_1210_3225Metric',
     '1812': 'Inductor_SMD:L_1812_4532Metric',
+
+    'L0402': 'Inductor_SMD:L_0402_1005Metric',
+    'L0603': 'Inductor_SMD:L_0603_1608Metric',
+    'L0805': 'Inductor_SMD:L_0805_2012Metric',
+    'L1206': 'Inductor_SMD:L_1206_3216Metric',
+    'L1210': 'Inductor_SMD:L_1210_3225Metric',
     'L1812': 'Inductor_SMD:L_1812_4532Metric',
   }
 

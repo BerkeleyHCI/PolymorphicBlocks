@@ -6,8 +6,17 @@ from electronics_lib.JlcPart import JlcTablePart
 
 class JlcLed(Led, GeneratorBlock, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
+    # 0201 not in parts table, LED_0201_0603Metric
+    
+    '0402': 'LED_SMD:LED_0402_1005Metric',
+    '0603': 'LED_SMD:LED_0603_1608Metric',
+    '0805': 'LED_SMD:LED_0805_2012Metric',
+    '1206': 'LED_SMD:LED_1206_3216Metric',
+
+    'LED_0402': 'LED_SMD:LED_0402_1005Metric',
     'LED_0603': 'LED_SMD:LED_0603_1608Metric',
     'LED_0805': 'LED_SMD:LED_0805_2012Metric',
+    'LED_1206': 'LED_SMD:LED_1206_3216Metric',
   }
 
   # because the description formatting is so inconsistent, the table is just hardcoded here

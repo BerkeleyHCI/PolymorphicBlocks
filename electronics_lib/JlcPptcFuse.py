@@ -5,17 +5,20 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart, DescriptionParser
 
 
-class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, FootprintBlock):
+class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, SmdStandardPackage, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
-    'F0603': 'Resistor_SMD:R_0603_1608Metric',
+    '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
-    'F0805': 'Resistor_SMD:R_0805_2012Metric',
     '0805': 'Resistor_SMD:R_0805_2012Metric',
-    'F1206': 'Resistor_SMD:R_1206_3216Metric',
     '1206': 'Resistor_SMD:R_1206_3216Metric',
     '1210': 'Resistor_SMD:R_1210_3225Metric',
-    'F1210': 'Resistor_SMD:R_1210_3225Metric',
     '1812': 'Resistor_SMD:R_1812_4532Metric',
+
+    'F0402': 'Resistor_SMD:R_0402_1005Metric',
+    'F0603': 'Resistor_SMD:R_0603_1608Metric',
+    'F0805': 'Resistor_SMD:R_0805_2012Metric',
+    'F1206': 'Resistor_SMD:R_1206_3216Metric',
+    'F1210': 'Resistor_SMD:R_1210_3225Metric',
     'F1812': 'Resistor_SMD:R_1812_4532Metric',
   }
 
