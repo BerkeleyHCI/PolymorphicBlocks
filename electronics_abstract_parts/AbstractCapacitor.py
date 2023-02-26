@@ -102,8 +102,9 @@ class TableCapacitor(Capacitor):
   VOLTAGE_RATING = PartsTableColumn(Range)
 
 
+from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
+class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)
@@ -111,6 +112,20 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
   PARALLEL_COUNT = PartsTableColumn(int)
   PARALLEL_CAPACITANCE = PartsTableColumn(Range)
   PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Capacitor_SMD:C_0201_0603Metric',
+    '0402': 'Capacitor_SMD:C_0402_1005Metric',
+    '0603': 'Capacitor_SMD:C_0603_1608Metric',
+    '0805': 'Capacitor_SMD:C_0805_2012Metric',
+    '1206': 'Capacitor_SMD:C_1206_3216Metric',
+    '1210': 'Capacitor_SMD:C_1210_3225Metric',
+    '1806': None,
+    '1812': 'Capacitor_SMD:C_1812_4532Metric',
+    '2010': None,
+    '2512': 'Capacitor_SMD:C_2512_6332Metric',
+  }
 
   # default derating parameters
   DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
@@ -123,7 +138,7 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.capacitance, self.voltage,
                    single_nominal_capacitance, self.voltage_rating_derating,
-                   self.part, self.footprint_spec)
+                   self.part, self.footprint_spec, self.minimum_smd_package)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
@@ -131,16 +146,19 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
     # the description string in the main superclass
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
-                  voltage_rating_derating: float, part_spec: str, footprint_spec: str) -> None:
+                  voltage_rating_derating: float,
+                  part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:
     derated_voltage = voltage / voltage_rating_derating
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, self.SMD_FOOTPRINT_MAP)
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltererd_parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
         derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
         Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
-    ))
+    )).sort_by(self._row_sort_by)
 
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages

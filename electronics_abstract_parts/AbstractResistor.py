@@ -107,7 +107,8 @@ class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootp
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec, self.minimum_smd_package)
+    self.generator(self.select_part, self.resistance, self.power,
+                   self.part, self.footprint_spec, self.minimum_smd_package)
 
   def select_part(self, resistance: Range, power_dissipation: Range,
                   part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:

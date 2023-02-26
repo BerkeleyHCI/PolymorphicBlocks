@@ -42,7 +42,7 @@ class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock)
     super().__init__(*args, **kwargs)
 
     self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage,
-                   footprint_spec, derating_coeff)
+                   footprint_spec, self.minimum_smd_package, derating_coeff)
 
     # Output values
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
@@ -98,7 +98,7 @@ class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock)
   ]
 
   def select_capacitor_no_prod_table(self, capacitance: Range, voltage: Range,
-                                     footprint: str, derating_coeff: float) -> None:
+                                     footprint: str, minimum_smd_package: str, derating_coeff: float) -> None:
     """
     Selects a generic capacitor without using product tables
 
@@ -111,11 +111,10 @@ class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock)
     """
 
     def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
-
-      if footprint == "":
-        package_options = self.PACKAGE_SPECS
-      else:
-        package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint]
+      minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, TableDeratingCapacitor.SMD_FOOTPRINT_MAP)
+      package_options = [spec for spec in self.PACKAGE_SPECS
+                         if (not footprint or spec.name == footprint) and
+                         (spec.name not in minimum_invalid_footprints)]
 
       for package in package_options:
         if package.max >= nominal_capacitance:

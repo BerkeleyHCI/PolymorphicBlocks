@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTablePart, DescriptionParser
 
 
-class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, SmdStandardPackage, FootprintBlock):
+class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
@@ -48,9 +48,11 @@ class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, SmdStandardPackage, Footpri
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
 
   def _make_footprint(self, part: PartsTableRow) -> None:
     super()._make_footprint(part)

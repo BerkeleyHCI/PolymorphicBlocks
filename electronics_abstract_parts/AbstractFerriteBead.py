@@ -55,26 +55,44 @@ class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBe
   }
 
 
+from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableFerriteBead(FerriteBeadStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableFerriteBead(SmdStandardPackage, FerriteBeadStandardPinning, PartsTableFootprint, GeneratorBlock):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)
 
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Inductor_SMD:L_0201_0603Metric',
+    '0402': 'Inductor_SMD:L_0402_1005Metric',
+    '0603': 'Inductor_SMD:L_0603_1608Metric',
+    '0805': 'Inductor_SMD:L_0805_2012Metric',
+    '1206': 'Inductor_SMD:L_1206_3216Metric',
+    '1210': 'Inductor_SMD:L_1210_3225Metric',
+    '1806': None,
+    '1812': 'Inductor_SMD:L_1812_4532Metric',
+    '2010': 'Inductor_SMD:L_2010_5025Metric',
+    '2512': 'Inductor_SMD:L_2512_6332Metric',
+  }
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.current, self.hf_impedance, self.dc_resistance, self.part, self.footprint_spec)
+    self.generator(self.select_part, self.current, self.hf_impedance, self.dc_resistance,
+                   self.part, self.footprint_spec, self.minimum_smd_package)
 
   def select_part(self, current: Range, hf_impedance: Range, dc_resistance: Range,
-                  part_spec: str, footprint_spec: str) -> None:
+                  part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, self.SMD_FOOTPRINT_MAP)
     parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
         current.fuzzy_in(row[self.CURRENT_RATING]) and
         row[self.HF_IMPEDANCE].fuzzy_in(hf_impedance) and
         row[self.DC_RESISTANCE].fuzzy_in(dc_resistance)
-    ))
+    )).sort_by(self._row_sort_by)
     part = parts.first(f"no matching ferrite bead")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
