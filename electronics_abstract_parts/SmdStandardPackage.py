@@ -33,7 +33,7 @@ class SmdStandardPackage(Block):
     self.smd_min_package = self.ArgParameter(smd_min_package)
 
   @classmethod
-  def get_smd_packages_below(cls, smd_min_package: str, mapping: Optional[Dict[str, Optional[str]]] = None) -> List[str]:
+  def get_smd_packages_below(cls, smd_min_package: str, mapping: Dict[str, Optional[str]]) -> List[str]:
     """Returns a list of SMD packages below some specified package size, as a list for an exclusionary filter.
     The mapping must be complete (define entries for all packages), but may map to None to ignore that entry
     (if there is no corresponding footprint)."""
@@ -41,12 +41,9 @@ class SmdStandardPackage(Block):
       return []
     index = cls.PACKAGE_SIZE_ORDER.index(smd_min_package)  # a bad package spec throws a ValueError
     results = cls.PACKAGE_SIZE_ORDER[:index]
-    if mapping is not None:
-      mapped_results = []
-      for result in results:
-        mapped_result = mapping[result]
-        if mapped_result is not None:
-          mapped_results.append(mapped_result)
-      return mapped_results
-    else:
-      return results
+    mapped_results = []
+    for result in results:
+      mapped_result = mapping[result]
+      if mapped_result is not None:
+        mapped_results.append(mapped_result)
+    return mapped_results
