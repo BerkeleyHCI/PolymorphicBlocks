@@ -466,7 +466,11 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       connect = Connection(self, flatten)
       self._connects.register(connect)
     else:  # more than 1 existing connect
-      raise ValueError("TODO implement net join")
+      raise ValueError("TODO: implement net joins. " +
+                       "Net joins (connections between connections) currently aren't supported. " +
+                       "Only the first argument to connect may be a prior connection, or port is part of another connection. " +
+                       "Other arguments to connect must be ports not yet part of any connection. " +
+                       "You should be able to restructure your connect statements to avoid net joins.")
 
     for port in connects_ports_new:
       if port._block_parent() is not self:
