@@ -7,14 +7,26 @@ from .JlcPart import JlcPart, JlcTablePart
 
 class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
+    # 0201 not in parts table, C_0201_0603Metric
+
+    '0402': 'Capacitor_SMD:C_0402_1005Metric',
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',
     '1206': 'Capacitor_SMD:C_1206_3216Metric',
+    '1812': 'Capacitor_SMD:C_1812_4532Metric',
+
+    'C0402': 'Capacitor_SMD:C_0402_1005Metric',
+    'C0603': 'Capacitor_SMD:C_0603_1608Metric',
+    'C0805': 'Capacitor_SMD:C_0805_2012Metric',
+    'C1206': 'Capacitor_SMD:C_1206_3216Metric',
+    'C1812': 'Capacitor_SMD:C_1812_4532Metric',
   }
   DERATE_VOLTCO_MAP = {  # in terms of %capacitance / V over 3.6
+    'Capacitor_SMD:C_0402_1005Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0603_1608Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0805_2012Metric': 0.08,
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
+    'Capacitor_SMD:C_1812_4532Metric': 0.04,  # arbitrary, copy from 1206
   }
 
   @classmethod
@@ -66,9 +78,11 @@ class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
       except (KeyError, PartParserUtil.ParseError):
         return None
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
 
   def _make_footprint(self, part: PartsTableRow) -> None:
     super()._make_footprint(part)

@@ -39,16 +39,16 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   COST_HEADER = 'Price'
   COST = PartsTableColumn(float)
 
-  _JLC_TABLE: Optional[PartsTable] = None
+  __JLC_TABLE: Optional[PartsTable] = None
 
   @classmethod
   def _jlc_table(cls) -> PartsTable:
     """Returns the full JLC parts table, saving the result for future use."""
-    if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
-      JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
+    if JlcTablePart.__JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
+      JlcTablePart.__JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
         'Pruned_JLCPCB SMT Parts Library(20220419).csv'
       ], 'resources'), encoding='gb2312')
-    return JlcTablePart._JLC_TABLE
+    return JlcTablePart.__JLC_TABLE
 
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:

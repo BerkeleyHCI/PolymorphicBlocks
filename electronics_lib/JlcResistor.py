@@ -6,11 +6,16 @@ from .JlcPart import JlcTablePart
 
 class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
   PACKAGE_FOOTPRINT_MAP = {
+    # 0201 not in parts table, R_0201_0603Metric
+
+    '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
     '0805': 'Resistor_SMD:R_0805_2012Metric',
     '1206': 'Resistor_SMD:R_1206_3216Metric',
     '2010': 'Resistor_SMD:R_2010_5025Metric',
     '2512': 'Resistor_SMD:R_2512_6332Metric',
+
+    'R0402': 'Resistor_SMD:R_0402_1005Metric',
     'R0603': 'Resistor_SMD:R_0603_1608Metric',
     'R0805': 'Resistor_SMD:R_0805_2012Metric',
     'R1206': 'Resistor_SMD:R_1206_3216Metric',
@@ -50,9 +55,11 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
       except (KeyError, PartParserUtil.ParseError):
         return None
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
 
   def _make_footprint(self, part: PartsTableRow) -> None:
     super()._make_footprint(part)

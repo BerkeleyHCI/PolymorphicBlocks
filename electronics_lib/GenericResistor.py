@@ -1,11 +1,10 @@
 from typing import List, Tuple
 
-from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
 @non_library
-class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
+class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.
@@ -20,10 +19,11 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
                footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
+    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance,
+                   footprint_spec, self.smd_min_package)
 
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
-                      footprint_spec: str) -> None:
+                      footprint_spec: str, smd_min_package: str) -> None:
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
@@ -36,8 +36,11 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
     if not selected_range.fuzzy_in(resistance):
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
-                         if package_power >= power.upper and (not footprint_spec or package == footprint_spec)]
+                         if package_power >= power.upper and
+                         (not footprint_spec or package == footprint_spec) and
+                         (package not in minimum_invalid_footprints)]
     if not suitable_packages:
       raise ValueError(f"no resistor package for {power.upper} W power")
 
@@ -55,8 +58,8 @@ class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     # (1.0/32, '01005'),  # KiCad doesn't seem to have a default footprint this small
-    # (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
-    # (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
+    (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
+    (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
     (1.0/10, 'Resistor_SMD:R_0603_1608Metric'),
     (1.0/8, 'Resistor_SMD:R_0805_2012Metric'),
     (1.0/4, 'Resistor_SMD:R_1206_3216Metric'),

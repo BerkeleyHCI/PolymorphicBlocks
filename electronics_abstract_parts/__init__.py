@@ -18,6 +18,7 @@ from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, Distance
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
+from .SmdStandardPackage import SmdStandardPackage
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
