@@ -104,7 +104,7 @@ class TableFuse(SmdStandardPackage, FuseStandardPinning, PartsTableFootprint, Ge
         row[self.TRIP_CURRENT].fuzzy_in(trip_current) and
         row[self.HOLD_CURRENT].fuzzy_in(hold_current) and
         voltage.fuzzy_in(row[self.VOLTAGE_RATING])
-    ))
+    )).sort_by(self._row_sort_by)
     part = parts.first(f"no matching part")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])

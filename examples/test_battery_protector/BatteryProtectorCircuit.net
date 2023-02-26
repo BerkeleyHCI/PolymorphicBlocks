@@ -46,7 +46,7 @@
   (tstamps "0b9c02e8"))
 (comp (ref "battery_protector.vdd_vss_cap")
   (value "100nF")
-  (footprint "Capacitor_SMD:C_0402_1005Metric")
+  (footprint "Capacitor_SMD:C_0603_1608Metric")
   (property (name "Sheetname") (value "battery_protector"))
   (property (name "Sheetfile") (value "electronics_lib.BatteryProtector_S8200A.BatteryProtector_S8200A"))
   (property (name "edg_path") (value "battery_protector.vdd_vss_cap.cap"))

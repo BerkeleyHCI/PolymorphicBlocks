@@ -28,8 +28,8 @@ class SmdStandardPackage(Block):
   ]
 
   @init_in_parent
-  def __init__(self, *, minimum_smd_package: StringLike = ""):
-    super().__init__()
+  def __init__(self, *args, minimum_smd_package: StringLike = "", **kwargs):
+    super().__init__(*args, **kwargs)
     self.minimum_smd_package = self.ArgParameter(minimum_smd_package)
 
   @classmethod
