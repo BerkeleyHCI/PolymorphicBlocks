@@ -57,7 +57,7 @@ class ResistorTestCase(unittest.TestCase):
 
   def test_min_package(self) -> None:
     compiled = ScalaCompiler.compile(ResistorTestTop, Refinements(
-      instance_values=[(['dut', 'minimum_smd_package'], '0603')]
+      instance_values=[(['dut', 'smd_min_package'], '0603')]
     ))
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Resistor_SMD:R_0603_1608Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_value']), '1k, 1%, 0.1 W')

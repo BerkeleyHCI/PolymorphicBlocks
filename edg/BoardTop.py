@@ -38,7 +38,7 @@ class BaseBoardTop(DesignTop):
 
         (Vl53l0x, Vl53l0xApplication)
       ], class_values=[
-        (SmdStandardPackage, ["minimum_smd_package"], "0603"),
+        (SmdStandardPackage, ['smd_min_package'], '0603'),
       ]
     )
 

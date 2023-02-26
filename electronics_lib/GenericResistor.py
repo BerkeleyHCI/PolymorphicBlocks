@@ -20,10 +20,10 @@ class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBloc
     super().__init__(*args, **kwargs)
 
     self.generator(self.select_resistor, self.resistance, self.power, series, tolerance,
-                   footprint_spec, self.minimum_smd_package)
+                   footprint_spec, self.smd_min_package)
 
   def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
-                      footprint_spec: str, minimum_smd_package: str) -> None:
+                      footprint_spec: str, smd_min_package: str) -> None:
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
@@ -36,7 +36,7 @@ class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBloc
     if not selected_range.fuzzy_in(resistance):
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, TableResistor.SMD_FOOTPRINT_MAP)
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
                          if package_power >= power.upper and
                          (not footprint_spec or package == footprint_spec) and

@@ -138,7 +138,7 @@ class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, Table
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.capacitance, self.voltage,
                    single_nominal_capacitance, self.voltage_rating_derating,
-                   self.part, self.footprint_spec, self.minimum_smd_package)
+                   self.part, self.footprint_spec, self.smd_min_package)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
@@ -147,9 +147,9 @@ class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, Table
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
                   voltage_rating_derating: float,
-                  part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:
+                  part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
     derated_voltage = voltage / voltage_rating_derating
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, self.SMD_FOOTPRINT_MAP)
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
     # Pre-filter out by the static parameters
     # Note that we can't filter out capacitance before derating
     prefiltererd_parts = self._get_table().filter(lambda row: (

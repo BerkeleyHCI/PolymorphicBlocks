@@ -94,11 +94,11 @@ class TableInductor(SmdStandardPackage, InductorStandardPinning, PartsTableFootp
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.inductance, self.current, self.frequency,
-                   self.part, self.footprint_spec, self.minimum_smd_package)
+                   self.part, self.footprint_spec, self.smd_min_package)
 
   def select_part(self, inductance: Range, current: Range, frequency: Range,
-                  part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, self.SMD_FOOTPRINT_MAP)
+                  part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
     parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
