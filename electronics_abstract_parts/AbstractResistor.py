@@ -84,23 +84,41 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
   }
 
 
+from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
+
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Resistor_SMD:R_0201_0603Metric',
+    '0402': 'Resistor_SMD:R_0402_1005Metric',
+    '0603': 'Resistor_SMD:R_0603_1608Metric',
+    '0805': 'Resistor_SMD:R_0805_2012Metric',
+    '1206': 'Resistor_SMD:R_1206_3216Metric',
+    '1210': 'Resistor_SMD:R_1210_3225Metric',
+    '1806': None,
+    '1812': None,
+    '2010': 'Resistor_SMD:R_2010_5025Metric',
+    '2512': 'Resistor_SMD:R_2512_6332Metric',
+  }
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec)
+    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec, self.minimum_smd_package)
 
-  def select_part(self, resistance: Range, power_dissipation: Range, part_spec: str, footprint_spec: str) -> None:
+  def select_part(self, resistance: Range, power_dissipation: Range,
+                  part_spec: str, footprint_spec: str, minimum_smd_package: str) -> None:
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(minimum_smd_package, self.SMD_FOOTPRINT_MAP)
     parts = self._get_table().filter(lambda row: (
         (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
+        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
         row[self.RESISTANCE].fuzzy_in(resistance) and
         power_dissipation.fuzzy_in(row[self.POWER_RATING])
-    ))
+    )).sort_by(self._row_sort_by)
     part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
