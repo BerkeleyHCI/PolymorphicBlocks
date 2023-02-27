@@ -26,7 +26,7 @@ object ElaborateRecord {
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
   // Defines the type of a parameter, may be held back by partial compilation rules
-  case class Parameter(root: DesignPath, rootClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
+  case class Parameter(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
                        param: init.ValInit) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
@@ -115,7 +115,7 @@ class AssignNamer() {
   */
 class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                         val refinements: Refinements, val partial: PartialCompile,
-                        init: Boolean) {
+                        initialize: Boolean) {
   // public constructor that does not expose init, which is internal only
   def this(inputDesignPb: schema.Design, library: edg.wir.Library,
            refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
@@ -141,7 +141,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  if (init) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+  if (initialize) {  // seed only on the initial object creation (and not forks, which would duplicate work)
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
 
     // this is done inside expandBlock which isn't called for the root
@@ -166,7 +166,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   // heldElaboratePending is cleared
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
+    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
@@ -283,28 +283,50 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  protected def paramMatchesPartial(root: DesignPath, rootClass: Option[ref.LibraryPath], postfix: ref.LocalPath): Boolean = {
+  protected def paramMatchesPartial(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath): Boolean = {
     if (partial.params.contains(root ++ postfix)) {
       return true
     }
-    rootClass match {
-      case Some(rootClass) =>
+    blockClass match {
+      case Some(blockClass) =>
         partial.classParams.exists { case (partialClass, partialPostfix) =>
-          library.isSubclassOf(rootClass, partialClass) && partialPostfix == postfix
+          library.isSubclassOf(blockClass, partialClass) && partialPostfix == postfix
         }
       case None => false
     }
   }
 
+  protected def addParamDeclaration(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
+                                    param: init.ValInit): Unit = {
+    // add class-based refinements, if this is in a block - must be set before refinement params
+    // this is done here to delay it as much as possible, since class-based refinement can be added later
+    // note that this operates on the post-refinement class
+    blockClass.foreach { blockClass =>
+      refinements.classValues.foreach { case (refinementClass, refinements) =>
+        if (library.isSubclassOf(blockClass, refinementClass)) {
+          refinements.collect { case (refinementPostfix, value) if refinementPostfix == postfix =>
+            val paramPath = root ++ postfix
+            if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+              constProp.setForcedValue(paramPath, value,
+                s"${refinementClass.toSimpleString} class refinement")
+            }
+          }
+        }
+      }
+    }
+
+    constProp.addDeclaration(root ++ postfix, param)
+  }
+
   // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(root: DesignPath, rootClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
+  protected def processParamDeclarations(root: DesignPath, blockClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
       val postfix = ExprBuilder.Ref(paramName)
-      if (paramMatchesPartial(root, rootClass, postfix)) {
-        elaboratePending.addNode(ElaborateRecord.Parameter(root, rootClass, postfix, param), Seq())
+      if (paramMatchesPartial(root, blockClass, postfix)) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(root, blockClass, postfix, param), Seq())
       } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
-        constProp.addDeclaration(root + paramName, param)
+        addParamDeclaration(root, blockClass, postfix, param)
       }
     }
   }
@@ -449,19 +471,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         import edgir.elem.elem
         errors += CompilerError.LibraryError(path, refinedLibraryPath, err)
         elem.HierarchyBlock()
-    }
-
-    // add class-based refinements - must be set before refinement params
-    // note that this operates on the post-refinement class
-    refinements.classValues.foreach { case (classPath, refinements) =>
-      if (library.isSubclassOf(refinedLibraryPath, classPath)) {
-        refinements.foreach { case (subpath, value) =>
-          if (!refinementInstanceValuePaths.contains(path ++ subpath)) {  // instance values supersede class values
-            constProp.setForcedValue(path ++ subpath, value,
-              s"${refinedLibraryPath.getTarget.getName} class refinement")
-          }
-        }
-      }
     }
 
     // additional processing needed for the refinement case
@@ -1306,12 +1315,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord@ElaborateRecord.Parameter(root, rootClass, postfix, param) =>
-              val paramPath = root ++ postfix
-              if (paramMatchesPartial(root, rootClass, postfix)) {
+            case elaborateRecord@ElaborateRecord.Parameter(root, blockClass, postfix, param) =>
+              if (paramMatchesPartial(root, blockClass, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
-                constProp.addDeclaration(paramPath, param)
+                addParamDeclaration(root, blockClass, postfix, param)
                 elaboratePending.setValue(elaborateRecord, None)
               }
             case connect: ElaborateRecord.Connect =>
