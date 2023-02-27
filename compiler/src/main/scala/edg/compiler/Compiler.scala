@@ -84,10 +84,11 @@ case class PartialCompile(
   classParams: Seq[(ref.LibraryPath, ref.LocalPath)] = Seq()  // do not propagate values into params of these classes
 ) {
   def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
-    PartialCompile(blocks ++ that.blocks, params ++ that.params)
+    PartialCompile(blocks ++ that.blocks, params ++ that.params,
+      classes ++ that.classes, classParams ++ that.classParams)
   }
 
-  def isEmpty = blocks.isEmpty && params.isEmpty
+  def isEmpty = blocks.isEmpty && params.isEmpty && classes.isEmpty && classParams.isEmpty
 }
 
 
@@ -283,8 +284,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   protected def paramMatchesPartial(root: DesignPath, rootClass: Option[ref.LibraryPath], postfix: ref.LocalPath): Boolean = {
-    val paramPath = root ++ postfix
-    if (partial.params.contains(paramPath)) {
+    if (partial.params.contains(root ++ postfix)) {
       return true
     }
     rootClass match {
