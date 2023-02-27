@@ -28,12 +28,19 @@ case class Refinements(
   }
 
   // separates the refinements into one not containing (only) the set blocks and params, and one not.
-  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath]): (Refinements, Refinements) = {
+  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath],
+                  classParams: Set[(ref.LibraryPath, ref.LocalPath)]): (Refinements, Refinements) = {
     val (containsBlocks, otherBlocks) = instanceRefinements.partition { case (path, _) => blocks.contains(path) }
     val (containsParams, otherParams) = instanceValues.partition { case (path, _) => params.contains(path) }
-    val containsRefinement = Refinements(Map(), containsBlocks, Map(), containsParams)
+    val (containsClassParams, otherClassParams) = classValues.map { case (refinementClass, pathValues) =>
+      val (containsPathValues, otherPathValues) = pathValues.partition { case (path, _) =>
+        classParams.contains((refinementClass, path))
+      }
+      (refinementClass -> containsPathValues, refinementClass -> otherPathValues)
+    }.unzip
+    val containsRefinement = Refinements(Map(), containsBlocks, containsClassParams.toMap, containsParams)
     val otherRefinement = Refinements(
-      classRefinements, otherBlocks, classValues, otherParams
+      classRefinements, otherBlocks, otherClassParams.toMap, otherParams
     )
 
     (containsRefinement, otherRefinement)
