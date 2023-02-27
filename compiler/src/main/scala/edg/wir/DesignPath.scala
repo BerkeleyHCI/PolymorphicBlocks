@@ -197,13 +197,6 @@ object DesignPath {
     }
   }
 
-  def fromIndirect(indirect: IndirectDesignPath): DesignPath = {
-    DesignPath(indirect.steps.map {
-      case IndirectStep.Element(name) => name
-      case step => throw new IndirectPathException(s"Found non-direct $step when converting indirect $indirect")
-    })
-  }
-
   def apply(): DesignPath = DesignPath(Seq())
 
   def unapply(path: DesignPath): Option[Seq[String]] = Some(path.steps)
