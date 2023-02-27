@@ -53,6 +53,19 @@ class CompilerPartialParamTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "param") shouldEqual None
   }
 
+  "Compiler on class-based partial design specification and refinement" should "evaluate to the refinement" in {
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(Library()),
+      partial = PartialCompile(classParams = Seq((ElemBuilder.LibraryPath("topDesign"), Ref("param")))))
+    compiler.compile()
+    compiler.getValue(IndirectDesignPath() + "param") shouldEqual None
+
+    val forkedCompiler = compiler.fork(Refinements(
+      classValues=Map(ElemBuilder.LibraryPath("topDesign") -> Map(Ref("param") -> IntValue(2)))
+    ), PartialCompile())
+    forkedCompiler.compile()
+    forkedCompiler.getValue(IndirectDesignPath() + "param") shouldEqual Some(IntValue(2))
+  }
+
   "Compiler on partial design specification" should "fork independently" in {
     val compiler = new Compiler(inputDesign, new EdgirLibrary(Library()),
       partial = PartialCompile(params = Seq(DesignPath() + "param")))
