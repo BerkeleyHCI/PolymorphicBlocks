@@ -193,6 +193,7 @@ class ConstProp() {
     forcedParams.get(target) match { // check for overassign based on forced status
       case Some(expr) if expr == (constrName, targetExpr) => // this is the forced param
         require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
+        params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
       case Some(expr) =>
         return // ignore forced params - discard the new assign
       case None => // non-forced, check for and record over-assigns
@@ -201,8 +202,8 @@ class ConstProp() {
           record.assigns.add(paramSourceRecord)
           return // first set "wins"
         }
+        params.addNode(target, Seq())
     }
-    params.addNode(target, Seq()) // first add is not update=True, actual processing happens in update()
 
     val assign = AssignRecord(target, root, targetExpr)
     paramAssign.put(target, assign)
