@@ -139,7 +139,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
                 case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
               }
             }
-            params.addNode(constrTarget, missingCorrected.toSeq, update = true)
+            params.addNode(constrTarget, missingCorrected.toSeq, overwrite = true)
         }
       }
     } while (readyList.nonEmpty)
@@ -200,7 +200,7 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
     forcedParams.get(target) match {  // check for overassign based on forced status
       case Some(expr) if expr == (constrName, targetExpr) =>  // this is the forced param
         require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
-        params.addNode(target, Seq(), update=true)  // allow updating and overwriting prior param record
+        params.addNode(target, Seq(), overwrite=true)  // allow updating and overwriting prior param record
       case Some(expr) =>
         return  // ignore forced params - discard the new assign
       case None =>  // non-forced, check for and record over-assigns
