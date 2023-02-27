@@ -11,9 +11,9 @@ import org.scalatest.matchers.should.Matchers._
 import scala.collection.SeqMap
 
 
-/** Tests partial compilation and fork-from-partial compilation.
+/** Tests partial compilation and fork-from-partial compilation for frozen blocks.
   */
-class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
+class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
   val inputDesign = Design(Block.Block("topDesign",
     blocks = SeqMap(
       "source" -> Block.Library("sourceContainerBlock"),
