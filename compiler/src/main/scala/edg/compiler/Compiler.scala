@@ -26,7 +26,8 @@ object ElaborateRecord {
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
   // Defines the type of a parameter, may be held back by partial compilation rules
-  case class Parameter(path: DesignPath, param: init.ValInit) extends ElaborateTask
+  case class Parameter(root: DesignPath, rootClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
+                       param: init.ValInit) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
@@ -145,7 +146,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     // this is done inside expandBlock which isn't called for the root
     constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""),
       DesignPath(), "name")
-    processParamDeclarations(DesignPath(), root)
+    processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
 
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
       constProp.setForcedValue(path, value, "path refinement")
@@ -282,14 +283,15 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
+  protected def processParamDeclarations(root: DesignPath, rootClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
-      val paramPath = path + paramName
-      if (!partial.params.contains(paramPath)) {
+      val paramPath = root + paramName
+      if (partial.params.contains(paramPath) ||
+          (rootClass.isDefined && partial.classParams.contains((rootClass.get, ExprBuilder.Ref(paramName))))) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(root, rootClass, ExprBuilder.Ref(paramName), param), Seq())
+      } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
         constProp.addDeclaration(paramPath, param)
-      } else {
-        elaboratePending.addNode(ElaborateRecord.Parameter(paramPath, param), Seq())
       }
     }
   }
@@ -323,11 +325,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.Port =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
-        processParamDeclarations(path, port)
+        processParamDeclarations(path, None, port)
       case port: wir.Bundle =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
-        processParamDeclarations(path, port)
+        processParamDeclarations(path, None, port)
         for ((childPortName, childPort) <- port.getPorts) {
           elaboratePort(path + childPortName, containerPath, port, childPort)
         }
@@ -484,7 +486,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
-    processParamDeclarations(path, newBlock)
+    processParamDeclarations(path, Some(newBlock.getBlockClass), newBlock)
 
     newBlock.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newBlock, port)
@@ -519,7 +521,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports and parameters
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
-    processParamDeclarations(path, newLink)
+    processParamDeclarations(path, None, newLink)
 
     newLink.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newLink, port)
@@ -1291,8 +1293,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord@ElaborateRecord.Parameter(paramPath, param) =>
-              if (partial.params.contains(paramPath)) {
+            case elaborateRecord@ElaborateRecord.Parameter(root, rootClass, postfix, param) =>
+              val paramPath = root ++ postfix
+              if (partial.params.contains(paramPath) ||
+                  (rootClass.isDefined && partial.classParams.contains((rootClass.get, postfix)))) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 constProp.addDeclaration(paramPath, param)
