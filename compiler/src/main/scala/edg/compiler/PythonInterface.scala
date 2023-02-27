@@ -369,7 +369,7 @@ class PythonInterfaceLibrary() extends Library {
   override def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = {
     getLibraryPartialMapped(path, "block") {
       case schema.Library.NS.Val.Type.HierarchyBlock(member) =>
-        require(!eltsRefinements.isDefinedAt(path))  // non-design-top blocks should not have refinements
+        require(!eltsRefinements.isDefinedAt(path), s"non-design-top ${path.toSimpleString} may not have refinements")
         member
     }
   }

@@ -237,6 +237,7 @@ class ConstProp() {
   def setForcedValue(target: DesignPath, value: ExprValue, constrName: String): Unit = {
     val targetIndirect = target.asIndirect
     val expr = ExprBuilder.ValueExpr.Literal(value.toLit)
+    require(!paramTypes.contains(targetIndirect), "must set forced value before param declaration processed")
     forcedParams.put(targetIndirect, (constrName, expr))
     addAssignExpr(targetIndirect, expr, DesignPath(), constrName)
   }
