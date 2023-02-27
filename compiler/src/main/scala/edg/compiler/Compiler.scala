@@ -154,7 +154,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
   }
 
-  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
+  // Some pre-processed data structures to make refinement processing more efficient
+  private val refinementClassValuesByClass = refinements.classValues.groupBy(_._1._1)
+  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet
 
   // Supplemental elaboration data structures
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
@@ -296,26 +298,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
-  protected def addParamDeclaration(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
-                                    param: init.ValInit): Unit = {
-    // add class-based refinements, if this is in a block - must be set before refinement params
-    // this is done here to delay it as much as possible, since class-based refinement can be added later
-    // note that this operates on the post-refinement class
-    blockClass.foreach { blockClass =>
-      refinements.classValues.foreach { case ((refinementClass, refinementPostfix), value) =>
-        if (library.isSubclassOf(blockClass, refinementClass) && refinementPostfix == postfix) {
-          val paramPath = root ++ postfix
-          if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-            constProp.setForcedValue(paramPath, value,
-              s"${refinementClass.toSimpleString} class refinement")
-          }
-        }
-      }
-    }
-
-    constProp.addDeclaration(root ++ postfix, param)
-  }
-
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(root: DesignPath, blockClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
@@ -324,7 +306,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
         elaboratePending.addNode(ElaborateRecord.Parameter(root, blockClass, postfix, param), Seq())
       } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
-        addParamDeclaration(root, blockClass, postfix, param)
+        constProp.addDeclaration(root ++ postfix, param)
       }
     }
   }
@@ -492,6 +474,18 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             path, s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
+    }
+
+    // add class-based refinements - must be set before refinement params
+    // note that this operates on the post-refinement class
+    refinementClassValuesByClass.collect {
+      case (refinementClass, refinementClassValues) if library.isSubclassOf(refinedLibraryPath, refinementClass) =>
+        refinementClassValues.foreach { case ((_, postfix), value) =>
+          val paramPath = path ++ postfix
+          if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+            constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+          }
+        }
     }
 
     val newBlock = if (blockPb.generator.isEmpty) {
@@ -1317,7 +1311,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
               if (paramMatchesPartial(root, blockClass, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
-                addParamDeclaration(root, blockClass, postfix, param)
+                constProp.addDeclaration(root ++ postfix, param)
                 elaboratePending.setValue(elaborateRecord, None)
               }
             case connect: ElaborateRecord.Connect =>
