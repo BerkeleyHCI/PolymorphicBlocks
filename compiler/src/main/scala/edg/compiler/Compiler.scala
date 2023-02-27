@@ -302,14 +302,12 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     // this is done here to delay it as much as possible, since class-based refinement can be added later
     // note that this operates on the post-refinement class
     blockClass.foreach { blockClass =>
-      refinements.classValues.foreach { case (refinementClass, refinements) =>
-        if (library.isSubclassOf(blockClass, refinementClass)) {
-          refinements.collect { case (refinementPostfix, value) if refinementPostfix == postfix =>
-            val paramPath = root ++ postfix
-            if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-              constProp.setForcedValue(paramPath, value,
-                s"${refinementClass.toSimpleString} class refinement")
-            }
+      refinements.classValues.foreach { case ((refinementClass, refinementPostfix), value) =>
+        if (library.isSubclassOf(blockClass, refinementClass) && refinementPostfix == postfix) {
+          val paramPath = root ++ postfix
+          if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+            constProp.setForcedValue(paramPath, value,
+              s"${refinementClass.toSimpleString} class refinement")
           }
         }
       }

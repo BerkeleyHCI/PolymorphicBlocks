@@ -60,7 +60,7 @@ class CompilerPartialParamTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "param") shouldEqual None
 
     val forkedCompiler = compiler.fork(Refinements(
-      classValues=Map(ElemBuilder.LibraryPath("topDesign") -> Map(Ref("param") -> IntValue(2)))
+      classValues=Map((ElemBuilder.LibraryPath("topDesign"), Ref("param")) -> IntValue(2))
     ), PartialCompile())
     forkedCompiler.compile()
     forkedCompiler.getValue(IndirectDesignPath() + "param") shouldEqual Some(IntValue(2))
