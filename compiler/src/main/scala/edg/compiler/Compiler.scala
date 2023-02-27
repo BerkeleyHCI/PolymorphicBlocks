@@ -19,7 +19,7 @@ object ElaborateRecord {
   sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency source
 
   // step 1/2 for blocks: replaces library reference blocks with the concrete block from the library
-  case class ExpandBlock(blockPath: DesignPath) extends ElaborateTask
+  case class ExpandBlock(blockPath: DesignPath, blockClass: ref.LibraryPath) extends ElaborateTask
   // step 2/2 for blocks, when generators are ready: processes the subtree (including connects and assigns)
   case class Block(blockPath: DesignPath) extends ElaborateTask
   case class Link(linkPath: DesignPath) extends ElaborateTask
@@ -607,7 +607,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-      elaboratePending.addNode(ElaborateRecord.ExpandBlock(path + innerBlockName), Seq())
+      elaboratePending.addNode(
+        ElaborateRecord.ExpandBlock(path + innerBlockName, innerBlock.asInstanceOf[BlockLibrary].target),
+        Seq())
     }
 
     block.getLinks.foreach {
@@ -1268,13 +1270,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
     var readyList = Set[ElaborateRecord]()
-    do  {
+    do {
       readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
-            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              if (partial.blocks.contains(blockPath)) {
+            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath, blockClass) =>
+              if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 expandBlock(blockPath)

@@ -3,7 +3,7 @@ package edg.compiler
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.wir.{DesignPath, EdgirLibrary, IndirectDesignPath, Refinements}
-import edg.{CompilerTestUtil, wir}
+import edg.{CompilerTestUtil, ElemBuilder, ExprBuilder, wir}
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -118,13 +118,24 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
     )
   ))
 
-  "Compiler on partial design specification" should "not compile those blocks" in {
+  "Compiler on path-based partial design specification" should "not compile those blocks" in {
     val compiler = new Compiler(inputDesign, new EdgirLibrary(CompilerExpansionTest.library),
       partial=PartialCompile(blocks=Seq(DesignPath() + "source" + "inner")))
     val compiled = compiler.compile()
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
-      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(DesignPath() + "source" + "inner"), Set()))
+      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
+        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
+  }
+
+  "Compiler on class-based partial design specification" should "not compile those blocks" in {
+    val compiler = new Compiler(inputDesign, new EdgirLibrary(CompilerExpansionTest.library),
+      partial = PartialCompile(classes = Seq(ElemBuilder.LibraryPath("sourceBlock"))))
+    val compiled = compiler.compile()
+    compiled should equal(referencePartialElaborated)
+    compiler.getErrors() should contain(
+      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
+        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
   }
 
   "Compiler on partial design specification" should "fork independently" in {
@@ -141,7 +152,8 @@ class CompilerPartialTest extends AnyFlatSpec with CompilerTestUtil {
     // check original was not changed
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
-      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(DesignPath() + "source" + "inner"), Set()))
+      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
+        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
 
     // check that we can fork multiple times
     val forkedCompiler2 = compiler.fork(Refinements(), PartialCompile())
