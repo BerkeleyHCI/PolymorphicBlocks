@@ -195,10 +195,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     errors.toSeq ++ constProp.getErrors ++ pendingErrors
   }
 
-  // Hook method to be overridden, eg for status
-  //
-  def onElaborate(record: ElaborateRecord): Unit = { }
-
   // Actual compilation methods
   //
 
@@ -1275,7 +1271,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     do  {
       readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
       readyList.foreach { elaborateRecord =>
-        onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
