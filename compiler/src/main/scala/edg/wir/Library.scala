@@ -16,13 +16,17 @@ trait Library {
     if (subclass == superclass) {
       true
     } else {
-      getBlock(subclass).get.superclasses.exists {
+      getBlock(subclass, true).get.superclasses.exists {
         isSubclassOf(_, superclass)
       }
     }
   }
 
-  def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock]
+  def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = getBlock(path, false)
+  // getBlock can't be used on blocks that have refinements, since that's data that would be discarded
+  // this internal method allows that check to be ignored for cases where the block's definition isn't relevant,
+  // for example for checking subclass relationships
+  protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock]
   def getLink(path: ref.LibraryPath): Errorable[elem.Link]
   def getPort(path: ref.LibraryPath): Errorable[IrPort]
 
@@ -65,10 +69,12 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
   }
 
-  override def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => Errorable.Success(member)
-    case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")
-    case None => Errorable.Error(s"Library does not contain $path")
+  override protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock] = {
+    elts.get(path) match {
+      case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => Errorable.Success(member)
+      case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")
+      case None => Errorable.Error(s"Library does not contain $path")
+    }
   }
 
   override def getLink(path: ref.LibraryPath): Errorable[elem.Link] = elts.get(path) match {
