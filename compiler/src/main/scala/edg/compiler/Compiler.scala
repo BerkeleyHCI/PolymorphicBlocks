@@ -158,6 +158,15 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   private val refinementClassValuesByClass = refinements.classValues.groupBy(_._1._1)
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet
 
+  def filterRefinementClassValues(blockClass: ref.LibraryPath,
+                                  classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
+                                 ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
+    classValuesByClass.collect {
+      case (refinementClass, refinementClassValues) if library.isSubclassOf(blockClass, refinementClass) =>
+        refinementClassValues
+    }.flatten.toSeq
+  }
+
   // Supplemental elaboration data structures
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
 
@@ -166,7 +175,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Creates a new copy of this compiler including all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
-  // heldElaboratePending is cleared
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
     val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize=false)
     cloned.root = root.cloned
@@ -175,6 +183,26 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     additionalRefinements.instanceValues.foreach { case (path, value) =>
       cloned.constProp.setForcedValue(path, value, "path refinement")
     }
+    val additionalRefinementClassValuesByClass = additionalRefinements.classValues.groupBy(_._1._1)
+    def processBlockAdditionalRefinements(path: DesignPath, block: Block): Unit = {
+      additionalRefinements.classRefinements.foreach { case (refinementClass, _) =>
+        require(!block.unrefinedType.contains(refinementClass), f"added class refinement changes class at $path")
+      }
+
+      filterRefinementClassValues(block.getBlockClass, additionalRefinementClassValuesByClass).foreach {
+        case ((refinementClass, postfix), value) =>
+          val paramPath = path ++ postfix
+          if (!cloned.refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+            cloned.constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+          }
+      }
+
+      block.getBlocks foreach {  // recurse
+        case (subblockName, subblock: Block) => processBlockAdditionalRefinements(path + subblockName, subblock)
+        case (subblockName, subblock: BlockLibrary) =>  // ignored
+      }
+    }
+    processBlockAdditionalRefinements(DesignPath(), cloned.root)
     require(cloned.expandedArrayConnectConstraints.isEmpty)
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     require(cloned.errors.isEmpty)
@@ -478,15 +506,14 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    refinementClassValuesByClass.collect {
-      case (refinementClass, refinementClassValues) if library.isSubclassOf(refinedLibraryPath, refinementClass) =>
-        refinementClassValues.foreach { case ((_, postfix), value) =>
-          val paramPath = path ++ postfix
-          if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-            constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
-          }
+    filterRefinementClassValues(refinedLibraryPath, refinementClassValuesByClass).foreach {
+      case ((refinementClass, postfix), value) =>
+        val paramPath = path ++ postfix
+        if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+          constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
         }
     }
+
 
     val newBlock = if (blockPb.generator.isEmpty) {
       new wir.Block(blockPb, unrefinedType)
