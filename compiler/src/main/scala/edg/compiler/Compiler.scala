@@ -113,7 +113,7 @@ class AssignNamer() {
   * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
-class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
+class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Library,
                         val refinements: Refinements, val partial: PartialCompile,
                         initialize: Boolean) {
   // public constructor that does not expose init, which is internal only
@@ -162,7 +162,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
                                   classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
                                  ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
     classValuesByClass.collect {
-      case (refinementClass, refinementClassValues) if library.isSubclassOf(blockClass, refinementClass) =>
+      case (refinementClass, refinementClassValues) if library.blockIsSubclassOf(blockClass, refinementClass) =>
         refinementClassValues
     }.flatten.toSeq
   }
@@ -320,7 +320,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     blockClass match {
       case Some(blockClass) =>
         partial.classParams.exists { case (partialClass, partialPostfix) =>
-          library.isSubclassOf(blockClass, partialClass) && partialPostfix == postfix
+          library.blockIsSubclassOf(blockClass, partialClass) && partialPostfix == postfix
         }
       case None => false
     }
@@ -483,7 +483,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      if (!library.isSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
+      if (!library.blockIsSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
         errors += CompilerError.RefinementSubclassError(path, refinedLibraryPath, libraryPath)
       }
 

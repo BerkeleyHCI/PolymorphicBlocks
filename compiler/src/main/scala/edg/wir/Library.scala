@@ -1,24 +1,44 @@
 package edg.wir
 
-import scala.collection.{AbstractMap, MapOps}
-import edgir.elem.elem
-import edgir.ref.ref
-import edgir.schema.schema
+import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable
+import edg.wir.ProtoUtil.ParamProtoToSeqMap
+import edgir.elem.elem
+import edgir.ref.ref
+import edgir.schema.schema
 
 
 /** API definition for a library
   */
 trait Library {
-  def isSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
+  // returns whether subclass is a subclass of (or equivalent to) superclass, traversing up the library
+  def blockIsSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
     if (subclass == superclass) {
       true
     } else {
       getBlock(subclass, true).get.superclasses.exists {
-        isSubclassOf(_, superclass)
+        blockIsSubclassOf(_, superclass)
       }
+    }
+  }
+
+  // returns the top-most superclass that defines some parameter name
+  // returns None if thisClass does not define the parameter, and errors out if there are multiple top-most superclasses
+  def blockParamGetDefiningSuperclass(thisClass: ref.LibraryPath, paramName: String): Option[ref.LibraryPath] = {
+    val thisBlock = getBlock(thisClass, true).get
+    if (thisBlock.params.get(paramName).isEmpty) {
+      return None
+    }
+    val definingSuperclasses = thisBlock.superclasses.flatMap { superclass =>
+      blockParamGetDefiningSuperclass(superclass, paramName)
+    }.distinct
+    definingSuperclasses match {
+      case Seq() => Some(thisClass)
+      case Seq(baseClass) => Some(baseClass)
+      case _ =>
+        throw new IllegalArgumentException(s"multiple superclasses of ${thisClass.toSimpleString} defines $paramName")
     }
   }
 
