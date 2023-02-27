@@ -7,6 +7,7 @@ import edg.wir._
 import edg.{ExprBuilder, wir}
 import edgir.expr.expr
 import edgir.ref.ref
+import edgir.init.init
 import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
@@ -23,6 +24,9 @@ object ElaborateRecord {
   case class Block(blockPath: DesignPath) extends ElaborateTask
   case class Link(linkPath: DesignPath) extends ElaborateTask
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
+
+  // Defines the type of a parameter, may be held back by partial compilation rules
+  case class Parameter(path: DesignPath, param: init.ValInit) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
@@ -74,7 +78,9 @@ object ElaborateRecord {
   */
 case class PartialCompile(
   blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
-  params: Seq[DesignPath] = Seq()  // do not propagate values into these params (assignments are discarded)
+  params: Seq[DesignPath] = Seq(),  // do not propagate values into these params (assignments are discarded)
+  classes: Seq[ref.LibraryPath] = Seq(),  // do not elaborate blocks of these classes
+  classParams: Seq[(ref.LibraryPath, ref.LocalPath)] = Seq()  // do not propagate values into params of these classes
 ) {
   def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
     PartialCompile(blocks ++ that.blocks, params ++ that.params)
@@ -127,7 +133,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
   // Design parameters solving (constraint evaluation) and assertions
-  private val constProp = new ConstProp(partial.params.map(_.asIndirect).toSet) {
+  private val constProp = new ConstProp() {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
@@ -161,10 +167,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
-    val additionalForcedValues = additionalRefinements.instanceValues.map { case (path, value) =>
-      path -> (value, "path refinement")  // forced values must be set before any prior processed constraints
+    cloned.constProp.initFrom(constProp)
+    additionalRefinements.instanceValues.foreach { case (path, value) =>
+      cloned.constProp.setForcedValue(path, value, "path refinement")
     }
-    cloned.constProp.initFrom(constProp, additionalForcedValues)
     require(cloned.expandedArrayConnectConstraints.isEmpty)
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     require(cloned.errors.isEmpty)
@@ -282,7 +288,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
-      constProp.addDeclaration(path + paramName, param)
+      elaboratePending.addNode(ElaborateRecord.Parameter(path + paramName, param), Seq())
     }
   }
 
@@ -1253,19 +1259,26 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    val partialElaborate = partial.blocks.map { blockPath =>
-      ElaborateRecord.ExpandBlock(blockPath)
-    }
+    // to handle partial compilation, as records are processed they are checked against a match to partial
+    // if there is a match, they are added here to be ignored on subsequent passes
+    // this is rebuilt dynamically on each compile() invocation
+    val partialCompileIgnoredRecords = mutable.Set[ElaborateRecord]()
 
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
-    while ((elaboratePending.getReady -- partialElaborate).nonEmpty) {
-      (elaboratePending.getReady -- partialElaborate).foreach { elaborateRecord =>
+    var readyList = Set[ElaborateRecord]()
+    do  {
+      readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
+      readyList.foreach { elaborateRecord =>
         onElaborate(elaborateRecord)
         try {
           elaborateRecord match {
             case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              expandBlock(blockPath)
-              elaboratePending.setValue(elaborateRecord, None)
+              if (partial.blocks.contains(blockPath)) {
+                partialCompileIgnoredRecords.add(elaborateRecord)
+              } else {
+                expandBlock(blockPath)
+                elaboratePending.setValue(elaborateRecord, None)
+              }
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)
@@ -1275,6 +1288,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
+            case elaborateRecord@ElaborateRecord.Parameter(paramPath, param) =>
+              if (partial.params.contains(paramPath)) {
+                partialCompileIgnoredRecords.add(elaborateRecord)
+              } else {
+                constProp.addDeclaration(paramPath, param)
+                elaboratePending.setValue(elaborateRecord, None)
+              }
             case connect: ElaborateRecord.Connect =>
               elaborateConnect(connect)
               elaboratePending.setValue(elaborateRecord, None)
@@ -1306,7 +1326,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             throw wrappedException
         }
       }
-    }
+    } while (readyList.nonEmpty)
 
     ElemBuilder.Design(root.toPb)
   }
