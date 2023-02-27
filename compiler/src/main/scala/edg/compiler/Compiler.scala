@@ -282,16 +282,29 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  protected def paramMatchesPartial(root: DesignPath, rootClass: Option[ref.LibraryPath], postfix: ref.LocalPath): Boolean = {
+    val paramPath = root ++ postfix
+    if (partial.params.contains(paramPath)) {
+      return true
+    }
+    rootClass match {
+      case Some(rootClass) =>
+        partial.classParams.exists { case (partialClass, partialPostfix) =>
+          library.isSubclassOf(rootClass, partialClass) && partialPostfix == postfix
+        }
+      case None => false
+    }
+  }
+
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(root: DesignPath, rootClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
-      val paramPath = root + paramName
-      if (partial.params.contains(paramPath) ||
-          (rootClass.isDefined && partial.classParams.contains((rootClass.get, ExprBuilder.Ref(paramName))))) {
-        elaboratePending.addNode(ElaborateRecord.Parameter(root, rootClass, ExprBuilder.Ref(paramName), param), Seq())
+      val postfix = ExprBuilder.Ref(paramName)
+      if (paramMatchesPartial(root, rootClass, postfix)) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(root, rootClass, postfix, param), Seq())
       } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
-        constProp.addDeclaration(paramPath, param)
+        constProp.addDeclaration(root + paramName, param)
       }
     }
   }
@@ -1295,8 +1308,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
               elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord@ElaborateRecord.Parameter(root, rootClass, postfix, param) =>
               val paramPath = root ++ postfix
-              if (partial.params.contains(paramPath) ||
-                  (rootClass.isDefined && partial.classParams.contains((rootClass.get, postfix)))) {
+              if (paramMatchesPartial(root, rootClass, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 constProp.addDeclaration(paramPath, param)
