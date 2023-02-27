@@ -142,16 +142,16 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   }
 
   if (initialize) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
+      constProp.setForcedValue(path, value, "path refinement")
+    }
+
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
 
     // this is done inside expandBlock which isn't called for the root
     constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""),
       DesignPath(), "name")
     processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
-
-    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
-      constProp.setForcedValue(path, value, "path refinement")
-    }
   }
 
   private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
@@ -180,10 +180,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     cloned
   }
 
-  // Add solved values
-  def addValues(values: Map[DesignPath, ExprValue], name: String): Unit = {
+  // Add solved values, where the param must not have had a value
+  def addAssignValues(values: Map[DesignPath, ExprValue], name: String): Unit = {
     values.foreach { case (path, value) =>
-      constProp.setForcedValue(path, value, name)
+      constProp.addAssignValue(path.asIndirect, value, DesignPath(), name)
     }
   }
 
