@@ -201,7 +201,8 @@ class ConstProp(frozenParams: Set[IndirectDesignPath] = Set()) {
       case Some(expr) if expr == (constrName, targetExpr) =>  // this is the forced param
         require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
         params.addNode(target, Seq(), update=true)  // allow updating and overwriting prior param record
-      case Some(expr) => return  // ignore forced params - discard the new assign
+      case Some(expr) =>
+        return  // ignore forced params - discard the new assign
       case None =>  // non-forced, check for and record over-assigns
         if (params.nodeDefinedAt(target)) {
           val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
