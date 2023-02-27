@@ -26,7 +26,7 @@ object ElaborateRecord {
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
   // Defines the type of a parameter, may be held back by partial compilation rules
-  case class Parameter(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
+  case class Parameter(containerPath: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
                        param: init.ValInit) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
@@ -313,8 +313,9 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
   }
 
-  protected def paramMatchesPartial(root: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath): Boolean = {
-    if (partial.params.contains(root ++ postfix)) {
+  protected def paramMatchesPartial(containerPath: DesignPath, blockClass: Option[ref.LibraryPath],
+                                    postfix: ref.LocalPath): Boolean = {
+    if (partial.params.contains(containerPath ++ postfix)) {
       return true
     }
     blockClass match {
@@ -481,6 +482,16 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         elem.HierarchyBlock()
     }
 
+    // add class-based refinements - must be set before refinement params
+    // note that this operates on the post-refinement class
+    filterRefinementClassValues(refinedLibraryPath, refinementClassValuesByClass).foreach {
+      case ((refinementClass, postfix), value) =>
+        val paramPath = path ++ postfix
+        if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+          constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+        }
+    }
+
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
       if (!library.blockIsSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
@@ -503,17 +514,6 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         }
       }
     }
-
-    // add class-based refinements - must be set before refinement params
-    // note that this operates on the post-refinement class
-    filterRefinementClassValues(refinedLibraryPath, refinementClassValuesByClass).foreach {
-      case ((refinementClass, postfix), value) =>
-        val paramPath = path ++ postfix
-        if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-          constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
-        }
-    }
-
 
     val newBlock = if (blockPb.generator.isEmpty) {
       new wir.Block(blockPb, unrefinedType)
