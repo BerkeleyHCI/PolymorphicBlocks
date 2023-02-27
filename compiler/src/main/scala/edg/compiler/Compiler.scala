@@ -288,7 +288,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
-      elaboratePending.addNode(ElaborateRecord.Parameter(path + paramName, param), Seq())
+      val paramPath = path + paramName
+      if (!partial.params.contains(paramPath)) {
+        // uniformly using ElaborateRecord craters performance, so this fast path is added here
+        constProp.addDeclaration(paramPath, param)
+      } else {
+        elaboratePending.addNode(ElaborateRecord.Parameter(paramPath, param), Seq())
+      }
     }
   }
 

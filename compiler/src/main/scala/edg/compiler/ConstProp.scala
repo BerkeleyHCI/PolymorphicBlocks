@@ -50,7 +50,9 @@ class ConstProp() {
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
   private val params = DependencyGraph[IndirectDesignPath, ExprValue]()
-  private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()  // only record types of authoritative elements
+  // Parameter types are used to track declared parameters
+  // Undeclared parameters cannot have values set, but can be forced (though the value is not effective until declared)
+  private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()
 
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
@@ -73,7 +75,6 @@ class ConstProp() {
     connectedLink.initFrom(that.connectedLink)
     forcedParams.addAll(that.forcedParams)
     discardOverassigns.addAll(that.discardOverassigns)
-    update() // for when frozenParams changes
   }
 
   //
