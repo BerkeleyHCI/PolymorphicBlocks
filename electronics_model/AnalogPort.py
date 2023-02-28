@@ -44,10 +44,7 @@ class AnalogLink(CircuitLink):
 
 
 class AnalogBase(CircuitPort[AnalogLink]):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.link_type = AnalogLink
+  link_type = AnalogLink
 
 
 class AnalogSinkBridge(CircuitPortBridge):

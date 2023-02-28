@@ -20,18 +20,20 @@ class TestBundleLink(Link):
 
 
 class TestBundleSource(Bundle[TestBundleLink]):
+  link_type = TestBundleLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = TestBundleLink
 
     self.a = self.Port(TestPortSource())
     self.b = self.Port(TestPortSource())
 
 
 class TestBundleSink(Bundle[TestBundleLink]):
+  link_type = TestBundleLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = TestBundleLink
 
     self.a = self.Port(TestPortSink())
     self.b = self.Port(TestPortSink())

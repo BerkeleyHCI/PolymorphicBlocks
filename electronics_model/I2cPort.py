@@ -35,19 +35,19 @@ class I2cLink(Link):
 
 
 class I2cPullupPort(Bundle[I2cLink]):
+  link_type = I2cLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = I2cLink
-
     self.scl = self.Port(DigitalSingleSource(pullup_capable=True))
     self.sda = self.Port(DigitalSingleSource(pullup_capable=True))
 
 
 class I2cMaster(Bundle[I2cLink]):
+  link_type = I2cLink
+
   def __init__(self, model: Optional[DigitalBidir] = None, has_pullup: BoolLike = False) -> None:
     super().__init__()
-    self.link_type = I2cLink
-
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.scl = self.Port(DigitalSource.from_bidir(model))
@@ -55,22 +55,6 @@ class I2cMaster(Bundle[I2cLink]):
 
     self.frequency = self.Parameter(RangeExpr(Default(RangeExpr.EMPTY_ZERO)))
     self.has_pullup = self.Parameter(BoolExpr(has_pullup))
-
-
-class I2cSlave(Bundle[I2cLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None, addresses: ArrayIntLike = []) -> None:
-    """Addresses specified excluding the R/W bit (as a 7-bit number)"""
-    super().__init__()
-    self.link_type = I2cLink
-    self.bridge_type = I2cSlaveBridge
-
-    if model is None:
-      model = DigitalBidir()  # ideal by default
-    self.scl = self.Port(DigitalSink.from_bidir(model))
-    self.sda = self.Port(model)
-
-    self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies
-    self.addresses = self.Parameter(ArrayIntExpr(addresses))
 
 
 class I2cSlaveBridge(PortBridge):
@@ -92,3 +76,19 @@ class I2cSlaveBridge(PortBridge):
     self.sda_bridge = self.Block(DigitalBidirBridge())
     self.connect(self.outer_port.sda, self.sda_bridge.outer_port)
     self.connect(self.sda_bridge.inner_link, self.inner_link.sda)
+
+
+class I2cSlave(Bundle[I2cLink]):
+  link_type = I2cLink
+  bridge_type = I2cSlaveBridge
+
+  def __init__(self, model: Optional[DigitalBidir] = None, addresses: ArrayIntLike = []) -> None:
+    """Addresses specified excluding the R/W bit (as a 7-bit number)"""
+    super().__init__()
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.scl = self.Port(DigitalSink.from_bidir(model))
+    self.sda = self.Port(model)
+
+    self.frequency_limit = self.Parameter(RangeExpr(Default(RangeExpr.ALL)))  # range of acceptable frequencies
+    self.addresses = self.Parameter(ArrayIntExpr(addresses))

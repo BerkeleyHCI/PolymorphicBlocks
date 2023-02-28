@@ -94,10 +94,10 @@ class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
 
 
 class VoltageBase(CircuitPort[VoltageLink]):
+  link_type = VoltageLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = VoltageLink
-
 #     self.isolation_domain = self.Parameter(RefParameter())  # semantics TBD
 #     self.reference = self.Parameter(RefParameter())  # semantics TBD, ideally some concept of implicit domains
 

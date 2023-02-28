@@ -131,6 +131,7 @@ class PassiveBridge(CircuitPortBridge):
 
 
 class Passive(CircuitPort[PassiveLink]):
+  """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
   adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
     VoltageSource: PassiveAdapterVoltageSource,
     VoltageSink: PassiveAdapterVoltageSink,
@@ -141,13 +142,8 @@ class Passive(CircuitPort[PassiveLink]):
     AnalogSink: PassiveAdapterAnalogSink,
     AnalogSource: PassiveAdapterAnalogSource
   }
-
-  """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.link_type = PassiveLink
-    self.bridge_type = PassiveBridge
+  link_type = PassiveLink
+  bridge_type = PassiveBridge
 
   AdaptTargetType = TypeVar('AdaptTargetType', bound=CircuitPort)
   def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:

@@ -24,10 +24,10 @@ class SwdLink(Link):
 
 
 class SwdHostPort(Bundle[SwdLink]):
+  link_type = SwdLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = SwdLink
-
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.swdio = self.Port(model)
@@ -36,10 +36,10 @@ class SwdHostPort(Bundle[SwdLink]):
 
 
 class SwdTargetPort(Bundle[SwdLink]):
+  link_type = SwdLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = SwdLink
-
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.swdio = self.Port(model)
@@ -48,10 +48,10 @@ class SwdTargetPort(Bundle[SwdLink]):
 
 
 class SwdPullPort(Bundle[SwdLink]):
+  link_type = SwdLink
+
   def __init__(self, model: Optional[DigitalSingleSource] = None) -> None:
     super().__init__()
-    self.link_type = SwdLink
-
     if model is None:
       model = DigitalSingleSource()  # ideal by default
     self.swdio = self.Port(model)

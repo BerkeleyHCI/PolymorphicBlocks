@@ -140,10 +140,7 @@ class DigitalLink(CircuitLink):
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.link_type = DigitalLink
+  link_type = DigitalLink
 
 
 class DigitalSink(DigitalBase):

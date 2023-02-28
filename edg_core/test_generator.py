@@ -85,16 +85,18 @@ class TestLink(Link):
 
 
 class TestPortSource(Port[TestLink]):
+  link_type = TestLink
+
   def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
     super().__init__()
-    self.link_type = TestLink
     self.float_param = self.Parameter(FloatExpr(float_value))
 
 
 class TestPortSink(Port[TestLink]):
+  link_type = TestLink
+
   def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.link_type = TestLink
     self.range_param = self.Parameter(RangeExpr(range_value))
 
 

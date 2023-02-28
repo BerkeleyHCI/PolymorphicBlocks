@@ -63,9 +63,10 @@ class TestPortConstPropLink(Link):
 
 
 class TestPortConstPropPort(Port[TestPortConstPropLink]):
+  link_type = TestPortConstPropLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = TestPortConstPropLink
     self.float_param = self.Parameter(FloatExpr())
 
 
@@ -134,10 +135,10 @@ class TestPortConstPropBundleLink(Link):
 
 
 class TestPortConstPropBundle(Bundle[TestPortConstPropBundleLink]):
+  link_type = TestPortConstPropBundleLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = TestPortConstPropBundleLink
-
     self.elt1 = self.Port(TestPortConstPropPort())
     self.elt2 = self.Port(TestPortConstPropPort())
 

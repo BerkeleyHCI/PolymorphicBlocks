@@ -35,9 +35,10 @@ class TestReductionLink(Link):
 
 
 class TestReductionPort(Port[TestReductionLink]):
+  link_type = TestReductionLink
+
   def __init__(self, range_param: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.link_type = TestReductionLink
     self.range_param = self.Parameter(RangeExpr(range_param))
 
 

@@ -26,10 +26,10 @@ class CanLogicLink(Link):
 
 
 class CanControllerPort(Bundle[CanLogicLink]):
+  link_type = CanLogicLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = CanLogicLink
-
     if model is None:  # ideal by default
       model = DigitalBidir()
     self.txd = self.Port(DigitalSource.from_bidir(model))
@@ -37,10 +37,10 @@ class CanControllerPort(Bundle[CanLogicLink]):
 
 
 class CanTransceiverPort(Bundle[CanLogicLink]):
+  link_type = CanLogicLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = CanLogicLink
-
     if model is None:  # ideal by default
       model = DigitalBidir()
     self.txd = self.Port(DigitalSink.from_bidir(model))
@@ -48,10 +48,10 @@ class CanTransceiverPort(Bundle[CanLogicLink]):
 
 
 class CanPassivePort(Bundle[CanLogicLink]):
+  link_type = CanLogicLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = CanLogicLink
-
     if model is None:  # ideal by default
       model = DigitalBidir()
     self.txd = self.Port(DigitalSink.from_bidir(model))
@@ -76,18 +76,6 @@ class CanDiffLink(Link):
                              flatten=True)
 
 
-class CanDiffPort(Bundle[CanDiffLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
-    super().__init__()
-    self.link_type = CanDiffLink
-    self.bridge_type = CanDiffBridge
-
-    if model is None:  # ideal by default
-      model = DigitalBidir()
-    self.canh = self.Port(model)
-    self.canl = self.Port(model)
-
-
 class CanDiffBridge(PortBridge):
   def __init__(self) -> None:
     super().__init__()
@@ -105,3 +93,15 @@ class CanDiffBridge(PortBridge):
     self.canl_bridge = self.Block(DigitalBidirBridge())
     self.connect(self.outer_port.canl, self.canl_bridge.outer_port)
     self.connect(self.canl_bridge.inner_link, self.inner_link.canl)
+
+
+class CanDiffPort(Bundle[CanDiffLink]):
+  link_type = CanDiffLink
+  bridge_type = CanDiffBridge
+
+  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    super().__init__()
+    if model is None:  # ideal by default
+      model = DigitalBidir()
+    self.canh = self.Port(model)
+    self.canl = self.Port(model)
