@@ -15,19 +15,13 @@ class I2cLink(Link):
     self.devices = self.Port(Vector(I2cSlave(DigitalBidir.empty())))
 
     self.addresses = self.Parameter(ArrayIntExpr(self.devices.flatten(lambda x: x.addresses)))
-    self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
 
-    # this is assigned by some bridges, otherwise left uninitialized
     self.has_pull = self.Parameter(BoolExpr(self.pull.is_connected()))
-    self.pull_scl_voltage = self.pull.scl.voltage_out
-    self.pull_sda_voltage = self.pull.sda.voltage_out
-    self.pull_scl_output_threshold = self.pull.scl.output_thresholds
-    self.pull_sda_output_threshold = self.pull.sda.output_thresholds
 
   def contents(self) -> None:
     super().contents()
-    # TODO define all IDs
     self.require(self.pull.is_connected() | self.master.has_pullup)
+    self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
     self.scl = self.connect(self.pull.scl, self.master.scl, self.devices.map_extract(lambda device: device.scl),
                             flatten=True)
     self.sda = self.connect(self.pull.sda, self.master.sda, self.devices.map_extract(lambda device: device.sda),
@@ -63,10 +57,11 @@ class I2cSlaveBridge(PortBridge):
 
     self.outer_port = self.Port(I2cSlave.empty())
     self.inner_link = self.Port(I2cMaster(DigitalBidir.empty(), self.outer_port.link().has_pull))
-    self.outer_port.init_from(I2cSlave(DigitalBidir.empty(), self.inner_link.link().addresses))
 
   def contents(self) -> None:
     super().contents()
+
+    self.outer_port.init_from(I2cSlave(DigitalBidir.empty(), self.inner_link.link().addresses))
 
     # this duplicates DigitalBidirBridge but mixing in the pullup
     self.scl_bridge = self.Block(DigitalSinkBridge())
