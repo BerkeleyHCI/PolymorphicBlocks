@@ -100,6 +100,8 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
 
 
 class AnalogSink(AnalogBase):
+  bridge_type = AnalogSinkBridge
+
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
                   voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
@@ -116,8 +118,6 @@ class AnalogSink(AnalogBase):
                current_draw: RangeLike = Default(RangeExpr.ZERO),
                impedance: RangeLike = Default(RangeExpr.INF)) -> None:
     super().__init__()
-    self.bridge_type = AnalogSinkBridge
-
     # TODO maybe separate absolute maximum limits from sensing limits?
     self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw = self.Parameter(RangeExpr(current_draw))
@@ -125,6 +125,8 @@ class AnalogSink(AnalogBase):
 
 
 class AnalogSource(AnalogBase):
+  bridge_type = AnalogSourceBridge
+
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
                   current_limits: RangeLike = Default(RangeExpr.ALL),
@@ -139,8 +141,6 @@ class AnalogSource(AnalogBase):
                current_limits: RangeLike = Default(RangeExpr.ALL),
                impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
-    self.bridge_type = AnalogSourceBridge
-
     self.voltage_out = self.Parameter(RangeExpr(voltage_out))
     self.current_limits = self.Parameter(RangeExpr(current_limits))
     self.impedance = self.Parameter(RangeExpr(impedance))
