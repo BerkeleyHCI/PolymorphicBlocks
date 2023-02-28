@@ -23,6 +23,9 @@ class AnalogLink(CircuitLink):
     self.voltage_limits = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+  def contents(self) -> None:
+    super().contents()
+
     self.description = DescriptionString(
       "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
@@ -30,9 +33,6 @@ class AnalogLink(CircuitLink):
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
       "\n<b>sink impedance</b>: ", DescriptionString.FormatUnits(self.sink_impedance, "Ω"),
       ", <b>source impedance</b>: ", DescriptionString.FormatUnits(self.source_impedance, "Ω"))
-
-  def contents(self) -> None:
-    super().contents()
 
     self.assign(self.sink_impedance, 1 / (1 / self.sinks.map_extract(lambda x: x.impedance)).sum())
     self.require(self.source.impedance.upper() <= self.sink_impedance.lower() * 0.1)  # about 10x for signal integrity

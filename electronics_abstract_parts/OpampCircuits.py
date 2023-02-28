@@ -90,6 +90,9 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>amplification:</b> ", DescriptionString.FormatUnits(self.actual_amplification, ""),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
@@ -210,6 +213,10 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.ratio = self.ArgParameter(ratio)
     self.actual_ratio = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio, "")
@@ -327,6 +334,10 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.factor = self.ArgParameter(factor)
     self.actual_factor = self.Parameter(RangeExpr())
+
+  def contents(self) -> None:
+    super().contents()
+
     self.description = DescriptionString(
       "<b>factor:</b> ", DescriptionString.FormatUnits(self.actual_factor, ""),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor, "")

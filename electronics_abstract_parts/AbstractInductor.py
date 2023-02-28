@@ -26,6 +26,9 @@ class Inductor(PassiveComponent):
     self.actual_current_rating = self.Parameter(RangeExpr())
     self.actual_frequency_rating = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.inductance, "H"), "\n",

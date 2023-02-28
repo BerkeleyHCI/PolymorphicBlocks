@@ -52,6 +52,9 @@ class DigitalLink(CircuitLink):
     self.has_low_signal_driver = self.Parameter(BoolExpr())
     self.has_high_signal_driver = self.Parameter(BoolExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
@@ -59,9 +62,6 @@ class DigitalLink(CircuitLink):
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
       "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "V"),
       ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "V"))
-
-  def contents(self):
-    super().contents()
 
     self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
                  "DigitalLink must have some kind of source")

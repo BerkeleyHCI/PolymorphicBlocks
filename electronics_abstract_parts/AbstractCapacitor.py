@@ -30,6 +30,9 @@ class UnpolarizedCapacitor(PassiveComponent):
     self.actual_capacitance = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"), "\n",

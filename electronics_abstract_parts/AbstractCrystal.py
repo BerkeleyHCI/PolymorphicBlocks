@@ -18,6 +18,9 @@ class Crystal(DiscreteComponent):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",

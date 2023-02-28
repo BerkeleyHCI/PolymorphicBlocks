@@ -15,6 +15,9 @@ class Fuse(InternalSubcircuit, Block):
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
     super().__init__()
 
+    self.a = self.Port(Passive())
+    self.b = self.Port(Passive())
+
     self.trip_current = self.ArgParameter(trip_current)  # current at which this will trip
     self.actual_trip_current = self.Parameter(RangeExpr())
     self.hold_current = self.ArgParameter(hold_current)  # current within at which this will NOT trip
@@ -22,15 +25,8 @@ class Fuse(InternalSubcircuit, Block):
     self.voltage = self.ArgParameter(voltage)  # operating voltage
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-    self.a = self.Port(Passive())
-    self.b = self.Port(Passive())
-
-    self.require(self.actual_trip_current.within(self.trip_current),
-                 "trip current not within specified rating")
-    self.require(self.actual_hold_current.within(self.hold_current),
-                 "hold current not within specified rating")
-    self.require(self.voltage.within(self.actual_voltage_rating),
-                 "operating voltage not within rating")
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>trip current:</b> ", DescriptionString.FormatUnits(self.actual_trip_current, "A"),
@@ -40,6 +36,13 @@ class Fuse(InternalSubcircuit, Block):
       "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
     )
+
+    self.require(self.actual_trip_current.within(self.trip_current),
+                 "trip current not within specified rating")
+    self.require(self.actual_hold_current.within(self.hold_current),
+                 "hold current not within specified rating")
+    self.require(self.voltage.within(self.actual_voltage_rating),
+                 "operating voltage not within rating")
 
 
 @abstract_block
