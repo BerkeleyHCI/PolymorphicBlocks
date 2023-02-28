@@ -32,6 +32,9 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())  # per element
 
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
+
   def contents(self):
     super().contents()
 
@@ -43,9 +46,6 @@ class ResistorArray(PassiveComponent, MultipackBlock):
       "<b>element power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.powers, "W")
     )
-
-    self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
-    self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 
 
 @non_library
