@@ -28,7 +28,6 @@ class IdealCircuitTestTop(Block):
     self.require(self.reg_draw.voltage == 2*Volt(tol=0))
 
 
-
 class IdealCircuitTest(unittest.TestCase):
   def test_ideal_circuit(self) -> None:
     ScalaCompiler.compile(IdealCircuitTestTop, refinements=Refinements(
