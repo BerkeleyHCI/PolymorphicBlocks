@@ -180,8 +180,7 @@ class DigitalSink(DigitalBase):
     if input_threshold_factor is not None:
       assert input_threshold_abs is None, "can only specify one input threshold type"
       input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
-      input_threshold = (input_threshold_factor.lower() * pos.link().voltage.lower(),
-                         input_threshold_factor.upper() * pos.link().voltage.upper())
+      input_threshold = pos.link().voltage * input_threshold_factor
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
@@ -189,8 +188,8 @@ class DigitalSink(DigitalBase):
       raise ValueError("no input threshold specified")
 
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
-                      RangeExpr._to_expr_type(voltage_limit_tolerance),
+      voltage_limits=neg.link().voltage.hull(pos.link().voltage.upper()) + \
+                     RangeExpr._to_expr_type(voltage_limit_tolerance),
       current_draw=current_draw,
       input_thresholds=input_threshold
     )
@@ -353,18 +352,17 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
       assert voltage_limit_tolerance is None
       voltage_limit = voltage_limit_abs
     elif voltage_limit_tolerance is not None:
-      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage.upper()) + \
                       RangeExpr._to_expr_type(voltage_limit_tolerance)
     else:  # generic default
-      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage.upper()) + \
                       RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
     if input_threshold_factor is not None:
       assert input_threshold_abs is None, "can only specify one input threshold type"
       input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
-      input_threshold = (input_threshold_factor.lower() * pos.link().voltage.lower(),
-                         input_threshold_factor.upper() * pos.link().voltage.upper())
+      input_threshold = pos.link().voltage * input_threshold_factor
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
