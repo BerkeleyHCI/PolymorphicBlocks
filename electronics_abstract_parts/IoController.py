@@ -98,6 +98,8 @@ class IoController(ProgrammableController, BaseIoController):
 
 
 class IdealIoController(IoController, IdealModel, GeneratorBlock):
+  """An ideal IO controller, with as many IOs as requested.
+  Digital IOs output voltages at pwr/gnd, all other parameters are ideal."""
   def __init__(self) -> None:
     super().__init__()
     self.generator(self.generate,
@@ -125,7 +127,9 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
       self.adc.append_elt(AnalogSink(), elt)
     self.dac.defined()
     for elt in dac_requests:
-      self.dac.append_elt(AnalogSource(), elt)
+      self.dac.append_elt(AnalogSource(
+        voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
+      ), elt)
     self.spi.defined()
     for elt in spi_requests:
       self.spi.append_elt(SpiMaster(dio_model), elt)
