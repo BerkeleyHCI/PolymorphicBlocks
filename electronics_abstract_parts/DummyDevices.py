@@ -33,6 +33,8 @@ class DummyVoltageSink(DummyDevice):
       voltage_limits=voltage_limit,
       current_draw=current_draw
     ), [Power, InOut])
+    self.voltage = self.Parameter(RangeExpr(self.pwr.link().voltage))
+    self.current_limits = self.Parameter(RangeExpr(self.pwr.link().current_limits))
 
 
 class DummyDigitalSink(DummyDevice):

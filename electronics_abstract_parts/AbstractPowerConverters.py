@@ -40,10 +40,11 @@ class IdealLinearRegulator(LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
     super().contents()
+    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.lower()))
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
-      voltage_out=self.output_voltage.intersect(self.pwr_in.link().voltage)))
+      voltage_out=effective_output_voltage))
     self.gnd.init_from(Ground())
 
 
