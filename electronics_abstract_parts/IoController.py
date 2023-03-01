@@ -99,7 +99,7 @@ class IoController(ProgrammableController, BaseIoController):
 
 class IdealIoController(IoController, IdealModel, GeneratorBlock):
   """An ideal IO controller, with as many IOs as requested.
-  Digital IOs output voltages at pwr/gnd, all other parameters are ideal."""
+  Output have voltages at pwr/gnd, all other parameters are ideal."""
   def __init__(self) -> None:
     super().__init__()
     self.generator(self.generate,
