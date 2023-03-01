@@ -500,12 +500,26 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])
 def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
+  """Defines the decorated block as abstract, a supertype block missing an implementation and
+  should be refined by a subclass in a final design.
+  If this block is present (unrefined) in a final design, causes an error."""
   decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
   return decorated
 
 
-def abstract_block_default(target: Type[Block]) -> Callable[[AbstractBlockType], AbstractBlockType]:
+def abstract_block_default(target: Callable[[], Type[Block]]) -> Callable[[AbstractBlockType], AbstractBlockType]:
+  """Similar to the abstract_block decorator, but specifies a default refinement.
+  The argument is a lambda since the default refinement is going to be a subclass of the class being defined,
+  it will not be defined yet when the base class is being evaluated, so evaluation needs to be delayed."""
   def inner(decorated: AbstractBlockType) -> AbstractBlockType:
-    decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
+    decorated._elt_properties[(decorated, AbstractBlockProperty)] = target
     return decorated
   return inner
+
+
+def ideal_block(decorated: AbstractBlockType) -> AbstractBlockType:
+  """Defines the decorated block as ideal, it contains a model implementation to allow
+  the rest of the design to compile, but does not contain a physical implementation.
+  If this block is present in a final design, causes an error."""
+  decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
+  return decorated

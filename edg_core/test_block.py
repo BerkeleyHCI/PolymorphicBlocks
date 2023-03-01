@@ -14,6 +14,7 @@ class TestBlockBase(Block):
     self.base_port_constr = self.Port(TestPortBase(self.base_float), optional=True)
 
 
+@abstract_block_default(lambda: TestBlock)
 class TestBlockSecondBase(Block):
   pass
 
@@ -38,6 +39,7 @@ class BlockBaseProtoTestCase(unittest.TestCase):
 
   def test_abstract(self) -> None:
     self.assertEqual(self.pb.is_abstract, True)
+    self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 1)
@@ -63,12 +65,24 @@ class BlockBaseProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.constraints[1].value, edgir.AssignRef(['base_port_constr', 'float_param'], ['base_float']))
 
 
+class BlockSecondBaseProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = TestBlockSecondBase()._elaborated_def_to_proto()
+
+  def test_abstract(self) -> None:
+    self.assertEqual(self.pb.is_abstract, True)
+
+  def test_default(self) -> None:
+    self.assertEqual(self.pb.default_refinement.target.name, "edg_core.test_block.TestBlock")
+
+
 class BlockProtoTestCase(unittest.TestCase):
   def setUp(self) -> None:
     self.pb = TestBlock()._elaborated_def_to_proto()
 
   def test_not_abstract(self) -> None:
     self.assertEqual(self.pb.is_abstract, False)
+    self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_superclass(self) -> None:
     self.assertEqual(self.pb.self_class.target.name, "edg_core.test_block.TestBlock")
