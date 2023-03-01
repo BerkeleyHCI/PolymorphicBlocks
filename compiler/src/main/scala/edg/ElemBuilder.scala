@@ -67,6 +67,7 @@ object ElemBuilder {
 
     def Block(selfClass: String,
               superclasses: Seq[String] = Seq(),
+              defaultRefinement: Option[String] = None,
               params: SeqMap[String, init.ValInit] = SeqMap(),
               paramDefaults: Map[String, expr.ValueExpr] = Map(),
               ports: SeqMap[String, elem.PortLike] = SeqMap(),
@@ -79,9 +80,8 @@ object ElemBuilder {
       ports=ports.toPb, blocks=blocks.toPb, links=links.toPb,
       constraints=constraints.toPb,
       selfClass=Some(LibraryPath(selfClass)),
-      superclasses=superclasses map {
-        LibraryPath(_)
-      },
+      superclasses=superclasses.map(LibraryPath(_)),
+      defaultRefinement=defaultRefinement.map(LibraryPath(_)),
       prerefineClass=prerefine match {
         case "" => None
         case prerefine => Some(LibraryPath(prerefine))
