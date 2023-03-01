@@ -1,54 +1,29 @@
 import unittest
 
-from electronics_abstract_parts import Resistor
 from electronics_model import *
-from .DummyDevices import DummyVoltageSource, DummyAnalogSink
-from .AbstractOpamp import Opamp
-from .OpampCircuits import Amplifier
+from .AbstractPowerConverters import IdealLinearRegulator
+from .Categories import IdealModel
+from .DummyDevices import DummyVoltageSource, DummyVoltageSink
 
 
-class AnalogSourceDummy(Block):
+class IdealCircuitTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.port = self.Port(AnalogSource(), [InOut])
+    self.gnd = self.Block(DummyVoltageSource(0*Volt(tol=0)))
+    self.pwr = self.Block(DummyVoltageSource(5*Volt(tol=0)))
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd.pwr, [Common]),
+    ) as imp:
+      self.reg = imp.Block(IdealLinearRegulator(5*Volt(tol=0)))
+      self.connect(self.reg.pwr_in, self.pwr.pwr)
+      self.reg_draw = self.Block(DummyVoltageSink(current_draw=1*Amp(tol=0)))
+      self.connect(self.reg_draw.pwr, self.reg.pwr_out)
+
+    self.require(self.pwr.current_drawn == 1*Amp(tol=0))
 
 
-class TestOpamp(Opamp):
-  def contents(self):
-    self.pwr.init_from(VoltageSink())
-    self.gnd.init_from(Ground())
-    self.inp.init_from(AnalogSink())
-    self.inn.init_from(AnalogSink())
-    self.out.init_from(AnalogSource())
-
-
-class TestResistor(Resistor):
-  def contents(self):
-    super().contents()
-    self.assign(self.actual_resistance, self.resistance)
-
-
-class AmplifierTestTop(Block):
-  def __init__(self):
-    super().__init__()
-    self.dut = self.Block(Amplifier(
-      amplification=Range.from_tolerance(2, 0.05)
+class IdealCircuitTest(unittest.TestCase):
+  def test_ideal_circuit(self) -> None:
+    compiled = ScalaCompiler.compile(IdealCircuitTestTop, refinements=Refinements(
+      class_values=[(IdealModel, ['allow_ideal'], True)]
     ))
-    (self.dummyin, ), _ = self.chain(self.dut.input, self.Block(AnalogSourceDummy()))
-    (self.dummyref, ), _ = self.chain(self.dut.reference, self.Block(AnalogSourceDummy()))
-    (self.dummyout, ), _ = self.chain(self.dut.output, self.Block(DummyAnalogSink()))
-    (self.dummypwr, ), _ = self.chain(self.dut.pwr, self.Block(DummyVoltageSource()))
-    (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(DummyVoltageSource()))
-
-
-class OpampCircuitTest(unittest.TestCase):
-  def test_opamp_amplifier(self) -> None:
-    compiled = ScalaCompiler.compile(AmplifierTestTop, refinements=Refinements(
-      class_refinements=[
-        (Opamp, TestOpamp),
-        (Resistor, TestResistor),
-      ]
-    ))
-
-    self.assertEqual(compiled.get_value(['dut', 'r1', 'resistance']), Range.from_tolerance(100e3, 0.01))
-    self.assertEqual(compiled.get_value(['dut', 'r2', 'resistance']), Range.from_tolerance(100e3, 0.01))

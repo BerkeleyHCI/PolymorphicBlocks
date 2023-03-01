@@ -36,7 +36,7 @@ class LinearRegulator(DcDcConverter):
   """Linear regulator, including supporting components in application circuit like capacitors if needed"""
 
 
-class IdealLinearRegulator(IdealModel, LinearRegulator):
+class IdealLinearRegulator(LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
     super().contents()
@@ -133,7 +133,7 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBuckConverter(IdealModel, DiscreteBuckConverter):
+class IdealBuckConverter(DiscreteBuckConverter, IdealModel):
   """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
@@ -273,7 +273,7 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBoostConverter(IdealModel, DiscreteBoostConverter):
+class IdealBoostConverter(DiscreteBoostConverter, IdealModel):
   """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
@@ -405,7 +405,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBuckBoostConverter(IdealModel, DiscreteBuckBoostConverter):
+class IdealBuckBoostConverter(DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
   def contents(self):

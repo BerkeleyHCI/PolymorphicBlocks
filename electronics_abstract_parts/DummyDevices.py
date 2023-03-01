@@ -19,6 +19,9 @@ class DummyVoltageSource(DummyDevice):
       current_limits=current_limits
     ), [Power, InOut])
 
+    self.current_drawn = self.Parameter(RangeExpr(self.pwr.link().current_drawn))
+    self.voltage_limits = self.Parameter(RangeExpr(self.pwr.link().voltage_limits))
+
 
 class DummyVoltageSink(DummyDevice):
   @init_in_parent
@@ -41,7 +44,7 @@ class DummyDigitalSink(DummyDevice):
     self.io = self.Port(DigitalSink(
       voltage_limits=voltage_limit,
       current_draw=current_draw
-    ), [Input, InOut])
+    ), [InOut])
 
 
 class DummyAnalogSink(DummyDevice):
@@ -55,7 +58,7 @@ class DummyAnalogSink(DummyDevice):
       voltage_limits=voltage_limit,
       current_draw=current_draw,
       impedance=impedance
-    ), [Input, InOut])
+    ), [InOut])
 
 
 class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
