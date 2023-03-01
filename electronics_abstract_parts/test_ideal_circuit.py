@@ -1,9 +1,10 @@
 import unittest
 
 from electronics_model import *
+from .IoController import IoController
 from .AbstractPowerConverters import LinearRegulator, BoostConverter
 from .Categories import IdealModel
-from .DummyDevices import DummyVoltageSource, DummyVoltageSink
+from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyDigitalSink
 
 
 class IdealCircuitTestTop(Block):
@@ -23,6 +24,11 @@ class IdealCircuitTestTop(Block):
       self.connect(self.boost.pwr_in, self.reg.pwr_out)
       self.boost_draw = self.Block(DummyVoltageSink(current_draw=1*Amp(tol=0)))
       self.connect(self.boost_draw.pwr, self.boost.pwr_out)  # draws 2A from reg
+
+      self.mcu = imp.Block(IoController())
+      self.connect(self.mcu.pwr, self.reg.pwr_out)
+      self.mcu_io = self.Block(DummyDigitalSink())
+      self.connect(self.mcu_io.io, self.mcu.gpio.request('test'))
 
     self.require(self.pwr.current_drawn == 3*Amp(tol=0))
     self.require(self.reg_draw.voltage == 2*Volt(tol=0))
