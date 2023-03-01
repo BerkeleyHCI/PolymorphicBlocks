@@ -31,8 +31,12 @@ class ResistorArray(PassiveComponent, MultipackBlock):
     self.actual_count = self.Parameter(IntExpr())
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())  # per element
+
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(  # TODO better support for array typed
       "<b>count:</b> ", DescriptionString.FormatUnits(self.actual_count, ""),  # TODO unitless

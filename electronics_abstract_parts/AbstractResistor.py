@@ -45,6 +45,9 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
       " <b>of spec</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"), "\n",

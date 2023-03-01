@@ -19,6 +19,9 @@ class Oscillator(DiscreteApplication):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"),

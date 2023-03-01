@@ -70,6 +70,9 @@ class Diode(KiCadImportableBlock, BaseDiode):
     self.actual_voltage_drop = self.Parameter(RangeExpr())
     self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>Vr:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.reverse_voltage, "V"), "\n",
@@ -139,6 +142,9 @@ class ZenerDiode(BaseDiode, DiscreteSemiconductor):
 
     self.actual_zener_voltage = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "zener voltage=", DescriptionString.FormatUnits(self.actual_zener_voltage, "V"),

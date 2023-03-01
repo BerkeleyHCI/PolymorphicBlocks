@@ -23,14 +23,14 @@ class VoltageLink(CircuitLink):
     self.current_drawn = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+  def contents(self) -> None:
+    super().contents()
+
     self.description = DescriptionString(
       "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"),
       "\n<b>current</b>: ", DescriptionString.FormatUnits(self.current_drawn, "A"),
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"))
-
-  def contents(self) -> None:
-    super().contents()
 
     self.assign(self.voltage, self.source.voltage_out)
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
@@ -94,12 +94,9 @@ class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
 
 
 class VoltageBase(CircuitPort[VoltageLink]):
-  def __init__(self) -> None:
-    super().__init__()
-    self.link_type = VoltageLink
+  link_type = VoltageLink
 
-#     self.isolation_domain = self.Parameter(RefParameter())  # semantics TBD
-#     self.reference = self.Parameter(RefParameter())  # semantics TBD, ideally some concept of implicit domains
+  # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
   def as_digital_source(self) -> DigitalSource:
@@ -108,7 +105,10 @@ class VoltageBase(CircuitPort[VoltageLink]):
   def as_analog_source(self) -> AnalogSource:
     return self._convert(VoltageSinkAdapterAnalogSource())
 
+
 class VoltageSink(VoltageBase):
+  bridge_type = VoltageSinkBridge
+
   @staticmethod
   def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> 'VoltageSink':
@@ -120,8 +120,6 @@ class VoltageSink(VoltageBase):
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
-    self.bridge_type = VoltageSinkBridge
-
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
 
@@ -165,11 +163,11 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
 
 class VoltageSource(VoltageBase):
+  bridge_type = VoltageSourceBridge
+
   def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
-    self.bridge_type = VoltageSourceBridge
-
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
 

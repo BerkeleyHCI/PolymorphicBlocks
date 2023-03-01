@@ -25,6 +25,9 @@ class FerriteBead(PassiveComponent):
     self.actual_hf_impedance = self.Parameter(RangeExpr())
     self.actual_dc_resistance = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
       " <b>of operating</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",

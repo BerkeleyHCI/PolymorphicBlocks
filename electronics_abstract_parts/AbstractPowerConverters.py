@@ -18,14 +18,17 @@ class DcDcConverter(PowerConditioner):
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.require(self.pwr_out.voltage_out.within(self.output_voltage),
-                 "Output voltage must be within spec")
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>output voltage:</b> ", DescriptionString.FormatUnits(self.pwr_out.voltage_out, "V"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.output_voltage, "V"), "\n",
       "<b>input voltage:</b> ", DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V")
     )
+
+    self.require(self.pwr_out.voltage_out.within(self.output_voltage),
+                 "Output voltage must be within spec")
 
 
 @abstract_block
@@ -163,6 +166,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit,
                    inductor_scale)
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
       " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
@@ -286,6 +292,9 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
       " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
@@ -397,6 +406,9 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple)
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.buck_dutycycle, ""), " (buck)",
