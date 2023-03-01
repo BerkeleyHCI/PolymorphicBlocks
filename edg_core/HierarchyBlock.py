@@ -10,7 +10,7 @@ from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, EltPropertiesBase, non_library
+from .Core import Refable, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -515,11 +515,3 @@ def abstract_block_default(target: Callable[[], Type[Block]]) -> Callable[[Abstr
     decorated._elt_properties[(decorated, AbstractBlockProperty)] = target
     return decorated
   return inner
-
-
-def ideal_block(decorated: AbstractBlockType) -> AbstractBlockType:
-  """Defines the decorated block as ideal, it contains a model implementation to allow
-  the rest of the design to compile, but does not contain a physical implementation.
-  If this block is present in a final design, causes an error."""
-  decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
-  return decorated
