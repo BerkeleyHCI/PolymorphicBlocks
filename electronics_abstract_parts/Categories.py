@@ -1,3 +1,4 @@
+from edg_core import BoolLike, init_in_parent
 from electronics_model import Block, abstract_block, InternalBlock
 
 
@@ -269,8 +270,6 @@ class DummyDevice(InternalBlock):
 class IdealModel(InternalBlock):
   """Ideal model device that can be used as a placeholder to get a design compiling
   but has no physical implementation."""
-  from edg_core import BoolLike, init_in_parent
-
   @init_in_parent
   def __init__(self, *args, allow_ideal: BoolLike = False, **kwargs):
     super().__init__(*args, **kwargs)

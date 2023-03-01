@@ -188,7 +188,7 @@ class DigitalSink(DigitalBase):
       raise ValueError("no input threshold specified")
 
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=neg.link().voltage.hull(pos.link().voltage.upper()) + \
+      voltage_limits=neg.link().voltage.hull(pos.link().voltage) + \
                      RangeExpr._to_expr_type(voltage_limit_tolerance),
       current_draw=current_draw,
       input_thresholds=input_threshold
@@ -352,10 +352,10 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
       assert voltage_limit_tolerance is None
       voltage_limit = voltage_limit_abs
     elif voltage_limit_tolerance is not None:
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage.upper()) + \
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
                       RangeExpr._to_expr_type(voltage_limit_tolerance)
     else:  # generic default
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage.upper()) + \
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
                       RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
