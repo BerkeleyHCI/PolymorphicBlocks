@@ -2,22 +2,15 @@ import unittest
 
 from electronics_abstract_parts import Resistor
 from electronics_model import *
-from .DummyDevices import DummyVoltageSource
+from .DummyDevices import DummyVoltageSource, DummyAnalogSink
 from .AbstractOpamp import Opamp
 from .OpampCircuits import Amplifier
 
 
-# TODO DEDUP w/ one from test_passive_common
 class AnalogSourceDummy(Block):
   def __init__(self):
     super().__init__()
     self.port = self.Port(AnalogSource(), [InOut])
-
-
-class AnalogSinkDummy(Block):
-  def __init__(self):
-    super().__init__()
-    self.port = self.Port(AnalogSink(), [InOut])
 
 
 class TestOpamp(Opamp):
@@ -43,7 +36,7 @@ class AmplifierTestTop(Block):
     ))
     (self.dummyin, ), _ = self.chain(self.dut.input, self.Block(AnalogSourceDummy()))
     (self.dummyref, ), _ = self.chain(self.dut.reference, self.Block(AnalogSourceDummy()))
-    (self.dummyout, ), _ = self.chain(self.dut.output, self.Block(AnalogSinkDummy()))
+    (self.dummyout, ), _ = self.chain(self.dut.output, self.Block(DummyAnalogSink()))
     (self.dummypwr, ), _ = self.chain(self.dut.pwr, self.Block(DummyVoltageSource()))
     (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(DummyVoltageSource()))
 

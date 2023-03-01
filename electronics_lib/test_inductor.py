@@ -1,7 +1,6 @@
 import unittest
 
-from . import *
-from .test_passive_common import *
+from .JlcInductor import *
 
 
 class JlcInductorTestTop(Block):
@@ -12,8 +11,8 @@ class JlcInductorTestTop(Block):
       current=(0, 500) * mAmp,
       # no frequency spec since JLC doesn't allow it
     ))
-    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
 
 
 class InductorTestCase(unittest.TestCase):
