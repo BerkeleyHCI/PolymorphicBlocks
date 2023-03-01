@@ -7,10 +7,10 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, Connection, BlockElaborationState
+from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library
+from .Core import Refable, EltPropertiesBase, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -500,5 +500,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])
 def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
-  decorated._elt_properties[(decorated, 'abstract')] = None
+  decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
   return decorated
+
+
+def abstract_block_default() -> Callable[[AbstractBlockType], AbstractBlockType]:
+  def inner(decorated: AbstractBlockType) -> AbstractBlockType:
+    decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
+    return decorated
+  return inner
