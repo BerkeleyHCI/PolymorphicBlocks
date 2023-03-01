@@ -191,7 +191,6 @@ class DescriptionString():
 
 AbstractBlockProperty = EltPropertiesBase()
 
-
 @non_library
 class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   """Base block that has ports (IOs), parameters, and constraints between them.

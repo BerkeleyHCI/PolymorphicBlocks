@@ -504,7 +504,7 @@ def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
   return decorated
 
 
-def abstract_block_default() -> Callable[[AbstractBlockType], AbstractBlockType]:
+def abstract_block_default(target: Type[Block]) -> Callable[[AbstractBlockType], AbstractBlockType]:
   def inner(decorated: AbstractBlockType) -> AbstractBlockType:
     decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
     return decorated

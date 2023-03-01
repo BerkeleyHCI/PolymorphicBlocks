@@ -182,7 +182,7 @@ def non_library(decorated: NonLibraryType) -> NonLibraryType:
 @non_library
 class LibraryElement(Refable, metaclass=ElementMeta):
   """Defines a library element, which optionally contains other library elements."""
-  _elt_properties: Dict[Tuple[LibraryElement, EltPropertiesBase], Any] = {}
+  _elt_properties: Dict[Tuple[Type[LibraryElement], EltPropertiesBase], Any] = {}
 
   def __repr__(self) -> str:
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
