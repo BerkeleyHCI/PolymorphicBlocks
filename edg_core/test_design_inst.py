@@ -1,12 +1,9 @@
-from typing import *
 import unittest
 
 import edgir
 from . import *
-from edg_core.ScalaCompilerInterface import ScalaCompiler
-from .test_common import TestPortSource, TestPortSink, TestBlockSource
+from .test_common import TestBlockSource
 from .test_hierarchy_block import TopHierarchyBlock, ExportPortHierarchyBlock, PortBridgeHierarchyBlock
-from . import test_common, test_hierarchy_block
 
 
 class ExportPortHierarchyBlockTop(Block):
