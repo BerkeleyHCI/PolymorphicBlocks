@@ -462,29 +462,36 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
   protected def expandBlock(path: DesignPath): Unit = {
+    import edgir.elem.elem
+
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
     val libraryPath = block.target
-
-    val (refinedLibraryPath, unrefinedType) = refinements.instanceRefinements.get(path) match {
-      case Some(refinement) => (refinement, Some(libraryPath))
-      case None => refinements.classRefinements.get(libraryPath) match {
-        case Some(refinement) => (refinement, Some(libraryPath))
-        case None => (libraryPath, None)
-      }
+    val libraryBlockPb = library.getBlock(libraryPath) match {
+      case Errorable.Success(blockPb) => blockPb
+      case Errorable.Error(err) =>
+        errors += CompilerError.LibraryError(path, libraryPath, err)
+        elem.HierarchyBlock()
     }
 
-    val blockPb = library.getBlock(refinedLibraryPath) match {
+    val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
+      refinements.classRefinements.get(libraryPath).orElse(
+        libraryBlockPb.defaultRefinement
+      )
+    )
+    val unrefinedType = if (refinementLibraryPath.isDefined) Some(libraryPath) else None
+    val blockLibraryPath = refinementLibraryPath.getOrElse(libraryPath)
+
+    val blockPb = library.getBlock(blockLibraryPath) match {
       case Errorable.Success(blockPb) =>
         blockPb
       case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.LibraryError(path, refinedLibraryPath, err)
+        errors += CompilerError.LibraryError(path, blockLibraryPath, err)
         elem.HierarchyBlock()
     }
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    filterRefinementClassValues(refinedLibraryPath, refinementClassValuesByClass).foreach {
+    filterRefinementClassValues(blockLibraryPath, refinementClassValuesByClass).foreach {
       case ((refinementClass, postfix), value) =>
         val paramPath = path ++ postfix
         if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
@@ -494,8 +501,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      if (!library.blockIsSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
-        errors += CompilerError.RefinementSubclassError(path, refinedLibraryPath, libraryPath)
+      if (!library.blockIsSubclassOf(blockLibraryPath, libraryPath)) {  // check refinement validity
+        errors += CompilerError.RefinementSubclassError(path, blockLibraryPath, libraryPath)
       }
 
       val unrefinedPb = library.getBlock(libraryPath) match {  // add subclass (refinement) default params
@@ -510,7 +517,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(path.asIndirect + refinedNewParam, refinedDefault,
-            path, s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
+            path, s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
     }

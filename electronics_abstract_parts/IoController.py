@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
-from .Categories import ProgrammableController
+from .Categories import ProgrammableController, IdealModel
 
 
 @non_library
@@ -87,7 +87,7 @@ class BaseIoController(Block):
     return pinmap
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):
   """An abstract, generic IO controller with common IOs and power ports."""
   def __init__(self) -> None:
@@ -95,3 +95,53 @@ class IoController(ProgrammableController, BaseIoController):
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
+
+
+class IdealIoController(IoController, IdealModel, GeneratorBlock):
+  """An ideal IO controller, with as many IOs as requested.
+  Output have voltages at pwr/gnd, all other parameters are ideal."""
+  def __init__(self) -> None:
+    super().__init__()
+    self.generator(self.generate,
+                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
+                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
+                   self.usb.requested(), self.can.requested())
+
+  def generate(self,
+               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
+               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
+               usb_requests: List[str], can_requests: List[str]) -> None:
+    self.pwr.init_from(VoltageSink())
+    self.gnd.init_from(Ground())
+
+    dio_model = DigitalBidir(
+      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
+      pullup_capable=True, pulldown_capable=True
+    )
+
+    self.gpio.defined()
+    for elt in gpio_requests:
+      self.gpio.append_elt(dio_model, elt)
+    self.adc.defined()
+    for elt in adc_requests:
+      self.adc.append_elt(AnalogSink(), elt)
+    self.dac.defined()
+    for elt in dac_requests:
+      self.dac.append_elt(AnalogSource(
+        voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
+      ), elt)
+    self.spi.defined()
+    for elt in spi_requests:
+      self.spi.append_elt(SpiMaster(dio_model), elt)
+    self.i2c.defined()
+    for elt in i2c_requests:
+      self.i2c.append_elt(I2cMaster(dio_model), elt)
+    self.uart.defined()
+    for elt in uart_requests:
+      self.uart.append_elt(UartPort(dio_model), elt)
+    self.usb.defined()
+    for elt in usb_requests:
+      self.usb.append_elt(UsbDevicePort(), elt)
+    self.can.defined()
+    for elt in can_requests:
+      self.can.append_elt(CanControllerPort(dio_model), elt)

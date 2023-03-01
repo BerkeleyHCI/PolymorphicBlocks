@@ -27,8 +27,17 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           "port" -> Port.Library("port"),
         )
       ),
+      Block.Block("superclassDefaultBlock",
+        defaultRefinement = Some("subclassBlock"),
+        params = SeqMap(
+          "superParam" -> ValInit.Integer,
+        ),
+        ports = SeqMap(
+          "port" -> Port.Library("port"),
+        )
+      ),
       Block.Block("subclassBlock",
-        superclasses = Seq("superclassBlock"),
+        superclasses = Seq("superclassBlock", "superclassDefaultBlock"),
         params = SeqMap(
           "superParam" -> ValInit.Integer,
           "subParam" -> ValInit.Integer,
@@ -73,7 +82,7 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
     val expected = Design(Block.Block("topDesign",
       blocks = SeqMap(
         "block" -> Block.Block("subclassBlock",
-          superclasses=Seq("superclassBlock"),
+          superclasses=Seq("superclassBlock", "superclassDefaultBlock"),
           prerefine="superclassBlock",
           params = SeqMap(
             "superParam" -> ValInit.Integer,
@@ -102,7 +111,7 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
     val expected = Design(Block.Block("topDesign",
       blocks = SeqMap(
         "block" -> Block.Block("subclassBlock",
-          superclasses=Seq("superclassBlock"),
+          superclasses=Seq("superclassBlock", "superclassDefaultBlock"),
           prerefine="superclassBlock",
           params = SeqMap(
             "superParam" -> ValInit.Integer,
@@ -162,5 +171,30 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
       classValues = Map((LibraryPath("superclassBlock"), Ref("superParam")) -> IntValue(0)),
       instanceValues = Map(DesignPath() + "block" + "superParam" -> IntValue(3))))
     compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(3)))
+  }
+
+  "Compiler on block with default refinement" should "work" in {
+    val blockDefaultInputDesign = Design(Block.Block("topDesign",
+      blocks = SeqMap(
+        "block" -> Block.Library("superclassDefaultBlock"),
+      )
+    ))
+    val expected = Design(Block.Block("topDesign",
+      blocks = SeqMap(
+        "block" -> Block.Block("subclassBlock",
+          superclasses = Seq("superclassBlock", "superclassDefaultBlock"),
+          prerefine = "superclassDefaultBlock",
+          params = SeqMap(
+            "superParam" -> ValInit.Integer,
+            "subParam" -> ValInit.Integer,
+          ),
+          ports = SeqMap(
+            "port" -> Port.Port(selfClass = "port"),
+          )
+        ),
+      )
+    ))
+    testCompile(blockDefaultInputDesign, library,
+      expectedDesign = Some(expected))
   }
 }

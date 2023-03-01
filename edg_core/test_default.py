@@ -2,7 +2,6 @@ import unittest
 
 import edgir
 from . import *
-from .test_bundle import TestBundle
 
 
 class BaseParamClass(Block):  # Base class containing no parameters or default

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from abc import abstractmethod
 from enum import Enum
 from typing import *
@@ -8,7 +9,7 @@ import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library
+from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -189,6 +190,8 @@ class DescriptionString():
       new_phrase.param.unit = self.units
 
 
+AbstractBlockProperty = EltPropertiesBase()
+
 @non_library
 class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   """Base block that has ports (IOs), parameters, and constraints between them.
@@ -243,9 +246,15 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._parameters.finalize()
     self._ports.finalize()
 
-    if (self.__class__, 'abstract') in self._elt_properties:
+    if (self.__class__, AbstractBlockProperty) in self._elt_properties:
       assert isinstance(pb, edgir.HierarchyBlock)
       pb.is_abstract = True
+      default_refinement_fn = self._elt_properties[(self.__class__, AbstractBlockProperty)]
+      if default_refinement_fn is not None:
+        default_refinement = default_refinement_fn()
+        assert inspect.isclass(default_refinement), "default refinement must be a type"
+        assert issubclass(default_refinement, self.__class__), "default refinement must be a subclass"
+        pb.default_refinement.target.name = default_refinement._static_def_name()
 
     pb.self_class.target.name = self._get_def_name()
 

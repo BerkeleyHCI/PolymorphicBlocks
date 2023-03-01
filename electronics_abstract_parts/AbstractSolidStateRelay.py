@@ -1,7 +1,7 @@
 from typing import Dict
 
 from electronics_model import *
-from .DummyDevices import MergedAnalogSource
+from .MergedBlocks import MergedAnalogSource
 from .AbstractResistor import Resistor
 from .Categories import Interface
 

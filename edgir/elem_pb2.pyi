@@ -364,6 +364,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     PREREFINE_CLASS_FIELD_NUMBER: builtins.int
     GENERATOR_FIELD_NUMBER: builtins.int
     IS_ABSTRACT_FIELD_NUMBER: builtins.int
+    DEFAULT_REFINEMENT_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
@@ -404,6 +405,9 @@ class HierarchyBlock(google.protobuf.message.Message):
     is_abstract: builtins.bool
     """true if self_class is abstract, and should error if used in a design"""
     @property
+    def default_refinement(self) -> edgir.ref_pb2.LibraryPath:
+        """optional default refinement subclass, only valid for library blocks"""
+    @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     @property
     def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
@@ -421,11 +425,12 @@ class HierarchyBlock(google.protobuf.message.Message):
         prerefine_class: edgir.ref_pb2.LibraryPath | None = ...,
         generator: global___Generator | None = ...,
         is_abstract: builtins.bool = ...,
+        default_refinement: edgir.ref_pb2.LibraryPath | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
         description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["generator", b"generator", "meta", b"meta", "prerefine_class", b"prerefine_class", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["default_refinement", b"default_refinement", "generator", b"generator", "meta", b"meta", "prerefine_class", b"prerefine_class", "self_class", b"self_class"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "default_refinement", b"default_refinement", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
 
 global___HierarchyBlock = HierarchyBlock
 

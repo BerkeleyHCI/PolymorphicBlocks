@@ -7,7 +7,7 @@ from .Ports import Port, Bundle
 from .NotConnectablePort import NotConnectableBlock, NotConnectablePort
 from .Link import Link
 from .DesignTop import DesignTop
-from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block
+from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block, abstract_block_default
 from .Generator import GeneratorBlock
 from .MultipackBlock import PackedBlockArray, MultipackBlock
 from .PortBlocks import PortBridge, PortAdapter

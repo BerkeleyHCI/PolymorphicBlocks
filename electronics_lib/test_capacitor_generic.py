@@ -1,7 +1,6 @@
 import unittest
 
-from .GenericCapacitor import GenericMlcc
-from .test_passive_common import *
+from .GenericCapacitor import *
 
 
 class CapacitorGenericTestTop(Block):
@@ -11,8 +10,8 @@ class CapacitorGenericTestTop(Block):
       capacitance=0.1 * uFarad(tol=0.2),
       voltage=(0, 3.3) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class BigCapacitorGenericTestTop(Block):
@@ -22,8 +21,8 @@ class BigCapacitorGenericTestTop(Block):
       capacitance=(50, 1000) * uFarad,
       voltage=(0, 5) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class HighVoltageCapacitorGenericTestTop(Block):
@@ -33,8 +32,8 @@ class HighVoltageCapacitorGenericTestTop(Block):
       capacitance=0.2 * uFarad(tol=0.2),
       voltage=(0, 20) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class HighSingleCapacitorGenericTestTop(Block):
@@ -44,8 +43,8 @@ class HighSingleCapacitorGenericTestTop(Block):
       capacitance=22 * uFarad(tol=0.2),
       voltage=(0, 10) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class MediumSingleCapacitorGenericTestTop(Block):
@@ -55,8 +54,8 @@ class MediumSingleCapacitorGenericTestTop(Block):
       capacitance=2 * uFarad(tol=0.2),
       voltage=(0, 20) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 class DeratedCapacitorGenericTestTop(Block):
   def __init__(self):
@@ -65,8 +64,8 @@ class DeratedCapacitorGenericTestTop(Block):
       capacitance=1 * uFarad(tol=0.2),
       voltage=(0, 5) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 class BigMultiCapacitorGenericTestTop(Block):
   def __init__(self):
@@ -75,8 +74,8 @@ class BigMultiCapacitorGenericTestTop(Block):
       capacitance=(50, 1000) * uFarad,
       voltage=(0, 5) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class CapacitorTestCase(unittest.TestCase):

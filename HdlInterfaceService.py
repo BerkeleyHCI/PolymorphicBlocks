@@ -7,6 +7,7 @@ from typing import Set, Type, Tuple, TypeVar, cast
 import edgir
 import edgrpc
 from edg_core import *
+from edg_core.Core import NonLibraryProperty
 
 
 class LibraryElementIndexer:
@@ -34,7 +35,7 @@ class LibraryElementIndexer:
 
       if inspect.isclass(member) and issubclass(member, LibraryElement) and not issubclass(member, DesignTop) \
           and member not in self.seen_elements \
-          and (member, 'non_library') not in member._elt_properties:  # process elements
+          and (member, NonLibraryProperty) not in member._elt_properties:  # process elements
         self.seen_elements.add(member)
 
         for mro in member.mro():
