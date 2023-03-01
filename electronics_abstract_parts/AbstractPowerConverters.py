@@ -3,7 +3,6 @@ from electronics_model import *
 from .Categories import *
 from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor
-from .IdealModel import IdealModel
 
 
 @abstract_block_default(lambda: IdealBuckBoostConverter)

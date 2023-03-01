@@ -75,8 +75,6 @@ from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource,
 from .VariantPinRemapper import VariantPinRemapper
 from .IoControllerProgramming import IoControllerWithSwdTargetConnector
 
-from .DummyDevices import VoltageLoad, ForcedVoltageCurrentDraw, ForcedVoltage
-from .DummyDevices import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource
-from .DummyDevices import MergedSpiMaster
-from .DummyDevices import ForcedDigitalSinkCurrentDraw
-from .DummyDevices import DummyPassive, DummyAnalogSink
+from .DummyDevices import DummyPassive, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, DummyAnalogSink
+from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedDigitalSinkCurrentDraw
+from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiMaster

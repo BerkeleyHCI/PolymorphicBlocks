@@ -266,6 +266,16 @@ class DummyDevice(InternalBlock):
 
 
 @abstract_block
+class IdealModel(InternalBlock):
+  """Ideal model device that can be used as a placeholder to get a design compiling
+  but has no physical implementation."""
+  def contents(self):
+    super().contents()
+    self.require(False, "ideal model")
+
+
+
+@abstract_block
 class Label(Block):
   """Nonfunctional footprint, including copper and silkscreen labels."""
   pass
