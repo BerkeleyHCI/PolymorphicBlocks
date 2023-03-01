@@ -281,7 +281,6 @@ class IdealModel(InternalBlock):
     self.require(self.allow_ideal, "ideal model")
 
 
-
 @abstract_block
 class Label(Block):
   """Nonfunctional footprint, including copper and silkscreen labels."""
