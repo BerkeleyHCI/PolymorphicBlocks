@@ -8,7 +8,7 @@ from .IdealModel import IdealModel
 
 @abstract_block_default(lambda: IdealBuckBoostConverter)
 class DcDcConverter(PowerConditioner):
-  """Base class for all DC-DC converters with shared ground (non-isoalted)."""
+  """Base class for all DC-DC converters with shared ground (non-isolated)."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
