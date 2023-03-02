@@ -66,7 +66,7 @@ Layout Integration Features
 
 
 ## Setup
-See the [getting started setup documentation](getting-started.md#setup).
+See the [setup documentation](setup.md).
 
 ### Unit Tests
 You can run the unit test suite to verify that everything works - all tests should be green.
