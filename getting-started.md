@@ -305,8 +305,32 @@ Abstract blocks are useful for two reasons:
 2. It can help preserve design intent more precisely and keep HDL readable.
    For example, saying that we want a buck converter by instantiating a buck converter can be more intuitive than directly instantiating a TPS561201 block.
 
-Unlike in software, we can instantiate abstract blocks here, but they won't actually place down a useful circuit.
-We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the top-level design class**.
+These abstract classes can be implemented by concrete subclasses, for example a TPS561201-based buck converter subcircuit.
+Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
+
+To help work with and search through this design space, we built design space exploration (DSE) into the IDE.
+To figure out which buck converter works, **right-click the buck converter (either in the design tree or block diagram), and select Search Refinements of base BuckConverter.**
+
+![Create search configuration for BuckConverter](docs/ide_dse/buck_search.png)
+
+This creates a DSE run configuration, and initializes the search space to all implementations of the buck converter.
+When a DSE run configuration is selected, the DSE panel is shown in the block visualizer panel: 
+
+![DSE panel with buck configuration](docs/ide_dse/dsepanel_buck.png)
+
+The Config tab shows the current search configuration (the combination of choices to try), currently all the subclasses of BuckConverter to use for the `buck` block.
+
+Run it to scan the search space.
+As design points are tested, they will be shown in the Results tab.
+Ignore the axis configurations for now, DSE is a larger feature and will be explored further later in this tutorial.
+
+![DSE panel with buck results](docs/ide_dse/dsepanel_buck_result.png)
+
+Under the current configuration, points are categorized by either errors or no errors.
+Because this example design so far is simple, all of the concrete converters work.
+Let's arbitrarily choose to use the `Tps561201`: **right-click the entry and select Insert Refinements**.
+This inserts a refinements block into the design:
+
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
@@ -318,6 +342,9 @@ class BlinkyExample(SimpleBoardTop):
       (['buck'], Tps561201),
     ])
 ```
+
+_Refinements_ allow the top-level design to specify additional information throughout the design.
+Here we specify that the abstract `BuckConverter` is specifically a `Tps561201`, but the capability is more general, for example allowing a global refinement of `Resistor` to `AxialResistor`, or even selecting the minimum SMD package to be 0603 or 0805.
 
 > `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
 > You can override these with a refinement in your HDL, for example choosing `AxialResistor`.
