@@ -414,7 +414,7 @@ class IdealBuckBoostConverter(DiscreteBuckBoostConverter, IdealModel):
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage))
+      voltage_out=self.output_voltage))
     self.gnd.init_from(Ground())
 
 
