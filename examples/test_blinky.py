@@ -18,6 +18,19 @@ class TestBlinkyIncomplete(SimpleBoardTop):
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
 
+class TestBlinkyRegulated(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.mcu = self.Block(Stm32f103_48())
+    self.led = self.Block(IndicatorLed())
+    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.mcu.gpio.request('led'), self.led.signal)
+
+
 class TestBlinkyComplete(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
@@ -399,6 +412,10 @@ class BlinkyTestCase(unittest.TestCase):
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
       compile_board_inplace(TestBlinkyIncomplete)
+
+  def test_design_regulated(self) -> None:
+    with self.assertRaises(CompilerCheckError):
+      compile_board_inplace(TestBlinkyRegulated)
 
   def test_design_complete(self) -> None:
     compile_board_inplace(TestBlinkyComplete)
