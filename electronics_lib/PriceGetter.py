@@ -25,11 +25,11 @@ class PriceTransform(TransformUtil.Transform):
 
 class GeneratePrice(BaseBackend):
     # part_number -> [ [lower-bound_1, price_1], [lower-bound_2 (and the previous upperbound), price_2], ... ]
-    PRICE_TABLE = Dict[str, List[Tuple[int, float]]] = None
+    PRICE_TABLE = Dict[str, List[Tuple[int, float]]] = {}
 
     @classmethod
     def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
-        if GeneratePrice.PRICE_TABLE is None:
+        if not GeneratePrice.PRICE_TABLE:
             cur_path = os.path.dirname(__file__)
             parts_library = os.path.relpath('resources/Pruned_JLCPCB SMT Parts Library(20220419).csv', cur_path)
             with open(parts_library, 'r', newline='') as csv_file:
