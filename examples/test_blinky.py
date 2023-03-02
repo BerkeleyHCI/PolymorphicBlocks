@@ -22,12 +22,12 @@ class TestBlinkyRegulated(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.reg = self.Block(DcDcConverter(3.3*Volt(tol=0.05)))
     self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
-    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+    self.connect(self.reg.pwr_out, self.mcu.pwr)
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
 

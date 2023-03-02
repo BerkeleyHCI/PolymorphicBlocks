@@ -327,7 +327,7 @@ Ignore the axis configurations for now, DSE is a larger feature and will be expl
 ![DSE panel with buck results](docs/ide_dse/dsepanel_buck_result.png)
 
 Under the current configuration, points are categorized by either errors or no errors.
-Because this example design so far is simple, all of the concrete converters work.
+Because this example design so far is simple, all the concrete converters work.
 Let's arbitrarily choose to use the `Tps561201`: **right-click the entry and select Insert Refinements**.
 This inserts a refinements block into the design:
 
