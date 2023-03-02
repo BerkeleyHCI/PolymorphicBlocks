@@ -34,6 +34,11 @@ These could be viewed as a block-like object (diamonds on the diagram) instead o
 
 We'll put these concepts into practice in the rest of this tutorial by building a variation of the blinky example above, then defining a custom part.
 
+
+### Setup
+Instructions for setting up the IDE and compiler are in the [setup document](setup.md).
+
+
 ### Reference Document
 While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
 The reference document includes a short overview of all the core primitives and common library elements.
