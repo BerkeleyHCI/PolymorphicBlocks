@@ -5,9 +5,9 @@ from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor
 
 
-@abstract_block_default(lambda: IdealBuckBoostConverter)
-class DcDcConverter(PowerConditioner):
-  """Base class for all DC-DC converters with shared ground (non-isolated)."""
+@abstract_block_default(lambda: IdealVoltageRegulator)
+class VoltageRegulator(PowerConditioner):
+  """Base class for all DC-DC voltage regulators with shared ground (non-isolated)."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
@@ -32,7 +32,7 @@ class DcDcConverter(PowerConditioner):
 
 
 @abstract_block_default(lambda: IdealLinearRegulator)
-class LinearRegulator(DcDcConverter):
+class LinearRegulator(VoltageRegulator):
   """Linear regulator, including supporting components in application circuit like capacitors if needed"""
 
 
@@ -81,7 +81,7 @@ class LinearRegulatorDevice(Block):
 
 
 @abstract_block
-class DcDcSwitchingConverter(DcDcConverter):
+class SwitchingVoltageRegulator(VoltageRegulator):
   @staticmethod
   def _calculate_ripple(output_current: RangeLike, ripple_ratio: RangeLike, *,
                         rated_current: Optional[FloatLike] = None) -> RangeExpr:
@@ -121,7 +121,7 @@ class DcDcSwitchingConverter(DcDcConverter):
 
 
 @abstract_block_default(lambda: IdealBuckConverter)
-class BuckConverter(DcDcSwitchingConverter):
+class BuckConverter(SwitchingVoltageRegulator):
   """Step-down switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
@@ -261,7 +261,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
 
 @abstract_block_default(lambda: IdealBoostConverter)
-class BoostConverter(DcDcSwitchingConverter):
+class BoostConverter(SwitchingVoltageRegulator):
   """Step-up switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
@@ -393,20 +393,20 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr_out)
 
 
-@abstract_block_default(lambda: IdealBuckBoostConverter)
-class BuckBoostConverter(DcDcSwitchingConverter):
+@abstract_block_default(lambda: IdealVoltageRegulator)
+class BuckBoostConverter(SwitchingVoltageRegulator):
   """Step-up or switch-down switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
 
-@abstract_block_default(lambda: IdealBuckBoostConverter)
+@abstract_block_default(lambda: IdealVoltageRegulator)
 class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBuckBoostConverter(DiscreteBuckBoostConverter, IdealModel):
+class IdealVoltageRegulator(DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
   def contents(self):
