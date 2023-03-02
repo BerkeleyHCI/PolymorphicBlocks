@@ -76,6 +76,9 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
     self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
+  def contents(self) -> None:
+    super().contents()
+
     self.description = DescriptionString(
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
       " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
@@ -196,17 +199,20 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
        self.output_voltage.upper() / self.actual_ratio.lower())
     ))
 
-    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
-    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
-    self.require(ratio_lower <= ratio_upper,
-                   "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
+  def contents(self) -> None:
+    super().contents()
 
     self.description = DescriptionString(  # TODO forward from internal?
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
       " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
       "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
+
+    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
+    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
+    self.require(ratio_lower <= ratio_upper,
+                 "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
 class SignalDivider(Analog, Block):

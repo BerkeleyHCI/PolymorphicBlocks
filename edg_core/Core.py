@@ -167,17 +167,22 @@ class Refable():
     return IdentityDict([(self, prefix)])
 
 
-NonLibraryFlag = object()
+class EltPropertiesBase:
+  """"Base type for properties associated with a particular block, that do not apply to subtypes"""
+  pass
+
+
+NonLibraryProperty = EltPropertiesBase()
 NonLibraryType = TypeVar('NonLibraryType', bound=Type['LibraryElement'])
 def non_library(decorated: NonLibraryType) -> NonLibraryType:
-  decorated._elt_properties[(decorated, 'non_library')] = None
+  decorated._elt_properties[(decorated, NonLibraryProperty)] = None
   return decorated
 
 
 @non_library
 class LibraryElement(Refable, metaclass=ElementMeta):
   """Defines a library element, which optionally contains other library elements."""
-  _elt_properties: Dict[Any, Any] = {}  # TODO can this be restricted further?
+  _elt_properties: Dict[Tuple[Type[LibraryElement], EltPropertiesBase], Any] = {}
 
   def __repr__(self) -> str:
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
@@ -260,7 +265,7 @@ class HasMetadata(LibraryElement):
     bases: List[Type] = []
     for bcls in cls.__bases__:
       if bcls not in bases and issubclass(bcls, base_type):
-        if (bcls, 'non_library') in bcls._elt_properties:
+        if (bcls, NonLibraryProperty) in bcls._elt_properties:
           for bcls_bases in bcls._get_bases_of(base_type):
             if bcls_bases not in bases:
               bases.append(bcls_bases)

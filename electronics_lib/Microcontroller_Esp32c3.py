@@ -25,7 +25,7 @@ class Esp32c3_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
 
     dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,
-      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       current_limits=(-28, 40)*mAmp,
       current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.25, 0.75),

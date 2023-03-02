@@ -21,9 +21,7 @@ class AdapterPortAdapter(PortAdapter[TestPortSource]):
 
 
 class AdapterPort(Port[AdapterLink]):
-  def __init__(self):
-    self.link_type = AdapterLink
-    super().__init__()
+  link_type = AdapterLink
 
   def as_test_src(self) -> TestPortSource:
     return self._convert(AdapterPortAdapter())

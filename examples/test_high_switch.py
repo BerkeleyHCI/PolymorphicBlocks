@@ -268,9 +268,9 @@ class TestHighSwitch(BoardTop):
       (self.can, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(VoltageLoad())
+      self.can_gnd_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(VoltageLoad())
+      self.can_pwr_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       (self.vsense, ), _ = self.chain(  # TODO update to use VoltageSenseDivider

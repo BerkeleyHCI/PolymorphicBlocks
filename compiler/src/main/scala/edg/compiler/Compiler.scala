@@ -7,6 +7,7 @@ import edg.wir._
 import edg.{ExprBuilder, wir}
 import edgir.expr.expr
 import edgir.ref.ref
+import edgir.init.init
 import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
@@ -18,11 +19,15 @@ object ElaborateRecord {
   sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency source
 
   // step 1/2 for blocks: replaces library reference blocks with the concrete block from the library
-  case class ExpandBlock(blockPath: DesignPath) extends ElaborateTask
+  case class ExpandBlock(blockPath: DesignPath, blockClass: ref.LibraryPath) extends ElaborateTask
   // step 2/2 for blocks, when generators are ready: processes the subtree (including connects and assigns)
   case class Block(blockPath: DesignPath) extends ElaborateTask
   case class Link(linkPath: DesignPath) extends ElaborateTask
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
+
+  // Defines the type of a parameter, may be held back by partial compilation rules
+  case class Parameter(containerPath: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
+                       param: init.ValInit) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
@@ -74,13 +79,16 @@ object ElaborateRecord {
   */
 case class PartialCompile(
   blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
-  params: Seq[DesignPath] = Seq()  // do not propagate values into these params (assignments are discarded)
+  params: Seq[DesignPath] = Seq(),  // do not propagate values into these params (assignments are discarded)
+  classes: Seq[ref.LibraryPath] = Seq(),  // do not elaborate blocks of these classes
+  classParams: Seq[(ref.LibraryPath, ref.LocalPath)] = Seq()  // do not propagate values into params of these classes
 ) {
   def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
-    PartialCompile(blocks ++ that.blocks, params ++ that.params)
+    PartialCompile(blocks ++ that.blocks, params ++ that.params,
+      classes ++ that.classes, classParams ++ that.classParams)
   }
 
-  def isEmpty = blocks.isEmpty && params.isEmpty
+  def isEmpty = blocks.isEmpty && params.isEmpty && classes.isEmpty && classParams.isEmpty
 }
 
 
@@ -105,9 +113,9 @@ class AssignNamer() {
   * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
   * CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
-class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
+class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Library,
                         val refinements: Refinements, val partial: PartialCompile,
-                        init: Boolean) {
+                        initialize: Boolean) {
   // public constructor that does not expose init, which is internal only
   def this(inputDesignPb: schema.Design, library: edg.wir.Library,
            refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
@@ -127,26 +135,37 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   private val elaboratePending = DependencyGraph[ElaborateRecord, None.type]()
 
   // Design parameters solving (constraint evaluation) and assertions
-  private val constProp = new ConstProp(partial.params.map(_.asIndirect).toSet) {
+  private val constProp = new ConstProp() {
     override def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {
       elaboratePending.setValue(ElaborateRecord.ParamValue(param), null)
     }
   }
 
-  if (init) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+  if (initialize) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
+      constProp.setForcedValue(path, value, "path refinement")
+    }
+
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
 
     // this is done inside expandBlock which isn't called for the root
     constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""),
       DesignPath(), "name")
-    processParamDeclarations(DesignPath(), root)
-
-    for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
-      constProp.setForcedValue(path, value, "path refinement")
-    }
+    processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
   }
 
-  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet  // these supersede class refinements
+  // Some pre-processed data structures to make refinement processing more efficient
+  private val refinementClassValuesByClass = refinements.classValues.groupBy(_._1._1)
+  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet
+
+  def filterRefinementClassValues(blockClass: ref.LibraryPath,
+                                  classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
+                                 ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
+    classValuesByClass.collect {
+      case (refinementClass, refinementClassValues) if library.blockIsSubclassOf(blockClass, refinementClass) =>
+        refinementClassValues
+    }.flatten.toSeq
+  }
 
   // Supplemental elaboration data structures
   private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
@@ -156,15 +175,34 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
   // Creates a new copy of this compiler including all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
-  // heldElaboratePending is cleared
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, init=false)
+    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize=false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
-    val additionalForcedValues = additionalRefinements.instanceValues.map { case (path, value) =>
-      path -> (value, "path refinement")  // forced values must be set before any prior processed constraints
+    cloned.constProp.initFrom(constProp)
+    additionalRefinements.instanceValues.foreach { case (path, value) =>
+      cloned.constProp.setForcedValue(path, value, "path refinement")
     }
-    cloned.constProp.initFrom(constProp, additionalForcedValues)
+    val additionalRefinementClassValuesByClass = additionalRefinements.classValues.groupBy(_._1._1)
+    def processBlockAdditionalRefinements(path: DesignPath, block: Block): Unit = {
+      additionalRefinements.classRefinements.foreach { case (refinementClass, _) =>
+        require(!block.unrefinedType.contains(refinementClass), f"added class refinement changes class at $path")
+      }
+
+      filterRefinementClassValues(block.getBlockClass, additionalRefinementClassValuesByClass).foreach {
+        case ((refinementClass, postfix), value) =>
+          val paramPath = path ++ postfix
+          if (!cloned.refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+            cloned.constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+          }
+      }
+
+      block.getBlocks foreach {  // recurse
+        case (subblockName, subblock: Block) => processBlockAdditionalRefinements(path + subblockName, subblock)
+        case (subblockName, subblock: BlockLibrary) =>  // ignored
+      }
+    }
+    processBlockAdditionalRefinements(DesignPath(), cloned.root)
     require(cloned.expandedArrayConnectConstraints.isEmpty)
     cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     require(cloned.errors.isEmpty)
@@ -172,10 +210,10 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     cloned
   }
 
-  // Add solved values
-  def addValues(values: Map[DesignPath, ExprValue], name: String): Unit = {
+  // Add solved values, where the param must not have had a value
+  def addAssignValues(values: Map[DesignPath, ExprValue], name: String): Unit = {
     values.foreach { case (path, value) =>
-      constProp.setForcedValue(path, value, name)
+      constProp.addAssignValue(path.asIndirect, value, DesignPath(), name)
     }
   }
 
@@ -188,10 +226,6 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     errors.toSeq ++ constProp.getErrors ++ pendingErrors
   }
-
-  // Hook method to be overridden, eg for status
-  //
-  def onElaborate(record: ElaborateRecord): Unit = { }
 
   // Actual compilation methods
   //
@@ -279,10 +313,30 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     }
   }
 
+  protected def paramMatchesPartial(containerPath: DesignPath, blockClass: Option[ref.LibraryPath],
+                                    postfix: ref.LocalPath): Boolean = {
+    if (partial.params.contains(containerPath ++ postfix)) {
+      return true
+    }
+    blockClass match {
+      case Some(blockClass) =>
+        partial.classParams.exists { case (partialClass, partialPostfix) =>
+          library.blockIsSubclassOf(blockClass, partialClass) && partialPostfix == postfix
+        }
+      case None => false
+    }
+  }
+
   // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(path: DesignPath, hasParams: wir.HasParams): Unit = {
+  protected def processParamDeclarations(root: DesignPath, blockClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
-      constProp.addDeclaration(path + paramName, param)
+      val postfix = ExprBuilder.Ref(paramName)
+      if (paramMatchesPartial(root, blockClass, postfix)) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(root, blockClass, postfix, param), Seq())
+      } else {
+        // uniformly using ElaborateRecord craters performance, so this fast path is added here
+        constProp.addDeclaration(root ++ postfix, param)
+      }
     }
   }
 
@@ -315,11 +369,11 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       case port: wir.Port =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
-        processParamDeclarations(path, port)
+        processParamDeclarations(path, None, port)
       case port: wir.Bundle =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
           containerPath, "name")
-        processParamDeclarations(path, port)
+        processParamDeclarations(path, None, port)
         for ((childPortName, childPort) <- port.getPorts) {
           elaboratePort(path + childPortName, containerPath, port, childPort)
         }
@@ -408,43 +462,47 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
   protected def expandBlock(path: DesignPath): Unit = {
+    import edgir.elem.elem
+
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
     val libraryPath = block.target
-
-    val (refinedLibraryPath, unrefinedType) = refinements.instanceRefinements.get(path) match {
-      case Some(refinement) => (refinement, Some(libraryPath))
-      case None => refinements.classRefinements.get(libraryPath) match {
-        case Some(refinement) => (refinement, Some(libraryPath))
-        case None => (libraryPath, None)
-      }
+    val libraryBlockPb = library.getBlock(libraryPath) match {
+      case Errorable.Success(blockPb) => blockPb
+      case Errorable.Error(err) =>
+        errors += CompilerError.LibraryError(path, libraryPath, err)
+        elem.HierarchyBlock()
     }
 
-    val blockPb = library.getBlock(refinedLibraryPath) match {
+    val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
+      refinements.classRefinements.get(libraryPath).orElse(
+        libraryBlockPb.defaultRefinement
+      )
+    )
+    val unrefinedType = if (refinementLibraryPath.isDefined) Some(libraryPath) else None
+    val blockLibraryPath = refinementLibraryPath.getOrElse(libraryPath)
+
+    val blockPb = library.getBlock(blockLibraryPath) match {
       case Errorable.Success(blockPb) =>
         blockPb
       case Errorable.Error(err) =>
-        import edgir.elem.elem
-        errors += CompilerError.LibraryError(path, refinedLibraryPath, err)
+        errors += CompilerError.LibraryError(path, blockLibraryPath, err)
         elem.HierarchyBlock()
     }
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    refinements.classValues.foreach { case (classPath, refinements) =>
-      if (library.isSubclassOf(refinedLibraryPath, classPath)) {
-        refinements.foreach { case (subpath, value) =>
-          if (!refinementInstanceValuePaths.contains(path ++ subpath)) {  // instance values supersede class values
-            constProp.setForcedValue(path ++ subpath, value,
-              s"${refinedLibraryPath.getTarget.getName} class refinement")
-          }
+    filterRefinementClassValues(blockLibraryPath, refinementClassValuesByClass).foreach {
+      case ((refinementClass, postfix), value) =>
+        val paramPath = path ++ postfix
+        if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
+          constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
         }
-      }
     }
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      if (!library.isSubclassOf(refinedLibraryPath, libraryPath)) {  // check refinement validity
-        errors += CompilerError.RefinementSubclassError(path, refinedLibraryPath, libraryPath)
+      if (!library.blockIsSubclassOf(blockLibraryPath, libraryPath)) {  // check refinement validity
+        errors += CompilerError.RefinementSubclassError(path, blockLibraryPath, libraryPath)
       }
 
       val unrefinedPb = library.getBlock(libraryPath) match {  // add subclass (refinement) default params
@@ -459,7 +517,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(path.asIndirect + refinedNewParam, refinedDefault,
-            path, s"(default)${refinedLibraryPath.toSimpleString}.$refinedNewParam")
+            path, s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
     }
@@ -476,7 +534,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
-    processParamDeclarations(path, newBlock)
+    processParamDeclarations(path, Some(newBlock.getBlockClass), newBlock)
 
     newBlock.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newBlock, port)
@@ -511,7 +569,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
     // Elaborate ports and parameters
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
       path, "name")
-    processParamDeclarations(path, newLink)
+    processParamDeclarations(path, None, newLink)
 
     newLink.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newLink, port)
@@ -599,7 +657,9 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
-      elaboratePending.addNode(ElaborateRecord.ExpandBlock(path + innerBlockName), Seq())
+      elaboratePending.addNode(
+        ElaborateRecord.ExpandBlock(path + innerBlockName, innerBlock.asInstanceOf[BlockLibrary].target),
+        Seq())
     }
 
     block.getLinks.foreach {
@@ -1253,19 +1313,25 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    val partialElaborate = partial.blocks.map { blockPath =>
-      ElaborateRecord.ExpandBlock(blockPath)
-    }
+    // to handle partial compilation, as records are processed they are checked against a match to partial
+    // if there is a match, they are added here to be ignored on subsequent passes
+    // this is rebuilt dynamically on each compile() invocation
+    val partialCompileIgnoredRecords = mutable.Set[ElaborateRecord]()
 
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
-    while ((elaboratePending.getReady -- partialElaborate).nonEmpty) {
-      (elaboratePending.getReady -- partialElaborate).foreach { elaborateRecord =>
-        onElaborate(elaborateRecord)
+    var readyList = Set[ElaborateRecord]()
+    do {
+      readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
+      readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
-            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath) =>
-              expandBlock(blockPath)
-              elaboratePending.setValue(elaborateRecord, None)
+            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath, blockClass) =>
+              if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
+                partialCompileIgnoredRecords.add(elaborateRecord)
+              } else {
+                expandBlock(blockPath)
+                elaboratePending.setValue(elaborateRecord, None)
+              }
             case elaborateRecord@ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)
@@ -1275,6 +1341,13 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
+            case elaborateRecord@ElaborateRecord.Parameter(root, blockClass, postfix, param) =>
+              if (paramMatchesPartial(root, blockClass, postfix)) {
+                partialCompileIgnoredRecords.add(elaborateRecord)
+              } else {
+                constProp.addDeclaration(root ++ postfix, param)
+                elaboratePending.setValue(elaborateRecord, None)
+              }
             case connect: ElaborateRecord.Connect =>
               elaborateConnect(connect)
               elaboratePending.setValue(elaborateRecord, None)
@@ -1306,7 +1379,7 @@ class Compiler private (inputDesignPb: schema.Design, library: edg.wir.Library,
             throw wrappedException
         }
       }
-    }
+    } while (readyList.nonEmpty)
 
     ElemBuilder.Design(root.toPb)
   }

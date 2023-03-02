@@ -62,6 +62,9 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>Vds:</b> ", DescriptionString.FormatUnits(self.actual_drain_voltage_rating, "V"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.drain_voltage, "V"), "\n",

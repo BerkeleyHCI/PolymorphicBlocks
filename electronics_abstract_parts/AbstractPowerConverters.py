@@ -5,9 +5,9 @@ from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBuckBoostConverter)
 class DcDcConverter(PowerConditioner):
-  """Base class for all DC-DC converters with shared ground (non-isoalted)."""
+  """Base class for all DC-DC converters with shared ground (non-isolated)."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
@@ -18,8 +18,8 @@ class DcDcConverter(PowerConditioner):
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.require(self.pwr_out.voltage_out.within(self.output_voltage),
-                 "Output voltage must be within spec")
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>output voltage:</b> ", DescriptionString.FormatUnits(self.pwr_out.voltage_out, "V"),
@@ -27,11 +27,25 @@ class DcDcConverter(PowerConditioner):
       "<b>input voltage:</b> ", DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V")
     )
 
+    self.require(self.pwr_out.voltage_out.within(self.output_voltage),
+                 "Output voltage must be within spec")
 
-@abstract_block
+
+@abstract_block_default(lambda: IdealLinearRegulator)
 class LinearRegulator(DcDcConverter):
-  """Application circuit, inclulding supporting components like capacitors if needed,
-  around a linear regulator step-down converter."""
+  """Linear regulator, including supporting components in application circuit like capacitors if needed"""
+
+
+class IdealLinearRegulator(LinearRegulator, IdealModel):
+  """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
+  def contents(self):
+    super().contents()
+    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
+    self.pwr_in.init_from(VoltageSink(
+      current_draw=self.pwr_out.link().current_drawn))
+    self.pwr_out.init_from(VoltageSource(
+      voltage_out=effective_output_voltage))
+    self.gnd.init_from(Ground())
 
 
 @non_library
@@ -106,7 +120,7 @@ class DcDcSwitchingConverter(DcDcConverter):
     self.frequency = self.Parameter(RangeExpr())
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBuckConverter)
 class BuckConverter(DcDcSwitchingConverter):
   """Step-down switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
@@ -115,9 +129,22 @@ class BuckConverter(DcDcSwitchingConverter):
     self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBuckConverter)
 class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
+
+
+class IdealBuckConverter(DiscreteBuckConverter, IdealModel):
+  """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
+  and drawing input current from conversation of power"""
+  def contents(self):
+    super().contents()
+    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
+    self.pwr_in.init_from(VoltageSink(
+      current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
+    self.pwr_out.init_from(VoltageSource(
+      voltage_out=effective_output_voltage))
+    self.gnd.init_from(Ground())
 
 
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
@@ -162,6 +189,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit,
                    inductor_scale)
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
@@ -230,7 +260,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr_out)
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBoostConverter)
 class BoostConverter(DcDcSwitchingConverter):
   """Step-up switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
@@ -239,9 +269,22 @@ class BoostConverter(DcDcSwitchingConverter):
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBoostConverter)
 class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
+
+
+class IdealBoostConverter(DiscreteBoostConverter, IdealModel):
+  """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
+  and drawing input current from conversation of power"""
+  def contents(self):
+    super().contents()
+    effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.lower(), float('inf')))
+    self.pwr_in.init_from(VoltageSink(
+      current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
+    self.pwr_out.init_from(VoltageSource(
+      voltage_out=effective_output_voltage))
+    self.gnd.init_from(Ground())
 
 
 class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
@@ -285,6 +328,9 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple, dutycycle_limit)
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
@@ -347,7 +393,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr_out)
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBuckBoostConverter)
 class BuckBoostConverter(DcDcSwitchingConverter):
   """Step-up or switch-down switching converter"""
   def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
@@ -355,9 +401,21 @@ class BuckBoostConverter(DcDcSwitchingConverter):
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
 
-@abstract_block
+@abstract_block_default(lambda: IdealBuckBoostConverter)
 class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
+
+
+class IdealBuckBoostConverter(DiscreteBuckBoostConverter, IdealModel):
+  """Ideal buck-boost / general DC-DC converter producing the spec output voltage
+  and drawing input current from conversation of power"""
+  def contents(self):
+    super().contents()
+    self.pwr_in.init_from(VoltageSink(
+      current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
+    self.pwr_out.init_from(VoltageSource(
+      voltage_out=self.output_voltage))
+    self.gnd.init_from(Ground())
 
 
 class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
@@ -397,6 +455,9 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
                    input_voltage_ripple, output_voltage_ripple)
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.buck_dutycycle, ""), " (buck)",

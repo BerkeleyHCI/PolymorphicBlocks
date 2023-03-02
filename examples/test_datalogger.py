@@ -56,9 +56,9 @@ class TestDatalogger(BoardTop):
       (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(VoltageLoad())
+      self.can_gnd_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(VoltageLoad())
+      self.can_pwr_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now

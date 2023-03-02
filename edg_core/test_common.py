@@ -16,20 +16,11 @@ class TestLink(Link):
 
 
 class TestPortBase(Port[TestLink]):
-  def __init__(self) -> None:
-    super().__init__()
-    self.link_type = TestLink
+  link_type = TestLink
 
 
 class TestPortSource(TestPortBase):
-  def __init__(self) -> None:
-    super().__init__()
-
-
-class TestPortSink(TestPortBase):
-  def __init__(self) -> None:
-    super().__init__()
-    self.bridge_type = TestPortBridge
+  pass
 
 
 class TestPortBridge(PortBridge):
@@ -37,6 +28,10 @@ class TestPortBridge(PortBridge):
     super().__init__()
     self.outer_port = self.Port(TestPortSink())
     self.inner_link = self.Port(TestPortSource())
+
+
+class TestPortSink(TestPortBase):
+  bridge_type = TestPortBridge
 
 
 class TestBlockSink(Block):

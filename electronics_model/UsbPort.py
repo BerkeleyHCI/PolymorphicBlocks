@@ -22,30 +22,17 @@ class UsbLink(Link):
 
 
 class UsbHostPort(Bundle[UsbLink]):
+  link_type = UsbLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = UsbLink
-
     self.dp = self.Port(DigitalBidir())
     self.dm = self.Port(DigitalBidir())
-
-
-class UsbDevicePort(Bundle[UsbLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
-    super().__init__()
-    self.link_type = UsbLink
-    self.bridge_type = UsbDeviceBridge
-
-    if model is None:
-      model = DigitalBidir()  # ideal by default
-    self.dp = self.Port(model)
-    self.dm = self.Port(model)
 
 
 class UsbDeviceBridge(PortBridge):
   def __init__(self) -> None:
     super().__init__()
-
     self.outer_port = self.Port(UsbDevicePort.empty())
     self.inner_link = self.Port(UsbHostPort.empty())
 
@@ -62,11 +49,23 @@ class UsbDeviceBridge(PortBridge):
     self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
 
+class UsbDevicePort(Bundle[UsbLink]):
+  link_type = UsbLink
+  bridge_type = UsbDeviceBridge
+
+  def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    super().__init__()
+    if model is None:
+      model = DigitalBidir()  # ideal by default
+    self.dp = self.Port(model)
+    self.dm = self.Port(model)
+
+
 class UsbPassivePort(Bundle[UsbLink]):
+  link_type = UsbLink
+
   def __init__(self) -> None:
     super().__init__()
-    self.link_type = UsbLink
-
     self.dp = self.Port(DigitalBidir())
     self.dm = self.Port(DigitalBidir())
 
@@ -89,9 +88,9 @@ class UsbCcLink(Link):
 
 
 class UsbCcPort(Bundle[UsbCcLink]):
+  link_type = UsbCcLink
+
   def __init__(self, pullup_capable: BoolLike = Default(False)) -> None:
     super().__init__()
-    self.link_type = UsbCcLink
-
     self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
     self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))

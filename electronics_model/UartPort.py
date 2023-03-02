@@ -18,10 +18,10 @@ class UartLink(Link):
 
 
 class UartPort(Bundle[UartLink]):
+  link_type = UartLink
+
   def __init__(self, model: Optional[DigitalBidir] = None) -> None:
     super().__init__()
-    self.link_type = UartLink
-
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.tx = self.Port(DigitalSource.from_bidir(model))

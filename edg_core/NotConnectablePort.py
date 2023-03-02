@@ -19,9 +19,7 @@ class NotConnectableBlock(InternalBlock, Block, Generic[NotConnectablePortType])
 class NotConnectablePort(Port):
   """Port that additionally supports not-connected() which instantiates a dummy block with a nop port
   and connects this port to it."""
-  def __init__(self) -> None:
-    super().__init__()
-    self.not_connected_type: Type[NotConnectableBlock[Port]]  # TODO type check this!
+  not_connected_type: Type[NotConnectableBlock[Port]]  # TODO type check this!
 
   def not_connected(self) -> Block:
     """Marks this port as not connected; can only be done on a boundary port (for example, when subclassing

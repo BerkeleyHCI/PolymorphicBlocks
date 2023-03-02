@@ -9,31 +9,28 @@ import edg.util.MapUtils
 case class Refinements(
   classRefinements: Map[ref.LibraryPath, ref.LibraryPath] = Map(),
   instanceRefinements: Map[DesignPath, ref.LibraryPath] = Map(),
-  classValues: Map[ref.LibraryPath, Map[ref.LocalPath, ExprValue]] = Map(),  // class -> (internal path -> value)
+  classValues: Map[(ref.LibraryPath, ref.LocalPath), ExprValue] = Map(),  // (class, internal path -> value)
   instanceValues: Map[DesignPath, ExprValue] = Map()
 ) {
   // Append another set of refinements on top of this one, erroring out in case of a conflict
   def ++(that: Refinements): Refinements = {
-    val combinedClassValues = (classValues.toSeq ++ that.classValues.toSeq)  // this one is merge-able one level down
-        .groupBy(_._1)
-        .map { case (className, classPathValues) =>
-      className -> MapUtils.mergeMapSafe(classPathValues.map(_._2):_*)
-    }
     Refinements(
       classRefinements = MapUtils.mergeMapSafe(classRefinements, that.classRefinements),
       instanceRefinements = MapUtils.mergeMapSafe(instanceRefinements, that.instanceRefinements),
-      classValues = combinedClassValues,
+      classValues = MapUtils.mergeMapSafe(classValues, that.classValues),
       instanceValues = MapUtils.mergeMapSafe(instanceValues, that.instanceValues),
     )
   }
 
   // separates the refinements into one not containing (only) the set blocks and params, and one not.
-  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath]): (Refinements, Refinements) = {
+  def partitionBy(blocks: Set[DesignPath], params: Set[DesignPath],
+                  classParams: Set[(ref.LibraryPath, ref.LocalPath)]): (Refinements, Refinements) = {
     val (containsBlocks, otherBlocks) = instanceRefinements.partition { case (path, _) => blocks.contains(path) }
     val (containsParams, otherParams) = instanceValues.partition { case (path, _) => params.contains(path) }
-    val containsRefinement = Refinements(Map(), containsBlocks, Map(), containsParams)
+    val (containsClassParams, otherClassParams) = classValues.partition { case (classPath, _) => classParams.contains(classPath) }
+    val containsRefinement = Refinements(Map(), containsBlocks, containsClassParams, containsParams)
     val otherRefinement = Refinements(
-      classRefinements, otherBlocks, classValues, otherParams
+      classRefinements, otherBlocks, otherClassParams, otherParams
     )
 
     (containsRefinement, otherRefinement)
@@ -56,14 +53,12 @@ case class Refinements(
             replacement = Some(target))
         },
       values =
-        classValues.flatMap { case (source, subpathValue) =>
-          subpathValue.map { case (subpath, value) =>
-            hdl.Refinements.Value(
-              source = hdl.Refinements.Value.Source.ClsParam(
-                hdl.Refinements.Value.ClassParamPath(cls = Some(source), paramPath = Some(subpath))
-              ),
-              value = Some(value.toLit))
-          }
+        classValues.map { case ((source, subpath), value) =>
+          hdl.Refinements.Value(
+            source = hdl.Refinements.Value.Source.ClsParam(
+              hdl.Refinements.Value.ClassParamPath(cls = Some(source), paramPath = Some(subpath))
+            ),
+            value = Some(value.toLit))
         }.toSeq ++ instanceValues.map { case (path, value) =>
           hdl.Refinements.Value(
             source = hdl.Refinements.Value.Source.Path(path.asIndirect.toLocalPath),
@@ -86,8 +81,8 @@ object Refinements {
     } }.toMap
     val classValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.ClsParam(clsParam) =>
-        clsParam.getCls -> (clsParam.getParamPath -> ExprEvaluate.evalLiteral(value.getValue))
-    } }.groupBy(_._1).view.mapValues(_.map(_._2).toMap).toMap
+        (clsParam.getCls, clsParam.getParamPath) -> ExprEvaluate.evalLiteral(value.getValue)
+    } }.toMap
 
     val instanceValues = pb.values.collect { value => value.source match {
       case hdl.Refinements.Value.Source.Path(path) =>

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
@@ -23,6 +23,12 @@ class PartsTablePart(Block):
   @abstractmethod
   def _make_table(cls) -> PartsTable:
     """Returns a parts table for this device. Implement me."""
+    ...
+
+  @classmethod
+  @abstractmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    """Defines a sorting key for rows of this parts table. Implement me."""
     ...
 
   @classmethod

@@ -1,6 +1,6 @@
 import unittest
-from .JlcResistor import JlcResistor
-from .test_passive_common import *
+from .JlcResistor import *
+
 
 class JlcResistorTestTop(Block):
   def __init__(self):
@@ -9,8 +9,8 @@ class JlcResistorTestTop(Block):
       resistance=750 * Ohm(tol=0.10),
       power=(0, 0.25) * Watt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
 
 
 class JlcResistorTestCase(unittest.TestCase):

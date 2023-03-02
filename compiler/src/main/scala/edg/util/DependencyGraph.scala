@@ -28,10 +28,10 @@ class DependencyGraph[KeyType, ValueType] {
   }
 
   // Adds a node in the graph. May only be called once per node.
-  def addNode(node: KeyType, dependencies: Seq[KeyType], update: Boolean = false): Unit = {
+  def addNode(node: KeyType, dependencies: Seq[KeyType], overwrite: Boolean = false): Unit = {
     deps.get(node) match {
       case Some(prevDeps) =>
-        require(update, s"reinsertion of dependency for node $node <- $dependencies without update=true")
+        require(overwrite, s"reinsertion of dependency for node $node <- $dependencies without overwrite=true")
         // TODO can this requirement be eliminated?
         require(prevDeps.subsetOf(dependencies.toSet), "update of dependencies without being a superset of prior")
       case None =>  // nothing if no previous dependencies
@@ -44,7 +44,7 @@ class DependencyGraph[KeyType, ValueType] {
       inverseDeps.getOrElseUpdate(dependency, mutable.Set()) += node
     }
 
-    if (update && ready.contains(node)) {
+    if (overwrite && ready.contains(node)) {
       ready -= node
     }
     if (remainingDeps.isEmpty && !values.isDefinedAt(node)) {
