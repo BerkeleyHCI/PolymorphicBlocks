@@ -40,7 +40,7 @@ class IdealLinearRegulator(LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
     super().contents()
-    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.lower()))
+    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
@@ -139,7 +139,7 @@ class IdealBuckConverter(DiscreteBuckConverter, IdealModel):
   and drawing input current from conversation of power"""
   def contents(self):
     super().contents()
-    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.lower()))
+    effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.pwr_in.init_from(VoltageSink(
       current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
@@ -279,7 +279,7 @@ class IdealBoostConverter(DiscreteBoostConverter, IdealModel):
   and drawing input current from conversation of power"""
   def contents(self):
     super().contents()
-    effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.upper(), float('inf')))
+    effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.lower(), float('inf')))
     self.pwr_in.init_from(VoltageSink(
       current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
@@ -414,7 +414,7 @@ class IdealBuckBoostConverter(DiscreteBuckBoostConverter, IdealModel):
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage))
+      voltage_out=self.output_voltage))
     self.gnd.init_from(Ground())
 
 
