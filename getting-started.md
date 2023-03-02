@@ -298,12 +298,12 @@ self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
 > However, the IDE can help you find where the code is:
 > 1. Right click on any port in the connection, then select "Goto Connect".
 
-If you try recompiling it, it will give you an error because `BuckConverter` is an _abstract block_ (it does not have an implementation), and was automatically substituted with an ideal model.
+If you try recompiling it, it will give you an error because `BuckConverter` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
 Abstract blocks are useful for two reasons:
 1. It allows your design to be more general and allows you to defer implementation choices until later.
    This is more relevant for library builders, where you may want to give the system designer the choice of, for example, whether to use a surface-mount or through-hole resistor.
 2. It can help preserve design intent more precisely and keep HDL readable.
-   For example, saying that we want a buck converter by instantiating a buck converter can be more intuitive than directly instantiating, for example, a TPS561201 block.
+   For example, saying that we want a buck converter by instantiating a buck converter can be more intuitive than directly instantiating a TPS561201 block.
 
 Unlike in software, we can instantiate abstract blocks here, but they won't actually place down a useful circuit.
 We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the top-level design class**.
