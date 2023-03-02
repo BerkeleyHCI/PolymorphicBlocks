@@ -7,7 +7,8 @@ from .AbstractInductor import Inductor
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
 class VoltageRegulator(PowerConditioner):
-  """Base class for all DC-DC voltage regulators with shared ground (non-isolated)."""
+  """Base class for all DC-DC voltage regulators with shared ground (non-isolated).
+  Can produce an output voltage lower than, equal to, or greater than its input voltage."""
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
