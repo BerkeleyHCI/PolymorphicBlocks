@@ -349,7 +349,7 @@ Here we specify that the abstract `BuckConverter` is specifically a `Tps561201`,
 > `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
 > You can override these with a refinement in your HDL, for example choosing `AxialResistor`.
 
-> If using the IDE, refinements can be done through the library browser.
+> If using the IDE, refinements can also be manually inserted through the library browser.
 > 1. Select (single click) on the block you want to refine.
 > 2. In the Library Browser, search for the class you want to refine into.
 >    If you don't know, you can filter by the abstract type and see what options are under it.
@@ -646,9 +646,10 @@ class BlinkyExample(SimpleBoardTop):
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
+> Similarly to `VoltageRegulator`, you can also use design space exploration to search through all compatible microcontrollers.
+
 With the abstract block in place, we can now easily change it to something else.
-Perhaps we want a microcontroller with built-in wifi, so
-**change the refinement to an `Esp32_Wroom_32`**.
+Perhaps we want a microcontroller with built-in WiFi, so **change the refinement to an `Esp32_Wroom_32`**.
 
 > If using the IDE, refinements can be changed the same way they are defined.
 > The IDE will update the existing refinement instead of inserting a new entry.
@@ -723,7 +724,11 @@ class BlinkyExample(SimpleBoardTop):
 
 And that's it for board-level design!
 You can import the netlist into KiCad if you'd like.
-Good luck with building PCBs!
+
+
+## Design Space Exploration
+
+
 
 
 ## Defining Library Parts
