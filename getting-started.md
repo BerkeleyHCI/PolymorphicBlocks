@@ -265,20 +265,20 @@ If you're in the IDE, errors will show up in the compilation log and in the erro
 You can also inspect the details of the power connection by mousing over it:   
 ![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
-### Adding a Buck Converter
-To run the STM32 within its rated voltage limits, we'll need something to lower the 5v from USB to the common 3.3v power expected by modern devices.
-Here, we'll choose to use a buck converter, a high-efficiency DC-DC switching converter.
-**Repeat the add block flow** with a `BuckConverter` block, **then update the power (between the USB and the microcontroller) and ground connections**.
-**Make sure to delete the previous power and ground connections, otherwise it will error out from over-connection.** 
-```python
-self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+### Adding a Voltage Regulator
+To run the STM32 within its rated voltage limits, we'll need a voltage regulator to lower the 5v from USB to the common 3.3v power expected by modern devices.
+**Repeat the add block flow** with a `VoltageRegulator` block, **then update the power (between the USB and the microcontroller) and ground connections**.
+**Make sure to delete the previous power and ground connections, otherwise it will error out from over-connection.**
 
-self.connect(self.usb.pwr, self.buck.pwr_in)
-self.connect(self.buck.pwr_out, self.mcu.pwr)
-self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
+```python
+self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+
+self.connect(self.usb.pwr, self.reg.pwr_in)
+self.connect(self.reg.pwr_out, self.mcu.pwr)
+self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
 ```
 
-> The `BuckConverter` block is parameterized - configured by additional data specified as constructor arguments.
+> The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
 > Here, we've specified a target output voltage of 3.3v.
 > 
 > Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
@@ -288,7 +288,7 @@ self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
 > This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
 > The IDE will create a block with empty parameters for you to fill.
 > 
-> You can append the buck converter's ground pin to the existing ground connect statement:
+> You can append the voltage regulator's ground pin to the existing ground connect statement:
 > 1. Select the existing connect statement in the code.
 > 2. Start a connect operation at any port that is part of the existing connection.
 >    - It is not currently supported to add to an existing connection without starting the connect operation at that connection.
@@ -298,12 +298,12 @@ self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
 > However, the IDE can help you find where the code is:
 > 1. Right click on any port in the connection, then select "Goto Connect".
 
-If you try recompiling it, it will give you an error because `BuckConverter` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
+If you try recompiling it, it will give you an error because `VoltageRegulator` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
 Abstract blocks are useful for two reasons:
 1. It allows your design to be more general and allows you to defer implementation choices until later.
    This is more relevant for library builders, where you may want to give the system designer the choice of, for example, whether to use a surface-mount or through-hole resistor.
 2. It can help preserve design intent more precisely and keep HDL readable.
-   For example, saying that we want a buck converter by instantiating a buck converter can be more intuitive than directly instantiating a TPS561201 block.
+   For example, saying that we want a voltage regulator can be more intuitive than directly instantiating a TPS561201 block.
 
 These abstract classes can be implemented by concrete subclasses, for example a TPS561201-based buck converter subcircuit.
 Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
@@ -339,7 +339,7 @@ class BlinkyExample(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
     instance_refinements=[
-      (['buck'], Tps561201),
+      (['reg'], Tps561201),
     ])
 ```
 
@@ -370,18 +370,18 @@ Recompiling in the IDE yields this block diagram and no errors:
 >     def contents(self) -> None:
 >       super().contents()
 >       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
 >       self.mcu = self.Block(Stm32f103_48())
 >       self.led = self.Block(IndicatorLed())
->       self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
->       self.connect(self.buck.pwr_out, self.mcu.pwr)
+>       self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
+>       self.connect(self.reg.pwr_out, self.mcu.pwr)
 >       self.connect(self.mcu.gpio.request('led'), self.led.signal)
 >
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['buck'], Tps561201),
+>         (['reg'], Tps561201),
 >       ])
 >   ```
 > </details>
@@ -389,7 +389,7 @@ Recompiling in the IDE yields this block diagram and no errors:
 ### Deeper Inspection
 One major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 Here, we were able to place down a buck converter - a non-trivial subcircuit - with just one line of code.
-The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `BuckConverter` block.
+The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `VoltageRegulator` block.
 
 You may want to inspect the results.
 In the IDE, you can hover over the output line and see that it is at 3.3v ±4.47%.
@@ -461,11 +461,11 @@ Recompiling in the IDE yields this block diagram:
 >     def contents(self) -> None:
 >       super().contents()
 >       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
 >       self.mcu = self.Block(Stm32f103_48())
->       self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
->       self.connect(self.buck.pwr_out, self.mcu.pwr)
+>       self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
+>       self.connect(self.reg.pwr_out, self.mcu.pwr)
 > 
 >       self.sw = self.Block(DigitalSwitch())
 >       self.connect(self.mcu.gpio.request('sw'), self.sw.out)
@@ -480,7 +480,7 @@ Recompiling in the IDE yields this block diagram:
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['buck'], Tps561201),
+>         (['reg'], Tps561201),
 >       ])
 >   ```
 > </details>
@@ -496,11 +496,12 @@ _In this section, we clean up the prior example by consolidating some repetitive
 ### Implicit Connections
 Because some connections (like power and ground) are very common, the HDL provides the idea of an implicit connection scope to automatically make them when a block is instantiated.
 In our example, we can get rid of the explicit power and ground connections.
-Start by **adding an implicit scope** to tie Power-tagged ports to `self.buck.pwr_out` and Common- (ground) tagged ports to `self.buck.gnd`:
+Start by **adding an implicit scope** to tie Power-tagged ports to `self.reg.pwr_out` and Common- (ground) tagged ports to `self.reg.gnd`:
+
 ```python
 with self.implicit_connect(
-    ImplicitConnect(self.buck.pwr_out, [Power]),
-    ImplicitConnect(self.buck.gnd, [Common]),
+    ImplicitConnect(self.reg.pwr_out, [Power]),
+    ImplicitConnect(self.reg.gnd, [Common]),
 ) as imp:
   ...
 ```
@@ -513,10 +514,10 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 **Move the microcontroller, switch, and LED instantiation into the scope, and delete their power and ground connections**:
 
 ```python
-self.buck = self.Block(BuckConverter())
+self.reg = self.Block(VoltageConverter(...))
 with self.implicit_connect(
-    ImplicitConnect(self.buck.pwr_out, [Power]),
-    ImplicitConnect(self.buck.gnd, [Common]),
+    ImplicitConnect(self.reg.pwr_out, [Power]),
+    ImplicitConnect(self.reg.gnd, [Common]),
 ) as imp:
   self.mcu = imp.Block(Stm32f103_48())
 
@@ -529,7 +530,7 @@ with self.implicit_connect(
     self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 ```
 
-Remember that the buck converter is outside the implicit scope because it takes 5v and must be connected separately.
+Remember that the voltage regulator is outside the implicit scope because it takes 5v and must be connected separately.
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
@@ -539,13 +540,13 @@ Remember that the buck converter is outside the implicit scope because it takes 
 >     def contents(self) -> None:
 >       super().contents()
 >       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
->       self.connect(self.usb.gnd, self.buck.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.reg.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
 >
 >       with self.implicit_connect(
->           ImplicitConnect(self.buck.pwr_out, [Power]),
->           ImplicitConnect(self.buck.gnd, [Common]),
+>           ImplicitConnect(self.reg.pwr_out, [Power]),
+>           ImplicitConnect(self.reg.gnd, [Common]),
 >       ) as imp:
 >         self.mcu = imp.Block(Stm32f103_48())
 >
@@ -560,7 +561,7 @@ Remember that the buck converter is outside the implicit scope because it takes 
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['buck'], Tps561201),
+>         (['reg'], Tps561201),
 >       ])
 >   ```
 > </details>
@@ -597,13 +598,13 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 >     def contents(self) -> None:
 >       super().contents()
 >       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
->       self.connect(self.usb.gnd, self.buck.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.reg.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
 >
 >       with self.implicit_connect(
->           ImplicitConnect(self.buck.pwr_out, [Power]),
->           ImplicitConnect(self.buck.gnd, [Common]),
+>           ImplicitConnect(self.reg.pwr_out, [Power]),
+>           ImplicitConnect(self.reg.gnd, [Common]),
 >       ) as imp:
 >         self.mcu = imp.Block(Stm32f103_48())
 >
@@ -616,7 +617,7 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['buck'], Tps561201),
+>         (['reg'], Tps561201),
 >       ])
 >   ```
 > </details>
@@ -626,7 +627,7 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 _Finally, let's put the finishing touches on this design by changing the microcontroller and specifying a pin assignment._
 
 ### Using the IoController Abstract Class
-Like the `BuckConverter`, there is actually an abstract class for microcontrollers, `IoController`.
+Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
 `Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
 
 ```python
@@ -689,13 +690,13 @@ class BlinkyExample(SimpleBoardTop):
 >     def contents(self) -> None:
 >       super().contents()
 >       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
->       self.connect(self.usb.gnd, self.buck.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+>       self.connect(self.usb.gnd, self.reg.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
 >
 >       with self.implicit_connect(
->           ImplicitConnect(self.buck.pwr_out, [Power]),
->           ImplicitConnect(self.buck.gnd, [Common]),
+>           ImplicitConnect(self.reg.pwr_out, [Power]),
+>           ImplicitConnect(self.reg.gnd, [Common]),
 >       ) as imp:
 >         self.mcu = imp.Block(IoController())
 >
@@ -708,7 +709,7 @@ class BlinkyExample(SimpleBoardTop):
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['buck'], Tps561201),
+>         (['reg'], Tps561201),
 >         (['mcu'], Esp32_Wroom_32),
 >       ],
 >       instance_values=[
