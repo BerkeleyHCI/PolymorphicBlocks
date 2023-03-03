@@ -22,12 +22,12 @@ class TestBlinkyRegulated(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
     self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
-    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+    self.connect(self.reg.pwr_out, self.mcu.pwr)
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
 
@@ -35,18 +35,18 @@ class TestBlinkyComplete(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
     self.mcu = self.Block(Stm32f103_48())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd, self.led.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
-    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+    self.connect(self.reg.pwr_out, self.mcu.pwr)
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
       ])
 
 
@@ -54,11 +54,11 @@ class TestBlinkyExpanded(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
     self.mcu = self.Block(Stm32f103_48())
-    self.connect(self.usb.gnd, self.buck.gnd, self.mcu.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
-    self.connect(self.buck.pwr_out, self.mcu.pwr)
+    self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+    self.connect(self.reg.pwr_out, self.mcu.pwr)
 
     self.sw = self.Block(DigitalSwitch())
     self.connect(self.mcu.gpio.request('sw'), self.sw.out)
@@ -73,7 +73,7 @@ class TestBlinkyExpanded(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
       ])
 
 
@@ -81,13 +81,13 @@ class TestBlinkyImplicit(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(Stm32f103_48())
 
@@ -102,7 +102,7 @@ class TestBlinkyImplicit(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
       ])
 
 
@@ -110,13 +110,13 @@ class TestBlinkyChain(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(Stm32f103_48())
 
@@ -129,7 +129,7 @@ class TestBlinkyChain(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
       ])
 
 
@@ -137,13 +137,13 @@ class TestBlinkyMicro(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -156,7 +156,7 @@ class TestBlinkyMicro(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
         (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
@@ -235,13 +235,13 @@ class TestBlinkyWithLibrary(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -257,7 +257,7 @@ class TestBlinkyWithLibrary(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
         (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
@@ -274,13 +274,13 @@ class TestBlinkyWithLibraryExport(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -296,7 +296,7 @@ class TestBlinkyWithLibraryExport(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
         (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
@@ -330,13 +330,13 @@ class TestBlinkyArray(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -349,7 +349,7 @@ class TestBlinkyArray(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
         (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
@@ -366,13 +366,13 @@ class TestBlinkyPacked(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
-    self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.buck.gnd)
-    self.connect(self.usb.pwr, self.buck.pwr_in)
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
 
     with self.implicit_connect(
-        ImplicitConnect(self.buck.pwr_out, [Power]),
-        ImplicitConnect(self.buck.gnd, [Common]),
+        ImplicitConnect(self.reg.pwr_out, [Power]),
+        ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
 
@@ -392,7 +392,7 @@ class TestBlinkyPacked(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['buck'], Tps561201),
+        (['reg'], Tps561201),
         (['mcu'], Esp32_Wroom_32),
       ],
       instance_values=[
