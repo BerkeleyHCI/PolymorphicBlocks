@@ -305,30 +305,51 @@ Abstract blocks are useful for two reasons:
 2. It can help preserve design intent more precisely and keep HDL readable.
    For example, saying that we want a voltage regulator can be more intuitive than directly instantiating a TPS561201 block.
 
-These abstract classes can be implemented by concrete subclasses, for example a TPS561201-based buck converter subcircuit.
+These abstract classes can be implemented by concrete subclasses, for example a TPS561201-based buck converter (high efficiency voltage converter) subcircuit.
 Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
 
 To help work with and search through this design space, we built design space exploration (DSE) into the IDE.
-To figure out which buck converter works, **right-click the buck converter (either in the design tree or block diagram), and select Search Refinements of base BuckConverter.**
+To figure out which voltage regulator works, **right-click the voltage regulator (either in the design tree or block diagram), and select Search Refinements of base VoltageRegulator.**
 
-![Create search configuration for BuckConverter](docs/ide_dse/buck_search.png)
+![Create search configuration for VoltageRegulator](docs/ide_dse/reg_search.png)
 
 This creates a DSE run configuration, and initializes the search space to all implementations of the buck converter.
 When a DSE run configuration is selected, the DSE panel is shown in the block visualizer panel: 
 
-![DSE panel with buck configuration](docs/ide_dse/dsepanel_buck.png)
+![DSE panel with reg configuration](docs/ide_dse/dsepanel_reg.png)
 
-The Config tab shows the current search configuration (the combination of choices to try), currently all the subclasses of BuckConverter to use for the `buck` block.
+The Config tab shows the current search configuration (the combination of choices to try), currently all the subclasses of VoltageRegulator to use for the `reg` block.
 
-Run it to scan the search space.
+**Run it to start the design space search.**
 As design points are tested, they will be shown in the Results tab.
-Ignore the axis configurations for now, DSE is a larger feature and will be explored further later in this tutorial.
+Designs are aggregated by similar results, but since we have no objective functions selected, it is aggregating by whether the design compiled with errors
 
-![DSE panel with buck results](docs/ide_dse/dsepanel_buck_result.png)
+![DSE panel with reg results](docs/ide_dse/dsepanel_reg_result.png)
 
-Under the current configuration, points are categorized by either errors or no errors.
-Because this example design so far is simple, all the concrete converters work.
-Let's arbitrarily choose to use the `Tps561201`: **right-click the entry and select Insert Refinements**.
+Specific design points can be inspected by double-clicking the entry to bring it up in the block diagram visualizer and design tree.
+**Open any of the results**.
+
+Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw by adding an objective function.
+For board area, **right click on the design root, and select Add objective contained footprint area.**
+For current draw, **select the regulator, then open the Detail panel, expand the input power (pwr_in) port, right click current_draw, and select Add objective.**
+If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
+**Re-run the design space search** to update the results with the new objective functions.
+
+As it runs, you can plot those points.
+**For the X Axis, select the footprint area, and for the Y Axis, select the current draw.**
+In this plot, better points are lower (less current draw, less power consumed) and to the left (smaller).
+Once all the points compile, this should be the final plot:
+
+![DSE panel with reg plot](docs/ide_dse/reg_plot.png)
+
+The brown points represent where ideal models are used.
+Both have the same X position, since ideal models have no components and no take board area.
+If you mouseover the points, it displays the point.
+The top ideal point is the IdealLinearRegulator (which drops the voltage by "burning" the excess as heat), while the bottom one is the IdealVoltageRegulator (which only enforces conversation of power, similar to real buck converters),
+The non-ideal points show a trade-off: the lowest power (most efficient) points are buck converters, but the smallest are linear regulators.
+This makes sense: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators often are just a chip and small capacitors.
+
+Let's arbitrarily choose to prioritize efficiency and use the `Tps561201`: **right-click the entry and select Insert Refinements**.
 This inserts a refinements block into the design:
 
 ```python
