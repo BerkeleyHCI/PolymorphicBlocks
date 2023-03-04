@@ -336,7 +336,7 @@ If done right, the Objective Functions listed in the Config tree should show bot
 **Re-run the design space search** to update the results with the new objective functions.
 
 As it runs, you can plot those points.
-**For the X Axis, select the footprint area, and for the Y Axis, select the current draw.**
+**For the X Axis, select the footprint area, and for the Y Axis, select the maximum (worst-case) current draw.**
 In this plot, better points are lower (less current draw, less power consumed) and to the left (smaller).
 Once all the points compile, this should be the final plot:
 
@@ -746,11 +746,17 @@ class BlinkyExample(SimpleBoardTop):
 >   ```
 > </details>
 
-And that's it for board-level design!
+And that's it for system-level (top-level, as opposed to library construction) PCB design!
 You can import the netlist into KiCad if you'd like.
 
 
 ## Design Space Exploration
+
+Another example: effect of 0402/0603/ global component selection - class refinements
+
+Example: part selection. Inductor?
+
+Overview of selections
 
 
 
@@ -761,6 +767,6 @@ Continue to [part 2 of the tutorial](getting_started_library.md) on defining a l
 ### Additional Resources
 If you want to some more complex examples of boards designed in this HDL, check out:
 - [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix.
-  Ignore the implementation of the charlieplexing LED matrix library block for now, just look at the top-leve design.
+  Ignore the implementation of the charlieplexing LED matrix library block for now, just look at the top-level design.
 - [Simon Game](examples/test_simon.py): an implementation of the Simon electronic game, that uses 12v dome buttons and includes the needed power conversion circuitry.
-- [CANdapter](examples/test_can_adapter.py): an USB to isolated CAN adapter, with a bunch of onboard LEDs and an LCD display.
+- [CANdapter](examples/test_can_adapter.py): a USB to isolated CAN adapter, with a bunch of onboard LEDs and an LCD display.
