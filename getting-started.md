@@ -668,7 +668,9 @@ class BlinkyExample(SimpleBoardTop):
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
-> Similarly to `VoltageRegulator`, you can also use design space exploration to search through all compatible microcontrollers.
+> Similarly to `VoltageRegulator`, you can also use design space exploration (DSE) to search through all compatible microcontrollers.
+> Under the current design, all of them will work (though with different power consumption and area trade-offs).
+> However, in a design that uses less common peripherals like USB or a DAC, DSE can help find suitable microcontrollers. 
 
 With the abstract block in place, we can now easily change it to something else.
 Perhaps we want a microcontroller with built-in WiFi, so **change the refinement to an `Esp32_Wroom_32`**.
