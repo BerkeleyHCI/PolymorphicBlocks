@@ -100,7 +100,10 @@ class SwitchingVoltageRegulator(VoltageRegulator):
     ripple_ratio_range = RangeExpr._to_expr_type(ripple_ratio)
     upper_ripple_limit = ripple_ratio_range.upper() * output_current_range.upper()
     if rated_current is not None:  # if rated current is specified, extend the upper limit for small current draws
-      upper_ripple_limit = upper_ripple_limit.max(ripple_ratio_range.lower() * rated_current)
+      # this fallback limit is an arbitrary and low 0.2, not tied to specified ripple ratio since
+      # it leads to unintuitive behavior where as the low bound increases (range shrinks) the inductance
+      # spec actually becomes larger
+      upper_ripple_limit = upper_ripple_limit.max(0.2 * rated_current)
     return RangeExpr._to_expr_type((
       ripple_ratio_range.lower() * output_current_range.upper(),
       upper_ripple_limit))
