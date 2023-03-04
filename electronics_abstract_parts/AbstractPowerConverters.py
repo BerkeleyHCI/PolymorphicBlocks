@@ -187,6 +187,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
+    self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
@@ -242,13 +243,20 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
+
+    actual_ripple_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                         (self.inductor.actual_inductance.upper() * frequency.lower * input_voltage.upper))
+    actual_ripple_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                         (self.inductor.actual_inductance.lower() * frequency.lower * input_voltage.upper))
+    self.assign(self.actual_inductor_current_ripple, (actual_ripple_min, actual_ripple_max))
+
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn*dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=self.current_limits
+      current_limits=(0, self.inductor.actual_current_rating.upper() - (self.actual_inductor_current_ripple.upper() / 2))
     )))
 
     input_capacitance = Range.from_lower(output_current.upper * self.max_d_inverse_d(effective_dutycycle) /
