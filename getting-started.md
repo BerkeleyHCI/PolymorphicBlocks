@@ -752,9 +752,10 @@ You can import the netlist into KiCad if you'd like.
 
 ## Design Space Exploration
 
-Another example: effect of 0402/0603/ global component selection - class refinements
-
 Example: part selection. Inductor?
+
+
+Another example: effect of 0402/0603/ global component selection - class refinements
 
 Overview of selections
 
