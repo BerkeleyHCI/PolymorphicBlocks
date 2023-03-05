@@ -426,6 +426,75 @@ Similarly, mousing over the other components like the resistors and capacitors s
 
 To zoom out, double-click on the topmost block.
 
+If you're curious about how this is implemented, you can also navigate to the definition of the `Tps561201` block.
+Ultimately, its definition is structurally similar to how you're building your board: create Blocks, optionally giving them parameters (or expressions to calculate parameters), and connect their ports together.
+It's like this all the way down, the 'magic' of being able to instantiate these complex subcircuits with a single line of code comes from the expertise baked into these library elements. 
+
+```python
+self.ic = imp.Block(Tps561201_Device())
+
+self.fb = imp.Block(FeedbackVoltageDivider(
+  output_voltage=(0.749, 0.787) * Volt,
+  impedance=(1, 10) * kOhm,
+  assumed_input_voltage=self.output_voltage
+))
+self.connect(self.fb.input, self.pwr_out)
+self.connect(self.fb.output, self.ic.fb)
+```
+
+
+### Hardware-Proven
+In the design tree, the proven status of each sub-block (and their sub-blocks, recursively) is shown.
+This indicates how many instances of a block has been previously proven in hardware, as a rough way to gauge design risk.
+Mousing over brings up a tooltip that shows the specific boards this has been used in, and the testing status.
+
+![Proven sub-blocks column in the design tree](docs/ide_dse/blinky_proven.png)
+
+The testing statuses and colors mean:
+- Green: built in hardware and tested working.
+- Orange: built in hardware, tested failing, and a fix has been implemented in HDL but not yet tested in hardware.
+- Red: built in hardware, tested not working, not (yet?) fixed.
+- Grey: built in hardware, but not tested. 
+
+
+## Advanced Design Space Exploration
+
+
+
+### Using the IoController Abstract Class
+Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
+`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
+
+```python
+class BlinkyExample(SimpleBoardTop):
+  def contents(self) -> None:
+    ...
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+    instance_refinements=[
+      ...
+      (['mcu'], Stm32f103_48),
+    ])
+```
+
+> `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
+> Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
+> This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
+
+> Similarly to `VoltageRegulator`, you can also use design space exploration (DSE) to search through all compatible microcontrollers.
+> Under the current design, all of them will work (though with different power consumption and area trade-offs).
+> However, in a design that uses less common peripherals like USB or a DAC, DSE can help find suitable microcontrollers.
+
+With the abstract block in place, we can now easily change it to something else.
+Perhaps we want a microcontroller with built-in WiFi, so **change the refinement to an `Esp32_Wroom_32`**.
+
+> If using the IDE, refinements can be changed the same way they are defined.
+> The IDE will update the existing refinement instead of inserting a new entry.
+
+
+
+
 ## KiCad Import
 If you have KiCad installed, you can import this full design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
@@ -445,6 +514,9 @@ While refdes generation is deterministic (the same design will produce the same 
 
 
 ## Expanding Blinky
+**_This section goes over some additional quality-of-life features that can make the HDL more elegant and powerful, but does not introduce any significantly new constructs._**
+**_This part may be skipped in the interest of time._**
+
 _In this section, we will add a tactile switch and three more LEDs._
 
 ### Adding a Switch
@@ -644,39 +716,8 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 > </details>
 
 
-## Changing the Microcontroller
-_Finally, let's put the finishing touches on this design by changing the microcontroller and specifying a pin assignment._
-
-### Using the IoController Abstract Class
-Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
-`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
-
-```python
-class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    ...
-
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    instance_refinements=[
-      ...
-      (['mcu'], Stm32f103_48),
-    ])
-```
-
-> `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
-> Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
-> This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
-
-> Similarly to `VoltageRegulator`, you can also use design space exploration (DSE) to search through all compatible microcontrollers.
-> Under the current design, all of them will work (though with different power consumption and area trade-offs).
-> However, in a design that uses less common peripherals like USB or a DAC, DSE can help find suitable microcontrollers. 
-
-With the abstract block in place, we can now easily change it to something else.
-Perhaps we want a microcontroller with built-in WiFi, so **change the refinement to an `Esp32_Wroom_32`**.
-
-> If using the IDE, refinements can be changed the same way they are defined.
-> The IDE will update the existing refinement instead of inserting a new entry.
+## Finishing Up
+_Finally, let's put the finishing touches on this design by specifying a pin assignment._
 
 ### Explicit Pin Assignments
 While `IoController` can assign peripherals like SPI pins according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
@@ -748,26 +789,3 @@ class BlinkyExample(SimpleBoardTop):
 
 And that's it for system-level (top-level, as opposed to library construction) PCB design!
 You can import the netlist into KiCad if you'd like.
-
-
-## Design Space Exploration
-
-Example: part selection. Inductor?
-
-
-Another example: effect of 0402/0603/ global component selection - class refinements
-
-Overview of selections
-
-
-
-
-## Defining Library Parts
-Continue to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
-
-### Additional Resources
-If you want to some more complex examples of boards designed in this HDL, check out:
-- [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix.
-  Ignore the implementation of the charlieplexing LED matrix library block for now, just look at the top-level design.
-- [Simon Game](examples/test_simon.py): an implementation of the Simon electronic game, that uses 12v dome buttons and includes the needed power conversion circuitry.
-- [CANdapter](examples/test_can_adapter.py): a USB to isolated CAN adapter, with a bunch of onboard LEDs and an LCD display.
