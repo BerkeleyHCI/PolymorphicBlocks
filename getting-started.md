@@ -323,7 +323,13 @@ Specific design points can be inspected by double-clicking the entry to bring it
 
 Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw (power consumption) by adding an objective function.
 For board area, **right click on the design root, and select Add objective contained footprint area.**
+
+![Add objective footprint area](docs/ide_dse/addobjective_fpa_root.png)
+
 For current draw, **select the regulator, then open the Detail panel, expand the input power (pwr_in) port, right click current_draw, and select Add objective.**
+
+![Add objective regulator current draw](docs/ide_dse/addobjective_reg_idraw.png)
+
 If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
 **Re-run the design space search** to update the results with the new objective functions.
 
@@ -341,7 +347,11 @@ The top ideal point is the IdealLinearRegulator (which drops the voltage by "bur
 The non-ideal points show a trade-off: the lowest power (most efficient) points are buck converters, but the smallest are linear regulators.
 This makes sense: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators often are just a chip and small capacitors.
 
-Let's arbitrarily choose to prioritize efficiency and use the `Tps561201`: **right-click the entry and select Insert Refinements**.
+Let's arbitrarily choose to prioritize efficiency but select the smaller of those, and use the `Ap3418`.
+**Right-click the entry and select Insert Refinements**.
+
+![Insert refinement for VoltageRegulator](docs/ide_dse/insertrefinement_ap3418.png)
+
 This inserts a refinements block into the design:
 
 ```python
@@ -352,12 +362,12 @@ class BlinkyExample(SimpleBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
     instance_refinements=[
-      (['reg'], Tps561201),
+      (['reg'], Ap3418),
     ])
 ```
 
 _Refinements_ allow the top-level design to specify additional information throughout the design.
-Here we specify that the abstract `BuckConverter` is specifically a `Tps561201`, but the capability is more general, for example allowing a global refinement of `Resistor` to `AxialResistor`, or even selecting the minimum SMD package to be 0603 or 0805.
+Here we specify that the abstract `BuckConverter` is specifically a `Ap3418`, but the capability is more general, for example allowing a global refinement of `Resistor` to `AxialResistor`, or even selecting the minimum SMD package to be 0603 or 0805.
 
 > `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
 > You can override these with a refinement in your HDL, for example choosing `AxialResistor`.
@@ -394,7 +404,7 @@ Recompiling in the IDE yields this block diagram and no errors:
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['reg'], Tps561201),
+>         (['reg'], Ap3418),
 >       ])
 >   ```
 > </details>
@@ -405,29 +415,29 @@ A major benefit of this HDL-based design flow is the design automation that is e
 The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `VoltageRegulator` block.
 
 You may want to inspect the results.
-In the IDE, you can hover over the output line and see that it is at 3.3v ±4.47%.
+In the IDE, you can hover over the output line and see that it is at 3.32v ±6.87%.
 Why?
-You can dig into the Tps561201 by double-clicking on it:  
+You can dig into the converter subcircuit by double-clicking on it:  
 ![TPS561201 subcircuit](docs/ide/ide_buck_internal.png)
 
-The implementation uses a feedback voltage divider, and if you mouseover this it will show the generated ratio of 0.23.
+The implementation uses a feedback voltage divider, and if you mouseover this it will show the generated ratio of 0.18.
 The converter's output voltage reflects the actual expected output voltage, accounting for resistor tolerance and the chip's internal reference tolerance.  
-![Buck converter input capacitor](docs/ide/ide_buck_fb.png)
+![Buck converter input capacitor](docs/ide_dse/bdv_ap3418_fb.png)
 
 Similarly, mousing over the other components like the resistors and capacitors shows their details.
 
 To zoom out, double-click on the topmost block.
 
-If you're curious about how this is implemented, you can also navigate to the definition of the `Tps561201` block.
+If you're curious about how this is implemented, you can also navigate to the definition of the `Ap3418` block.
 Ultimately, its definition is structurally similar to how you're building your board: create Blocks, optionally giving them parameters (or expressions to calculate parameters), and connect their ports together.
 It's like this all the way down, the 'magic' of being able to instantiate these complex subcircuits with a single line of code comes from the expertise baked into these library elements. 
 
 ```python
-self.ic = imp.Block(Tps561201_Device())
+self.ic = imp.Block(Ap3418_Device())
 
 self.fb = imp.Block(FeedbackVoltageDivider(
-  output_voltage=(0.749, 0.787) * Volt,
-  impedance=(1, 10) * kOhm,
+  output_voltage=(0.588, 0.612) * Volt,
+  impedance=(10, 100) * kOhm,
   assumed_input_voltage=self.output_voltage
 ))
 self.connect(self.fb.input, self.pwr_out)
@@ -469,13 +479,14 @@ class BlinkyExample(SimpleBoardTop):
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
 To search the design space, first recompile the design to update the design tree with the new `IoController`.
+You can recompile a single design from the DSE runer by **deleting the existing search configurations, then re-run the design.**
+
+![Search config deletion](docs/ide_dse/dsepanel_config_delete1.png)
+
 It should produce an error, like `VoltageRegulator`, `IoController` is abstract but provides a default ideal model.
 With this done, **right-click the new `mcu` and select Search all subclass refinements**.
-Note that this adds a new dimension to the search space: unless you cleared the regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers.
-Since this becomes very time-intensive, **right-click the regulator search config and delete it**.
+Note that this adds a new dimension to the search space: if you didn't clear the voltage regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers which can become very time-intensive.
 Then, **re-run the search**.
-
-![Search config deletion](docs/ide_dse/dsepanel_config_delete.png)
 
 Under the current design, all of them will work (though with different power consumption and area trade-offs).
 So, if we wanted a microcontroller module with WiFi, we might pick one of the ESP32 options, **insert a refinement for the Esp32_Wroom_32**.
