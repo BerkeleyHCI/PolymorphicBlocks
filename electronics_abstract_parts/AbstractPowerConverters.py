@@ -256,7 +256,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=(0, self.inductor.actual_current_rating.upper() - (self.actual_inductor_current_ripple.upper() / 2))
+      current_limits=self.current_limits.intersect(self.inductor.actual_current_rating) -
+         (self.actual_inductor_current_ripple.upper() / 2)
     )))
 
     input_capacitance = Range.from_lower(output_current.upper * self.max_d_inverse_d(effective_dutycycle) /
