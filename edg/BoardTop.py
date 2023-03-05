@@ -36,7 +36,7 @@ class BaseBoardTop(DesignTop):
 
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
 
-        (Vl53l0x, Vl53l0xApplication)
+        (SpiMemory, W25q),
       ], class_values=[
         (SmdStandardPackage, ['smd_min_package'], '0603'),
       ]

@@ -69,7 +69,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
     self.assign(self.actual_basic_part, False)
 
 
-@abstract_block
+@abstract_block_default(lambda: Vl53l0xApplication)
 class Vl53l0x(DistanceSensor, Block):
   """Abstract base class for VL53L0x application circuits"""
   def __init__(self) -> None:
