@@ -346,7 +346,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
       " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
       "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
-      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
+      ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
