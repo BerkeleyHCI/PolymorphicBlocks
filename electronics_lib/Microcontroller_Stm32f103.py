@@ -14,7 +14,7 @@ class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Ge
     # Additional ports (on top of BaseIoController)
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
-      current_draw=(0, 50.3)*mAmp  # Table 13, TODO propagate current consumption from IO ports
+      current_draw=(0, 50.3)*mAmp + self.io_current_draw.upper()  # Table 13
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -185,7 +185,8 @@ class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Ge
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', self.PACKAGE,

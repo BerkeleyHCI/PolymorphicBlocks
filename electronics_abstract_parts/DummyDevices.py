@@ -89,15 +89,16 @@ class ForcedVoltage(DummyDevice, NetBlock):
 
     self.pwr_in = self.Port(VoltageSink(
       current_draw=RangeExpr(),
-      voltage_limits=RangeExpr.ALL
+      voltage_limits=RangeExpr()
     ), [Input])
 
     self.pwr_out = self.Port(VoltageSource(
       voltage_out=forced_voltage,
-      current_limits=RangeExpr.ALL
+      current_limits=self.pwr_in.link().current_limits
     ), [Output])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+    self.assign(self.pwr_in.voltage_limits, self.pwr_out.link().voltage_limits)
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):

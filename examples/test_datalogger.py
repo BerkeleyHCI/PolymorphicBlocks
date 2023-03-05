@@ -32,7 +32,7 @@ class TestDatalogger(BoardTop):
 
       (self.buffer, self.pwr_3v3), _ = self.chain(
         self.pwr_5v_merge.pwr_out,
-        imp.Block(BufferedSupply(charging_current=(0.4, 0.5)*Amp, sense_resistance=0.47*Ohm(tol=0.01),
+        imp.Block(BufferedSupply(charging_current=(0.3, 0.4)*Amp, sense_resistance=0.47*Ohm(tol=0.01),
                                  voltage_drop=(0, 0.4)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )

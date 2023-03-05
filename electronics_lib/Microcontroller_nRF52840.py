@@ -14,8 +14,7 @@ class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gen
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
-      current_draw=(0, 212 / 64 + 4.8) * mAmp  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
-      # TODO propagate current consumption from IO ports
+      current_draw=(0, 212 / 64 + 4.8)*mAmp + self.io_current_draw.upper()  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -236,7 +235,8 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', 'edg:Holyiot-18010-NRF52840',
@@ -345,7 +345,8 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', 'RF_Module:Raytac_MDBT50Q',

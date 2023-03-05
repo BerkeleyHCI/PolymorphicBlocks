@@ -13,8 +13,7 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gene
     # Ports with shared references
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
-      current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
-      # TODO propagate current consumption from IO ports
+      current_draw=(0, 19)*mAmp + self.io_current_draw.upper(),  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -185,7 +184,8 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gene
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', self.PACKAGE,
