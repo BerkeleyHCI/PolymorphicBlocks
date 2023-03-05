@@ -256,8 +256,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=self.current_limits.intersect(self.inductor.actual_current_rating) -
-         (self.actual_inductor_current_ripple.upper() / 2)
+      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
+                      (self.actual_inductor_current_ripple.upper() / 2))
     )))
 
     input_capacitance = Range.from_lower(output_current.upper * self.max_d_inverse_d(effective_dutycycle) /
@@ -325,8 +325,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input cap and inductor power draw
     self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
-    # TODO switch is a sink as far as dataflow directionality, but it's a voltage and current source
-    self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
+    self.switch = self.Port(VoltageSource.empty())  # current draw defined as average
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.output_voltage = self.ArgParameter(output_voltage)
@@ -336,6 +335,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
+    self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
@@ -379,13 +379,21 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=(0, self.peak_current),
       frequency=frequency*Hertz
     ))
+
+    actual_ripple_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                         (self.inductor.actual_inductance.upper() * frequency.lower * output_voltage.lower))
+    actual_ripple_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                         (self.inductor.actual_inductance.lower() * frequency.lower * output_voltage.lower))
+    self.assign(self.actual_inductor_current_ripple, (actual_ripple_min, actual_ripple_max))
+
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
     )))
-    self.connect(self.switch, self.inductor.b.adapt_to(VoltageSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
+    self.connect(self.switch, self.inductor.b.adapt_to(VoltageSource(
+      voltage_out=self.output_voltage,
+      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
+                      (self.actual_inductor_current_ripple.upper() / 2))
     )))
 
     # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
