@@ -234,7 +234,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
     if inductor_current_ripple.lower == 0:
-      inductance_max = 1  # arbitrarily large inductance if no current drawn
+      inductance_max = 1.0  # arbitrarily large inductance if no current drawn
     else:
       inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                         (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
