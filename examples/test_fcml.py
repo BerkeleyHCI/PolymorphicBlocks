@@ -145,7 +145,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
           current_draw=self.low_out.link().current_drawn
         ),
         'low_fet.D': VoltageSource(
-          voltage_out=self.low_in.link().voltage,
+          voltage_out=self.low_in.link().voltage
         ),
         'high_fet.D': VoltageSink(
           current_draw=self.high_out.link().current_drawn
