@@ -3,7 +3,7 @@ from .AbstractDebugHeaders import SwdCortexTargetWithSwoTdiConnector
 from .IoController import IoController
 
 
-@non_library
+@abstract_block
 class IoControllerWithSwdTargetConnector(IoController):
   """An IoController with a SWD programming header and optional SWO and TDI pins that
   can be assigned to any microcontroller pin.

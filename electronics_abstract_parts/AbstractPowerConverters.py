@@ -233,8 +233,11 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # this range must be constructed manually to not double-count the tolerance stackup of the voltages
     inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+    if inductor_current_ripple.lower == 0:
+      inductance_max = 1  # arbitrarily large inductance if no current drawn
+    else:
+      inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                        (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
     inductor_spec_peak_current = output_current.upper + inductor_current_ripple.upper / 2
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min/inductor_scale, inductance_max/inductor_scale)*Henry,
