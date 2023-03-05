@@ -226,7 +226,9 @@ self.connect(self.mcu.gpio.request('led'), self.led.signal)
 > Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
 > Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
 > `request(...)` takes an optional name parameter, the meaning of which depends on the block.
-> For microcontrollers, this name can be used later to manually assign pins to simplify layout.
+> 
+> By default, these connections are arbitrarily assigned to microcontroller pins.
+> However pin assignments can also be manually specified (using this name parameter) to simplify board layout - this will be covered at the end of this tutorial.
 > 
 > Port arrays behave differently when viewed externally (as we're doing here) and internally (for library builders).
 > Internal usage of port arrays will be covered later in the library building section.
@@ -459,40 +461,31 @@ The testing statuses and colors mean:
 
 ## Advanced Design Space Exploration
 
-
-
-### Using the IoController Abstract Class
+### Searching Through Microcontrollers
 Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
-`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **add a refinement to `Stm32f103_48`**.
+`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **search all possible subclass refinements**.
 
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
     ...
-
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    instance_refinements=[
-      ...
-      (['mcu'], Stm32f103_48),
-    ])
+    self.mcu = self.Block(IoController())
+    ...
+  ...
 ```
 
 > `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
-> Similarly to `VoltageRegulator`, you can also use design space exploration (DSE) to search through all compatible microcontrollers.
-> Under the current design, all of them will work (though with different power consumption and area trade-offs).
-> However, in a design that uses less common peripherals like USB or a DAC, DSE can help find suitable microcontrollers.
+Under the current design, all of them will work (though with different power consumption and area trade-offs).
+So, if we wanted a microcontroller module with WiFi, we might pick one of the ESP32 options.
+However, in a design that uses less common peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits, DSE can help find suitable microcontrollers.
 
-With the abstract block in place, we can now easily change it to something else.
-Perhaps we want a microcontroller with built-in WiFi, so **change the refinement to an `Esp32_Wroom_32`**.
+### Searching Compatible Passives
+While abstract classes like `VoltageRegulator` and `IoController` don't have a default, 
 
-> If using the IDE, refinements can be changed the same way they are defined.
-> The IDE will update the existing refinement instead of inserting a new entry.
-
-
+### Searching Global Settings
 
 
 ## KiCad Import
