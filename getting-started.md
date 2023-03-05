@@ -336,11 +336,11 @@ If done right, the Objective Functions listed in the Config tree should show bot
 **Re-run the design space search** to update the results with the new objective functions.
 
 As it runs, you can plot those points.
-**For the X Axis, select the footprint area, and for the Y Axis, select the maximum (worst-case) current draw.**
+**For the Y Axis, select the maximum (worst-case) current draw, and for the X Axis, select the footprint area.**
 In this plot, better points are lower (less current draw, less power consumed) and to the left (smaller).
 Once all the points compile, this should be the final plot:
 
-![DSE panel with reg plot](docs/ide_dse/reg_plot.png)
+![DSE panel with reg plot](docs/ide_dse/plot_reg_idraw_vs_fpa.png)
 
 The brown points represent where ideal models are used.
 Both have the same X position, since ideal models have no components and no take board area.
