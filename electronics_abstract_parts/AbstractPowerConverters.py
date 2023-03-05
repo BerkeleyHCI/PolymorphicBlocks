@@ -233,8 +233,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # this range must be constructed manually to not double-count the tolerance stackup of the voltages
     inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    if inductor_current_ripple.lower == 0:
-      inductance_max = 1.0  # arbitrarily large inductance if no current drawn
+    if inductor_current_ripple.lower == 0:  # basically infinite inductance
+      inductance_max = float('inf')
     else:
       inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                         (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
@@ -369,8 +369,11 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # This range must be constructed manually to not double-count the tolerance stackup of the voltages
     inductance_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
                       (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
-    inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                      (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
+    if inductor_current_ripple.lower == 0:  # basically infinite inductance
+      inductance_max = float('inf')
+    else:
+      inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                        (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
     inductor_spec_peak_current = inductor_current_ripple.upper / 2 + output_current.upper / (1 - effective_dutycycle.upper)
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
@@ -503,14 +506,20 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # This range must be constructed manually to not double-count the tolerance stackup of the voltages
     buck_inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                            (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    buck_inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                           (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+    if inductor_current_ripple.lower == 0:  # basically infinite inductance
+      buck_inductance_max = float('inf')
+    else:
+      buck_inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                             (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
     min_current = max(0, output_current.lower - inductor_current_ripple.upper / 2)  # applies to both modes
     buck_peak_current = output_current.upper + inductor_current_ripple.upper / 2
     boost_inductance_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
                             (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
-    boost_inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                            (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
+    if inductor_current_ripple.lower == 0:  # basically infinite inductance
+      boost_inductance_max = float('inf')
+    else:
+      boost_inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                              (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
     boost_peak_current = output_current.upper / (1 - boost_dutycycle.upper) + inductor_current_ripple.upper / 2
     inductor_spec_peak_current = max(buck_peak_current, boost_peak_current)
     self.assign(self.inductor_spec_peak_current, inductor_spec_peak_current)
