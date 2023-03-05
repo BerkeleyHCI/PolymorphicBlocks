@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from electronics_model import *
 from .PinMappable import AllocatedResource
@@ -25,6 +25,8 @@ class BaseIoController(Block):
     self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
     self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
+    self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
+
     self._io_ports: List[BasePort] = [
       self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can]
 
@@ -42,10 +44,11 @@ class BaseIoController(Block):
       assert self_io._type_of() == inner_io._type_of(), "IO ports must be of same type"
       if self_io not in exclude_set:
         self.connect(self_io, inner_io)
+    self.assign(self.io_current_draw, inner.io_current_draw)
 
   @staticmethod
   def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
-      Dict[str, CircuitPort]:
+      Tuple[Dict[str, CircuitPort], RangeExpr]:
     """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
     instantiate vector elements (if a vector) or init the port model (if a port)
     for the allocated resources using their data model and return the pin mapping."""
@@ -53,6 +56,7 @@ class BaseIoController(Block):
     pinmap: Dict[str, CircuitPort] = {}
 
     ports_assigned = IdentitySet[Port]()
+    io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
 
     for io in ios:
       if isinstance(io, Vector):
@@ -71,6 +75,21 @@ class BaseIoController(Block):
       else:
         raise NotImplementedError(f"unknown port type {io}")
 
+      if isinstance(io_port, DigitalBidir):
+        io_current_draw_builder = io_current_draw_builder + (
+          io_port.link().current_drawn.lower().min(0), io_port.link().current_drawn.upper().max(0)
+        )
+      elif isinstance(io_port, AnalogSink):
+        pass  # assumed no current draw into a sink
+      elif isinstance(io_port, AnalogSource):
+        io_current_draw_builder = io_current_draw_builder + (
+          io_port.link().current_drawn.lower().min(0), io_port.link().current_drawn.upper().max(0)
+        )
+      elif isinstance(io_port, Bundle):
+        pass  # TODO: don't assume signal bundles have zero current draw
+      else:
+        raise NotImplementedError(f"unknown port type {io_port}")
+
       if isinstance(allocation.pin, str):
         assert isinstance(io_port, CircuitPort)
         pinmap[allocation.pin] = io_port
@@ -84,7 +103,8 @@ class BaseIoController(Block):
           pinmap[pin_name] = subport
       else:
         raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
-    return pinmap
+
+    return (pinmap, io_current_draw_builder)
 
 
 @abstract_block_default(lambda: IdealIoController)

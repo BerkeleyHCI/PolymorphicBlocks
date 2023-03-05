@@ -17,8 +17,7 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 5.2, table 14, most restrictive limits
-      current_draw=(0.001, 370) * mAmp  # from power off (table 8) to RF working (WRROM datasheet table 9)
-      # # TODO propagate current consumption from IO ports
+      current_draw=(0.001, 370)*mAmp + self.io_current_draw.upper()  # from power off (table 8) to RF working (WRROM datasheet table 9)
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -211,7 +210,8 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    io_pins, current_draw = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, current_draw)
     self.assign(self.has_chip_pu, True)
 
     self.assign(self.lcsc_part, 'C701342')
@@ -323,7 +323,8 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, io_current_draw)
     self.assign(self.has_chip_pu, False)
 
     self.footprint(
