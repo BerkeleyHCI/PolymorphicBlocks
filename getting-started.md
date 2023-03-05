@@ -474,18 +474,53 @@ class BlinkyExample(SimpleBoardTop):
   ...
 ```
 
+Note that this adds a new dimension to the search space: unless you cleared the regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers.
+Since this becomes very time-intensive very fast, **right-click the regulator search config and delete it**.
+
+![Search config deletion](docs/ide_dse/dsepanel_config_delete.png)
+
 > `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
 Under the current design, all of them will work (though with different power consumption and area trade-offs).
-So, if we wanted a microcontroller module with WiFi, we might pick one of the ESP32 options.
+So, if we wanted a microcontroller module with WiFi, we might pick one of the ESP32 options, **insert a refinement for the Esp32_Wroom_32**.
 However, in a design that uses less common peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits, DSE can help find suitable microcontrollers.
 
+
 ### Searching Compatible Passives
-While abstract classes like `VoltageRegulator` and `IoController` don't have a default, 
+While abstract classes like `VoltageRegulator` and `IoController` have many alternatives but don't provide an automatic default, many of the jellybean parts (passives like resistors, capacitors, and inductors, also discrete semiconductors like diodes and transistors) also have alternatives but an automatic default makes those choices optional.
+However, DSE allows searching through those and comparing alternatives.
+
+In the limited design so far, the most interesting part may be the inductor for the buck converter voltage regulator.
+**In the design tree, expand `reg`, then `power_path`, right click on `inductor`, and select Search matching parts.**
+**Make sure to delete any other search configs to avoid an excessively large search space.**
+
+In terms of inductor selection, an interesting trade-off to evaluate may be current limit vs. footprint area.
+**To get the area for the regulator block only, right-click on `reg` and select Add contained footprint area.**
+**To see the current limit, select `reg` to show the regulator block in the Detail panel, and from there expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective.**
+
+![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
+
+The current limit parameter reflects the limits of the subcircuit and takes into account limitations of the controller chip and inductor, and the ripple current.
+Since the search only considers matching parts, all these designs are legal but they present different trade-offs in terms of maximum current, for example if we wanted additional headroom.
+The overall plot looks like this, and the default choice minimizes area (so chooses the point on the bottom left).
+
+![Regulator current llimits vs. area](docs/ide_dse/plot_reg_ilim_vs_fpa.png)
 
 ### Searching Global Settings
+Finally, we can also search over some global settings - settings that affect all of some type of part.
+Here, let's look at the effect on total area based on the minimum SMD component size, from 0402 to 1206.
+All components that have standard SMD package sizes define a parameter `smd_min_package`, which is defined by default to be a reasonable `0603`.
+To search across this, **select any SMD component (for example, the inductor), go into its Detail panel, right click the parameter `smd_min_package`, and select Search values of param-defining class SmdStandardPackage:smd_min_package.**
+This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
+
+**Make sure to clear any other search configs, then run the search.** If you plot the minimum package parameter vs. area, you'll get something like:
+
+![Regulator current llimits vs. area](docs/ide_dse/plot_smd_min_vs_fpa.png)
+
+Since the minimum package parameter is a string (instead of a number), the values are equally spaced and the Y-position isn't meaningful other than for separating out points.
+However, this can give us a rough idea of how much area we can save if we consider using smaller parts.
 
 
 ## KiCad Import

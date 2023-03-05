@@ -36,7 +36,7 @@ class TestBlinkyComplete(SimpleBoardTop):
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
     self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-    self.mcu = self.Block(Stm32f103_48())
+    self.mcu = self.Block(IoController())
     self.led = self.Block(IndicatorLed())
     self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
     self.connect(self.usb.pwr, self.reg.pwr_in)
@@ -47,6 +47,7 @@ class TestBlinkyComplete(SimpleBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['reg'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
       ])
 
 
