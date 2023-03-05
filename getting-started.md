@@ -35,15 +35,6 @@ These could be viewed as a block-like object (diamonds on the diagram) instead o
 We'll put these concepts into practice in the rest of this tutorial by building a variation of the blinky example above, then defining a custom part.
 
 
-### Setup
-Instructions for setting up the IDE and compiler are in the [setup document](setup.md).
-
-
-### Reference Document
-While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
-The reference document includes a short overview of all the core primitives and common library elements.
-
-
 ### Hardware Description Language (HDL)
 To support user-defined computation of parameters and generator blocks, the design system is implemented as a _hardware description language_ (HDL).
 That is, blocks are "placed" or instantiated, and their ports are connected, through lines in code instead of GUI actions in a graphical schematic.
@@ -63,14 +54,14 @@ There are a couple of basic operations, which you'll get to try in the tutorial:
 While an HDL is needed to support parameter computation and programmatic construction, some operations (like building a top-level design with an LED connected to a microcontroller) may not require the full power provided by an HDL and may be more intuitive or familiar within a graphical environment.
 However, because this design makes use of generator blocks (the LED), and because blocks may also take parameters (such as the target output voltage of a DC-DC converter), the HDL is still the primary design input.
 
-To help with these more basic operations and to support those more familiar with a graphical schematic capture flow, we're developing an IDE to help bridge the graphical schematic-like and HDL code representations. Specifically, it:
+To help with these more basic operations and to support those more familiar with a graphical schematic capture flow, an IDE helps bridge the graphical schematic-like and HDL code representations. Specifically, it:
 - provides a block diagram visualization of the design
 - allows inspection of solved / computed parameters in the design
 - generates and inserts HDL code from schematic editor-like actions
 
-The IDE is organized like:  
 ![Annotated IDE screen](docs/ide/overview.png)
 
+The IDE has these major components:
 - **Block Diagram Visualization**: shows the compiled design visualized as a block diagram here.
   - **Design Tree**: shows the compiled design as a tree structure of the block hierarchy.
 - **Library Browser**: shows all the library blocks, ports, and links.
@@ -122,8 +113,7 @@ Try building the example now:
      > Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
 
      > **Note on re-compiling behavior**: The IDE only re-compiles block classes when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
-     > If changes aren't recompiling, try making a change to the class code.
-     > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
+     > If changes aren't recompiling, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
      > 
      > In particular, these changes may not trigger a recompile:
      > - Any changes outside the class, even if the code is called by the class.
@@ -311,7 +301,7 @@ These abstract classes can be implemented by concrete subclasses, for example a 
 Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
 
 To help work with and search through this design space, we built design space exploration (DSE) into the IDE.
-To figure out which voltage regulator works, **right-click the voltage regulator (either in the design tree or block diagram), and select Search Refinements of base VoltageRegulator.**
+To figure out which voltage regulators work, **right-click the voltage regulator and select Search Refinements of base VoltageRegulator.**
 
 ![Create search configuration for VoltageRegulator](docs/ide_dse/reg_search.png)
 
@@ -331,7 +321,7 @@ Designs are aggregated by similar results, but since we have no objective functi
 Specific design points can be inspected by double-clicking the entry to bring it up in the block diagram visualizer and design tree.
 **Open any of the results**.
 
-Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw by adding an objective function.
+Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw (power consumption) by adding an objective function.
 For board area, **right click on the design root, and select Add objective contained footprint area.**
 For current draw, **select the regulator, then open the Detail panel, expand the input power (pwr_in) port, right click current_draw, and select Add objective.**
 If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
@@ -345,9 +335,9 @@ Once all the points compile, this should be the final plot:
 ![DSE panel with reg plot](docs/ide_dse/plot_reg_idraw_vs_fpa.png)
 
 The brown points represent where ideal models are used.
-Both have the same X position, since ideal models have no components and no take board area.
-If you mouseover the points, it displays the point.
-The top ideal point is the IdealLinearRegulator (which drops the voltage by "burning" the excess as heat), while the bottom one is the IdealVoltageRegulator (which only enforces conversation of power, similar to real buck converters),
+Both have the same X position, since ideal models have no components and take no board area.
+Mousing over points displays its configuration, here the subclass selection. 
+The top ideal point is the IdealLinearRegulator (which drops the voltage by "burning" the excess as heat), while the bottom one is the IdealVoltageRegulator (which only enforces conservation of power, similar to real buck converters),
 The non-ideal points show a trade-off: the lowest power (most efficient) points are buck converters, but the smallest are linear regulators.
 This makes sense: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators often are just a chip and small capacitors.
 
@@ -410,8 +400,8 @@ Recompiling in the IDE yields this block diagram and no errors:
 > </details>
 
 ### Deeper Inspection
-One major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 Here, we were able to place down a buck converter - a non-trivial subcircuit - with just one line of code.
+A major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `VoltageRegulator` block.
 
 You may want to inspect the results.
@@ -421,7 +411,7 @@ You can dig into the Tps561201 by double-clicking on it:
 ![TPS561201 subcircuit](docs/ide/ide_buck_internal.png)
 
 The implementation uses a feedback voltage divider, and if you mouseover this it will show the generated ratio of 0.23.
-The converter's output voltage reflects the actual expected output voltage, accounting for resistor tolerance and the chip's feedback reference tolerance.  
+The converter's output voltage reflects the actual expected output voltage, accounting for resistor tolerance and the chip's internal reference tolerance.  
 ![Buck converter input capacitor](docs/ide/ide_buck_fb.png)
 
 Similarly, mousing over the other components like the resistors and capacitors shows their details.
@@ -447,15 +437,15 @@ self.connect(self.fb.output, self.ic.fb)
 
 ### Hardware-Proven
 In the design tree, the proven status of each sub-block (and their sub-blocks, recursively) is shown.
-This indicates how many instances of a block has been previously proven in hardware, as a rough way to gauge design risk.
+This indicates how many instances of a block has been previously proven in hardware, as a rough gauge of design risk.
 Mousing over brings up a tooltip that shows the specific boards this has been used in, and the testing status.
 
 ![Proven sub-blocks column in the design tree](docs/ide_dse/blinky_proven.png)
 
 The testing statuses and colors mean:
 - Green: built in hardware and tested working.
-- Orange: built in hardware, tested failing, and a fix has been implemented in HDL but not yet tested in hardware.
-- Red: built in hardware, tested not working, not (yet?) fixed.
+- Orange: built in hardware, tested failing, but a (untested) fix has been implemented in HDL.
+- Red: built in hardware, tested not working, not yet fixed.
 - Grey: built in hardware, but not tested. 
 
 
@@ -463,7 +453,7 @@ The testing statuses and colors mean:
 
 ### Searching Through Microcontrollers
 Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
-`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**, then **search all possible subclass refinements**.
+`Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**.
 
 ```python
 class BlinkyExample(SimpleBoardTop):
@@ -474,14 +464,18 @@ class BlinkyExample(SimpleBoardTop):
   ...
 ```
 
-Note that this adds a new dimension to the search space: unless you cleared the regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers.
-Since this becomes very time-intensive very fast, **right-click the regulator search config and delete it**.
-
-![Search config deletion](docs/ide_dse/dsepanel_config_delete.png)
-
 > `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
+
+To search the design space, first recompile the design to update the design tree with the new `IoController`.
+It should produce an error, like `VoltageRegulator`, `IoController` is abstract but provides a default ideal model.
+With this done, **right-click the new `mcu` and select Search all subclass refinements**.
+Note that this adds a new dimension to the search space: unless you cleared the regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers.
+Since this becomes very time-intensive, **right-click the regulator search config and delete it**.
+Then, **re-run the search**.
+
+![Search config deletion](docs/ide_dse/dsepanel_config_delete.png)
 
 Under the current design, all of them will work (though with different power consumption and area trade-offs).
 So, if we wanted a microcontroller module with WiFi, we might pick one of the ESP32 options, **insert a refinement for the Esp32_Wroom_32**.
@@ -492,7 +486,7 @@ However, in a design that uses less common peripherals like USB or a DAC (which 
 While abstract classes like `VoltageRegulator` and `IoController` have many alternatives but don't provide an automatic default, many of the jellybean parts (passives like resistors, capacitors, and inductors, also discrete semiconductors like diodes and transistors) also have alternatives but an automatic default makes those choices optional.
 However, DSE allows searching through those and comparing alternatives.
 
-In the limited design so far, the most interesting part may be the inductor for the buck converter voltage regulator.
+In this limited design, the most interesting part may be the inductor for the buck converter voltage regulator.
 **In the design tree, expand `reg`, then `power_path`, right click on `inductor`, and select Search matching parts.**
 **Make sure to delete any other search configs to avoid an excessively large search space.**
 
@@ -509,9 +503,9 @@ The overall plot looks like this, and the default choice minimizes area (so choo
 ![Regulator current llimits vs. area](docs/ide_dse/plot_reg_ilim_vs_fpa.png)
 
 ### Searching Global Settings
-Finally, we can also search over some global settings - settings that affect all of some type of part.
+Finally, we can also search over some global settings - settings that affect similar parts across the entire design.
 Here, let's look at the effect on total area based on the minimum SMD component size, from 0402 to 1206.
-All components that have standard SMD package sizes define a parameter `smd_min_package`, which is defined by default to be a reasonable `0603`.
+All components that have standard SMD package sizes extend the `SmdStandardPackage` class which defines a parameter `smd_min_package`.
 To search across this, **select any SMD component (for example, the inductor), go into its Detail panel, right click the parameter `smd_min_package`, and select Search values of param-defining class SmdStandardPackage:smd_min_package.**
 This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
 
@@ -520,7 +514,7 @@ This will pop up a textbox for the values to search, **enter `0402,0603,0805,120
 ![Regulator current llimits vs. area](docs/ide_dse/plot_smd_min_vs_fpa.png)
 
 Since the minimum package parameter is a string (instead of a number), the values are equally spaced and the Y-position isn't meaningful other than for separating out points.
-However, this can give us a rough idea of how much area we can save if we consider using smaller parts.
+However, this can give us a rough idea of how much area we can save by using smaller parts.
 
 
 ## KiCad Import
