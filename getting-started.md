@@ -295,9 +295,9 @@ Abstract blocks are useful for two reasons:
 1. It allows your design to be more general and allows you to defer implementation choices until later.
    This is more relevant for library builders, where you may want to give the system designer the choice of, for example, whether to use a surface-mount or through-hole resistor.
 2. It can help preserve design intent more precisely and keep HDL readable.
-   For example, saying that we want a voltage regulator can be more intuitive than directly instantiating a TPS561201 block.
+   For example, saying that we want a voltage regulator can be more intuitive than directly instantiating a AP3418 block.
 
-These abstract classes can be implemented by concrete subclasses, for example a TPS561201-based buck converter (high efficiency voltage converter) subcircuit.
+These abstract classes can be implemented by concrete subclasses, for example a AP3418-based buck converter (high efficiency voltage converter) subcircuit.
 Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
 
 To help work with and search through this design space, we built design space exploration (DSE) into the IDE.
@@ -606,7 +606,7 @@ Recompiling in the IDE yields this block diagram:
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['reg'], Tps561201),
+>         (['reg'], Ap3418),
 >       ])
 >   ```
 > </details>
@@ -687,7 +687,7 @@ Remember that the voltage regulator is outside the implicit scope because it tak
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['reg'], Tps561201),
+>         (['reg'], Ap3418),
 >       ])
 >   ```
 > </details>
@@ -743,7 +743,7 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['reg'], Tps561201),
+>         (['reg'], Ap3418),
 >       ])
 >   ```
 > </details>
@@ -806,7 +806,7 @@ class BlinkyExample(SimpleBoardTop):
 >     def refinements(self) -> Refinements:
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
->         (['reg'], Tps561201),
+>         (['reg'], Ap3418),
 >         (['mcu'], Esp32_Wroom_32),
 >       ],
 >       instance_values=[
