@@ -11,9 +11,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.sw = self.Port(VoltageSource(
-      current_limits=(0, 500)*mAmp  # TODO how to model sink current limits?!
-    ))
+    self.sw = self.Port(VoltageSink())
     self.fb = self.Port(AnalogSink(impedance=(12500, float('inf')) * kOhm))  # based on input current spec
 
   def contents(self):
@@ -75,5 +73,5 @@ class Ap3012(DiscreteBoostConverter):
       self.connect(self.ic.sw, self.rect.anode.adapt_to(VoltageSink()))
       self.connect(self.pwr_out, self.rect.cathode.adapt_to(VoltageSource(
         voltage_out=self.fb.actual_input_voltage,
-        current_limits=(0, 0.5)*Amp  # TODO proper switch current modeling?
+        current_limits=self.power_path.switch.current_limits
       )))

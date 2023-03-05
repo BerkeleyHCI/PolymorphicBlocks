@@ -10,11 +10,11 @@ class Ltc3429_Device(InternalSubcircuit, FootprintBlock):
       # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.sw = self.Port(VoltageSource())
+    self.sw = self.Port(VoltageSink())
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))
     self.vout = self.Port(VoltageSource(
       voltage_out=output_voltage,
-      current_limits=Range.zero_to_upper(Ltc3429.NMOS_CURRENT_LIMIT),  # TODO is this the actual output limit?
+      current_limits=self.sw.link().current_limits
     ))
 
   def contents(self) -> None:

@@ -50,8 +50,8 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
     self.gnd = self.Port(Ground(), [Common])
     self.vccio_1 = self.Port(VoltageSink(
       voltage_limits=(1.71, 3.46)*Volt,  # table 4.2
-      current_draw=(0.0005, 9) * mAmp  # table 4.6, static to startup peak; no max given
-    ))
+      current_draw=(0.0005, 9)*mAmp + self.io_current_draw.upper()  # table 4.6, static to startup peak; no max given
+    ))  # TODO IO currents should be allocated per-bank
 
     vccio_model = VoltageSink(
       voltage_limits=(1.71, 3.46)*Volt,  # table 4.2
@@ -186,7 +186,8 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', self.PACKAGE,

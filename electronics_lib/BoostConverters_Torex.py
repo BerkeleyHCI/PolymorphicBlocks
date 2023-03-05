@@ -29,9 +29,10 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     self.ce = self.Port(DigitalSink.from_supply(self.gnd, self.vin,
                                                 voltage_limit_tolerance=(0, 5)*Volt,
                                                 input_threshold_abs=(0.2, 0.6)*Volt))
-    self.sw = self.Port(VoltageSource())
+    self.sw = self.Port(VoltageSink())
     self.vout = self.Port(VoltageSource().empty())
 
+    self.actual_current_limit = self.Parameter(RangeExpr())  # set by part number
     self.actual_frequency = self.Parameter(RangeExpr())  # set by part number
 
     self.generator(self.select_part, output_voltage, frequency)
@@ -46,8 +47,9 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     part_number_package, part_package = self.parts_package[0]  # SOT-23-5 hardcoded for now
 
     self.assign(self.actual_frequency, part_frequency)
+    self.assign(self.actual_current_limit, (0, part_current.lower))
     self.vout.init_from(VoltageSource(
-      voltage_out=part_voltage, current_limits=(0, part_current.lower)
+      voltage_out=part_voltage, current_limits=self.sw.link().current_limits
     ))
 
     self.footprint(
@@ -81,10 +83,10 @@ class Xc9142(DiscreteBoostConverter):
 
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
-        self.pwr_out.link().current_drawn, self.ic.vout.current_limits,
+        self.pwr_out.link().current_drawn, self.ic.actual_current_limit,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=self.ic.vout.current_limits.lower())
+                                                       rated_current=self.ic.actual_current_limit.lower())
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

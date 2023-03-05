@@ -23,7 +23,7 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
 
     self.power_path = self.Block(BuckBoostConverterPowerPath(
       self.pwr_in.link().voltage, self.output_voltage, self.frequency,
-      self.pwr_out.link().current_drawn,
+      self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
       inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                      self.ripple_current_factor,
                                                      rated_current=self.pwr_out.link().current_drawn.upper())
@@ -47,18 +47,18 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
                  self.in_low_diode.cathode.adapt_to(VoltageSink()))
     self.out_high_diode = self.Block(Diode(
       reverse_voltage=self.output_voltage,
-      current=-self.power_path.switch_out.current_draw,
+      current=(0, self.power_path.inductor_spec_peak_current),
       voltage_drop=self.voltage_drop
     ))
     self.out_low_switch = self.Block(Fet.NFet(
       drain_voltage=self.output_voltage,
-      drain_current=-self.power_path.switch_out.current_draw,
+      drain_current=(0, self.power_path.inductor_spec_peak_current),
       gate_voltage=(self.boost_pwm.link().output_thresholds.upper(),
                     self.boost_pwm.link().voltage.upper()),
       rds_on=self.rds_on,
     ))
     self.connect(self.power_path.switch_out,  # internal node not modeled, assumed specs correct
-                 self.out_high_diode.anode.adapt_to(VoltageSource()),  # arbitrarily as source
+                 self.out_high_diode.anode.adapt_to(VoltageSink()),
                  self.out_low_switch.drain.adapt_to(VoltageSink()))
     self.connect(self.boost_pwm, self.out_low_switch.gate.adapt_to(DigitalSink(
       # TODO model me

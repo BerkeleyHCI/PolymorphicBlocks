@@ -18,8 +18,7 @@ class Esp32c3_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
-      current_draw=(0.001, 335) * mAmp  # section 4.6, from power off to RF active
-      # TODO propagate current consumption from IO ports
+      current_draw=(0.001, 335)*mAmp + self.io_current_draw.upper()  # section 4.6, from power off to RF active
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -151,7 +150,8 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.assign(self.lcsc_part, 'C2934560')
     self.assign(self.actual_basic_part, False)

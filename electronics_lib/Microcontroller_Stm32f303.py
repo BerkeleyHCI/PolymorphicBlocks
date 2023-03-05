@@ -182,7 +182,7 @@ class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlo
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
       # TODO can be lower if don't need 5.0v out
-      current_draw=(0, 0) * Amp # TODO current draw specs, the part doesn't really have a datasheet
+      current_draw=(0, 0) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
     ), optional=True)
     self.pwr_3v3 = self.Port(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
@@ -215,7 +215,8 @@ class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlo
     ], assignments)
     self.generator_set_allocation(allocated)
 
-    io_pins = self._instantiate_from(self._get_io_ports(), allocated)
+    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, io_current_draw)
 
     self.footprint(
       'U', 'edg:Nucleo32',
