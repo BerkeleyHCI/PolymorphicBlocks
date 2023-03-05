@@ -36,12 +36,12 @@ class ESeriesUtil:
   def choose_preferred_number(cls, within: Range, series: Sequence[float], tolerance: float) -> \
       Optional[float]:
     if within.lower == 0:
-      lower_pow10 = -12  # arbitrarily pico-level small
+      lower_pow10 = -6  # arbitrarily micro-level, which is common for capacitors and inductors
     else:
       lower_pow10 = math.floor(math.log10(within.lower))
 
     if within.upper == float('inf'):
-      upper_pow10 = lower_pow10 + 2  # arbitrarily give it two powers of 10 if it's unbounded
+      upper_pow10 = lower_pow10 + 2  # give it two decades so it can select the exact power of 10 ('E1 series')
     else:
       upper_pow10 = math.ceil(math.log10(within.upper))
 
