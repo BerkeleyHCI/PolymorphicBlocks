@@ -389,7 +389,8 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
 
     self.connect(self.swd.swd, self.ic.swd)
 
-    self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
+    if usb_requests:
+      self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
