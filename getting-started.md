@@ -348,9 +348,9 @@ The non-ideal points show a trade-off: the lowest power (most efficient) points 
 This makes sense: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators often are just a chip and small capacitors.
 
 Let's arbitrarily choose to prioritize efficiency but select the smaller of those, and use the `Ap3418`.
-**Right-click the entry and select Insert Refinements**.
+**Right-click the point and select Insert Refinements**.
 
-![Insert refinement for VoltageRegulator](docs/ide_dse/insertrefinement_ap3418.png)
+![Insert refinement for VoltageRegulator](docs/ide_dse/plot_insertrefinement_ap3418.png)
 
 This inserts a refinements block into the design:
 
