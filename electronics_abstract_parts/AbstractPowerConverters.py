@@ -188,7 +188,6 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
-    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
@@ -201,9 +200,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
       " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
-      "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
-      " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
-      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
+      ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   @staticmethod
@@ -237,22 +235,22 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                       (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
     inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
                       (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
-    self.assign(self.peak_current, output_current.upper + inductor_current_ripple.upper / 2)
+    inductor_spec_peak_current = output_current.upper + inductor_current_ripple.upper / 2
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min/inductor_scale, inductance_max/inductor_scale)*Henry,
-      current=(0, self.peak_current),
+      current=(0, inductor_spec_peak_current),
       frequency=frequency*Hertz
     ))
 
     actual_ripple_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                         (self.inductor.actual_inductance.upper() * frequency.lower * input_voltage.upper))
+                         (self.inductor.actual_inductance.upper() * frequency.lower * input_voltage.upper)) / inductor_scale
     actual_ripple_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                         (self.inductor.actual_inductance.lower() * frequency.lower * input_voltage.upper))
+                         (self.inductor.actual_inductance.lower() * frequency.lower * input_voltage.upper)) / inductor_scale
     self.assign(self.actual_inductor_current_ripple, (actual_ripple_min, actual_ripple_max))
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=self.pwr_out.link().current_drawn*dutycycle
+      current_draw=self.pwr_out.link().current_drawn * dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
@@ -336,7 +334,6 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
-    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw from switch pin
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
@@ -348,9 +345,8 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
       " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
-      "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
-      " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
-      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
+      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
@@ -372,11 +368,10 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                       (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
     inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
                       (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
-    self.assign(self.peak_current,
-                inductor_current_ripple.upper / 2 + output_current.upper / (1 - effective_dutycycle.upper))
+    inductor_spec_peak_current = inductor_current_ripple.upper / 2 + output_current.upper / (1 - effective_dutycycle.upper)
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
-      current=(0, self.peak_current),
+      current=(0, inductor_spec_peak_current),
       frequency=frequency*Hertz
     ))
 
@@ -452,7 +447,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: RangeLike, inductor_current_ripple: RangeLike, *,
+               output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
                efficiency: RangeLike = Default((0.8, 1.0)),  # from TI reference
                input_voltage_ripple: FloatLike = Default(75*mVolt),
                output_voltage_ripple: FloatLike = Default(25*mVolt)):  # arbitrary
@@ -460,18 +455,22 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # connected to the input cap, models input current
     self.switch_in = self.Port(VoltageSink.empty())  # models input high and low switch current draws
-    self.switch_out = self.Port(VoltageSink.empty())  # models output high and low switch current draws
+    self.switch_out = self.Port(VoltageSource.empty())  # models output high and low switch current draws
     self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.output_current = self.ArgParameter(output_current)
+    self.current_limits = self.ArgParameter(current_limits)
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
     # duty cycle limits not supported, since the crossover point has a dutycycle of 0 (boost) and 1 (buck)
 
-    self.buck_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in buck mode
-    self.boost_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in boost mode
-    self.peak_current = self.Parameter(FloatExpr())  # peak (non-averaged) current draw through any switch
+    # TODO, this is a hack and should be replaced by the actual peak current
+    self.inductor_spec_peak_current = self.Parameter(FloatExpr())
+
+    self.actual_buck_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in buck mode
+    self.actual_boost_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in boost mode
+    self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
 
     self.generator(self.generate_passives, input_voltage, output_voltage, frequency, output_current,
                    inductor_current_ripple, efficiency,
@@ -481,11 +480,10 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     super().contents()
 
     self.description = DescriptionString(
-      "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.buck_dutycycle, ""), " (buck)",
-      ", ", DescriptionString.FormatUnits(self.boost_dutycycle, ""), " (boost)\n",
-      "<b>peak switching current:</b> ", DescriptionString.FormatUnits(self.peak_current, "A"),
-      " (<b>output operating avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
-      ", <b>ripple spec:</b> ", DescriptionString.FormatUnits(self.inductor_current_ripple, "A"), ")"
+      "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_buck_dutycycle, ""), " (buck)",
+      ", ", DescriptionString.FormatUnits(self.actual_boost_dutycycle, ""), " (boost)\n",
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
+      ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   def generate_passives(self, input_voltage: Range, output_voltage: Range, frequency: Range,
@@ -494,40 +492,54 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                         input_voltage_ripple: float, output_voltage_ripple: float) -> None:
     # clip each mode's duty cycle to that mode's operating range
     buck_dutycycle = (output_voltage / input_voltage / efficiency).bound_to(Range(-float('inf'), 1))
-    self.assign(self.buck_dutycycle, buck_dutycycle)
+    self.assign(self.actual_buck_dutycycle, buck_dutycycle)
     boost_dutycycle = (1 - input_voltage / output_voltage * efficiency).bound_to(Range(0, float('inf')))
-    self.assign(self.boost_dutycycle, boost_dutycycle)
+    self.assign(self.actual_boost_dutycycle, boost_dutycycle)
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # This range must be constructed manually to not double-count the tolerance stackup of the voltages
     buck_inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
+                           (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
     buck_inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+                           (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
     min_current = max(0, output_current.lower - inductor_current_ripple.upper / 2)  # applies to both modes
     buck_peak_current = output_current.upper + inductor_current_ripple.upper / 2
     boost_inductance_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                      (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
+                            (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
     boost_inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                      (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
+                            (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
     boost_peak_current = output_current.upper / (1 - boost_dutycycle.upper) + inductor_current_ripple.upper / 2
-    peak_current = max(buck_peak_current, boost_peak_current)
-    self.assign(self.peak_current, peak_current)
+    inductor_spec_peak_current = max(buck_peak_current, boost_peak_current)
+    self.assign(self.inductor_spec_peak_current, inductor_spec_peak_current)
 
     inductance_min = max(buck_inductance_min, boost_inductance_min)
     inductance_max = min(buck_inductance_max, boost_inductance_max)
     self.inductor = self.Block(Inductor(
       inductance=(inductance_min, inductance_max)*Henry,
-      current=(0, self.peak_current),
+      current=(0, inductor_spec_peak_current),
       frequency=frequency*Hertz
     ))
+
+    buck_actual_ripple_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                              (self.inductor.actual_inductance.upper() * frequency.lower * input_voltage.upper))
+    buck_actual_ripple_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                              (self.inductor.actual_inductance.lower() * frequency.lower * input_voltage.upper))
+    boost_actual_ripple_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                              (self.inductor.actual_inductance.upper() * frequency.lower * output_voltage.lower))
+    boost_actual_ripple_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
+                              (self.inductor.actual_inductance.lower() * frequency.lower * output_voltage.lower))
+    self.assign(self.actual_inductor_current_ripple,
+                (buck_actual_ripple_min.min(boost_actual_ripple_min),
+                 buck_actual_ripple_max.max(boost_actual_ripple_max)))
+
     self.connect(self.switch_in, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
-      current_draw=(min_current, peak_current)  # peak currents
+      current_draw=(min_current, inductor_spec_peak_current)  # peak currents
     )))
-    self.connect(self.switch_out, self.inductor.b.adapt_to(VoltageSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=(-peak_current, -min_current)  # peak currents, flowing out
+    self.connect(self.switch_out, self.inductor.b.adapt_to(VoltageSource(
+      voltage_out=self.output_voltage,
+      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
+                      (self.actual_inductor_current_ripple.upper() / 2))
     )))
 
     input_buck_min_cap = (output_current.upper * BuckConverterPowerPath.max_d_inverse_d(buck_dutycycle) /

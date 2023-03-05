@@ -145,7 +145,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
           current_draw=self.low_out.link().current_drawn
         ),
         'low_fet.D': VoltageSource(
-          voltage_out=self.low_in.link().voltage
+          voltage_out=self.low_in.link().voltage,
         ),
         'high_fet.D': VoltageSink(
           current_draw=self.high_out.link().current_drawn
@@ -204,7 +204,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     assert levels >= 2, "levels must be 2 or more"
     self.power_path = self.Block(BuckConverterPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
-      self.pwr_out.link().current_drawn, self.pwr_out.link().current_drawn,
+      self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,
       dutycycle_limit=(0, 1),
