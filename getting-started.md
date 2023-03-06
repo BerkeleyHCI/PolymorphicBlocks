@@ -328,7 +328,9 @@ Instead of just choosing any regulator that works, let's compare the options and
 
 1. For board area, **right click on the design root, and select Add objective contained footprint area.**  
    ![Add objective footprint area](docs/ide_dse/addobjective_fpa_root.png)
-2. For current draw, **select the voltage regulator `reg`, then open the Detail panel, expand the input power `pwr_in` port, right click `current_draw`, and select Add objective.**  
+2. For current draw: 
+   1. **Select the voltage regulator `reg`**.
+   2. In the Detail panel, **expand the input power `pwr_in` port, right click `current_draw`, and select Add objective.**  
    ![Add objective regulator current draw](docs/ide_dse/addobjective_reg_idraw.png)
 3. If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
    **Re-run the design space search** to update the results with the new objective functions.
@@ -507,8 +509,10 @@ In this limited design, the most interesting part may be the inductor for the bu
 
 In terms of inductor selection, an interesting trade-off to evaluate may be current limit vs. footprint area:
 1. To get the area for the regulator block only, **right-click on `reg` and select Add objective contained footprint area.**
-2. To see the current limit, **select `reg` to show the regulator block in the Detail panel, and from there expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.  
-  ![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
+2. To see the current limit: 
+   1. **Select `reg`** to show the regulator block.
+   2. In the Detail panel, **expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.  
+   ![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
 3. You don't need to add any refinements here (though you could select a design point to lock in a choice of inductor).
 
 > The current limit parameter reflects the limits of the subcircuit and takes into account limitations of the controller chip and inductor, and the ripple current.
@@ -522,8 +526,10 @@ Finally, we can also search over some global settings - settings that affect sim
 Here, let's look at the effect on total area based on the minimum SMD component size, from 0402 to 1206.
 All components that have standard SMD package sizes extend the `SmdStandardPackage` class which defines a parameter `smd_min_package`.
 
-1. To search across this, **select any SMD component (for example, the inductor), go into its Detail panel, right click the parameter `smd_min_package`, and select Search values of param-defining class SmdStandardPackage:smd_min_package.**
-   1. This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
+1. To search across this: 
+   1. **Select any SMD component (for example, the inductor)**.
+   2. **In its Detail panel, right click the parameter `smd_min_package`, and select Search values of param-defining class SmdStandardPackage:smd_min_package.**
+   3. This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
 2. Make sure to **add the objective top-level footprint area**, if it's not still in the objective functions list.
 3. **Make sure to clear any other search configs**.
 4. **Run the search**.
