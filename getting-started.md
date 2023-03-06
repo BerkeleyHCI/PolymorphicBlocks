@@ -303,13 +303,11 @@ These abstract classes can be implemented by concrete subclasses, for example a 
 Because there can be many valid options for which one can be used, the top level design actually describes a _design space_ instead of a single design point as mainstream schematic tools do.
 
 To help work with and search through this design space, we built design space exploration (DSE) into the IDE.
-To figure out which voltage regulators work, **right-click the voltage regulator and select Search Refinements of base VoltageRegulator.**
-
+To figure out which voltage regulators work, **right-click the voltage regulator and select Search Refinements of base VoltageRegulator**:  
 ![Create search configuration for VoltageRegulator](docs/ide_dse/reg_search.png)
 
 This creates a DSE run configuration, and initializes the search space to all implementations of the buck converter.
-When a DSE run configuration is selected, the DSE panel is shown in the block visualizer panel: 
-
+When a DSE run configuration is selected, the DSE panel is shown in the block visualizer panel:   
 ![DSE panel with reg configuration](docs/ide_dse/dsepanel_reg.png)
 
 The Config tab shows the current search configuration (the combination of choices to try), currently all the subclasses of VoltageRegulator to use for the `reg` block.
@@ -352,12 +350,10 @@ Once all the points compile, this should be the final plot:
 > This makes sense for low power draws: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators can be just the chip with small stabilizing capacitors.
 
 Let's arbitrarily choose to prioritize efficiency but select the smaller of those, and use the `Ap3418`.
-**Right-click the point and select Insert refinements**.
-
+**Right-click the point and select Insert refinements**.  
 ![Insert refinement for VoltageRegulator](docs/ide_dse/plot_insertrefinement_ap3418.png)
 
-This inserts a refinements block into the design:
-
+This inserts a refinements block into the design:  
 ```python
 class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
@@ -432,28 +428,33 @@ Similarly, mousing over the other components like the resistors and capacitors s
 
 To zoom out, double-click on the topmost block.
 
-If you're curious about how this is implemented, you can also navigate to the definition of the `Ap3418` block.
-Ultimately, its definition is structurally similar to how you're building your board: create Blocks, optionally giving them parameters (or expressions to calculate parameters), and connect their ports together.
-It's like this all the way down, the 'magic' of being able to instantiate these complex subcircuits with a single line of code comes from the expertise baked into these library elements. 
-
-```python
-self.ic = imp.Block(Ap3418_Device())
-
-self.fb = imp.Block(FeedbackVoltageDivider(
-  output_voltage=(0.588, 0.612) * Volt,
-  impedance=(10, 100) * kOhm,
-  assumed_input_voltage=self.output_voltage
-))
-self.connect(self.fb.input, self.pwr_out)
-self.connect(self.fb.output, self.ic.fb)
-```
+> If you're curious about how this is implemented, you can also navigate to the definition of the `Ap3418` block.
+> 
+> Ultimately, its definition is structurally similar to how you're building your board: create blocks, optionally giving them parameters (or expressions to calculate parameters), and connect their ports together.
+> It's like this all the way down, the 'magic' of being able to instantiate these complex subcircuits with a single line of code comes from the expertise baked into these library elements. 
+>
+> ```python
+> class Ap3418(DiscreteBuckConverter):
+>   ...
+>   def contents(self):
+>     ...
+>     self.ic = imp.Block(Ap3418_Device())
+>
+>     self.fb = imp.Block(FeedbackVoltageDivider(
+>       output_voltage=(0.588, 0.612) * Volt,
+>       impedance=(10, 100) * kOhm,
+>       assumed_input_voltage=self.output_voltage
+>     ))
+>     self.connect(self.fb.input, self.pwr_out)
+>     self.connect(self.fb.output, self.ic.fb)
+>     ...
+> ```
 
 
 ### Hardware-Proven
 In the design tree, the proven status of each sub-block (and their sub-blocks, recursively) is shown.
 This indicates how many instances of a block has been previously proven in hardware, as a rough gauge of design risk.
 Mousing over brings up a tooltip that shows the specific boards this has been used in, and the testing status.
-
 ![Proven sub-blocks column in the design tree](docs/ide_dse/blinky_proven.png)
 
 The testing statuses and colors mean:
