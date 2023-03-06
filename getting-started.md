@@ -73,6 +73,8 @@ The rest of this tutorial will focus on the HDL, but will also describe how the 
 **As you go through the tutorial, you can write the code shown in the code blocks or follow the graphical actions described immediately afterward.**
 However, you can't do both (since they would duplicate the same results), but you can try the graphical actions if you remove the code.
 
+> **Tip**: This tutorial focuses on `blinky_skeleton.py`, so you can minimize the project explorer (left-side panel) if you need more screen space.
+
 
 ## A top-level design: Blinky
 _In this example, we will create a circuit consisting of a LED and switch connected to a microcontroller._
@@ -312,43 +314,45 @@ When a DSE run configuration is selected, the DSE panel is shown in the block vi
 
 The Config tab shows the current search configuration (the combination of choices to try), currently all the subclasses of VoltageRegulator to use for the `reg` block.
 
-**Run it to start the design space search.**
+**Run it (click ![run icon](docs/ide/ide_run_button.png) near the top right of the IDE) to start the design space search.**
 As design points are tested, they will be shown in the Results tab.
 Designs are aggregated by similar results, but since we have no objective functions selected, it is aggregating by whether the design compiled with errors
+
+> Because not all voltage regulators are valid in this design, errors in the run console are normal.
+> For example, the voltage regulators being searched include boost converters, where the output voltage is higher than the input, which will produce errors.
 
 ![DSE panel with reg results](docs/ide_dse/dsepanel_reg_result.png)
 
 Specific design points can be inspected by double-clicking the entry to bring it up in the block diagram visualizer and design tree.
 **Open any of the results**.
 
-Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw (power consumption) by adding an objective function.
-For board area, **right click on the design root, and select Add objective contained footprint area.**
+Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw (power consumption) by adding objective functions.
 
-![Add objective footprint area](docs/ide_dse/addobjective_fpa_root.png)
+1. For board area, **right click on the design root, and select Add objective contained footprint area.**  
+   ![Add objective footprint area](docs/ide_dse/addobjective_fpa_root.png)
+2. For current draw, **select the voltage regulator `reg`, then open the Detail panel, expand the input power `pwr_in` port, right click `current_draw`, and select Add objective.**  
+   ![Add objective regulator current draw](docs/ide_dse/addobjective_reg_idraw.png)
+3. If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
+   **Re-run the design space search** to update the results with the new objective functions.
+4. As it runs, you can plot those points.
+   1. **For the Y Axis, select the maximum (worst-case) current draw.**
+   2. **For the X Axis, select the footprint area.**
+5. In this plot, better points are lower (less current draw, less power consumed) and to the left (smaller).
+Once all the points compile, this should be the final plot:  
+  ![DSE panel with reg plot](docs/ide_dse/plot_reg_idraw_vs_fpa.png)
 
-For current draw, **select the regulator, then open the Detail panel, expand the input power (pwr_in) port, right click current_draw, and select Add objective.**
-
-![Add objective regulator current draw](docs/ide_dse/addobjective_reg_idraw.png)
-
-If done right, the Objective Functions listed in the Config tree should show both FootprintArea((root)) and Parameter(reg.pwr_in.current_draw).
-**Re-run the design space search** to update the results with the new objective functions.
-
-As it runs, you can plot those points.
-**For the Y Axis, select the maximum (worst-case) current draw, and for the X Axis, select the footprint area.**
-In this plot, better points are lower (less current draw, less power consumed) and to the left (smaller).
-Once all the points compile, this should be the final plot:
-
-![DSE panel with reg plot](docs/ide_dse/plot_reg_idraw_vs_fpa.png)
-
-The brown points represent where ideal models are used.
-Both have the same X position, since ideal models have no components and take no board area.
-Mousing over points displays its configuration, here the subclass selection. 
-The top ideal point is the IdealLinearRegulator (which drops the voltage by "burning" the excess as heat), while the bottom one is the IdealVoltageRegulator (which only enforces conservation of power, similar to real buck converters),
-The non-ideal points show a trade-off: the lowest power (most efficient) points are buck converters, but the smallest are linear regulators.
-This makes sense: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators often are just a chip and small capacitors.
+> The brown points represent where ideal models are used.
+> Both have the same X position, since ideal models have no components and take no board area.
+> 
+> Mousing over points displays its configuration, here the subclass selection.
+> 
+> The top ideal point is the `IdealLinearRegulator` (which drops the voltage by 'burning' the excess as heat and draws as much current as the output), while the bottom one is the `IdealVoltageRegulator` (which only enforces conservation of power, like real buck converters, and draws less current than the output when stepping down voltage),
+> 
+> The non-ideal points show a trade-off: the lowest power (most efficient) points are buck converters, but the smallest are linear regulators.
+> This makes sense for low power draws: buck converters generally require many supporting components (inductor and significant capacitors), while linear regulators can be just the chip with small stabilizing capacitors.
 
 Let's arbitrarily choose to prioritize efficiency but select the smaller of those, and use the `Ap3418`.
-**Right-click the point and select Insert Refinements**.
+**Right-click the point and select Insert refinements**.
 
 ![Insert refinement for VoltageRegulator](docs/ide_dse/plot_insertrefinement_ap3418.png)
 
@@ -372,7 +376,7 @@ Here we specify that the abstract `BuckConverter` is specifically a `Ap3418`, bu
 > `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
 > You can override these with a refinement in your HDL, for example choosing `AxialResistor`.
 
-> If using the IDE, refinements can also be manually inserted through the library browser.
+> Alternatively, refinements can be manually inserted through the library browser.
 > 1. Select (single click) on the block you want to refine.
 > 2. In the Library Browser, search for the class you want to refine into.
 >    If you don't know, you can filter by the abstract type and see what options are under it.
