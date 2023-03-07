@@ -491,10 +491,22 @@ To search the design space, first recompile the design to update the design tree
 Like `VoltageRegulator`, `IoController` is abstract but provides a default ideal model and produces an error.
 Let's now set up and run the search:
 1. Add the search config by **right-clicking the new `mcu` and select Search refinements of base IoController**.
-   - Note that this adds a new dimension to the search space: if you didn't clear the voltage regulator search configuration, it will search over all combinations of voltage regulators AND microcontrollers which can become very time-intensive.
+   - Note that this adds a new dimension to the search space.
+     Here, let's search the combination of all voltage regulators and microcontrollers, so keep both of them.
 2. Then, **re-run the search**.
-3. For this simple design, all the microcontrollers work (though with different power consumption and area trade-offs - plot those if you're curious!).
-4. Let's arbitrarily pick a microcontroller module with WiFi: **right click the Esp32_Wroom_32 design point and select Insert refinements**.
+   - Because it's searching all combinations of regulators and microcontrollers, this may take a while.
+   - Even though we previously specified a refinement for voltage regulator, the search configuration takes priority - so this does scan over all voltage regulators
+3. If we **plot the microcontroller and regulator**, we can see which combinations work:  
+   ![Microcontroller and regulator](docs/ide_dse/plot_mcu_vs_reg.png)
+4. Alternatively, to see more dimensions on a single plot, **switch to the parallel coordinates plot (using the switch plots button: ![Switch plots button](docs/intellij_icons/toolWindowMessages_dark.svg))**.
+   Parallel coordinates plots support arbitrary number of axes, arranged in parallel to each other.
+   Each design point is a line through all the axes.
+   - Try plotting the regulator class, current draw, footprint area, and microcontroller class.  
+     Let's say we're interested in the Esp32_Wroom_32, a WiFi microcontroller module.
+     If you mouse over the point, it will show all the design points that use that: 
+     ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_esp32.png)
+     Note that this design tends to have higher power draw and larger area.
+6. Let's arbitrarily pick a microcontroller module with WiFi while keeping the prior regulator: **right click the Esp32_Wroom_32 and Ap3418 design point and select Insert refinements**.
 
 > In a design that uses more specialized peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits, DSE can help find suitable microcontrollers.
 
@@ -503,7 +515,7 @@ While abstract classes like `VoltageRegulator` and `IoController` have many alte
 However, DSE allows searching through those and comparing alternatives.
 
 In this limited design, the most interesting part may be the inductor for the buck converter voltage regulator, so let's see the effect of different inductors:
-1. **Make sure to delete any other search configs** to avoid an excessively large search space.
+1. First, **delete any other search configs** to avoid an excessively large search space.
 2. Add the search config: **in the design tree, expand `reg`, then `power_path`, right click on `inductor`, and select Search matching parts**.
 3. **Run the search**.
 
