@@ -499,7 +499,7 @@ Let's now set up and run the search:
 3. If we **plot the microcontroller and regulator**, we can see which combinations work:  
    ![Microcontroller and regulator](docs/ide_dse/plot_mcu_vs_reg.png)
 4. Alternatively, to see more dimensions on a single plot, **switch to the parallel coordinates plot (using the switch plots button: ![Switch plots button](docs/intellij_icons/toolWindowMessages_dark.svg))**.
-   Parallel coordinates plots support arbitrary number of axes, arranged in parallel to each other.
+   Parallel coordinates plots support arbitrary number of axes, arranged in parallel to each other, and are a common way to visualize high-dimensional data.
    Each design point is a line through all the axes.
    - Try plotting the regulator class, current draw, footprint area, and microcontroller class.  
      Let's say we're interested in the Esp32_Wroom_32, a WiFi microcontroller module.
