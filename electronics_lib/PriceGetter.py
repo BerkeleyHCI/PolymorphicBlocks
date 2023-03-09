@@ -57,8 +57,8 @@ class GeneratePrice(BaseBackend):
         return GeneratePrice.PRICE_TABLE
 
     def generate_price(self, lcsc_part_number: str, quantity: int) -> float:
-        full_price_list = self.get_price_table().get(lcsc_part_number, [(0, 0.0)])
-        if full_price_list == [(0, 0.0)]:
+        full_price_list = self.get_price_table().get(lcsc_part_number, None)
+        if full_price_list is None:
             print(lcsc_part_number + " is missing from the price list.")
             return 0
         temp_price = full_price_list[0][1]  # sets price to initial amount (the lowest quantity bracket)
