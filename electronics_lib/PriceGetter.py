@@ -80,7 +80,6 @@ class GeneratePrice(BaseBackend):
         for lcsc_part_number in price_list:
             quantity = price_list[lcsc_part_number]
             total_price += round(self.generate_price(lcsc_part_number, quantity), 2)
-        print(total_price)
         return [
             (edgir.LocalPath(), str(total_price))
         ]
