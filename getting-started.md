@@ -677,6 +677,8 @@ While you certainly can copy-paste the above LED instantiation 4 times, that's n
 ```python
   ...
 - self.led = self.Block(IndicatorLed())
+- self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
++ self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
   ...
 - self.connect(self.mcu.gpio.request('led'), self.led.signal)
   ...
@@ -767,7 +769,7 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 +     ImplicitConnect(self.reg.pwr_out, [Power]),
 +     ImplicitConnect(self.reg.gnd, [Common]),
 + ) as imp:
-    self.mcu = self.Block(Stm32f103_48())
+    self.mcu = self.Block(IoController())
     self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
     self.connect(self.usb.pwr, self.reg.pwr_in)
     self.connect(self.reg.pwr_out, self.mcu.pwr)
@@ -793,8 +795,8 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
       ImplicitConnect(self.reg.pwr_out, [Power]),
       ImplicitConnect(self.reg.gnd, [Common]),
   ) as imp:
--   self.mcu = self.Block(Stm32f103_48())
-+   self.mcu = imp.Block(Stm32f103_48())
+-   self.mcu = self.Block(IoController())
++   self.mcu = imp.Block(IoController())
 -   self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
 -   self.connect(self.usb.pwr, self.reg.pwr_in)
 -   self.connect(self.reg.pwr_out, self.mcu.pwr)
@@ -830,7 +832,7 @@ Remember that the voltage regulator is outside the implicit scope because it tak
 >           ImplicitConnect(self.reg.pwr_out, [Power]),
 >           ImplicitConnect(self.reg.gnd, [Common]),
 >       ) as imp:
->         self.mcu = imp.Block(Stm32f103_48())
+>         self.mcu = imp.Block(IoController())
 >
 >         self.sw = imp.Block(DigitalSwitch())
 >         self.connect(self.mcu.gpio.request('sw'), self.sw.out)
@@ -844,6 +846,7 @@ Remember that the voltage regulator is outside the implicit scope because it tak
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
 >         (['reg'], Ap3418),
+>         (['mcu'], Esp32_Wroom_32),
 >       ])
 >   ```
 > </details>
@@ -900,6 +903,7 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 >       return super().refinements() + Refinements(
 >       instance_refinements=[
 >         (['reg'], Ap3418),
+>         (['mcu'], Esp32_Wroom_32),
 >       ])
 >   ```
 > </details>
