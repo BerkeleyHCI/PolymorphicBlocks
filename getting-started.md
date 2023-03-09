@@ -743,23 +743,26 @@ _In this section, we clean up the prior example by consolidating some repetitive
 
 ### Implicit Connections
 Because some connections (like power and ground) are very common, the HDL provides the idea of an implicit connection scope to automatically make them when a block is instantiated.
-In our example, we can get rid of the explicit power and ground connections.
-Start by **adding an implicit scope** to tie Power-tagged ports to `self.reg.pwr_out` and Common- (ground) tagged ports to `self.reg.gnd`:
+The implicit scope defines the connections to make and the conditions for which ports to connect (through tags):
 
 ```python
 with self.implicit_connect(
     ImplicitConnect(self.reg.pwr_out, [Power]),
     ImplicitConnect(self.reg.gnd, [Common]),
 ) as imp:
-  ...
+  # any blocks here instantiated with imp.Block(...) instead of self.Block(...)
+  # will have Power-tagged ports connected to self.reg.pwr_out
+  # and Common-tagged ports connected to self.reg.gnd
 ```
+
 
 > When blocks define ports, they can associate tags with them to specify implicit connectivity.
 > To prevent errors, all ports with tags are required to be connected, either implicitly (as in this section) or explicitly (through `connect` statements).
-> `Power` (for a general positive voltage rail) and `Common` (for ground) are the most common tags.
+> 
+> The most common tags are `Power` (for a general positive voltage rail) and `Common` (for ground).
 
-Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
-**Move the microcontroller, switch, and LED instantiation into the scope, and delete their power and ground connections**:
+In our example, we can get rid of the explicit power and ground connections.
+Start by **adding an implicit scope** to tie Power-tagged ports to `self.reg.pwr_out` and Common- (ground) tagged ports to `self.reg.gnd`, and **move the microcontroller, switch, and LED into the implicit scope**:
 
 ```diff
   ...
@@ -784,6 +787,9 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
       self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
       self.connect(self.usb.gnd, self.led[i].gnd)
 ```
+
+Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
+**Replace the microcontroller, switch, and LED `self.Block(...)` instantiations with `imp.Block(...)` instantiations**, then **delete the redundant power and ground connections** (remember that the USB to regulator ground would need to be separated out):
 
 ```diff
   ...
@@ -813,8 +819,6 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
       self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 -     self.connect(self.usb.gnd, self.led[i].gnd)
 ```
-
-Remember that the voltage regulator is outside the implicit scope because it takes 5v and must be connected separately.
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
@@ -854,10 +858,16 @@ Remember that the voltage regulator is outside the implicit scope because it tak
 ### Chain Connects
 Another shorthand is for chained connections of blocks with inline declarations of blocks.
 We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:  
-```python
-(self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
-...
-(self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+```diff
+  ...
+- self.sw = imp.Block(DigitalSwitch())
+- self.connect(self.mcu.gpio.request('sw'), self.sw.out)
++ (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+  ...
+  for i in range(4):
+-   self.led[i] = imp.Block(IndicatorLed())
+-   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
++   (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 ```
 
 `chain` takes blocks and ports as arguments, from left to right as inputs to outputs, and does `connects` to chain them together.
@@ -919,23 +929,20 @@ However, it does define a `pin_assigns` parameter (as an array-of-strings) which
 We can also force parameter values through the refinements system, using `instance_values`.
 Let's arbitrarily choose pins 26-29 for the LEDs.
 **Add a pin assignment for the ESP32 in the refinements section**:
-```python
-class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    ...
-
+```diff
+  ...
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
     instance_refinements=[
       ...
     ],
-    instance_values=[
-      (['mcu', 'pin_assigns'], [
-        'led0=26',
-        'led1=27',
-        'led2=28',
-        'led3=29',
-      ])
++   instance_values=[
++     (['mcu', 'pin_assigns'], [
++       'led0=26',
++       'led1=27',
++       'led2=28',
++       'led3=29',
++     ])
     ])
 ```
 
