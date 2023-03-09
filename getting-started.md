@@ -396,7 +396,11 @@ Here we specify that the abstract `BuckConverter` is specifically a `Ap3418`, bu
 >      This may be useful, for example, if you wanted to do a design-wide replacement of all generic resistors with a specific type.
 > 4. The corresponding refinement block should be inserted, or if it already exists, a new refinement entry will be added.
 
-Recompiling in the IDE yields this block diagram and no errors:  
+To see the refinement take effect, clear the search configurations (since the search configuration will override refinements), then re-run the search:
+![Blinky with buck converter block diagram](docs/ide_dse/dsepanel_config_delete.png)
+
+Running DSE search with an empty search configuration is equivalent to compiling the design and automatically updates the block diagram visualization.
+The block diagram at this point might look like:
 ![Blinky with buck converter block diagram](docs/ide/ide_blinky_buck.png)
 
 > <details>
@@ -468,14 +472,14 @@ To zoom out, double-click on the topmost block.
 ### Hardware-Proven
 In the design tree, the proven status of each sub-block (and their sub-blocks, recursively) is shown.
 This indicates how many instances of a block has been previously proven in hardware, as a rough gauge of design risk.
-Mousing over brings up a tooltip that shows the specific boards this has been used in, and the testing status.
+Mousing over brings up a tooltip that shows the specific boards this has been used in, and the testing status.  
 ![Proven sub-blocks column in the design tree](docs/ide_dse/blinky_proven.png)
 
-The testing statuses and colors mean:
-- Green: built in hardware and tested working.
-- Orange: built in hardware, tested failing, but a (untested) fix has been implemented in HDL.
-- Red: built in hardware, tested not working, not yet fixed.
-- Grey: built in hardware, but not tested. 
+> The testing statuses and colors mean:
+> - Green: built in hardware and tested working.
+> - Orange: built in hardware, tested failing, but a (untested) fix has been implemented in HDL.
+> - Red: built in hardware, tested not working, not yet fixed.
+> - Grey: built in hardware, but not tested. 
 
 
 ## Advanced Design Space Exploration
@@ -497,30 +501,65 @@ class BlinkyExample(SimpleBoardTop):
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
-To search the design space, first recompile the design to update the design tree with the new `IoController`. You can recompile a single design from the DSE runer with an empty search space, such as by **deleting the existing search configurations**:    
-![Search config deletion](docs/ide_dse/dsepanel_config_delete1.png)
-
+To search the design space, first recompile the design to update the design tree with the new `IoController`.
+Remember, running DSE with an empty design space is equivalent to recompiling the design.
 Like `VoltageRegulator`, `IoController` is abstract but provides a default ideal model and produces an error.
-Let's now set up and run the search:
-1. Add the search config by **right-clicking the new `mcu` and select Search refinements of base IoController**.
-   - Note that this adds a new dimension to the search space.
-     Here, let's search the combination of all voltage regulators and microcontrollers, so keep both of them.
-2. Then, **re-run the search**.
+
+Let's now set up and run the search, and let's actually search through all combinations of the voltage regulator and microcontroller:
+1. Re-add the voltage regulator search by **right-clicking `reg` and select Search subclasses of VoltageRegulator**.
+2. Add the microcontroller search by **right-clicking the new `mcu` and select Search subclasses of IoController**.
+   - Note that this adds a dimension to the search space.
+3. Make sure the footprint area and current draw objective functions are still there.
+4. Then, **re-run the search**.
    - Because it's searching all combinations of regulators and microcontrollers, this may take a while.
    - Even though we previously specified a refinement for voltage regulator, the search configuration takes priority - so this does scan over all voltage regulators
-3. If we **plot the microcontroller and regulator**, we can see which combinations work:  
+5. If we **plot the microcontroller and regulator**, we can see which combinations work:  
    ![Microcontroller and regulator](docs/ide_dse/plot_mcu_vs_reg.png)
-4. Alternatively, to see more dimensions on a single plot, **switch to the parallel coordinates plot (using the switch plots button: ![Switch plots button](docs/intellij_icons/toolWindowMessages_dark.svg))**.
-   Parallel coordinates plots support arbitrary number of axes, arranged in parallel to each other, and are a common way to visualize high-dimensional data.
-   Each design point is a line through all the axes.
-   - Try plotting the regulator class, current draw, footprint area, and microcontroller class.  
-     Let's say we're interested in the Esp32_Wroom_32, a WiFi microcontroller module.
-     If you mouse over the point, it will show all the design points that use that: 
-     ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_esp32.png)
-     Note that this design tends to have higher power draw and larger area.
-6. Let's arbitrarily pick a microcontroller module with WiFi while keeping the prior regulator: **right click the Esp32_Wroom_32 and Ap3418 design point and select Insert refinements**.
 
-> In a design that uses more specialized peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits, DSE can help find suitable microcontrollers.
+> Here, we're plotting the microcontroller and voltage regulator classes, which are non-numeric.
+> Since these are search configurations, they are plotted in the order specified.
+> For subclass search, choices are roughly grouped by similarity through the type hierarchy.
+> For example, in the above plot, the linear regulators are together (left), the boost converters are together (center, red points since this design requires a step-down converter), and the buck converters are together (right).
+
+However, as we have more data to work with, two axes is limiting.
+Parallel coordinates plot is another visualization method commonly used for visualizing high-dimensional data, and supports arbitrary number of axes by arranging them in parallel to each other.
+Let's use this to examine choices of microcontroller:
+1. **Switch to the parallel coordinates plot using the switch plots button: ![Switch plots button](docs/intellij_icons/toolWindowMessages_dark.svg)**.
+2. The initial plot starts with one axis, but let's plot the regulator, current draw, area, and microcontroller (4 axes).
+   **Add three more axes using the + button**.
+3. **Configure the axes left-to-right as the regulator class, maximum current draw, area, and microcontroller class**.
+   The resulting plot should look like:  
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu.png)  
+   Each individual design is a line, going through the points at the values of each axis.
+4. Let's say we want a ESP32, a microcontroller module with built-in WiFi.
+   **Select the Esp32_Wroom_32 point on the bottom right** to select all designs going through that point:  
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32.png)  
+   One way to interpret this selection is that:
+   - Because the points on the current draw axis (second from left) are fairly high, it means that regardless of voltage regulator it draws comparatively higher power.
+     This makes sense, WiFi is a power-intensive feature.
+   - Because the points on the area axis (third from right) are somewhat high, designs that use this module are fairly large.
+     This also makes sense, the module is larger compared to a single chip, but also not as big as the development boards that are at the top of the axis.
+5. Let's say we want to prioritize power efficiency. **Select the lowest non-ideal (not-brown) point on the current draw axis** to subset the current selection:  
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw.png)
+6. There's still a few design points here, so let's look at the area axis.
+   Most of the designs are close together, so **mousewheel over the axis to zoom in**.  
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw_areasel.png)
+7. Zoomed in, we can differentiate the points better.
+   If we arbitrarily pick the lowest area one, we're down to one point that we can use.
+   Let's choose that point for our design, **right-click the point and select Insert refinements**.  
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw_area_insertrefinement.png)
+8. The refinements block should update with the new choices:
+   ```python
+   def refinements(self) -> Refinements:
+     return super().refinements() + Refinements(
+       instance_refinements=[
+         (['reg'], Ap3418),
+         (['mcu'], Esp32_Wroom_32),
+       ])
+   ```
+
+> While for this simple design, all the microcontrollers could have worked, the same may not be true for a more complex design that uses more specialized peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits.
+> In those cases DSE can help find suitable microcontrollers.
 
 ### Searching Compatible Passives
 While abstract classes like `VoltageRegulator` and `IoController` have many alternatives but don't provide an automatic default, many of the jellybean parts (passives like resistors, capacitors, and inductors, also discrete semiconductors like diodes and transistors) also have alternatives but an automatic default makes those choices optional.
