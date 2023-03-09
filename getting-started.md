@@ -719,21 +719,54 @@ with self.implicit_connect(
 Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
 **Move the microcontroller, switch, and LED instantiation into the scope, and delete their power and ground connections**:
 
-```python
-self.reg = self.Block(VoltageConverter(...))
-with self.implicit_connect(
-    ImplicitConnect(self.reg.pwr_out, [Power]),
-    ImplicitConnect(self.reg.gnd, [Common]),
-) as imp:
-  self.mcu = imp.Block(Stm32f103_48())
+```diff
+  ...
+  self.reg = self.Block(VoltageConverter(...))
++ self.connect(self.usb.gnd, self.reg.gnd)
 
-  self.sw = imp.Block(DigitalSwitch())
-  self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+- self.mcu = self.Block(Stm32f103_48())
+- self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+- self.connect(self.usb.pwr, self.reg.pwr_in)
+- self.connect(self.reg.pwr_out, self.mcu.pwr)
+-
+- self.sw = self.Block(DigitalSwitch())
+- self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+- self.connect(self.usb.gnd, self.sw.gnd)
+-
+- self.led = ElementDict[IndicatorLed]()
+- for i in range(4):
+-   self.led[i] = self.Block(IndicatorLed())
+-   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+-   self.connect(self.usb.gnd, self.led[i].gnd)
+    
++ with self.implicit_connect(
++     ImplicitConnect(self.reg.pwr_out, [Power]),
++     ImplicitConnect(self.reg.gnd, [Common]),
++ ) as imp:
++   self.mcu = imp.Block(Stm32f103_48())
++ 
++   self.sw = imp.Block(DigitalSwitch())
++ 
++   self.led = ElementDict[IndicatorLed]()
++   for i in range(4):
++     self.led[i] = imp.Block(IndicatorLed())
+```
 
-  self.led = ElementDict[IndicatorLed]()
-  for i in range(4):
-    self.led[i] = imp.Block(IndicatorLed())
-    self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+```diff
+  ...
+  with self.implicit_connect(
+      ImplicitConnect(self.reg.pwr_out, [Power]),
+      ImplicitConnect(self.reg.gnd, [Common]),
+  ) as imp:
+    self.mcu = imp.Block(Stm32f103_48())
+  
+    self.sw = imp.Block(DigitalSwitch())
++   self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+  
+    self.led = ElementDict[IndicatorLed]()
+    for i in range(4):
+      self.led[i] = imp.Block(IndicatorLed())
++     self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 ```
 
 Remember that the voltage regulator is outside the implicit scope because it takes 5v and must be connected separately.
