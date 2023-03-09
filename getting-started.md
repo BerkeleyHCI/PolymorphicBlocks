@@ -612,7 +612,7 @@ All components that have standard SMD package sizes extend the `SmdStandardPacka
 If you have KiCad installed, you can import this full design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
 In the KiCad PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
-KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
+KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:  
 ![Blinky layout with default placement](docs/blinky_kicad.png)
 
 The block hierarchy will appear to KiCad as a sheet hierarchy.
