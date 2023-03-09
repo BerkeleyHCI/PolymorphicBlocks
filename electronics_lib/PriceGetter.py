@@ -31,8 +31,6 @@ class GeneratePrice(BaseBackend):
     @classmethod
     def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
         if not GeneratePrice.PRICE_TABLE:
-            # default value for checking if something is not in the price table:
-            GeneratePrice.PRICE_TABLE.setdefault("00", [(0, 0.0)])
             parts_library = str(PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'],
                                                            'resources')[0])
             with open(parts_library, 'r', newline='', encoding='gb2312') as csv_file:
@@ -59,7 +57,7 @@ class GeneratePrice(BaseBackend):
         return GeneratePrice.PRICE_TABLE
 
     def generate_price(self, lcsc_part_number: str, quantity: int) -> float:
-        full_price_list = self.get_price_table()[lcsc_part_number]
+        full_price_list = self.get_price_table().get(lcsc_part_number, [(0, 0.0)])
         if full_price_list == [(0, 0.0)]:  # default value when the part isn't in the table
             print(lcsc_part_number + " is missing from the price list.")
             return 0
@@ -76,6 +74,7 @@ class GeneratePrice(BaseBackend):
         for lcsc_part_number in price_list:
             quantity = price_list[lcsc_part_number]
             total_price += round(self.generate_price(lcsc_part_number, quantity), 2)
+        print (total_price)
         return [
             (edgir.LocalPath(), str(total_price))
         ]
