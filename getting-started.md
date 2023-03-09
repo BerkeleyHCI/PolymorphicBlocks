@@ -721,52 +721,55 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 
 ```diff
   ...
-  self.reg = self.Block(VoltageConverter(...))
-+ self.connect(self.usb.gnd, self.reg.gnd)
-
-- self.mcu = self.Block(Stm32f103_48())
-- self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
-- self.connect(self.usb.pwr, self.reg.pwr_in)
-- self.connect(self.reg.pwr_out, self.mcu.pwr)
--
-- self.sw = self.Block(DigitalSwitch())
-- self.connect(self.mcu.gpio.request('sw'), self.sw.out)
-- self.connect(self.usb.gnd, self.sw.gnd)
--
-- self.led = ElementDict[IndicatorLed]()
-- for i in range(4):
--   self.led[i] = self.Block(IndicatorLed())
--   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
--   self.connect(self.usb.gnd, self.led[i].gnd)
-    
+  self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+  
 + with self.implicit_connect(
 +     ImplicitConnect(self.reg.pwr_out, [Power]),
 +     ImplicitConnect(self.reg.gnd, [Common]),
 + ) as imp:
-+   self.mcu = imp.Block(Stm32f103_48())
-+ 
-+   self.sw = imp.Block(DigitalSwitch())
-+ 
-+   self.led = ElementDict[IndicatorLed]()
-+   for i in range(4):
-+     self.led[i] = imp.Block(IndicatorLed())
+    self.mcu = self.Block(Stm32f103_48())
+    self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+    self.connect(self.reg.pwr_out, self.mcu.pwr)
+    
+    self.sw = self.Block(DigitalSwitch())
+    self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+    self.connect(self.usb.gnd, self.sw.gnd)
+    
+    self.led = ElementDict[IndicatorLed]()
+    for i in range(4):
+      self.led[i] = self.Block(IndicatorLed())
+      self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+      self.connect(self.usb.gnd, self.led[i].gnd)
 ```
 
 ```diff
   ...
+  self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
++ self.connect(self.usb.gnd, self.reg.gnd)
++ self.connect(self.usb.pwr, self.reg.pwr_in)
+
   with self.implicit_connect(
       ImplicitConnect(self.reg.pwr_out, [Power]),
       ImplicitConnect(self.reg.gnd, [Common]),
   ) as imp:
-    self.mcu = imp.Block(Stm32f103_48())
-  
-    self.sw = imp.Block(DigitalSwitch())
-+   self.connect(self.mcu.gpio.request('sw'), self.sw.out)
-  
+-   self.mcu = self.Block(Stm32f103_48())
++   self.mcu = imp.Block(Stm32f103_48())
+-   self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+-   self.connect(self.usb.pwr, self.reg.pwr_in)
+-   self.connect(self.reg.pwr_out, self.mcu.pwr)
+    
+-   self.sw = self.Block(DigitalSwitch())
++   self.sw = imp.Block(DigitalSwitch())
+    self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+-   self.connect(self.usb.gnd, self.sw.gnd)
+    
     self.led = ElementDict[IndicatorLed]()
     for i in range(4):
-      self.led[i] = imp.Block(IndicatorLed())
-+     self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+-     self.led[i] = self.Block(IndicatorLed())
++     self.led[i] = imp.Block(IndicatorLed())
+      self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+-     self.connect(self.usb.gnd, self.led[i].gnd)
 ```
 
 Remember that the voltage regulator is outside the implicit scope because it takes 5v and must be connected separately.
