@@ -146,10 +146,12 @@ Try building the example now:
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
 **In `blinky_skeleton.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
-```python
-self.usb = self.Block(UsbCReceptacle())
-self.mcu = self.Block(Stm32f103_48())
-self.led = self.Block(IndicatorLed())
+```diff
+  super().contents()
+- # your implementation here
++ self.usb = self.Block(UsbCReceptacle())
++ self.mcu = self.Block(Stm32f103_48())
++ self.led = self.Block(IndicatorLed())
 ```
 > `self.Block(...)` creates a sub-block in `self` (the current hierarchy block being defined).
 > It must be assigned to an instance variable (in this case, `mcu`), which is used as the name sub-block.
@@ -187,9 +189,12 @@ We'll fix that next.
 Blocks alone aren't very interesting, and they must be connected to be useful.
 First, we need to connect the power and ground between the devices, by **adding connect statements after your block instantiations**:
 
-```python
-self.connect(self.usb.pwr, self.mcu.pwr)
-self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+```diff
+  self.usb = self.Block(UsbCReceptacle())
+  self.mcu = self.Block(Stm32f103_48())
+  self.led = self.Block(IndicatorLed())
++ self.connect(self.usb.pwr, self.mcu.pwr)
++ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 ```
 
 > `self.connect(...)` connects all the argument ports together. 
@@ -211,8 +216,10 @@ If you're using the IDE, once you recompile the block diagram should look like:
 
 Then, we need to connect the LED to a GPIO on the microcontroller, by **adding this connect statement:**.
 
-```python
-self.connect(self.mcu.gpio.request('led'), self.led.signal)
+```diff
+  self.connect(self.usb.pwr, self.mcu.pwr)
+  self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
++ self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
 > Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
@@ -275,13 +282,17 @@ You can also inspect the details of the power connection by mousing over it:
 To run the STM32 within its rated voltage limits, we'll need a voltage regulator to lower the 5v from USB to the common 3.3v power expected by modern devices.
 **Repeat the add block flow** with a `VoltageRegulator` block, **then update the power (between the USB and the microcontroller) and ground connections**.
 
-```python
-self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
-
-# make sure to delete the prior power and ground connections to avoid over-connection
-self.connect(self.usb.pwr, self.reg.pwr_in)
-self.connect(self.reg.pwr_out, self.mcu.pwr)
-self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+```diff
+  self.usb = self.Block(UsbCReceptacle())
++ self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+  self.mcu = self.Block(Stm32f103_48())
+  self.led = self.Block(IndicatorLed())
+- self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
++ self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+- self.connect(self.usb.pwr, self.mcu.pwr)
++ self.connect(self.usb.pwr, self.reg.pwr_in)
++ self.connect(self.reg.pwr_out, self.mcu.pwr)
+  self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
 > The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
@@ -488,13 +499,11 @@ Mousing over brings up a tooltip that shows the specific boards this has been us
 Like the `VoltageRegulator`, there is actually an abstract class for microcontrollers, `IoController`.
 `Stm32f103_48` extends this class and adheres to its interface, so we can **change the type of `mcu` to `IoController`**.
 
-```python
-class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    ...
-    self.mcu = self.Block(IoController())
-    ...
-  ...
+```diff
+  self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+- self.mcu = self.Block(Stm32f103_48())
++ self.mcu = self.Block(IoController())
+  self.led = self.Block(IndicatorLed())
 ```
 
 > `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
@@ -607,6 +616,31 @@ All components that have standard SMD package sizes extend the `SmdStandardPacka
    But the overall takeaway here is that using smaller parts can save space - but whether it's worth the trade-off would be up to you.
 6. You don't need to add any refinements here (though you could select a design point to choose a different minimum SMD package).
 
+> <details>
+>   <summary>At this point, your HDL might look like...</summary>
+>
+>   ```python
+>   class BlinkyExample(SimpleBoardTop):
+>     def contents(self) -> None:
+>       super().contents()
+>       self.usb = self.Block(UsbCReceptacle())
+>       self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+>       self.mcu = self.Block(IoController())
+>       self.led = self.Block(IndicatorLed())
+>       self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+>       self.connect(self.usb.pwr, self.reg.pwr_in)
+>       self.connect(self.reg.pwr_out, self.mcu.pwr)
+>       self.connect(self.mcu.gpio.request('led'), self.led.signal)
+>
+>     def refinements(self) -> Refinements:
+>       return super().refinements() + Refinements(
+>       instance_refinements=[
+>         (['reg'], Ap3418),
+>         (['mcu'], Esp32_Wroom_32),
+>       ])
+>   ```
+> </details>
+
 
 ## KiCad Import
 If you have KiCad installed, you can import this full design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
@@ -641,11 +675,17 @@ While you certainly can copy-paste the above LED instantiation 4 times, that's n
 
 **Replace your single LED instantiation and connections with**:
 ```python
-self.led = ElementDict[IndicatorLed]()
-for i in range(4):
-  self.led[i] = self.Block(IndicatorLed())
-  self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
-  self.connect(self.usb.gnd, self.led[i].gnd)
+  ...
+- self.led = self.Block(IndicatorLed())
+  ...
+- self.connect(self.mcu.gpio.request('led'), self.led.signal)
+  ...
+
++ self.led = ElementDict[IndicatorLed]()
++ for i in range(4):
++   self.led[i] = self.Block(IndicatorLed())
++   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
++   self.connect(self.usb.gnd, self.led[i].gnd)
 ```
 
 > ElementDict creates a naming space that is an extension of the parent and is needed to give a unique, arrayed name for the LED being created.
