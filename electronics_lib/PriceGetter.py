@@ -33,10 +33,8 @@ class GeneratePrice(BaseBackend):
     @classmethod
     def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
         if not GeneratePrice.PRICE_TABLE:
-            #current_path = os.getcwd()
             parts_library = str(PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'],
                                                            'resources')[0])
-            print(parts_library)
             with open(parts_library, 'r', newline='', encoding='gb2312') as csv_file:
                 csv_reader = csv.reader(csv_file)
                 next(csv_reader)    # to skip the header
