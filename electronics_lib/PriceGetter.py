@@ -6,6 +6,8 @@ from edg_core import BaseBackend, CompiledDesign, TransformUtil
 import os
 import csv
 
+from electronics_abstract_parts import PartsTable
+
 
 class PriceTransform(TransformUtil.Transform):
     def __init__(self, design: CompiledDesign):
@@ -31,39 +33,42 @@ class GeneratePrice(BaseBackend):
     @classmethod
     def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
         if not GeneratePrice.PRICE_TABLE:
-            current_path = os.getcwd()
-            parts_library = current_path + "\PolymorphicBlocks\electronics_lib\\resources\Pruned_JLCPCB SMT Parts Library(20220419).csv"
-            with open(parts_library, 'r', newline='') as csv_file:
-                csv_reader = csv.reader(csv_file, dialect='excel')
-                next(csv_reader)
+            #current_path = os.getcwd()
+            parts_library = str(PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'],
+                                                           'resources')[0])
+            print(parts_library)
+            with open(parts_library, 'r', newline='', encoding='gb2312') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                next(csv_reader)    # to skip the header
                 for row in csv_reader:
                     full_price_list = row[10]
-                    if full_price_list == " ":
-                        print("Part " + row[0] + " is missing from the price list.")
-                        value = ([(0, 0.0), (20000, 0.0)])
+                    if not full_price_list.strip():
+                        print(row[0] + " is missing from the price list.")
+                        continue
                     else:
                         price_and_quantity_groups = full_price_list.split(',')
                         value: List[Tuple[int, float]] = []
                         for price_and_quantity in price_and_quantity_groups:
                             price_and_quantity_list = price_and_quantity.split(':')
+                            # this has to be 2 because it will split the quantity range & the cost:
                             assert len(price_and_quantity_list) == 2
                             quantity_range = price_and_quantity_list[0].split('-')
+                            # when the length is 1, it's the minimum quantity for a price break (ex: 15000+)
                             assert len(quantity_range) == 1 or len(quantity_range) == 2
                             value.append((int(quantity_range[0]), float(price_and_quantity_list[1])))
 
                     # sorts each value for PRICE_TABLE by lower-bounds, which is the first int in the Tuple:
-                    sorted(value)
-                    GeneratePrice.PRICE_TABLE[row[0]] = value
+                    GeneratePrice.PRICE_TABLE[row[0]] = sorted(value)
         return GeneratePrice.PRICE_TABLE
 
     def generate_price(self, lcsc_part_number: str, quantity: int) -> float:
-        if lcsc_part_number in GeneratePrice.PRICE_TABLE:
+        if lcsc_part_number in self.get_price_table():
             full_price_list = GeneratePrice.PRICE_TABLE[lcsc_part_number]
-            for i in range(len(full_price_list)):
-                if i == len(full_price_list) - 1:   # if you reached the last group
-                    return quantity * (full_price_list[i])[1]
-                if quantity < (full_price_list[i + 1])[0]:
-                    return (quantity * full_price_list[i])[1]
+            temp_price = full_price_list[0][1]  # sets price to initial amount (the lowest quantity bracket)
+            for (minimum_quantity, price) in full_price_list:
+                if quantity > minimum_quantity:
+                    temp_price = price
+            return quantity * temp_price
         else:
             print(lcsc_part_number + " is missing from the price list.")
             return 0
@@ -72,12 +77,10 @@ class GeneratePrice(BaseBackend):
         assert not args
         price_list = PriceTransform(design).run()
         total_price = 0
-        self.get_price_table()
         for lcsc_part_number in price_list:
             quantity = price_list[lcsc_part_number]
-            print(lcsc_part_number + ": quantity = " + str(quantity))
             total_price += round(self.generate_price(lcsc_part_number, quantity), 2)
-        print("total price: " + str(total_price))
+        print(total_price)
         return [
             (edgir.LocalPath(), str(total_price))
         ]
