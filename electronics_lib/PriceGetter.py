@@ -1,9 +1,7 @@
-import sys
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
-import os
 import csv
 
 from electronics_abstract_parts import PartsTable
@@ -15,11 +13,11 @@ class PriceTransform(TransformUtil.Transform):
         self.part_list: Dict[str, int] = {}
 
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-        lcsc_part_number: str = self.design.get_value(context.path.to_tuple() + ('lcsc_part',)) or None
-        if lcsc_part_number is not None:
+        lcsc_part_number: Optional[str] = str(self.design.get_value(context.path.to_tuple() + ('lcsc_part',)))
+        if lcsc_part_number != "None":
             if lcsc_part_number not in self.part_list:
-                self.part_list[lcsc_part_number] = 0
-            self.part_list[lcsc_part_number] += 1
+                self.part_list[str(lcsc_part_number)] = 0
+            self.part_list[str(lcsc_part_number)] += 1
 
     def run(self) -> Dict[str, int]:
         self.transform_design(self.design.design)
@@ -74,7 +72,7 @@ class GeneratePrice(BaseBackend):
     def run(self, design: CompiledDesign, args=None) -> List[Tuple[edgir.LocalPath, str]]:
         assert not args
         price_list = PriceTransform(design).run()
-        total_price = 0
+        total_price: float = 0
         for lcsc_part_number in price_list:
             quantity = price_list[lcsc_part_number]
             total_price += round(self.generate_price(lcsc_part_number, quantity), 2)
