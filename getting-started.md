@@ -407,7 +407,7 @@ Here we specify that the abstract `BuckConverter` is specifically a `Ap3418`, bu
 >      This may be useful, for example, if you wanted to do a design-wide replacement of all generic resistors with a specific type.
 > 4. The corresponding refinement block should be inserted, or if it already exists, a new refinement entry will be added.
 
-To see the refinement take effect, clear the search configurations (since the search configuration will override refinements), then re-run the search:  
+To see the refinement take effect, **clear the search configurations** (since the search configuration will override refinements; either through the Delete key or the right-click menu below), then **re-run the search**:  
 ![Blinky with buck converter block diagram](docs/ide_dse/dsepanel_config_delete.png)
 
 Running DSE search with an empty search configuration is equivalent to compiling the design and automatically updates the block diagram visualization.
