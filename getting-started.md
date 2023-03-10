@@ -304,7 +304,10 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 > Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
 > See each block's definition or documentation for what those parameters mean.
 
-> If using the IDE, make sure to select an appropriate location for insertion.
+> <details>
+>   <summary>You can also do this through graphical operations in the IDE. (not recommended - work-in-progress)</summary>
+>
+> The voltage regulator can be inserted through the library browser, but make sure to select an appropriate location for insertion.
 > This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
 > The IDE will create a block with empty parameters for you to fill.
 > 
@@ -317,6 +320,7 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 > The IDE does not support disconnect operations, so you'll have to edit the HDL for code that.
 > However, the IDE can help you find where the code is:
 > 1. Right click on any port in the connection, then select "Goto Connect".
+> </details>
 
 If you try recompiling it, it will give you an error because `VoltageRegulator` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
 Abstract blocks are useful for two reasons:
