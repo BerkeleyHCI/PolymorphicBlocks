@@ -674,7 +674,7 @@ Using what you've learned above, instantiate a switch and connect it to the micr
 While you certainly can copy-paste the above LED instantiation 4 times, that's no fun given that we're in a programming language with `for` loops.
 
 **Replace your single LED instantiation and connections with**:
-```python
+```diff
   ...
 - self.led = self.Block(IndicatorLed())
 - self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
