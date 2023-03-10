@@ -570,52 +570,6 @@ Let's use this to examine choices of microcontroller:
 > While for this simple design, all the microcontrollers could have worked, the same may not be true for a more complex design that uses more specialized peripherals like USB or a DAC (which not all ESP32s have) or bumps up against current limits.
 > In those cases DSE can help find suitable microcontrollers.
 
-### Searching Compatible Passives
-While abstract classes like `VoltageRegulator` and `IoController` have alternatives and requires an explicit choice, many of the jellybean parts (passives like resistors, capacitors, and inductors, also discrete semiconductors like diodes and transistors) also have alternatives but an automatic default makes those choices optional.
-However, DSE allows searching through those and comparing alternatives.
-
-In this limited design, the most interesting part may be the inductor for the buck converter voltage regulator, so let's see the effect of different inductors:
-1. First, **delete any other search configs** to avoid an excessively large search space.
-2. If you don't have the Esp32_Wroom_32 and Ap3418 design point loaded, recompile with the empty design space.
-3. Add the search config: **in the design tree, expand `reg`, then `power_path`, right click on `inductor`, and select Search matching parts**:  
-   ![Add inductor search](docs/ide_dse/addsearch_inductor.png)
-4. In terms of inductor selection, an interesting trade-off to evaluate may be current limit vs. footprint area:
-   1. To get the area for the regulator block only, **right-click on `reg` and select Add objective area.**
-   2. To get the current limit:
-      1. **Select `reg`** to bring up its contents in the Detail panel.
-      2. In the Detail panel, **expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.  
-         ![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
-4. **Run the search**.
-   This may take a while, it's searching through about 40 parts.
-5. An interesting plot might be to compare maximum current vs. area:  
-   ![Regulator current llimits vs. area](docs/ide_dse/plot_reg_ilim_vs_fpa.png)  
-   Here, I've selected the default selection (point 0) which minimizes area, but there's another point above it that increases current capability (more headroom, essentially) at a minimal additional cost in area.
-5. You don't need to add any refinements here (though you could select a design point to choose a particular inductor). 
-
-> The current limit parameter reflects the limits of the subcircuit and takes into account limitations of the controller chip and inductor, and the ripple current.
-> Since the search only considers matching parts, all these designs are legal but they present different trade-offs in terms of maximum current, for example if we wanted additional headroom.
-
-### Searching Global Settings
-Finally, we can also search over some global settings - settings that affect similar parts across the entire design.
-Here, let's look at the effect on total area based on the minimum SMD component size, from 0402 to 1206.
-All components that have standard SMD package sizes extend the `SmdStandardPackage` class which defines a parameter `smd_min_package`.
-
-1. First, **delete any other search configs** to avoid an excessively large search space.
-2. To search across minimum component sizes: 
-   1. **Select any SMD component (for example, the inductor)** to bring up its contents in the Detail panel.
-   2. In its Detail panel, **right click the parameter `smd_min_package`, and select Search values for all SmdStandardPackage:smd_min_package.**  
-      >![Minimum SMD search](docs/ide_dse/addsearch_minsmd.png)
-   3. This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
-3. Make sure the overall (root) footprint area objective function is still there.
-4. **Run the search**.
-5. **Configure the plot axes, the minimum SMD size vs. area**.
-   The resulting plot might look like:  
-   ![Regulator current llimits vs. area](docs/ide_dse/plot_smd_vs_fpa.png)  
-   Note that, like with classes, the minimum package parameter is a string (instead of a number) and the values are evenly spaced.
-   The particular Y-position is not meaningful other than for spacing out points.
-   But the overall takeaway here is that using smaller parts can save space - but whether it's worth the trade-off would be up to you.
-6. You don't need to add any refinements here (though you could select a design point to choose a different minimum SMD package).
-
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
 >
@@ -639,6 +593,61 @@ All components that have standard SMD package sizes extend the `SmdStandardPacka
 >         (['mcu'], Esp32_Wroom_32),
 >       ])
 >   ```
+> </details>
+
+### Searching Compatible Passives
+While abstract classes like `VoltageRegulator` and `IoController` have alternatives and requires an explicit choice, many of the jellybean parts (passives like resistors, capacitors, and inductors, also discrete semiconductors like diodes and transistors) also have alternatives but an automatic default makes those choices optional.
+However, DSE allows searching through those and comparing alternatives.
+
+For example, if we wanted to examine the effect of inductor choice in the buck converter, we could plot maximum current vs. area:  
+![Regulator current limits vs. area](docs/ide_dse/plot_reg_ilim_vs_fpa.png)  
+The default selection (selected) minimizes area, but there's nearby points that increase the current limit (headroom) at only a slight increase in area.
+
+> <details>
+>   <summary>Optional: try it yourself...</summary>
+>
+> 1. First, **delete any other search configs** to avoid an excessively large search space.
+> 2. If you don't have the Esp32_Wroom_32 and Ap3418 design point loaded, recompile with the empty design space.
+> 3. Add the search config: **in the design tree, expand `reg`, then `power_path`, right click on `inductor`, and select Search matching parts**:  
+>    ![Add inductor search](docs/ide_dse/addsearch_inductor.png)
+> 4. In terms of inductor selection, an interesting trade-off to evaluate may be current limit vs. footprint area:
+>    1. To get the area for the regulator block only, **right-click on `reg` and select Add objective area.**
+>    2. To get the current limit:
+>       1. **Select `reg`** to bring up its contents in the Detail panel.
+>       2. In the Detail panel, **expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.  
+>          ![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
+> 5. **Run the search**.
+>    This may take a while, it's searching through about 40 parts.
+> 6. **Plot something interesting.**
+> 7. You don't need to add any refinements here (though you could select a design point to choose a particular inductor). 
+> 
+> > The current limit parameter reflects the limits of the subcircuit and takes into account limitations of the controller chip and inductor, and the ripple current.
+> > Since the search only considers matching parts, all these designs are legal but they present different trade-offs in terms of maximum current, for example if we wanted additional headroom.
+> </details>
+
+### Searching Global Settings
+Finally, we can also search over some global settings - settings that affect similar parts across the entire design.
+For example, we might want to see how much effect shrinking SMD components (for example, using 0402s vs 1206s) has on total board area:  
+ ![Regulator current llimits vs. area](docs/ide_dse/plot_smd_vs_fpa.png)
+
+> <details>
+>   <summary>Optional: try it yourself...</summary>
+>
+> 1. First, **delete any other search configs** to avoid an excessively large search space.
+> 2. To search across minimum component sizes: 
+>    1. **Select any SMD component (for example, the inductor)** to bring up its contents in the Detail panel.
+>    2. In its Detail panel, **right click the parameter `smd_min_package`, and select Search values for all SmdStandardPackage:smd_min_package.**  
+>       ![Minimum SMD search](docs/ide_dse/addsearch_minsmd.png)
+>       > All components that have standard SMD package sizes extend the `SmdStandardPackage` class which defines a parameter `smd_min_package`.
+>       > The search value is applied to the `smd_min_package` parameter of all blocks extending `SmdStandardPackage`.
+>    3. This will pop up a textbox for the values to search, **enter `0402,0603,0805,1206` (without spaces)**.
+> 3. Make sure the overall (root) footprint area objective function is still there.
+> 4. **Run the search**.
+> 5. **Plot something interesting.**  
+>    Note that, like with classes, the minimum package parameter is a string (instead of a number) and the values are evenly spaced.
+>    The particular Y-position is not meaningful other than for spacing out points.
+>    But the overall takeaway here is that using smaller parts can save space - but whether it's worth the trade-off would be up to you.
+> 6. You don't need to add any refinements here (though you could select a design point to choose a different minimum SMD package).
 > </details>
 
 
