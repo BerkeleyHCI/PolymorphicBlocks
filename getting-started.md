@@ -628,7 +628,7 @@ The default selection (selected) minimizes area, but there's nearby points that 
 ### Searching Global Settings
 Finally, we can also search over some global settings - settings that affect similar parts across the entire design.
 For example, we might want to see how much effect shrinking SMD components (for example, using 0402s vs 1206s) has on total board area:  
- ![Regulator current llimits vs. area](docs/ide_dse/plot_smd_vs_fpa.png)
+ ![Regulator current limits vs. area](docs/ide_dse/plot_smd_vs_fpa.png)
 
 > <details>
 >   <summary>Optional: try it yourself...</summary>
@@ -865,34 +865,39 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 > </details>
 
 ### Chain Connects
-Another shorthand is for chained connections of blocks with inline declarations of blocks.
-We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:  
-```diff
-  ...
-- self.sw = imp.Block(DigitalSwitch())
-- self.connect(self.mcu.gpio.request('sw'), self.sw.out)
-+ (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
-  ...
-  for i in range(4):
--   self.led[i] = imp.Block(IndicatorLed())
--   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
-+   (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
-```
+Another shorthand is for chained connections of blocks, which allows declaring and connecting certain blocks in the same line.
 
-`chain` takes blocks and ports as arguments, from left to right as inputs to outputs, and does `connects` to chain them together.
-The first argument is treated as the initial input, and the last element is treated as the final output.
-Blocks in the middle (if any) have the previous link connected to their `Input`-tagged ports and present their `Output`-tagged ports for the next element, or attach their `InOut`-tagged port to the previous link which is also presented to the next element.
-Only one pin per block may be tagged with `Input`, `Output`, and `InOut`.
-
-`chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
-The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
-
-> As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram:  
-> ![Chain Connects Example](docs/chain.png)  
-> The chain starts at Port1.
-> Block1 and Block2 have both an Input and Output port, so the chain goes "through" those blocks.
-> Block3 has an InOut port, so it is attached to the previous connection, but the chain goes not go "through" it.
-> Because Block4 is the last in the chain, it only needs an Input port.
+> <details>
+>   <summary>Optional: try it yourself...</summary>
+>
+> We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:  
+> ```diff
+>   ...
+> - self.sw = imp.Block(DigitalSwitch())
+> - self.connect(self.mcu.gpio.request('sw'), self.sw.out)
+> + (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+>   ...
+>   for i in range(4):
+> -   self.led[i] = imp.Block(IndicatorLed())
+> -   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
+> +   (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+> ```
+> 
+> `chain` takes blocks and ports as arguments, from left to right as inputs to outputs, and does `connects` to chain them together.
+> The first argument is treated as the initial input, and the last element is treated as the final output.
+> Blocks in the middle (if any) have the previous link connected to their `Input`-tagged ports and present their `Output`-tagged ports for the next element, or attach their `InOut`-tagged port to the previous link which is also presented to the next element.
+> Only one pin per block may be tagged with `Input`, `Output`, and `InOut`.
+> 
+> `chain` returns a chain object, which can be unpacked into a tuple of blocks that are part of the chain and the chain object itself.
+> The tuple of blocks can be used to name inline blocks declared in the chain (which is done in the blinky example to name the LED and switch), and the chain object can be used to name the links.
+> 
+> > As a more complicated example, running `self.chain(Port1, Block1, Block2, Block3, Block4)` (with the block definitions written as are shown below) would produce this block diagram:  
+> > ![Chain Connects Example](docs/chain.png)  
+> > The chain starts at Port1.
+> > Block1 and Block2 have both an Input and Output port, so the chain goes "through" those blocks.
+> > Block3 has an InOut port, so it is attached to the previous connection, but the chain goes not go "through" it.
+> > Because Block4 is the last in the chain, it only needs an Input port.
+> </details>
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
@@ -932,28 +937,34 @@ The tuple of blocks can be used to name inline blocks declared in the chain (whi
 _Finally, let's put the finishing touches on this design by specifying a pin assignment._
 
 ### Explicit Pin Assignments
-While `IoController` can assign peripherals like SPI pins according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
-However, it does define a `pin_assigns` parameter (as an array-of-strings) which allows specifying a pin number (on the footprint) or pin name (eg, `PC_13` - format specific to each microcontroller) for each requested pin.
+While `IoController` automatically assigns pins based on available IOs and peripherals of the chip, it does not have access to layout data to do physically-based pin assignment.
+You can manually specify that with a refinement, which can simplify layout.
 
-We can also force parameter values through the refinements system, using `instance_values`.
-Let's arbitrarily choose pins 26-29 for the LEDs.
-**Add a pin assignment for the ESP32 in the refinements section**:
-```diff
-  ...
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    instance_refinements=[
-      ...
-    ],
-+   instance_values=[
-+     (['mcu', 'pin_assigns'], [
-+       'led0=26',
-+       'led1=27',
-+       'led2=28',
-+       'led3=29',
-+     ])
-    ])
-```
+> <details>
+>   <summary>Optional: try it yourself...</summary>
+> 
+> `IoController` provides a `pin_assigns` parameter (as an array-of-strings) which can map a requested port to a pin number (on the footprint) or pin name (eg, `PC_13` - format specific to each microcontroller).
+> 
+> We can also force parameter values through the refinements system, using `instance_values`.
+> Let's arbitrarily choose pins 26-29 for the LEDs.
+> **Add a pin assignment for the ESP32 in the refinements section**:
+> ```diff
+>   ...
+>   def refinements(self) -> Refinements:
+>     return super().refinements() + Refinements(
+>     instance_refinements=[
+>       ...
+>     ],
+> +   instance_values=[
+> +     (['mcu', 'pin_assigns'], [
+> +       'led0=26',
+> +       'led1=27',
+> +       'led2=28',
+> +       'led3=29',
+> +     ])
+>     ])
+> ```
+> </details>
 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
