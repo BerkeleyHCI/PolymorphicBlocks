@@ -407,11 +407,11 @@ Here we specify that the abstract `BuckConverter` is specifically a `Ap3418`, bu
 >      This may be useful, for example, if you wanted to do a design-wide replacement of all generic resistors with a specific type.
 > 4. The corresponding refinement block should be inserted, or if it already exists, a new refinement entry will be added.
 
-To see the refinement take effect, clear the search configurations (since the search configuration will override refinements), then re-run the search:
+To see the refinement take effect, clear the search configurations (since the search configuration will override refinements), then re-run the search:  
 ![Blinky with buck converter block diagram](docs/ide_dse/dsepanel_config_delete.png)
 
 Running DSE search with an empty search configuration is equivalent to compiling the design and automatically updates the block diagram visualization.
-The block diagram at this point might look like:
+The block diagram at this point might look like:  
 ![Blinky with buck converter block diagram](docs/ide/ide_blinky_buck.png)
 
 > <details>
@@ -583,7 +583,7 @@ In this limited design, the most interesting part may be the inductor for the bu
    1. To get the area for the regulator block only, **right-click on `reg` and select Add objective area.**
    2. To get the current limit:
       1. **Select `reg`** to bring up its contents in the Detail panel.
-      2. In the Detail panel, **expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.
+      2. In the Detail panel, **expand the output power port `pwr_out`, right-click on `current_limits`, and select Add objective**.  
          ![Add regulator current limit objective](docs/ide_dse/addobjective_reg_ilim.png)
 4. **Run the search**.
    This may take a while, it's searching through about 40 parts.
