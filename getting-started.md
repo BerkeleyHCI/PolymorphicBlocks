@@ -200,7 +200,9 @@ First, we need to connect the power and ground between the devices, by **adding 
 > `self.connect(...)` connects all the argument ports together. 
 > Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
 
-> You can also connect ports through graphical operations in the IDE.
+> <details>
+>   <summary>You can also connect ports through graphical operations in the IDE. (not recommended - work-in-progress)</summary>
+> 
 > 1. Again, start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
 > 2. Double click any of the ports you want to connect.
 >    This starts a connection operation, which dims out the ports that cannot be connected.
@@ -210,6 +212,7 @@ First, we need to connect the power and ground between the devices, by **adding 
 >    - You can also cancel the connect operation by double-clicking anywhere (within a block) without additional ports selected, or through the right-click menu.
 > 5. Optionally, in the text prompt. give the connection a name.
 > 6. The connection should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
+> </details>
 
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
@@ -703,7 +706,7 @@ While you certainly can copy-paste the above LED instantiation 4 times, that's n
 > The square brackets provide the type parameter for the value type, which is necessary when using static analysis tools like mypy.
 
 > The IDE cannot produce code that programmatically generates hardware.
-> In general, code offers you a lot more power than can be achieved through the GUI
+> In general, code offers you a lot more power than can be achieved through the GUI.
 > 
 > However, the visualizer will run fine.
 
