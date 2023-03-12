@@ -1,10 +1,9 @@
+import csv
 import os
 from typing import List, Tuple, Dict, Optional
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
-import csv
-
 from electronics_abstract_parts import PartsTable
 
 
@@ -14,11 +13,20 @@ class PartQuantityTransform(TransformUtil.Transform):
         self.part_list: Dict[str, int] = {}
 
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-        lcsc_part_number: Optional[str] = str(self.design.get_value(context.path.to_tuple() + ('lcsc_part',)))
-        if lcsc_part_number != "None":
-            if lcsc_part_number not in self.part_list:
-                self.part_list[str(lcsc_part_number)] = 0
-            self.part_list[str(lcsc_part_number)] += 1
+        lcsc_part_number = self.design.get_value(context.path.to_tuple() + ('lcsc_part',))
+        part = self.design.get_value(context.path.to_tuple() + ('fp_part',))
+
+        if lcsc_part_number:  # non-None (value exists) and nonempty
+            assert isinstance(lcsc_part_number, str)
+            index = lcsc_part_number
+        elif part:  # TODO this is a temporary hacky fix, to support parts not in JLC's library
+            assert isinstance(part, str)
+            if part.startswith("PinHeader"):
+                return  # TODO headers ignored - not supported for now
+            index = part
+        else:
+            return  # ignored, not a part, eg tooling holes and jumper pads
+        self.part_list[index] = self.part_list.get(index, 0) + 1
 
     def run(self) -> Dict[str, int]:
         self.transform_design(self.design.design)
@@ -52,7 +60,6 @@ class GeneratePrice(BaseBackend):
             main_table = PartsTable.with_source_dir(['JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
             if not os.path.exists(main_table):
                 main_table = PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
-            assert isinstance(main_table, str)
             parts_tables = [main_table]
 
             supplementary_table = PartsTable.with_source_dir(['supplemental.csv'], 'resources')[0]
@@ -70,11 +77,10 @@ class GeneratePrice(BaseBackend):
                         GeneratePrice.PRICE_TABLE[row[0]] = full_price_list
         return GeneratePrice.PRICE_TABLE
 
-    def generate_price(self, lcsc_part_number: str, quantity: int) -> float:
+    def generate_price(self, lcsc_part_number: str, quantity: int) -> Optional[float]:
         full_price_str = self.get_price_table().get(lcsc_part_number, None)
         if full_price_str is None:
-            print(lcsc_part_number + " is missing from the price list.")
-            return 0
+            return None
         full_price_list = self.price_list_from_str(full_price_str)
         temp_price = full_price_list[0][1]  # sets price to initial amount (the lowest quantity bracket)
         for (minimum_quantity, price) in full_price_list:
@@ -88,7 +94,12 @@ class GeneratePrice(BaseBackend):
         total_price: float = 0
         for lcsc_part_number in price_list:
             quantity = price_list[lcsc_part_number]
-            total_price += round(self.generate_price(lcsc_part_number, quantity), 2)
+            price = self.generate_price(lcsc_part_number, quantity)
+            if price is not None:
+                total_price += price
+            else:
+                print(lcsc_part_number + " is missing from the price list.")
+
         return [
-            (edgir.LocalPath(), str(total_price))
+            (edgir.LocalPath(), str(round(total_price, 2)))
         ]
