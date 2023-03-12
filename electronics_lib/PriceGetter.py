@@ -26,11 +26,28 @@ class PartQuantityTransform(TransformUtil.Transform):
 
 
 class GeneratePrice(BaseBackend):
-    # part_number -> [ [lower-bound_1, price_1], [lower-bound_2 (and the previous upperbound), price_2], ... ]
-    PRICE_TABLE: Dict[str, List[Tuple[int, float]]] = {}
+    # part_number -> price string (pre-parsing everything takes a long time, especially since most rows aren't used)
+    PRICE_TABLE: Dict[str, str] = {}
+
+    @staticmethod
+    def price_list_from_str(full_price_list: str) -> List[Tuple[int, float]]:
+        # returns as [ [lower-bound_1, price_1], [lower-bound_2 (and the previous upperbound), price_2], ... ]
+        price_and_quantity_groups = full_price_list.split(',')
+        value: List[Tuple[int, float]] = []
+        for price_and_quantity in price_and_quantity_groups:
+            price_and_quantity_list = price_and_quantity.split(':')
+            # this has to be 2 because it will split the quantity range & the cost:
+            assert len(price_and_quantity_list) == 2
+            quantity_range = price_and_quantity_list[0].split('-')
+            # when the length is 1, it's the minimum quantity for a price break (ex: 15000+)
+            assert len(quantity_range) == 1 or len(quantity_range) == 2
+            value.append((int(quantity_range[0]), float(price_and_quantity_list[1])))
+
+        # sorts each value for PRICE_TABLE by lower-bounds, which is the first int in the Tuple:
+        return sorted(value)
 
     @classmethod
-    def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
+    def get_price_table(cls) -> Dict[str, str]:
         if not GeneratePrice.PRICE_TABLE:
             parts_library = PartsTable.with_source_dir(['JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
             if not os.path.exists(parts_library):
@@ -43,26 +60,15 @@ class GeneratePrice(BaseBackend):
                     full_price_list = row[10]
                     if not full_price_list.strip():  # missing price, discard row
                         continue
-                    price_and_quantity_groups = full_price_list.split(',')
-                    value: List[Tuple[int, float]] = []
-                    for price_and_quantity in price_and_quantity_groups:
-                        price_and_quantity_list = price_and_quantity.split(':')
-                        # this has to be 2 because it will split the quantity range & the cost:
-                        assert len(price_and_quantity_list) == 2
-                        quantity_range = price_and_quantity_list[0].split('-')
-                        # when the length is 1, it's the minimum quantity for a price break (ex: 15000+)
-                        assert len(quantity_range) == 1 or len(quantity_range) == 2
-                        value.append((int(quantity_range[0]), float(price_and_quantity_list[1])))
-
-                    # sorts each value for PRICE_TABLE by lower-bounds, which is the first int in the Tuple:
-                    GeneratePrice.PRICE_TABLE[row[0]] = sorted(value)
+                    GeneratePrice.PRICE_TABLE[row[0]] = full_price_list
         return GeneratePrice.PRICE_TABLE
 
     def generate_price(self, lcsc_part_number: str, quantity: int) -> float:
-        full_price_list = self.get_price_table().get(lcsc_part_number, None)
-        if full_price_list is None:
+        full_price_str = self.get_price_table().get(lcsc_part_number, None)
+        if full_price_str is None:
             print(lcsc_part_number + " is missing from the price list.")
             return 0
+        full_price_list = self.price_list_from_str(full_price_str)
         temp_price = full_price_list[0][1]  # sets price to initial amount (the lowest quantity bracket)
         for (minimum_quantity, price) in full_price_list:
             if quantity >= minimum_quantity:
