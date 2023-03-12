@@ -1,3 +1,4 @@
+import os
 from typing import List, Tuple, Dict, Optional
 
 import edgir
@@ -31,15 +32,16 @@ class GeneratePrice(BaseBackend):
     @classmethod
     def get_price_table(cls) -> Dict[str, List[Tuple[int, float]]]:
         if not GeneratePrice.PRICE_TABLE:
-            parts_library = str(PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'],
-                                                           'resources')[0])
+            parts_library = PartsTable.with_source_dir(['JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
+            if not os.path.exists(parts_library):
+                parts_library = PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
+            assert isinstance(parts_library, str)
             with open(parts_library, 'r', newline='', encoding='gb2312') as csv_file:
                 csv_reader = csv.reader(csv_file)
                 next(csv_reader)    # to skip the header
                 for row in csv_reader:
                     full_price_list = row[10]
-                    if not full_price_list.strip():
-                        print(row[0] + " is missing from the price list.")
+                    if not full_price_list.strip():  # missing price, discard row
                         continue
                     price_and_quantity_groups = full_price_list.split(',')
                     value: List[Tuple[int, float]] = []
