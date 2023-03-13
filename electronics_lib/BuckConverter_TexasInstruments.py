@@ -89,7 +89,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_draw=self.sw.link().current_drawn  # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.fb = self.Port(AnalogSink())  # no impednace specs
+    self.fb = self.Port(AnalogSink())  # no impedance specs
     self.boot = self.Port(VoltageSource())
     self.en = self.Port(DigitalSink(  # must be connected, floating is disable
       voltage_limits=(-0.1, 7) * Volt,
