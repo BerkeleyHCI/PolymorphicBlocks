@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Tps561201_Device(InternalSubcircuit, FootprintBlock):
+class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -29,6 +30,8 @@ class Tps561201_Device(InternalSubcircuit, FootprintBlock):
       mfr='Texas Instruments', part='TPS561201',
       datasheet='https://www.ti.com/lit/ds/symlink/tps561201.pdf'
     )
+    self.assign(self.lcsc_part, 'C220433')
+    self.assign(self.actual_basic_part, False)
 
 
 class Tps561201(DiscreteBuckConverter):
@@ -74,7 +77,7 @@ class Tps561201(DiscreteBuckConverter):
       self.connect(self.power_path.switch, self.ic.sw)
 
 
-class Tps54202h_Device(InternalSubcircuit, FootprintBlock):
+class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -86,7 +89,7 @@ class Tps54202h_Device(InternalSubcircuit, FootprintBlock):
       current_draw=self.sw.link().current_drawn  # TODO quiescent current
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
-    self.fb = self.Port(AnalogSink())  # no impednace specs
+    self.fb = self.Port(AnalogSink())  # no impedance specs
     self.boot = self.Port(VoltageSource())
     self.en = self.Port(DigitalSink(  # must be connected, floating is disable
       voltage_limits=(-0.1, 7) * Volt,
@@ -108,6 +111,8 @@ class Tps54202h_Device(InternalSubcircuit, FootprintBlock):
       mfr='Texas Instruments', part='TPS54202H',
       datasheet='https://www.ti.com/lit/ds/symlink/tps54202h.pdf'
     )
+    self.assign(self.lcsc_part, 'C527684')
+    self.assign(self.actual_basic_part, False)
 
 
 class Tps54202h(DiscreteBuckConverter):

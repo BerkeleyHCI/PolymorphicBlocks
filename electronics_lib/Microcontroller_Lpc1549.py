@@ -3,10 +3,11 @@ from typing import *
 
 from electronics_abstract_parts import *
 from electronics_lib import OscillatorCrystal
+from .JlcPart import JlcPart
 
 
 @abstract_block
-class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -169,6 +170,7 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gene
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
+  LCSC_PART: str
 
   def generate(self, assignments: List[str],
                gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
@@ -193,6 +195,8 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gene
       mfr='NXP', part=self.PART,
       datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
     )
+    self.assign(self.lcsc_part, self.LCSC_PART)
+    self.assign(self.actual_basic_part, False)
 
 
 class Lpc1549_48_Device(Lpc1549Base_Device):
@@ -250,6 +254,7 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
   }
   PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
   PART = 'LPC1549JBD48'
+  LCSC_PART = 'C71906'
 
 
 class Lpc1549_64_Device(Lpc1549Base_Device):
@@ -321,6 +326,7 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
   }
   PACKAGE = 'Package_QFP:LQFP-64_10x10mm_P0.5mm'
   PART = 'LPC1549JBD64'
+  LCSC_PART = 'C74507'
 
 
 class Lpc1549SwdPull(InternalSubcircuit, Block):

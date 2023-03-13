@@ -2,6 +2,7 @@ from typing import *
 from itertools import chain
 
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 @abstract_block
@@ -267,7 +268,7 @@ class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
                                    self.ic.swd)
 
 
-class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
+class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart, FootprintBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
@@ -354,6 +355,8 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, FootprintBlock):
       mfr='Raytac', part='MDBT50Q-1MV2',
       datasheet='https://www.raytac.com/download/index.php?index_id=43',
     )
+    self.assign(self.lcsc_part, 'C5118826')
+    self.assign(self.actual_basic_part, False)
 
 
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):

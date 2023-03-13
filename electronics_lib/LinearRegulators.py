@@ -199,7 +199,7 @@ class Ap2204k(LinearRegulator):
     self.connect(bridge.inner_link.as_digital_source(), self.ic.en)
 
 
-class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   # Also pin-compatible with MCP1802 and NJM2882F (which has a noise bypass pin)
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
@@ -213,16 +213,15 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, F
 
   def select_part(self, output_voltage: Range):
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
-    parts = [  # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current
-      (1.5, 'XC6209F152MR-G', (0.50, 0.60)),
-      (3.3, 'XC6209F332MR-G', (0.06, 0.25)),
-      (5.0, 'XC6209F502MR-G', (0.05, 0.21)),
+    parts = [  # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current, lcsc
+      (1.5, 'XC6209F152MR-G', (0.50, 0.60), 'C216623'),
+      (3.3, 'XC6209F332MR-G', (0.06, 0.25), 'C216624'),
+      (5.0, 'XC6209F502MR-G', (0.05, 0.21), 'C222571'),
     ]
-    suitable_parts = [(part_out_nominal, part_number, part_dropout)
-                      for part_out_nominal, part_number, part_dropout in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in output_voltage]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
-    part_output_voltage_nominal, part_number, part_dropout = suitable_parts[0]
+    part_output_voltage_nominal, part_number, part_dropout, lcsc_part = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.assign(self.actual_dropout, part_dropout * Volt)
@@ -238,6 +237,8 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, F
       mfr='Torex Semiconductor Ltd', part=part_number,
       datasheet='https://www.torexsemi.com/file/en/products/discontinued/-2016/53-XC6209_12.pdf',
     )
+    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.actual_basic_part, False)
 
 
 class Xc6209(LinearRegulator):
