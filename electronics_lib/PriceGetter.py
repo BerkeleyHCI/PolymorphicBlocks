@@ -62,7 +62,7 @@ class GeneratePrice(BaseBackend):
                 main_table = PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
             parts_tables = [main_table]
 
-            supplementary_table = PartsTable.with_source_dir(['jlc_supplemental_price.csv'], 'resources')[0]
+            supplementary_table = PartsTable.with_source_dir(['supplemental_price.csv'], 'resources')[0]
             if os.path.exists(supplementary_table):
                 parts_tables.append(supplementary_table)
 
