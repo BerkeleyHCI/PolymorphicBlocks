@@ -526,10 +526,11 @@ Let's now set up and run the search, and let's actually search through all combi
 2. Add the microcontroller search by **right-clicking the new `mcu` and select Search subclasses of IoController**.
    - Note that this adds a dimension to the search space.
 3. Make sure the footprint area and current draw objective functions are still there.
-4. Then, **re-run the search**.
+4. Add two new objective functions: **right click on the design root, and select Add objective price**. Repeat the same for **Add objective unproven count**.
+5. Then, **re-run the search**.
    - Because it's searching all combinations of regulators and microcontrollers, this may take a while.
    - Even though we previously specified a refinement for voltage regulator, the search configuration takes priority - so this does scan over all voltage regulators
-5. If we **plot the microcontroller and regulator**, we can see which combinations work:  
+6. If we **plot the microcontroller and regulator**, we can see which combinations work:  
    ![Microcontroller and regulator](docs/ide_dse/plot_mcu_vs_reg.png)
 
 > Here, we're plotting the microcontroller and voltage regulator classes, which are non-numeric.
@@ -542,11 +543,17 @@ Parallel coordinates plot is another visualization method commonly used for visu
 Let's use this to examine choices of microcontroller:
 1. **Switch to the parallel coordinates plot using the switch plots button: ![Switch plots button](docs/intellij_icons/toolWindowMessages_dark.svg)**.
 2. The initial plot starts with one axis, but let's plot the regulator, current draw, area, and microcontroller (4 axes).
-   **Add three more axes using the + button**.
-3. **Configure the axes left-to-right as the regulator class, maximum current draw, area, and microcontroller class**.
+   **Add five more axes using the + button**.
+3. **Configure the axes left-to-right as the regulator class, maximum current draw, unproven count, price, area, and microcontroller class**.
    The resulting plot should look like:  
    ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu.png)  
    Each individual design is a line, going through the points at the values of each axis.
+   It's definitely a very crowded chart!
+   > _Unproven_ counts the number of unproven blocks (blocks that have not been tested working or fixed) in the design.
+   > Lower is better, since it means fewer blocks are being built in hardware for the first time.
+
+   > _Price_ calculates the total price of components for the design.
+   > This has some limitations: price data may be out of date or incomplete (though missing prices will be logged on the console during a DSE run), and only reflects price of components.
 4. Let's say we want a ESP32, a microcontroller module with built-in WiFi.
    **Select the Esp32_Wroom_32 point on the bottom right** to select all designs going through that point:  
    ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32.png)  
@@ -555,15 +562,18 @@ Let's use this to examine choices of microcontroller:
      This makes sense, WiFi is a power-intensive feature.
    - Because the points on the area axis (third from right) are somewhat high, designs that use this module are fairly large.
      This also makes sense, the module is larger compared to a single chip, but also not as big as the development boards that are at the top of the axis.
+   - There's still a large remaining spread for unproven components and price.
 5. Let's say we want to prioritize power efficiency. **Select the lowest non-ideal (not-brown) point on the current draw axis** to subset the current selection:  
    ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw.png)
 6. There's still a few design points here, so let's look at the area axis.
    Most of the designs are close together, so **mousewheel over the axis to zoom in**.  
-   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw_areasel.png)
+   ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw_area.png)
 7. Zoomed in, we can differentiate the points better.
    If we arbitrarily pick the lowest area one, which once again turns out to be the Ap3418-based regulator.
-   Let's choose that point for our design, **right-click the point and select Insert refinements**.  
+   From its points through the other axes, this is also the design with the lowest design risk (fewest unproven parts) and relatively low price (compared to other feasible designs).
+   Let's choose this design, **right-click the point and select Insert refinements**.  
    ![Parallel plot regulator and microcontroller](docs/ide_dse/pcp_vreg_mcu_esp32_idraw_area_insertrefinement.png)
+   The right-click menu also displays more information about that particular point.
 8. The refinements block should update with the new choices:
    ```python
    def refinements(self) -> Refinements:
