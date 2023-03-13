@@ -218,9 +218,8 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       (3.3, 'XC6209F332MR-G', (0.06, 0.25), 'C216624'),
       (5.0, 'XC6209F502MR-G', (0.05, 0.21), 'C222571'),
     ]
-    suitable_parts = [(part_out_nominal, part_number, part_dropout)
-                      for part_out_nominal, part_number, part_dropout in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in output_voltage]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
     assert suitable_parts, f"no regulator with compatible output {output_voltage}"
     part_output_voltage_nominal, part_number, part_dropout, lcsc_part = suitable_parts[0]
 
