@@ -92,10 +92,37 @@ class JlcBoardTop(BaseBoardTop):
     )
 
 
-class SimpleBoardTop(JlcBoardTop):
+class SimpleBoardTop(BaseBoardTop):
   """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
+      class_refinements=[
+        (Resistor, JlcResistor),
+        (Capacitor, JlcCapacitor),
+        (Inductor, JlcInductor),
+        (FerriteBead, JlcFerriteBead),
+        (PptcFuse, JlcPptcFuse),
+        (ResistorArray, JlcResistorArray),
+        (Crystal, JlcCrystal),
+        (Oscillator, JlcOscillator),
+
+        (Switch, JlcSwitch),
+        (Led, JlcLed),
+        (ZenerDiode, JlcZenerDiode),
+        (Diode, JlcDiode),
+        (Fet, JlcFet),
+
+        (Fpc050Bottom, Afc01),
+        (UsbEsdDiode, Pesd5v0x1bt),
+        (Opamp, Lmv321),
+        (SpiMemory, W25q),  # 128M version is a basic part
+        (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
+      ],
+      class_values=[  # realistically only RCs are going to likely be basic parts
+        (JlcResistor, ['require_basic_part'], True),
+        (JlcCapacitor, ['require_basic_part'], True),
+      ],
+    ) + Refinements(
       class_refinements=[
         (PassiveConnector, PinHeader254),
       ],
