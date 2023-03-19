@@ -1,8 +1,9 @@
 package edg.wir
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edgir.ref.ref
 import edgrpc.hdl.hdl
-import edg.compiler.{ExprEvaluate, ExprValue}
+import edg.compiler.{ExprEvaluate, ExprToString, ExprValue}
 import edg.util.MapUtils
 
 
@@ -12,6 +13,44 @@ case class Refinements(
   classValues: Map[(ref.LibraryPath, ref.LocalPath), ExprValue] = Map(),  // (class, internal path -> value)
   instanceValues: Map[DesignPath, ExprValue] = Map()
 ) {
+  override def toString: String = {
+    val classRefinementsStr = if (classRefinements.nonEmpty) {
+      val elts = classRefinements.map { case (dstCls, cls) =>
+        s"${dstCls.toSimpleString}<-${cls.toSimpleString}"
+      }.mkString(", ")
+      Some(s"classRefinements($elts)")
+    } else {
+      None
+    }
+    val instanceRefinementsStr = if (instanceRefinements.nonEmpty) {
+      val elts = instanceRefinements.map { case (dst, cls) =>
+        s"${dst}<-${cls.toSimpleString}"
+      }.mkString(", ")
+      Some(s"instanceRefinements($elts)")
+    } else {
+      None
+    }
+    val classValuesStr = if (classValues.nonEmpty) {
+      val elts = classValues.map { case ((target, subpath), expr) =>
+        s"${target.toSimpleString}:${ExprToString(subpath)}<-${expr.toStringValue}"
+      }.mkString(", ")
+      Some(s"classValues($elts)")
+    } else {
+      None
+    }
+    val instanceValuesStr = if (instanceValues.nonEmpty) {
+      val elts = instanceValues.map { case (target, expr) =>
+        s"${target}<-${expr.toStringValue}"
+      }.mkString(", ")
+      Some(s"instanceValues($elts)")
+    } else {
+      None
+    }
+
+    val allStrs = Seq(classRefinementsStr, instanceRefinementsStr, classValuesStr, instanceValuesStr).flatten
+    s"Refinements(${allStrs.mkString(", ")}"
+  }
+
   // Append another set of refinements on top of this one, erroring out in case of a conflict
   def ++(that: Refinements): Refinements = {
     Refinements(
