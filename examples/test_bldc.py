@@ -241,10 +241,10 @@ class BldcDriverBoard(JlcBoardTop):
         (['mcu', 'swd_swo_pin'], 'PB3'),  # TODO maybe use a UART capable pin
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
-        (['curr[2]', 'res', 'res', 'require_basic_part'], False),
-        (['curr[2]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
-        (['curr[3]', 'res', 'res', 'require_basic_part'], False),
-        (['curr[3]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['curr[2]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
+        (['curr[2]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
+        (['curr[3]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
+        (['curr[3]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
 
         # doesn't seem to be available at JLC
         # (['conv', 'in_high_switch', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
