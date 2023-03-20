@@ -37,6 +37,11 @@ class LinearRegulator(VoltageRegulator):
   """Linear regulator, including supporting components in application circuit like capacitors if needed"""
 
 
+@abstract_block
+class VoltageReference(LinearRegulator):
+  """Voltage reference, generally provides high accuracy but limited current"""
+
+
 class IdealLinearRegulator(LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
