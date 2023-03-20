@@ -56,8 +56,7 @@ class ConstProp() {
 
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
 
-  // Params that have a forced/override value, and the name and target expr.
-  // The value is tracked so we know which expr takes precedence.
+  // Params that have a forced/override value, so they arent over-assigned.
   private val forcedParams = mutable.Set[IndirectDesignPath]()
 
   // Overassigns, for error tracking
