@@ -40,12 +40,12 @@ class Refinements():
       val_entry = pb.values.add()
       val_entry.cls_param.cls.target.name = src_cls._static_def_name()
       val_entry.cls_param.param_path.CopyFrom(edgir.LocalPathList(target_subpath))
-      val_entry.value.CopyFrom(edgir.lit_to_valuelit(target_value))
+      val_entry.expr.CopyFrom(edgir.lit_to_valuelit(target_value))
 
     for (src_path, target_value) in self.instance_values:
       val_entry = pb.values.add()
       val_entry.path.CopyFrom(edgir.LocalPathList(src_path))
-      val_entry.value.CopyFrom(edgir.lit_to_valuelit(target_value))
+      val_entry.expr.CopyFrom(edgir.lit_to_valuelit(target_value))
 
     return pb
 
