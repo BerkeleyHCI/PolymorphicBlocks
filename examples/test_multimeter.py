@@ -65,7 +65,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
   def contents(self):
     super().contents()
 
-    self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
+    self.res = self.Block(Resistor(1*MOhm(tol=0.01), voltage=self.input_positive.link().voltage))
     self.range = self.Block(ResistorMux([
       1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
       10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
@@ -169,7 +169,7 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
     max_current = self.pwr_out.link().current_drawn.upper()
 
     self.pull_res = self.Block(Resistor(
-      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
     ))
     self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=(0, max_voltage),
@@ -346,14 +346,8 @@ class MultimeterTest(JlcBoardTop):
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
       # and Vdd/2 (high impedance, but can measure negative voltages)
       self.inn = self.Block(BananaSafetyJack())
-
-      # # TODO remove this with proper bridging adapters
-      from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
-      self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.gnd_src.src, self.gnd)
-
       self.inn_mux = imp.Block(AnalogMuxer()).mux_to(
-        inputs=[self.gnd_src.dst, self.ref_buf.output]
+        inputs=[self.gnd_merge.pwr_out.as_analog_source(), self.ref_buf.output]
       )
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.adapt_to(AnalogSource()))

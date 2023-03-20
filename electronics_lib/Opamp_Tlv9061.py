@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Tlv9061_Device(InternalSubcircuit, FootprintBlock):
+class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
@@ -33,9 +34,11 @@ class Tlv9061_Device(InternalSubcircuit, FootprintBlock):
         '5': self.vcc,  # SHDN, active low (pull high to enable)
         '6': self.vcc,
       },
-      mfr='Texas Instruments', part='TLV9061SQDBVRQ1',
+      mfr='Texas Instruments', part='TLV9061S',
       datasheet='https://www.ti.com/lit/ds/symlink/tlv9062-q1.pdf'
     )
+    self.assign(self.lcsc_part, 'C2058350')
+    self.assign(self.actual_basic_part, False)
 
 
 class Tlv9061(Opamp):
