@@ -97,11 +97,11 @@ case class Refinements(
             source = hdl.Refinements.Value.Source.ClsParam(
               hdl.Refinements.Value.ClassParamPath(cls = Some(source), paramPath = Some(subpath))
             ),
-            value = Some(value.toLit))
+            value = hdl.Refinements.Value.Value.Expr(value.toLit))
         }.toSeq ++ instanceValues.map { case (path, value) =>
           hdl.Refinements.Value(
             source = hdl.Refinements.Value.Source.Path(path.asIndirect.toLocalPath),
-            value = Some(value.toLit))
+            value = hdl.Refinements.Value.Value.Expr(value.toLit))
         }
     )
   }
@@ -118,15 +118,22 @@ object Refinements {
       case hdl.Refinements.Subclass.Source.Path(path) =>
         DesignPath() ++ path -> refinement.getReplacement
     } }.toMap
-    val classValues = pb.values.collect { value => value.source match {
-      case hdl.Refinements.Value.Source.ClsParam(clsParam) =>
-        (clsParam.getCls, clsParam.getParamPath) -> ExprEvaluate.evalLiteral(value.getValue)
+    val classValues = pb.values.collect { value => (value.source, value.value.value) match {
+      case (hdl.Refinements.Value.Source.ClsParam(clsParam), hdl.Refinements.Value.Value.Expr(value)) =>
+        (clsParam.getCls, clsParam.getParamPath) -> ExprEvaluate.evalLiteral(value)
+      case (hdl.Refinements.Value.Source.ClsParam(_), _) =>
+        throw new IllegalArgumentException("class-based value from parameter refinements not supported")
     } }.toMap
-
-    val instanceValues = pb.values.collect { value => value.source match {
-      case hdl.Refinements.Value.Source.Path(path) =>
-        DesignPath() ++ path -> ExprEvaluate.evalLiteral(value.getValue)
+    val instanceValues = pb.values.collect { value => (value.source, value.value.value) match {
+      case (hdl.Refinements.Value.Source.Path(path), hdl.Refinements.Value.Value.Expr(value)) =>
+        DesignPath() ++ path -> ExprEvaluate.evalLiteral(value)
     } }.toMap
+    val instanceAssigns = pb.values.collect { value =>
+      (value.source, value.value.value) match {
+        case (hdl.Refinements.Value.Source.Path(path), hdl.Refinements.Value.Value.Param(param)) =>
+          ???  // TODO implement me
+      }
+    }.toMap
 
     Refinements(classRefinements, instanceRefinements, classValues, instanceValues)
   }
