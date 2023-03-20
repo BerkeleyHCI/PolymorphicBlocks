@@ -118,13 +118,13 @@ object Refinements {
       case hdl.Refinements.Subclass.Source.Path(path) =>
         DesignPath() ++ path -> refinement.getReplacement
     } }.toMap
-    val classValues = pb.values.collect { value => (value.source, value.value.value) match {
+    val classValues = pb.values.collect { value => (value.source, value.value) match {
       case (hdl.Refinements.Value.Source.ClsParam(clsParam), hdl.Refinements.Value.Value.Expr(value)) =>
         (clsParam.getCls, clsParam.getParamPath) -> ExprEvaluate.evalLiteral(value)
       case (hdl.Refinements.Value.Source.ClsParam(_), _) =>
         throw new IllegalArgumentException("class-based value from parameter refinements not supported")
     } }.toMap
-    val instanceValues = pb.values.collect { value => (value.source, value.value.value) match {
+    val instanceValues = pb.values.collect { value => (value.source, value.value) match {
       case (hdl.Refinements.Value.Source.Path(path), hdl.Refinements.Value.Value.Expr(value)) =>
         DesignPath() ++ path -> ExprEvaluate.evalLiteral(value)
     } }.toMap

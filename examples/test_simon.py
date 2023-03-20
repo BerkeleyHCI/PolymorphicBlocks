@@ -115,9 +115,9 @@ class TestSimon(BoardTop):
 
         # keep netlist footprints as libraries change
         (['btn_drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[2]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[3]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['btn_drv[1]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
+        (['btn_drv[2]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
+        (['btn_drv[3]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
       ],
       instance_refinements=[
         (['spk', 'conn'], JstPhKVertical),
