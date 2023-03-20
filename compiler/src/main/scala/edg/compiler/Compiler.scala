@@ -145,6 +145,9 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
       constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced=true)
     }
+    for ((path, source) <- refinements.instanceAssigns) {
+      constProp.addAssignEqual(path.asIndirect, source.asIndirect, DesignPath(), "path refinement", forced=true)
+    }
 
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
 
@@ -156,7 +159,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
 
   // Some pre-processed data structures to make refinement processing more efficient
   private val refinementClassValuesByClass = refinements.classValues.groupBy(_._1._1)
-  private val refinementInstanceValuePaths = refinements.instanceValues.keys.toSet
+  private val refinementInstanceValuePaths = (refinements.instanceValues.keys ++ refinements.instanceAssigns.keys).toSet
 
   def filterRefinementClassValues(blockClass: ref.LibraryPath,
                                   classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
